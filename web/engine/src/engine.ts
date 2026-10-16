@@ -7,23 +7,33 @@
  * `apply`; `replay` re-applies a log, so a state is exactly its events. `restore` replays
  * a snapshot's log and refuses the snapshot unless the result is identical.
  *
- * Rules implemented, with semantics.md sections (PROVISIONAL marks an open question):
- * - §1 states: not-reached (page never reached), irrelevant (reached, hidden), unanswered,
- *   answered. Once reached, a page stays reached (fixtures/FORMAT.md §4.2; C3a-6 open).
+ * Rules implemented, with semantics.md sections:
+ * - §1 states: not-reached (page never reached), irrelevant (reached, hidden, or its block
+ *   dropped off the path), unanswered, answered. Once reached, a page stays reached.
  * - §3 a value that is irrelevant at a page submit is cleared then; until then a hidden
  *   value is kept (live show-if within a page). Clearing is a fixpoint: an irrelevant
  *   question is null to every expression, so dependants follow in the same submit.
- * - §4 required only while relevant; constraints only on answered values; validation on
- *   page submit (`next`).
- * - §5 back keeps values and re-evaluates later pages when they are reached again.
- * - §6 a page with no relevant item is skipped and its questions become irrelevant
- *   (PROVISIONAL R1-6, C3a-1: notes count as content, so a notes-only page is shown). Running off
- *   the end of the flow is `end: complete`.
+ * - §3 a submit after going back that takes a reached page off the path (a branch now
+ *   goes the other way, an earlier end now ends the session) makes that page's questions
+ *   irrelevant and clears them (`offPath`).
+ * - §3 runtime type mismatches and division by zero give null and are logged in
+ *   `data.diagnostics` (and the response), never thrown.
+ * - §4 required only while relevant; numeric min/max and constraints only on answered
+ *   values; unreadable input blocks the page (`invalid`), even on an optional question;
+ *   validation on page submit (`next`).
+ * - §5 back keeps values and re-evaluates later pages when they are reached again. Back is
+ *   refused while a quota call is pending.
+ * - §6 a page whose page-level `showIf` is false, or with no relevant item, is skipped and
+ *   its questions become irrelevant; a relevant note counts as content, so a notes-only page
+ *   is shown. Skipping is per page. Running off the end of the flow is `end: complete`.
+ * - §6 a quota check asks the server once per node while its `when` is true and reuses the
+ *   recorded result on every later pass; `full` shows the `onFull` block, then ends.
  * - §7 realised orders are computed at first reach and stored before the page renders.
+ *   Assigned conditions are null to expressions until their `assign` node is reached.
  */
 
 import { planChecksum, canonicalJson } from './canonical.ts';
-import { evaluate, evaluateCondition, type Lookup, type Value } from './expr.ts';
+import { evaluate, evaluateCondition, type DiagnosticSink, type Lookup, type Value } from './expr.ts';
 import * as dec from './decimal.ts';
 import {
 	ENGINE_VERSION,
@@ -31,6 +41,7 @@ import {
 	isQuestion,
 	type BlockNode,
 	type ChoiceValue,
+	type Expr,
 	type FlowNode,
 	type Id,
 	type Item,
@@ -56,13 +67,14 @@ import {
 	type QuotaResult,
 	type RenderedText,
 	type ResponseRecord,
+	type RuntimeDiagnostic,
 	type Snapshot,
 	type StartOptions,
 	type State,
 	type StepResult,
 	type ViewItem
 } from './types.ts';
-import { checkAnswer, codeValue, matchChoice, pyStrip, toValue, type Stored } from './values.ts';
+import { canonicalDecimal, checkAnswer, codeValue, matchChoice, toValue, trimAnswer, type Stored } from './values.ts';
 
 const MAX_WALK = 1_000_000;
 
@@ -125,31 +137,57 @@ function listFor(plan: Plan, data: Data, key: string): List {
 	return { kind: 'nodes', nodes: [] };
 }
 
+// --- Runtime diagnostics ---------------------------------------------------------------
+
+/**
+ * Where diagnostics go while an event is applied (`apply` sets it; evaluation in `view`,
+ * `result` and other read-only calls logs nothing). Single-threaded and synchronous.
+ */
+let collector: Data['diagnostics'] | null = null;
+
+function logDiagnostic(d: RuntimeDiagnostic): void {
+	if (!collector) return;
+	if (collector.some((x) => x.site === d.site && x.code === d.code && x.path === d.path)) return;
+	collector.push(d);
+}
+
+function sinkFor(site: string): DiagnosticSink | undefined {
+	return collector ? (d) => logDiagnostic({ code: d.code, path: d.path, site }) : undefined;
+}
+
 // --- Evaluation environment ------------------------------------------------------------
 
 const INT_TEXT = /^[+-]?\d+$/;
 
+/**
+ * An embedded variable's value (semantics.md §6, C3a-5): the URL parameter captured at
+ * start if present, else the declared default. A malformed parameter is unanswered (null)
+ * and logged; the participant is never blocked.
+ */
 function embeddedRaw(plan: Plan, data: Data, id: Id): string | number | null {
 	const v = plan.variables[id];
 	if (!v || v.kind !== 'embedded') return null;
-	// PROVISIONAL (C3a-5): the URL parameter if present, else the declared default.
-	const raw: string | number | null = Object.prototype.hasOwnProperty.call(data.urlParams, v.param)
-		? (data.urlParams[v.param] ?? null)
-		: v.default;
+	const fromUrl = Object.prototype.hasOwnProperty.call(data.urlParams, v.param);
+	const raw: string | number | null = fromUrl ? (data.urlParams[v.param] ?? null) : v.default;
 	if (raw === null || raw === undefined) return null;
-	const text = typeof raw === 'number' ? String(raw) : pyStrip(raw);
+	const text = typeof raw === 'number' ? String(raw) : trimAnswer(raw);
 	if (text === '') return null;
+	const malformed = () => {
+		logDiagnostic({ code: 'embedded.malformed', path: '/', site: `variables.${id}` });
+		return null;
+	};
 	if (v.valueType === 'integer') {
-		if (!INT_TEXT.test(text)) return null;
+		if (!INT_TEXT.test(text)) return malformed();
 		const n = Number(text);
-		return Number.isSafeInteger(n) ? n : null;
+		return Number.isSafeInteger(n) ? n : malformed();
 	}
-	if (v.valueType === 'decimal') return dec.parseDecimal(text) === null ? null : text.replace(/^\+/, '');
+	if (v.valueType === 'decimal') return canonicalDecimal(text) ?? malformed();
 	return text;
 }
 
 class Env {
 	private rel = new Map<Id, boolean>();
+	private pageRel = new Map<Id, boolean>();
 	private comp = new Map<Id, Value>();
 	private busy = new Set<string>();
 	constructor(
@@ -158,17 +196,40 @@ class Env {
 		readonly cursor: Frame[] | null = null
 	) {}
 
+	cond(expr: Expr, site: string): boolean {
+		return evaluateCondition(expr, this.lookup, sinkFor(site));
+	}
+
+	/** A reached page is relevant unless it is off the path or its own `showIf` is false. */
+	pageRelevant(pageId: Id): boolean {
+		const memo = this.pageRel.get(pageId);
+		if (memo !== undefined) return memo;
+		const page = this.plan.pages[pageId];
+		let r = false;
+		if (page && this.data.reachedPages[pageId] && !this.data.offPath[pageId]) {
+			if (!page.showIf) r = true;
+			else if (this.busy.has(`p:${pageId}`)) return false; // a cycle: never in a valid plan
+			else {
+				this.busy.add(`p:${pageId}`);
+				r = this.cond(page.showIf, `pages.${pageId}.showIf`);
+				this.busy.delete(`p:${pageId}`);
+			}
+		}
+		this.pageRel.set(pageId, r);
+		return r;
+	}
+
 	relevant(id: Id): boolean {
 		const memo = this.rel.get(id);
 		if (memo !== undefined) return memo;
 		const item = this.plan.items[id];
 		let r = false;
-		if (item && this.data.reachedPages[item.page]) {
+		if (item && this.pageRelevant(item.page)) {
 			if (!item.showIf) r = true;
 			else if (this.busy.has(`r:${id}`)) return false; // a cycle: never in a valid plan
 			else {
 				this.busy.add(`r:${id}`);
-				r = evaluateCondition(item.showIf, this.lookup);
+				r = this.cond(item.showIf, `items.${id}.showIf`);
 				this.busy.delete(`r:${id}`);
 			}
 		}
@@ -204,18 +265,18 @@ class Env {
 				return toValue(v.valueType, raw);
 			}
 			case 'assigned':
-				// PROVISIONAL (C3a-7): null until the assign node is reached (osp-spec forbids
-				// referring to it earlier, C2-1), although the value is fixed at start.
+				// §7 (C3a-7): null until the assign node is reached, although the value is fixed
+				// at start and always recorded in the response.
 				return this.data.assignReached[id] && id in this.data.conditions
 					? codeValue(this.data.conditions[id])
 					: null;
 			case 'computed': {
-				// PROVISIONAL (C2-6): recomputed from current values whenever read.
+				// §2 (C2-6): recomputed from current values whenever read.
 				const memo = this.comp.get(id);
 				if (memo !== undefined) return memo;
 				if (this.busy.has(`c:${id}`)) return null;
 				this.busy.add(`c:${id}`);
-				const r = evaluate(v.expr, this.lookup);
+				const r = evaluate(v.expr, this.lookup, sinkFor(`variables.${id}.expr`));
 				this.busy.delete(`c:${id}`);
 				this.comp.set(id, r);
 				return r;
@@ -296,9 +357,10 @@ function seedVersion(plan: Plan): string {
 type WalkOutcome = { kind: 'page'; page: Id; cursor: Frame[] } | { kind: 'effect' } | { kind: 'end' };
 
 /** Realise orders for a page at first reach and mark it reached. */
-function enterPage(plan: Plan, d: Data, pageId: Id): void {
+function enterPage(plan: Plan, d: Data, pageId: Id, entered?: Set<Id>): void {
 	const page = plan.pages[pageId];
 	d.reachedPages[pageId] = true;
+	entered?.add(pageId);
 	if (!page) return;
 	if (page.itemOrder === 'shuffle' && !d.orders.items[pageId]) {
 		d.orders.items[pageId] = randomize(page.items, nodeSeed(seedVersion(plan), d.sessionSeed, pageId));
@@ -314,7 +376,7 @@ function enterPage(plan: Plan, d: Data, pageId: Id): void {
 
 function pageHasContent(plan: Plan, d: Data, pageId: Id, cursor: Frame[]): boolean {
 	const env = new Env(plan, d, cursor);
-	return (plan.pages[pageId]?.items ?? []).some((id) => env.relevant(id));
+	return env.pageRelevant(pageId) && (plan.pages[pageId]?.items ?? []).some((id) => env.relevant(id));
 }
 
 function popFrame(cursor: Frame[]): void {
@@ -327,7 +389,7 @@ function popFrame(cursor: Frame[]): void {
  * Walk forward from `cursor` (pointing at the next thing to do) to the next page to show,
  * an effect, or the end. Mutates `d` (orders, reached pages, assignment, pending, ended).
  */
-function walk(plan: Plan, d: Data, cursor: Frame[], t: number): WalkOutcome {
+function walk(plan: Plan, d: Data, cursor: Frame[], t: number, entered?: Set<Id>): WalkOutcome {
 	for (let steps = 0; steps < MAX_WALK; steps++) {
 		const top = cursor[cursor.length - 1];
 		if (!top) {
@@ -345,7 +407,7 @@ function walk(plan: Plan, d: Data, cursor: Frame[], t: number): WalkOutcome {
 				continue;
 			}
 			const pageId = list.pages[top.i]!;
-			enterPage(plan, d, pageId);
+			enterPage(plan, d, pageId, entered);
 			if (pageHasContent(plan, d, pageId, cursor)) return { kind: 'page', page: pageId, cursor };
 			top.i++; // §6: skipped silently
 			continue;
@@ -360,14 +422,14 @@ function walk(plan: Plan, d: Data, cursor: Frame[], t: number): WalkOutcome {
 				cursor.push({ k: `pages:${node.id}`, i: 0 });
 				break;
 			case 'branch': {
-				const yes = evaluateCondition(node.if, new Env(plan, d, cursor).lookup);
+				const yes = new Env(plan, d, cursor).cond(node.if, `flow.${node.id}.if`);
 				cursor.push({ k: `${yes ? 'then' : 'else'}:${node.id}`, i: 0 });
 				break;
 			}
 			case 'randomiser': {
 				if (!d.orders.blocks[node.id]) {
-					// PROVISIONAL (R1-2, C2-4): `pick` takes the first `pick` children of the
-					// seeded shuffle (a uniform draw without replacement).
+					// §7 (C2-4): `pick` takes the first `pick` children of the seeded shuffle
+					// (a uniform draw without replacement), frozen at first reach.
 					const ids = node.children.map((c) => c.id);
 					const order = randomize(ids, nodeSeed(seedVersion(plan), d.sessionSeed, node.id));
 					d.orders.blocks[node.id] = node.pick ? order.slice(0, node.pick) : order;
@@ -381,10 +443,10 @@ function walk(plan: Plan, d: Data, cursor: Frame[], t: number): WalkOutcome {
 				break;
 			case 'quotaCheck': {
 				const quota = plan.quotas[node.quota];
-				// PROVISIONAL (R1-5, C3a-3, C2-7): the check applies only while `when` is true;
-				// the server result is asked once per node and then reused (idempotent);
-				// `full` shows the onFull block's pages, then ends with its outcome.
-				const applies = quota ? evaluateCondition(quota.when, new Env(plan, d, cursor).lookup) : false;
+				// §6 (C3a-3, C2-7, R6-4): the check applies only while `when` is true; the
+				// server result is asked once per node and then reused (idempotent, also on
+				// replay); `full` shows the onFull block's pages, then ends with its outcome.
+				const applies = quota ? new Env(plan, d, cursor).cond(quota.when, `quotas.${quota.id}.when`) : false;
 				if (!applies) {
 					top.i++;
 					break;
@@ -439,16 +501,75 @@ function validate(plan: Plan, d: Data, pageId: Id): Record<Id, PageError> {
 	for (const id of displayOrder(plan, d, pageId)) {
 		const item = plan.items[id];
 		if (!item || !isQuestion(item) || !env.relevant(id)) continue;
-		// PROVISIONAL (R1-4): unreadable input blocks the page, even on an optional question.
+		// §4 (R1-4): unreadable input blocks the page, even on an optional question.
 		const bad = d.invalid[id];
 		if (bad !== undefined) errors[id] = { kind: 'invalid', code: bad };
 		else if (env.value(id) === null) {
 			if (item.required) errors[id] = { kind: 'required' };
-		} else if (item.constraint && !evaluateCondition(item.constraint, env.lookup)) {
+		} else if (!inRange(item, env.lookup(id))) {
+			errors[id] = { kind: 'range' };
+		} else if (item.constraint && !env.cond(item.constraint, `items.${id}.constraint`)) {
 			errors[id] = { kind: 'constraint' };
 		}
 	}
 	return errors;
+}
+
+/** §4: numeric `min` / `max` (inclusive) on an answered integer or decimal. */
+function inRange(item: QuestionItem, v: Value): boolean {
+	if (v === null || v.k !== 'num') return true;
+	const bound = (b: number | string | undefined) =>
+		b === undefined ? null : typeof b === 'number' ? dec.fromInteger(b) : dec.parseDecimal(b);
+	const lo = bound(item.min);
+	const hi = bound(item.max);
+	if (lo !== null && dec.cmp(v.v, lo) < 0) return false;
+	if (hi !== null && dec.cmp(v.v, hi) > 0) return false;
+	return true;
+}
+
+/**
+ * §3 (C3a-6): the reached pages that are no longer on the participant's path, given the
+ * current answers. The path is re-walked from the start, passing every page (shown or
+ * not yet reached), with recorded quota results and an unrecorded quota taken as open
+ * (so an uncertain future never clears anything). Iterated to a fixpoint, because answers
+ * on a page that drops off are null to every later branch.
+ */
+function offPathPages(plan: Plan, d: Data): Record<Id, true> {
+	const outer = collector;
+	collector = null; // a simulation: nothing it evaluates is logged
+	try {
+		return offPathFixpoint(plan, d);
+	} finally {
+		collector = outer;
+	}
+}
+
+function offPathFixpoint(plan: Plan, d: Data): Record<Id, true> {
+	let off: Record<Id, true> = {};
+	const limit = index(plan).pageCount + 2;
+	for (let round = 0; round <= limit; round++) {
+		const dd: Data = clone({ ...d, events: [], diagnostics: [], offPath: off, pending: null, ended: null });
+		const seen = new Set<Id>();
+		let cursor: Frame[] = [{ k: 'root', i: 0 }];
+		for (let i = 0; i <= limit; i++) {
+			const out = walk(plan, dd, cursor, 0, seen);
+			if (out.kind === 'end') break;
+			if (out.kind === 'effect') {
+				dd.quotas[dd.pending!.effect.nodeId] = 'open';
+				cursor = dd.pending!.cursor;
+				dd.pending = null;
+				continue;
+			}
+			cursor = out.cursor;
+			const top = cursor[cursor.length - 1];
+			if (top) top.i++;
+		}
+		const next: Record<Id, true> = {};
+		for (const p of Object.keys(d.reachedPages)) if (!seen.has(p)) next[p] = true;
+		if (canonicalJson(next) === canonicalJson(off)) return next;
+		off = next;
+	}
+	return off;
 }
 
 /** §3: on page submit, clear the value of every reached question that is irrelevant. */
@@ -493,6 +614,7 @@ function initialData(plan: Plan, ev: Extract<EngineEvent, { type: 'start' }>): D
 		values: {},
 		invalid: {},
 		reachedPages: {},
+		offPath: {},
 		conditions: {},
 		conditionSource: {},
 		assignReached: {},
@@ -503,6 +625,7 @@ function initialData(plan: Plan, ev: Extract<EngineEvent, { type: 'start' }>): D
 		errors: {},
 		frozen: {},
 		ended: null,
+		diagnostics: [],
 		events: []
 	};
 	for (const v of Object.values(plan.variables)) {
@@ -511,9 +634,10 @@ function initialData(plan: Plan, ev: Extract<EngineEvent, { type: 'start' }>): D
 			d.conditions[v.id] = ev.assigned[v.id]!;
 			d.conditionSource[v.id] = 'server';
 		} else {
-			// PROVISIONAL (C2-5): an independent uniform seeded draw per variable, on the stream
-			// `seedNode` (R1-2), exactly as the server's simple assignment. Drawn at start, so
-			// it never re-rolls. Normally the server sends every level and this is not used.
+			// §7 (C2-5, R1-8): an independent uniform seeded draw per variable, on the stream
+			// `seedNode` (`<assign node>/<variable>`), exactly as the server's simple
+			// assignment, recorded as `seeded` for that variable. Drawn at start, so it never
+			// re-rolls. Normally the server sends every level and this is not used.
 			const seed = nodeSeed(seedVersion(plan), ev.sessionSeed, v.seedNode || v.id);
 			d.conditions[v.id] = drawCondition(v.levels, null, seed);
 			d.conditionSource[v.id] = 'seeded';
@@ -522,10 +646,24 @@ function initialData(plan: Plan, ev: Extract<EngineEvent, { type: 'start' }>): D
 	return d;
 }
 
-/** Apply one (non-rejected) event to `d` in place. Returns the step result, if any. */
+/**
+ * Apply one (non-rejected) event to `d` in place. Returns the step result, if any. Runtime
+ * diagnostics raised while applying it are appended to `d.diagnostics`.
+ */
 function apply(plan: Plan, d: Data, ev: EngineEvent): StepResult | undefined {
+	const outer = collector;
+	collector = d.diagnostics;
+	try {
+		return applyEvent(plan, d, ev);
+	} finally {
+		collector = outer;
+	}
+}
+
+function applyEvent(plan: Plan, d: Data, ev: EngineEvent): StepResult | undefined {
 	switch (ev.type) {
 		case 'start': {
+			for (const v of Object.values(plan.variables)) if (v.kind === 'embedded') embeddedRaw(plan, d, v.id);
 			const out = walk(plan, d, [{ k: 'root', i: 0 }], ev.t);
 			return pageChanged(plan, d, finishWalk(d, out, ev.t));
 		}
@@ -549,6 +687,7 @@ function apply(plan: Plan, d: Data, ev: EngineEvent): StepResult | undefined {
 				return { outcome: 'invalid', to: page, errors };
 			}
 			d.errors = {};
+			d.offPath = offPathPages(plan, d);
 			clearIrrelevant(plan, d);
 			const cursor = clone(currentCursor(d));
 			const top = cursor[cursor.length - 1];
@@ -651,6 +790,26 @@ export function start(plan: Plan, opts: StartOptions): State {
 	return { plan, clock, data: d };
 }
 
+/**
+ * §5 (R6-5): start the same session again from the beginning, for an `end-only` session
+ * whose only copy was in memory and is lost on refresh: the same seed, server conditions,
+ * language, device, URL parameters and session id, so orders and assignment repeat. The
+ * runtime shows the participant a notice.
+ */
+export function restart(state: State, opts: { clock?: Clock } = {}): State {
+	const first = state.data.events[0];
+	if (!first || first.type !== 'start') throw new EngineError('state.invalid', 'state has no start event');
+	return start(state.plan, {
+		sessionSeed: first.sessionSeed,
+		assigned: first.assigned,
+		clock: opts.clock ?? state.clock,
+		language: first.language,
+		device: first.device,
+		urlParams: first.urlParams,
+		sessionId: first.sessionId
+	});
+}
+
 export type Rejection =
 	| 'ended'
 	| 'pending'
@@ -712,9 +871,10 @@ export function next(state: State): { state: State; effect?: Effect; result: Ste
 	return { state: out.state, effect: result.effect, result };
 }
 
+/** §5 (R6-4): back is allowed by the survey, there is a page to go to, and no call is pending. */
 export function canGoBack(state: State): boolean {
 	const d = state.data;
-	return !d.ended && state.plan.settings.backNavigation && d.history.length > 1;
+	return !d.ended && !d.pending && state.plan.settings.backNavigation && d.history.length > 1;
 }
 
 /** Go to the previous shown page, keeping values (§5). Refused calls return `state`. */
@@ -725,6 +885,7 @@ export function back(state: State): State {
 export function tryBack(state: State): { state: State; rejected?: Rejection } {
 	const d = state.data;
 	if (d.ended) return { state, rejected: 'ended' };
+	if (d.pending) return { state, rejected: 'pending' };
 	if (!state.plan.settings.backNavigation) return { state, rejected: 'back-disabled' };
 	if (d.history.length <= 1) return { state, rejected: 'first-page' };
 	return { state: commit(state, { type: 'back', t: now(state.clock), from: currentPage(d) }).state };
@@ -805,9 +966,14 @@ function pipeText(plan: Plan, d: Data, env: Env, id: string): string {
 			return c ? plainText(plan, d.language, c.label) : String(code);
 		};
 		if (item.type === 'single') return label(stored);
-		// PROVISIONAL (R1-3, C3a-9): a multi answer pipes its labels in choice-list order,
-		// joined with ", "; a decimal pipes as typed.
-		if (item.type === 'multi') return (stored as ChoiceValue[]).map(label).join(', ');
+		// §8 (C3a-9): a multi answer pipes its labels in the order they were displayed (the
+		// realised choice order), joined with ", "; a decimal pipes in canonical form, which
+		// is how it is stored.
+		if (item.type === 'multi') {
+			const picked = stored as ChoiceValue[];
+			const shown = d.orders.choices[id] ?? (item.choices ?? []).map((c) => c.value);
+			return shown.filter((v) => picked.includes(v)).map(label).join(', ');
+		}
 		return String(stored);
 	}
 	return formatValue(env.lookup(id));
@@ -931,6 +1097,71 @@ function variableValues(state: State) {
 	return { embedded, computed };
 }
 
+/** Question ids an expression reads, following computed variables (cycles cut). */
+function questionInputs(plan: Plan, expr: Expr, out = new Set<Id>(), seen = new Set<Id>()): Set<Id> {
+	const visit = (n: Expr): void => {
+		switch (n.kind) {
+			case 'ref': {
+				if (plan.items[n.id]) out.add(n.id);
+				const v = plan.variables[n.id];
+				if (v?.kind === 'computed' && !seen.has(v.id)) {
+					seen.add(v.id);
+					visit(v.expr);
+				}
+				return;
+			}
+			case 'answered':
+				return visit(n.ref);
+			case 'contains':
+				visit(n.ref);
+				return visit(n.value);
+			case 'compare':
+			case 'arith':
+				visit(n.left);
+				return visit(n.right);
+			case 'and':
+			case 'or':
+				return n.args.forEach(visit);
+			case 'not':
+				return visit(n.arg);
+			case 'if':
+				visit(n.cond);
+				visit(n.then);
+				return visit(n.else);
+		}
+	};
+	visit(expr);
+	return out;
+}
+
+/**
+ * The export state of each embedded and computed variable (semantics.md §1, C2-6, C3a-5).
+ * Embedded: answered when it has a value (a parameter or its default), else unanswered.
+ * Computed: answered when non-null; when null, not-reached if every question it reads is
+ * not-reached, irrelevant if each is not-reached or irrelevant, otherwise unanswered.
+ */
+function varStates(
+	state: State,
+	ans: Record<Id, AnswerRecord>,
+	embedded: Record<Id, string | number | null>,
+	computed: Record<Id, string | boolean | null>
+): Record<Id, QuestionState> {
+	const out: Record<Id, QuestionState> = {};
+	for (const v of Object.values(state.plan.variables)) {
+		if (v.kind === 'embedded') out[v.id] = embedded[v.id] === null ? 'unanswered' : 'answered';
+		if (v.kind !== 'computed') continue;
+		if (computed[v.id] !== null) {
+			out[v.id] = 'answered';
+			continue;
+		}
+		const inputs = [...questionInputs(state.plan, v.expr)].map((q) => ans[q]?.state ?? 'not-reached');
+		if (inputs.length && inputs.every((s) => s === 'not-reached')) out[v.id] = 'not-reached';
+		else if (inputs.length && inputs.every((s) => s === 'not-reached' || s === 'irrelevant')) out[v.id] = 'irrelevant';
+		else out[v.id] = 'unanswered';
+	}
+	return out;
+}
+
 /** Effect results the session recorded, in order (replay reuses them, never re-asks). */
 function recordedEffects(plan: Plan, d: Data): ResponseRecord['effects'] {
 	const out: ResponseRecord['effects'] = [];
@@ -962,6 +1193,8 @@ export function result(state: State): ResponseRecord {
 		csvState[`${item.name}__state`] = ans[id]!.state;
 	}
 	const { embedded, computed } = variableValues(state);
+	const variableStates = varStates(state, ans, embedded, computed);
+	for (const [id, st] of Object.entries(variableStates)) csvState[`${plan.variables[id]!.name}__state`] = st;
 	const sources = Object.values(d.conditionSource);
 	return {
 		format: 'osp-response/1',
@@ -976,7 +1209,8 @@ export function result(state: State): ResponseRecord {
 		device: d.device,
 		end: d.ended?.outcome ?? null,
 		endNode: d.ended?.nodeId ?? null,
-		// PROVISIONAL (R1-8): `seeded` when the engine drew any condition itself.
+		// §7 (R1-8): `seeded` when the engine drew any condition itself; per variable in
+		// `conditionSources`.
 		allocation: sources.includes('seeded') ? 'seeded' : 'server',
 		assigned: serverAssigned(d),
 		conditions: { ...d.conditions },
@@ -986,7 +1220,9 @@ export function result(state: State): ResponseRecord {
 		csvState,
 		embedded,
 		computed,
+		variableStates,
 		quotas: { ...d.quotas },
+		diagnostics: clone(d.diagnostics),
 		effects: recordedEffects(plan, d),
 		urlParams: { ...d.urlParams },
 		startedAt: d.startedAt,

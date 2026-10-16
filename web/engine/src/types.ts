@@ -39,8 +39,22 @@ export interface Orders {
 
 export type PageError =
 	| { kind: 'required' }
+	| { kind: 'range' }
 	| { kind: 'constraint' }
 	| { kind: 'invalid'; code: string };
+
+/**
+ * A runtime diagnostic, logged, never thrown (semantics.md §3): a type mismatch or a
+ * division by zero in an expression, or a malformed URL parameter. `site` names the
+ * expression (`items.<id>.showIf`, `pages.<id>.showIf`, `items.<id>.constraint`,
+ * `flow.<node>.if`, `quotas.<id>.when`, `variables.<id>.expr`, `variables.<id>`); `path`
+ * is a JSON pointer into its AST.
+ */
+export interface RuntimeDiagnostic {
+	code: 'type-mismatch' | 'division-by-zero' | 'embedded.malformed';
+	site: string;
+	path: string;
+}
 
 export interface QuotaEffect {
 	kind: 'quota';
@@ -128,6 +142,11 @@ export interface Data {
 	invalid: Record<Id, string>;
 	/** Pages the flow has reached (shown or skipped as empty). */
 	reachedPages: Record<Id, true>;
+	/**
+	 * Reached pages that a later submit took off the path (semantics.md §3, C3a-6): their
+	 * questions are irrelevant and were cleared. Recomputed on every page submit.
+	 */
+	offPath: Record<Id, true>;
 	conditions: Record<Id, ChoiceValue>;
 	conditionSource: Record<Id, 'server' | 'seeded'>;
 	/** Assigned variables whose `assign` node has been reached (visible to expressions). */
@@ -147,6 +166,8 @@ export interface Data {
 	 */
 	frozen: Record<Id, QuestionState>;
 	ended: { outcome: Id; nodeId: Id | null; at: number } | null;
+	/** Runtime diagnostics logged while applying events (de-duplicated, in order). */
+	diagnostics: RuntimeDiagnostic[];
 	events: EngineEvent[];
 }
 
@@ -235,7 +256,11 @@ export interface ResponseRecord {
 	csvState: Record<string, QuestionState>;
 	embedded: Record<Id, string | number | null>;
 	computed: Record<Id, string | boolean | null>;
+	/** Export state of each embedded and computed variable (also in `csvState`). */
+	variableStates: Record<Id, QuestionState>;
 	quotas: Record<Id, QuotaResult>;
+	/** Runtime diagnostics the session logged (semantics.md §3). */
+	diagnostics: RuntimeDiagnostic[];
 	/** Recorded effect results in order (FORMAT.md `response.effects`). */
 	effects: Array<{ kind: 'quota'; nodeId: Id; quota: Id; result: QuotaResult }>;
 	urlParams: Record<string, string>;
