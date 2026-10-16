@@ -1,0 +1,112 @@
+{
+  "specVersion": "osp-survey/0.1",
+  "id": "srv_ops",
+  "metadata": {
+    "title": {"en": "Ops test survey", "de": "Ops-Testumfrage"},
+    "languages": ["en", "de"],
+    "defaultLanguage": "en"
+  },
+  "settings": {"backNavigation": true},
+  "choiceLists": [
+    {
+      "id": "yesno",
+      "choices": [
+        {"value": 1, "label": {"en": "Yes", "de": "Ja"}},
+        {"value": 0, "label": {"en": "No", "de": "Nein"}}
+      ]
+    },
+    {
+      "id": "spare",
+      "choices": [{"value": "a", "label": "A"}, {"value": "b", "label": "B"}]
+    }
+  ],
+  "variables": [
+    {"kind": "embedded", "id": "source", "param": "src", "default": "direct"},
+    {"kind": "assigned", "id": "arm", "levels": ["gain", "loss"]},
+    {
+      "kind": "computed",
+      "id": "age_next",
+      "expr": {"kind": "arith", "op": "+", "left": {"kind": "ref", "id": "age"}, "right": {"kind": "int", "value": 1}}
+    }
+  ],
+  "blocks": [
+    {
+      "id": "b_intro",
+      "title": "Intro",
+      "pages": [
+        {
+          "id": "p_consent",
+          "items": [
+            {"id": "consent", "type": "single", "choiceList": "yesno", "required": true,
+             "label": {"en": "Do you consent?", "de": "Willigen Sie ein?"}}
+          ]
+        },
+        {
+          "id": "p_demo",
+          "items": [
+            {"id": "age", "type": "integer", "label": {"en": "Age?", "de": "Alter?"},
+             "constraint": {"kind": "compare", "op": ">=", "left": {"kind": "ref", "id": "age"}, "right": {"kind": "int", "value": 18}}},
+            {"id": "fruit", "type": "multi", "label": {"en": "Fruit?", "de": "Obst?"},
+             "choices": [
+               {"value": 1, "label": {"en": "Apple", "de": "Apfel"}},
+               {"value": 2, "label": {"en": "Pear", "de": "Birne"}},
+               {"value": 3, "label": {"en": "Plum", "de": "Pflaume"}}
+             ]},
+            {"id": "why_pear", "type": "text", "label": {"en": "Why pears, ${age}?", "de": "Warum Birnen, ${age}?"},
+             "showIf": {"kind": "contains", "ref": {"kind": "ref", "id": "fruit"}, "value": {"kind": "int", "value": 2}}}
+          ]
+        }
+      ]
+    },
+    {
+      "id": "b_main",
+      "pages": [
+        {
+          "id": "p_main",
+          "items": [
+            {"id": "info", "type": "note", "label": {"en": "Thanks", "de": "Danke"}},
+            {"id": "rating", "type": "decimal", "label": {"en": "Rate", "de": "Bewerten"},
+             "showIf": {"kind": "compare", "op": "==", "left": {"kind": "ref", "id": "consent"}, "right": {"kind": "int", "value": 1}}}
+          ]
+        }
+      ]
+    },
+    {
+      "id": "b_extra",
+      "pages": [
+        {"id": "p_extra", "items": [{"id": "when", "type": "date", "label": {"en": "When?", "de": "Wann?"}}]}
+      ]
+    },
+    {
+      "id": "b_full",
+      "pages": [
+        {"id": "p_full", "items": [{"id": "sorry", "type": "note", "label": {"en": "Full", "de": "Voll"}}]}
+      ]
+    }
+  ],
+  "quotas": [
+    {
+      "id": "adults",
+      "when": {"kind": "compare", "op": ">=", "left": {"kind": "ref", "id": "age"}, "right": {"kind": "int", "value": 18}},
+      "limit": 100,
+      "onFull": {"block": "b_full", "outcome": "quota_full"}
+    }
+  ],
+  "flow": [
+    {"type": "block", "id": "n_intro", "block": "b_intro"},
+    {"type": "quotaCheck", "id": "n_quota", "quota": "adults"},
+    {"type": "assign", "id": "n_assign", "variables": ["arm"]},
+    {
+      "type": "branch",
+      "id": "n_branch",
+      "if": {"kind": "compare", "op": "==", "left": {"kind": "ref", "id": "consent"}, "right": {"kind": "int", "value": 1}},
+      "then": [
+        {"type": "randomiser", "id": "n_rand", "children": [
+          {"type": "block", "id": "n_main", "block": "b_main"},
+          {"type": "block", "id": "n_extra", "block": "b_extra"}
+        ]}
+      ],
+      "else": [{"type": "end", "id": "n_end_no", "outcome": "screened_out", "message": {"en": "Bye ${source}", "de": "Tschüss ${source}"}}]
+    }
+  ]
+}
