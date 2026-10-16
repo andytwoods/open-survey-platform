@@ -115,3 +115,11 @@ hooks-test:
 
 hooks-e2e:
 	$(PNPM) -C web/hooks-sandbox exec playwright test $(E2E_ARGS)
+
+# LimeSurvey .lss export (task M4): import and activate every fixture in a real LimeSurvey
+# 6.17 over RemoteControl, using spikes/spike-1's docker compose (pinned images, local-only
+# credentials). Not part of `make check`; skips cleanly without Docker. Leaves containers
+# it started running with OSP_LSS_IMPORT_KEEP=1.
+.PHONY: lss-import-check
+lss-import-check:
+	OSP_LSS_IMPORT=1 $(UV_RUN) pytest python/osp-targets/tests/test_lss_import.py -rs
