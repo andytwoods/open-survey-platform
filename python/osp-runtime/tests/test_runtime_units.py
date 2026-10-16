@@ -152,7 +152,7 @@ class FakeRepo:
             expired_at=None,
             publication_id="p1",
         )
-        self.pub = SimpleNamespace(plan_checksum="abc", config=config, slug="x")
+        self.pub = SimpleNamespace(plan_checksum="abc", config=config, slug="x", plan={})
         self.sess = SimpleNamespace(
             id="s1",
             assigned={"f": "a"},
@@ -212,3 +212,62 @@ def test_service_submit_after_holds_released_is_late():
     svc = SessionService(repo, clock=clock)  # type: ignore[arg-type]
     assert svc.resume("tok").session_id == "s1"
     assert svc.submit("s1", "tok", GOOD).late is True
+
+
+def test_quota_result_uses_the_engine_words_and_reads_the_old_ones():
+    from osp_runtime.session import quota_result
+
+    assert [quota_result(v) for v in ("open", "admitted", "full")] == ["open", "open", "full"]
+    for bad in ("closed", None, 1):
+        with pytest.raises(InvalidPayload):
+            quota_result(bad)
+
+
+def _snap(rev, *events):
+    return {"revision": rev, "data": {"events": [{"t": e} for e in events]}}
+
+
+@pytest.mark.parametrize(
+    ("mine", "server", "older"),
+    [
+        (_snap(1, "a"), _snap(3, "a", "b", "c"), True),
+        (_snap(3, "a", "b", "c"), _snap(3, "a", "b", "c"), True),  # identical
+        (_snap(2, "a", "x"), _snap(3, "a", "b", "c"), False),  # diverged
+        (_snap(4, "a", "b", "c", "d"), _snap(3, "a", "b", "c"), False),  # newer
+        (_snap(5, "a"), _snap(3, "a", "b"), False),  # newer engine revision
+        ({"p": 1}, _snap(3, "a"), False),  # not an engine snapshot
+        (_snap(1, "a"), None, False),
+        (_snap(1, "a"), {"data": {"events": "no"}}, False),
+    ],
+)
+def test_is_older_prefix(mine, server, older):
+    from osp_runtime.session import is_older_prefix
+
+    assert is_older_prefix(mine, server) is older
+
+
+def test_local_copy_comes_from_plan_settings():
+    from osp_runtime.session import local_copy
+
+    assert local_copy({"settings": {"localCopy": "memory"}}) == "memory"
+    assert local_copy({"settings": {"localCopy": "browser"}}) == "browser"
+    assert local_copy({}) == local_copy(None) == local_copy({"settings": 3}) == "browser"
+
+
+def test_embed_theme_sets_plan_theme_and_recomputes_the_checksum():
+    import json
+    from pathlib import Path
+
+    from osp_runtime.plan import checksum, embed_theme
+    from osp_spec.theme import PRESETS
+
+    schema = json.loads(
+        (Path(__file__).resolve().parents[3] / "contract" / "runtime-plan.schema.json").read_text()
+    )
+    assert "theme" in schema["properties"] and "theme" not in schema["required"]
+    plan = {"checksum": "sha256:old", "settings": {}}
+    theme = PRESETS["clean"].model_dump(mode="json", by_alias=True)
+    out = embed_theme(plan, theme)
+    assert out["theme"] == theme and "theme" not in plan  # the input is not mutated
+    assert out["checksum"] == checksum(out) != checksum({**plan, "theme": None})
+    assert all(k in theme for k in schema["$defs"]["theme"]["required"])

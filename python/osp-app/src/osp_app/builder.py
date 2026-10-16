@@ -30,7 +30,13 @@ from osp_ops import Draft as OpsDraft
 from osp_ops import Invocation, apply_transaction
 from osp_runtime import InvalidPayload, RuntimeConfig, SessionService
 from osp_runtime.config import SAVE_MODES
-from osp_runtime.plan import ENGINE_VERSION, PLAN_VERSION, compile_survey, runtime_config
+from osp_runtime.plan import (
+    ENGINE_VERSION,
+    PLAN_VERSION,
+    compile_survey,
+    embed_theme,
+    runtime_config,
+)
 from osp_spec import SPEC_VERSION, Diagnostic, parse, publish_diagnostics
 from osp_store import (
     AccountStore,
@@ -57,6 +63,7 @@ from .errors import (
     Rejected,
     RevisionConflictError,
 )
+from .publish_theme import resolve_theme
 from .runtime_repo import StoreParticipantRepo
 
 UNDO_PREFIX = "u:"
@@ -168,6 +175,23 @@ def _retention_policy(body: Any) -> RetentionPolicy:
         until = datetime.combine(date.fromisoformat(r["until"]), time.min, tzinfo=UTC)
         return RetentionPolicy.after_date(until)
     return RetentionPolicy.none()  # "indefinite": kept until the researcher deletes it
+
+
+RETENTION_REQUIRED = "publish.retention_required"
+
+
+def _publish_message(diagnostics: Sequence[Diagnostic]) -> str:
+    """The headline for a refused publish. A missing retention policy is named, since it
+    is the one error a survey that previews fine can still have."""
+    errors = _errors(diagnostics)
+    if any(d.code == RETENTION_REQUIRED for d in errors):
+        rest = len(errors) - 1
+        more = f" ({rest} other error{'s' if rest != 1 else ''} too)" if rest else ""
+        return (
+            "Choose how long participant data is kept (settings.retention) "
+            f"before publishing{more}."
+        )
+    return "Fix the errors before publishing."
 
 
 def _errors(diagnostics: Sequence[Diagnostic]) -> list[Diagnostic]:
@@ -458,7 +482,7 @@ class Builder:
         # Publishing also needs a retention policy (decided 16 Oct 2026, no silent default).
         diagnostics = publish_diagnostics(draft.body)
         if _errors(diagnostics) or not isinstance(draft.body, dict):
-            raise Rejected("Fix the errors before publishing.", diagnostics)
+            raise Rejected(_publish_message(diagnostics), diagnostics)
         retention = _retention_policy(draft.body)
 
         # The plan's seed version is the published number (semantics R1-1), so compile
@@ -468,6 +492,10 @@ class Builder:
         plan, plan_diags = compile_survey(body)
         if plan is None:
             raise Rejected("The runtime plan can't be built.", _errors(plan_diags) or plan_diags)
+        theme, theme_diags = resolve_theme(self.store, ctx, draft.body)
+        if theme is None:
+            raise Rejected("The survey theme fails the accessibility check.", theme_diags)
+        plan = embed_theme(plan, theme)
         config = runtime_config(plan, save_mode=save_mode)
         try:
             RuntimeConfig.from_json(config)
