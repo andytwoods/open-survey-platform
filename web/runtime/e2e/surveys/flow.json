@@ -1,0 +1,105 @@
+{
+  "specVersion": "osp-survey/0.1",
+  "id": "e2e_flow",
+  "version": 1,
+  "metadata": {
+    "title": "Everyday life",
+    "description": "R3 end-to-end survey: consent gate, required + constraint, live show-if, piping, every pilot type over four pages.",
+    "languages": ["en"]
+  },
+  "settings": { "backNavigation": true },
+  "choiceLists": [
+    { "id": "yesno", "choices": [{ "value": "yes", "label": "Yes" }, { "value": "no", "label": "No" }] },
+    {
+      "id": "colour",
+      "choices": [
+        { "value": "red", "label": "Red" },
+        { "value": "green", "label": "Green" },
+        { "value": "other", "label": "Something else" }
+      ]
+    }
+  ],
+  "blocks": [
+    {
+      "id": "consent_blk",
+      "pages": [
+        {
+          "id": "p_consent",
+          "items": [
+            { "type": "note", "id": "intro", "label": "This short survey asks about everyday things." },
+            { "type": "single", "id": "consent", "label": "Do you agree to take part?", "choiceList": "yesno", "required": true }
+          ]
+        }
+      ]
+    },
+    {
+      "id": "about_blk",
+      "pages": [
+        {
+          "id": "p_about",
+          "items": [
+            {
+              "type": "integer",
+              "id": "age",
+              "label": "How old are you?",
+              "required": true,
+              "constraint": {
+                "kind": "and",
+                "args": [
+                  { "kind": "compare", "op": ">=", "left": { "kind": "ref", "id": "age" }, "right": { "kind": "int", "value": 18 } },
+                  { "kind": "compare", "op": "<=", "left": { "kind": "ref", "id": "age" }, "right": { "kind": "int", "value": 120 } }
+                ]
+              },
+              "constraintMessage": "Please enter an age between 18 and 120."
+            },
+            { "type": "text", "id": "nick", "label": "What should we call you?" }
+          ]
+        }
+      ]
+    },
+    {
+      "id": "likes_blk",
+      "pages": [
+        {
+          "id": "p_likes",
+          "items": [
+            { "type": "multi", "id": "colours", "label": "Which colours do you like, ${nick}?", "choiceList": "colour", "required": true },
+            {
+              "type": "text",
+              "id": "other_colour",
+              "label": "Which other colour?",
+              "required": true,
+              "showIf": { "kind": "contains", "ref": { "kind": "ref", "id": "colours" }, "value": { "kind": "text", "value": "other" } }
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "id": "more_blk",
+      "pages": [
+        {
+          "id": "p_more",
+          "items": [
+            { "type": "date", "id": "when", "label": "When did you last go outside?" },
+            { "type": "decimal", "id": "cost", "label": "What did your last coffee cost, in pounds?" },
+            { "type": "text", "id": "comment", "label": "Any comment?" }
+          ]
+        }
+      ]
+    }
+  ],
+  "flow": [
+    { "type": "block", "id": "n_consent", "block": "consent_blk" },
+    {
+      "type": "branch",
+      "id": "gate",
+      "if": { "kind": "compare", "op": "==", "left": { "kind": "ref", "id": "consent" }, "right": { "kind": "text", "value": "no" } },
+      "then": [{ "type": "end", "id": "end_declined", "outcome": "declined" }]
+    },
+    { "type": "block", "id": "n_about", "block": "about_blk" },
+    { "type": "block", "id": "n_likes", "block": "likes_blk" },
+    { "type": "block", "id": "n_more", "block": "more_blk" },
+    { "type": "end", "id": "end_complete" }
+  ]
+}
