@@ -4,6 +4,7 @@ from __future__ import annotations
 
 from dataclasses import dataclass
 
+from osp_runtime import SessionService
 from osp_store import AccountStore, Conflict, Store, SystemContext
 
 from .auth import AuthService, PasswordHasher, Role
@@ -13,6 +14,7 @@ from .auth.ports import Clock, RandomSource, SystemClock, SystemRandom
 from .auth.service import EmailTaken, PasswordRejected
 from .auth.sessions import SessionConfig
 from .builder import Builder
+from .runtime_repo import StoreParticipantRepo
 from .store_repos import StoreMembershipRepo, StoreSessionRepo, StoreUserRepo
 
 
@@ -21,6 +23,7 @@ class AppServices:
     store: Store
     auth: AuthService
     builder: Builder
+    sessions: SessionService  # participant sessions; publish registers plans here
 
     def create_account(
         self, tenant_id: str, email: str, password: str, role: Role | str = Role.VIEWER
@@ -68,4 +71,7 @@ def build_services(
         session_config=session_config,
         policy=password_policy or PasswordPolicy.from_env(),
     )
-    return AppServices(store=store, auth=auth, builder=Builder(store))
+    sessions = SessionService(
+        StoreParticipantRepo(store), **({"clock": clock.now} if clock is not None else {})
+    )
+    return AppServices(store=store, auth=auth, builder=Builder(store, sessions), sessions=sessions)

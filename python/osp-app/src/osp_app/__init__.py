@@ -12,6 +12,7 @@ from .errors import (
     RevisionConflictError,
     Unauthenticated,
 )
+from .runtime_repo import StoreParticipantRepo
 from .services import AppServices, build_services
 from .store_repos import StoreMembershipRepo, StoreSessionRepo, StoreUserRepo
 
@@ -32,6 +33,7 @@ __all__ = [
     "Rejected",
     "RevisionConflictError",
     "StoreMembershipRepo",
+    "StoreParticipantRepo",
     "StoreSessionRepo",
     "StoreUserRepo",
     "SurveyView",

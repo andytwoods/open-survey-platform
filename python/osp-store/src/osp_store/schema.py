@@ -114,6 +114,8 @@ surveys = Table(
     Column("retention_kind", String(20), nullable=False, server_default="none"),
     Column("retention_days", Integer, nullable=True),
     _ts("retention_until", nullable=True),
+    # The public link id (`/s/<public_slug>`), generated, globally unique. Migration 0005.
+    Column("public_slug", String(80), nullable=True, unique=True),
     UniqueConstraint("tenant_id", "id"),
     CheckConstraint(
         "retention_kind IN ('none', 'days_after_close', 'after_date')", name="retention_kind"
@@ -245,14 +247,16 @@ audit_log = Table(
 # participant data hangs off `sessions` / `responses` with ON DELETE CASCADE, so
 # withdrawal (`delete_session`, `delete_response`) and retention remove it too.
 
-# A published survey link: slug -> one version + its runtime plan (opaque JSON).
+# A published survey link: slug -> a version + its runtime plan (opaque JSON). Each publish
+# of a survey adds a row under the survey's slug; the newest version is the one that starts
+# (migration 0005 made `slug` non-unique so a republish keeps the link).
 publications = Table(
     "publications",
     metadata,
     Column("id", ID, primary_key=True),
     Column("tenant_id", ID, nullable=False, index=True),
     Column("version_id", ID, nullable=False, index=True),
-    Column("slug", String(80), nullable=False, unique=True),
+    Column("slug", String(80), nullable=False, index=True),
     Column("plan", Text, nullable=False),  # canonical JSON text of the runtime plan
     Column("plan_checksum", String(128), nullable=False),
     Column("save_mode", String(16), nullable=False),

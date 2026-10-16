@@ -1302,6 +1302,16 @@
             ],
             "description": "If given, publish only if the draft is still at it",
             "title": "Baserevision"
+          },
+          "saveMode": {
+            "default": "every-page",
+            "description": "Participant save mode (runtime-design section 5.0)",
+            "enum": [
+              "every-page",
+              "end-only"
+            ],
+            "title": "Savemode",
+            "type": "string"
           }
         },
         "title": "PublishRequest",
@@ -1324,6 +1334,15 @@
             "title": "Number",
             "type": "integer"
           },
+          "planChecksum": {
+            "title": "Planchecksum",
+            "type": "string"
+          },
+          "planUrl": {
+            "description": "Where the immutable runtime plan is served",
+            "title": "Planurl",
+            "type": "string"
+          },
           "publishedAt": {
             "format": "date-time",
             "title": "Publishedat",
@@ -1333,9 +1352,18 @@
             "title": "Revision",
             "type": "integer"
           },
-          "runtimePlan": {
-            "description": "Not compiled yet (R1); always null for now",
-            "title": "Runtimeplan"
+          "saveMode": {
+            "enum": [
+              "every-page",
+              "end-only"
+            ],
+            "title": "Savemode",
+            "type": "string"
+          },
+          "slug": {
+            "description": "The survey's public slug: participants start at /s/{slug}",
+            "title": "Slug",
+            "type": "string"
           },
           "versionId": {
             "title": "Versionid",
@@ -1348,7 +1376,11 @@
           "checksum",
           "publishedAt",
           "revision",
-          "diagnostics"
+          "diagnostics",
+          "slug",
+          "planChecksum",
+          "planUrl",
+          "saveMode"
         ],
         "title": "PublishResponse",
         "type": "object"
@@ -2017,6 +2049,18 @@
             "title": "Id",
             "type": "string"
           },
+          "publicSlug": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "description": "Participant link id: /s/{publicSlug}",
+            "title": "Publicslug"
+          },
           "revision": {
             "title": "Revision",
             "type": "integer"
@@ -2085,6 +2129,18 @@
           "id": {
             "title": "Id",
             "type": "string"
+          },
+          "publicSlug": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "description": "Participant link id: /s/{publicSlug}",
+            "title": "Publicslug"
           },
           "tenantId": {
             "title": "Tenantid",
