@@ -167,6 +167,7 @@ test('build the §2.3 example flow with the mouse', async ({ page }) => {
 	const condDialog = page.getByRole('dialog', { name: 'Edit branch condition' });
 	await condDialog.getByTestId('view-text').click();
 	const editor = condDialog.locator('.cm-content');
+	await expect(editor).toHaveText('consent == 0');
 	await editor.click();
 	await page.keyboard.press('ControlOrMeta+a');
 	await page.keyboard.type('consent != 1');
