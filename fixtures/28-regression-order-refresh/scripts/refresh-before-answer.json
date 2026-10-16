@@ -1,0 +1,72 @@
+{
+  "format": "osp-fixture-script/0",
+  "id": "refresh-before-answer",
+  "description": "Reach the shuffled page and refresh at once (nothing answered yet), refresh again, answer one item and resume, go back and refresh on the earlier page, return: the item order of p_att and the choice order of att3 never change.",
+  "sessionSeed": 2801,
+  "language": "en",
+  "actions": [
+    {
+      "expectPage": "p_intro",
+      "set": {
+        "ready": "yes"
+      },
+      "do": "next"
+    },
+    {
+      "expectPage": "p_att",
+      "do": "refresh"
+    },
+    {
+      "expectPage": "p_att",
+      "do": "refresh"
+    },
+    {
+      "expectPage": "p_att",
+      "set": {
+        "att2": 4
+      },
+      "do": "resume"
+    },
+    {
+      "expectPage": "p_att",
+      "do": "back"
+    },
+    {
+      "expectPage": "p_intro",
+      "do": "refresh"
+    },
+    {
+      "expectPage": "p_intro",
+      "do": "next"
+    },
+    {
+      "expectPage": "p_att",
+      "set": {
+        "att1": 2,
+        "att3": 5,
+        "att4": 1
+      },
+      "do": "refresh"
+    },
+    {
+      "expectPage": "p_att",
+      "do": "next"
+    },
+    {
+      "expectPage": "p_end",
+      "do": "back"
+    },
+    {
+      "expectPage": "p_att",
+      "do": "refresh"
+    },
+    {
+      "expectPage": "p_att",
+      "do": "next"
+    },
+    {
+      "expectPage": "p_end",
+      "do": "next"
+    }
+  ]
+}

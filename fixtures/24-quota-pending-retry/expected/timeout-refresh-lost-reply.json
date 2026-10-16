@@ -1,0 +1,326 @@
+{
+  "format": "osp-fixture-expected/0",
+  "fixture": "24-quota-pending-retry",
+  "script": "timeout-refresh-lost-reply",
+  "pending": [
+    "C3a-3",
+    "R6-4"
+  ],
+  "steps": [
+    {
+      "index": 0,
+      "page": "p1",
+      "visible": [
+        "region"
+      ],
+      "errors": {},
+      "nav": {
+        "back": false
+      },
+      "questions": {
+        "region": {
+          "state": "unanswered",
+          "value": null
+        },
+        "p2_q": {
+          "state": "not-reached",
+          "value": null
+        },
+        "full_q": {
+          "state": "not-reached",
+          "value": null
+        }
+      },
+      "orders": {
+        "blocks": {},
+        "items": {},
+        "choices": {}
+      },
+      "conditions": {},
+      "end": null,
+      "effect": null
+    },
+    {
+      "index": 1,
+      "page": "p1",
+      "visible": [
+        "region"
+      ],
+      "errors": {},
+      "nav": {
+        "back": false
+      },
+      "questions": {
+        "region": {
+          "state": "answered",
+          "value": "north"
+        },
+        "p2_q": {
+          "state": "not-reached",
+          "value": null
+        },
+        "full_q": {
+          "state": "not-reached",
+          "value": null
+        }
+      },
+      "orders": {
+        "blocks": {},
+        "items": {},
+        "choices": {}
+      },
+      "conditions": {},
+      "end": null,
+      "effect": {
+        "kind": "quota",
+        "nodeId": "qc_north"
+      }
+    },
+    {
+      "index": 2,
+      "page": "p1",
+      "visible": [
+        "region"
+      ],
+      "errors": {},
+      "nav": {
+        "back": false
+      },
+      "questions": {
+        "region": {
+          "state": "answered",
+          "value": "north"
+        },
+        "p2_q": {
+          "state": "not-reached",
+          "value": null
+        },
+        "full_q": {
+          "state": "not-reached",
+          "value": null
+        }
+      },
+      "orders": {
+        "blocks": {},
+        "items": {},
+        "choices": {}
+      },
+      "conditions": {},
+      "end": null,
+      "effect": {
+        "kind": "quota",
+        "nodeId": "qc_north"
+      }
+    },
+    {
+      "index": 3,
+      "page": "p1",
+      "visible": [
+        "region"
+      ],
+      "errors": {},
+      "nav": {
+        "back": false
+      },
+      "questions": {
+        "region": {
+          "state": "answered",
+          "value": "north"
+        },
+        "p2_q": {
+          "state": "not-reached",
+          "value": null
+        },
+        "full_q": {
+          "state": "not-reached",
+          "value": null
+        }
+      },
+      "orders": {
+        "blocks": {},
+        "items": {},
+        "choices": {}
+      },
+      "conditions": {},
+      "end": null,
+      "effect": {
+        "kind": "quota",
+        "nodeId": "qc_north"
+      }
+    },
+    {
+      "index": 4,
+      "page": "p2",
+      "visible": [
+        "p2_q"
+      ],
+      "errors": {},
+      "nav": {
+        "back": true
+      },
+      "questions": {
+        "region": {
+          "state": "answered",
+          "value": "north"
+        },
+        "p2_q": {
+          "state": "unanswered",
+          "value": null
+        },
+        "full_q": {
+          "state": "not-reached",
+          "value": null
+        }
+      },
+      "orders": {
+        "blocks": {},
+        "items": {},
+        "choices": {}
+      },
+      "conditions": {},
+      "end": null,
+      "effect": null
+    },
+    {
+      "index": 5,
+      "page": "p1",
+      "visible": [
+        "region"
+      ],
+      "errors": {},
+      "nav": {
+        "back": false
+      },
+      "questions": {
+        "region": {
+          "state": "answered",
+          "value": "north"
+        },
+        "p2_q": {
+          "state": "unanswered",
+          "value": null
+        },
+        "full_q": {
+          "state": "not-reached",
+          "value": null
+        }
+      },
+      "orders": {
+        "blocks": {},
+        "items": {},
+        "choices": {}
+      },
+      "conditions": {},
+      "end": null,
+      "effect": null
+    },
+    {
+      "index": 6,
+      "page": "p2",
+      "visible": [
+        "p2_q"
+      ],
+      "errors": {},
+      "nav": {
+        "back": true
+      },
+      "questions": {
+        "region": {
+          "state": "answered",
+          "value": "north"
+        },
+        "p2_q": {
+          "state": "unanswered",
+          "value": null
+        },
+        "full_q": {
+          "state": "not-reached",
+          "value": null
+        }
+      },
+      "orders": {
+        "blocks": {},
+        "items": {},
+        "choices": {}
+      },
+      "conditions": {},
+      "end": null,
+      "effect": null
+    },
+    {
+      "index": 7,
+      "page": null,
+      "visible": [],
+      "errors": {},
+      "nav": null,
+      "questions": {
+        "region": {
+          "state": "answered",
+          "value": "north"
+        },
+        "p2_q": {
+          "state": "answered",
+          "value": "quiet"
+        },
+        "full_q": {
+          "state": "not-reached",
+          "value": null
+        }
+      },
+      "orders": {
+        "blocks": {},
+        "items": {},
+        "choices": {}
+      },
+      "conditions": {},
+      "end": "complete",
+      "effect": null
+    }
+  ],
+  "invariants": [],
+  "response": {
+    "surveyId": "f24_quota_retry",
+    "surveyVersion": 1,
+    "end": "complete",
+    "allocation": "server",
+    "sessionSeed": 2401,
+    "conditions": {},
+    "orders": {
+      "blocks": {},
+      "items": {},
+      "choices": {}
+    },
+    "answers": {
+      "region": {
+        "state": "answered",
+        "value": "north"
+      },
+      "p2_q": {
+        "state": "answered",
+        "value": "quiet"
+      },
+      "full_q": {
+        "state": "not-reached",
+        "value": null
+      }
+    },
+    "csvState": {
+      "region__state": "answered",
+      "p2_q__state": "answered",
+      "full_q__state": "not-reached"
+    },
+    "effects": [
+      {
+        "kind": "quota",
+        "nodeId": "qc_north",
+        "quota": "q_north",
+        "result": "open"
+      }
+    ]
+  },
+  "network": {
+    "quotaCalls": {
+      "qc_north": 3
+    }
+  }
+}

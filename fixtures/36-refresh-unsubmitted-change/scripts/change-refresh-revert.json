@@ -1,0 +1,60 @@
+{
+  "format": "osp-fixture-script/0",
+  "id": "change-refresh-revert",
+  "description": "drinks = yes, drink_kind = tea. Back to p1, set drinks = no and refresh: drinks = no is restored and drink_kind is still tea (not submitted, so not cleared). Set drinks = yes and submit: tea is still there. Then back, drinks = no, submit: tea is cleared and p2 (now empty) is skipped.",
+  "sessionSeed": 3601,
+  "language": "en",
+  "actions": [
+    {
+      "expectPage": "p1",
+      "set": {
+        "drinks": "yes"
+      },
+      "do": "next"
+    },
+    {
+      "expectPage": "p2",
+      "set": {
+        "drink_kind": "tea"
+      },
+      "do": "next"
+    },
+    {
+      "expectPage": "p3",
+      "do": "back"
+    },
+    {
+      "expectPage": "p2",
+      "do": "back"
+    },
+    {
+      "expectPage": "p1",
+      "set": {
+        "drinks": "no"
+      },
+      "do": "refresh"
+    },
+    {
+      "expectPage": "p1",
+      "set": {
+        "drinks": "yes"
+      },
+      "do": "next"
+    },
+    {
+      "expectPage": "p2",
+      "do": "back"
+    },
+    {
+      "expectPage": "p1",
+      "set": {
+        "drinks": "no"
+      },
+      "do": "next"
+    },
+    {
+      "expectPage": "p3",
+      "do": "next"
+    }
+  ]
+}

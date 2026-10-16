@@ -1,0 +1,166 @@
+{
+  "specVersion": "osp-survey/0.1",
+  "id": "f31_choice_label_piping",
+  "version": 1,
+  "metadata": {
+    "title": {
+      "en": "Regression: choice-label piping",
+      "de": "Regression: Antwortlabel einsetzen"
+    },
+    "description": {
+      "en": "Enketo spike workaround 4 (§8, jr:choice-name): piping a choice inserts its label in the session language, never the code; also for integer codes, a shuffled list and after back-and-change.",
+      "de": "Workaround 4: das Antwortlabel wird eingesetzt, nie der Code."
+    },
+    "languages": [
+      "en",
+      "de"
+    ]
+  },
+  "settings": {
+    "backNavigation": true
+  },
+  "choiceLists": [
+    {
+      "id": "fruit_codes",
+      "choices": [
+        {
+          "value": 1,
+          "label": {
+            "en": "Apples",
+            "de": "Äpfel"
+          }
+        },
+        {
+          "value": 2,
+          "label": {
+            "en": "Bananas",
+            "de": "Bananen"
+          }
+        },
+        {
+          "value": 3,
+          "label": {
+            "en": "Cherries",
+            "de": "Kirschen"
+          }
+        }
+      ]
+    },
+    {
+      "id": "pet_codes",
+      "choices": [
+        {
+          "value": "c1",
+          "label": {
+            "en": "Cat",
+            "de": "Katze"
+          }
+        },
+        {
+          "value": "c2",
+          "label": {
+            "en": "Dog",
+            "de": "Hund"
+          }
+        },
+        {
+          "value": "c3",
+          "label": {
+            "en": "Fish",
+            "de": "Fisch"
+          }
+        }
+      ]
+    }
+  ],
+  "blocks": [
+    {
+      "id": "p1",
+      "pages": [
+        {
+          "id": "p1_page",
+          "items": [
+            {
+              "type": "single",
+              "id": "fav",
+              "label": {
+                "en": "Which fruit?",
+                "de": "Welches Obst?"
+              },
+              "choiceList": "fruit_codes",
+              "required": true
+            },
+            {
+              "type": "single",
+              "id": "pet",
+              "label": {
+                "en": "Which pet?",
+                "de": "Welches Haustier?"
+              },
+              "choiceList": "pet_codes",
+              "choiceOrder": "shuffle"
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "id": "p2",
+      "pages": [
+        {
+          "id": "p2_page",
+          "items": [
+            {
+              "type": "text",
+              "id": "pipe_fav",
+              "label": {
+                "en": "You chose ${fav}.",
+                "de": "Du hast ${fav} gewählt."
+              }
+            },
+            {
+              "type": "text",
+              "id": "pipe_pet",
+              "label": {
+                "en": "Your pet: ${pet}.",
+                "de": "Dein Haustier: ${pet}."
+              }
+            },
+            {
+              "type": "text",
+              "id": "s_banana",
+              "label": {
+                "en": "Shown when fav == 2 (the code): ${fav} again.",
+                "de": "Wenn fav == 2 (der Code): nochmal ${fav}."
+              },
+              "showIf": {
+                "kind": "compare",
+                "op": "==",
+                "left": {
+                  "kind": "ref",
+                  "id": "fav"
+                },
+                "right": {
+                  "kind": "int",
+                  "value": 2
+                }
+              }
+            }
+          ]
+        }
+      ]
+    }
+  ],
+  "flow": [
+    {
+      "type": "block",
+      "id": "n_p1",
+      "block": "p1"
+    },
+    {
+      "type": "block",
+      "id": "n_p2",
+      "block": "p2"
+    }
+  ]
+}

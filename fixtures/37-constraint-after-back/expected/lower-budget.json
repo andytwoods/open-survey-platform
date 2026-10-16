@@ -1,0 +1,372 @@
+{
+  "format": "osp-fixture-expected/0",
+  "fixture": "37-constraint-after-back",
+  "script": "lower-budget",
+  "pending": [],
+  "steps": [
+    {
+      "index": 0,
+      "page": "p1",
+      "visible": [
+        "budget"
+      ],
+      "errors": {},
+      "nav": {
+        "back": false
+      },
+      "questions": {
+        "budget": {
+          "state": "unanswered",
+          "value": null
+        },
+        "spend": {
+          "state": "not-reached",
+          "value": null
+        },
+        "rest": {
+          "state": "not-reached",
+          "value": null
+        },
+        "comment": {
+          "state": "not-reached",
+          "value": null
+        }
+      },
+      "orders": {
+        "blocks": {},
+        "items": {},
+        "choices": {}
+      },
+      "conditions": {},
+      "end": null
+    },
+    {
+      "index": 1,
+      "page": "p2",
+      "visible": [
+        "spend"
+      ],
+      "errors": {},
+      "nav": {
+        "back": true
+      },
+      "questions": {
+        "budget": {
+          "state": "answered",
+          "value": 100
+        },
+        "spend": {
+          "state": "unanswered",
+          "value": null
+        },
+        "rest": {
+          "state": "not-reached",
+          "value": null
+        },
+        "comment": {
+          "state": "not-reached",
+          "value": null
+        }
+      },
+      "orders": {
+        "blocks": {},
+        "items": {},
+        "choices": {}
+      },
+      "conditions": {},
+      "end": null
+    },
+    {
+      "index": 2,
+      "page": "p3",
+      "visible": [
+        "rest",
+        "comment"
+      ],
+      "errors": {},
+      "nav": {
+        "back": true
+      },
+      "questions": {
+        "budget": {
+          "state": "answered",
+          "value": 100
+        },
+        "spend": {
+          "state": "answered",
+          "value": 80
+        },
+        "rest": {
+          "state": "unanswered",
+          "value": null
+        },
+        "comment": {
+          "state": "unanswered",
+          "value": null
+        }
+      },
+      "orders": {
+        "blocks": {},
+        "items": {},
+        "choices": {}
+      },
+      "conditions": {},
+      "end": null
+    },
+    {
+      "index": 3,
+      "page": "p2",
+      "visible": [
+        "spend"
+      ],
+      "errors": {},
+      "nav": {
+        "back": true
+      },
+      "questions": {
+        "budget": {
+          "state": "answered",
+          "value": 100
+        },
+        "spend": {
+          "state": "answered",
+          "value": 80
+        },
+        "rest": {
+          "state": "answered",
+          "value": "save it"
+        },
+        "comment": {
+          "state": "unanswered",
+          "value": null
+        }
+      },
+      "orders": {
+        "blocks": {},
+        "items": {},
+        "choices": {}
+      },
+      "conditions": {},
+      "end": null
+    },
+    {
+      "index": 4,
+      "page": "p1",
+      "visible": [
+        "budget"
+      ],
+      "errors": {},
+      "nav": {
+        "back": false
+      },
+      "questions": {
+        "budget": {
+          "state": "answered",
+          "value": 100
+        },
+        "spend": {
+          "state": "answered",
+          "value": 80
+        },
+        "rest": {
+          "state": "answered",
+          "value": "save it"
+        },
+        "comment": {
+          "state": "unanswered",
+          "value": null
+        }
+      },
+      "orders": {
+        "blocks": {},
+        "items": {},
+        "choices": {}
+      },
+      "conditions": {},
+      "end": null
+    },
+    {
+      "index": 5,
+      "page": "p2",
+      "visible": [
+        "spend"
+      ],
+      "errors": {},
+      "nav": {
+        "back": true
+      },
+      "questions": {
+        "budget": {
+          "state": "answered",
+          "value": 50
+        },
+        "spend": {
+          "state": "answered",
+          "value": 80
+        },
+        "rest": {
+          "state": "irrelevant",
+          "value": null
+        },
+        "comment": {
+          "state": "unanswered",
+          "value": null
+        }
+      },
+      "orders": {
+        "blocks": {},
+        "items": {},
+        "choices": {}
+      },
+      "conditions": {},
+      "end": null
+    },
+    {
+      "index": 6,
+      "page": "p2",
+      "visible": [
+        "spend"
+      ],
+      "errors": {
+        "spend": {
+          "kind": "constraint",
+          "message": "Cannot be more than your budget."
+        }
+      },
+      "nav": {
+        "back": true
+      },
+      "questions": {
+        "budget": {
+          "state": "answered",
+          "value": 50
+        },
+        "spend": {
+          "state": "answered",
+          "value": 80
+        },
+        "rest": {
+          "state": "irrelevant",
+          "value": null
+        },
+        "comment": {
+          "state": "unanswered",
+          "value": null
+        }
+      },
+      "orders": {
+        "blocks": {},
+        "items": {},
+        "choices": {}
+      },
+      "conditions": {},
+      "end": null
+    },
+    {
+      "index": 7,
+      "page": "p3",
+      "visible": [
+        "comment"
+      ],
+      "errors": {},
+      "nav": {
+        "back": true
+      },
+      "questions": {
+        "budget": {
+          "state": "answered",
+          "value": 50
+        },
+        "spend": {
+          "state": "answered",
+          "value": 50
+        },
+        "rest": {
+          "state": "irrelevant",
+          "value": null
+        },
+        "comment": {
+          "state": "unanswered",
+          "value": null
+        }
+      },
+      "orders": {
+        "blocks": {},
+        "items": {},
+        "choices": {}
+      },
+      "conditions": {},
+      "end": null
+    },
+    {
+      "index": 8,
+      "page": null,
+      "visible": [],
+      "errors": {},
+      "nav": null,
+      "questions": {
+        "budget": {
+          "state": "answered",
+          "value": 50
+        },
+        "spend": {
+          "state": "answered",
+          "value": 50
+        },
+        "rest": {
+          "state": "irrelevant",
+          "value": null
+        },
+        "comment": {
+          "state": "unanswered",
+          "value": null
+        }
+      },
+      "orders": {
+        "blocks": {},
+        "items": {},
+        "choices": {}
+      },
+      "conditions": {},
+      "end": "complete"
+    }
+  ],
+  "invariants": [],
+  "response": {
+    "surveyId": "f37_constraint_after_back",
+    "surveyVersion": 1,
+    "end": "complete",
+    "allocation": "server",
+    "sessionSeed": 3701,
+    "conditions": {},
+    "orders": {
+      "blocks": {},
+      "items": {},
+      "choices": {}
+    },
+    "answers": {
+      "budget": {
+        "state": "answered",
+        "value": 50
+      },
+      "spend": {
+        "state": "answered",
+        "value": 50
+      },
+      "rest": {
+        "state": "irrelevant",
+        "value": null
+      },
+      "comment": {
+        "state": "unanswered",
+        "value": null
+      }
+    },
+    "csvState": {
+      "budget__state": "answered",
+      "spend__state": "answered",
+      "rest__state": "irrelevant",
+      "comment__state": "unanswered"
+    }
+  }
+}

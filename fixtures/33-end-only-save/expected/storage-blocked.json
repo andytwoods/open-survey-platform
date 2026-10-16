@@ -1,0 +1,140 @@
+{
+  "format": "osp-fixture-expected/0",
+  "fixture": "33-end-only-save",
+  "script": "storage-blocked",
+  "pending": [
+    "R6-5"
+  ],
+  "steps": [
+    {
+      "index": 0,
+      "page": "p1",
+      "visible": [
+        "consent"
+      ],
+      "errors": {},
+      "nav": {
+        "back": false
+      },
+      "questions": {
+        "consent": {
+          "state": "unanswered",
+          "value": null
+        },
+        "q_a": {
+          "state": "not-reached",
+          "value": null
+        },
+        "q_b": {
+          "state": "not-reached",
+          "value": null
+        }
+      },
+      "orders": {
+        "blocks": {},
+        "items": {},
+        "choices": {}
+      },
+      "conditions": {},
+      "end": null
+    },
+    {
+      "index": 1,
+      "page": "p2",
+      "visible": [
+        "q_a"
+      ],
+      "errors": {},
+      "nav": {
+        "back": true
+      },
+      "questions": {
+        "consent": {
+          "state": "answered",
+          "value": "yes"
+        },
+        "q_a": {
+          "state": "unanswered",
+          "value": null
+        },
+        "q_b": {
+          "state": "not-reached",
+          "value": null
+        }
+      },
+      "orders": {
+        "blocks": {},
+        "items": {},
+        "choices": {}
+      },
+      "conditions": {},
+      "end": null
+    },
+    {
+      "index": 2,
+      "page": "<pending:R6-5>",
+      "visible": "<pending:R6-5>",
+      "errors": {},
+      "nav": "<pending:R6-5>",
+      "questions": "<pending:R6-5>",
+      "orders": {
+        "blocks": {},
+        "items": {},
+        "choices": {}
+      },
+      "conditions": {},
+      "end": "<pending:R6-5>"
+    },
+    {
+      "index": 3,
+      "page": "<pending:R6-5>",
+      "visible": "<pending:R6-5>",
+      "errors": {},
+      "nav": "<pending:R6-5>",
+      "questions": "<pending:R6-5>",
+      "orders": {
+        "blocks": {},
+        "items": {},
+        "choices": {}
+      },
+      "conditions": {},
+      "end": "<pending:R6-5>"
+    },
+    {
+      "index": 4,
+      "page": "<pending:R6-5>",
+      "visible": "<pending:R6-5>",
+      "errors": {},
+      "nav": "<pending:R6-5>",
+      "questions": "<pending:R6-5>",
+      "orders": {
+        "blocks": {},
+        "items": {},
+        "choices": {}
+      },
+      "conditions": {},
+      "end": "<pending:R6-5>"
+    },
+    {
+      "index": 5,
+      "page": "<pending:R6-5>",
+      "visible": "<pending:R6-5>",
+      "errors": {},
+      "nav": "<pending:R6-5>",
+      "questions": "<pending:R6-5>",
+      "orders": {
+        "blocks": {},
+        "items": {},
+        "choices": {}
+      },
+      "conditions": {},
+      "end": "<pending:R6-5>"
+    }
+  ],
+  "invariants": [],
+  "response": "<pending:R6-5>",
+  "network": {
+    "snapshotWrites": 0,
+    "submits": "<pending:R6-5>"
+  }
+}

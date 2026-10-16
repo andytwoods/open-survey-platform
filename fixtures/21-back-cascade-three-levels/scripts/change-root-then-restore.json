@@ -1,0 +1,90 @@
+{
+  "format": "osp-fixture-script/0",
+  "id": "change-root-then-restore",
+  "description": "Clear the chain with a = no, then go back and set a = yes again: b returns empty and required (the old 3 does not come back), c and d stay irrelevant until b >= 2 again.",
+  "sessionSeed": 2102,
+  "language": "en",
+  "actions": [
+    {
+      "expectPage": "p1",
+      "set": {
+        "a": "yes"
+      },
+      "do": "next"
+    },
+    {
+      "expectPage": "p2",
+      "set": {
+        "b": 3
+      },
+      "do": "next"
+    },
+    {
+      "expectPage": "p3",
+      "set": {
+        "c": "the red one"
+      },
+      "do": "next"
+    },
+    {
+      "expectPage": "p4",
+      "do": "back"
+    },
+    {
+      "expectPage": "p3",
+      "do": "back"
+    },
+    {
+      "expectPage": "p2",
+      "do": "back"
+    },
+    {
+      "expectPage": "p1",
+      "set": {
+        "a": "no"
+      },
+      "do": "next"
+    },
+    {
+      "expectPage": "p2",
+      "do": "back"
+    },
+    {
+      "expectPage": "p1",
+      "set": {
+        "a": "yes"
+      },
+      "do": "next"
+    },
+    {
+      "expectPage": "p2",
+      "do": "next"
+    },
+    {
+      "expectPage": "p2",
+      "set": {
+        "b": 1
+      },
+      "do": "next"
+    },
+    {
+      "expectPage": "p3",
+      "do": "back"
+    },
+    {
+      "expectPage": "p2",
+      "set": {
+        "b": 2
+      },
+      "do": "next"
+    },
+    {
+      "expectPage": "p3",
+      "do": "next"
+    },
+    {
+      "expectPage": "p4",
+      "do": "next"
+    }
+  ]
+}

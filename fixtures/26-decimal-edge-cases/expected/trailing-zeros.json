@@ -1,0 +1,296 @@
+{
+  "format": "osp-fixture-expected/0",
+  "fixture": "26-decimal-edge-cases",
+  "script": "trailing-zeros",
+  "pending": [
+    "R6-2"
+  ],
+  "steps": [
+    {
+      "index": 0,
+      "page": "p1",
+      "visible": [
+        "a",
+        "b",
+        "big",
+        "z"
+      ],
+      "errors": {},
+      "nav": {
+        "back": false
+      },
+      "questions": {
+        "a": {
+          "state": "unanswered",
+          "value": null
+        },
+        "b": {
+          "state": "unanswered",
+          "value": null
+        },
+        "big": {
+          "state": "unanswered",
+          "value": null
+        },
+        "z": {
+          "state": "unanswered",
+          "value": null
+        },
+        "p2_anchor": {
+          "state": "not-reached",
+          "value": null
+        },
+        "s_sum_eq": {
+          "state": "not-reached",
+          "value": null
+        },
+        "s_sum_gt": {
+          "state": "not-reached",
+          "value": null
+        },
+        "s_mul": {
+          "state": "not-reached",
+          "value": null
+        },
+        "s_sub": {
+          "state": "not-reached",
+          "value": null
+        },
+        "s_big_gt": {
+          "state": "not-reached",
+          "value": null
+        },
+        "s_big_eq": {
+          "state": "not-reached",
+          "value": null
+        },
+        "s_big_plus": {
+          "state": "not-reached",
+          "value": null
+        }
+      },
+      "orders": {
+        "blocks": {},
+        "items": {},
+        "choices": {}
+      },
+      "conditions": {},
+      "end": null
+    },
+    {
+      "index": 1,
+      "page": "p2",
+      "visible": [
+        "p2_anchor",
+        "s_sum_eq",
+        "s_mul",
+        "s_sub",
+        "s_big_gt",
+        "s_big_plus"
+      ],
+      "errors": {},
+      "nav": {
+        "back": true
+      },
+      "questions": {
+        "a": {
+          "state": "answered",
+          "value": "<pending:R6-2>"
+        },
+        "b": {
+          "state": "answered",
+          "value": "<pending:R6-2>"
+        },
+        "big": {
+          "state": "answered",
+          "value": "<pending:R6-2>"
+        },
+        "z": {
+          "state": "answered",
+          "value": "<pending:R6-2>"
+        },
+        "p2_anchor": {
+          "state": "unanswered",
+          "value": null
+        },
+        "s_sum_eq": {
+          "state": "unanswered",
+          "value": null
+        },
+        "s_sum_gt": {
+          "state": "irrelevant",
+          "value": null
+        },
+        "s_mul": {
+          "state": "unanswered",
+          "value": null
+        },
+        "s_sub": {
+          "state": "unanswered",
+          "value": null
+        },
+        "s_big_gt": {
+          "state": "unanswered",
+          "value": null
+        },
+        "s_big_eq": {
+          "state": "irrelevant",
+          "value": null
+        },
+        "s_big_plus": {
+          "state": "unanswered",
+          "value": null
+        }
+      },
+      "orders": {
+        "blocks": {},
+        "items": {},
+        "choices": {}
+      },
+      "conditions": {},
+      "end": null
+    },
+    {
+      "index": 2,
+      "page": null,
+      "visible": [],
+      "errors": {},
+      "nav": null,
+      "questions": {
+        "a": {
+          "state": "answered",
+          "value": "<pending:R6-2>"
+        },
+        "b": {
+          "state": "answered",
+          "value": "<pending:R6-2>"
+        },
+        "big": {
+          "state": "answered",
+          "value": "<pending:R6-2>"
+        },
+        "z": {
+          "state": "answered",
+          "value": "<pending:R6-2>"
+        },
+        "p2_anchor": {
+          "state": "unanswered",
+          "value": null
+        },
+        "s_sum_eq": {
+          "state": "unanswered",
+          "value": null
+        },
+        "s_sum_gt": {
+          "state": "irrelevant",
+          "value": null
+        },
+        "s_mul": {
+          "state": "unanswered",
+          "value": null
+        },
+        "s_sub": {
+          "state": "unanswered",
+          "value": null
+        },
+        "s_big_gt": {
+          "state": "unanswered",
+          "value": null
+        },
+        "s_big_eq": {
+          "state": "irrelevant",
+          "value": null
+        },
+        "s_big_plus": {
+          "state": "unanswered",
+          "value": null
+        }
+      },
+      "orders": {
+        "blocks": {},
+        "items": {},
+        "choices": {}
+      },
+      "conditions": {},
+      "end": "complete"
+    }
+  ],
+  "invariants": [],
+  "response": {
+    "surveyId": "f26_decimal_edges",
+    "surveyVersion": 1,
+    "end": "complete",
+    "allocation": "server",
+    "sessionSeed": 2602,
+    "conditions": {},
+    "orders": {
+      "blocks": {},
+      "items": {},
+      "choices": {}
+    },
+    "answers": {
+      "a": {
+        "state": "answered",
+        "value": "<pending:R6-2>"
+      },
+      "b": {
+        "state": "answered",
+        "value": "<pending:R6-2>"
+      },
+      "big": {
+        "state": "answered",
+        "value": "<pending:R6-2>"
+      },
+      "z": {
+        "state": "answered",
+        "value": "<pending:R6-2>"
+      },
+      "p2_anchor": {
+        "state": "unanswered",
+        "value": null
+      },
+      "s_sum_eq": {
+        "state": "unanswered",
+        "value": null
+      },
+      "s_sum_gt": {
+        "state": "irrelevant",
+        "value": null
+      },
+      "s_mul": {
+        "state": "unanswered",
+        "value": null
+      },
+      "s_sub": {
+        "state": "unanswered",
+        "value": null
+      },
+      "s_big_gt": {
+        "state": "unanswered",
+        "value": null
+      },
+      "s_big_eq": {
+        "state": "irrelevant",
+        "value": null
+      },
+      "s_big_plus": {
+        "state": "unanswered",
+        "value": null
+      }
+    },
+    "csvState": {
+      "a__state": "answered",
+      "b__state": "answered",
+      "big__state": "answered",
+      "z__state": "answered",
+      "p2_anchor__state": "unanswered",
+      "s_sum_eq__state": "unanswered",
+      "s_sum_gt__state": "irrelevant",
+      "s_mul__state": "unanswered",
+      "s_sub__state": "unanswered",
+      "s_big_gt__state": "unanswered",
+      "s_big_eq__state": "irrelevant",
+      "s_big_plus__state": "unanswered"
+    }
+  }
+}

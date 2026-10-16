@@ -1,0 +1,124 @@
+{
+  "specVersion": "osp-survey/0.1",
+  "id": "f37_constraint_after_back",
+  "version": 1,
+  "metadata": {
+    "title": "Constraint broken by a back-and-change",
+    "description": "§4: lowering an earlier answer makes a later, already accepted answer violate its constraint. The value is kept (answered) until its page is submitted again, which then fails until it is fixed.",
+    "languages": [
+      "en"
+    ]
+  },
+  "settings": {
+    "backNavigation": true
+  },
+  "blocks": [
+    {
+      "id": "p1",
+      "pages": [
+        {
+          "id": "p1_page",
+          "items": [
+            {
+              "type": "integer",
+              "id": "budget",
+              "label": "What is your weekly budget?",
+              "required": true,
+              "constraint": {
+                "kind": "compare",
+                "op": ">",
+                "left": {
+                  "kind": "ref",
+                  "id": "budget"
+                },
+                "right": {
+                  "kind": "int",
+                  "value": 0
+                }
+              },
+              "constraintMessage": "Must be more than 0."
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "id": "p2",
+      "pages": [
+        {
+          "id": "p2_page",
+          "items": [
+            {
+              "type": "integer",
+              "id": "spend",
+              "label": "How much do you spend?",
+              "required": true,
+              "constraint": {
+                "kind": "compare",
+                "op": "<=",
+                "left": {
+                  "kind": "ref",
+                  "id": "spend"
+                },
+                "right": {
+                  "kind": "ref",
+                  "id": "budget"
+                }
+              },
+              "constraintMessage": "Cannot be more than your budget."
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "id": "p3",
+      "pages": [
+        {
+          "id": "p3_page",
+          "items": [
+            {
+              "type": "text",
+              "id": "rest",
+              "label": "Shown when spend < budget: what do you do with the rest?",
+              "showIf": {
+                "kind": "compare",
+                "op": "<",
+                "left": {
+                  "kind": "ref",
+                  "id": "spend"
+                },
+                "right": {
+                  "kind": "ref",
+                  "id": "budget"
+                }
+              }
+            },
+            {
+              "type": "text",
+              "id": "comment",
+              "label": "Any comment? (optional)"
+            }
+          ]
+        }
+      ]
+    }
+  ],
+  "flow": [
+    {
+      "type": "block",
+      "id": "n_p1",
+      "block": "p1"
+    },
+    {
+      "type": "block",
+      "id": "n_p2",
+      "block": "p2"
+    },
+    {
+      "type": "block",
+      "id": "n_p3",
+      "block": "p3"
+    }
+  ]
+}

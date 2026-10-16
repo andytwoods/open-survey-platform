@@ -1,0 +1,61 @@
+{
+  "format": "osp-fixture-script/0",
+  "id": "car-bus-car",
+  "description": "As car-then-bus, then back to p1 and route = car again: do the old car answers come back, and what happens to bus_line? (C3a-6)",
+  "sessionSeed": 3402,
+  "language": "en",
+  "actions": [
+    {
+      "expectPage": "p1",
+      "set": {
+        "route": "car"
+      },
+      "do": "next"
+    },
+    {
+      "expectPage": "p_car",
+      "set": {
+        "car_make": "Volvo",
+        "car_age": 4
+      },
+      "do": "next"
+    },
+    {
+      "expectPage": "p_end",
+      "do": "back"
+    },
+    {
+      "expectPage": "p_car",
+      "do": "back"
+    },
+    {
+      "expectPage": "p1",
+      "set": {
+        "route": "bus"
+      },
+      "do": "next"
+    },
+    {
+      "expectPage": "p_bus",
+      "set": {
+        "bus_line": "42"
+      },
+      "do": "back"
+    },
+    {
+      "expectPage": "p1",
+      "set": {
+        "route": "car"
+      },
+      "do": "next"
+    },
+    {
+      "expectPage": "p_car",
+      "do": "next"
+    },
+    {
+      "expectPage": "p_end",
+      "do": "next"
+    }
+  ]
+}

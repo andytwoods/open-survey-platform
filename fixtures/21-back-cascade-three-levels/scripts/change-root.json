@@ -1,0 +1,69 @@
+{
+  "format": "osp-fixture-script/0",
+  "id": "change-root",
+  "description": "Answer a, b, c and d (d is set on p4, then back: values are kept, not submitted). Back to p1, set a = no: b, c and d become irrelevant and null on that one submit (c because b is null, d because c is null); weather and colour stay.",
+  "sessionSeed": 2101,
+  "language": "en",
+  "actions": [
+    {
+      "expectPage": "p1",
+      "set": {
+        "a": "yes"
+      },
+      "do": "next"
+    },
+    {
+      "expectPage": "p2",
+      "set": {
+        "b": 3,
+        "weather": "windy"
+      },
+      "do": "next"
+    },
+    {
+      "expectPage": "p3",
+      "set": {
+        "c": "the red one",
+        "colour": "green"
+      },
+      "do": "next"
+    },
+    {
+      "expectPage": "p4",
+      "set": {
+        "d": "it is fast"
+      },
+      "do": "back"
+    },
+    {
+      "expectPage": "p3",
+      "do": "back"
+    },
+    {
+      "expectPage": "p2",
+      "do": "back"
+    },
+    {
+      "expectPage": "p1",
+      "set": {
+        "a": "no"
+      },
+      "do": "next"
+    },
+    {
+      "expectPage": "p2",
+      "do": "next"
+    },
+    {
+      "expectPage": "p3",
+      "do": "next"
+    },
+    {
+      "expectPage": "p4",
+      "set": {
+        "final": "done"
+      },
+      "do": "next"
+    }
+  ]
+}

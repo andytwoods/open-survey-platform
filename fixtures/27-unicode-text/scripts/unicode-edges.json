@@ -1,0 +1,23 @@
+{
+  "format": "osp-fixture-script/0",
+  "id": "unicode-edges",
+  "description": "Characters at the ends that are not ASCII whitespace: NBSP, zero-width space, an ideographic space on its own, a BOM, and a decomposed e + U+0301. Whether they are trimmed, whether an ideographic-space-only answer is unanswered, and whether text is NFC-normalised before comparing are R6-1.",
+  "sessionSeed": 2702,
+  "language": "en",
+  "actions": [
+    {
+      "expectPage": "p1",
+      "set": {
+        "t_emoji": "\u00a0👍🏽 great\u00a0",
+        "t_rtl": "\u200bשלום עולם\u200b",
+        "t_mixed": "\u3000",
+        "t_name": "\ufeffcafe\u0301"
+      },
+      "do": "next"
+    },
+    {
+      "expectPage": "p2",
+      "do": "next"
+    }
+  ]
+}

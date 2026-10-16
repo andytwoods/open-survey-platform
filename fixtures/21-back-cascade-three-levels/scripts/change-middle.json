@@ -1,0 +1,55 @@
+{
+  "format": "osp-fixture-script/0",
+  "id": "change-middle",
+  "description": "Change only the middle link: back to p2 and set b = 1. c and d are cleared, a and the unrelated answers stay.",
+  "sessionSeed": 2103,
+  "language": "en",
+  "actions": [
+    {
+      "expectPage": "p1",
+      "set": {
+        "a": "yes"
+      },
+      "do": "next"
+    },
+    {
+      "expectPage": "p2",
+      "set": {
+        "b": 3,
+        "weather": "windy"
+      },
+      "do": "next"
+    },
+    {
+      "expectPage": "p3",
+      "set": {
+        "c": "the red one",
+        "colour": "green"
+      },
+      "do": "next"
+    },
+    {
+      "expectPage": "p4",
+      "do": "back"
+    },
+    {
+      "expectPage": "p3",
+      "do": "back"
+    },
+    {
+      "expectPage": "p2",
+      "set": {
+        "b": 1
+      },
+      "do": "next"
+    },
+    {
+      "expectPage": "p3",
+      "do": "next"
+    },
+    {
+      "expectPage": "p4",
+      "do": "next"
+    }
+  ]
+}

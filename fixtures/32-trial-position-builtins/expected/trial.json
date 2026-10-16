@@ -1,0 +1,614 @@
+{
+  "format": "osp-fixture-expected/0",
+  "fixture": "32-trial-position-builtins",
+  "script": "trial",
+  "pending": [],
+  "steps": [
+    {
+      "index": 0,
+      "page": "p_intro",
+      "visible": [
+        "ready"
+      ],
+      "errors": {},
+      "nav": {
+        "back": false
+      },
+      "questions": {
+        "ready": {
+          "state": "unanswered",
+          "value": null
+        },
+        "why_not": {
+          "state": "not-reached",
+          "value": null
+        },
+        "r1": {
+          "state": "not-reached",
+          "value": null
+        },
+        "r2": {
+          "state": "not-reached",
+          "value": null
+        },
+        "r3": {
+          "state": "not-reached",
+          "value": null
+        },
+        "outro": {
+          "state": "not-reached",
+          "value": null
+        }
+      },
+      "orders": {
+        "blocks": {},
+        "items": {},
+        "choices": {}
+      },
+      "conditions": {},
+      "end": null,
+      "builtins": {
+        "trial": 1
+      }
+    },
+    {
+      "index": 1,
+      "page": "<engine>",
+      "visible": "<engine>",
+      "errors": {},
+      "nav": {
+        "back": true
+      },
+      "questions": {
+        "ready": {
+          "state": "answered",
+          "value": "yes"
+        },
+        "why_not": {
+          "state": "irrelevant",
+          "value": null
+        },
+        "r1": "<engine>",
+        "r2": "<engine>",
+        "r3": "<engine>",
+        "outro": {
+          "state": "not-reached",
+          "value": null
+        }
+      },
+      "orders": {
+        "blocks": {
+          "r_stim": "<engine>"
+        },
+        "items": {},
+        "choices": {}
+      },
+      "conditions": {},
+      "end": null,
+      "builtins": {
+        "trial": 2
+      }
+    },
+    {
+      "index": 2,
+      "page": "<engine>",
+      "visible": "<engine>",
+      "errors": "<engine>",
+      "nav": {
+        "back": true
+      },
+      "questions": {
+        "ready": {
+          "state": "answered",
+          "value": "yes"
+        },
+        "why_not": {
+          "state": "irrelevant",
+          "value": null
+        },
+        "r1": "<engine>",
+        "r2": "<engine>",
+        "r3": "<engine>",
+        "outro": {
+          "state": "not-reached",
+          "value": null
+        }
+      },
+      "orders": {
+        "blocks": {
+          "r_stim": "<engine>"
+        },
+        "items": {},
+        "choices": {}
+      },
+      "conditions": {},
+      "end": null,
+      "builtins": {
+        "trial": 2
+      }
+    },
+    {
+      "index": 3,
+      "page": "<engine>",
+      "visible": "<engine>",
+      "errors": {},
+      "nav": {
+        "back": true
+      },
+      "questions": {
+        "ready": {
+          "state": "answered",
+          "value": "yes"
+        },
+        "why_not": {
+          "state": "irrelevant",
+          "value": null
+        },
+        "r1": "<engine>",
+        "r2": "<engine>",
+        "r3": "<engine>",
+        "outro": {
+          "state": "not-reached",
+          "value": null
+        }
+      },
+      "orders": {
+        "blocks": {
+          "r_stim": "<engine>"
+        },
+        "items": {},
+        "choices": {}
+      },
+      "conditions": {},
+      "end": null,
+      "builtins": {
+        "trial": 3
+      }
+    },
+    {
+      "index": 4,
+      "page": "<engine>",
+      "visible": "<engine>",
+      "errors": {},
+      "nav": {
+        "back": true
+      },
+      "questions": {
+        "ready": {
+          "state": "answered",
+          "value": "yes"
+        },
+        "why_not": {
+          "state": "irrelevant",
+          "value": null
+        },
+        "r1": "<engine>",
+        "r2": "<engine>",
+        "r3": "<engine>",
+        "outro": {
+          "state": "not-reached",
+          "value": null
+        }
+      },
+      "orders": {
+        "blocks": {
+          "r_stim": "<engine>"
+        },
+        "items": {},
+        "choices": {}
+      },
+      "conditions": {},
+      "end": null,
+      "builtins": {
+        "trial": 2
+      }
+    },
+    {
+      "index": 5,
+      "page": "<engine>",
+      "visible": "<engine>",
+      "errors": {},
+      "nav": {
+        "back": true
+      },
+      "questions": {
+        "ready": {
+          "state": "answered",
+          "value": "yes"
+        },
+        "why_not": {
+          "state": "irrelevant",
+          "value": null
+        },
+        "r1": "<engine>",
+        "r2": "<engine>",
+        "r3": "<engine>",
+        "outro": {
+          "state": "not-reached",
+          "value": null
+        }
+      },
+      "orders": {
+        "blocks": {
+          "r_stim": "<engine>"
+        },
+        "items": {},
+        "choices": {}
+      },
+      "conditions": {},
+      "end": null,
+      "builtins": {
+        "trial": 2
+      }
+    },
+    {
+      "index": 6,
+      "page": "<engine>",
+      "visible": "<engine>",
+      "errors": {},
+      "nav": {
+        "back": true
+      },
+      "questions": {
+        "ready": {
+          "state": "answered",
+          "value": "yes"
+        },
+        "why_not": {
+          "state": "irrelevant",
+          "value": null
+        },
+        "r1": "<engine>",
+        "r2": "<engine>",
+        "r3": "<engine>",
+        "outro": {
+          "state": "not-reached",
+          "value": null
+        }
+      },
+      "orders": {
+        "blocks": {
+          "r_stim": "<engine>"
+        },
+        "items": {},
+        "choices": {}
+      },
+      "conditions": {},
+      "end": null,
+      "builtins": {
+        "trial": 3
+      }
+    },
+    {
+      "index": 7,
+      "page": "<engine>",
+      "visible": "<engine>",
+      "errors": {},
+      "nav": {
+        "back": true
+      },
+      "questions": {
+        "ready": {
+          "state": "answered",
+          "value": "yes"
+        },
+        "why_not": {
+          "state": "irrelevant",
+          "value": null
+        },
+        "r1": "<engine>",
+        "r2": "<engine>",
+        "r3": "<engine>",
+        "outro": {
+          "state": "not-reached",
+          "value": null
+        }
+      },
+      "orders": {
+        "blocks": {
+          "r_stim": "<engine>"
+        },
+        "items": {},
+        "choices": {}
+      },
+      "conditions": {},
+      "end": null,
+      "builtins": {
+        "trial": 4
+      }
+    },
+    {
+      "index": 8,
+      "page": "p_outro",
+      "visible": [
+        "outro"
+      ],
+      "errors": {},
+      "nav": {
+        "back": true
+      },
+      "questions": {
+        "ready": {
+          "state": "answered",
+          "value": "yes"
+        },
+        "why_not": {
+          "state": "irrelevant",
+          "value": null
+        },
+        "r1": {
+          "state": "answered",
+          "value": 1
+        },
+        "r2": {
+          "state": "answered",
+          "value": 2
+        },
+        "r3": {
+          "state": "answered",
+          "value": 3
+        },
+        "outro": {
+          "state": "unanswered",
+          "value": null
+        }
+      },
+      "orders": {
+        "blocks": {
+          "r_stim": "<engine>"
+        },
+        "items": {},
+        "choices": {}
+      },
+      "conditions": {},
+      "end": null,
+      "builtins": {
+        "trial": 5
+      }
+    },
+    {
+      "index": 9,
+      "page": "<engine>",
+      "visible": "<engine>",
+      "errors": {},
+      "nav": {
+        "back": true
+      },
+      "questions": {
+        "ready": {
+          "state": "answered",
+          "value": "yes"
+        },
+        "why_not": {
+          "state": "irrelevant",
+          "value": null
+        },
+        "r1": {
+          "state": "answered",
+          "value": 1
+        },
+        "r2": {
+          "state": "answered",
+          "value": 2
+        },
+        "r3": {
+          "state": "answered",
+          "value": 3
+        },
+        "outro": {
+          "state": "unanswered",
+          "value": null
+        }
+      },
+      "orders": {
+        "blocks": {
+          "r_stim": "<engine>"
+        },
+        "items": {},
+        "choices": {}
+      },
+      "conditions": {},
+      "end": null,
+      "builtins": {
+        "trial": 4
+      }
+    },
+    {
+      "index": 10,
+      "page": "p_outro",
+      "visible": [
+        "outro"
+      ],
+      "errors": {},
+      "nav": {
+        "back": true
+      },
+      "questions": {
+        "ready": {
+          "state": "answered",
+          "value": "yes"
+        },
+        "why_not": {
+          "state": "irrelevant",
+          "value": null
+        },
+        "r1": {
+          "state": "answered",
+          "value": 1
+        },
+        "r2": {
+          "state": "answered",
+          "value": 2
+        },
+        "r3": {
+          "state": "answered",
+          "value": 3
+        },
+        "outro": {
+          "state": "unanswered",
+          "value": null
+        }
+      },
+      "orders": {
+        "blocks": {
+          "r_stim": "<engine>"
+        },
+        "items": {},
+        "choices": {}
+      },
+      "conditions": {},
+      "end": null,
+      "builtins": {
+        "trial": 5
+      }
+    },
+    {
+      "index": 11,
+      "page": null,
+      "visible": [],
+      "errors": {},
+      "nav": null,
+      "questions": {
+        "ready": {
+          "state": "answered",
+          "value": "yes"
+        },
+        "why_not": {
+          "state": "irrelevant",
+          "value": null
+        },
+        "r1": {
+          "state": "answered",
+          "value": 1
+        },
+        "r2": {
+          "state": "answered",
+          "value": 2
+        },
+        "r3": {
+          "state": "answered",
+          "value": 3
+        },
+        "outro": {
+          "state": "answered",
+          "value": "done"
+        }
+      },
+      "orders": {
+        "blocks": {
+          "r_stim": "<engine>"
+        },
+        "items": {},
+        "choices": {}
+      },
+      "conditions": {},
+      "end": "complete",
+      "builtins": null
+    }
+  ],
+  "invariants": [
+    {
+      "kind": "permutation",
+      "of": [
+        "s1",
+        "s2",
+        "s3"
+      ],
+      "paths": [
+        "response.orders.blocks.r_stim"
+      ]
+    },
+    {
+      "kind": "equal",
+      "paths": [
+        "steps[1].orders.blocks.r_stim",
+        "steps[2].orders.blocks.r_stim",
+        "steps[3].orders.blocks.r_stim",
+        "steps[4].orders.blocks.r_stim",
+        "steps[5].orders.blocks.r_stim",
+        "steps[6].orders.blocks.r_stim",
+        "steps[7].orders.blocks.r_stim",
+        "steps[8].orders.blocks.r_stim",
+        "steps[9].orders.blocks.r_stim",
+        "steps[10].orders.blocks.r_stim",
+        "steps[11].orders.blocks.r_stim",
+        "response.orders.blocks.r_stim"
+      ]
+    },
+    {
+      "kind": "equal",
+      "paths": [
+        "steps[1].page",
+        "steps[2].page",
+        "steps[4].page",
+        "steps[5].page",
+        "response.orders.blocks.r_stim[0]"
+      ]
+    },
+    {
+      "kind": "equal",
+      "paths": [
+        "steps[3].page",
+        "steps[6].page",
+        "response.orders.blocks.r_stim[1]"
+      ]
+    },
+    {
+      "kind": "equal",
+      "paths": [
+        "steps[7].page",
+        "steps[9].page",
+        "response.orders.blocks.r_stim[2]"
+      ]
+    }
+  ],
+  "response": {
+    "surveyId": "f32_trial_position",
+    "surveyVersion": 1,
+    "end": "complete",
+    "allocation": "server",
+    "sessionSeed": 3201,
+    "conditions": {},
+    "orders": {
+      "blocks": {
+        "r_stim": "<engine>"
+      },
+      "items": {},
+      "choices": {}
+    },
+    "answers": {
+      "ready": {
+        "state": "answered",
+        "value": "yes"
+      },
+      "why_not": {
+        "state": "irrelevant",
+        "value": null
+      },
+      "r1": {
+        "state": "answered",
+        "value": 1
+      },
+      "r2": {
+        "state": "answered",
+        "value": 2
+      },
+      "r3": {
+        "state": "answered",
+        "value": 3
+      },
+      "outro": {
+        "state": "answered",
+        "value": "done"
+      }
+    },
+    "csvState": {
+      "ready__state": "answered",
+      "why_not__state": "irrelevant",
+      "r1__state": "answered",
+      "r2__state": "answered",
+      "r3__state": "answered",
+      "outro__state": "answered"
+    }
+  }
+}

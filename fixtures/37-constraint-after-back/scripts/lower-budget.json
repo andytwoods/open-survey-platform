@@ -1,0 +1,56 @@
+{
+  "format": "osp-fixture-script/0",
+  "id": "lower-budget",
+  "description": "budget = 100, spend = 80, rest answered. Back to p1, budget = 50: rest is cleared (80 < 50 is false), spend keeps 80 (still answered). Submitting p2 fails the constraint; spend = 50 passes, and rest stays hidden (50 < 50 is false).",
+  "sessionSeed": 3701,
+  "language": "en",
+  "actions": [
+    {
+      "expectPage": "p1",
+      "set": {
+        "budget": 100
+      },
+      "do": "next"
+    },
+    {
+      "expectPage": "p2",
+      "set": {
+        "spend": 80
+      },
+      "do": "next"
+    },
+    {
+      "expectPage": "p3",
+      "set": {
+        "rest": "save it"
+      },
+      "do": "back"
+    },
+    {
+      "expectPage": "p2",
+      "do": "back"
+    },
+    {
+      "expectPage": "p1",
+      "set": {
+        "budget": 50
+      },
+      "do": "next"
+    },
+    {
+      "expectPage": "p2",
+      "do": "next"
+    },
+    {
+      "expectPage": "p2",
+      "set": {
+        "spend": 50
+      },
+      "do": "next"
+    },
+    {
+      "expectPage": "p3",
+      "do": "next"
+    }
+  ]
+}

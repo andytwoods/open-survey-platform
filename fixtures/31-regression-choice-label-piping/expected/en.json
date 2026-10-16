@@ -1,0 +1,388 @@
+{
+  "format": "osp-fixture-expected/0",
+  "fixture": "31-regression-choice-label-piping",
+  "script": "en",
+  "pending": [],
+  "steps": [
+    {
+      "index": 0,
+      "page": "p1",
+      "visible": [
+        "fav",
+        "pet"
+      ],
+      "errors": {},
+      "nav": {
+        "back": false
+      },
+      "questions": {
+        "fav": {
+          "state": "unanswered",
+          "value": null
+        },
+        "pet": {
+          "state": "unanswered",
+          "value": null
+        },
+        "pipe_fav": {
+          "state": "not-reached",
+          "value": null
+        },
+        "pipe_pet": {
+          "state": "not-reached",
+          "value": null
+        },
+        "s_banana": {
+          "state": "not-reached",
+          "value": null
+        }
+      },
+      "orders": {
+        "blocks": {},
+        "items": {},
+        "choices": {
+          "pet": "<engine>"
+        }
+      },
+      "conditions": {},
+      "end": null,
+      "labels": {
+        "fav": "Which fruit?",
+        "pet": "Which pet?"
+      },
+      "choiceLabels": {
+        "fav": [
+          [
+            1,
+            "Apples"
+          ],
+          [
+            2,
+            "Bananas"
+          ],
+          [
+            3,
+            "Cherries"
+          ]
+        ],
+        "pet": "<engine>"
+      }
+    },
+    {
+      "index": 1,
+      "page": "p2",
+      "visible": [
+        "pipe_fav",
+        "pipe_pet"
+      ],
+      "errors": {},
+      "nav": {
+        "back": true
+      },
+      "questions": {
+        "fav": {
+          "state": "answered",
+          "value": 1
+        },
+        "pet": {
+          "state": "answered",
+          "value": "c2"
+        },
+        "pipe_fav": {
+          "state": "unanswered",
+          "value": null
+        },
+        "pipe_pet": {
+          "state": "unanswered",
+          "value": null
+        },
+        "s_banana": {
+          "state": "irrelevant",
+          "value": null
+        }
+      },
+      "orders": {
+        "blocks": {},
+        "items": {},
+        "choices": {
+          "pet": "<engine>"
+        }
+      },
+      "conditions": {},
+      "end": null,
+      "labels": {
+        "pipe_fav": "You chose Apples.",
+        "pipe_pet": "Your pet: Dog."
+      }
+    },
+    {
+      "index": 2,
+      "page": "p1",
+      "visible": [
+        "fav",
+        "pet"
+      ],
+      "errors": {},
+      "nav": {
+        "back": false
+      },
+      "questions": {
+        "fav": {
+          "state": "answered",
+          "value": 1
+        },
+        "pet": {
+          "state": "answered",
+          "value": "c2"
+        },
+        "pipe_fav": {
+          "state": "unanswered",
+          "value": null
+        },
+        "pipe_pet": {
+          "state": "unanswered",
+          "value": null
+        },
+        "s_banana": {
+          "state": "irrelevant",
+          "value": null
+        }
+      },
+      "orders": {
+        "blocks": {},
+        "items": {},
+        "choices": {
+          "pet": "<engine>"
+        }
+      },
+      "conditions": {},
+      "end": null,
+      "labels": {
+        "fav": "Which fruit?",
+        "pet": "Which pet?"
+      },
+      "choiceLabels": {
+        "fav": [
+          [
+            1,
+            "Apples"
+          ],
+          [
+            2,
+            "Bananas"
+          ],
+          [
+            3,
+            "Cherries"
+          ]
+        ],
+        "pet": "<engine>"
+      }
+    },
+    {
+      "index": 3,
+      "page": "p2",
+      "visible": [
+        "pipe_fav",
+        "pipe_pet",
+        "s_banana"
+      ],
+      "errors": {},
+      "nav": {
+        "back": true
+      },
+      "questions": {
+        "fav": {
+          "state": "answered",
+          "value": 2
+        },
+        "pet": {
+          "state": "answered",
+          "value": "c2"
+        },
+        "pipe_fav": {
+          "state": "unanswered",
+          "value": null
+        },
+        "pipe_pet": {
+          "state": "unanswered",
+          "value": null
+        },
+        "s_banana": {
+          "state": "unanswered",
+          "value": null
+        }
+      },
+      "orders": {
+        "blocks": {},
+        "items": {},
+        "choices": {
+          "pet": "<engine>"
+        }
+      },
+      "conditions": {},
+      "end": null,
+      "labels": {
+        "pipe_fav": "You chose Bananas.",
+        "pipe_pet": "Your pet: Dog.",
+        "s_banana": "Shown when fav == 2 (the code): Bananas again."
+      }
+    },
+    {
+      "index": 4,
+      "page": "p2",
+      "visible": [
+        "pipe_fav",
+        "pipe_pet",
+        "s_banana"
+      ],
+      "errors": {},
+      "nav": {
+        "back": true
+      },
+      "questions": {
+        "fav": {
+          "state": "answered",
+          "value": 2
+        },
+        "pet": {
+          "state": "answered",
+          "value": "c2"
+        },
+        "pipe_fav": {
+          "state": "unanswered",
+          "value": null
+        },
+        "pipe_pet": {
+          "state": "unanswered",
+          "value": null
+        },
+        "s_banana": {
+          "state": "unanswered",
+          "value": null
+        }
+      },
+      "orders": {
+        "blocks": {},
+        "items": {},
+        "choices": {
+          "pet": "<engine>"
+        }
+      },
+      "conditions": {},
+      "end": null,
+      "labels": {
+        "pipe_fav": "You chose Bananas.",
+        "pipe_pet": "Your pet: Dog.",
+        "s_banana": "Shown when fav == 2 (the code): Bananas again."
+      }
+    },
+    {
+      "index": 5,
+      "page": null,
+      "visible": [],
+      "errors": {},
+      "nav": null,
+      "questions": {
+        "fav": {
+          "state": "answered",
+          "value": 2
+        },
+        "pet": {
+          "state": "answered",
+          "value": "c2"
+        },
+        "pipe_fav": {
+          "state": "unanswered",
+          "value": null
+        },
+        "pipe_pet": {
+          "state": "unanswered",
+          "value": null
+        },
+        "s_banana": {
+          "state": "unanswered",
+          "value": null
+        }
+      },
+      "orders": {
+        "blocks": {},
+        "items": {},
+        "choices": {
+          "pet": "<engine>"
+        }
+      },
+      "conditions": {},
+      "end": "complete"
+    }
+  ],
+  "invariants": [
+    {
+      "kind": "permutation",
+      "of": [
+        "c1",
+        "c2",
+        "c3"
+      ],
+      "paths": [
+        "response.orders.choices.pet"
+      ]
+    },
+    {
+      "kind": "equal",
+      "paths": [
+        "steps[0].orders.choices.pet",
+        "steps[1].orders.choices.pet",
+        "steps[2].orders.choices.pet",
+        "steps[3].orders.choices.pet",
+        "steps[4].orders.choices.pet",
+        "steps[5].orders.choices.pet",
+        "response.orders.choices.pet"
+      ]
+    }
+  ],
+  "response": {
+    "surveyId": "f31_choice_label_piping",
+    "surveyVersion": 1,
+    "end": "complete",
+    "allocation": "server",
+    "sessionSeed": 3101,
+    "conditions": {},
+    "orders": {
+      "blocks": {},
+      "items": {},
+      "choices": {
+        "pet": "<engine>"
+      }
+    },
+    "answers": {
+      "fav": {
+        "state": "answered",
+        "value": 2
+      },
+      "pet": {
+        "state": "answered",
+        "value": "c2"
+      },
+      "pipe_fav": {
+        "state": "unanswered",
+        "value": null
+      },
+      "pipe_pet": {
+        "state": "unanswered",
+        "value": null
+      },
+      "s_banana": {
+        "state": "unanswered",
+        "value": null
+      }
+    },
+    "csvState": {
+      "fav__state": "answered",
+      "pet__state": "answered",
+      "pipe_fav__state": "unanswered",
+      "pipe_pet__state": "unanswered",
+      "s_banana__state": "unanswered"
+    }
+  }
+}
