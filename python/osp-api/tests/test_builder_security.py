@@ -27,10 +27,12 @@ ROUTES: list[tuple[str, str, dict | None]] = [
     ("GET", f"/api/surveys/{SID}/export/xlsform", None),
     ("GET", f"/api/surveys/{SID}/export/responses", None),
     ("GET", f"/api/surveys/{SID}/export/codebook", None),
+    ("GET", f"/api/surveys/{SID}/export-check?target=lss", None),
     ("GET", "/api/meta/ops", None),
     ("GET", "/api/meta/property-schemas", None),
     ("GET", "/api/meta/survey-schema", None),
     ("GET", "/api/meta/theme-schema", None),
+    ("GET", "/api/meta/targets", None),
     ("POST", "/api/meta/expressions/parse", {"text": "a > 1"}),
     ("POST", "/api/meta/expressions/print", {"ast": {"kind": "null"}}),
 ]
@@ -63,7 +65,7 @@ def test_route_list_covers_every_builder_route(benv):
         for method, op in item.items()
         if set(op.get("tags", ())) & {"auth", "surveys", "ops", "meta"}
     }
-    listed = {(m, p) for m, p, _ in ROUTES}
+    listed = {(m, p.split("?")[0]) for m, p, _ in ROUTES}
     assert {(m, p) for m, p in app_routes if p not in PUBLIC} == listed
 
 
