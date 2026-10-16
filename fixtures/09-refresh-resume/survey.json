@@ -1,140 +1,195 @@
 {
-  "format": "osp-fixture-survey/0",
-  "description": "§5/§7: refresh and resume restore page, values, orders and condition.",
+  "specVersion": "osp-survey/0.1",
   "id": "f09_refresh_resume",
   "version": 1,
-  "title": "Refresh and resume",
-  "languages": [
-    "en"
-  ],
+  "metadata": {
+    "title": "Refresh and resume",
+    "description": "§5/§7: refresh and resume restore page, values, orders and condition.",
+    "languages": [
+      "en"
+    ]
+  },
   "settings": {
     "backNavigation": true
   },
-  "choiceLists": {
-    "colour5": [
-      {
-        "value": "red",
-        "label": "Red"
-      },
-      {
-        "value": "green",
-        "label": "Green"
-      },
-      {
-        "value": "blue",
-        "label": "Blue"
-      },
-      {
-        "value": "yellow",
-        "label": "Yellow"
-      },
-      {
-        "value": "purple",
-        "label": "Purple"
-      }
-    ],
-    "yesno": [
-      {
-        "value": "yes",
-        "label": "Yes"
-      },
-      {
-        "value": "no",
-        "label": "No"
-      }
-    ]
-  },
-  "design": {
-    "factors": [
-      {
-        "id": "cond",
-        "levels": [
-          "A",
-          "B"
-        ]
-      }
-    ]
-  },
-  "blocks": {
-    "p_colour": {
-      "items": [
+  "choiceLists": [
+    {
+      "id": "colour5",
+      "choices": [
         {
-          "id": "fav_colour",
-          "type": "single",
-          "label": "Pick a colour.",
-          "choices": "colour5",
-          "choiceOrder": "shuffle"
-        }
-      ]
-    },
-    "stim_a": {
-      "items": [
-        {
-          "id": "stim_a_check",
-          "type": "single",
-          "label": "Story A was about a red kite. Did you read it?",
-          "choices": "yesno"
-        }
-      ]
-    },
-    "stim_b": {
-      "items": [
-        {
-          "id": "stim_b_check",
-          "type": "single",
-          "label": "Story B was about a blue whale. Did you read it?",
-          "choices": "yesno"
-        }
-      ]
-    },
-    "p_items": {
-      "items": [
-        {
-          "id": "i1",
-          "type": "integer",
-          "label": "Rate item one from 1 to 10."
+          "value": "red",
+          "label": "Red"
         },
         {
-          "id": "i2",
-          "type": "integer",
-          "label": "Rate item two from 1 to 10."
+          "value": "green",
+          "label": "Green"
         },
         {
-          "id": "i3",
-          "type": "integer",
-          "label": "Rate item three from 1 to 10."
+          "value": "blue",
+          "label": "Blue"
+        },
+        {
+          "value": "yellow",
+          "label": "Yellow"
+        },
+        {
+          "value": "purple",
+          "label": "Purple"
         }
-      ],
-      "itemOrder": "shuffle"
+      ]
+    },
+    {
+      "id": "yesno",
+      "choices": [
+        {
+          "value": "yes",
+          "label": "Yes"
+        },
+        {
+          "value": "no",
+          "label": "No"
+        }
+      ]
     }
-  },
+  ],
+  "variables": [
+    {
+      "kind": "assigned",
+      "id": "cond",
+      "levels": [
+        "A",
+        "B"
+      ]
+    }
+  ],
+  "blocks": [
+    {
+      "id": "p_colour",
+      "pages": [
+        {
+          "id": "p_colour_page",
+          "items": [
+            {
+              "type": "single",
+              "id": "fav_colour",
+              "label": "Pick a colour.",
+              "choiceList": "colour5",
+              "choiceOrder": "shuffle"
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "id": "stim_a",
+      "pages": [
+        {
+          "id": "stim_a_page",
+          "items": [
+            {
+              "type": "single",
+              "id": "stim_a_check",
+              "label": "Story A was about a red kite. Did you read it?",
+              "choiceList": "yesno"
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "id": "stim_b",
+      "pages": [
+        {
+          "id": "stim_b_page",
+          "items": [
+            {
+              "type": "single",
+              "id": "stim_b_check",
+              "label": "Story B was about a blue whale. Did you read it?",
+              "choiceList": "yesno"
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "id": "p_items",
+      "pages": [
+        {
+          "id": "p_items_page",
+          "items": [
+            {
+              "type": "integer",
+              "id": "i1",
+              "label": "Rate item one from 1 to 10."
+            },
+            {
+              "type": "integer",
+              "id": "i2",
+              "label": "Rate item two from 1 to 10."
+            },
+            {
+              "type": "integer",
+              "id": "i3",
+              "label": "Rate item three from 1 to 10."
+            }
+          ],
+          "itemOrder": "shuffle"
+        }
+      ]
+    }
+  ],
   "flow": [
     {
+      "type": "block",
+      "id": "n_p_colour",
       "block": "p_colour"
     },
     {
-      "assign": "design"
+      "type": "assign",
+      "id": "assign_design",
+      "variables": [
+        "cond"
+      ]
     },
     {
-      "branch": {
-        "if": "cond == \"A\"",
-        "then": [
-          {
-            "block": "stim_a"
-          }
-        ],
-        "else": [
-          {
-            "block": "stim_b"
-          }
-        ]
-      }
+      "type": "branch",
+      "id": "branch_1",
+      "if": {
+        "kind": "compare",
+        "op": "==",
+        "left": {
+          "kind": "ref",
+          "id": "cond"
+        },
+        "right": {
+          "kind": "text",
+          "value": "A"
+        }
+      },
+      "then": [
+        {
+          "type": "block",
+          "id": "n_stim_a",
+          "block": "stim_a"
+        }
+      ],
+      "else": [
+        {
+          "type": "block",
+          "id": "n_stim_b",
+          "block": "stim_b"
+        }
+      ]
     },
     {
+      "type": "block",
+      "id": "n_p_items",
       "block": "p_items"
     },
     {
-      "end": "complete"
+      "type": "end",
+      "id": "end_complete"
     }
   ]
 }

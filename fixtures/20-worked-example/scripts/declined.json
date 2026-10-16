@@ -15,7 +15,7 @@
   },
   "actions": [
     {
-      "expectPage": "consent",
+      "expectPage": "consent_blk",
       "set": {
         "consent": 0
       },
