@@ -5,6 +5,7 @@ export default defineConfig({
 	test: {
 		projects: [
 			'./builder/vite.config.ts',
+			'./builder/vitest.dom.config.ts',
 			'./ui-components/vitest.config.ts',
 			{
 				test: {
