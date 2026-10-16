@@ -10,7 +10,7 @@
   "steps": [
     {
       "index": 0,
-      "page": "consent",
+      "page": "consent_blk",
       "visible": [
         "consent"
       ],

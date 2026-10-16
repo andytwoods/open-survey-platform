@@ -1,92 +1,146 @@
 {
-  "format": "osp-fixture-survey/0",
-  "description": "§6: a block with no relevant questions is skipped silently (also on back).",
+  "specVersion": "osp-survey/0.1",
   "id": "f10_empty_block_skipped",
   "version": 1,
-  "title": "Empty block skipped",
-  "languages": [
-    "en"
-  ],
+  "metadata": {
+    "title": "Empty block skipped",
+    "description": "§6: a block with no relevant questions is skipped silently (also on back).",
+    "languages": [
+      "en"
+    ]
+  },
   "settings": {
     "backNavigation": true
   },
-  "choiceLists": {
-    "yesno": [
-      {
-        "value": "yes",
-        "label": "Yes"
-      },
-      {
-        "value": "no",
-        "label": "No"
-      }
-    ],
-    "commute": [
-      {
-        "value": "walk",
-        "label": "Walk"
-      },
-      {
-        "value": "bus",
-        "label": "Bus"
-      },
-      {
-        "value": "train",
-        "label": "Train"
-      },
-      {
-        "value": "car",
-        "label": "Car"
-      }
-    ]
-  },
-  "blocks": {
-    "p1": {
-      "items": [
+  "choiceLists": [
+    {
+      "id": "yesno",
+      "choices": [
         {
-          "id": "has_car",
-          "type": "single",
-          "label": "Do you have a car?",
-          "choices": "yesno",
-          "required": true
-        }
-      ]
-    },
-    "p_car": {
-      "items": [
-        {
-          "id": "car_colour",
-          "type": "text",
-          "label": "What colour is it?",
-          "showIf": "has_car == \"yes\""
+          "value": "yes",
+          "label": "Yes"
         },
         {
-          "id": "car_age",
-          "type": "integer",
-          "label": "How old is it, in years?",
-          "showIf": "has_car == \"yes\""
+          "value": "no",
+          "label": "No"
         }
       ]
     },
-    "p3": {
-      "items": [
+    {
+      "id": "commute_list",
+      "choices": [
         {
-          "id": "commute",
-          "type": "single",
-          "label": "How do you usually travel?",
-          "choices": "commute"
+          "value": "walk",
+          "label": "Walk"
+        },
+        {
+          "value": "bus",
+          "label": "Bus"
+        },
+        {
+          "value": "train",
+          "label": "Train"
+        },
+        {
+          "value": "car",
+          "label": "Car"
         }
       ]
     }
-  },
+  ],
+  "blocks": [
+    {
+      "id": "p1",
+      "pages": [
+        {
+          "id": "p1_page",
+          "items": [
+            {
+              "type": "single",
+              "id": "has_car",
+              "label": "Do you have a car?",
+              "choiceList": "yesno",
+              "required": true
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "id": "p_car",
+      "pages": [
+        {
+          "id": "p_car_page",
+          "items": [
+            {
+              "type": "text",
+              "id": "car_colour",
+              "label": "What colour is it?",
+              "showIf": {
+                "kind": "compare",
+                "op": "==",
+                "left": {
+                  "kind": "ref",
+                  "id": "has_car"
+                },
+                "right": {
+                  "kind": "text",
+                  "value": "yes"
+                }
+              }
+            },
+            {
+              "type": "integer",
+              "id": "car_age",
+              "label": "How old is it, in years?",
+              "showIf": {
+                "kind": "compare",
+                "op": "==",
+                "left": {
+                  "kind": "ref",
+                  "id": "has_car"
+                },
+                "right": {
+                  "kind": "text",
+                  "value": "yes"
+                }
+              }
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "id": "p3",
+      "pages": [
+        {
+          "id": "p3_page",
+          "items": [
+            {
+              "type": "single",
+              "id": "commute",
+              "label": "How do you usually travel?",
+              "choiceList": "commute_list"
+            }
+          ]
+        }
+      ]
+    }
+  ],
   "flow": [
     {
+      "type": "block",
+      "id": "n_p1",
       "block": "p1"
     },
     {
+      "type": "block",
+      "id": "n_p_car",
       "block": "p_car"
     },
     {
+      "type": "block",
+      "id": "n_p3",
       "block": "p3"
     }
   ]

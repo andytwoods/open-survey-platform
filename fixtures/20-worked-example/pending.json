@@ -1,0 +1,97 @@
+{
+  "format": "osp-fixture-pending/0",
+  "description": "Parts of the review.md §2.3 worked example that osp-survey/0.1 cannot express. They are left out of survey.json and kept here verbatim (v0 form) until the model and planning/semantics.md decide them. See fixtures/README.md.",
+  "pending": [
+    "C3a-2",
+    "C3a-3",
+    "C3a-4"
+  ],
+  "allowedDiagnostics": [],
+  "notExpressible": [
+    {
+      "feature": "calculate item with if()",
+      "openQuestion": "C3a-2",
+      "why": "computed variables exist (variables[].kind = computed) but the expression grammar has no if(), so the expression cannot be parsed into the AST",
+      "v0": {
+        "block": "demo",
+        "item": {
+          "id": "age_band",
+          "type": "calculate",
+          "expr": "if(age < 40, \"18-39\", \"40+\")"
+        }
+      }
+    },
+    {
+      "feature": "quota and quotaCheck node",
+      "openQuestion": "C3a-3",
+      "why": "the model has quotas, but this one's `when` refers to the calculate above, and onFull needs an `outcome` end code that semantics has not decided (v0 has only goto)",
+      "v0": {
+        "quotas": [
+          {
+            "id": "q_old",
+            "when": "age_band == \"40+\"",
+            "limit": 150,
+            "onFull": {
+              "goto": "screenout"
+            },
+            "countOn": "complete"
+          }
+        ],
+        "flow": {
+          "after": "demo",
+          "node": {
+            "quotaCheck": "q_old"
+          }
+        }
+      }
+    },
+    {
+      "feature": "scores and reverseScored",
+      "openQuestion": "C3a-4",
+      "why": "the model has no scores and no per-item reverse scoring",
+      "v0": {
+        "scores": [
+          {
+            "id": "att_score",
+            "method": "mean",
+            "items": [
+              "att1",
+              "att2",
+              "att3"
+            ],
+            "reverse": {
+              "max": 5,
+              "min": 1
+            }
+          }
+        ],
+        "reverseScored": {
+          "att2": false,
+          "att3": true
+        }
+      }
+    },
+    {
+      "feature": "design.allocation and design.between",
+      "openQuestion": null,
+      "why": "the model has no allocation settings (method, strata, fallback). `between` is implied: both factors are assigned variables set by one assign node",
+      "v0": {
+        "between": [
+          "framing",
+          "incentive"
+        ],
+        "allocation": {
+          "runtime": "server",
+          "method": "balanced",
+          "strata": [
+            "age_band"
+          ],
+          "fallback": "seeded-random"
+        }
+      }
+    }
+  ],
+  "consequences": [
+    "block 'screenout' is only reached through the quota, so it is not in the flow (warning block.unused)"
+  ]
+}

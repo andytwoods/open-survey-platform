@@ -1,94 +1,129 @@
 {
-  "format": "osp-fixture-survey/0",
-  "description": "Required checks on submit; required applies only while relevant (§4).",
+  "specVersion": "osp-survey/0.1",
   "id": "f02_required",
   "version": 1,
-  "title": "Required questions",
-  "languages": [
-    "en"
-  ],
+  "metadata": {
+    "title": "Required questions",
+    "description": "Required checks on submit; required applies only while relevant (§4).",
+    "languages": [
+      "en"
+    ]
+  },
   "settings": {
     "backNavigation": true
   },
-  "choiceLists": {
-    "yesno": [
-      {
-        "value": "yes",
-        "label": "Yes"
-      },
-      {
-        "value": "no",
-        "label": "No"
-      }
-    ],
-    "colour": [
-      {
-        "value": "red",
-        "label": "Red"
-      },
-      {
-        "value": "green",
-        "label": "Green"
-      },
-      {
-        "value": "blue",
-        "label": "Blue"
-      }
-    ]
-  },
-  "blocks": {
-    "p1": {
-      "items": [
+  "choiceLists": [
+    {
+      "id": "yesno",
+      "choices": [
         {
-          "id": "r_int",
-          "type": "integer",
-          "label": "How many books did you read last month?",
-          "required": true
+          "value": "yes",
+          "label": "Yes"
         },
         {
-          "id": "r_single",
-          "type": "single",
-          "label": "Do you own a bicycle?",
-          "choices": "yesno",
-          "required": true
-        },
-        {
-          "id": "opt_text",
-          "type": "text",
-          "label": "Any comment? (optional)"
+          "value": "no",
+          "label": "No"
         }
       ]
     },
-    "p2": {
-      "items": [
+    {
+      "id": "colour",
+      "choices": [
         {
-          "id": "r_multi",
-          "type": "multi",
-          "label": "Which colours do you like?",
-          "choices": "colour",
-          "required": true
+          "value": "red",
+          "label": "Red"
         },
         {
-          "id": "r_follow",
-          "type": "integer",
-          "label": "You read more than ten books. How many were novels?",
-          "required": true,
-          "showIf": "r_int > 10"
+          "value": "green",
+          "label": "Green"
         },
         {
-          "id": "r_date",
-          "type": "date",
-          "label": "Pick a date for a fictional picnic.",
-          "required": true
+          "value": "blue",
+          "label": "Blue"
         }
       ]
     }
-  },
+  ],
+  "blocks": [
+    {
+      "id": "p1",
+      "pages": [
+        {
+          "id": "p1_page",
+          "items": [
+            {
+              "type": "integer",
+              "id": "r_int",
+              "label": "How many books did you read last month?",
+              "required": true
+            },
+            {
+              "type": "single",
+              "id": "r_single",
+              "label": "Do you own a bicycle?",
+              "choiceList": "yesno",
+              "required": true
+            },
+            {
+              "type": "text",
+              "id": "opt_text",
+              "label": "Any comment? (optional)"
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "id": "p2",
+      "pages": [
+        {
+          "id": "p2_page",
+          "items": [
+            {
+              "type": "multi",
+              "id": "r_multi",
+              "label": "Which colours do you like?",
+              "choiceList": "colour",
+              "required": true
+            },
+            {
+              "type": "integer",
+              "id": "r_follow",
+              "label": "You read more than ten books. How many were novels?",
+              "required": true,
+              "showIf": {
+                "kind": "compare",
+                "op": ">",
+                "left": {
+                  "kind": "ref",
+                  "id": "r_int"
+                },
+                "right": {
+                  "kind": "int",
+                  "value": 10
+                }
+              }
+            },
+            {
+              "type": "date",
+              "id": "r_date",
+              "label": "Pick a date for a fictional picnic.",
+              "required": true
+            }
+          ]
+        }
+      ]
+    }
+  ],
   "flow": [
     {
+      "type": "block",
+      "id": "n_p1",
       "block": "p1"
     },
     {
+      "type": "block",
+      "id": "n_p2",
       "block": "p2"
     }
   ]

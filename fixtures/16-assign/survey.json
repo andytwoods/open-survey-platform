@@ -1,105 +1,157 @@
 {
-  "format": "osp-fixture-survey/0",
-  "description": "§7 assign: server-assigned condition drives a branch, is piped and is recorded.",
+  "specVersion": "osp-survey/0.1",
   "id": "f16_assign",
   "version": 1,
-  "title": "Server-assigned condition",
-  "languages": [
-    "en"
-  ],
+  "metadata": {
+    "title": "Server-assigned condition",
+    "description": "§7 assign: server-assigned condition drives a branch, is piped and is recorded.",
+    "languages": [
+      "en"
+    ]
+  },
   "settings": {
     "backNavigation": true
   },
-  "choiceLists": {
-    "yesno": [
-      {
-        "value": "yes",
-        "label": "Yes"
-      },
-      {
-        "value": "no",
-        "label": "No"
-      }
-    ]
-  },
-  "design": {
-    "factors": [
-      {
-        "id": "cond",
-        "levels": [
-          "control",
-          "treatment"
-        ]
-      }
-    ]
-  },
-  "blocks": {
-    "p_intro": {
-      "items": [
+  "choiceLists": [
+    {
+      "id": "yesno",
+      "choices": [
         {
-          "id": "intro_q",
-          "type": "single",
-          "label": "Are you ready to begin?",
-          "choices": "yesno"
-        }
-      ]
-    },
-    "blk_ctrl": {
-      "items": [
+          "value": "yes",
+          "label": "Yes"
+        },
         {
-          "id": "ctrl_q",
-          "type": "text",
-          "label": "Describe a chair."
-        }
-      ]
-    },
-    "blk_treat": {
-      "items": [
-        {
-          "id": "treat_q",
-          "type": "text",
-          "label": "Describe a chair you would design."
-        }
-      ]
-    },
-    "p_out": {
-      "items": [
-        {
-          "id": "out_q",
-          "type": "single",
-          "label": "You were in the ${cond} group. Did you guess that?",
-          "choices": "yesno"
+          "value": "no",
+          "label": "No"
         }
       ]
     }
-  },
+  ],
+  "variables": [
+    {
+      "kind": "assigned",
+      "id": "cond",
+      "levels": [
+        "control",
+        "treatment"
+      ]
+    }
+  ],
+  "blocks": [
+    {
+      "id": "p_intro",
+      "pages": [
+        {
+          "id": "p_intro_page",
+          "items": [
+            {
+              "type": "single",
+              "id": "intro_q",
+              "label": "Are you ready to begin?",
+              "choiceList": "yesno"
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "id": "blk_ctrl",
+      "pages": [
+        {
+          "id": "blk_ctrl_page",
+          "items": [
+            {
+              "type": "text",
+              "id": "ctrl_q",
+              "label": "Describe a chair."
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "id": "blk_treat",
+      "pages": [
+        {
+          "id": "blk_treat_page",
+          "items": [
+            {
+              "type": "text",
+              "id": "treat_q",
+              "label": "Describe a chair you would design."
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "id": "p_out",
+      "pages": [
+        {
+          "id": "p_out_page",
+          "items": [
+            {
+              "type": "single",
+              "id": "out_q",
+              "label": "You were in the ${cond} group. Did you guess that?",
+              "choiceList": "yesno"
+            }
+          ]
+        }
+      ]
+    }
+  ],
   "flow": [
     {
+      "type": "block",
+      "id": "n_p_intro",
       "block": "p_intro"
     },
     {
-      "assign": "design"
+      "type": "assign",
+      "id": "assign_design",
+      "variables": [
+        "cond"
+      ]
     },
     {
-      "branch": {
-        "if": "cond == \"treatment\"",
-        "then": [
-          {
-            "block": "blk_treat"
-          }
-        ],
-        "else": [
-          {
-            "block": "blk_ctrl"
-          }
-        ]
-      }
+      "type": "branch",
+      "id": "branch_1",
+      "if": {
+        "kind": "compare",
+        "op": "==",
+        "left": {
+          "kind": "ref",
+          "id": "cond"
+        },
+        "right": {
+          "kind": "text",
+          "value": "treatment"
+        }
+      },
+      "then": [
+        {
+          "type": "block",
+          "id": "n_blk_treat",
+          "block": "blk_treat"
+        }
+      ],
+      "else": [
+        {
+          "type": "block",
+          "id": "n_blk_ctrl",
+          "block": "blk_ctrl"
+        }
+      ]
     },
     {
+      "type": "block",
+      "id": "n_p_out",
       "block": "p_out"
     },
     {
-      "end": "complete"
+      "type": "end",
+      "id": "end_complete"
     }
   ]
 }

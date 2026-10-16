@@ -1,82 +1,64 @@
-# Fixture format v0 (provisional)
+# Fixture format
 
-Written by C3a before `osp-spec` (C2) exists. C3b converts every fixture to the real model, so
-this format is deliberately small, regular and close to `planning/semantics.md` and the
-`review.md` §2.3 example. Where it differs from §2.3, conditions are plain text instead of
-JSONLogic.
+Surveys are real `osp-survey/0.1` documents (the `osp-spec` model, C2). Answer scripts and
+expected traces keep the provisional formats C3a wrote (`osp-fixture-script/0`,
+`osp-fixture-expected/0`); C3b did not need to change their shape.
 
 Each fixture is `fixtures/NN-name/` with:
 
 ```text
-survey.json            the survey            ("format": "osp-fixture-survey/0")
+survey.json            the survey            ("specVersion": "osp-survey/0.1")
 scripts/<id>.json      one participant each  ("format": "osp-fixture-script/0")
 expected/<id>.json     trace for that script ("format": "osp-fixture-expected/0")
+pending.json           optional: what the survey cannot express yet ("osp-fixture-pending/0")
 ```
 
 `scripts/` and `expected/` file names match one to one. All data is synthetic.
+`tests/test_fixtures_shape.py` loads every survey through `osp_spec.parse` and requires zero
+error diagnostics (warnings and info are allowed).
 
 ## 1. survey.json
 
+The model, its JSON Schema and the validator are in `python/osp-spec`
+(`schema/survey.schema.json`). C3a wrote the fixtures in a small v0 format before the model
+existed; C3b converted them with `fixtures/tools/convert_v0.py`, which documents the mapping
+and stays as a record (the v0 files are in git history up to commit `85db6ad`). Conventions
+the traces rely on:
+
+- **One block, one page.** Every fixture block is a `Block` with exactly one `Page`. The block
+  keeps the v0 id and the page is `<block>_page`. Traces and scripts name **blocks**: a step's
+  `page`, a script's `expectPage`, `orders.blocks` and the keys of `orders.items` are block ids.
+- **Conditions** (`showIf`, `constraint`, branch `if`) are C1's AST (`osp_expr`), not text. The
+  model has no comment field, so the v0 condition text was dropped; `osp_expr.to_text` prints
+  it back. Question labels in fixtures 05 and 19 still spell out the condition.
+- **Conditions from `assign`** are `assigned` variables (`variables[]`, `kind: "assigned"`),
+  one per v0 design factor, all set by a single `assign` node `assign_design`.
+- **Flow node ids**: `n_<block>` for block nodes, `branch_<n>`, `end_<outcome>`,
+  `assign_design`; randomisers keep their v0 id (`r_blocks`, the PRNG stream id).
+- **Id clashes.** Ids are unique across the whole survey, so a v0 choice list or block that
+  shared an id with a question was renamed: `commute_list` (10), `tags_list` (19) and block
+  `consent_blk` (20, which also changed that block's `page`/`expectPage` in its traces).
+- **PRNG node ids** (§7 streams): randomiser `id`, block id for `itemOrder`, question id for
+  `choiceOrder`. `itemOrder` now lives on the page, so C4 must decide whether its stream is
+  keyed by the page or the block id; every affected order is still `"<engine>"`.
+
+### pending.json
+
+A fixture whose survey uses something `osp-survey/0.1` cannot express leaves that part out of
+`survey.json` and records it here (only fixture 20 has one):
+
 ```jsonc
 {
-  "format": "osp-fixture-survey/0",
-  "description": "what the fixture tests",
-  "id": "f06_clear_on_back",
-  "version": 1,
-  "title": "…",                      // text, see "Text" below
-  "languages": ["en"],               // first one is the default
-  "settings": { "backNavigation": true },
-  "choiceLists": { "yesno": [ { "value": "yes", "label": "Yes" }, … ] },
-  "design": { "factors": [ { "id": "cond", "levels": ["A", "B"] } ] },   // only with assign
-  "blocks": { "p1": { "items": [ … ], "itemOrder": "fixed" | "shuffle" } },
-  "flow": [ … ]
+  "format": "osp-fixture-pending/0",
+  "pending": ["C3a-2"],                 // open questions in planning/semantics.md
+  "allowedDiagnostics": [               // error diagnostics the survey may have; every one
+    { "code": "…", "pointer": "…" }     //   listed must still occur (no stale entries)
+  ],
+  "notExpressible": [ { "feature": "…", "openQuestion": "C3a-2", "why": "…", "v0": { … } } ]
 }
 ```
 
-Fixture 20 also carries `metadata`, `embeddedData`, `scores`, `quotas` and a fuller `design`
-exactly as in `review.md` §2.3. Those parts are undecided in semantics (C3a-1…5).
-
-**Pages.** One block is one page (as in the Enketo spike: one `field-list` group per page).
-`itemOrder` defaults to `"fixed"`.
-
-**Items.** Every item has `id` (unique across the survey) and `type`.
-
-| Field | Applies to | Meaning |
-|---|---|---|
-| `type` | all | `integer` `decimal` `text` `single` `multi` `date` (questions, §2), `note` (display only), `calculate` (fixture 20 only) |
-| `label` | all but calculate | Text; may contain `${id}` pipes (§8) |
-| `required` | questions | default `false` (§4) |
-| `constraint` | questions | Expression; refers to the question by its own id, e.g. `age >= 18 and age <= 120` |
-| `constraintMessage` | questions | Text shown when the constraint fails |
-| `showIf` | questions | Expression; question is relevant when it is true (null counts as false, §3) |
-| `choices` | single, multi | Name of a `choiceLists` entry |
-| `choiceOrder` | single, multi | `"fixed"` (default) or `"shuffle"` |
-| `expr` | calculate | Expression |
-
-**Choices.** `{ "value": <string or integer>, "label": <text> }`. Values are codes (§2).
-
-**Text.** A plain string (same in every language) or `{ "en": "…", "de": "…" }`.
-
-**Expressions** (C1 grammar): numbers, `"double-quoted strings"`, question/condition ids,
-`== != < <= > >=`, `and or not`, `+ - * /`, parentheses, `answered(id)`,
-`contains(multiId, value)`. Usual precedence: `* /` over `+ -` over comparisons over `not` over
-`and` over `or`. Fixture 20's calculate uses `if(…)`, which is outside the v0 grammar (C3a-2).
-
-**Flow nodes** (§6):
-
-| Node | Meaning |
-|---|---|
-| `{ "block": "p1" }` | Show that block's page |
-| `{ "branch": { "if": expr, "then": [nodes], "else": [nodes] } }` | `else` optional |
-| `{ "randomiser": { "id": "r1", "shuffle": [nodes] } }` | All children, in a shuffled order (§7) |
-| `{ "assign": "design" }` | Point where the design's conditions take effect (§7) |
-| `{ "quotaCheck": "q_old" }` | Fixture 20 only, pending C3a-3 |
-| `{ "end": "code" }` | End the session with that code |
-
-Running off the end of the flow is `end: "complete"` (§6).
-
-**PRNG node ids** (§7 streams): randomiser `id`, block id for `itemOrder`, question id for
-`choiceOrder`.
+`v0` keeps the left-out part verbatim, in the v0 survey format, so nothing is lost.
 
 ## 2. scripts/<id>.json
 
@@ -130,7 +112,7 @@ So `steps` has one more entry than `actions`.
 | Field | Meaning |
 |---|---|
 | `index` | Position in `steps` |
-| `page` | Block id shown, or `null` once the session has ended |
+| `page` | Id of the block shown (each fixture block has one page), or `null` once the session has ended |
 | `visible` | Item ids shown, in display order (notes included) |
 | `errors` | `{ id: { "kind": "required" } }` or `{ id: { "kind": "constraint", "message": "…" } }`; when non-empty the page did not advance |
 | `nav` | `{ "back": bool }`; `null` after the end |

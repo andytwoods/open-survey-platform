@@ -1,99 +1,118 @@
 {
-  "format": "osp-fixture-survey/0",
-  "description": "§7 choice-order shuffle (XForms randomize) on single and multi questions.",
+  "specVersion": "osp-survey/0.1",
   "id": "f15_choice_order_shuffle",
   "version": 1,
-  "title": "Shuffled choice order",
-  "languages": [
-    "en"
-  ],
+  "metadata": {
+    "title": "Shuffled choice order",
+    "description": "§7 choice-order shuffle (XForms randomize) on single and multi questions.",
+    "languages": [
+      "en"
+    ]
+  },
   "settings": {
     "backNavigation": true
   },
-  "choiceLists": {
-    "colour5": [
-      {
-        "value": "red",
-        "label": "Red"
-      },
-      {
-        "value": "green",
-        "label": "Green"
-      },
-      {
-        "value": "blue",
-        "label": "Blue"
-      },
-      {
-        "value": "yellow",
-        "label": "Yellow"
-      },
-      {
-        "value": "purple",
-        "label": "Purple"
-      }
-    ],
-    "fruit5": [
-      {
-        "value": "apple",
-        "label": "Apple"
-      },
-      {
-        "value": "kiwi",
-        "label": "Kiwi"
-      },
-      {
-        "value": "mango",
-        "label": "Mango"
-      },
-      {
-        "value": "pear",
-        "label": "Pear"
-      },
-      {
-        "value": "plum",
-        "label": "Plum"
-      }
-    ],
-    "yesno": [
-      {
-        "value": "yes",
-        "label": "Yes"
-      },
-      {
-        "value": "no",
-        "label": "No"
-      }
-    ]
-  },
-  "blocks": {
-    "p1": {
-      "items": [
+  "choiceLists": [
+    {
+      "id": "colour5",
+      "choices": [
         {
-          "id": "fav_colour",
-          "type": "single",
-          "label": "Pick a colour.",
-          "choices": "colour5",
-          "choiceOrder": "shuffle"
+          "value": "red",
+          "label": "Red"
         },
         {
-          "id": "fruits",
-          "type": "multi",
-          "label": "Which fruits do you eat?",
-          "choices": "fruit5",
-          "choiceOrder": "shuffle"
+          "value": "green",
+          "label": "Green"
         },
         {
-          "id": "plain",
-          "type": "single",
-          "label": "Is the sky blue today?",
-          "choices": "yesno"
+          "value": "blue",
+          "label": "Blue"
+        },
+        {
+          "value": "yellow",
+          "label": "Yellow"
+        },
+        {
+          "value": "purple",
+          "label": "Purple"
+        }
+      ]
+    },
+    {
+      "id": "fruit5",
+      "choices": [
+        {
+          "value": "apple",
+          "label": "Apple"
+        },
+        {
+          "value": "kiwi",
+          "label": "Kiwi"
+        },
+        {
+          "value": "mango",
+          "label": "Mango"
+        },
+        {
+          "value": "pear",
+          "label": "Pear"
+        },
+        {
+          "value": "plum",
+          "label": "Plum"
+        }
+      ]
+    },
+    {
+      "id": "yesno",
+      "choices": [
+        {
+          "value": "yes",
+          "label": "Yes"
+        },
+        {
+          "value": "no",
+          "label": "No"
         }
       ]
     }
-  },
+  ],
+  "blocks": [
+    {
+      "id": "p1",
+      "pages": [
+        {
+          "id": "p1_page",
+          "items": [
+            {
+              "type": "single",
+              "id": "fav_colour",
+              "label": "Pick a colour.",
+              "choiceList": "colour5",
+              "choiceOrder": "shuffle"
+            },
+            {
+              "type": "multi",
+              "id": "fruits",
+              "label": "Which fruits do you eat?",
+              "choiceList": "fruit5",
+              "choiceOrder": "shuffle"
+            },
+            {
+              "type": "single",
+              "id": "plain",
+              "label": "Is the sky blue today?",
+              "choiceList": "yesno"
+            }
+          ]
+        }
+      ]
+    }
+  ],
   "flow": [
     {
+      "type": "block",
+      "id": "n_p1",
       "block": "p1"
     }
   ]

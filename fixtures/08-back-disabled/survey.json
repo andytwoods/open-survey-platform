@@ -1,53 +1,74 @@
 {
-  "format": "osp-fixture-survey/0",
-  "description": "§5 per-survey setting backNavigation = false.",
+  "specVersion": "osp-survey/0.1",
   "id": "f08_back_disabled",
   "version": 1,
-  "title": "Back navigation disabled",
-  "languages": [
-    "en"
-  ],
+  "metadata": {
+    "title": "Back navigation disabled",
+    "description": "§5 per-survey setting backNavigation = false.",
+    "languages": [
+      "en"
+    ]
+  },
   "settings": {
     "backNavigation": false
   },
-  "choiceLists": {
-    "yesno": [
-      {
-        "value": "yes",
-        "label": "Yes"
-      },
-      {
-        "value": "no",
-        "label": "No"
-      }
-    ]
-  },
-  "blocks": {
-    "p1": {
-      "items": [
+  "choiceLists": [
+    {
+      "id": "yesno",
+      "choices": [
         {
-          "id": "q1",
-          "type": "single",
-          "label": "Is it raining where you are?",
-          "choices": "yesno"
-        }
-      ]
-    },
-    "p2": {
-      "items": [
+          "value": "yes",
+          "label": "Yes"
+        },
         {
-          "id": "q2",
-          "type": "text",
-          "label": "How is your day going?"
+          "value": "no",
+          "label": "No"
         }
       ]
     }
-  },
+  ],
+  "blocks": [
+    {
+      "id": "p1",
+      "pages": [
+        {
+          "id": "p1_page",
+          "items": [
+            {
+              "type": "single",
+              "id": "q1",
+              "label": "Is it raining where you are?",
+              "choiceList": "yesno"
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "id": "p2",
+      "pages": [
+        {
+          "id": "p2_page",
+          "items": [
+            {
+              "type": "text",
+              "id": "q2",
+              "label": "How is your day going?"
+            }
+          ]
+        }
+      ]
+    }
+  ],
   "flow": [
     {
+      "type": "block",
+      "id": "n_p1",
       "block": "p1"
     },
     {
+      "type": "block",
+      "id": "n_p2",
       "block": "p2"
     }
   ]

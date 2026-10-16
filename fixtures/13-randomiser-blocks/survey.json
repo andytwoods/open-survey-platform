@@ -1,96 +1,140 @@
 {
-  "format": "osp-fixture-survey/0",
-  "description": "§7 randomiser node shuffling blocks; order fixed at first reach, stable on back/refresh.",
+  "specVersion": "osp-survey/0.1",
   "id": "f13_randomiser_blocks",
   "version": 1,
-  "title": "Block randomiser",
-  "languages": [
-    "en"
-  ],
+  "metadata": {
+    "title": "Block randomiser",
+    "description": "§7 randomiser node shuffling blocks; order fixed at first reach, stable on back/refresh.",
+    "languages": [
+      "en"
+    ]
+  },
   "settings": {
     "backNavigation": true
   },
-  "choiceLists": {
-    "yesno": [
-      {
-        "value": "yes",
-        "label": "Yes"
-      },
-      {
-        "value": "no",
-        "label": "No"
-      }
-    ]
-  },
-  "blocks": {
-    "intro": {
-      "items": [
+  "choiceLists": [
+    {
+      "id": "yesno",
+      "choices": [
         {
-          "id": "intro_q",
-          "type": "single",
-          "label": "Ready to start?",
-          "choices": "yesno"
-        }
-      ]
-    },
-    "blk_x": {
-      "items": [
+          "value": "yes",
+          "label": "Yes"
+        },
         {
-          "id": "q_x",
-          "type": "integer",
-          "label": "Block X: any number."
-        }
-      ]
-    },
-    "blk_y": {
-      "items": [
-        {
-          "id": "q_y",
-          "type": "integer",
-          "label": "Block Y: any number."
-        }
-      ]
-    },
-    "blk_z": {
-      "items": [
-        {
-          "id": "q_z",
-          "type": "integer",
-          "label": "Block Z: any number."
-        }
-      ]
-    },
-    "outro": {
-      "items": [
-        {
-          "id": "outro_q",
-          "type": "text",
-          "label": "Last question: say anything."
+          "value": "no",
+          "label": "No"
         }
       ]
     }
-  },
+  ],
+  "blocks": [
+    {
+      "id": "intro",
+      "pages": [
+        {
+          "id": "intro_page",
+          "items": [
+            {
+              "type": "single",
+              "id": "intro_q",
+              "label": "Ready to start?",
+              "choiceList": "yesno"
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "id": "blk_x",
+      "pages": [
+        {
+          "id": "blk_x_page",
+          "items": [
+            {
+              "type": "integer",
+              "id": "q_x",
+              "label": "Block X: any number."
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "id": "blk_y",
+      "pages": [
+        {
+          "id": "blk_y_page",
+          "items": [
+            {
+              "type": "integer",
+              "id": "q_y",
+              "label": "Block Y: any number."
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "id": "blk_z",
+      "pages": [
+        {
+          "id": "blk_z_page",
+          "items": [
+            {
+              "type": "integer",
+              "id": "q_z",
+              "label": "Block Z: any number."
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "id": "outro",
+      "pages": [
+        {
+          "id": "outro_page",
+          "items": [
+            {
+              "type": "text",
+              "id": "outro_q",
+              "label": "Last question: say anything."
+            }
+          ]
+        }
+      ]
+    }
+  ],
   "flow": [
     {
+      "type": "block",
+      "id": "n_intro",
       "block": "intro"
     },
     {
-      "randomiser": {
-        "id": "r_blocks",
-        "shuffle": [
-          {
-            "block": "blk_x"
-          },
-          {
-            "block": "blk_y"
-          },
-          {
-            "block": "blk_z"
-          }
-        ]
-      }
+      "type": "randomiser",
+      "id": "r_blocks",
+      "children": [
+        {
+          "type": "block",
+          "id": "n_blk_x",
+          "block": "blk_x"
+        },
+        {
+          "type": "block",
+          "id": "n_blk_y",
+          "block": "blk_y"
+        },
+        {
+          "type": "block",
+          "id": "n_blk_z",
+          "block": "blk_z"
+        }
+      ]
     },
     {
+      "type": "block",
+      "id": "n_outro",
       "block": "outro"
     }
   ]
