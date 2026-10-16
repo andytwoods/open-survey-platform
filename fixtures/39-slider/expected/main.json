@@ -1,0 +1,208 @@
+{
+  "format": "osp-fixture-expected/0",
+  "fixture": "39-slider",
+  "script": "main",
+  "pending": [],
+  "steps": [
+    {
+      "index": 0,
+      "page": "p1",
+      "visible": [
+        "pain",
+        "sleep"
+      ],
+      "errors": {},
+      "nav": {
+        "back": false
+      },
+      "questions": {
+        "pain": {
+          "state": "unanswered",
+          "value": null
+        },
+        "sleep": {
+          "state": "unanswered",
+          "value": null
+        },
+        "pain_why": {
+          "state": "not-reached",
+          "value": null
+        },
+        "mood": {
+          "state": "not-reached",
+          "value": null
+        }
+      },
+      "orders": {
+        "blocks": {},
+        "items": {},
+        "choices": {}
+      },
+      "conditions": {},
+      "end": null,
+      "labels": {
+        "pain": "How strong is the (fictional) pain?",
+        "sleep": "Hours of sleep last night (optional)"
+      }
+    },
+    {
+      "index": 1,
+      "page": "p1",
+      "visible": [
+        "pain",
+        "sleep"
+      ],
+      "errors": {
+        "pain": {
+          "kind": "required"
+        }
+      },
+      "nav": {
+        "back": false
+      },
+      "questions": {
+        "pain": {
+          "state": "unanswered",
+          "value": null
+        },
+        "sleep": {
+          "state": "unanswered",
+          "value": null
+        },
+        "pain_why": {
+          "state": "not-reached",
+          "value": null
+        },
+        "mood": {
+          "state": "not-reached",
+          "value": null
+        }
+      },
+      "orders": {
+        "blocks": {},
+        "items": {},
+        "choices": {}
+      },
+      "conditions": {},
+      "end": null,
+      "labels": {
+        "pain": "How strong is the (fictional) pain?",
+        "sleep": "Hours of sleep last night (optional)"
+      }
+    },
+    {
+      "index": 2,
+      "page": "p2",
+      "visible": [
+        "pain_why",
+        "rested",
+        "mood"
+      ],
+      "errors": {},
+      "nav": {
+        "back": true
+      },
+      "questions": {
+        "pain": {
+          "state": "answered",
+          "value": 8
+        },
+        "sleep": {
+          "state": "answered",
+          "value": "7.5"
+        },
+        "pain_why": {
+          "state": "unanswered",
+          "value": null
+        },
+        "mood": {
+          "state": "unanswered",
+          "value": null
+        }
+      },
+      "orders": {
+        "blocks": {},
+        "items": {},
+        "choices": {}
+      },
+      "conditions": {},
+      "end": null,
+      "labels": {
+        "pain_why": "You rated the pain 8. What helps?",
+        "rested": "You slept 7.5 hours.",
+        "mood": "Mood right now (optional)"
+      }
+    },
+    {
+      "index": 3,
+      "page": null,
+      "visible": [],
+      "errors": {},
+      "nav": null,
+      "questions": {
+        "pain": {
+          "state": "answered",
+          "value": 8
+        },
+        "sleep": {
+          "state": "answered",
+          "value": "7.5"
+        },
+        "pain_why": {
+          "state": "answered",
+          "value": "rest"
+        },
+        "mood": {
+          "state": "unanswered",
+          "value": null
+        }
+      },
+      "orders": {
+        "blocks": {},
+        "items": {},
+        "choices": {}
+      },
+      "conditions": {},
+      "end": "complete",
+      "labels": {}
+    }
+  ],
+  "invariants": [],
+  "response": {
+    "surveyId": "f39_slider",
+    "surveyVersion": 1,
+    "end": "complete",
+    "allocation": "server",
+    "sessionSeed": 3901,
+    "conditions": {},
+    "orders": {
+      "blocks": {},
+      "items": {},
+      "choices": {}
+    },
+    "answers": {
+      "pain": {
+        "state": "answered",
+        "value": 8
+      },
+      "sleep": {
+        "state": "answered",
+        "value": "7.5"
+      },
+      "pain_why": {
+        "state": "answered",
+        "value": "rest"
+      },
+      "mood": {
+        "state": "unanswered",
+        "value": null
+      }
+    },
+    "csvState": {
+      "pain__state": "answered",
+      "sleep__state": "answered",
+      "pain_why__state": "answered",
+      "mood__state": "unanswered"
+    }
+  }
+}
