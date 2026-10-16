@@ -131,16 +131,15 @@
 	// -- boot ------------------------------------------------------------------------
 	function readUrl() {
 		const m = /^\/s\/([^/]+)\/?$/.exec(location.pathname);
-		const params = new URLSearchParams(location.search);
-		slug = m ? decodeURIComponent(m[1]!) : (params.get('s') ?? '');
-		params.delete('s');
+		const params = [...new URLSearchParams(location.search)];
+		slug = m ? decodeURIComponent(m[1]!) : (params.find(([k]) => k === 's')?.[1] ?? '');
 		const hash = new URLSearchParams(location.hash.replace(/^#/, ''));
 		const resumeToken = hash.get('resume');
 		if (resumeToken) {
 			// Keep the secret out of the address bar, history and bookmarks.
 			history.replaceState(null, '', location.pathname + location.search);
 		}
-		return { resumeToken, urlParams: Object.fromEntries(params) };
+		return { resumeToken, urlParams: Object.fromEntries(params.filter(([k]) => k !== 's')) };
 	}
 
 	function device(): Device {
