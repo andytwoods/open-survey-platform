@@ -2,7 +2,7 @@
 	import ChevronRight from '@lucide/svelte/icons/chevron-right';
 	import { tick, untrack } from 'svelte';
 	import { SvelteSet } from 'svelte/reactivity';
-	import type { MockNode } from '../mock/survey';
+	import type { OutlineNode } from '../model/outline';
 	import { ancestorsOf, navigate, visibleRows } from '../outline/tree-nav';
 	import type { SelectionStore } from '../selection.svelte';
 	import { iconFor } from './icons';
@@ -11,9 +11,9 @@
 	 * Outline tree (WAI-ARIA tree, single select, selection follows focus).
 	 * Roving tabindex: only the active item is in the Tab order; arrows move within.
 	 */
-	let { roots, selection }: { roots: MockNode[]; selection: SelectionStore } = $props();
+	let { roots, selection }: { roots: OutlineNode[]; selection: SelectionStore } = $props();
 
-	function allParents(nodes: MockNode[], out: string[] = []): string[] {
+	function allParents(nodes: OutlineNode[], out: string[] = []): string[] {
 		for (const n of nodes) {
 			if (n.children?.length) {
 				out.push(n.id);
@@ -24,6 +24,19 @@
 	}
 
 	const expanded = new SvelteSet<string>(untrack(() => allParents(roots)));
+	// Parents that appear later (a page added by an edit) start expanded too; ones the
+	// user collapsed stay collapsed.
+	// Bookkeeping only, deliberately not reactive.
+	// eslint-disable-next-line svelte/prefer-svelte-reactivity
+	const seen = new Set<string>(untrack(() => allParents(roots)));
+	$effect(() => {
+		for (const id of allParents(roots)) {
+			if (!seen.has(id)) {
+				seen.add(id);
+				expanded.add(id);
+			}
+		}
+	});
 	const rows = $derived(visibleRows(roots, expanded));
 	const activeId = $derived(
 		selection.id && rows.some((r) => r.node.id === selection.id) ? selection.id : rows[0]?.node.id
@@ -43,7 +56,7 @@
 		document.getElementById(domId(id))?.focus();
 	}
 
-	function toggle(node: MockNode) {
+	function toggle(node: OutlineNode) {
 		if (expanded.has(node.id)) {
 			expanded.delete(node.id);
 			if (selection.id && ancestorsOf(roots, selection.id).includes(node.id)) selection.select(node.id);

@@ -1,6 +1,6 @@
 /**
- * The shell's commands, as data. Undo/redo are placeholders until the op client lands
- * (B2): they dispatch through the registry like everything else, then say so.
+ * The shell's commands, as data. Undo/redo go to the survey store (the API's undo/redo)
+ * in the editor, to the theme editor in Appearance, and say so in the `?mock` shell.
  */
 import type { Command } from '../commands/registry';
 
@@ -17,6 +17,10 @@ export interface ShellActions {
 	propertiesCollapsible: () => boolean;
 	preview: () => void;
 	clearSelection: () => void;
+	/** Add a question (the `add_question` op) to the selected or last page. */
+	addQuestion: () => void;
+	/** True when a real survey is open in the editor view. */
+	canEdit: () => boolean;
 }
 
 export function shellCommands(a: ShellActions): Command[] {
@@ -44,6 +48,14 @@ export function shellCommands(a: ShellActions): Command[] {
 			group: 'Edit',
 			shortcut: ['Mod+Shift+Z', 'Mod+Y'],
 			run: a.redo
+		},
+		{
+			id: 'survey.addQuestion',
+			label: 'Add question',
+			group: 'Survey',
+			keywords: ['new', 'insert', 'item'],
+			enabled: a.canEdit,
+			run: a.addQuestion
 		},
 		{
 			id: 'selection.clear',

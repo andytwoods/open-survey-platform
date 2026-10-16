@@ -3,19 +3,15 @@
  *
  * A static, survey-shaped tree so the W1 shell has something real-looking to show
  * (pages → blocks → questions). It is not `osp-spec`, carries no survey semantics and
- * must not grow any. B2 replaces it with the store fed by the op client and the API.
+ * must not grow any. The real builder renders the store fed by the op client (B2); this
+ * stays for component tests behind the `?mock` flag.
  * Content is invented; no real personal data.
  */
-export type MockNodeType = 'survey' | 'page' | 'block' | 'question';
+import type { NodeType, OutlineNode } from '../model/outline';
 
-export interface MockNode {
-	id: string;
-	type: MockNodeType;
-	label: string;
-	/** Display-only family name for the placeholder card. */
-	family?: 'choice' | 'text' | 'number' | 'matrix' | 'scale' | 'note';
-	children?: MockNode[];
-}
+// Same shape the real survey is projected into (model/outline.ts). Shown at `/?mock`.
+export type MockNodeType = NodeType;
+export type MockNode = OutlineNode;
 
 const q = (id: string, label: string, family: MockNode['family']): MockNode => ({
 	id,
