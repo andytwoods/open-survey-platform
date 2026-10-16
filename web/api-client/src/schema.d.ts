@@ -997,7 +997,7 @@ export interface components {
             baseRevision?: number | null;
             /**
              * Savemode
-             * @description Participant save mode (runtime-design §5.0)
+             * @description Participant save mode (runtime-design section 5.0)
              * @default every-page
              * @enum {string}
              */

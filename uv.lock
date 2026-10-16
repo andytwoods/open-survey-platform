@@ -746,6 +746,16 @@ requires-dist = [
 name = "osp-cli"
 version = "0.0.0"
 source = { editable = "python/osp-cli" }
+dependencies = [
+    { name = "osp-app" },
+    { name = "osp-store" },
+]
+
+[package.metadata]
+requires-dist = [
+    { name = "osp-app", editable = "python/osp-app" },
+    { name = "osp-store", editable = "python/osp-store" },
+]
 
 [[package]]
 name = "osp-engine"

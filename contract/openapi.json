@@ -1305,7 +1305,7 @@
           },
           "saveMode": {
             "default": "every-page",
-            "description": "Participant save mode (runtime-design §5.0)",
+            "description": "Participant save mode (runtime-design section 5.0)",
             "enum": [
               "every-page",
               "end-only"

@@ -52,7 +52,7 @@ class PublishRequest(BaseModel):
         None, ge=0, description="If given, publish only if the draft is still at it"
     )
     saveMode: Literal["every-page", "end-only"] = Field(
-        "every-page", description="Participant save mode (runtime-design §5.0)"
+        "every-page", description="Participant save mode (runtime-design section 5.0)"
     )
 
 
