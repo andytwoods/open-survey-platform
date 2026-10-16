@@ -1068,7 +1068,6 @@ class Store(ThemeLibrary):  # theme-library methods: themes.py
         Retire an old key only after this returns 0 for it (``count_by_key``).
         """
         sys = require_system(sys)
-        names = {"users": "totp_secret", "sessions": "instance", "responses": "answers"}
         total = 0
         for table, ct_col, kid_col in t.ENCRYPTED_FIELDS:
             ct, kid = table.c[ct_col], table.c[kid_col]
@@ -1077,7 +1076,7 @@ class Store(ThemeLibrary):  # theme-library methods: themes.py
                     select(table.c.id, ct, kid).where(ct.is_not(None) & (kid != self._keys.active))
                 ).all()
                 for row_id, blob, old in rows:
-                    aad = aad_for(table.name, names[table.name], row_id)
+                    aad = aad_for(table.name, ct_col.removesuffix("_ct"), row_id)
                     new = self._keys.encrypt(self._keys.decrypt(old, blob, aad), aad)
                     res = conn.execute(
                         update(table)

@@ -240,6 +240,125 @@ audit_log = Table(
     Index("ix_audit_log_tenant_at", "tenant_id", "at"),
 )
 
+# --- Participant runtime (task R2, planning/runtime-design.md §5) -------------------
+# Additions only: the tables above are unchanged. Every row below that holds
+# participant data hangs off `sessions` / `responses` with ON DELETE CASCADE, so
+# withdrawal (`delete_session`, `delete_response`) and retention remove it too.
+
+# A published survey link: slug -> one version + its runtime plan (opaque JSON).
+publications = Table(
+    "publications",
+    metadata,
+    Column("id", ID, primary_key=True),
+    Column("tenant_id", ID, nullable=False, index=True),
+    Column("version_id", ID, nullable=False, index=True),
+    Column("slug", String(80), nullable=False, unique=True),
+    Column("plan", Text, nullable=False),  # canonical JSON text of the runtime plan
+    Column("plan_checksum", String(128), nullable=False),
+    Column("save_mode", String(16), nullable=False),
+    Column("config", JsonType, nullable=False),  # assignment + quota config, no participant data
+    Column("published_by", String(80), nullable=False),
+    _ts("created_at"),
+    _ts("closed_at", nullable=True),
+    ForeignKeyConstraint(["tenant_id", "version_id"], ["versions.tenant_id", "versions.id"]),
+    UniqueConstraint("tenant_id", "id"),
+    CheckConstraint("save_mode IN ('every-page', 'end-only')", name="save_mode"),
+)
+
+# 1:1 extension of `sessions` for runtime sessions (id = sessions.id). The resume
+# token is stored only as its SHA-256; the snapshot lives in sessions.instance_ct.
+participant_sessions = Table(
+    "participant_sessions",
+    metadata,
+    Column("id", ID, ForeignKey("sessions.id", ondelete="CASCADE"), primary_key=True),
+    Column("tenant_id", ID, nullable=False, index=True),
+    Column("publication_id", ID, nullable=False, index=True),
+    Column("token_hash", String(64), nullable=False, unique=True),
+    Column("revision", Integer, nullable=False),
+    Column("save_mode", String(16), nullable=False),
+    Column("balanced", JsonType, nullable=False),  # {variable: level key} counted at start
+    Column("url_params_ct", LargeBinary, nullable=True),
+    Column("url_params_key_id", String(32), nullable=True),
+    Column("submission_checksum", String(64), nullable=True),
+    Column("response_id", ID, nullable=True),
+    _ts("last_active_at"),
+    _ts("submitted_at", nullable=True),
+    _ts("expired_at", nullable=True),
+    ForeignKeyConstraint(
+        ["tenant_id", "publication_id"], ["publications.tenant_id", "publications.id"]
+    ),
+    CheckConstraint("revision >= 0", name="revision_nonneg"),
+    CheckConstraint("save_mode IN ('every-page', 'end-only')", name="save_mode"),
+)
+
+# Atomic quota counters, one per (publication, quota). `used` never exceeds `cap`.
+quota_counters = Table(
+    "quota_counters",
+    metadata,
+    Column("publication_id", ID, ForeignKey("publications.id"), primary_key=True),
+    Column("quota_id", String(200), primary_key=True),
+    Column("tenant_id", ID, nullable=False, index=True),
+    Column("cap", Integer, nullable=False),
+    Column("used", Integer, nullable=False),
+    CheckConstraint("cap >= 0", name="cap_nonneg"),
+    CheckConstraint("used >= 0 AND used <= cap", name="used_in_range"),
+)
+
+# One recorded quota result per (session, quotaCheck node): repeat calls return it.
+quota_claims = Table(
+    "quota_claims",
+    metadata,
+    Column("session_id", ID, ForeignKey("sessions.id", ondelete="CASCADE"), primary_key=True),
+    Column("node_id", String(200), primary_key=True),
+    Column("tenant_id", ID, nullable=False, index=True),
+    Column("publication_id", ID, nullable=False),
+    Column("quota_id", String(200), nullable=False),
+    Column("result", String(16), nullable=False),
+    _ts("at"),
+    _ts("released_at", nullable=True),
+    CheckConstraint("result IN ('admitted', 'full')", name="result"),
+)
+
+# Balanced-assignment counters, one per (publication, variable, level).
+assignment_counters = Table(
+    "assignment_counters",
+    metadata,
+    Column("publication_id", ID, ForeignKey("publications.id"), primary_key=True),
+    Column("variable", String(200), primary_key=True),
+    Column("level", String(200), primary_key=True),  # canonical JSON of the level
+    Column("tenant_id", ID, nullable=False, index=True),
+    Column("count", Integer, nullable=False),
+    CheckConstraint("count >= 0", name="count_nonneg"),
+)
+
+# Decision R-2: on a two-device conflict the server copy wins; the losing snapshot is
+# kept here (encrypted), and the audit log records only that it happened.
+session_conflicts = Table(
+    "session_conflicts",
+    metadata,
+    Column("id", ID, primary_key=True),
+    Column("tenant_id", ID, nullable=False, index=True),
+    Column(
+        "session_id", ID, ForeignKey("sessions.id", ondelete="CASCADE"), nullable=False, index=True
+    ),
+    Column("base_revision", Integer, nullable=False),
+    Column("server_revision", Integer, nullable=False),
+    Column("snapshot_ct", LargeBinary, nullable=False),
+    Column("snapshot_key_id", String(32), nullable=False),
+    _ts("at"),
+)
+
+# The full submitted ResponseRecord (event log, paradata, URL parameters, ...), beside
+# the `responses` row that holds the answers (id = responses.id).
+response_records = Table(
+    "response_records",
+    metadata,
+    Column("id", ID, ForeignKey("responses.id", ondelete="CASCADE"), primary_key=True),
+    Column("tenant_id", ID, nullable=False, index=True),
+    Column("record_ct", LargeBinary, nullable=False),
+    Column("record_key_id", String(32), nullable=False),
+)
+
 # --- Theme library (R8, migration 0002_themes) ----------------------------------------
 # A lab's saved survey themes. ``body`` is opaque theme JSON (osp_spec.theme validates it).
 
@@ -273,9 +392,13 @@ lab_theme_defaults = Table(
     ),
 )
 
-#: (table, ciphertext column, key-id column) for every encrypted field.
+#: (table, ciphertext column, key-id column) for every encrypted field. The AEAD field
+#: name is the ciphertext column without ``_ct``; the row id is the table's ``id``.
 ENCRYPTED_FIELDS: tuple[tuple[Table, str, str], ...] = (
     (users, "totp_secret_ct", "totp_secret_key_id"),
     (sessions, "instance_ct", "instance_key_id"),
     (responses, "answers_ct", "answers_key_id"),
+    (participant_sessions, "url_params_ct", "url_params_key_id"),
+    (session_conflicts, "snapshot_ct", "snapshot_key_id"),
+    (response_records, "record_ct", "record_key_id"),
 )

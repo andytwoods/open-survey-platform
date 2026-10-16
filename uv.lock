@@ -702,10 +702,16 @@ version = "0.0.0"
 source = { editable = "python/osp-api" }
 dependencies = [
     { name = "fastapi" },
+    { name = "osp-runtime" },
+    { name = "osp-store" },
 ]
 
 [package.metadata]
-requires-dist = [{ name = "fastapi", specifier = ">=0.140,<0.144" }]
+requires-dist = [
+    { name = "fastapi", specifier = ">=0.140,<0.144" },
+    { name = "osp-runtime", editable = "python/osp-runtime" },
+    { name = "osp-store", editable = "python/osp-store" },
+]
 
 [[package]]
 name = "osp-app"
@@ -796,6 +802,12 @@ source = { editable = "python/osp-qa" }
 name = "osp-runtime"
 version = "0.0.0"
 source = { editable = "python/osp-runtime" }
+dependencies = [
+    { name = "osp-engine" },
+]
+
+[package.metadata]
+requires-dist = [{ name = "osp-engine", editable = "python/osp-engine" }]
 
 [[package]]
 name = "osp-spec"
