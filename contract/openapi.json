@@ -1283,6 +1283,7 @@
           "op.invalid_result",
           "op.invalid_survey",
           "op.not_allowed",
+          "op.not_applicable",
           "op.not_found",
           "op.params",
           "op.patch",

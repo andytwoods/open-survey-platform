@@ -55,6 +55,14 @@ def model_fields(cls: type[BaseModel]) -> list[str]:
     return [f.alias or name for name, f in cls.model_fields.items()]
 
 
+def family_fields(cls: type[BaseModel]) -> set[str]:
+    """Fields of any variant of the same kind of object (every question type, say)."""
+    for family in (QUESTION_CLASSES, NODE_CLASSES, VARIABLE_CLASSES):
+        if cls in family.values():
+            return {f for c in family.values() for f in model_fields(c)}
+    return set(model_fields(cls))
+
+
 def resolve(ctx: Ctx, target: str) -> tuple[tuple[Any, ...], type[BaseModel]]:
     """Path to the target object and its model class."""
     if target in SINGLETONS:
@@ -94,8 +102,11 @@ def set_property(ctx: Ctx, p: SetProperty) -> Invocation:
     allowed = model_fields(cls)
     if p.property in FORBIDDEN or p.property not in allowed:
         editable = ", ".join(f for f in allowed if f not in FORBIDDEN)
+        # A field of another variant (a note's `constraint`) is "not applicable" to this
+        # one; ids, discriminators, child collections and unknown names are "not allowed".
+        unknown = p.property in FORBIDDEN or p.property not in family_fields(cls)
         raise OpError(
-            "op.not_allowed",
+            "op.not_allowed" if unknown else "op.not_applicable",
             f"{p.property[:40]!r} is not an editable property of {cls.__name__} "
             f"(editable: {editable})",
             to_pointer((*path, p.property[:64])),

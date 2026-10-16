@@ -255,10 +255,11 @@ def params_strategy(op_id: str, *, hostile: bool = True) -> st.SearchStrategy[An
     return st.one_of(random_dict, mutated, JSON)
 
 
-@pytest.mark.parametrize("op_id", sorted(REGISTRY))
-@settings(max_examples=60, deadline=None, suppress_health_check=[HealthCheck.too_slow])
-@given(data=st.data())
-def test_near_miss_params(op_id: str, data: st.DataObject) -> None:
+FAST = 60  # per op, every `make check`
+NIGHTLY = 1500  # per op, `pytest -m nightly` (minutes, not seconds)
+
+
+def near_miss(op_id: str, data: st.DataObject) -> None:
     """Examples with one or two fields swapped for other plausible values: mostly valid
     params, so this exercises the ops' own checks and the round trip."""
     params = data.draw(params_strategy(op_id, hostile=False))
@@ -267,16 +268,48 @@ def test_near_miss_params(op_id: str, data: st.DataObject) -> None:
     check_result(op_id, BASE, params, res)
 
 
-@pytest.mark.parametrize("op_id", sorted(REGISTRY))
-@settings(max_examples=60, deadline=None, suppress_health_check=[HealthCheck.too_slow])
-@given(data=st.data())
-def test_hostile_params(op_id: str, data: st.DataObject) -> None:
+def hostile(op_id: str, data: st.DataObject) -> None:
     params = data.draw(params_strategy(op_id))
     before = copy.deepcopy(BASE)
     res = run(op_id, before, params)
     event("ok" if res.ok else res.diagnostics[0].code)
     assert jp.same(before, BASE), "ops never mutate their input"
     check_result(op_id, BASE, params, res)
+
+
+# Written out (not made by a factory) so each test keeps its own Hypothesis database key.
+OPS = pytest.mark.parametrize("op_id", sorted(REGISTRY))
+SLOW_OK = [HealthCheck.too_slow]
+
+
+@OPS
+@settings(max_examples=FAST, deadline=None, suppress_health_check=SLOW_OK)
+@given(data=st.data())
+def test_near_miss_params(op_id: str, data: st.DataObject) -> None:
+    near_miss(op_id, data)
+
+
+@OPS
+@settings(max_examples=FAST, deadline=None, suppress_health_check=SLOW_OK)
+@given(data=st.data())
+def test_hostile_params(op_id: str, data: st.DataObject) -> None:
+    hostile(op_id, data)
+
+
+@pytest.mark.nightly
+@OPS
+@settings(max_examples=NIGHTLY, deadline=None, suppress_health_check=SLOW_OK)
+@given(data=st.data())
+def test_near_miss_params_nightly(op_id: str, data: st.DataObject) -> None:
+    near_miss(op_id, data)
+
+
+@pytest.mark.nightly
+@OPS
+@settings(max_examples=NIGHTLY, deadline=None, suppress_health_check=SLOW_OK)
+@given(data=st.data())
+def test_hostile_params_nightly(op_id: str, data: st.DataObject) -> None:
+    hostile(op_id, data)
 
 
 @pytest.mark.parametrize("op_id", sorted(REGISTRY))
