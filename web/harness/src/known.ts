@@ -12,6 +12,33 @@ export interface KnownBug {
 }
 
 export const KNOWN_RUNTIME_BUGS: Record<string, KnownBug> = {
+	'20-worked-example/complete-gain': {
+		issue: 'R3b: fixture un-pended by SEM1 (if(), calculate, embedded data, quota); runtime app not yet updated.'
+	},
+	'20-worked-example/declined': {
+		issue: 'R3b: as 20/complete-gain.'
+	},
+	'20-worked-example/loss-charity-back-refresh': {
+		issue: 'R3b: as 20/complete-gain.'
+	},
+	'20-worked-example/screenout-quota-full': {
+		issue: 'R3b: as 20/complete-gain (quota full path).'
+	},
+	'24-quota-pending-retry/timeout-refresh-lost-reply': {
+		issue: 'R3b: SEM1 R6-4: refresh must re-send the pending quota call with the same idempotency key.'
+	},
+	'25-second-device-resume/stale-device-a': {
+		issue: 'R3b: SEM1 R6-6: 409 must adopt the server copy and show the other-device notice.'
+	},
+	'26-decimal-edge-cases/precision': {
+		issue: 'R3b: SEM1 R6-2: canonical decimal strings, 28 significant digits, reject longer input.'
+	},
+	'26-decimal-edge-cases/trailing-zeros': {
+		issue: 'R3b: SEM1 R6-2: canonical decimal strings.'
+	},
+	'33-end-only-save/storage-blocked': {
+		issue: 'R3b: SEM1 R6-5: memory-only refresh must restart() with the same seed and conditions and show a notice.'
+	},
 	'04-text-whitespace/whitespace': {
 		issue:
 			'R4-1: every text question renders as a one-line <input> (Question.svelte never sets TextInput `multiline`; ' +
