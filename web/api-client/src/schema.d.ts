@@ -123,6 +123,40 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
+    "/api/meta/expressions/parse": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /** Parse */
+        post: operations["parseExpression"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/meta/expressions/print": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /** Print */
+        post: operations["printExpression"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
     "/api/meta/ops": {
         parameters: {
             query?: never;
@@ -822,6 +856,39 @@ export interface components {
             /** Message */
             message: string;
         };
+        /** ExprDiagnostic */
+        ExprDiagnostic: {
+            /** Code */
+            code: string;
+            /**
+             * End
+             * @description Exclusive end offset (parse errors)
+             */
+            end?: number | null;
+            /** Message */
+            message: string;
+            /**
+             * Path
+             * @description JSON pointer into the AST (type errors)
+             */
+            path?: string | null;
+            /**
+             * Questionid
+             * @description The question or variable it is about
+             */
+            questionId?: string | null;
+            /**
+             * Severity
+             * @default error
+             * @enum {string}
+             */
+            severity: "error" | "warning" | "info";
+            /**
+             * Start
+             * @description 0-based character offset (parse errors)
+             */
+            start?: number | null;
+        };
         /** @enum {string} */
         ExprField: "showIf" | "constraint" | "if" | "when" | "expr";
         /** HTTPValidationError */
@@ -1021,6 +1088,70 @@ export interface components {
              * @description Client-chosen id; a retry with the same id is not applied twice
              */
             transactionId?: string | null;
+        };
+        /** ParseExpressionRequest */
+        ParseExpressionRequest: {
+            /**
+             * Field
+             * @description Default: showIf / if / when / expr
+             */
+            field?: ("showIf" | "constraint" | "if" | "when" | "expr") | null;
+            /**
+             * Surveyid
+             * @description Type-check against this survey's draft
+             */
+            surveyId?: string | null;
+            /**
+             * Target
+             * @description Check in place: the question, branch, quota or variable it is for
+             */
+            target?: string | null;
+            /** Text */
+            text: string;
+        };
+        /** ParseExpressionResponse */
+        ParseExpressionResponse: {
+            /**
+             * Ast
+             * @description Expression AST (osp-expr JSON)
+             */
+            ast?: {
+                [key: string]: unknown;
+            } | null;
+            /** Diagnostics */
+            diagnostics?: components["schemas"]["ExprDiagnostic"][];
+            /**
+             * Ok
+             * @description True iff the text parsed (ast is set)
+             */
+            ok: boolean;
+            /**
+             * References
+             * @description Ids the expression uses
+             */
+            references?: string[];
+            /**
+             * Text
+             * @description Canonical text of the AST
+             */
+            text?: string | null;
+        };
+        /** PrintExpressionRequest */
+        PrintExpressionRequest: {
+            /** Ast */
+            ast: {
+                [key: string]: unknown;
+            };
+        };
+        /** PrintExpressionResponse */
+        PrintExpressionResponse: {
+            /** Diagnostics */
+            diagnostics?: components["schemas"]["ExprDiagnostic"][];
+            /**
+             * Text
+             * @description Canonical text; null if the AST is invalid
+             */
+            text?: string | null;
         };
         /** PublishRequest */
         PublishRequest: {
@@ -1769,6 +1900,108 @@ export interface operations {
                 };
                 content: {
                     "application/json": components["schemas"]["Health"];
+                };
+            };
+        };
+    };
+    parseExpression: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["ParseExpressionRequest"];
+            };
+        };
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ParseExpressionResponse"];
+                };
+            };
+            /** @description Unauthorized */
+            401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorBody"];
+                };
+            };
+            /** @description Forbidden */
+            403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorBody"];
+                };
+            };
+            /** @description Not Found */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorBody"];
+                };
+            };
+            /** @description Unprocessable Content */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["RejectedBody"];
+                };
+            };
+        };
+    };
+    printExpression: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["PrintExpressionRequest"];
+            };
+        };
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["PrintExpressionResponse"];
+                };
+            };
+            /** @description Unauthorized */
+            401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorBody"];
+                };
+            };
+            /** @description Unprocessable Content */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["RejectedBody"];
                 };
             };
         };

@@ -8,6 +8,7 @@ requires-python = ">=3.14"
 dependencies = [
     "fastapi>=0.140,<0.144",
     "osp-app",
+    "osp-expr",
     "osp-ops",
     "osp-runtime",
     "osp-spec",
@@ -20,6 +21,7 @@ osp-api = "osp_api.serve:main"
 
 [tool.uv.sources]
 osp-app = { workspace = true }
+osp-expr = { workspace = true }
 osp-ops = { workspace = true }
 osp-spec = { workspace = true }
 osp-runtime = { workspace = true }
