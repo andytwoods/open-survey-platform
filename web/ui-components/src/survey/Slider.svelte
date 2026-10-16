@@ -196,6 +196,17 @@
 		background: var(--color-surface-raised);
 		box-shadow: var(--shadow-sm);
 	}
+	.track-wrap :global(.osp-slider-root[data-disabled] .osp-slider-range) {
+		background: var(--color-text-muted);
+	}
+	.track-wrap :global(.osp-slider-root[data-disabled] .osp-slider-thumb) {
+		cursor: not-allowed;
+	}
+	.track-wrap :global(.osp-slider-root[data-disabled] .osp-slider-thumb)::after {
+		border-color: var(--color-text-muted);
+		background: var(--color-surface-sunken);
+		box-shadow: none;
+	}
 	.track-wrap :global(.osp-slider-thumb:focus-visible) {
 		outline: var(--focus-ring-width) solid var(--color-focus);
 		outline-offset: 0;
