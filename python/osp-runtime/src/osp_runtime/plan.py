@@ -119,20 +119,21 @@ def expr_json(expr: Any) -> Json:
 def seed_node(assign_node_id: str, variable_id: str) -> str:
     """The `node_id` for the seeded draw of one assigned variable: `<assign node>/<variable>`.
 
-    PROVISIONAL (semantics.md Open questions R1-2, C2-5): one independent stream per
-    variable. The server (`RuntimeConfig.seedNode`) and the browser engine (plan
-    `variables[id].seedNode`) both take it from here, so they draw the same level.
+    semantics.md §7 (C2-5, R1-2): one independent stream per variable. The server
+    (`RuntimeConfig.seedNode`) and the browser engine (plan `variables[id].seedNode`) both
+    take it from here, so they draw the same level.
     """
     return f"{assign_node_id}/{variable_id}"
 
 
-def runtime_config(plan: Json, *, save_mode: str = "every-page") -> Json:
+def runtime_config(plan: Json, *, save_mode: str | None = None) -> Json:
     """The `RuntimeConfig` JSON (`osp_runtime.config`) the session service needs beside the
-    plan: survey-version string, save mode, one `simple` assignment per assigned variable
-    (with its `seedNode`) and one entry per `quotaCheck` node.
+    plan: survey-version string, save mode, resume expiry, one `simple` assignment per
+    assigned variable (with its `seedNode`) and one entry per `quotaCheck` node.
 
     osp-survey/0.1 models neither balanced allocation nor weights, so every assignment is
-    `simple` with equal weights; the save mode is a publish setting, not in the survey.
+    `simple` with equal weights. The save mode and resume expiry come from the survey's
+    settings (semantics.md §5); `save_mode` overrides the save mode if given.
     """
     quotas = []
 
@@ -158,19 +159,19 @@ def runtime_config(plan: Json, *, save_mode: str = "every-page") -> Json:
         for v in plan["variables"].values()
         if v["kind"] == "assigned"
     ]
+    settings = plan.get("settings", {})
     return {
         "surveyVersion": plan["survey"]["seedVersion"],
-        "saveMode": save_mode,
+        "saveMode": save_mode or settings.get("saveMode", "every-page"),
+        "resumeExpiryDays": settings.get("resumeExpiryDays", 30),
         "assignments": assignments,
         "quotas": quotas,
     }
 
 
 def seed_version(survey: Survey) -> str:
-    """The `surveyVersion` string fed to `node_seed` (semantics.md §7).
-
-    PROVISIONAL (semantics.md Open questions R1-1): the published version number as
-    decimal text, or `"draft"` for an unpublished survey (preview, tests).
+    """The `surveyVersion` string fed to `node_seed` (semantics.md §7, R1-1): the published
+    version number as decimal text, or `"draft"` for an unpublished survey (preview, tests).
     """
     return str(survey.version) if survey.version is not None else "draft"
 
@@ -247,6 +248,10 @@ class _Compiler:
             out["constraint"] = self.expr(q.constraint)
         if q.constraintMessage is not None:
             out["constraintMessage"] = self.text(q.constraintMessage)
+        for key in ("min", "max"):
+            bound = getattr(q, key, None)
+            if bound is not None:
+                out[key] = bound  # an int, or decimal text
         if isinstance(q, SingleQuestion | MultiQuestion):
             source = q.choices if q.choices is not None else self.lists.get(q.choiceList or "")
             out["choices"] = self.choices(source or [])
@@ -272,6 +277,8 @@ class _Compiler:
                     "items": [q.id for q in page.items],
                     "itemOrder": page.itemOrder,
                 }
+                if page.showIf is not None:
+                    self.pages[page.id]["showIf"] = self.expr(page.showIf)
         self.blocks[block_id] = {"id": block_id, "pages": page_ids}
         return page_ids
 
@@ -347,7 +354,12 @@ class _Compiler:
             "languages": self.languages,
             "defaultLanguage": self.default,
             "title": self.text(s.metadata.title),
-            "settings": {"backNavigation": s.settings.backNavigation},
+            "settings": {
+                "backNavigation": s.settings.backNavigation,
+                "saveMode": s.settings.saveMode,
+                "localCopy": s.settings.localCopy,
+                "resumeExpiryDays": s.settings.resumeExpiryDays,
+            },
             "items": self.items,
             "questions": self.questions,
             "pages": self.pages,

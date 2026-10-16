@@ -86,6 +86,10 @@ def researcher(services: AppServices, email: str, password: str, lab: str) -> Ac
     return Actor.from_memberships(user.id, memberships)
 
 
+# Retention the seed sets on a fixture survey without one (synthetic data only).
+SEED_RETENTION = {"kind": "days-after-close", "days": 30}
+
+
 def seed_fixture(
     services: AppServices,
     fixture_dir: Path,
@@ -93,13 +97,17 @@ def seed_fixture(
     email: str = DEFAULT_EMAIL,
     password: str = DEFAULT_PASSWORD,
     lab: str = DEFAULT_LAB,
-    save_mode: str = "every-page",
+    save_mode: str | None = None,
 ) -> dict[str, Any]:
     path = fixture_dir / "survey.json"
     try:
         survey = json.loads(path.read_text(encoding="utf-8"))
     except (OSError, ValueError) as exc:
         raise CliError(f"can't read {path}: {exc}") from exc
+    if isinstance(survey, dict) and "retention" not in (survey.get("settings") or {}):
+        # Publishing requires an explicit retention policy. Fixtures hold synthetic data
+        # only, so the seed chooses one explicitly (and says so in its output).
+        survey["settings"] = {**(survey.get("settings") or {}), "retention": SEED_RETENTION}
     actor = researcher(services, email, password, lab)
     builder = services.builder
     view = builder.run(
@@ -133,7 +141,12 @@ def _parser() -> argparse.ArgumentParser:
     s.add_argument("--email", default=DEFAULT_EMAIL)
     s.add_argument("--password", default=DEFAULT_PASSWORD)
     s.add_argument("--lab", default=DEFAULT_LAB, help="lab name, if the researcher is new")
-    s.add_argument("--save-mode", choices=("every-page", "end-only"), default="every-page")
+    s.add_argument(
+        "--save-mode",
+        choices=("every-page", "end-only"),
+        default=None,
+        help="override the survey's settings.saveMode",
+    )
     return p
 
 

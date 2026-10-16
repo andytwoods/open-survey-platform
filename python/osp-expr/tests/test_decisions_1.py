@@ -97,7 +97,7 @@ def test_if_typecheck():
         ("name + 1", {"name": "a"}, None, ["type-mismatch"]),
         ("contains(name, 1)", {"name": "a"}, None, ["type-mismatch"]),
         ("not age", {"age": 1}, True, ["type-mismatch"]),
-        ("d == \"2.5\"", {"d": Decimal("2.5")}, None, ["type-mismatch"]),
+        ('d == "2.5"', {"d": Decimal("2.5")}, None, ["type-mismatch"]),
         ('band == "1"', {"band": 1}, True, []),  # C2-8: codes compare as text
         ("age + 1", {}, None, []),  # null is not a mismatch
         ('contains(pets, "a")', {}, False, []),

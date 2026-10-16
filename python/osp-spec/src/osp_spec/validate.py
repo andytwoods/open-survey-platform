@@ -5,12 +5,16 @@ Two stages:
    diagnostics with JSON pointers into the input, and stage 2 is skipped.
 2. Semantics: ids, names, languages, choices, flow and references.
 
-Reference ordering rule (planning/semantics.md, Open questions, C2-1): number every question
+Reference ordering rule (planning/semantics.md §3, decision C2-1): number every question
 in **flow order** (a depth-first walk of `flow`; `then` before `else`, randomiser children in
 document order, pages and items in document order). An expression or piped label may only
-refer to a question or `assigned` variable with a lower number than its own site:
+refer to a question or `assigned` variable with a lower number than its own site, or to a
+question on the **same page** (either direction):
 - a question's `showIf`, `constraint` and texts sit at that question's number; only
-  `constraint` may refer to the question itself;
+  `constraint` may refer to the question itself; same-page `showIf` references must not
+  form a cycle (`ref.cycle`);
+- a page-level `showIf` sits just before the page's first item, so it may refer only to
+  earlier pages;
 - a branch `if`, a quota checked by a `quotaCheck`, and an `end` message sit just after
   everything earlier in the walk;
 - an `assigned` variable is numbered at its `assign` node, an `embedded` one is available
@@ -23,6 +27,7 @@ from __future__ import annotations
 
 import re
 from dataclasses import dataclass, field
+from datetime import date as _date
 from decimal import Decimal, InvalidOperation
 from typing import Any
 
@@ -39,9 +44,11 @@ from .model import (
     BranchNode,
     Choice,
     ComputedVariable,
+    DecimalQuestion,
     EmbeddedVariable,
     EndNode,
     FlowNode,
+    IntegerQuestion,
     MultiQuestion,
     NoteQuestion,
     Question,
@@ -53,8 +60,17 @@ from .model import (
 )
 from .reserved import reserved_reason
 
+try:
+    from osp_expr.values import canonical_decimal as _canonical_decimal
+except ImportError:  # pragma: no cover
+    _canonical_decimal = None
+
 _IDENT = re.compile(r"^[A-Za-z_][A-Za-z0-9_]*$")
 _PIPE = re.compile(r"\$\{([^}]*)\}")
+# Built-in `$` variables usable in piping (semantics.md §8, R6-3; runtime-design §7a).
+BUILTIN_PIPES = frozenset(
+    {"$trial", "$position.index", "$position.of", "$pagesDone", "$language", "$device"}
+)
 
 # A path element: (kind, node id, arm). kind is "branch" | "randomiser" | "quota".
 PathElem = tuple[str, str, int]
@@ -154,6 +170,7 @@ def _loc_to_parts(loc: tuple[Any, ...], data: Any, *, keep_last: bool) -> list[s
 class _QInfo:
     q: Question
     ptr: str
+    page: str = ""
     pos: int | None = None
     path: tuple[PathElem, ...] = ()
 
@@ -176,6 +193,7 @@ class _Site:
     path: tuple[PathElem, ...] = ()
     self_id: str | None = None
     allow_self: bool = False
+    page: str | None = None  # same-page references are allowed in either direction
 
 
 @dataclass
@@ -210,6 +228,8 @@ class _Checker:
         self._unplaced()
         self._computed_cycles()
         self._references()
+        self._same_page_cycles()
+        self._settings()
         self._choice_codes()
         unique: dict[tuple[str, str, str], Diagnostic] = {}
         for d in self.out:
@@ -247,7 +267,7 @@ class _Checker:
                 for k, q in enumerate(page.items):
                     qp = pp + pointer("items", k)
                     if claim(q.id, qp):
-                        self.questions[q.id] = _QInfo(q, qp)
+                        self.questions[q.id] = _QInfo(q, qp, page.id)
         for i, v in enumerate(self.s.variables):
             vp = pointer("variables", i)
             if claim(v.id, vp):
@@ -293,7 +313,7 @@ class _Checker:
                     "name.case_collision",
                     ptr,
                     f"variable name '{name}' differs from '{other}' only in case; "
-                    "SPSS, Stata and LimeSurvey treat them as the same",
+                    "SPSS, Stata and LimeSurvey would treat them as one variable",
                 )
             exact.setdefault(name, ptr)
             folded.setdefault(name.lower(), name)
@@ -340,12 +360,14 @@ class _Checker:
                 inner = m.group(1).strip()
                 if _IDENT.match(inner):
                     refs.append(inner)
+                elif inner in BUILTIN_PIPES:
+                    continue  # filled by the engine; always available
                 else:
                     self.emit("pipe.invalid", sp, f"'${{{m.group(1)}}}' is not a valid reference")
             if refs:
                 base = site or _Site(sp, [], None)
                 self.sites.append(
-                    _Site(sp, refs, base.pos, base.path, base.self_id, allow_self=False)
+                    _Site(sp, refs, base.pos, base.path, base.self_id, False, base.page)
                 )
 
     # -- choices --------------------------------------------------------------------
@@ -538,10 +560,13 @@ class _Checker:
         self.placed_blocks.add(bid)
         bp = pointer("blocks", self.blocks[bid])
         for j, page in enumerate(self.s.blocks[self.blocks[bid]].pages):
+            pp = bp + pointer("pages", j)
             if page.title is not None:
                 # A page title sits before the page's first item: it may pipe earlier pages.
-                pp = bp + pointer("pages", j)
                 self._text(page.title, pp + "/title", _Site(pp, [], self.counter, path))
+            if page.showIf is not None:
+                # So does a page-level showIf: it may refer only to earlier pages.
+                self._expr_site(page.showIf, pp + "/showIf", self.counter, path, boolean=True)
             for q in page.items:
                 info = self.questions.get(q.id)
                 if info is None or info.q is not q:
@@ -557,19 +582,33 @@ class _Checker:
             for j, page in enumerate(self.s.blocks[i].pages):
                 if page.title is not None:
                     self._text(page.title, pointer("blocks", i, "pages", j, "title"), None)
+                if page.showIf is not None:
+                    pp = pointer("blocks", i, "pages", j, "showIf")
+                    self._expr_site(page.showIf, pp, None, (), boolean=True)
         for info in self.questions.values():
             if info.pos is None:
                 self._question_sites(info)
 
     def _question_sites(self, info: _QInfo) -> None:
         q = info.q
-        site = _Site(info.ptr, [], info.pos, info.path, q.id)
+        site = _Site(info.ptr, [], info.pos, info.path, q.id, page=info.page)
         if q.showIf is not None:
-            self._expr_site(q.showIf, info.ptr + "/showIf", info.pos, info.path, True, q.id)
+            self._expr_site(
+                q.showIf, info.ptr + "/showIf", info.pos, info.path, True, q.id, page=info.page
+            )
         if not isinstance(q, NoteQuestion) and q.constraint is not None:
             self._expr_site(
-                q.constraint, info.ptr + "/constraint", info.pos, info.path, True, q.id, True
+                q.constraint,
+                info.ptr + "/constraint",
+                info.pos,
+                info.path,
+                True,
+                q.id,
+                True,
+                info.page,
             )
+        if isinstance(q, (IntegerQuestion, DecimalQuestion)):
+            self._bounds(q, info.ptr)
         self._text(q.label, info.ptr + "/label", site)
         if q.help is not None:
             self._text(q.help, info.ptr + "/help", site)
@@ -587,8 +626,9 @@ class _Checker:
         boolean: bool,
         self_id: str | None = None,
         allow_self: bool = False,
+        page: str | None = None,
     ) -> None:
-        self.sites.append(_Site(ptr, ex.references(e), pos, path, self_id, allow_self))
+        self.sites.append(_Site(ptr, ex.references(e), pos, path, self_id, allow_self, page))
         self._typecheck(e, ptr, boolean)
         self.code_sites.append((e, ptr))
 
@@ -743,6 +783,8 @@ class _Checker:
         if site.pos is None or t is None:
             return
         if t >= site.pos:
+            if site.page is not None and self._same_page_only(ref, site):
+                return  # C2-1: same-page references go either way (cycles: _same_page_cycles)
             self.emit("ref.forward", site.ptr, f"'{ref}' comes later in the flow")
             return
         if tpath is None:
@@ -766,6 +808,129 @@ class _Checker:
                         "on this path",
                     )
             return
+
+
+def _question_inputs(checker: _Checker, ref: str, seen: frozenset[str] = frozenset()) -> set[str]:
+    """Question ids `ref` reads: itself, or a computed variable's inputs (transitively)."""
+    if ref in checker.questions:
+        return {ref}
+    vi = checker.variables.get(ref)
+    if vi is None or not isinstance(vi.v, ComputedVariable) or ref in seen:
+        return set()
+    out: set[str] = set()
+    for r in ex.references(vi.v.expr):
+        out |= _question_inputs(checker, r, seen | {ref})
+    return out
+
+
+def _same_page_only(self: _Checker, ref: str, site: _Site) -> bool:
+    """Every question `ref` reads at or after the site is on the site's page."""
+    for qid in _question_inputs(self, ref):
+        info = self.questions[qid]
+        if info.pos is not None and site.pos is not None and info.pos >= site.pos:
+            if info.page != site.page:
+                return False
+    vi = self.variables.get(ref)
+    if vi is not None and isinstance(vi.v, AssignedVariable):
+        return False  # an assigned variable is never on a page
+    return True
+
+
+def _same_page_cycles(self: _Checker) -> None:
+    """`ref.cycle`: questions on one page whose `showIf`s depend on each other in a loop
+    (each one's relevance needs the other's value). Constraints and piping cannot loop."""
+    edges: dict[str, set[str]] = {}
+    for qid, info in self.questions.items():
+        if info.q.showIf is None:
+            continue
+        deps: set[str] = set()
+        for r in ex.references(info.q.showIf):
+            deps |= {x for x in _question_inputs(self, r) if self.questions[x].page == info.page}
+        deps.discard(qid)  # self-reference is ref.self
+        edges[qid] = deps
+    state: dict[str, int] = {}
+    reported: set[str] = set()
+
+    def visit(q: str, stack: list[str]) -> None:
+        state[q] = 1
+        stack.append(q)
+        for nxt in sorted(edges.get(q, ())):
+            if state.get(nxt) == 1:
+                loop = stack[stack.index(nxt) :]
+                if not reported & set(loop):
+                    reported.update(loop)
+                    info = self.questions[loop[0]]
+                    self.emit(
+                        "ref.cycle",
+                        info.ptr + "/showIf",
+                        "show-if conditions on one page depend on each other in a loop: "
+                        + " -> ".join([*loop, loop[0]]),
+                    )
+            elif nxt not in state:
+                visit(nxt, stack)
+        stack.pop()
+        state[q] = 2
+
+    for q in sorted(edges):
+        if q not in state:
+            visit(q, [])
+
+
+def _bounds(self: _Checker, q: IntegerQuestion | DecimalQuestion, ptr: str) -> None:
+    """Numeric `min` / `max` (§4): readable, at most 28 significant figures, min <= max."""
+    values: dict[str, Decimal] = {}
+    for key in ("min", "max"):
+        raw = getattr(q, key)
+        if raw is None:
+            continue
+        text = _canonical_decimal(raw) if _canonical_decimal else str(raw)
+        if text is None:
+            self.emit("question.bounds", f"{ptr}/{key}", f"{key} {raw!r} is not a usable number")
+            continue
+        values[key] = Decimal(text)
+    if "min" in values and "max" in values and values["min"] > values["max"]:
+        self.emit("question.bounds", ptr + "/min", "min is greater than max")
+
+
+def _settings(self: _Checker) -> None:
+    r = self.s.settings.retention
+    if r is None:
+        return
+    ptr = "/settings/retention"
+    if r.kind == "days-after-close" and (r.days is None or r.until is not None):
+        self.emit("settings.retention", ptr, "'days-after-close' needs 'days' (and no 'until')")
+    elif r.kind == "after-date" and (r.until is None or r.days is not None):
+        self.emit("settings.retention", ptr, "'after-date' needs 'until' (and no 'days')")
+    elif r.kind == "indefinite" and (r.days is not None or r.until is not None):
+        self.emit("settings.retention", ptr, "'indefinite' takes no 'days' or 'until'")
+    if r.until is not None:
+        try:
+            _date.fromisoformat(r.until)
+        except ValueError:
+            self.emit("settings.retention", ptr + "/until", f"{r.until!r} is not a date")
+
+
+_Checker._same_page_only = _same_page_only  # type: ignore[attr-defined]
+_Checker._same_page_cycles = _same_page_cycles  # type: ignore[attr-defined]
+_Checker._bounds = _bounds  # type: ignore[attr-defined]
+_Checker._settings = _settings  # type: ignore[attr-defined]
+
+
+def publish_diagnostics(data: Any) -> list[Diagnostic]:
+    """Diagnostics that block **publishing** but not editing or previewing: everything
+    `validate` reports, plus `publish.retention_required` when no retention policy is set
+    (decided 16 Oct 2026: required before publishing, no silent default). Never raises."""
+    survey, diagnostics = parse(data)
+    if survey is not None and survey.settings.retention is None:
+        diagnostics = [
+            *diagnostics,
+            make(
+                "publish.retention_required",
+                "/settings/retention",
+                "choose how long participant data is kept before publishing",
+            ),
+        ]
+    return diagnostics
 
 
 def _default_fits(value_type: str, default: str | int) -> bool:

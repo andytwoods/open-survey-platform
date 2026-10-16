@@ -1,5 +1,5 @@
 {
-  "description": "showIf may only refer to questions earlier in flow order.",
+  "description": "showIf may only refer to questions earlier in flow order (a later page; same-page references may go either way).",
   "expect": [
     {
       "code": "ref.forward",
@@ -38,7 +38,12 @@
                     "value": 1
                   }
                 }
-              },
+              }
+            ]
+          },
+          {
+            "id": "p2",
+            "items": [
               {
                 "id": "q2",
                 "type": "integer",

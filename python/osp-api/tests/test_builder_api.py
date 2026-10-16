@@ -115,12 +115,26 @@ def test_undo_redo(benv):
     assert missing.status_code == 404
 
 
+RETENTION = {
+    "op": "set_property",
+    "params": {
+        "target": "/settings",
+        "property": "retention",
+        "value": {"kind": "days-after-close", "days": 365},
+    },
+}
+
+
 def test_publish_freezes_a_version(benv):
     c = benv.login("editor@a.example")
     s = _create(c)
+    # A retention policy is required before publishing (no silent default).
+    r = c.post(f"/api/surveys/{s['id']}/publish", json={"baseRevision": 0})
+    assert r.status_code == 422 and "publish.retention_required" in r.text
+    c.post(f"/api/surveys/{s['id']}/ops", json={"ops": [RETENTION], "baseRevision": 0})
     stale = c.post(f"/api/surveys/{s['id']}/publish", json={"baseRevision": 5})
     assert stale.status_code == 409
-    r = c.post(f"/api/surveys/{s['id']}/publish", json={"baseRevision": 0})
+    r = c.post(f"/api/surveys/{s['id']}/publish", json={"baseRevision": 1})
     assert r.status_code == 201, r.text
     v = r.json()
     assert v["number"] == 1 and len(v["checksum"]) == 64

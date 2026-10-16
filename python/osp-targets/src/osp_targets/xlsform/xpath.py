@@ -23,6 +23,7 @@ from osp_expr.ast import (
     Contains,
     DecLit,
     Expr,
+    If,
     IntLit,
     Not,
     NullLit,
@@ -181,6 +182,9 @@ class XPathWriter:
                 # A constraint only runs on a non-empty value, so `.` needs no guard.
                 guards = [] if r == "." else [f"string-length({r}) > 0"]
                 return _Value(r, guards, ref_type=self.ctx.types.get(e.id))
+            case If(cond=c, then=t, else_=e):
+                tv, ev = self._value(t), self._value(e)
+                return _Value(f"if({self._cond(c)}, {tv.text}, {ev.text})")
             case Arith(op=op, left=left, right=right):
                 lv, rv = self._value(left), self._value(right)
                 xop = "div" if op == "/" else op
@@ -218,6 +222,8 @@ class XPathWriter:
                 return and_(*v.guards, f"selected({self._ref(ref)}, {text})")
             case BoolLit(value=b):
                 return TRUE if b else FALSE
+            case If(cond=c, then=t, else_=e):
+                return f"if({self._cond(c)}, {self._cond(t)}, {self._cond(e)})"
             case Ref() if self.ctx.types.get(e.id) == "boolean":
                 return f"{self._ref(e)} = 'true'"
             case _:

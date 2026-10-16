@@ -210,7 +210,9 @@ class _Evaluator:
             self.note(TYPE_MISMATCH, path + "/ref", f"contains() needs a multi, not {_kind(multi)}")
             return None
         if _kind(value) not in ("number", "text"):
-            self.note(TYPE_MISMATCH, path + "/value", f"contains() looks for a code, not {_kind(value)}")
+            self.note(
+                TYPE_MISMATCH, path + "/value", f"contains() looks for a code, not {_kind(value)}"
+            )
             return None
         return any(_code_eq(code, value) for code in multi)
 
@@ -243,7 +245,9 @@ class _Evaluator:
         if left is None or right is None:
             return None  # §3
         if not (_is_number(left) and _is_number(right)):
-            self.note(TYPE_MISMATCH, path, f"'{op}' needs numbers, not {_kind(left)}, {_kind(right)}")
+            self.note(
+                TYPE_MISMATCH, path, f"'{op}' needs numbers, not {_kind(left)}, {_kind(right)}"
+            )
             return None
         if op != "/" and isinstance(left, int) and isinstance(right, int):
             if op == "+":

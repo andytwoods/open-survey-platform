@@ -26,8 +26,8 @@ from .ast import (
 from .diagnostics import Diagnostic
 from .evaluate import Value, evaluate, evaluate_condition
 from .static import references, typecheck
-from .values import DECIMAL_DIGITS, TRIM_CHARS, canonical_decimal, trim
 from .syntax import ParseResult, parse, to_text
+from .values import DECIMAL_DIGITS, TRIM_CHARS, canonical_decimal, trim
 
 __all__ = [
     "EXPR_ADAPTER",

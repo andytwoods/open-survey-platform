@@ -92,7 +92,7 @@ ROWS = [
     ("§2", "s_code == 1", True, True),
     ("D1", 's_code == "1"', True, True),  # C2-8: codes compare as text
     ("D1", 'contains(mi, "2")', True, True),
-    ("D1", 's_code == 1.0', True, True),  # numbers compare numerically
+    ("D1", "s_code == 1.0", True, True),  # numbers compare numerically
     ("D1", 'd2 == "2.5"', None, False),  # a decimal is never a code: mismatch
     # §2 dates compare as dates
     ("§2", "day == day", True, True),
@@ -114,7 +114,7 @@ ROWS = [
     ("D1", "n5 and n5 > 1", False, False),
     ("D1", "not n5", True, True),
     ("D1", "not nr", True, True),
-    ("D1", "not (t < \"b\")", True, True),
+    ("D1", 'not (t < "b")', True, True),
     ("D1", 'not contains(nr, "a")', True, True),  # did not pick: true when unanswered
     # D1 (C1-3): if(cond, a, b), lazy; a null condition picks b
     ("D1", 'if(n5 > 1, "big", "small")', "big", False),

@@ -51,8 +51,10 @@ class PublishRequest(BaseModel):
     baseRevision: int | None = Field(
         None, ge=0, description="If given, publish only if the draft is still at it"
     )
-    saveMode: Literal["every-page", "end-only"] = Field(
-        "every-page", description="Participant save mode (runtime-design section 5.0)"
+    saveMode: Literal["every-page", "end-only"] | None = Field(
+        None,
+        description="Participant save mode (runtime-design section 5.0); "
+        "default: the survey's settings.saveMode",
     )
 
 
@@ -167,7 +169,7 @@ def publish(
         auth.actor,
         survey_id=survey_id,
         base_revision=None if body is None else body.baseRevision,
-        save_mode="every-page" if body is None else body.saveMode,
+        save_mode=None if body is None else body.saveMode,
     )
     return PublishResponse(
         versionId=r.version_id,

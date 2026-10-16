@@ -12,7 +12,8 @@
    assign and seed-error cases at the edges. Regenerated here into `.build/shared.json`;
    the TS tests check the committed file is current and that TS matches it.
 4. Expression vectors (`.build/expr.json`): random ASTs and environments evaluated by
-   `osp_expr.evaluate` (exact decimals, null rules), compared by test/expr-parity.test.ts.
+   `osp_expr.evaluate` (exact decimals, null rules, if(), codes as text), with the runtime
+   diagnostics it reports, compared by test/expr-parity.test.ts.
 """
 
 from __future__ import annotations
@@ -175,8 +176,10 @@ def _rand_expr(r: random.Random, depth: int) -> dict:
             if isinstance(n, int):
                 return {"kind": "int", "value": n}
             return {"kind": "decimal", "value": str(n)}
-        if roll < 0.92:
-            return {"kind": "text", "value": r.choice(["a", "b", "x y", "1", ""])}
+        if roll < 0.9:
+            return {"kind": "text", "value": r.choice(["a", "b", "x y", "1", "2", ""])}
+        if roll < 0.95:
+            return {"kind": "bool", "value": r.random() < 0.5}
         return {"kind": "null"}
     roll = r.random()
     sub = lambda: _rand_expr(r, depth - 1)  # noqa: E731
@@ -189,6 +192,8 @@ def _rand_expr(r: random.Random, depth: int) -> dict:
         return {"kind": r.choice(["and", "or"]), "args": [sub() for _ in range(r.randint(2, 3))]}
     if roll < 0.72:
         return {"kind": "not", "arg": sub()}
+    if roll < 0.77:
+        return {"kind": "if", "cond": sub(), "then": sub(), "else": sub()}
     ref = {"kind": "ref", "id": r.choice([*ENV_KINDS, "missing"])}
     if roll < 0.82:
         return {"kind": "answered", "ref": ref}
@@ -237,8 +242,16 @@ def expr_vectors(n: int = 6000) -> dict:
         env = {k: _env_value(r, kind) for k, kind in ENV_KINDS.items()}
         ast = _rand_expr(r, r.randint(1, 4))
         expr = EXPR_ADAPTER.validate_python(ast)
-        out = evaluate(expr, env)
-        rows.append([expr_json(expr), {k: _json_env(v) for k, v in env.items()}, _json_result(out)])
+        diags: list = []
+        out = evaluate(expr, env, diags)
+        rows.append(
+            [
+                expr_json(expr),
+                {k: _json_env(v) for k, v in env.items()},
+                _json_result(out),
+                [[d.code, d.path] for d in diags],
+            ]
+        )
     return {"source": "osp_expr.evaluate", "rows": rows}
 
 
