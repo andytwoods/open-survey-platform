@@ -19,7 +19,7 @@ export default defineConfig({
 	},
 	webServer: {
 		command: `vite build --logLevel warn && uv run --locked --with uvicorn==0.38.0 python e2e/server.py --port ${PORT}`,
-		url: `http://127.0.0.1:${PORT}/`,
+		url: `http://127.0.0.1:${PORT}/__test/surveys`,
 		reuseExistingServer: false,
 		timeout: 180_000,
 		env: { VIRTUAL_ENV: '' }

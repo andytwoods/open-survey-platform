@@ -27,16 +27,20 @@ class KeyboardState {
 			const shrunk = !!vv && window.innerHeight - vv.height > 120;
 			this.open = this.focused && (shrunk || !!coarse?.matches);
 		};
+		let undock: ReturnType<typeof setTimeout> | undefined;
 		const onFocusIn = (e: FocusEvent) => {
+			clearTimeout(undock);
 			this.focused = isTextEntry(e.target as Element);
 			update();
 		};
 		const onFocusOut = () => {
-			// focusout fires before the next focusin; wait for it.
-			queueMicrotask(() => {
+			// Wait before undocking: a tap on Next blurs the input first, and moving the bar
+			// mid-tap would make the tap miss the button. A focusin in between cancels it.
+			clearTimeout(undock);
+			undock = setTimeout(() => {
 				this.focused = isTextEntry(document.activeElement);
 				update();
-			});
+			}, 400);
 		};
 		const onResize = () => {
 			update();
@@ -48,6 +52,7 @@ class KeyboardState {
 		document.addEventListener('focusout', onFocusOut);
 		vv?.addEventListener('resize', onResize);
 		return () => {
+			clearTimeout(undock);
 			document.removeEventListener('focusin', onFocusIn);
 			document.removeEventListener('focusout', onFocusOut);
 			vv?.removeEventListener('resize', onResize);

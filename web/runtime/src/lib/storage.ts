@@ -142,3 +142,45 @@ export async function openIndexedDb(idb: IDBFactory | undefined = globalThis.ind
 		return null;
 	}
 }
+
+/**
+ * A synchronous last-moment copy for `pagehide`: IndexedDB writes are asynchronous, so a
+ * refresh within milliseconds of an answer can beat them; localStorage is synchronous.
+ * Read once on the next load (used only if it extends the IndexedDB copy), then removed.
+ */
+export interface SyncBackup {
+	write(slug: string, sessionId: string, snapshot: Snapshot): void;
+	take(slug: string, sessionId: string): Snapshot | null;
+}
+
+export function localStorageBackup(ls?: Storage): SyncBackup | undefined {
+	let store: Storage | undefined = ls;
+	try {
+		store ??= globalThis.localStorage;
+	} catch {
+		return undefined; // access itself throws when storage is blocked
+	}
+	if (!store) return undefined;
+	const s = store;
+	const key = (slug: string) => `osp-runtime:last:${slug}`;
+	return {
+		write(slug, sessionId, snapshot) {
+			try {
+				s.setItem(key(slug), JSON.stringify({ sessionId, snapshot }));
+			} catch {
+				/* blocked or full: the IndexedDB copy still stands */
+			}
+		},
+		take(slug, sessionId) {
+			try {
+				const raw = s.getItem(key(slug));
+				s.removeItem(key(slug));
+				if (!raw) return null;
+				const v = JSON.parse(raw) as { sessionId?: string; snapshot?: Snapshot };
+				return v.sessionId === sessionId && v.snapshot ? v.snapshot : null;
+			} catch {
+				return null;
+			}
+		}
+	};
+}

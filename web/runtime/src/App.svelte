@@ -7,7 +7,7 @@
 	import { fill, ui } from './lib/messages';
 	import Question from './lib/Question.svelte';
 	import { boot, BootError, type Env, type Session } from './lib/session';
-	import { MemoryStore, openIndexedDb } from './lib/storage';
+	import { localStorageBackup, MemoryStore, openIndexedDb } from './lib/storage';
 	import { domId, errorText, plain } from './lib/view-map';
 	import type { Device } from '@osp/engine';
 
@@ -160,6 +160,7 @@
 		const env: Env = {
 			api: httpApi(''),
 			store,
+			backup: localStorageBackup(),
 			now: () => Date.now(),
 			random: Math.random,
 			setTimer: (fn, ms) => setTimeout(fn, ms),
@@ -203,13 +204,19 @@
 		applyTheme(DEFAULT_THEME);
 		const stopKeyboard = keyboard.start();
 		const hidden = () => {
-			if (document.visibilityState === 'hidden') session?.flushKeepalive();
+			if (document.visibilityState === 'hidden') {
+				session?.flushLocalSync();
+				session?.flushKeepalive();
+			}
 			else {
 				session?.wake();
 				session?.saveNow();
 			}
 		};
-		const pagehide = () => session?.flushKeepalive();
+		const pagehide = () => {
+			session?.flushLocalSync();
+			session?.flushKeepalive();
+		};
 		const online = () => session?.wake();
 		document.addEventListener('visibilitychange', hidden);
 		window.addEventListener('pagehide', pagehide);

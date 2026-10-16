@@ -90,3 +90,16 @@ engine-test: engine-fixtures
 # Engine bundle size (minified + gzip), informational: the budget is a target, not a gate.
 engine-size:
 	$(PNPM) -C web/engine exec node scripts/size.mjs
+
+# Participant app (task R3) end to end: builds web/runtime, starts osp-api on a fresh SQLite
+# store (web/runtime/e2e/server.py, uvicorn via `uv run --with`), publishes the test surveys
+# and runs Playwright on iPhone SE, Pixel 7 and desktop. Not part of `make check` (needs
+# Playwright browsers: `pnpm -C web/runtime exec playwright install chromium webkit`).
+.PHONY: runtime-e2e runtime-size
+runtime-e2e:
+	$(PNPM) -C web/runtime exec playwright test $(E2E_ARGS)
+
+# Runtime bundle size (gzip), informational: target <= 90 KB.
+runtime-size:
+	$(PNPM) -C web/runtime exec vite build --logLevel warn
+	$(PNPM) -C web/runtime exec node scripts/size.mjs

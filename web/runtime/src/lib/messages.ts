@@ -13,8 +13,9 @@ export const ui = {
 	page: 'Page {n}',
 	saved: 'Saved',
 	saving: 'Saving…',
-	offline: 'Offline: your answers are kept on this device and will be sent when you reconnect.',
-	offlineNoStorage: 'Offline: keep this page open, your answers will be sent when you reconnect.',
+	// Short: the status sits between the nav buttons and must not reflow them.
+	offline: 'Offline · saved on this device',
+	offlineNoStorage: 'Offline · keep this page open',
 	memoryEndOnly:
 		'Your browser is not keeping data for this site. Your answers stay only in this window until you finish: closing or refreshing it will lose them.',
 	memoryEveryPage: 'Your browser is not keeping data for this site, so each answer is sent as soon as you give it.',

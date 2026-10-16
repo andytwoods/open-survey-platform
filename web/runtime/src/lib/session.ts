@@ -24,7 +24,7 @@
 import * as E from '@osp/engine';
 import type { Effect, PageView, Plan, Snapshot, State } from '@osp/engine';
 import { HttpError, retryable, type Api, type ResumeResponse, type SaveMode } from './api';
-import type { LocalRecord, LocalStore } from './storage';
+import type { LocalRecord, LocalStore, SyncBackup } from './storage';
 
 export type Phase = 'page' | 'pending' | 'submitting' | 'done' | 'fatal';
 /** Quiet save indicator. `local`: end-only (kept on this device until submit). */
@@ -38,6 +38,8 @@ export interface Env {
 	setTimer: (fn: () => void, ms: number) => unknown;
 	clearTimer: (handle: unknown) => void;
 	debounceMs?: number;
+	/** Synchronous copy written on pagehide (see storage.ts SyncBackup). */
+	backup?: SyncBackup;
 	log?: (msg: string, detail?: unknown) => void;
 }
 
@@ -111,6 +113,8 @@ export class Session {
 	private reconciled: boolean;
 	private writes: Promise<void> = Promise.resolve();
 	private writeQueued = false;
+	private sending = false;
+	private gone = false;
 	private closed = false;
 	private effectRunning = false;
 
@@ -160,6 +164,8 @@ export class Session {
 	 * one coalesce: the store copies the record when the write starts, so it is the newest.
 	 */
 	private persist(): Promise<void> {
+		// After submit the local copy is deleted; a late save ack must not write it back.
+		if (this.gone) return this.writes;
 		this.rec.updatedAt = this.env.now();
 		if (!this.writeQueued) {
 			this.writeQueued = true;
@@ -215,12 +221,24 @@ export class Session {
 		return true;
 	}
 
+	/**
+	 * The page is being hidden or unloaded: copy the newest snapshot synchronously, in case
+	 * the asynchronous IndexedDB write has not landed. Never in memory-only mode (§5.0).
+	 */
+	flushLocalSync() {
+		if (this.closed || this.storageBlocked || !this.rec.snapshot) return;
+		this.env.backup?.write(this.rec.slug, this.rec.sessionId, this.rec.snapshot);
+	}
+
 	/** The page is being hidden or unloaded: last-chance save with `keepalive`. */
 	flushKeepalive() {
 		if (this.saveMode !== 'every-page' || this.closed || !this.reconciled) return;
 		const snap = this.rec.snapshot;
 		if (!snap) return;
 		if (!this.rec.inflight && snap.revision === this.rec.syncedEngineRev) return;
+		// A save is on the wire (sent with keepalive): a duplicate would only arrive late as a
+		// stale write and clutter the server's conflict log.
+		if (this.sending) return;
 		if (!this.rec.inflight) {
 			this.rec.inflight = { base: this.rec.serverRevision, snapshot: snap };
 			void this.persist();
@@ -310,7 +328,11 @@ export class Session {
 					const body = this.rec.inflight;
 					this.setNet('saving');
 					try {
-						const ack = await this.env.api.save(this.rec.sessionId, this.rec.resumeToken, body.base, body.snapshot);
+						// keepalive: an unload does not cancel it, so flushKeepalive needn't resend it.
+						this.sending = true;
+						const ack = await this.env.api
+							.save(this.rec.sessionId, this.rec.resumeToken, body.base, body.snapshot, { keepalive: true })
+							.finally(() => (this.sending = false));
 						this.rec.serverRevision = ack.revision;
 						this.rec.syncedEngineRev = body.snapshot.revision;
 						this.rec.inflight = null;
@@ -516,7 +538,9 @@ export class Session {
 		if (this.debounce !== null) this.env.clearTimer(this.debounce);
 		this.wake();
 		this.phase = 'done';
+		this.env.backup?.take(this.rec.slug, this.rec.sessionId);
 		this.net = 'saved';
+		this.gone = true;
 		await this.writes;
 		try {
 			await this.env.store.delete(this.rec.slug);
@@ -543,9 +567,22 @@ export class Session {
 
 // -- boot --------------------------------------------------------------------------------
 
+/** Boot-time calls: a few quick retries on a dropped connection or a server hiccup. */
+async function withRetry<T>(env: Env, fn: () => Promise<T>, tries = 5): Promise<T> {
+	for (let i = 0; ; i++) {
+		try {
+			return await fn();
+		} catch (e) {
+			if (i + 1 >= tries || !retryable(e)) throw e;
+			const base = 500 * 2 ** i;
+			await new Promise((r) => env.setTimer(() => r(undefined), base / 2 + (env.random() * base) / 2));
+		}
+	}
+}
+
 async function loadPlan(env: Env, url: string, checksum: string, cached: Plan | null): Promise<Plan> {
 	let plan: unknown = cached;
-	if (!cached || cached.checksum !== checksum) plan = await env.api.plan(url);
+	if (!cached || cached.checksum !== checksum) plan = await withRetry(env, () => env.api.plan(url));
 	// The checksum is recomputed here, not trusted from the file (§5.1).
 	const p = plan as Plan;
 	if (!p || typeof p !== 'object' || p.checksum !== checksum || E.planChecksum(p) !== checksum) {
@@ -610,7 +647,7 @@ export async function boot(env: Env, o: BootOptions): Promise<Session> {
 	if (!rec && o.resumeToken) {
 		let r: ResumeResponse;
 		try {
-			r = await env.api.resume(o.resumeToken);
+			r = await withRetry(env, () => env.api.resume(o.resumeToken!));
 		} catch (e) {
 			throw bootError(e);
 		}
@@ -640,7 +677,7 @@ export async function boot(env: Env, o: BootOptions): Promise<Session> {
 	if (!rec) {
 		let st;
 		try {
-			st = await env.api.start(o.slug);
+			st = await withRetry(env, () => env.api.start(o.slug));
 		} catch (e) {
 			throw bootError(e);
 		}
@@ -659,6 +696,10 @@ export async function boot(env: Env, o: BootOptions): Promise<Session> {
 	// A local copy exists (refresh, tab killed, came back later).
 	const plan = await loadPlan(env, rec.planUrl, rec.planChecksum, rec.plan).catch((e) => Promise.reject(bootError(e)));
 	rec.plan = plan;
+	const last = env.backup?.take(rec.slug, rec.sessionId) ?? null;
+	if (last && (!rec.snapshot || (isPrefix(rec.snapshot, last) && last.data.events.length > rec.snapshot.data.events.length))) {
+		rec.snapshot = last; // the pagehide copy is newer than the last IndexedDB write
+	}
 	let state: State;
 	const local = rec.snapshot ? E.restore(plan, rec.snapshot, { clock: env.now }) : null;
 	if (local && E.isState(local)) state = local;

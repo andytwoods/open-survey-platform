@@ -9,6 +9,7 @@ export interface Stored {
 	responses: number;
 	record: { answers: Record<string, { state: string; value: unknown }>; quotas: Record<string, string>; events: Array<{ type: string }> } | null;
 	conflicts: number;
+	conflictsLosingData: number;
 	saveMode: string;
 }
 
@@ -143,4 +144,18 @@ export async function expectStoredResponse(request: APIRequestContext, sid: stri
 	expect(s.responses).toBe(1);
 	expect(s.record?.answers).toEqual(expected);
 	return s;
+}
+
+let slugs: Record<string, string> | null = null;
+
+/** Public slug of a test survey (the launcher publishes them through the builder). */
+export async function slugOf(page: Page, name: string): Promise<string> {
+	slugs ??= (await (await page.request.get('/__test/surveys')).json()) as Record<string, string>;
+	const slug = slugs[name];
+	if (!slug) throw new Error(`no test survey ${name}`);
+	return slug;
+}
+
+export async function openSurvey(page: Page, name: string) {
+	await page.goto(`/s/${await slugOf(page, name)}`);
 }

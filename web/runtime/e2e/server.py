@@ -1,19 +1,21 @@
-"""Test-only backend for the runtime's Playwright tests (task R3). Not shipped.
+"""Test-only launcher for the runtime's Playwright tests (task R3). Not shipped.
 
     uv run --locked --with uvicorn==0.38.0 python web/runtime/e2e/server.py --port 4391
 
-A fresh SQLite store in a temp dir, one lab, and these surveys published as participant
-links (compiled with ``osp_runtime.plan``, the same path a real publish takes):
+A fresh SQLite store in a temp dir. Each test survey is imported and published through
+the real builder path (``osp_cli.main.seed_fixture`` → ``survey.publish``), which compiles
+the runtime plan and gives the survey its public slug:
 
-    /s/flow      web/runtime/e2e/surveys/flow.json         every-page
-    /s/alltypes  fixtures/01-all-types                     every-page
-    /s/quota     fixtures/24-quota-pending-retry           every-page (quotaCheck node)
-    /s/assign    fixtures/16-assign                        every-page (server assignment)
-    /s/endonly   fixtures/33-end-only-save                 end-only
+    flow      web/runtime/e2e/surveys/flow           every-page
+    alltypes  fixtures/01-all-types                  every-page
+    quota     fixtures/24-quota-pending-retry        every-page (quotaCheck node)
+    assign    fixtures/16-assign                     every-page (server assignment)
+    endonly   fixtures/33-end-only-save              end-only
 
-It serves the built app (``web/runtime/dist``) at ``/s/{slug}`` and ``/r/*``, the real
-participant API under ``/api``, and test-only inspection routes under ``/__test`` that
-read what the server stored (decrypted) and which participant requests it received.
+It serves ``osp_api.app.create_app`` (the real participant API under ``/api``), the built
+app (``web/runtime/dist``) at ``/s/{slug}`` and ``/r/*``, and test-only routes under
+``/__test``: the name → slug map, what the server stored for a session (decrypted), and
+which participant requests it received.
 """
 
 from __future__ import annotations
@@ -25,57 +27,64 @@ from pathlib import Path
 from typing import Any
 
 from fastapi import FastAPI, Request
-from fastapi.responses import FileResponse, JSONResponse
+from fastapi.responses import FileResponse
 from fastapi.staticfiles import StaticFiles
 from osp_api.app import create_app
-from osp_api.runtime_repo import StoreParticipantRepo
-from osp_runtime import SessionService, TokenBucket
-from osp_runtime.plan import compile_survey, runtime_config
-from osp_store import Keyring, Store, SystemContext, TenantContext, create_engine, migrate
+from osp_app import build_services
+from osp_app.runtime_repo import StoreParticipantRepo
+from osp_cli.main import seed_fixture
+from osp_runtime import TokenBucket
+from osp_store import Keyring, Store, TenantContext, create_engine, generate_key, migrate
 from osp_store import schema as t
 from sqlalchemy import func, select
 
 HERE = Path(__file__).resolve().parent
 ROOT = HERE.parents[2]
 DIST = HERE.parent / "dist"
-KEY = "b" * 43 + "="
 
 SURVEYS: dict[str, tuple[Path, str]] = {
-    "flow": (HERE / "surveys" / "flow.json", "every-page"),
-    "alltypes": (ROOT / "fixtures" / "01-all-types" / "survey.json", "every-page"),
-    "quota": (ROOT / "fixtures" / "24-quota-pending-retry" / "survey.json", "every-page"),
-    "assign": (ROOT / "fixtures" / "16-assign" / "survey.json", "every-page"),
-    "endonly": (ROOT / "fixtures" / "33-end-only-save" / "survey.json", "end-only"),
+    "flow": (HERE / "surveys" / "flow", "every-page"),
+    "alltypes": (ROOT / "fixtures" / "01-all-types", "every-page"),
+    "quota": (ROOT / "fixtures" / "24-quota-pending-retry", "every-page"),
+    "assign": (ROOT / "fixtures" / "16-assign", "every-page"),
+    "endonly": (ROOT / "fixtures" / "33-end-only-save", "end-only"),
 }
 
 
-def build(db: Path) -> FastAPI:
-    engine = create_engine(f"sqlite:///{db}")
-    migrate(engine)
-    store = Store(engine, Keyring({"k1": KEY}, active="k1"))
-    repo = StoreParticipantRepo(store)
-    service = SessionService(
-        repo, start_limiter=TokenBucket(10_000, 100), resume_limiter=TokenBucket(10_000, 100)
-    )
-    service._client_limiter = TokenBucket(10_000, 100)  # one test client starts many sessions
-    tenant = store.create_tenant(SystemContext("system:e2e"), "E2E lab")
-    ctx = TenantContext(tenant.id, "researcher:e2e")
-    for slug, (path, mode) in SURVEYS.items():
-        plan, diags = compile_survey(json.loads(path.read_text()))
-        if plan is None:
-            raise SystemExit(f"{slug}: {[d.message for d in diags]}")
-        survey, _ = store.create_survey(ctx, slug, {"blocks": []})
-        version = store.publish_version(ctx, survey.id, b"", meta={})
-        service.publish(
-            ctx.tenant_id,
-            ctx.actor,
-            version.id,
-            slug,
-            plan,
-            runtime_config(plan, save_mode=mode),
-        )
+def _events(snapshot: Any) -> list[Any]:
+    try:
+        return list(snapshot["data"]["events"])
+    except (KeyError, TypeError):
+        return []
 
-    app = create_app(service)
+
+def _prefix(a: list[Any], b: list[Any] | None) -> bool:
+    if b is None or len(a) > len(b):
+        return False
+    return json.dumps(a, sort_keys=True) == json.dumps(b[: len(a)], sort_keys=True)
+
+
+def build(db: Path) -> FastAPI:
+    # Concurrent test workers: wait for the SQLite write lock instead of failing.
+    engine = create_engine(f"sqlite:///{db}", connect_args={"timeout": 30})
+    migrate(engine)
+    store = Store(engine, Keyring({"k1": generate_key()}, active="k1"))
+    services = build_services(store)
+    # One test client starts many sessions: lift the per-link and per-client limits.
+    s = services.sessions
+    s._start_limiter = TokenBucket(10_000, 100)
+    s._client_limiter = TokenBucket(10_000, 100)
+    s._resume_limiter = TokenBucket(10_000, 100)
+
+    slugs: dict[str, str] = {}
+    tenant_id = ""
+    for name, (folder, mode) in SURVEYS.items():
+        seeded = seed_fixture(services, folder, save_mode=mode)
+        slugs[name] = seeded["slug"]
+        tenant_id = seeded["tenantId"]
+
+    repo = StoreParticipantRepo(store)
+    app = create_app(builder=services)
     requests: list[dict[str, str]] = []
 
     @app.middleware("http")
@@ -85,30 +94,38 @@ def build(db: Path) -> FastAPI:
         return await call_next(request)
 
     def tctx(sid: str) -> TenantContext:
-        return TenantContext(tenant.id, f"participant:{sid}")
+        return TenantContext(tenant_id, f"participant:{sid}")
+
+    @app.get("/__test/surveys")
+    def surveys() -> dict[str, str]:
+        return slugs
 
     @app.get("/__test/sessions/{sid}")
     def inspect(sid: str) -> dict[str, Any]:
-        sess = repo.get(tenant.id, sid)
+        sess = repo.get(tenant_id, sid)
+        ps = t.participant_sessions.c
         with engine.connect() as conn:
-            ps = t.participant_sessions.c
-            response_id = conn.execute(
-                select(ps.response_id).where(ps.id == sid)
-            ).scalar_one_or_none()
+            response_id = conn.execute(select(ps.response_id).where(ps.id == sid)).scalar_one()
             responses = conn.execute(
                 select(func.count())
                 .select_from(t.responses)
                 .where(t.responses.c.session_id == sid)
             ).scalar_one()
         stored = repo.ps.get_record(tctx(sid), response_id) if response_id else None
-        record = stored["record"] if stored else None  # {"record": ResponseRecord, "server": ...}
         return {
             "revision": sess.revision,
             "snapshot": sess.snapshot,
             "submitted": sess.submitted_at is not None,
             "responses": responses,
-            "record": record,
+            "record": stored["record"] if stored else None,  # {"record", "server"}
             "conflicts": len(repo.ps.list_conflicts(tctx(sid), sid)),
+            # A conflict row loses data only if its snapshot is not a prefix of what was
+            # finally submitted. Stale late writes of older copies are harmless.
+            "conflictsLosingData": sum(
+                1
+                for c in repo.ps.list_conflicts(tctx(sid), sid)
+                if not _prefix(_events(c.snapshot), (stored or {}).get("record", {}).get("events"))
+            ),
             "saveMode": sess.save_mode,
         }
 
@@ -119,10 +136,6 @@ def build(db: Path) -> FastAPI:
     @app.get("/s/{slug}")
     def page(slug: str) -> FileResponse:
         return FileResponse(DIST / "index.html", headers={"Cache-Control": "no-store"})
-
-    @app.get("/")
-    def root() -> JSONResponse:
-        return JSONResponse({"surveys": sorted(SURVEYS)})
 
     app.mount("/r", StaticFiles(directory=DIST), name="runtime")
     return app
