@@ -75,7 +75,8 @@ def test_export_csv_json_and_codebook(benv):
     assert full["_late"] == "false" and full["_submitted_at"].endswith("Z")
     other = next(row for k, row in rows.items() if k != rid)
     assert other["n_int"] == "" and other["n_int__state"] == "unanswered"
-    assert "-99" not in r.text
+    # no SPSS-style missing codes in any cell (ids are random UUIDs, so test cells)
+    assert not {"-97", "-98", "-99"} & {v for row in rows.values() for v in row.values()}
 
     excel = c.get(f"/api/surveys/{sid}/export/responses?version=1&excel=true&multi=codes")
     assert excel.content.startswith(b"\xef\xbb\xbf")

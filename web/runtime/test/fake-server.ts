@@ -130,10 +130,10 @@ export class FakeServer {
 				const body = JSON.parse(canonicalJson(record)) as ResponseRecord;
 				if (s.submitted) {
 					if (canonicalJson(s.submitted) !== canonicalJson(body)) throw new HttpError(409, 'submit.mismatch', {});
-					return { responseId: `r-${s.id}`, submittedAt: '2026-01-01T00:00:00Z', replay: true };
+					return { responseId: `r-${s.id}`, submittedAt: '2026-01-01T00:00:00Z', replay: true, late: false };
 				}
 				s.submitted = body;
-				return { responseId: `r-${s.id}`, submittedAt: '2026-01-01T00:00:00Z', replay: false };
+				return { responseId: `r-${s.id}`, submittedAt: '2026-01-01T00:00:00Z', replay: false, late: false };
 			})
 	};
 }

@@ -74,6 +74,13 @@ _row("Metadata.defaultLanguage", "native", "The survey's base `language`.")
 _row("Metadata.license", "unsupported", "No licence field in LimeSurvey; dropped.")
 _row("Metadata.ddi", "unsupported", "No study-metadata block in LimeSurvey; dropped.")
 _row("Settings.backNavigation", "native", "Survey setting `allowprev` (Y/N).")
+_row("Settings.saveMode", "unsupported", "Our runtime's save mode; LimeSurvey saves itself.")
+_row("Settings.localCopy", "unsupported", "Our runtime's device copy; not in LimeSurvey.")
+_row("Settings.resumeExpiryDays", "unsupported", "Our resume links; LimeSurvey has its own.")
+_row("Settings.retention", "unsupported", "Data retention is a platform policy, not the survey's.")
+_row("Retention.kind", "unsupported", "See Settings.retention.")
+_row("Retention.days", "unsupported", "See Settings.retention.")
+_row("Retention.until", "unsupported", "See Settings.retention.")
 
 # --- Choices -----------------------------------------------------------------------------
 _row("ChoiceList.id", "native", "Not written: each question gets its own answer rows.")
@@ -111,6 +118,18 @@ _rows(
     "`em_validation_q` attribute, written `is_empty(q.NAOK) or (...)` so it is only checked "
     "on answered values (§4).",
 )
+_rows(
+    ("IntegerQuestion", "DecimalQuestion"),
+    "min",
+    "lowered",
+    "Joined into `em_validation_q` as `q >= min`; the validation tip covers both.",
+)
+_rows(
+    ("IntegerQuestion", "DecimalQuestion"),
+    "max",
+    "lowered",
+    "Joined into `em_validation_q` as `q <= max`; the validation tip covers both.",
+)
 _rows(ANSWERABLE, "constraintMessage", "native", "`em_validation_q_tip`, per language.")
 _row(
     "IntegerQuestion.type",
@@ -144,6 +163,7 @@ _row("Page.id", "native", "One question group per page (survey format G: group b
 _row("Page.items", "native", "The group's questions, in `question_order`.")
 _row("Page.title", "native", "`group_l10ns.group_name` (otherwise the page id).")
 _row("Page.itemOrder", "native", "`fixed`: question order.")
+_row("Page.showIf", "native", "Joined into the group's relevance (`grelevance`).")
 _row(
     "Page.itemOrder=shuffle",
     "approximated",
@@ -314,12 +334,21 @@ _row(
     "`!is_empty(q.NAOK)`; for a multi-choice question, any subquestion is `Y`.",
 )
 _row("Answered.ref", "native", "The question code.")
+_row("If.kind", "native", "Expression Manager `if(cond, a, b)`.")
+_row("If.cond", "native", "The EM condition.")
+_row("If.then", "native", "The EM value.")
+_row("If.else", "native", "The EM value.")
 _row("Contains.kind", "lowered", '`<q>_<code>.NAOK == "Y"` on the choice\'s subquestion.')
 _row("Contains.ref", "native", "The question code.")
 _row("Contains.value", "native", "The choice's subquestion code.")
 
 # --- Behaviours that are not a single field ----------------------------------------------
 _row("$pipe.value", "native", "`{q}` in a text inserts the stored value (§8).")
+_row(
+    "$pipe.builtin",
+    "unsupported",
+    "`${$trial}`, `${$position.index}` … are our runtime's built-ins; dropped from the text.",
+)
 _row(
     "$pipe.choiceLabel",
     "native",

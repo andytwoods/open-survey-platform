@@ -28,7 +28,7 @@ function plan(withQuota = false): Plan {
 		languages: ['en'],
 		defaultLanguage: 'en',
 		title: t('Test'),
-		settings: { backNavigation: true },
+		settings: { backNavigation: true, saveMode: 'every-page', localCopy: 'browser', resumeExpiryDays: 30 },
 		items,
 		questions: ['age', 'why'],
 		pages,
