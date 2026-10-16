@@ -1,13 +1,30 @@
 <script lang="ts">
-	import type { MockNode } from '../mock/survey';
+	import Plus from '@lucide/svelte/icons/plus';
+	import type { OutlineNode } from '../model/outline';
 	import type { SelectionStore } from '../selection.svelte';
 	import { iconFor } from './icons';
 
-	/** Placeholder cards for the mock tree. Real question cards (per family) are task B5. */
-	let { pages, selection }: { pages: MockNode[]; selection: SelectionStore } = $props();
+	/**
+	 * Simple cards for the outline tree: sections (level 1), groups (level 2), question
+	 * cards. Real survey: block → page → question; the `?mock` tree: page → block → question.
+	 * Rich per-family cards are task B5 (lib/cards).
+	 */
+	let {
+		pages,
+		selection,
+		mock = false,
+		onAddQuestion
+	}: {
+		pages: OutlineNode[];
+		selection: SelectionStore;
+		mock?: boolean;
+		/** Present when editing is connected: shows "Add question" under each page. */
+		onAddQuestion?: (pageId: string) => void;
+	} = $props();
 
 	const cardId = (id: string) => `card-${id}`;
 	const firstId = $derived(pages[0]?.id);
+	const kind = (n: OutlineNode) => (n.type === 'page' ? 'Page' : n.type === 'block' ? 'Block' : '');
 
 	$effect(() => {
 		const id = selection.id;
@@ -19,37 +36,39 @@
 </script>
 
 <div class="canvas">
-	<p class="mock-note">Mock data: placeholder cards, not a live survey.</p>
-	{#each pages as page (page.id)}
-		{@const PageIcon = iconFor(page)}
-		<section class="page" aria-labelledby={cardId(page.id)}>
+	{#if mock}
+		<p class="mock-note">Mock data: placeholder cards, not a live survey.</p>
+	{/if}
+	{#each pages as section (section.id)}
+		{@const SectionIcon = iconFor(section)}
+		<section class="page" aria-labelledby={cardId(section.id)}>
 			<button
 				type="button"
-				id={cardId(page.id)}
+				id={cardId(section.id)}
 				class="page-head"
-				aria-current={selection.id === page.id ? 'true' : undefined}
-				data-pane-focus={focusMark(page.id)}
-				onclick={() => selection.select(page.id)}
+				aria-current={selection.id === section.id ? 'true' : undefined}
+				data-pane-focus={focusMark(section.id)}
+				onclick={() => selection.select(section.id)}
 			>
-				<PageIcon size={18} aria-hidden="true" />
-				<span>Page: {page.label}</span>
+				<SectionIcon size={18} aria-hidden="true" />
+				<span>{kind(section)}: {section.label}</span>
 			</button>
-			{#each page.children ?? [] as block (block.id)}
-				{@const BlockIcon = iconFor(block)}
+			{#each section.children ?? [] as group (group.id)}
+				{@const GroupIcon = iconFor(group)}
 				<div class="block">
 					<button
 						type="button"
-						id={cardId(block.id)}
+						id={cardId(group.id)}
 						class="block-head"
-						aria-current={selection.id === block.id ? 'true' : undefined}
-						data-pane-focus={focusMark(block.id)}
-						onclick={() => selection.select(block.id)}
+						aria-current={selection.id === group.id ? 'true' : undefined}
+						data-pane-focus={focusMark(group.id)}
+						onclick={() => selection.select(group.id)}
 					>
-						<BlockIcon size={16} aria-hidden="true" />
-						<span>Block: {block.label}</span>
+						<GroupIcon size={16} aria-hidden="true" />
+						<span>{kind(group)}: {group.label}</span>
 					</button>
 					<ul class="cards">
-						{#each block.children ?? [] as question (question.id)}
+						{#each group.children ?? [] as question (question.id)}
 							{@const QIcon = iconFor(question)}
 							<li>
 								<button
@@ -62,7 +81,7 @@
 								>
 									<span class="card-type">
 										<QIcon size={16} aria-hidden="true" />
-										{question.family}
+										{question.questionType || question.family}
 									</span>
 									<span class="card-label">{question.label}</span>
 									<span class="card-placeholder" aria-hidden="true"></span>
@@ -70,6 +89,17 @@
 							</li>
 						{/each}
 					</ul>
+					{#if onAddQuestion && group.type === 'page'}
+						<button
+							type="button"
+							class="add"
+							aria-label="Add question to {group.label}"
+							onclick={() => onAddQuestion(group.id)}
+						>
+							<Plus size={16} aria-hidden="true" />
+							<span>Add question</span>
+						</button>
+					{/if}
 				</div>
 			{/each}
 		</section>
@@ -169,6 +199,22 @@
 		width: 60%;
 		border-radius: var(--radius-full);
 		background: var(--color-surface-sunken);
+	}
+	.add {
+		display: inline-flex;
+		align-items: center;
+		gap: var(--space-1);
+		margin-top: var(--space-3);
+		padding: var(--space-1) var(--space-2);
+		border: 1px dashed var(--color-border-strong);
+		border-radius: var(--radius-md);
+		background: transparent;
+		color: var(--color-text-muted);
+		font-size: var(--text-sm);
+	}
+	.add:hover {
+		background: var(--color-surface-sunken);
+		color: var(--color-text);
 	}
 	[aria-current='true'] {
 		background: var(--color-selected);

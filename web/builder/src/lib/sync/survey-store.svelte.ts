@@ -92,6 +92,8 @@ export class SurveyStore {
 
 	#queue: Item[] = [];
 	#draining: Promise<void> | null = null;
+	// Not reactive: only iterated on flush.
+	// eslint-disable-next-line svelte/prefer-svelte-reactivity
 	#buffers = new Set<Flushable>();
 	readonly #t: SurveyTransport;
 	readonly #newTxn: () => string;

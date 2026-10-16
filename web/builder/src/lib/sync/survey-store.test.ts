@@ -39,15 +39,21 @@ class FakeServer implements SurveyTransport {
 		return { revision: this.revision, patch: forward, diagnostics: [], transactionId: txn };
 	}
 
-	async applyOps(_id: string, body: { ops: Invocation[]; baseRevision: number; transactionId: string }) {
+	async applyOps(
+		_id: string,
+		body: { ops: Invocation[]; baseRevision: number; transactionId: string }
+	): Promise<Result<EditResult>> {
 		this.calls.push({ kind: 'ops', body: structuredClone(body) });
 		if (this.offlineCalls > 0) {
 			this.offlineCalls--;
-			return { kind: 'offline', message: 'down' } as const;
+			return { kind: 'offline', message: 'down' };
 		}
 		const done = this.txns.get(body.transactionId);
 		if (done && done.revision > body.baseRevision) {
-			return { kind: 'ok', data: { revision: done.revision, patch: [], diagnostics: [], transactionId: body.transactionId, replayed: true } } as const;
+			return {
+				kind: 'ok',
+				data: { revision: done.revision, patch: [], diagnostics: [], transactionId: body.transactionId, replayed: true }
+			};
 		}
 		if (body.baseRevision !== this.revision) return failure(409, { message: 'stale', currentRevision: this.revision });
 		const forward: PatchOperation[] = [];
@@ -66,7 +72,7 @@ class FakeServer implements SurveyTransport {
 			}
 			forward.push({ op: 'replace', path: p.path, value: p.value });
 		}
-		return { kind: 'ok', data: this.#commit(forward, body.transactionId) } as const;
+		return { kind: 'ok', data: this.#commit(forward, body.transactionId) };
 	}
 
 	#reverse(kind: 'undo' | 'redo', body: { transactionId: string; baseRevision: number }): Result<EditResult> {

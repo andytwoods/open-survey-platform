@@ -1,6 +1,9 @@
 <script lang="ts">
 	import ArrowLeft from '@lucide/svelte/icons/arrow-left';
+	import CloudAlert from '@lucide/svelte/icons/cloud-alert';
 	import CloudCheck from '@lucide/svelte/icons/cloud-check';
+	import CloudOff from '@lucide/svelte/icons/cloud-off';
+	import CloudUpload from '@lucide/svelte/icons/cloud-upload';
 	import Eye from '@lucide/svelte/icons/eye';
 	import Moon from '@lucide/svelte/icons/moon';
 	import Palette from '@lucide/svelte/icons/palette';
@@ -14,9 +17,11 @@
 	import { shortcutsOf, type CommandRegistry } from '../commands/registry';
 	import { ariaShortcut, formatShortcut } from '../commands/shortcut';
 	import type { HealthState } from '../health.svelte';
+	import type { SaveState } from '../sync/survey-store.svelte';
 
 	let {
 		title,
+		saveState = 'saved',
 		view = 'editor',
 		registry,
 		health,
@@ -26,6 +31,7 @@
 		propertiesOpen
 	}: {
 		title: string;
+		saveState?: SaveState;
 		view?: 'editor' | 'appearance';
 		registry: CommandRegistry;
 		health: HealthState;
@@ -47,6 +53,16 @@
 		{ checking: 'Checking connection…', online: 'API connected', offline: 'API offline' }[health]
 	);
 	const isDark = $derived(theme.resolved === 'dark');
+
+	const SAVE = {
+		loading: { icon: CloudUpload, text: 'Loading…' },
+		saved: { icon: CloudCheck, text: 'All changes saved' },
+		saving: { icon: CloudUpload, text: 'Saving…' },
+		offline: { icon: CloudOff, text: 'Offline: changes will be sent when you reconnect' },
+		conflict: { icon: CloudAlert, text: 'Conflict: changed elsewhere' },
+		error: { icon: CloudAlert, text: 'Not saved' }
+	} as const;
+	const save = $derived(SAVE[saveState]);
 </script>
 
 <header class="topbar" data-pane="topbar">
@@ -61,10 +77,9 @@
 			/>
 		{/if}
 		<h1 class="title">{title}</h1>
-		<!-- MOCK: save state is static until the op client exists (B2). -->
-		<span class="save-state" role="status">
-			<CloudCheck size={16} aria-hidden="true" />
-			<span>All changes saved</span>
+		<span class="save-state" role="status" data-state={saveState}>
+			<save.icon size={16} aria-hidden="true" />
+			<span>{save.text}</span>
 		</span>
 	</div>
 
@@ -147,6 +162,11 @@
 	}
 	.health {
 		margin-inline-end: var(--space-2);
+	}
+	.save-state[data-state='offline'],
+	.save-state[data-state='conflict'],
+	.save-state[data-state='error'] {
+		color: var(--color-warning);
 	}
 	.dot {
 		width: 0.5rem;

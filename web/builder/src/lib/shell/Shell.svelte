@@ -1,7 +1,7 @@
 <script lang="ts">
 	import { goto } from '$app/navigation';
 	import { resolve } from '$app/paths';
-	import { Announcer, Button, Dialog, PaneResizer, theme, toast } from '@osp/ui-components';
+	import { announce, Announcer, Button, Dialog, PaneResizer, theme, toast } from '@osp/ui-components';
 	import AppearanceView from '../appearance/AppearanceView.svelte';
 	import { appearanceCommands, type BuilderView } from '../appearance/commands';
 	import { themeEditor } from '../appearance/theme-editor.svelte';
@@ -10,7 +10,10 @@
 	import { detectMac } from '../commands/shortcut';
 	import { health } from '../health.svelte';
 	import { MOCK_SURVEY } from '../mock/survey';
+	import { addedQuestionId, allIds, outlineFromSurvey, surveyTitle, targetPage } from '../model/outline';
 	import { selection } from '../selection.svelte';
+	import type { SurveyStore } from '../sync/survey-store.svelte';
+	import ConflictBanner from './ConflictBanner.svelte';
 	import CanvasPane from './CanvasPane.svelte';
 	import CommandPalette from './CommandPalette.svelte';
 	import { shellCommands } from './commands';
@@ -19,8 +22,11 @@
 	import PropertiesPane from './PropertiesPane.svelte';
 	import TopBar from './TopBar.svelte';
 
-	/** Which view fills the area under the top bar (each has its own route). */
-	let { view = 'editor' }: { view?: BuilderView } = $props();
+	/**
+	 * Which view fills the area under the top bar (each has its own route), and the survey
+	 * being edited. Without a store the shell shows the static mock tree (`?mock`).
+	 */
+	let { view = 'editor', store = null }: { view?: BuilderView; store?: SurveyStore | null } = $props();
 	const editing = $derived(view === 'editor');
 
 	// Below these widths a pane collapses and opens as an overlay from the top bar.
@@ -31,7 +37,54 @@
 		isMac: detectMac(),
 		isModalOpen: () => paletteOpen || previewOpen
 	});
-	const pages = MOCK_SURVEY.children ?? [];
+	const mockPages = MOCK_SURVEY.children ?? [];
+	const pages = $derived(store ? outlineFromSurvey(store.survey) : mockPages);
+	const title = $derived(store ? surveyTitle(store.survey) || store.title : MOCK_SURVEY.label);
+
+	// Selection survives patches; it is cleared only when its object is gone (deleted, undone).
+	$effect(() => {
+		if (store && selection.id && !allIds(pages).has(selection.id)) selection.clear();
+	});
+
+	// A rejected edit (422): say so, visibly and to screen readers.
+	$effect(() => {
+		const r = store?.rejection;
+		if (!r) return;
+		const n = r.diagnostics.length;
+		toast(n ? `${r.message} ${n === 1 ? r.diagnostics[0].message : `${n} problems.`}` : r.message, {
+			kind: 'error'
+		});
+	});
+
+	async function addQuestion(pageId?: string) {
+		if (!store) return;
+		const page = pageId ?? targetPage(pages, selection.id);
+		if (!page) return toast('Add a page first.');
+		const out = await store.submit([{ op: 'add_question', params: { page, type: 'text' } }]);
+		if (out.status !== 'applied') return;
+		const id = addedQuestionId(out.result.patch);
+		if (id) {
+			selection.select(id);
+			announce('Question added.');
+		}
+	}
+
+	async function undoRedo(which: 'undo' | 'redo') {
+		if (!store) return;
+		const out = await (which === 'undo' ? store.undo() : store.redo());
+		if (out.status === 'dropped') toast(out.message);
+		else if (out.status === 'applied') announce(which === 'undo' ? 'Undone.' : 'Redone.');
+	}
+
+	const routeOf = (v: BuilderView) => {
+		if (store) {
+			const id = store.surveyId;
+			return v === 'appearance'
+				? resolve('/surveys/[id]/appearance', { id })
+				: resolve('/surveys/[id]', { id });
+		}
+		return v === 'appearance' ? resolve('/appearance') : `${resolve('/')}?mock`;
+	};
 
 	let innerWidth = $state(1280);
 	let outlineWidth = $state(280);
@@ -53,12 +106,14 @@
 			undo: () => {
 				if (view === 'appearance') {
 					if (!themeEditor.undo()) toast('Nothing to undo.');
-				} else toast('Undo: nothing to undo yet (editing is not connected).');
+				} else if (store) void undoRedo('undo');
+				else toast('Undo: nothing to undo yet (editing is not connected).');
 			},
 			redo: () => {
 				if (view === 'appearance') {
 					if (!themeEditor.redo()) toast('Nothing to redo.');
-				} else toast('Redo: nothing to redo yet (editing is not connected).');
+				} else if (store) void undoRedo('redo');
+				else toast('Redo: nothing to redo yet (editing is not connected).');
 			},
 			cyclePane: (dir) => cyclePane(dir),
 			toggleTheme: () => theme.toggle(),
@@ -74,13 +129,16 @@
 			outlineCollapsible: () => outlineCollapsible,
 			propertiesCollapsible: () => propertiesCollapsible,
 			preview: () => (previewOpen = true),
-			clearSelection: () => selection.clear()
+			clearSelection: () => selection.clear(),
+			addQuestion: () => void addQuestion(),
+			canEdit: () => editing && !!store
 		})
-		);
+	);
 	const offAppearance = registry.registerAll(
 		appearanceCommands({
 			view: () => view,
-			open: (v) => goto(resolve(v === 'appearance' ? '/appearance' : '/'))
+			// eslint-disable-next-line svelte/no-navigation-without-resolve -- routeOf resolves
+			open: (v) => goto(routeOf(v))
 		})
 	);
 	onDestroy(() => {
@@ -105,7 +163,8 @@
 
 <div class="shell">
 	<TopBar
-		title={MOCK_SURVEY.label}
+		{title}
+		saveState={store?.saveState ?? 'saved'}
 		{view}
 		{registry}
 		health={health.state}
@@ -114,6 +173,13 @@
 		{outlineOpen}
 		{propertiesOpen}
 	/>
+	{#if store?.conflict}
+		<ConflictBanner
+			message={store.conflict.message}
+			onreload={() => void store?.reload()}
+			ondismiss={() => store?.dismissConflict()}
+		/>
+	{/if}
 
 	{#if view === 'appearance'}
 		<main id="pane-appearance" class="appearance" aria-label="Appearance">
@@ -134,7 +200,9 @@
 			>
 				<div class="pane-scroll">
 					<h2 id="outline-heading" class="pane-heading">Outline</h2>
-					<OutlineTree roots={pages} {selection} />
+					{#key store?.surveyId}
+						<OutlineTree roots={pages} {selection} />
+					{/key}
 				</div>
 				{#if !outlineCollapsible}
 					<PaneResizer
@@ -150,7 +218,12 @@
 		{/if}
 
 		<main id="pane-canvas" class="pane canvas" aria-label="Canvas" data-pane="canvas">
-			<CanvasPane {pages} {selection} />
+			<CanvasPane
+				{pages}
+				{selection}
+				mock={!store}
+				onAddQuestion={store ? (id) => void addQuestion(id) : undefined}
+			/>
 		</main>
 
 		{#if showProperties}
@@ -175,7 +248,7 @@
 					/>
 				{/if}
 				<div class="pane-scroll">
-					<PropertiesPane roots={pages} {selection} />
+					<PropertiesPane roots={pages} {selection} {store} />
 				</div>
 			</aside>
 		{/if}
@@ -200,18 +273,20 @@
 
 <style>
 	.shell {
-		display: grid;
-		grid-template-rows: auto 1fr;
+		display: flex;
+		flex-direction: column;
 		height: 100dvh;
 		overflow: hidden;
 	}
 	.appearance {
+		flex: 1;
 		min-height: 0;
 		overflow: hidden;
 	}
 	.panes {
 		position: relative;
 		display: flex;
+		flex: 1;
 		min-height: 0;
 	}
 	.pane {
