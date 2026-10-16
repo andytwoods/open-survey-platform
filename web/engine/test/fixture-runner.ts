@@ -18,6 +18,7 @@ import {
 	tryAnswer,
 	view,
 	isState,
+	replay,
 	type Plan,
 	type State
 } from '../src/index.ts';
@@ -30,13 +31,25 @@ export interface Script {
 	id: string;
 	sessionSeed: number;
 	language: string;
-	server?: { conditions?: Record<string, string | number>; quotas?: Record<string, string> };
+	server?: Server;
+	/** "blocked": no IndexedDB. The engine has no storage, so this only matters to R3/R4. */
+	storage?: string;
+	replay?: { server?: Server };
 	actions: Array<{
 		expectPage?: string;
 		set?: Record<string, unknown>;
 		setIfShown?: Record<string, unknown>;
-		do: 'next' | 'back' | 'refresh' | 'resume';
+		do: 'next' | 'back' | 'refresh' | 'resume' | 'retry' | 'switchDevice';
+		device?: string;
+		restoreFrom?: 'local';
 	}>;
+}
+
+interface Server {
+	conditions?: Record<string, string | number>;
+	quotas?: Record<string, string>;
+	/** Per quotaCheck node: what happens to the 1st, 2nd … call. */
+	quotaCalls?: Record<string, Array<'timeout' | 'lostReply' | 'ok'>>;
 }
 
 export interface Meta {
@@ -95,7 +108,7 @@ function renameOrders(plan: Plan, orders: ReturnType<typeof result>['orders']) {
 	return { blocks, items, choices: orders.choices };
 }
 
-export function trace(state: State, index: number) {
+export function trace(state: State, index: number, device = 'A') {
 	const v = view(state);
 	const r = result(state);
 	const errors: Record<string, unknown> = {};
@@ -121,7 +134,10 @@ export function trace(state: State, index: number) {
 		conditions: r.conditions,
 		end: r.end,
 		labels,
-		choiceLabels
+		choiceLabels,
+		effect: v.status === 'pending' && v.effect?.kind === 'quota' ? { kind: 'quota', nodeId: v.effect.nodeId } : null,
+		device,
+		builtins: v.status === 'ended' ? null : { trial: v.trial, position: v.position }
 	};
 }
 
@@ -140,7 +156,35 @@ export function play(plan: Plan, script: Script) {
 		clock,
 		language: script.language
 	});
-	const steps = [trace(state, 0)];
+	// Simulated server and devices (FORMAT.md §2 script extensions).
+	let device = 'A';
+	const local: Record<string, State> = {};
+	let serverCopy: State = state;
+	const recorded: Record<string, string> = {};
+	const calls: Record<string, number> = {};
+	/** Send one quota call; returns the state after the reply (unchanged if it was lost). */
+	const send = (s: State): State => {
+		const effect = view(s).effect;
+		if (view(s).status !== 'pending' || effect?.kind !== 'quota') return s;
+		const k = (calls[effect.nodeId] = (calls[effect.nodeId] ?? 0) + 1);
+		const fate = script.server?.quotaCalls?.[effect.nodeId]?.[k - 1] ?? 'ok';
+		if (fate === 'timeout') return s;
+		recorded[effect.nodeId] ??= script.server?.quotas?.[effect.quota] ?? 'open';
+		if (fate === 'lostReply') return s;
+		return resolveEffect(s, effect, recorded[effect.nodeId]);
+	};
+	/** Send until an effect stays pending (lost reply) or none is left. */
+	const settle = (s: State): State => {
+		for (let guard = 0; guard < 100 && view(s).status === 'pending'; guard++) {
+			const after = send(s);
+			if (after === s || view(after).status === 'pending' && after.data.pending?.effect.nodeId === s.data.pending?.effect.nodeId) {
+				return after;
+			}
+			s = after;
+		}
+		return s;
+	};
+	const steps = [trace(state, 0, device)];
 	script.actions.forEach((action, i) => {
 		const v = view(state);
 		const shown = blockOfPage(plan, v.page);
@@ -158,32 +202,56 @@ export function play(plan: Plan, script: Script) {
 		}
 		switch (action.do) {
 			case 'next': {
-				let out = next(state);
-				state = out.state;
-				for (let guard = 0; out.effect?.kind === 'quota' && guard < 100; guard++) {
-					const quota = out.effect.quota;
-					const res = script.server?.quotas?.[quota] ?? 'open';
-					state = resolveEffect(state, out.effect, res);
-					out = next(state);
-					state = out.state;
-				}
+				// `next` sends the first call itself; only `retry` sends again.
+				const pendingBefore = view(state).status === 'pending';
+				state = next(state).state;
+				if (!pendingBefore) state = settle(state);
 				break;
 			}
+			case 'retry':
+				state = settle(state);
+				break;
 			case 'back':
 				state = back(state);
 				break;
 			case 'refresh':
-			case 'resume': {
-				const snap = JSON.parse(JSON.stringify(snapshot(state)));
-				const r = restore(plan, snap, { clock });
-				if (!isState(r)) throw new Error(`action ${i}: restore failed: ${r.error.code}`);
-				state = r;
+			case 'resume':
+				state = reload(plan, state, clock, i);
+				break;
+			case 'switchDevice': {
+				// every-page saves on every change, so the server holds this device's answers too.
+				serverCopy = state;
+				local[device] = state;
+				device = action.device ?? (device === 'A' ? 'B' : 'A');
+				const revived = local[device];
+				state = action.restoreFrom === 'local' && revived ? revived : reload(plan, serverCopy, clock, i);
 				break;
 			}
 		}
-		steps.push(trace(state, i + 1));
+		local[device] = state;
+		serverCopy = state;
+		const step = trace(state, i + 1, device);
+		// FORMAT.md §3: `errors` only ever comes from a `next` in that step's action. The
+		// engine keeps the last errors in the state (restore is exact); a reloaded page shows
+		// none, which is the runtime's choice (R3), so the trace reports none.
+		if (action.do !== 'next') step.errors = {};
+		steps.push(step);
 	});
 	return { state, steps, response: responseOf(state) };
+}
+
+function reload(plan: Plan, state: State, clock: () => number, i: number): State {
+	const snap = JSON.parse(JSON.stringify(snapshot(state)));
+	const r = restore(plan, snap, { clock });
+	if (!isState(r)) throw new Error(`action ${i}: restore failed: ${r.error.code}`);
+	return r;
+}
+
+/** FORMAT.md `replay`: the event log alone, through a fresh engine, gives the same response. */
+export function replayResponse(plan: Plan, state: State) {
+	const r = replay(plan, state.data.events);
+	if (!isState(r)) return { error: r.error };
+	return { response: responseOf(r) };
 }
 
 // --- Comparison with "<engine>" and "<pending:…>" placeholders ---------------------------
@@ -279,5 +347,11 @@ export function checkInvariant(inv: Invariant, root: unknown): string | null {
 export function pick(actual: Record<string, unknown>, expected: Record<string, unknown>) {
 	const out: Record<string, unknown> = {};
 	for (const k of Object.keys(expected)) out[k] = actual[k];
+	// `builtins` names only the built-ins a script asserts (e.g. `trial` without `position`).
+	const eb = expected.builtins;
+	const ab = out.builtins;
+	if (eb && typeof eb === 'object' && ab && typeof ab === 'object') {
+		out.builtins = pick(ab as Record<string, unknown>, eb as Record<string, unknown>);
+	}
 	return out;
 }

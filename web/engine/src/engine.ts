@@ -460,6 +460,22 @@ function clearIrrelevant(plan: Plan, d: Data): void {
 	}
 }
 
+/** Re-evaluate every question's state (a page change). Passes `r` through. */
+function pageChanged<T>(plan: Plan, d: Data, r: T): T {
+	const env = new Env(plan, d);
+	const frozen: Record<Id, QuestionState> = {};
+	for (const id of plan.questions) frozen[id] = env.state(id);
+	d.frozen = frozen;
+	return r;
+}
+
+/** The reported state: live on the current page, as of the last page change elsewhere. */
+function reportedState(plan: Plan, d: Data, env: Env, id: Id): QuestionState {
+	const page = currentPage(d);
+	if (page !== null && plan.items[id]?.page === page) return env.state(id);
+	return d.frozen[id] ?? env.state(id);
+}
+
 // --- Applying events -------------------------------------------------------------------
 
 function initialData(plan: Plan, ev: Extract<EngineEvent, { type: 'start' }>): Data {
@@ -484,6 +500,7 @@ function initialData(plan: Plan, ev: Extract<EngineEvent, { type: 'start' }>): D
 		history: [],
 		pending: null,
 		errors: {},
+		frozen: {},
 		ended: null,
 		events: []
 	};
@@ -509,7 +526,7 @@ function apply(plan: Plan, d: Data, ev: EngineEvent): StepResult | undefined {
 	switch (ev.type) {
 		case 'start': {
 			const out = walk(plan, d, [{ k: 'root', i: 0 }], ev.t);
-			return finishWalk(d, out, ev.t);
+			return pageChanged(plan, d, finishWalk(d, out, ev.t));
 		}
 		case 'answer':
 			if (ev.invalid !== undefined) {
@@ -535,19 +552,20 @@ function apply(plan: Plan, d: Data, ev: EngineEvent): StepResult | undefined {
 			const cursor = clone(currentCursor(d));
 			const top = cursor[cursor.length - 1];
 			if (top) top.i++;
-			return finishWalk(d, walk(plan, d, cursor, ev.t), ev.t);
+			return pageChanged(plan, d, finishWalk(d, walk(plan, d, cursor, ev.t), ev.t));
 		}
 		case 'back':
 			d.pending = null;
 			d.errors = {};
 			d.history.pop();
+			pageChanged(plan, d, undefined);
 			return undefined;
 		case 'resolve': {
 			const p = d.pending;
 			if (!p || ev.effect.kind !== 'quota') return undefined;
 			d.quotas[p.effect.nodeId] = ev.value as QuotaResult;
 			d.pending = null;
-			return finishWalk(d, walk(plan, d, clone(p.cursor), ev.t), ev.t);
+			return pageChanged(plan, d, finishWalk(d, walk(plan, d, clone(p.cursor), ev.t), ev.t));
 		}
 		case 'language':
 			d.language = ev.language;
@@ -890,7 +908,11 @@ export function view(state: State): PageView {
 export function answers(state: State): Record<Id, AnswerRecord> {
 	const env = new Env(state.plan, state.data);
 	const out: Record<Id, AnswerRecord> = {};
-	for (const id of state.plan.questions) out[id] = { state: env.state(id), value: env.value(id) };
+	for (const id of state.plan.questions) {
+		const st = reportedState(state.plan, state.data, env, id);
+		const v = state.data.values[id];
+		out[id] = { state: st, value: st === 'answered' && v !== undefined ? v : null };
+	}
 	return out;
 }
 
@@ -906,6 +928,18 @@ function variableValues(state: State) {
 		}
 	}
 	return { embedded, computed };
+}
+
+/** Effect results the session recorded, in order (replay reuses them, never re-asks). */
+function recordedEffects(plan: Plan, d: Data): ResponseRecord['effects'] {
+	const out: ResponseRecord['effects'] = [];
+	for (const ev of d.events) {
+		if (ev.type !== 'resolve' || ev.rejected !== undefined || ev.effect.kind !== 'quota') continue;
+		const node = ev.effect.nodeId ?? '';
+		const qn = index(plan).nodes.get(node);
+		out.push({ kind: 'quota', nodeId: node, quota: qn?.type === 'quotaCheck' ? qn.quota : '', result: ev.value as QuotaResult });
+	}
+	return out;
 }
 
 /** Conditions the server assigned at session start: what R2's submit checks against. */
@@ -952,6 +986,7 @@ export function result(state: State): ResponseRecord {
 		embedded,
 		computed,
 		quotas: { ...d.quotas },
+		effects: recordedEffects(plan, d),
 		urlParams: { ...d.urlParams },
 		startedAt: d.startedAt,
 		endedAt: d.ended?.at ?? null,

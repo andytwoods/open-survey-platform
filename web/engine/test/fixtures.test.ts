@@ -21,6 +21,7 @@ import {
 	loadPlan,
 	pick,
 	play,
+	replayResponse,
 	type Diff,
 	type Invariant,
 	type Realised,
@@ -36,6 +37,14 @@ interface Expected {
 }
 
 type Status = 'passed' | 'pending' | 'failed';
+
+/** Expected files that contradict themselves; fixtures are not R1's to edit (reported to the lead). */
+const KNOWN_FIXTURE_BUGS: Record<string, { why: string; broken: string[] }> = {
+	'28-regression-order-refresh/refresh-before-answer': {
+		why: 'an `equal` invariant lists steps[12].visible, but its own steps[12] is p_end with visible ["outro"]',
+		broken: ['steps[12].visible = ["outro"] differs from steps[1].orders.items.p_att = ["att3","att1","att2","att4"]']
+	}
+};
 const report: Array<{
 	fixture: string;
 	script: string;
@@ -120,6 +129,12 @@ for (const name of fixtureNames()) {
 					diffs,
 					realised
 				);
+				if (script.replay) {
+					// The engine's replay makes no effect calls at all: results come from the log.
+					const rep = replayResponse(plan, run.state);
+					const same = 'response' in rep && JSON.stringify(rep.response) === JSON.stringify(run.response);
+					if (!same) diffs.push({ path: 'replay', expected: 'the same response', actual: rep });
+				}
 				const root = { steps, response };
 				const broken = expected.invariants.map((inv) => checkInvariant(inv, root)).filter((x): x is string => !!x);
 				entry.diffs = diffs;
@@ -128,6 +143,16 @@ for (const name of fixtureNames()) {
 				if (pending) {
 					entry.status = 'pending';
 					entry.reason = `pending ${expected.pending.join(', ')}`;
+					return;
+				}
+				const known = KNOWN_FIXTURE_BUGS[`${name}/${script.id}`];
+				if (known) {
+					// Reported as failed, but only in exactly the known way; once the fixture is
+					// fixed this assertion fails and the entry must be removed.
+					entry.status = 'failed';
+					entry.reason = `fixture bug: ${known.why}`;
+					expect(diffs).toEqual([]);
+					expect(broken).toEqual(known.broken);
 					return;
 				}
 				if (diffs.length || broken.length) entry.status = 'failed';

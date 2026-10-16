@@ -139,6 +139,13 @@ export interface Data {
 	history: HistoryEntry[];
 	pending: Pending | null;
 	errors: Record<Id, PageError>;
+	/**
+	 * Question states as of the last page change (fixtures/FORMAT.md §4 readings 1 and 8).
+	 * Off the current page a state is only re-evaluated when the page changes (next, back,
+	 * an effect result), never by an unsubmitted answer or a reload; on the current page
+	 * states are live.
+	 */
+	frozen: Record<Id, QuestionState>;
 	ended: { outcome: Id; nodeId: Id | null; at: number } | null;
 	events: EngineEvent[];
 }
@@ -229,6 +236,8 @@ export interface ResponseRecord {
 	embedded: Record<Id, string | number | null>;
 	computed: Record<Id, string | boolean | null>;
 	quotas: Record<Id, QuotaResult>;
+	/** Recorded effect results in order (FORMAT.md `response.effects`). */
+	effects: Array<{ kind: 'quota'; nodeId: Id; quota: Id; result: QuotaResult }>;
 	urlParams: Record<string, string>;
 	startedAt: number;
 	endedAt: number | null;
