@@ -31,6 +31,8 @@ Every method takes a context first. `TenantContext(tenant_id, actor)` scopes eve
 | `sessions` | version, `sessionSeed` (positive int), assigned conditions, realised orders (append-only), current page, autosaved instance (encrypted) |
 | `responses` | version + checksum, allocation mode, seed, conditions, orders, engine version, answers with state (encrypted), timestamps |
 | `audit_log` | actor, action, target; never participant data. Reads of responses are audited |
+| `themes` | the lab's theme library: name (unique per lab), opaque theme JSON (`osp_spec.theme` validates it). Migration `0002_themes` |
+| `lab_theme_defaults` | one row per lab: the theme new surveys start with; composite FK to the lab's own theme, cleared when that theme is deleted |
 
 Child rows reference parents through composite `(tenant_id, id)` foreign keys, so the database refuses cross-tenant references too.
 

@@ -20,6 +20,8 @@ EXPECTED_TABLES = {
     "sessions",
     "responses",
     "audit_log",
+    "themes",  # 0002_themes
+    "lab_theme_defaults",
 }
 
 # Anything that would let us store where a participant connected from or with what.
