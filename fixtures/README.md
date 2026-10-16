@@ -2,12 +2,17 @@
 
 Shared test fixtures used by every test layer: engine (C4), XLSForm export (C6), the Enketo
 harness (C8) and the builder. Each folder `NN-name/` holds a survey, one or more answer scripts
-and one expected trace per script. The format is provisional and written down in
-[`FORMAT.md`](FORMAT.md); C3b converts it to `osp-spec` once C2 lands. All answers are
+and one expected trace per script. Surveys are `osp-survey/0.1` documents (`python/osp-spec`);
+scripts and traces use the fixture formats in [`FORMAT.md`](FORMAT.md). C3b converted the
+surveys from C3a's provisional v0 format with `tools/convert_v0.py`. All answers are
 synthetic. No real personal data, ever.
 
 `tests/test_fixtures_shape.py` checks that every folder has all three parts, that the JSON
-parses and that every `pending` id exists in `planning/semantics.md`.
+parses, that every survey loads through `osp_spec` with zero error diagnostics (a fixture's
+`pending.json` may allow specific ones; none does today) and that every `pending` id exists in
+`planning/semantics.md`. Current warnings: fixture 20 has an untranslated `de` consent label
+(`text.missing_translation`, as in `review.md` §2.3) and an unplaced `screenout` block
+(`block.unused`, see below).
 
 ## Fixtures
 
@@ -83,6 +88,27 @@ parses and that every `pending` id exists in `planning/semantics.md`.
 - Every trace in `20-worked-example` is marked `"pending"`: notes-only pages, `calculate`,
   `quotaCheck`, `scores` and `embeddedData` are not yet defined in `planning/semantics.md`
   (open questions C3a-1 to C3a-5). The traces are drafts under the assumptions stated there.
+  The survey parts the model cannot express yet are listed below.
+
+## Not expressible in osp-survey/0.1
+
+All in fixture 20 (`20-worked-example`). These parts are left out of its `survey.json` and kept
+verbatim, in v0 form, in `20-worked-example/pending.json`; nothing was invented to stand in
+for them. Its traces were already pending and are unchanged.
+
+| Feature | Why | Open question |
+|---|---|---|
+| `calculate` item `age_band = if(age < 40, "18-39", "40+")` | The model has computed variables, but the expression grammar has no `if()`, so there is no AST to store | C3a-2 |
+| Quota `q_old` and its `quotaCheck` node | The model has quotas, but `when` uses `age_band` (above), and `onFull` needs an `outcome` end code; v0 only says `goto: screenout` | C3a-3 |
+| `scores` (`att_score`, mean with reverse) and per-item `reverseScored` | No scores in the model | C3a-4 |
+| `design.allocation` (`balanced`, `strata`, `fallback: seeded-random`) | No allocation settings in the model. `design.between` is implied: both factors are `assigned` variables set by one `assign` node | none yet |
+
+Consequence: block `screenout` is reached only through the quota, so it is in `blocks` but not
+in the flow (`block.unused` warning). The question `age` had no label in §2.3; the model
+requires one, so the converter gave it "How old are you?" (the only content it added).
+Expressible and converted: `metadata.license`/`ddi`, `embeddedData` (as an `embedded`
+variable `source`; how it is recorded is still C3a-5), the 2×2 design (two `assigned`
+variables), piping `${incentive}`.
 
 ## Not covered yet
 
