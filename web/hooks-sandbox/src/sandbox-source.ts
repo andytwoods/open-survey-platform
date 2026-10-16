@@ -12,14 +12,10 @@
  */
 
 import { sha256, utf8 } from '@osp/engine';
+import { FRAME_SCRIPT, frameCsp, frameDocument } from './frame-script.ts';
 import { HOOK_EVENTS } from './manifest.ts';
 
-/**
- * The iframe's only script. It accepts one init message from its parent carrying exactly one
- * MessagePort and the worker source, starts the worker from a blob, hands it the port, and
- * then ignores everything else (including anything the worker posts to it).
- */
-export const FRAME_SCRIPT = `(function(){"use strict";var done=false;addEventListener("message",function(e){if(done||e.source!==parent)return;var d=e.data,p=e.ports;if(!d||d.osp!=="hooks-init"||typeof d.workerSource!=="string"||!p||p.length!==1)return;done=true;var u=URL.createObjectURL(new Blob([d.workerSource],{type:"text/javascript"}));var w=new Worker(u);setTimeout(function(){URL.revokeObjectURL(u)},5000);w.onmessage=null;w.onmessageerror=null;w.onerror=function(ev){ev.preventDefault()};w.postMessage({port:p[0]},[p[0]])})})();`;
+export { FRAME_SCRIPT };
 
 function base64(bytes: Uint8Array): string {
 	const abc = 'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789+/';
@@ -41,10 +37,8 @@ function base64(bytes: Uint8Array): string {
  */
 export const FRAME_SCRIPT_HASH = `'sha256-${base64(sha256(utf8(FRAME_SCRIPT)))}'`;
 
-/** The iframe's CSP: nothing but the frame script and one blob worker. */
-export const FRAME_CSP = `default-src 'none'; script-src ${FRAME_SCRIPT_HASH}; worker-src blob:; base-uri 'none'; form-action 'none'`;
-
-export const FRAME_SRCDOC = `<!doctype html><html><head><meta charset="utf-8"><meta http-equiv="Content-Security-Policy" content="${FRAME_CSP}"><meta name="referrer" content="no-referrer"></head><body><script>${FRAME_SCRIPT}</script></body></html>`;
+export const FRAME_CSP = frameCsp(FRAME_SCRIPT_HASH);
+export const FRAME_SRCDOC = frameDocument(FRAME_SCRIPT_HASH);
 
 /** Globals removed from the worker before researcher code runs (defence in depth). */
 export const LOCKED_GLOBALS = [
@@ -90,9 +84,9 @@ function def(o,k,v){try{Object.defineProperty(o,k,{value:v,writable:false,config
 def(G,"Date",D);def(Math,"random",rnd);
 if(G.performance){def(G.performance,"now",function(){return 0;});}
 if(G.crypto&&G.crypto.getRandomValues){def(G.crypto,"getRandomValues",function(a){for(var i=0;i<a.length;i++)a[i]=Math.floor(rnd()*256);return a;});}
-if(G.Intl&&Intl.DateTimeFormat){var F=Intl.DateTimeFormat.prototype,f0=F.format,f1=F.formatToParts;
- def(F,"format",function(d){return f0.call(this,d===undefined?nowValue:d);});
- def(F,"formatToParts",function(d){return f1.call(this,d===undefined?nowValue:d);});}
+try{var F=Intl.DateTimeFormat.prototype,fd=Object.getOwnPropertyDescriptor(F,"format"),f1=F.formatToParts;
+ if(fd&&fd.get){var g=fd.get;Object.defineProperty(F,"format",{configurable:false,enumerable:false,get:function(){var f=g.call(this);return function(d){return f(d===undefined?nowValue:d);};}});}
+ def(F,"formatToParts",function(d){return f1.call(this,d===undefined?nowValue:d);});}catch(e){}
 if(LOCK){for(var i=0;i<LOCKED.length;i++){var n=LOCKED[i];for(var o=G;o&&o!==Object.prototype;o=Object.getPrototypeOf(o)){try{if(Object.prototype.hasOwnProperty.call(o,n))delete o[n];}catch(e){}}def(G,n,undefined);}}
 function deepFreeze(x){if(x&&typeof x==="object"&&!Object.isFrozen(x)){var k=keys(x);for(var i=0;i<k.length;i++)deepFreeze(x[k[i]]);freeze(x);}return x;}
 def(G,"osp",freeze({on:function(name,fn){if(EVENTS.indexOf(name)>=0&&typeof fn==="function")handlers[name]=fn;}}));

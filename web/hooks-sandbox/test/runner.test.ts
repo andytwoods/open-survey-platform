@@ -14,7 +14,7 @@ import {
 	type State
 } from '@osp/engine';
 import { describe, expect, it } from 'vitest';
-import { HookManifestError, HookRunner, type ParentMessage } from '../src/runner.ts';
+import { HookManifestError, HookRunner, type InflightMarker, type ParentMessage } from '../src/runner.ts';
 import { validateActions } from '../src/validate.ts';
 import { FakeInvoker, type Handler } from './fake-invoker.ts';
 import { PARENT_ORIGIN, hookManifest, hookPlan } from './fixtures.ts';
@@ -272,6 +272,42 @@ describe('HookRunner + engine', () => {
 		const r = await runner.submitted();
 		expect(r).toMatchObject({ outcome: 'ok' });
 		expect(runner.redirectUrl()).toBe('https://app.prolific.com/submissions/complete?cc=C0DE12');
+	});
+
+	it('a tab that died mid-hook: never re-run blindly; non-critical switched off, critical retry then hook-failed', async () => {
+		let marker: InflightMarker | null = null;
+		const store = { get: () => marker, set: (m: InflightMarker | null) => (marker = m) };
+		const invoker = new FakeInvoker({});
+		const never = new Promise<void>(() => {});
+		invoker.gate.onPageShown = never; // the "crash": the call never returns
+		const s0 = start(plan, { sessionSeed: 3, clock: clock() });
+		const r1 = new HookRunner({ plan, manifest: hookManifest('src'), invoker, state: s0, inflight: store });
+		void r1.begin();
+		await new Promise((r) => setTimeout(r, 0));
+		expect(marker).toMatchObject({ event: 'onPageShown', retry: false });
+		const snap = snapshot(r1.state);
+
+		// Reload: a fresh runner on the persisted snapshot + marker.
+		const inv2 = new FakeInvoker({});
+		const r2 = new HookRunner({ plan, manifest: hookManifest('src'), invoker: inv2, state: restore(plan, snap) as State, inflight: store });
+		await r2.resume();
+		expect(marker).toBeNull();
+		expect(inv2.calls.map((c) => c.event)).toEqual(['onResume']); // onPageShown is off now
+		const crashed = hookEvents(r2.state).filter((e) => (e.value as HookResolution | null)?.error === 'crashed');
+		expect(crashed.map((e) => e.effect.event)).toEqual(['onPageShown']);
+		await r2.fire('onPageShown');
+		expect(inv2.calls.map((c) => c.event)).toEqual(['onResume']);
+
+		// A flow-critical hook (onPageNext writes hv_score) dies twice: retry prompt, then hook-failed.
+		const crit = (s: State, retry: boolean) => ({ invocationId: `onPageNext@${s.data.revision}`, event: 'onPageNext' as const, data: { page: 'p1' }, retry });
+		marker = crit(r2.state, false);
+		const r3 = new HookRunner({ plan, manifest: hookManifest('src'), invoker: inv2, state: r2.state, inflight: store });
+		expect(await r3.resume()).toEqual({ outcome: 'retry', event: 'onPageNext', error: 'crashed' });
+		marker = crit(r3.state, true);
+		const r4 = new HookRunner({ plan, manifest: hookManifest('src'), invoker: inv2, state: r3.state, inflight: store });
+		expect(await r4.resume()).toEqual({ outcome: 'hook-failed', error: 'crashed' });
+		expect(r4.state.data.ended?.outcome).toBe('hook-failed');
+		expect(isState(replay(plan, r4.state.data.events))).toBe(true);
 	});
 });
 

@@ -70,6 +70,23 @@ export interface ParentMessage {
 	payload: unknown;
 }
 
+/**
+ * The hook call in flight, persisted (synchronously, next to the snapshot) so a tab that
+ * dies mid-hook (e.g. the renderer crashed on a hook's memory use) can tell on reload.
+ */
+export interface InflightMarker {
+	invocationId: string;
+	event: HookEvent;
+	data: unknown;
+	retry: boolean;
+}
+export interface InflightStore {
+	get(): InflightMarker | null;
+	set(m: InflightMarker | null): void;
+}
+
+export const CRASHED = 'crashed';
+
 export interface HookRunnerOptions {
 	plan: Plan;
 	manifest: HookManifest;
@@ -79,6 +96,8 @@ export interface HookRunnerOptions {
 	onState?: (state: State) => void;
 	/** Delivers an accepted `postToParent`. Default: `window.parent.postMessage(msg, origin)`. */
 	deliverToParent?: (origin: string, msg: ParentMessage) => void;
+	/** Where the in-flight marker lives (crash recovery in `resume`). */
+	inflight?: InflightStore;
 }
 
 function defaultDeliver(origin: string, msg: ParentMessage): void {
@@ -120,6 +139,7 @@ export class HookRunner {
 	private readonly invoker: Invoker;
 	private readonly onState?: (s: State) => void;
 	private readonly deliver: (origin: string, msg: ParentMessage) => void;
+	private readonly inflight?: InflightStore;
 	private current: State;
 	private chain: Promise<unknown> = Promise.resolve();
 	private retryPending: { event: HookEvent; data: unknown } | null = null;
@@ -135,6 +155,7 @@ export class HookRunner {
 		this.current = opts.state;
 		this.onState = opts.onState;
 		this.deliver = opts.deliverToParent ?? defaultDeliver;
+		this.inflight = opts.inflight;
 		this.critical = criticalEvents(opts.plan, opts.manifest);
 	}
 
@@ -175,6 +196,15 @@ export class HookRunner {
 		return buildRedirectUrl(this.manifest, this.current.data.hooks?.redirect ?? null);
 	}
 
+	/**
+	 * Call from `pagehide`: a clean unload (refresh, close) clears the in-flight marker, so
+	 * `resume` simply runs the interrupted hook again. A marker that survives means the page
+	 * died (crash, killed tab) and `resume` treats the hook as failed instead.
+	 */
+	unloading(): void {
+		this.inflight?.set(null);
+	}
+
 	dispose(): void {
 		this.invoker.dispose();
 	}
@@ -195,6 +225,8 @@ export class HookRunner {
 	 * `onPageShown`.
 	 */
 	async resume(): Promise<FireOutcome> {
+		const crash = await this.enqueue(() => this.recoverCrash());
+		if (crash.outcome === 'retry' || crash.outcome === 'hook-failed') return crash;
 		const r = await this.fire('onResume', {});
 		if (r.outcome === 'retry' || r.outcome === 'hook-failed') return r;
 		const s = this.current;
@@ -237,7 +269,7 @@ export class HookRunner {
 		return { outcome: r.result.outcome === 'ended' ? 'ended' : 'advanced' };
 	}
 
-	/** Go back: engine `back`, `onBack`, then the page's hooks. */
+	/** Go back: engine `back`, `onBack`, then the page's hooks. Returns `onBack`'s outcome. */
 	async back(): Promise<FireOutcome> {
 		await this.idle();
 		const from = view(this.current).page;
@@ -246,7 +278,8 @@ export class HookRunner {
 		this.setState(r.state);
 		const b = await this.fire('onBack', { from });
 		if (b.outcome === 'retry' || b.outcome === 'hook-failed') return b;
-		return this.arrive();
+		const a = await this.arrive();
+		return a.outcome === 'retry' || a.outcome === 'hook-failed' ? a : b;
 	}
 
 	/**
@@ -300,6 +333,57 @@ export class HookRunner {
 
 	// --- Internals ---------------------------------------------------------------------
 
+	/**
+	 * The previous page died while a hook ran (its result never got recorded). Record that
+	 * as a failure, never re-run it blindly: a non-critical hook is switched off for the rest
+	 * of the session; a flow-critical one gets its retry prompt, and a crash on the retry
+	 * ends the session `hook-failed`.
+	 */
+	private async recoverCrash(): Promise<FireOutcome> {
+		const m = this.inflight?.get() ?? null;
+		if (!m) return { outcome: 'skipped' };
+		this.inflight!.set(null);
+		const events = this.current.data.events;
+		const done = events.some((e) => e.type === 'resolve' && e.effect.kind === 'hook' && e.effect.invocationId === m.invocationId && e.rejected === undefined);
+		if (done || !this.manifest.handlers[m.event]) return { outcome: 'skipped' };
+		const critical = this.critical.has(m.event);
+		const s = this.current;
+		if (s.data.ended && m.event !== 'onBeforeSubmit' && m.event !== 'onSubmitted') return { outcome: 'skipped' };
+		const revision = s.data.revision;
+		const effect: HookEffect = { kind: 'hook', invocationId: `${m.event}@${revision}`, event: m.event, revision };
+		const status = critical && (m.retry || this.failedOnThisPage(m.event)) ? 'fatal' : 'failed';
+		const r = tryResolve(s, effect, { status, actions: [], seed: 0, now: this.now(s), error: CRASHED });
+		this.setState(r.state);
+		if (r.rejected) return { outcome: 'refused', reason: r.rejected };
+		if (status === 'fatal') return { outcome: 'hook-failed', error: CRASHED };
+		if (critical) {
+			this.retryPending = { event: m.event, data: m.data };
+			return { outcome: 'retry', event: m.event, error: CRASHED };
+		}
+		return { outcome: 'failed-open', error: CRASHED };
+	}
+
+	/** Events whose non-critical hook crashed the page earlier in this session. */
+	private crashed(event: HookEvent): boolean {
+		return this.current.data.events.some(
+			(e) =>
+				e.type === 'resolve' &&
+				e.rejected === undefined &&
+				e.effect.kind === 'hook' &&
+				e.effect.event === event &&
+				(e.value as HookResolution | null)?.error === CRASHED
+		);
+	}
+
+	private now(s: State): number {
+		try {
+			const t = Number(s.clock());
+			return Number.isFinite(t) ? t : 0;
+		} catch {
+			return 0;
+		}
+	}
+
 	private enqueue(f: () => Promise<FireOutcome>): Promise<FireOutcome> {
 		const run = this.chain.then(f);
 		this.chain = run.catch(() => undefined);
@@ -335,21 +419,32 @@ export class HookRunner {
 		});
 	}
 
-	private async fireNow(event: HookEvent, data: unknown, isRetry: boolean): Promise<FireOutcome> {
+	/**
+	 * Did this event's hook already fail on the current page visit? Then this call is its
+	 * retry, also after a reload (the retry allowance is in the log, not in memory).
+	 */
+	private failedOnThisPage(event: HookEvent): boolean {
+		const events = this.current.data.events;
+		for (let i = lastArrival(events); i < events.length; i++) {
+			const e = events[i]!;
+			if (e.type === 'resolve' && e.rejected === undefined && e.effect.kind === 'hook' && e.effect.event === event && (e.value as HookResolution | null)?.status === 'failed') return true;
+		}
+		return false;
+	}
+
+	private async fireNow(event: HookEvent, data: unknown, isRetryCall: boolean): Promise<FireOutcome> {
 		const decl = this.manifest.handlers[event];
 		if (!decl) return { outcome: 'skipped' };
 		const s0 = this.current;
 		if (s0.data.ended && event !== 'onBeforeSubmit' && event !== 'onSubmitted') return { outcome: 'skipped' };
+		const critical = this.critical.has(event);
+		if (!critical && this.crashed(event)) return { outcome: 'skipped' };
+		const isRetry = isRetryCall || (critical && this.failedOnThisPage(event));
 		const revision = s0.data.revision;
 		const effect: HookEffect = { kind: 'hook', invocationId: `${event}@${revision}`, event, revision };
 		const seed = nodeSeed(this.plan.survey.seedVersion, s0.data.sessionSeed, `hook:${effect.invocationId}`);
-		let now = 0;
-		try {
-			now = Number(s0.clock());
-			if (!Number.isFinite(now)) now = 0;
-		} catch {
-			now = 0;
-		}
+		const now = this.now(s0);
+		this.inflight?.set({ invocationId: effect.invocationId, event, data: clone(data), retry: isRetry });
 		let out;
 		try {
 			out = await this.invoker.invoke({
@@ -365,7 +460,6 @@ export class HookRunner {
 			out = { status: 'error' as const, error: e instanceof Error ? e.message.slice(0, 80) : 'error' };
 		}
 		const s1 = this.current;
-		const critical = this.critical.has(event);
 		let resolution: HookResolution;
 		let failure: string | null = null;
 		let diagnostics: string[] = [];
@@ -383,6 +477,7 @@ export class HookRunner {
 		if (diagnostics.length) resolution.diagnostics = diagnostics;
 		const r = tryResolve(s1, effect, resolution);
 		this.setState(r.state);
+		this.inflight?.set(null);
 		if (r.rejected === 'stale') return { outcome: 'stale' };
 		if (r.rejected) return { outcome: 'refused', reason: r.rejected };
 		if (resolution.status === 'fatal') return { outcome: 'hook-failed', error: failure ?? 'failed' };

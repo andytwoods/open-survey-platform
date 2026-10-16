@@ -37,6 +37,13 @@ export interface Invoker {
 export interface HookHostOptions {
 	/** The researcher's script (the manifest's `source`). */
 	source: string;
+	/**
+	 * Serve the sandbox document from this URL instead of `srcdoc`. Use a URL on a separate
+	 * *site* (e.g. a dedicated sandbox domain): browsers with site isolation then run the
+	 * sandbox in its own process, so a hook that exhausts memory crashes only that process.
+	 * The file is `frameDocument(FRAME_SCRIPT_HASH)`.
+	 */
+	frameUrl?: string;
 	/** Where the hidden iframe goes (default `document.body`). */
 	container?: HTMLElement;
 	/** Time for a fresh sandbox to report ready (its top-level code runs in this). */
@@ -63,7 +70,7 @@ interface Inflight {
 
 export class HookHost implements Invoker {
 	readonly stats: HostStats = { spawns: 0, kills: 0, violations: [] };
-	private readonly opts: Required<Omit<HookHostOptions, 'container'>> & { container?: HTMLElement };
+	private readonly opts: Required<Omit<HookHostOptions, 'container' | 'frameUrl'>> & { container?: HTMLElement; frameUrl?: string };
 	private readonly script: string;
 	private frame: HTMLIFrameElement | null = null;
 	private port: MessagePort | null = null;
@@ -161,7 +168,8 @@ export class HookHost implements Invoker {
 		frame.setAttribute('tabindex', '-1');
 		frame.setAttribute('title', 'hooks');
 		frame.style.cssText = 'position:absolute;width:0;height:0;border:0;visibility:hidden';
-		frame.srcdoc = FRAME_SRCDOC;
+		if (this.opts.frameUrl) frame.src = this.opts.frameUrl;
+		else frame.srcdoc = FRAME_SRCDOC;
 		const channel = new MessageChannel();
 		const port = channel.port1;
 		this.frame = frame;
