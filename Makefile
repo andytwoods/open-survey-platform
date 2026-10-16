@@ -16,7 +16,7 @@ unexport VIRTUAL_ENV
 UV_RUN := uv run --locked
 PNPM := pnpm
 
-CHECKS := py-test py-layers py-lint web-check web-test web-build contract-check licence-check harness-quick
+CHECKS := py-test py-layers py-lint web-check web-test web-build contract-check licence-check harness-quick engine-test
 
 .PHONY: install check $(CHECKS) contract
 
@@ -75,3 +75,18 @@ test-postgres:
 .PHONY: web-e2e
 web-e2e:
 	$(PNPM) -C web --filter @osp/builder exec playwright test $(E2E_ARGS)
+
+# Participant engine (task R1). Python compiles every fixture survey to a runtime plan and
+# writes the Python/TS parity vectors into web/engine/.build/ (gitignored); vitest then runs
+# every fixture script, the parity checks and the property tests. Report of realised
+# "<engine>" values: web/engine/.build/fixture-report.json.
+.PHONY: engine-fixtures engine-test engine-size
+engine-fixtures:
+	$(UV_RUN) python web/engine/scripts/build_fixtures.py
+
+engine-test: engine-fixtures
+	$(PNPM) -C web/engine exec vitest run
+
+# Engine bundle size (minified + gzip), informational: the budget is a target, not a gate.
+engine-size:
+	$(PNPM) -C web/engine exec node scripts/size.mjs
