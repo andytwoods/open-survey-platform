@@ -1356,6 +1356,11 @@ export interface components {
             createdAt: string;
             /** Createdby */
             createdBy: string;
+            /**
+             * Diagnostics
+             * @description The validator's diagnostics for the draft as it is now
+             */
+            diagnostics: components["schemas"]["Diagnostic"][];
             /** Id */
             id: string;
             /**

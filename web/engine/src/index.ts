@@ -14,6 +14,7 @@ export {
 	checkPlan,
 	context,
 	escapeHtml,
+	HOOK_FAILED_OUTCOME,
 	isState,
 	next,
 	replay,

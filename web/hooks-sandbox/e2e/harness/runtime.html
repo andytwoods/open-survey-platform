@@ -1,0 +1,19 @@
+<!doctype html>
+<html lang="en">
+	<head>
+		<meta charset="utf-8" />
+		<!-- A strict runtime CSP, as R3 will ship: the srcdoc sandbox inherits it, so it must allow
+		     the frame script's hash and blob: workers (and nothing else is needed for hooks). -->
+		<meta
+			http-equiv="Content-Security-Policy"
+			content="default-src 'self'; script-src 'self' %FRAME_SCRIPT_HASH%; worker-src blob:; style-src 'self'; img-src 'self'; connect-src 'self'; frame-src 'self' http://localhost:4417; base-uri 'none'; form-action 'none'"
+		/>
+		<title>Hooks runtime harness</title>
+	</head>
+	<body>
+		<section id="consent"><p>Consent: your answers are stored for research only.</p></section>
+		<header id="platform"><p>Open Survey Platform</p></header>
+		<main id="survey"></main>
+		<script type="module" src="./harness.ts"></script>
+	</body>
+</html>

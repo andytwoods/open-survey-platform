@@ -130,7 +130,19 @@ export interface ComputedVariable {
 	expr: Expr;
 }
 
-export type Variable = EmbeddedVariable | AssignedVariable | ComputedVariable;
+/**
+ * A variable only researcher hooks set (task R7, runtime-design.md §7a): `setVariable` from a
+ * hook writes it, conditions and pipes read it. Null until a hook sets it.
+ * NOTE (R7): not yet in contract/runtime-plan.schema.json or the Python plan compiler.
+ */
+export interface HookVariable {
+	id: Id;
+	kind: 'hook';
+	name: string;
+	valueType: 'text' | 'integer' | 'decimal' | 'boolean';
+}
+
+export type Variable = EmbeddedVariable | AssignedVariable | ComputedVariable | HookVariable;
 
 export interface Quota {
 	id: Id;

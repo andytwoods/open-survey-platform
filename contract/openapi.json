@@ -2058,6 +2058,14 @@
             "title": "Createdby",
             "type": "string"
           },
+          "diagnostics": {
+            "description": "The validator's diagnostics for the draft as it is now",
+            "items": {
+              "$ref": "#/components/schemas/Diagnostic"
+            },
+            "title": "Diagnostics",
+            "type": "array"
+          },
           "id": {
             "title": "Id",
             "type": "string"
@@ -2111,7 +2119,8 @@
           "revision",
           "survey",
           "updatedAt",
-          "updatedBy"
+          "updatedBy",
+          "diagnostics"
         ],
         "title": "SurveyDetail",
         "type": "object"

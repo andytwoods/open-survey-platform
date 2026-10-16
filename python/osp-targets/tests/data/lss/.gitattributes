@@ -1,0 +1,2 @@
+# Golden exports are compared byte for byte: never convert them.
+* -text

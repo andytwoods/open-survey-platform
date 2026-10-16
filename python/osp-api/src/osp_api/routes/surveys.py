@@ -10,7 +10,7 @@ from typing import Any, Literal
 
 from fastapi import APIRouter, Response
 from osp_app import SurveyView
-from osp_spec import Diagnostic
+from osp_spec import Diagnostic, validate
 from osp_store import Survey
 from pydantic import BaseModel, ConfigDict, Field
 
@@ -35,6 +35,9 @@ class SurveyDetail(SurveySummary):
     survey: dict[str, Any] = Field(description="The draft (osp-survey JSON)")
     updatedAt: datetime
     updatedBy: str
+    diagnostics: list[Diagnostic] = Field(
+        description="The validator's diagnostics for the draft as it is now"
+    )
 
 
 class CreateSurveyRequest(BaseModel):
@@ -100,6 +103,7 @@ def detail(v: SurveyView) -> SurveyDetail:
         survey=d.body,
         updatedAt=d.updated_at,
         updatedBy=d.updated_by,
+        diagnostics=validate(d.body),
     )
 
 
