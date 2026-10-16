@@ -5,9 +5,19 @@ description = "Open Survey Platform: osp-api (layer L6)"
 readme = "README.md"
 license = "MIT"
 requires-python = ">=3.14"
-dependencies = ["fastapi>=0.140,<0.144", "osp-runtime", "osp-store"]
+dependencies = [
+    "fastapi>=0.140,<0.144",
+    "osp-app",
+    "osp-ops",
+    "osp-runtime",
+    "osp-spec",
+    "osp-store",
+]
 
 [tool.uv.sources]
+osp-app = { workspace = true }
+osp-ops = { workspace = true }
+osp-spec = { workspace = true }
 osp-runtime = { workspace = true }
 osp-store = { workspace = true }
 

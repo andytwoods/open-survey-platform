@@ -10,10 +10,11 @@ from importlib.metadata import version
 from typing import Literal
 
 from fastapi import FastAPI
+from osp_app import AppServices
 from osp_runtime import SessionService
 from pydantic import BaseModel
 
-from . import participant
+from . import participant, routes
 
 API_TITLE = "Open Survey Platform API"
 
@@ -27,8 +28,11 @@ class VersionInfo(BaseModel):
     version: str
 
 
-def create_app(sessions: SessionService | None = None) -> FastAPI:
-    """``sessions`` backs the participant endpoints; without it they answer 503."""
+def create_app(
+    sessions: SessionService | None = None, builder: AppServices | None = None
+) -> FastAPI:
+    """``sessions`` backs the participant endpoints and ``builder`` the builder ones
+    (auth, surveys, ops, meta); without them they answer 503."""
     pkg_version = version("osp-api")
     app = FastAPI(
         title=API_TITLE,
@@ -47,6 +51,7 @@ def create_app(sessions: SessionService | None = None) -> FastAPI:
         return VersionInfo(name="osp-api", version=pkg_version)
 
     participant.install(app, sessions)
+    routes.install(app, builder)
     return app
 
 

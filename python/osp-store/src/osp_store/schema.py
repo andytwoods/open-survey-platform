@@ -392,6 +392,34 @@ lab_theme_defaults = Table(
     ),
 )
 
+# --- Builder accounts (C10, migration 0004_accounts) ------------------------------------
+# Researcher sign-in state the auth core (osp_app.auth) needs beyond ``users``: the
+# pending (unconfirmed) TOTP secret, the TOTP replay guard and hashed recovery codes.
+# One row per user; ``id`` is the user id (so key rotation can address it).
+user_mfa = Table(
+    "user_mfa",
+    metadata,
+    Column("id", ID, ForeignKey("users.id", ondelete="CASCADE"), primary_key=True),
+    Column("totp_pending_ct", LargeBinary, nullable=True),
+    Column("totp_pending_key_id", String(32), nullable=True),
+    Column("totp_last_step", BigInteger, nullable=True),
+    Column("recovery_code_hashes", JsonType, nullable=False),  # list of SHA-256 hex
+)
+
+# Researcher sign-in sessions (not participant sessions). ``id`` is SHA-256(token);
+# the token itself is never stored.
+auth_sessions = Table(
+    "auth_sessions",
+    metadata,
+    Column("id", String(64), primary_key=True),
+    Column("user_id", ID, ForeignKey("users.id", ondelete="CASCADE"), nullable=False, index=True),
+    Column("stage", String(16), nullable=False),
+    _ts("created_at"),
+    _ts("last_seen_at"),
+    _ts("expires_at"),
+    CheckConstraint("stage IN ('full', 'mfa_pending')", name="stage"),
+)
+
 #: (table, ciphertext column, key-id column) for every encrypted field. The AEAD field
 #: name is the ciphertext column without ``_ct``; the row id is the table's ``id``.
 ENCRYPTED_FIELDS: tuple[tuple[Table, str, str], ...] = (
@@ -401,4 +429,5 @@ ENCRYPTED_FIELDS: tuple[tuple[Table, str, str], ...] = (
     (participant_sessions, "url_params_ct", "url_params_key_id"),
     (session_conflicts, "snapshot_ct", "snapshot_key_id"),
     (response_records, "record_ct", "record_key_id"),
+    (user_mfa, "totp_pending_ct", "totp_pending_key_id"),
 )

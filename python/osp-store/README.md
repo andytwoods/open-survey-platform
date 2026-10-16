@@ -33,6 +33,8 @@ Every method takes a context first. `TenantContext(tenant_id, actor)` scopes eve
 | `audit_log` | actor, action, target; never participant data. Reads of responses are audited |
 | `themes` | the lab's theme library: name (unique per lab), opaque theme JSON (`osp_spec.theme` validates it). Migration `0002_themes` |
 | `lab_theme_defaults` | one row per lab: the theme new surveys start with; composite FK to the lab's own theme, cleared when that theme is deleted |
+| `user_mfa` | per researcher: pending TOTP secret (encrypted), TOTP replay step, hashed recovery codes. Migration `0004_accounts` (`AccountStore`) |
+| `auth_sessions` | researcher sign-in sessions, keyed by SHA-256 of the token (never the token). Migration `0004_accounts` |
 
 Child rows reference parents through composite `(tenant_id, id)` foreign keys, so the database refuses cross-tenant references too.
 

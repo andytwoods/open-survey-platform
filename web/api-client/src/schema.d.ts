@@ -4,6 +4,108 @@
  */
 
 export interface paths {
+    "/api/auth/login": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /** Login */
+        post: operations["login"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/auth/login/totp": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /** Login Totp */
+        post: operations["loginTotp"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/auth/logout": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /** Logout */
+        post: operations["logout"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/auth/me": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** Me */
+        get: operations["getMe"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/auth/totp/enrol": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /** Totp Enrol */
+        post: operations["startTotpEnrolment"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/auth/totp/verify": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /** Totp Verify */
+        post: operations["confirmTotpEnrolment"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
     "/api/health": {
         parameters: {
             query?: never;
@@ -13,6 +115,74 @@ export interface paths {
         };
         /** Health */
         get: operations["getHealth"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/meta/ops": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** Ops */
+        get: operations["getOpCatalogue"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/meta/property-schemas": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** Property Schemas */
+        get: operations["getPropertySchemas"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/meta/survey-schema": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** Survey Schema */
+        get: operations["getSurveySchema"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/meta/theme-schema": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** Theme Schema */
+        get: operations["getThemeSchema"];
         put?: never;
         post?: never;
         delete?: never;
@@ -123,6 +293,144 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
+    "/api/surveys": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** List Surveys */
+        get: operations["listSurveys"];
+        put?: never;
+        /** Create Survey */
+        post: operations["createSurvey"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/surveys/{survey_id}": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** Get Survey */
+        get: operations["getSurvey"];
+        put?: never;
+        post?: never;
+        /** Delete Survey */
+        delete: operations["deleteSurvey"];
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/surveys/{survey_id}/export/xlsform": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** Export Xlsform */
+        get: operations["exportXlsform"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/surveys/{survey_id}/history": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** History */
+        get: operations["getSurveyHistory"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/surveys/{survey_id}/ops": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /** Apply Ops */
+        post: operations["applyOps"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/surveys/{survey_id}/publish": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /** Publish */
+        post: operations["publishSurvey"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/surveys/{survey_id}/redo": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /** Redo */
+        post: operations["redo"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/surveys/{survey_id}/undo": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /** Undo */
+        post: operations["undo"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
     "/api/version": {
         parameters: {
             query?: never;
@@ -144,6 +452,114 @@ export interface paths {
 export type webhooks = Record<string, never>;
 export interface components {
     schemas: {
+        /** AddBlock */
+        AddBlockParams: {
+            /**
+             * Block
+             * @default null
+             */
+            block: {
+                [key: string]: components["schemas"]["JsonValue"];
+            } | null;
+            /**
+             * Id
+             * @default null
+             */
+            id: string | null;
+            /**
+             * Index
+             * @default null
+             */
+            index: number | null;
+            /** @default text */
+            question_type: components["schemas"]["QuestionType"];
+            /**
+             * Title
+             * @default null
+             */
+            title: string | null;
+        };
+        /** AddChoice */
+        AddChoiceParams: {
+            /**
+             * Index
+             * @default null
+             */
+            index: number | null;
+            /** @default  */
+            label: components["schemas"]["Text"];
+            /** Owner */
+            owner: string;
+            /** @default null */
+            value: components["schemas"]["ChoiceValue"] | null;
+        };
+        /** AddPage */
+        AddPageParams: {
+            /** Block */
+            block: string;
+            /**
+             * Id
+             * @default null
+             */
+            id: string | null;
+            /**
+             * Index
+             * @default null
+             */
+            index: number | null;
+            /**
+             * Page
+             * @default null
+             */
+            page: {
+                [key: string]: components["schemas"]["JsonValue"];
+            } | null;
+            /** @default text */
+            question_type: components["schemas"]["QuestionType"];
+        };
+        /** AddQuestion */
+        AddQuestionParams: {
+            /**
+             * Id
+             * @default null
+             */
+            id: string | null;
+            /**
+             * Index
+             * @default null
+             */
+            index: number | null;
+            /**
+             * Label
+             * @default null
+             */
+            label: string | {
+                [key: string]: string;
+            } | null;
+            /** Page */
+            page: string;
+            /**
+             * Question
+             * @default null
+             */
+            question: {
+                [key: string]: components["schemas"]["JsonValue"];
+            } | null;
+            /** @default text */
+            type: components["schemas"]["QuestionType"];
+        };
+        /** AddVariable */
+        AddVariableParams: {
+            /**
+             * Index
+             * @default null
+             */
+            index: number | null;
+            /** Variable */
+            variable: {
+                [key: string]: components["schemas"]["JsonValue"];
+            };
+        };
         /** AnswerIn */
         AnswerIn: {
             /**
@@ -156,6 +572,215 @@ export interface components {
         } & {
             [key: string]: unknown;
         };
+        /** ApplyPatch */
+        ApplyPatchParams: {
+            /** Patch */
+            patch: {
+                [key: string]: components["schemas"]["JsonValue"];
+            }[];
+        };
+        /** @enum {string} */
+        Arm: "then" | "else" | "children";
+        /** BulkPasteChoices */
+        BulkPasteChoicesParams: {
+            /**
+             * Force
+             * @default false
+             */
+            force: boolean;
+            /**
+             * Mode
+             * @default replace
+             * @enum {string}
+             */
+            mode: "replace" | "append";
+            /** Owner */
+            owner: string;
+            /** Text */
+            text: string;
+        };
+        ChoiceValue: number | string;
+        /** CreateChoiceList */
+        CreateChoiceListParams: {
+            /**
+             * Choices
+             * @default null
+             */
+            choices: {
+                [key: string]: components["schemas"]["JsonValue"];
+            }[] | null;
+            /**
+             * Id
+             * @default null
+             */
+            id: string | null;
+            /**
+             * Index
+             * @default null
+             */
+            index: number | null;
+        };
+        /** CreateSurveyRequest */
+        CreateSurveyRequest: {
+            /**
+             * Survey
+             * @description Initial osp-survey JSON; omitted: a one-page skeleton
+             */
+            survey?: {
+                [key: string]: unknown;
+            } | null;
+            /**
+             * Tenantid
+             * @description Needed only if you belong to several labs
+             */
+            tenantId?: string | null;
+            /** Title */
+            title: string;
+        };
+        /** DeleteById */
+        DeleteBlockParams: {
+            /**
+             * Cascade
+             * @default false
+             */
+            cascade: boolean;
+            /**
+             * Force
+             * @default false
+             */
+            force: boolean;
+            /** Id */
+            id: string;
+        };
+        /** DeleteChoiceList */
+        DeleteChoiceListParams: {
+            /**
+             * Cascade
+             * @default false
+             */
+            cascade: boolean;
+            /**
+             * Force
+             * @default false
+             */
+            force: boolean;
+            /** Id */
+            id: string;
+        };
+        /** DeleteChoice */
+        DeleteChoiceParams: {
+            /**
+             * Cascade
+             * @default false
+             */
+            cascade: boolean;
+            /**
+             * Force
+             * @default false
+             */
+            force: boolean;
+            /** Owner */
+            owner: string;
+            value: components["schemas"]["ChoiceValue"];
+        };
+        /** DeleteFlowNode */
+        DeleteFlowNodeParams: {
+            /** Id */
+            id: string;
+        };
+        /** DeleteById */
+        DeletePageParams: {
+            /**
+             * Cascade
+             * @default false
+             */
+            cascade: boolean;
+            /**
+             * Force
+             * @default false
+             */
+            force: boolean;
+            /** Id */
+            id: string;
+        };
+        /** DeleteQuestion */
+        DeleteQuestionParams: {
+            /**
+             * Cascade
+             * @default false
+             */
+            cascade: boolean;
+            /**
+             * Force
+             * @default false
+             */
+            force: boolean;
+            /** Id */
+            id: string;
+        };
+        /** DeleteVariable */
+        DeleteVariableParams: {
+            /**
+             * Cascade
+             * @default false
+             */
+            cascade: boolean;
+            /**
+             * Force
+             * @default false
+             */
+            force: boolean;
+            /** Id */
+            id: string;
+        };
+        /** Diagnostic */
+        Diagnostic: {
+            /** Code */
+            code: string;
+            /** Message */
+            message: string;
+            /** Pointer */
+            pointer: string;
+            /**
+             * Severity
+             * @enum {string}
+             */
+            severity: "error" | "warning" | "info";
+        };
+        /** DuplicateQuestion */
+        DuplicateQuestionParams: {
+            /** Id */
+            id: string;
+            /**
+             * New Id
+             * @default null
+             */
+            new_id: string | null;
+        };
+        /** EditResponse */
+        EditResponse: {
+            /** Diagnostics */
+            diagnostics: components["schemas"]["Diagnostic"][];
+            /**
+             * Patch
+             * @description RFC 6902, from baseRevision to revision
+             */
+            patch: {
+                [key: string]: unknown;
+            }[];
+            /**
+             * Replayed
+             * @default false
+             */
+            replayed: boolean;
+            /** Revision */
+            revision: number;
+            /**
+             * Transactionid
+             * @description Undo handle; null when nothing changed (nothing logged)
+             */
+            transactionId: string | null;
+        };
         /** ErrorBody */
         ErrorBody: {
             /** Code */
@@ -163,6 +788,8 @@ export interface components {
             /** Message */
             message: string;
         };
+        /** @enum {string} */
+        ExprField: "showIf" | "constraint" | "if" | "when" | "expr";
         /** HTTPValidationError */
         HTTPValidationError: {
             /** Detail */
@@ -176,6 +803,224 @@ export interface components {
              */
             status: "ok";
         };
+        /** HistoryItem */
+        HistoryItem: {
+            /** Actor */
+            actor: string;
+            /**
+             * At
+             * Format: date-time
+             */
+            at: string;
+            /**
+             * Kind
+             * @description edit | undo | redo
+             */
+            kind: string;
+            /** Ops */
+            ops: string[];
+            /** Revision */
+            revision: number;
+            /** Transactionid */
+            transactionId: string;
+        };
+        /** InsertFlowNode */
+        InsertFlowNodeParams: {
+            /** @default null */
+            arm: components["schemas"]["Arm"] | null;
+            /**
+             * Index
+             * @default null
+             */
+            index: number | null;
+            /** Node */
+            node: {
+                [key: string]: components["schemas"]["JsonValue"];
+            };
+            /**
+             * Parent
+             * @default null
+             */
+            parent: string | null;
+        };
+        /**
+         * Invocation
+         * @description One op call: what the UI, CLI and MCP send, and what an inverse is.
+         */
+        Invocation: {
+            /** Op */
+            op: string;
+            /** Params */
+            params?: {
+                [key: string]: components["schemas"]["JsonValue"];
+            };
+        };
+        JsonValue: unknown;
+        /** LoginRequest */
+        LoginRequest: {
+            /** Email */
+            email: string;
+            /** Password */
+            password: string;
+        };
+        /** LoginResponse */
+        LoginResponse: {
+            me?: components["schemas"]["Me"] | null;
+            /**
+             * Status
+             * @enum {string}
+             */
+            status: "ok" | "mfa_required";
+        };
+        /** Me */
+        Me: {
+            /**
+             * Csrftoken
+             * @description Send as `X-CSRF-Token` on every unsafe request.
+             */
+            csrfToken: string;
+            /** Email */
+            email: string;
+            /** Memberships */
+            memberships: components["schemas"]["MembershipOut"][];
+            /** Totpenrolled */
+            totpEnrolled: boolean;
+            /** Userid */
+            userId: string;
+        };
+        /** MembershipOut */
+        MembershipOut: {
+            /** Role */
+            role: string;
+            /** Tenantid */
+            tenantId: string;
+        };
+        /** MoveBlock */
+        MoveBlockParams: {
+            /** Id */
+            id: string;
+            /** Index */
+            index: number;
+        };
+        /** MoveChoice */
+        MoveChoiceParams: {
+            /** Index */
+            index: number;
+            /** Owner */
+            owner: string;
+            value: components["schemas"]["ChoiceValue"];
+        };
+        /** MoveFlowNode */
+        MoveFlowNodeParams: {
+            /** @default null */
+            arm: components["schemas"]["Arm"] | null;
+            /** Id */
+            id: string;
+            /**
+             * Index
+             * @default null
+             */
+            index: number | null;
+            /**
+             * Parent
+             * @default null
+             */
+            parent: string | null;
+        };
+        /** MovePage */
+        MovePageParams: {
+            /** Block */
+            block: string;
+            /** Id */
+            id: string;
+            /**
+             * Index
+             * @default null
+             */
+            index: number | null;
+        };
+        /** MoveQuestion */
+        MoveQuestionParams: {
+            /** Id */
+            id: string;
+            /**
+             * Index
+             * @default null
+             */
+            index: number | null;
+            /** Page */
+            page: string;
+        };
+        /** OpCatalogueEntry */
+        OpCatalogueEntry: {
+            /** Area */
+            area: string;
+            /** Description */
+            description: string;
+            /** Id */
+            id: string;
+            /** Label */
+            label: string;
+            /**
+             * Paramsschema
+             * @description JSON Schema (2020-12) of the params
+             */
+            paramsSchema: {
+                [key: string]: unknown;
+            };
+        };
+        /** @enum {string} */
+        OpErrorCode: "op.cascade_blocked" | "op.conflict" | "op.dangling_ref" | "op.duplicate_id" | "op.expr_syntax" | "op.internal" | "op.invalid_result" | "op.invalid_survey" | "op.not_allowed" | "op.not_found" | "op.params" | "op.patch" | "op.unknown";
+        /** @enum {string} */
+        OpId: "add_block" | "add_choice" | "add_page" | "add_question" | "add_variable" | "apply_patch" | "bulk_paste_choices" | "create_choice_list" | "delete_block" | "delete_choice" | "delete_choice_list" | "delete_flow_node" | "delete_page" | "delete_question" | "delete_variable" | "duplicate_question" | "insert_flow_node" | "move_block" | "move_choice" | "move_flow_node" | "move_page" | "move_question" | "rename_block" | "rename_page" | "replace_survey" | "set_choice" | "set_condition" | "set_languages" | "set_property" | "set_title";
+        /** OpsRequest */
+        OpsRequest: {
+            /** Baserevision */
+            baseRevision: number;
+            /**
+             * Ops
+             * @description Applied all or nothing
+             */
+            ops: components["schemas"]["Invocation"][];
+            /**
+             * Transactionid
+             * @description Client-chosen id; a retry with the same id is not applied twice
+             */
+            transactionId?: string | null;
+        };
+        /** PublishRequest */
+        PublishRequest: {
+            /**
+             * Baserevision
+             * @description If given, publish only if the draft is still at it
+             */
+            baseRevision?: number | null;
+        };
+        /** PublishResponse */
+        PublishResponse: {
+            /** Checksum */
+            checksum: string;
+            /** Diagnostics */
+            diagnostics: components["schemas"]["Diagnostic"][];
+            /** Number */
+            number: number;
+            /**
+             * Publishedat
+             * Format: date-time
+             */
+            publishedAt: string;
+            /** Revision */
+            revision: number;
+            /**
+             * Runtimeplan
+             * @description Not compiled yet (R1); always null for now
+             */
+            runtimePlan?: unknown;
+            /** Versionid */
+            versionId: string;
+        };
+        /** @enum {string} */
+        QuestionType: "integer" | "decimal" | "text" | "single" | "multi" | "date" | "note";
         /** QuotaResponse */
         QuotaResponse: {
             /** Nodeid */
@@ -187,6 +1032,40 @@ export interface components {
              * @enum {string}
              */
             result: "admitted" | "full";
+        };
+        /** RejectedBody */
+        RejectedBody: {
+            /** Code */
+            code: string;
+            /** Diagnostics */
+            diagnostics: {
+                [key: string]: unknown;
+            }[];
+            /** Failedindex */
+            failedIndex?: number | null;
+            /** Message */
+            message: string;
+        };
+        /** RenameBlock */
+        RenameBlockParams: {
+            /** Id */
+            id: string;
+            /** Title */
+            title: string | null;
+        };
+        /** RenamePage */
+        RenamePageParams: {
+            /** Id */
+            id: string;
+            /** New Id */
+            new_id: string;
+        };
+        /** ReplaceSurvey */
+        ReplaceSurveyParams: {
+            /** Survey */
+            survey: {
+                [key: string]: components["schemas"]["JsonValue"];
+            };
         };
         /**
          * ResponseRecordIn
@@ -243,6 +1122,89 @@ export interface components {
             } | null;
             /** Submitted */
             submitted: boolean;
+        };
+        /** ReverseRequest */
+        ReverseRequest: {
+            /** Baserevision */
+            baseRevision: number;
+            /** Transactionid */
+            transactionId: string;
+        };
+        /** RevisionConflictBody */
+        RevisionConflictBody: {
+            /** Code */
+            code: string;
+            /**
+             * Currentrevision
+             * @description Refetch the draft at this revision and replay.
+             */
+            currentRevision: number;
+            /** Message */
+            message: string;
+        };
+        /** SetChoice */
+        SetChoiceParams: {
+            /**
+             * Force
+             * @default false
+             */
+            force: boolean;
+            /** @default null */
+            label: components["schemas"]["Text"] | null;
+            /** @default null */
+            new_value: components["schemas"]["ChoiceValue"] | null;
+            /** Owner */
+            owner: string;
+            value: components["schemas"]["ChoiceValue"];
+        };
+        /** SetCondition */
+        SetConditionParams: {
+            /** Condition */
+            condition: string | {
+                [key: string]: components["schemas"]["JsonValue"];
+            } | null;
+            /** @default null */
+            field: components["schemas"]["ExprField"] | null;
+            /** Target */
+            target: string;
+        };
+        /** SetLanguages */
+        SetLanguagesParams: {
+            /**
+             * Cascade
+             * @default false
+             */
+            cascade: boolean;
+            /**
+             * Default Language
+             * @default null
+             */
+            default_language: string | null;
+            /**
+             * Force
+             * @default false
+             */
+            force: boolean;
+            /** Languages */
+            languages: string[];
+        };
+        /** SetProperty */
+        SetPropertyParams: {
+            /** Property */
+            property: string;
+            /** Target */
+            target: string;
+            /**
+             * Unset
+             * @default false
+             */
+            unset: boolean;
+            /** @default null */
+            value: components["schemas"]["JsonValue"];
+        };
+        /** SetTitle */
+        SetTitleParams: {
+            title: components["schemas"]["Text"];
         };
         /** SnapshotRequest */
         SnapshotRequest: {
@@ -323,6 +1285,94 @@ export interface components {
              */
             submittedAt: string;
         };
+        /** SurveyDetail */
+        SurveyDetail: {
+            /** Closedat */
+            closedAt?: string | null;
+            /**
+             * Createdat
+             * Format: date-time
+             */
+            createdAt: string;
+            /** Createdby */
+            createdBy: string;
+            /** Id */
+            id: string;
+            /** Revision */
+            revision: number;
+            /**
+             * Survey
+             * @description The draft (osp-survey JSON)
+             */
+            survey: {
+                [key: string]: unknown;
+            };
+            /** Tenantid */
+            tenantId: string;
+            /** Title */
+            title: string;
+            /**
+             * Updatedat
+             * Format: date-time
+             */
+            updatedAt: string;
+            /** Updatedby */
+            updatedBy: string;
+        };
+        /** SurveySummary */
+        SurveySummary: {
+            /** Closedat */
+            closedAt?: string | null;
+            /**
+             * Createdat
+             * Format: date-time
+             */
+            createdAt: string;
+            /** Createdby */
+            createdBy: string;
+            /** Id */
+            id: string;
+            /** Tenantid */
+            tenantId: string;
+            /** Title */
+            title: string;
+        };
+        Text: string | {
+            [key: string]: string;
+        };
+        /** TotpCode */
+        TotpCode: {
+            /** Code */
+            code: string;
+        };
+        /** TotpConfirmed */
+        TotpConfirmed: {
+            /** Csrftoken */
+            csrfToken: string;
+            /**
+             * Recoverycodes
+             * @description Shown once. Stored hashed.
+             */
+            recoveryCodes: string[];
+        };
+        /** TotpEnrolmentOut */
+        TotpEnrolmentOut: {
+            /** Provisioninguri */
+            provisioningUri: string;
+            /** Secret */
+            secret: string;
+        };
+        /** TotpLoginRequest */
+        TotpLoginRequest: {
+            /** Code */
+            code: string;
+            /**
+             * Recovery
+             * @description `code` is a single-use recovery code
+             * @default false
+             */
+            recovery: boolean;
+        };
         /** ValidationError */
         ValidationError: {
             /** Context */
@@ -352,6 +1402,289 @@ export interface components {
 }
 export type $defs = Record<string, never>;
 export interface operations {
+    login: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["LoginRequest"];
+            };
+        };
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["LoginResponse"];
+                };
+            };
+            /** @description Unauthorized */
+            401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorBody"];
+                };
+            };
+            /** @description Forbidden */
+            403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorBody"];
+                };
+            };
+            /** @description Unsupported Media Type */
+            415: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorBody"];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    loginTotp: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["TotpLoginRequest"];
+            };
+        };
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["LoginResponse"];
+                };
+            };
+            /** @description Unauthorized */
+            401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorBody"];
+                };
+            };
+            /** @description Forbidden */
+            403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorBody"];
+                };
+            };
+            /** @description Unsupported Media Type */
+            415: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorBody"];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    logout: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            204: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+            /** @description Unauthorized */
+            401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorBody"];
+                };
+            };
+            /** @description Forbidden */
+            403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorBody"];
+                };
+            };
+        };
+    };
+    getMe: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["Me"];
+                };
+            };
+            /** @description Unauthorized */
+            401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorBody"];
+                };
+            };
+        };
+    };
+    startTotpEnrolment: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["TotpEnrolmentOut"];
+                };
+            };
+            /** @description Unauthorized */
+            401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorBody"];
+                };
+            };
+            /** @description Forbidden */
+            403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorBody"];
+                };
+            };
+            /** @description Unprocessable Content */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["RejectedBody"];
+                };
+            };
+        };
+    };
+    confirmTotpEnrolment: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["TotpCode"];
+            };
+        };
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["TotpConfirmed"];
+                };
+            };
+            /** @description Unauthorized */
+            401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorBody"];
+                };
+            };
+            /** @description Forbidden */
+            403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorBody"];
+                };
+            };
+            /** @description Unprocessable Content */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["RejectedBody"];
+                };
+            };
+        };
+    };
     getHealth: {
         parameters: {
             query?: never;
@@ -368,6 +1701,128 @@ export interface operations {
                 };
                 content: {
                     "application/json": components["schemas"]["Health"];
+                };
+            };
+        };
+    };
+    getOpCatalogue: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["OpCatalogueEntry"][];
+                };
+            };
+            /** @description Unauthorized */
+            401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorBody"];
+                };
+            };
+        };
+    };
+    getPropertySchemas: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": {
+                        [key: string]: unknown;
+                    };
+                };
+            };
+            /** @description Unauthorized */
+            401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorBody"];
+                };
+            };
+        };
+    };
+    getSurveySchema: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": {
+                        [key: string]: unknown;
+                    };
+                };
+            };
+            /** @description Unauthorized */
+            401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorBody"];
+                };
+            };
+        };
+    };
+    getThemeSchema: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": {
+                        [key: string]: unknown;
+                    };
+                };
+            };
+            /** @description Unauthorized */
+            401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorBody"];
                 };
             };
         };
@@ -739,6 +2194,609 @@ export interface operations {
                 };
                 content: {
                     "application/json": components["schemas"]["ErrorBody"];
+                };
+            };
+        };
+    };
+    listSurveys: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["SurveySummary"][];
+                };
+            };
+            /** @description Unauthorized */
+            401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorBody"];
+                };
+            };
+        };
+    };
+    createSurvey: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["CreateSurveyRequest"];
+            };
+        };
+        responses: {
+            /** @description Successful Response */
+            201: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["SurveyDetail"];
+                };
+            };
+            /** @description Unauthorized */
+            401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorBody"];
+                };
+            };
+            /** @description Forbidden */
+            403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorBody"];
+                };
+            };
+            /** @description Unprocessable Content */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["RejectedBody"];
+                };
+            };
+        };
+    };
+    getSurvey: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                survey_id: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["SurveyDetail"];
+                };
+            };
+            /** @description Unauthorized */
+            401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorBody"];
+                };
+            };
+            /** @description Forbidden */
+            403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorBody"];
+                };
+            };
+            /** @description Not Found */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorBody"];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    deleteSurvey: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                survey_id: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            204: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+            /** @description Unauthorized */
+            401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorBody"];
+                };
+            };
+            /** @description Forbidden */
+            403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorBody"];
+                };
+            };
+            /** @description Not Found */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorBody"];
+                };
+            };
+            /** @description Conflict */
+            409: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorBody"];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    exportXlsform: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                survey_id: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description XLSForm workbook */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet": string;
+                };
+            };
+            /** @description Unauthorized */
+            401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorBody"];
+                };
+            };
+            /** @description Forbidden */
+            403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorBody"];
+                };
+            };
+            /** @description Not Found */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorBody"];
+                };
+            };
+            /** @description Unprocessable Content */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["RejectedBody"];
+                };
+            };
+        };
+    };
+    getSurveyHistory: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                survey_id: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HistoryItem"][];
+                };
+            };
+            /** @description Unauthorized */
+            401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorBody"];
+                };
+            };
+            /** @description Forbidden */
+            403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorBody"];
+                };
+            };
+            /** @description Not Found */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorBody"];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    applyOps: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                survey_id: string;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["OpsRequest"];
+            };
+        };
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["EditResponse"];
+                };
+            };
+            /** @description Unauthorized */
+            401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorBody"];
+                };
+            };
+            /** @description Forbidden */
+            403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorBody"];
+                };
+            };
+            /** @description Not Found */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorBody"];
+                };
+            };
+            /** @description Stale baseRevision */
+            409: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["RevisionConflictBody"];
+                };
+            };
+            /** @description Unprocessable Content */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["RejectedBody"];
+                };
+            };
+        };
+    };
+    publishSurvey: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                survey_id: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: {
+            content: {
+                "application/json": components["schemas"]["PublishRequest"] | null;
+            };
+        };
+        responses: {
+            /** @description Successful Response */
+            201: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["PublishResponse"];
+                };
+            };
+            /** @description Unauthorized */
+            401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorBody"];
+                };
+            };
+            /** @description Forbidden */
+            403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorBody"];
+                };
+            };
+            /** @description Not Found */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorBody"];
+                };
+            };
+            /** @description Stale baseRevision */
+            409: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["RevisionConflictBody"];
+                };
+            };
+            /** @description Unprocessable Content */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["RejectedBody"];
+                };
+            };
+        };
+    };
+    redo: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                survey_id: string;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["ReverseRequest"];
+            };
+        };
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["EditResponse"];
+                };
+            };
+            /** @description Unauthorized */
+            401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorBody"];
+                };
+            };
+            /** @description Forbidden */
+            403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorBody"];
+                };
+            };
+            /** @description Not Found */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorBody"];
+                };
+            };
+            /** @description Stale baseRevision */
+            409: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["RevisionConflictBody"];
+                };
+            };
+            /** @description Unprocessable Content */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["RejectedBody"];
+                };
+            };
+        };
+    };
+    undo: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                survey_id: string;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["ReverseRequest"];
+            };
+        };
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["EditResponse"];
+                };
+            };
+            /** @description Unauthorized */
+            401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorBody"];
+                };
+            };
+            /** @description Forbidden */
+            403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorBody"];
+                };
+            };
+            /** @description Not Found */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorBody"];
+                };
+            };
+            /** @description Stale baseRevision */
+            409: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["RevisionConflictBody"];
+                };
+            };
+            /** @description Unprocessable Content */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["RejectedBody"];
                 };
             };
         };
