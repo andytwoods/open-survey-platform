@@ -14,8 +14,14 @@ The runtime plan (``plan.py``, task R1) is opaque here: the server reads only it
          "seedNode": "assign1/arm"}
       ],
       "quotas": [{"node": "qc1", "quota": "women", "limit": 50}],
-      "resumeExpiryDays": 30                      # optional; see below
+      "resumeExpiryDays": 30,                     # optional; see below
+      "consent": {"version": "sha256:…", "countDeclines": false}   # optional
     }
+
+``consent`` (optional, semantics.md §11): the survey has a consent page. The server then
+refuses snapshots, quota checks and submits until the session has agreed to exactly this
+``version``, stores no URL parameters, and on a decline deletes the session, keeping at
+most an anonymous count (``countDeclines``).
 
 ``resumeExpiryDays`` (optional, a positive integer up to 3650) is how long a resume
 link keeps working without activity (decision S-1). Absent: the server default
@@ -65,12 +71,19 @@ class QuotaNode:
 
 
 @dataclass(frozen=True, slots=True)
+class ConsentConfig:
+    version: str
+    count_declines: bool = False
+
+
+@dataclass(frozen=True, slots=True)
 class RuntimeConfig:
     survey_version: str
     save_mode: SaveMode = "every-page"
     assignments: tuple[Assignment, ...] = ()
     quotas: tuple[QuotaNode, ...] = ()
     resume_expiry_days: int | None = None
+    consent: ConsentConfig | None = None
 
     @property
     def quota_by_node(self) -> dict[str, QuotaNode]:
@@ -161,12 +174,23 @@ class RuntimeConfig:
                 f"resumeExpiryDays must be an integer from 1 to {MAX_RESUME_EXPIRY_DAYS}",
                 "config.invalid",
             )
+        consent = None
+        raw = data.get("consent")
+        if raw is not None:
+            if not isinstance(raw, dict) or not isinstance(raw.get("countDeclines", False), bool):
+                raise InvalidPayload(
+                    "consent must be {version, countDeclines: bool}", "config.invalid"
+                )
+            consent = ConsentConfig(
+                _str(raw.get("version"), "consent version", 80), raw.get("countDeclines", False)
+            )
         return cls(
             _str(data.get("surveyVersion"), "surveyVersion"),
             save_mode,
             tuple(assignments),
             tuple(quotas),
             expiry,
+            consent,
         )
 
     def to_json(self) -> dict[str, Any]:
@@ -187,6 +211,16 @@ class RuntimeConfig:
             **(
                 {"resumeExpiryDays": self.resume_expiry_days}
                 if self.resume_expiry_days is not None
+                else {}
+            ),
+            **(
+                {
+                    "consent": {
+                        "version": self.consent.version,
+                        "countDeclines": self.consent.count_declines,
+                    }
+                }
+                if self.consent is not None
                 else {}
             ),
         }

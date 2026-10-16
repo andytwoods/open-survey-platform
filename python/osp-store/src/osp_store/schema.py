@@ -264,6 +264,8 @@ publications = Table(
     Column("published_by", String(80), nullable=False),
     _ts("created_at"),
     _ts("closed_at", nullable=True),
+    # Anonymous count of consent declines (0006_consent), only if the survey asks for it.
+    Column("declines", Integer, nullable=False, server_default="0"),
     ForeignKeyConstraint(["tenant_id", "version_id"], ["versions.tenant_id", "versions.id"]),
     UniqueConstraint("tenant_id", "id"),
     CheckConstraint("save_mode IN ('every-page', 'end-only')", name="save_mode"),
@@ -285,6 +287,10 @@ participant_sessions = Table(
     Column("url_params_key_id", String(32), nullable=True),
     Column("submission_checksum", String(64), nullable=True),
     Column("response_id", ID, nullable=True),
+    # The consent the participant agreed to (0006_consent; semantics.md §11): the plan's
+    # consent version and the server time of agreement. NULL: no consent page, or not yet.
+    Column("consent_version", String(80), nullable=True),
+    _ts("consented_at", nullable=True),
     _ts("last_active_at"),
     _ts("submitted_at", nullable=True),
     _ts("expired_at", nullable=True),

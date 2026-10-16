@@ -66,6 +66,20 @@
         "resumeExpiryDays": { "type": "integer", "minimum": 1 }
       }
     },
+    "consent": {
+      "description": "Optional consent page, shown before the flow (semantics.md §11). `version` is sha256:<hex> of the canonical JSON of {text, agree, decline} as compiled here.",
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["version", "text", "agree", "decline", "declineOutcome", "countDeclines"],
+      "properties": {
+        "version": { "type": "string", "pattern": "^sha256:[0-9a-f]{64}$" },
+        "text": { "$ref": "#/$defs/text" },
+        "agree": { "$ref": "#/$defs/text" },
+        "decline": { "$ref": "#/$defs/text" },
+        "declineOutcome": { "$ref": "#/$defs/id" },
+        "countDeclines": { "type": "boolean" }
+      }
+    },
     "items": {
       "description": "Every item (questions and notes) by id.",
       "type": "object",
