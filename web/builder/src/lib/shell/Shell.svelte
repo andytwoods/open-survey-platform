@@ -1,5 +1,10 @@
 <script lang="ts">
+	import { goto } from '$app/navigation';
+	import { resolve } from '$app/paths';
 	import { Announcer, Button, Dialog, PaneResizer, theme, toast } from '@osp/ui-components';
+	import AppearanceView from '../appearance/AppearanceView.svelte';
+	import { appearanceCommands, type BuilderView } from '../appearance/commands';
+	import { themeEditor } from '../appearance/theme-editor.svelte';
 	import { onDestroy, onMount } from 'svelte';
 	import { CommandRegistry } from '../commands/registry';
 	import { detectMac } from '../commands/shortcut';
@@ -13,6 +18,10 @@
 	import { cyclePane } from './panes';
 	import PropertiesPane from './PropertiesPane.svelte';
 	import TopBar from './TopBar.svelte';
+
+	/** Which view fills the area under the top bar (each has its own route). */
+	let { view = 'editor' }: { view?: BuilderView } = $props();
+	const editing = $derived(view === 'editor');
 
 	// Below these widths a pane collapses and opens as an overlay from the top bar.
 	const PROPERTIES_BREAKPOINT = 1024;
@@ -32,8 +41,8 @@
 	let paletteOpen = $state(false);
 	let previewOpen = $state(false);
 
-	const outlineCollapsible = $derived(innerWidth < OUTLINE_BREAKPOINT);
-	const propertiesCollapsible = $derived(innerWidth < PROPERTIES_BREAKPOINT);
+	const outlineCollapsible = $derived(editing && innerWidth < OUTLINE_BREAKPOINT);
+	const propertiesCollapsible = $derived(editing && innerWidth < PROPERTIES_BREAKPOINT);
 	const showOutline = $derived(!outlineCollapsible || outlineOpen);
 	const showProperties = $derived(!propertiesCollapsible || propertiesOpen);
 
@@ -41,8 +50,16 @@
 	const offCommands = registry.registerAll(
 		shellCommands({
 				togglePalette: () => (paletteOpen = !paletteOpen),
-			undo: () => toast('Undo: nothing to undo yet (editing is not connected).'),
-			redo: () => toast('Redo: nothing to redo yet (editing is not connected).'),
+			undo: () => {
+				if (view === 'appearance') {
+					if (!themeEditor.undo()) toast('Nothing to undo.');
+				} else toast('Undo: nothing to undo yet (editing is not connected).');
+			},
+			redo: () => {
+				if (view === 'appearance') {
+					if (!themeEditor.redo()) toast('Nothing to redo.');
+				} else toast('Redo: nothing to redo yet (editing is not connected).');
+			},
 			cyclePane: (dir) => cyclePane(dir),
 			toggleTheme: () => theme.toggle(),
 			systemTheme: () => theme.set('system'),
@@ -60,7 +77,16 @@
 			clearSelection: () => selection.clear()
 		})
 		);
-	onDestroy(offCommands);
+	const offAppearance = registry.registerAll(
+		appearanceCommands({
+			view: () => view,
+			open: (v) => goto(resolve(v === 'appearance' ? '/appearance' : '/'))
+		})
+	);
+	onDestroy(() => {
+		offCommands();
+		offAppearance();
+	});
 
 	onMount(() => {
 		const offTheme = theme.init();
@@ -80,6 +106,7 @@
 <div class="shell">
 	<TopBar
 		title={MOCK_SURVEY.label}
+		{view}
 		{registry}
 		health={health.state}
 		{outlineCollapsible}
@@ -88,6 +115,11 @@
 		{propertiesOpen}
 	/>
 
+	{#if view === 'appearance'}
+		<main id="pane-appearance" class="appearance" aria-label="Appearance">
+			<AppearanceView />
+		</main>
+	{:else}
 	<div class="panes">
 		{#if showOutline}
 			<!-- svelte-ignore a11y_no_noninteractive_element_interactions -->
@@ -148,6 +180,7 @@
 			</aside>
 		{/if}
 	</div>
+	{/if}
 </div>
 
 <CommandPalette bind:open={paletteOpen} {registry} />
@@ -170,6 +203,10 @@
 		display: grid;
 		grid-template-rows: auto 1fr;
 		height: 100dvh;
+		overflow: hidden;
+	}
+	.appearance {
+		min-height: 0;
 		overflow: hidden;
 	}
 	.panes {

@@ -1,7 +1,9 @@
 <script lang="ts">
+	import ArrowLeft from '@lucide/svelte/icons/arrow-left';
 	import CloudCheck from '@lucide/svelte/icons/cloud-check';
 	import Eye from '@lucide/svelte/icons/eye';
 	import Moon from '@lucide/svelte/icons/moon';
+	import Palette from '@lucide/svelte/icons/palette';
 	import PanelLeft from '@lucide/svelte/icons/panel-left';
 	import PanelRight from '@lucide/svelte/icons/panel-right';
 	import Redo2 from '@lucide/svelte/icons/redo-2';
@@ -15,6 +17,7 @@
 
 	let {
 		title,
+		view = 'editor',
 		registry,
 		health,
 		outlineCollapsible,
@@ -23,6 +26,7 @@
 		propertiesOpen
 	}: {
 		title: string;
+		view?: 'editor' | 'appearance';
 		registry: CommandRegistry;
 		health: HealthState;
 		outlineCollapsible: boolean;
@@ -77,6 +81,14 @@
 		/>
 		<IconButton icon={Undo2} label="Undo" {...sc('edit.undo')} onclick={() => registry.run('edit.undo')} />
 		<IconButton icon={Redo2} label="Redo" {...sc('edit.redo')} onclick={() => registry.run('edit.redo')} />
+		{#if view === 'appearance'}
+			<Button onclick={() => registry.run('view.editor')}>
+				<ArrowLeft size={16} aria-hidden="true" />
+				Back to editor
+			</Button>
+		{:else}
+			<IconButton icon={Palette} label="Appearance" onclick={() => registry.run('view.appearance')} />
+		{/if}
 		<IconButton
 			icon={isDark ? Sun : Moon}
 			label={isDark ? 'Switch to light theme' : 'Switch to dark theme'}

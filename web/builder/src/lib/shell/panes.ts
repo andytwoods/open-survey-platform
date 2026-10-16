@@ -3,7 +3,15 @@
  * marked data-pane-focus (e.g. the outline's roving-tabindex item) receives focus,
  * falling back to the first focusable element, then the pane itself.
  */
-export const PANE_ORDER = ['topbar', 'outline', 'canvas', 'properties'] as const;
+export const PANE_ORDER = [
+	'topbar',
+	'outline',
+	'canvas',
+	'properties',
+	// The Appearance view's two panes.
+	'appearance-controls',
+	'appearance-preview'
+] as const;
 export type PaneName = (typeof PANE_ORDER)[number];
 
 const FOCUSABLE =
