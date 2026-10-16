@@ -113,6 +113,11 @@ for _d in CHOICE_QUESTIONS:
 # --- Pages and blocks --------------------------------------------------------------------
 _row("Page.id", "native", "`begin group` name with `appearance: field-list` (one screen).")
 _row("Page.items", "native", "Questions inside the field-list group.")
+_row(
+    "Page.title",
+    "unsupported",
+    "Not exported yet (C2b added the field); the field-list group's `label` could carry it.",
+)
 _row("Page.itemOrder", "native", "`fixed`: sheet order.")
 _row(
     "Page.itemOrder=shuffle",
@@ -204,6 +209,12 @@ _row("DecLit.kind", "native", "XPath number.")
 _row("DecLit.value", "native", "Written in plain notation (no exponent).")
 _row("TextLit.kind", "native", "XPath string literal.")
 _row("TextLit.value", "native", "Quoted; `concat()` when it holds both quote kinds.")
+_row(
+    "BoolLit.kind",
+    "unsupported",
+    "Not exported yet (C2b added the literal); the XPath is `true()` / `false()`.",
+)
+_row("BoolLit.value", "unsupported", "See BoolLit.kind.")
 _row("NullLit.kind", "lowered", "`''` as a value; any comparison with it is `false()`.")
 _row("Ref.kind", "native", "`${name}`.")
 _row("Ref.id", "native", "Rewritten to the target's variable name.")
