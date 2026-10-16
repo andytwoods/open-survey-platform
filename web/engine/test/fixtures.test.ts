@@ -56,10 +56,10 @@ afterAll(() => {
 describe('runner', () => {
 	it('detects a wrong expected trace and a broken invariant', () => {
 		const name = '06-clear-on-back';
-		const { plan, meta } = loadPlan(name);
+		const { plan } = loadPlan(name);
 		const script = loadJson<Script>(join(FIXTURES, name, 'scripts', 'main.json'));
 		const expected = loadJson<Expected>(join(FIXTURES, name, 'expected', 'main.json'));
-		const run = play(plan!, script, meta);
+		const run = play(plan!, script);
 		const bad = structuredClone(expected.steps[5]!);
 		(bad.questions as Record<string, { state: string }>).pet_name!.state = 'answered';
 		bad.visible = ['pet_name', 'season'];
@@ -82,7 +82,7 @@ for (const name of fixtureNames()) {
 			const expected = loadJson<Expected>(join(FIXTURES, name, 'expected', file));
 			const pending = expected.pending.length > 0;
 			it(`${script.id}${pending ? ` (pending: ${expected.pending.join(', ')})` : ''}`, () => {
-				const { plan, error, meta } = loadPlan(name);
+				const { plan, error } = loadPlan(name);
 				const entry: (typeof report)[number] = { fixture: name, script: script.id, status: 'passed' };
 				report.push(entry);
 				if (!plan) {
@@ -93,7 +93,7 @@ for (const name of fixtureNames()) {
 				}
 				let run: ReturnType<typeof play>;
 				try {
-					run = play(plan, script, meta);
+					run = play(plan, script);
 				} catch (e) {
 					entry.status = pending ? 'pending' : 'failed';
 					entry.reason = `script could not be played: ${(e as Error).message}`;

@@ -493,9 +493,10 @@ function initialData(plan: Plan, ev: Extract<EngineEvent, { type: 'start' }>): D
 			d.conditions[v.id] = ev.assigned[v.id]!;
 			d.conditionSource[v.id] = 'server';
 		} else {
-			// PROVISIONAL (C2-5): an independent uniform seeded draw per variable, with the
-			// variable id as the stream id (R1-2). Drawn at start, so it never re-rolls.
-			const seed = nodeSeed(seedVersion(plan), ev.sessionSeed, v.id);
+			// PROVISIONAL (C2-5): an independent uniform seeded draw per variable, on the stream
+			// `seedNode` (R1-2), exactly as the server's simple assignment. Drawn at start, so
+			// it never re-rolls. Normally the server sends every level and this is not used.
+			const seed = nodeSeed(seedVersion(plan), ev.sessionSeed, v.seedNode || v.id);
 			d.conditions[v.id] = drawCondition(v.levels, null, seed);
 			d.conditionSource[v.id] = 'seeded';
 		}
@@ -907,7 +908,16 @@ function variableValues(state: State) {
 	return { embedded, computed };
 }
 
-/** The response: values, per-question states, orders, event log and versions. */
+/** Conditions the server assigned at session start: what R2's submit checks against. */
+function serverAssigned(d: Data): Record<Id, ChoiceValue> {
+	const first = d.events[0];
+	return first?.type === 'start' ? { ...first.assigned } : {};
+}
+
+/**
+ * The response: values, per-question states, orders, event log and versions. `answers` is
+ * `{questionId: {state, value}}` (semantics §1); `csvState` uses export names.
+ */
 export function result(state: State): ResponseRecord {
 	const { plan, data: d } = state;
 	const ans = answers(state);
@@ -933,6 +943,7 @@ export function result(state: State): ResponseRecord {
 		endNode: d.ended?.nodeId ?? null,
 		// PROVISIONAL (R1-5): `seeded` when the engine drew any condition itself.
 		allocation: sources.includes('seeded') ? 'seeded' : 'server',
+		assigned: serverAssigned(d),
 		conditions: { ...d.conditions },
 		conditionSources: { ...d.conditionSource },
 		orders: clone(d.orders),

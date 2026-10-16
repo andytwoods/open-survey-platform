@@ -40,7 +40,8 @@ export interface Script {
 }
 
 export interface Meta {
-	idmap?: { nodes: Record<string, string> };
+	fixture?: string;
+	diagnostics?: unknown[];
 }
 
 export function loadJson<T>(path: string): T {
@@ -64,14 +65,37 @@ export function loadPlan(name: string): { plan: Plan | null; error?: string; met
 	return { plan: raw, meta };
 }
 
-function renameOrders(orders: ReturnType<typeof result>['orders'], meta: Meta) {
-	const nodes = meta.idmap?.nodes ?? {};
-	const blocks: Record<string, string[]> = {};
-	for (const [k, v] of Object.entries(orders.blocks)) blocks[k] = v.map((id) => nodes[id] ?? id);
-	return { blocks, items: orders.items, choices: orders.choices };
+/**
+ * Traces name blocks (fixtures/FORMAT.md §1: one block, one page `<block>_page`): a step's
+ * `page`, `orders.items` keys and randomiser children are block ids. The engine works in
+ * pages and flow nodes, so translate through the plan.
+ */
+function blockOfPage(plan: Plan, page: string | null): string | null {
+	return page === null ? null : (plan.pages[page]?.block ?? page);
 }
 
-export function trace(state: State, index: number, meta: Meta) {
+function blockOfNode(plan: Plan, nodeId: string): string {
+	const find = (ns: Plan['flow']): string | undefined => {
+		for (const n of ns) {
+			if (n.id === nodeId) return n.type === 'block' ? n.block : n.id;
+			const sub = n.type === 'branch' ? [...n.then, ...n.else] : n.type === 'randomiser' ? n.children : [];
+			const hit = find(sub);
+			if (hit) return hit;
+		}
+		return undefined;
+	};
+	return find(plan.flow) ?? nodeId;
+}
+
+function renameOrders(plan: Plan, orders: ReturnType<typeof result>['orders']) {
+	const blocks: Record<string, string[]> = {};
+	for (const [k, v] of Object.entries(orders.blocks)) blocks[k] = v.map((id) => blockOfNode(plan, id));
+	const items: Record<string, string[]> = {};
+	for (const [k, v] of Object.entries(orders.items)) items[blockOfPage(plan, k) ?? k] = v;
+	return { blocks, items, choices: orders.choices };
+}
+
+export function trace(state: State, index: number) {
 	const v = view(state);
 	const r = result(state);
 	const errors: Record<string, unknown> = {};
@@ -88,12 +112,12 @@ export function trace(state: State, index: number, meta: Meta) {
 	}
 	return {
 		index,
-		page: v.page,
+		page: blockOfPage(state.plan, v.page),
 		visible: v.items.map((i) => i.id),
 		errors,
 		nav: v.nav ? { back: v.nav.back } : null,
 		questions: answers(state),
-		orders: renameOrders(r.orders, meta),
+		orders: renameOrders(state.plan, r.orders),
 		conditions: r.conditions,
 		end: r.end,
 		labels,
@@ -101,13 +125,13 @@ export function trace(state: State, index: number, meta: Meta) {
 	};
 }
 
-export function responseOf(state: State, meta: Meta) {
+export function responseOf(state: State) {
 	const r = result(state);
-	return { ...r, orders: renameOrders(r.orders, meta) };
+	return { ...r, orders: renameOrders(state.plan, r.orders) };
 }
 
 /** Run a script. Throws on a script that cannot be played (wrong page, hidden item). */
-export function play(plan: Plan, script: Script, meta: Meta) {
+export function play(plan: Plan, script: Script) {
 	let t = 1_000;
 	const clock = () => (t += 1_000);
 	let state = start(plan, {
@@ -116,11 +140,12 @@ export function play(plan: Plan, script: Script, meta: Meta) {
 		clock,
 		language: script.language
 	});
-	const steps = [trace(state, 0, meta)];
+	const steps = [trace(state, 0)];
 	script.actions.forEach((action, i) => {
 		const v = view(state);
-		if (action.expectPage !== undefined && v.page !== action.expectPage) {
-			throw new Error(`action ${i}: expected page ${action.expectPage}, engine shows ${v.page}`);
+		const shown = blockOfPage(plan, v.page);
+		if (action.expectPage !== undefined && shown !== action.expectPage) {
+			throw new Error(`action ${i}: expected page ${action.expectPage}, engine shows ${shown}`);
 		}
 		const visible = new Set(v.items.map((it) => it.id));
 		for (const [id, value] of Object.entries(action.set ?? {})) {
@@ -156,9 +181,9 @@ export function play(plan: Plan, script: Script, meta: Meta) {
 				break;
 			}
 		}
-		steps.push(trace(state, i + 1, meta));
+		steps.push(trace(state, i + 1));
 	});
-	return { state, steps, response: responseOf(state, meta) };
+	return { state, steps, response: responseOf(state) };
 }
 
 // --- Comparison with "<engine>" and "<pending:…>" placeholders ---------------------------

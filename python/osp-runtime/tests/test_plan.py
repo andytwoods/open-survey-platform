@@ -7,6 +7,7 @@ import json
 from pathlib import Path
 
 import pytest
+from osp_runtime.config import RuntimeConfig
 from osp_runtime.plan import (
     ENGINE_VERSION,
     PLAN_VERSION,
@@ -15,6 +16,8 @@ from osp_runtime.plan import (
     checksum,
     compile_plan,
     compile_survey,
+    runtime_config,
+    seed_node,
     segments,
 )
 from osp_spec import CODES, parse
@@ -146,6 +149,7 @@ def test_worked_example_details() -> None:
         "kind": "assigned",
         "name": "framing",
         "levels": ["gain", "loss"],
+        "seedNode": "f_assign/framing",
     }
     gate = plan["flow"][1]
     assert gate["type"] == "branch" and gate["else"] == []
@@ -171,3 +175,29 @@ def test_segments() -> None:
         {"pipe": "$position.of"},
     ]
     assert segments("${not valid} ${$nope}") == ["${not valid} ${$nope}"]
+
+
+def test_assigned_variables_carry_their_seed_node() -> None:
+    plan, _ = compile_survey(_survey(CASES / "valid" / "v01_worked_example.json"))
+    assert plan["variables"]["framing"]["seedNode"] == seed_node("f_assign", "framing")
+    assert plan["variables"]["incentive"]["seedNode"] == "f_assign/incentive"
+
+
+def test_runtime_config_is_what_the_session_service_reads() -> None:
+    plan, _ = compile_survey(_survey(CASES / "valid" / "v01_worked_example.json"))
+    cfg = runtime_config(plan)
+    parsed = RuntimeConfig.from_json(cfg)  # R2's parser accepts it unchanged
+    assert parsed.to_json() == cfg
+    assert cfg["surveyVersion"] == plan["survey"]["seedVersion"] == "3"
+    assert [(a["variable"], a["seedNode"]) for a in cfg["assignments"]] == [
+        ("framing", "f_assign/framing"),
+        ("incentive", "f_assign/incentive"),
+    ]
+    assert cfg["quotas"] == [{"node": "f_quota", "quota": "q_old", "limit": 150}]
+    assert runtime_config(plan, save_mode="end-only")["saveMode"] == "end-only"
+
+
+@pytest.mark.parametrize("path", VALID, ids=lambda p: p.stem)
+def test_runtime_config_for_every_valid_case(path: Path) -> None:
+    plan, _ = compile_survey(_survey(path))
+    RuntimeConfig.from_json(runtime_config(plan))

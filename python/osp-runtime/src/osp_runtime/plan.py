@@ -51,6 +51,8 @@ __all__ = [
     "checksum",
     "compile_plan",
     "compile_survey",
+    "runtime_config",
+    "seed_node",
     "seed_version",
     "segments",
 ]
@@ -90,6 +92,56 @@ def checksum(plan: Json) -> str:
     """`sha256:<hex>` of the canonical JSON of `plan` without its `checksum` field."""
     body = {k: v for k, v in plan.items() if k != "checksum"}
     return "sha256:" + hashlib.sha256(canonical_json(body).encode("utf-8")).hexdigest()
+
+
+def seed_node(assign_node_id: str, variable_id: str) -> str:
+    """The `node_id` for the seeded draw of one assigned variable: `<assign node>/<variable>`.
+
+    PROVISIONAL (semantics.md Open questions R1-2, C2-5): one independent stream per
+    variable. The server (`RuntimeConfig.seedNode`) and the browser engine (plan
+    `variables[id].seedNode`) both take it from here, so they draw the same level.
+    """
+    return f"{assign_node_id}/{variable_id}"
+
+
+def runtime_config(plan: Json, *, save_mode: str = "every-page") -> Json:
+    """The `RuntimeConfig` JSON (`osp_runtime.config`) the session service needs beside the
+    plan: survey-version string, save mode, one `simple` assignment per assigned variable
+    (with its `seedNode`) and one entry per `quotaCheck` node.
+
+    osp-survey/0.1 models neither balanced allocation nor weights, so every assignment is
+    `simple` with equal weights; the save mode is a publish setting, not in the survey.
+    """
+    quotas = []
+
+    def walk(nodes: list[Json]) -> None:
+        for n in nodes:
+            if n["type"] == "quotaCheck":
+                q = plan["quotas"].get(n["quota"], {})
+                quotas.append({"node": n["id"], "quota": n["quota"], "limit": q.get("limit", 0)})
+            elif n["type"] == "branch":
+                walk(n["then"])
+                walk(n["else"])
+            elif n["type"] == "randomiser":
+                walk(n["children"])
+
+    walk(plan["flow"])
+    assignments = [
+        {
+            "variable": v["id"],
+            "levels": list(v["levels"]),
+            "method": "simple",
+            "seedNode": v["seedNode"],
+        }
+        for v in plan["variables"].values()
+        if v["kind"] == "assigned"
+    ]
+    return {
+        "surveyVersion": plan["survey"]["seedVersion"],
+        "saveMode": save_mode,
+        "assignments": assignments,
+        "quotas": quotas,
+    }
 
 
 def seed_version(survey: Survey) -> str:
@@ -132,6 +184,7 @@ class _Compiler:
         self.pages: dict[str, Json] = {}
         self.blocks: dict[str, Json] = {}
         self.questions: list[str] = []
+        self.seed_nodes: dict[str, str] = {}
 
     def text(self, text: str | dict[str, str] | None) -> Json:
         """Translatable text → `{language: segments}` for every survey language.
@@ -220,6 +273,8 @@ class _Compiler:
                 out["pick"] = n.pick
                 return out
             case AssignNode():
+                for var in n.variables:
+                    self.seed_nodes.setdefault(var, seed_node(n.id, var))
                 return {"type": "assign", "id": n.id, "variables": list(n.variables)}
             case QuotaCheckNode():
                 return {"type": "quotaCheck", "id": n.id, "quota": n.quota}
@@ -238,6 +293,7 @@ class _Compiler:
                 out["default"] = v.default
             case AssignedVariable():
                 out["levels"] = list(v.levels)
+                out["seedNode"] = self.seed_nodes.get(v.id, v.id)
             case ComputedVariable():
                 out["expr"] = self.expr(v.expr)
         return out

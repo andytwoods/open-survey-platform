@@ -218,6 +218,9 @@ export interface ResponseRecord {
 	end: Id | null;
 	endNode: Id | null;
 	allocation: 'server' | 'seeded';
+	/** Exactly the conditions the server sent at start (osp_runtime.validate_record checks it). */
+	assigned: Record<Id, ChoiceValue>;
+	/** All conditions in force, including any the engine drew itself. */
 	conditions: Record<Id, ChoiceValue>;
 	conditionSources: Record<Id, 'server' | 'seeded'>;
 	orders: Orders;

@@ -112,6 +112,8 @@ export interface AssignedVariable {
 	kind: 'assigned';
 	name: string;
 	levels: ChoiceValue[];
+	/** node_id for the seeded draw (`<assign node>/<variable>`); same as RuntimeConfig's seedNode. */
+	seedNode: string;
 }
 
 export interface ComputedVariable {
