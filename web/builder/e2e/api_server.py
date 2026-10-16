@@ -18,6 +18,7 @@ import tempfile
 from pathlib import Path
 
 import uvicorn
+from fastapi import FastAPI
 from osp_api.app import create_app
 from osp_app import build_services
 from osp_store import Keyring, Store, SystemContext, create_engine, migrate
@@ -26,7 +27,7 @@ EMAIL = os.environ.get("OSP_E2E_EMAIL", "researcher@lab.example")
 PASSWORD = os.environ.get("OSP_E2E_PASSWORD", "plover tundra kettle 4417 orbit")
 
 
-def build(db_dir: Path):  # noqa: ANN201 (FastAPI app)
+def build(db_dir: Path) -> FastAPI:
     engine = create_engine(f"sqlite:///{db_dir / 'e2e.db'}")
     migrate(engine)
     key = base64.b64encode(secrets.token_bytes(32)).decode("ascii")

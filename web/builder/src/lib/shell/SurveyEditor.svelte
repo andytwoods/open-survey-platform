@@ -11,7 +11,7 @@
 
 	$effect(() => {
 		const s = store;
-		if (!s.survey && !s.loading) void s.load(surveyId);
+		if (!s.survey && !s.loading && !s.error) void s.load(surveyId);
 	});
 </script>
 

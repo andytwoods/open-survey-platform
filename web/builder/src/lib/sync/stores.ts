@@ -11,7 +11,8 @@ import { apiTransport } from './transport';
 let current: SurveyStore | null = null;
 
 export function storeFor(surveyId: string): SurveyStore {
-	if (current && current.surveyId === surveyId) return current;
+	// Reuse only a store that loaded: a failed load is retried on the next visit.
+	if (current && current.surveyId === surveyId && current.survey) return current;
 	current = new SurveyStore({ transport: apiTransport(api), onUnauthenticated: () => auth.expired() });
 	current.surveyId = surveyId;
 	return current;
