@@ -63,13 +63,13 @@ export interface PanelDiagnostic {
 	pointer: string;
 }
 
-/** `set_property` params (see `GET /api/meta/ops`). */
-export interface SetPropertyParams {
+/** `set_property` params (see `GET /api/meta/ops`). A type alias, so it is a plain record. */
+export type SetPropertyParams = {
 	target: string;
 	property: string;
 	value?: unknown;
 	unset?: boolean;
-}
+};
 
 /** One op invocation, as the op client (B2) submits it. */
 export interface SetPropertyOp {

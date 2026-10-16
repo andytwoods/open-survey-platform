@@ -1,5 +1,5 @@
 <script lang="ts">
-	import { Tabs } from '@osp/ui-components';
+	import { Tabs, announce } from '@osp/ui-components';
 	import {
 		defaultLanguage,
 		findObject,
@@ -13,11 +13,14 @@
 	import type { SelectionStore } from '../selection.svelte';
 	import type { SurveyStore } from '../sync/survey-store.svelte';
 	import BufferedTextField from './BufferedTextField.svelte';
+	import { api } from '../api';
+	import PropertyPanel from '../properties/PropertyPanel.svelte';
+	import { propertySchemas, schemaFor } from '../properties/schemas.svelte';
 
 	/**
-	 * Shows what is selected, plus the one editable field each object has here (question
-	 * label, page/block title) so the edit flow is wired end to end. The schema-driven
-	 * property panel is task B4.
+	 * Shows what is selected and its schema-driven property panel (B4). Until the property
+	 * schemas have loaded, the one editable field each object has (question label,
+	 * page/block title) stands in.
 	 */
 	let {
 		roots,
@@ -62,6 +65,21 @@
 		};
 	}
 
+	// The schema-driven property panel (B4), once the schemas have loaded; until then (or
+	// for a type without a schema) the single buffered field above stands in.
+	$effect(() => {
+		if (store) void propertySchemas.load(() => api.GET('/api/meta/property-schemas'));
+	});
+	const panelTarget = $derived(store && node ? (node.type === 'survey' ? store.survey : raw) : undefined);
+	const schema = $derived(node && panelTarget ? schemaFor(propertySchemas.doc, node.type, panelTarget) : undefined);
+	const panelPointer = $derived(
+		store && node ? (node.type === 'survey' ? '' : (pointerOf(store.survey, node.id) ?? '')) : ''
+	);
+	let panel = $state<PropertyPanel | null>(null);
+	$effect(() => {
+		if (store) return store.registerBuffer({ flush: () => panel?.flush() });
+	});
+
 	const nodeDiagnostics = $derived.by(() => {
 		if (!store || !node) return [];
 		const base = pointerOf(store.survey, node.id);
@@ -75,7 +93,23 @@
 	<h2 id="properties-heading" tabindex="-1" data-pane-focus>Properties</h2>
 	{#if node}
 		{#snippet details()}
-			{#if field && store}
+			{#if store && schema && propertySchemas.doc}
+				<div class="field">
+					<PropertyPanel
+						bind:this={panel}
+						{schema}
+						target={panelTarget}
+						language={lang}
+						diagnostics={[...store.diagnostics, ...(store.rejection?.diagnostics ?? [])]}
+						pointer={panelPointer}
+						survey={store.survey}
+						groups={propertySchemas.doc.groups}
+						onOp={(op) => store?.submit([op])}
+						onOpenEditor={(r) => announce(`The ${r.kind} editor is not available yet.`)}
+						onDirty={(d) => store?.markDirty(d)}
+					/>
+				</div>
+			{:else if field && store}
 				{#key node.id}
 					<div class="field">
 						<BufferedTextField
