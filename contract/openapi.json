@@ -744,6 +744,82 @@
         "title": "ErrorBody",
         "type": "object"
       },
+      "ExprDiagnostic": {
+        "properties": {
+          "code": {
+            "title": "Code",
+            "type": "string"
+          },
+          "end": {
+            "anyOf": [
+              {
+                "type": "integer"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "description": "Exclusive end offset (parse errors)",
+            "title": "End"
+          },
+          "message": {
+            "title": "Message",
+            "type": "string"
+          },
+          "path": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "description": "JSON pointer into the AST (type errors)",
+            "title": "Path"
+          },
+          "questionId": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "description": "The question or variable it is about",
+            "title": "Questionid"
+          },
+          "severity": {
+            "default": "error",
+            "enum": [
+              "error",
+              "warning",
+              "info"
+            ],
+            "title": "Severity",
+            "type": "string"
+          },
+          "start": {
+            "anyOf": [
+              {
+                "type": "integer"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "description": "0-based character offset (parse errors)",
+            "title": "Start"
+          }
+        },
+        "required": [
+          "code",
+          "message"
+        ],
+        "title": "ExprDiagnostic",
+        "type": "object"
+      },
       "ExprField": {
         "enum": [
           "showIf",
@@ -1285,6 +1361,158 @@
           "baseRevision"
         ],
         "title": "OpsRequest",
+        "type": "object"
+      },
+      "ParseExpressionRequest": {
+        "additionalProperties": false,
+        "properties": {
+          "field": {
+            "anyOf": [
+              {
+                "enum": [
+                  "showIf",
+                  "constraint",
+                  "if",
+                  "when",
+                  "expr"
+                ],
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "description": "Default: showIf / if / when / expr",
+            "title": "Field"
+          },
+          "surveyId": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "description": "Type-check against this survey's draft",
+            "title": "Surveyid"
+          },
+          "target": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "description": "Check in place: the question, branch, quota or variable it is for",
+            "title": "Target"
+          },
+          "text": {
+            "maxLength": 20000,
+            "title": "Text",
+            "type": "string"
+          }
+        },
+        "required": [
+          "text"
+        ],
+        "title": "ParseExpressionRequest",
+        "type": "object"
+      },
+      "ParseExpressionResponse": {
+        "properties": {
+          "ast": {
+            "anyOf": [
+              {
+                "additionalProperties": true,
+                "type": "object"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "description": "Expression AST (osp-expr JSON)",
+            "title": "Ast"
+          },
+          "diagnostics": {
+            "items": {
+              "$ref": "#/components/schemas/ExprDiagnostic"
+            },
+            "title": "Diagnostics",
+            "type": "array"
+          },
+          "ok": {
+            "description": "True iff the text parsed (ast is set)",
+            "title": "Ok",
+            "type": "boolean"
+          },
+          "references": {
+            "description": "Ids the expression uses",
+            "items": {
+              "type": "string"
+            },
+            "title": "References",
+            "type": "array"
+          },
+          "text": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "description": "Canonical text of the AST",
+            "title": "Text"
+          }
+        },
+        "required": [
+          "ok"
+        ],
+        "title": "ParseExpressionResponse",
+        "type": "object"
+      },
+      "PrintExpressionRequest": {
+        "additionalProperties": false,
+        "properties": {
+          "ast": {
+            "additionalProperties": true,
+            "title": "Ast",
+            "type": "object"
+          }
+        },
+        "required": [
+          "ast"
+        ],
+        "title": "PrintExpressionRequest",
+        "type": "object"
+      },
+      "PrintExpressionResponse": {
+        "properties": {
+          "diagnostics": {
+            "items": {
+              "$ref": "#/components/schemas/ExprDiagnostic"
+            },
+            "title": "Diagnostics",
+            "type": "array"
+          },
+          "text": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "description": "Canonical text; null if the AST is invalid",
+            "title": "Text"
+          }
+        },
+        "title": "PrintExpressionResponse",
         "type": "object"
       },
       "PublishRequest": {
@@ -2658,6 +2886,128 @@
           }
         },
         "summary": "Health",
+        "tags": [
+          "meta"
+        ]
+      }
+    },
+    "/api/meta/expressions/parse": {
+      "post": {
+        "operationId": "parseExpression",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/ParseExpressionRequest"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ParseExpressionResponse"
+                }
+              }
+            },
+            "description": "Successful Response"
+          },
+          "401": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorBody"
+                }
+              }
+            },
+            "description": "Unauthorized"
+          },
+          "403": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorBody"
+                }
+              }
+            },
+            "description": "Forbidden"
+          },
+          "404": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorBody"
+                }
+              }
+            },
+            "description": "Not Found"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/RejectedBody"
+                }
+              }
+            },
+            "description": "Unprocessable Content"
+          }
+        },
+        "summary": "Parse",
+        "tags": [
+          "meta"
+        ]
+      }
+    },
+    "/api/meta/expressions/print": {
+      "post": {
+        "operationId": "printExpression",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/PrintExpressionRequest"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/PrintExpressionResponse"
+                }
+              }
+            },
+            "description": "Successful Response"
+          },
+          "401": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorBody"
+                }
+              }
+            },
+            "description": "Unauthorized"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/RejectedBody"
+                }
+              }
+            },
+            "description": "Unprocessable Content"
+          }
+        },
+        "summary": "Print ",
         "tags": [
           "meta"
         ]

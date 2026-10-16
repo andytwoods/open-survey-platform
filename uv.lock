@@ -703,6 +703,7 @@ source = { editable = "python/osp-api" }
 dependencies = [
     { name = "fastapi" },
     { name = "osp-app" },
+    { name = "osp-expr" },
     { name = "osp-ops" },
     { name = "osp-runtime" },
     { name = "osp-spec" },
@@ -713,6 +714,7 @@ dependencies = [
 requires-dist = [
     { name = "fastapi", specifier = ">=0.140,<0.144" },
     { name = "osp-app", editable = "python/osp-app" },
+    { name = "osp-expr", editable = "python/osp-expr" },
     { name = "osp-ops", editable = "python/osp-ops" },
     { name = "osp-runtime", editable = "python/osp-runtime" },
     { name = "osp-spec", editable = "python/osp-spec" },
