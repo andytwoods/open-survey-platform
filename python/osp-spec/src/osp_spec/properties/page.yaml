@@ -1,0 +1,18 @@
+# Property schema for pages (planning/builder-design.md §1).
+type: page
+entity: page
+label: { en: "Page" }
+icon: file
+properties:
+  itemOrder:
+    kind: enum
+    label: { en: "Question order" }
+    options:
+      - { value: fixed, label: { en: "As listed" } }
+      - { value: shuffle, label: { en: "Shuffle per participant" } }
+    default: fixed
+    group: Basics
+    help: { en: "The realised order is fixed the first time a participant reaches the page." }
+hidden:
+  id: "Stable identity; assigned when the page is added, never edited in the panel."
+  items: "Questions are edited on the canvas and in the outline tree, not in the property panel."
