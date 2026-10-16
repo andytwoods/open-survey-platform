@@ -15,7 +15,8 @@ export default defineConfig({
 		modulePreload: false
 	},
 	server: {
-		proxy: { '/api': 'http://127.0.0.1:8000' }
+		// `make dev`'s osp-api; OSP_API_URL overrides it (as in web/builder).
+		proxy: { '/api': process.env.OSP_API_URL ?? 'http://127.0.0.1:8000' }
 	},
 	test: {
 		name: 'runtime',

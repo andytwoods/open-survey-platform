@@ -54,7 +54,7 @@ SURVEYS: dict[str, tuple[Path, str]] = {
 def _events(snapshot: Any) -> list[Any]:
     try:
         return list(snapshot["data"]["events"])
-    except (KeyError, TypeError):
+    except KeyError, TypeError:
         return []
 
 
@@ -65,8 +65,7 @@ def _prefix(a: list[Any], b: list[Any] | None) -> bool:
 
 
 def build(db: Path) -> FastAPI:
-    # Concurrent test workers: wait for the SQLite write lock instead of failing.
-    engine = create_engine(f"sqlite:///{db}", connect_args={"timeout": 30})
+    engine = create_engine(f"sqlite:///{db}")  # osp-store sets WAL + busy timeout
     migrate(engine)
     store = Store(engine, Keyring({"k1": generate_key()}, active="k1"))
     services = build_services(store)
@@ -107,9 +106,7 @@ def build(db: Path) -> FastAPI:
         with engine.connect() as conn:
             response_id = conn.execute(select(ps.response_id).where(ps.id == sid)).scalar_one()
             responses = conn.execute(
-                select(func.count())
-                .select_from(t.responses)
-                .where(t.responses.c.session_id == sid)
+                select(func.count()).select_from(t.responses).where(t.responses.c.session_id == sid)
             ).scalar_one()
         stored = repo.ps.get_record(tctx(sid), response_id) if response_id else None
         return {

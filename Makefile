@@ -123,3 +123,44 @@ hooks-e2e:
 .PHONY: lss-import-check
 lss-import-check:
 	OSP_LSS_IMPORT=1 $(UV_RUN) pytest python/osp-targets/tests/test_lss_import.py -rs
+
+# Local dev: `make dev` runs osp-api (SQLite in .data/, port 8000) and the builder dev server
+# (5173, which proxies /api to the API, so no CORS) together; Ctrl+C stops both. The first
+# run makes dev-only keys, a dev login and three seeded surveys, all in .data/ (gitignored);
+# every run prints the login and the URLs. The participant app's dev server (5174, base
+# /r/, proxying /api too) starts as well; its links are /r/?s=<slug>. `make dev-reset` wipes .data/. Dev only: never point this at real data.
+DEV_DATA := .data
+DEV_API_PORT := 8000
+DEV_BUILDER_PORT := 5173
+DEV_RUNTIME_PORT := 5174
+DEV_FIXTURES := fixtures/01-all-types fixtures/13-randomiser-blocks fixtures/18-multi-language
+DEV_ENV := OSP_ENV=dev OSP_DATA_DIR=$(DEV_DATA) OSP_DATABASE_URL=sqlite:///$(DEV_DATA)/osp.db
+DEV_PROXY := OSP_API_URL=http://127.0.0.1:$(DEV_API_PORT)
+
+.PHONY: dev dev-reset
+dev:
+	@$(DEV_ENV) $(UV_RUN) osp-api init >/dev/null
+	@if [ -z "$${OSP_STORE_KEYS:-}" ]; then set -a; . $(DEV_DATA)/dev-keys.env; set +a; fi; \
+	runtime=""; if [ -f web/runtime/package.json ]; then \
+		runtime="http://localhost:$(DEV_RUNTIME_PORT)/r/?s={slug}"; fi; \
+	$(DEV_ENV) $(UV_RUN) osp-cli dev-seed $(DEV_FIXTURES) \
+		--builder-url http://localhost:$(DEV_BUILDER_PORT) \
+		--api-url http://localhost:$(DEV_API_PORT) --participant-link "$$runtime"; \
+	pids=""; \
+	stop() { trap - INT TERM EXIT; if [ -n "$$pids" ]; then kill $$pids 2>/dev/null || true; fi; \
+		wait 2>/dev/null || true; }; \
+	alive() { for p in $$pids; do kill -0 $$p 2>/dev/null || return 1; done; }; \
+	trap 'stop; exit 130' INT TERM; trap stop EXIT; \
+	$(DEV_ENV) $(UV_RUN) osp-api serve --port $(DEV_API_PORT) & pids="$$!"; \
+	(cd web/builder && exec env $(DEV_PROXY) node_modules/.bin/vite dev \
+		--port $(DEV_BUILDER_PORT) --strictPort) & pids="$$pids $$!"; \
+	if [ -n "$$runtime" ]; then \
+		(cd web/runtime && exec env $(DEV_PROXY) node_modules/.bin/vite dev \
+			--port $(DEV_RUNTIME_PORT) --strictPort) & pids="$$pids $$!"; \
+	fi; \
+	while alive; do sleep 1; done; \
+	echo "make dev: a server stopped, so stopping the others"; exit 1
+
+dev-reset:
+	rm -rf $(DEV_DATA)
+	@echo "dev-reset: removed $(DEV_DATA)/; the next make dev starts fresh"

@@ -5,6 +5,10 @@ Commands
 - ``seed-fixture <fixture-dir>``: migrate the database, create a lab and a researcher (or
   reuse them), import the fixture's ``survey.json`` as a new survey and publish it. Prints
   one JSON object (slug, plan URL, ids, credentials) for test harnesses such as Playwright.
+- ``dev-seed <fixture-dir>...`` (``make dev``, dev only): on the first run, create a dev
+  lab and researcher with a random password and seed each fixture with ``seed-fixture``;
+  remember it all in ``<data-dir>/dev-seed.json`` (gitignored). Every run prints the login,
+  the seeded surveys and the local URLs. Refused when ``OSP_ENV=production``.
 
 The database URL comes from ``--db`` or ``OSP_DATABASE_URL``; the keyring from
 ``OSP_STORE_KEYS`` / ``OSP_STORE_ACTIVE_KEY`` (the same variables the server reads).
@@ -15,8 +19,9 @@ from __future__ import annotations
 import argparse
 import json
 import os
+import secrets
 import sys
-from collections.abc import Mapping, Sequence
+from collections.abc import Callable, Mapping, Sequence
 from pathlib import Path
 from typing import Any
 
@@ -123,6 +128,87 @@ def seed_fixture(
     }
 
 
+DEV_EMAIL = "dev@osp.example"
+DEV_LAB = "Dev lab"
+DEV_SEED_FILE = "dev-seed.json"
+
+
+def dev_password() -> str:
+    """A random, readable dev password (four groups of four)."""
+    alphabet = "abcdefghjkmnpqrstuvwxyz23456789"
+    return "-".join("".join(secrets.choice(alphabet) for _ in range(4)) for _ in range(4))
+
+
+def dev_seed(
+    services_factory: Callable[[], AppServices],
+    data_dir: Path,
+    fixture_dirs: Sequence[Path],
+    environ: Mapping[str, str] | None = None,
+) -> tuple[dict[str, Any], bool]:
+    """The dev account and seeded surveys: from ``<data_dir>/dev-seed.json`` if present,
+    else created now (``services_factory()`` is only called then). Returns (state, created)."""
+    env = os.environ if environ is None else environ
+    if (env.get("OSP_ENV") or "dev").strip().lower() == "production":
+        raise CliError("dev-seed is for local development only (OSP_ENV=production)")
+    path = data_dir / DEV_SEED_FILE
+    if path.exists():
+        try:
+            return json.loads(path.read_text(encoding="utf-8")), False
+        except (OSError, ValueError) as exc:
+            raise CliError(f"can't read {path} ({exc}); run `make dev-reset`") from exc
+    services = services_factory()
+    password = dev_password()
+    surveys = []
+    for fixture in fixture_dirs:
+        out = seed_fixture(services, fixture, email=DEV_EMAIL, password=password, lab=DEV_LAB)
+        title = _title(json.loads((fixture / "survey.json").read_text("utf-8")), fixture.name)
+        keep = ("fixture", "surveyId", "slug", "planUrl", "versionNumber")
+        surveys.append({k: out[k] for k in keep} | {"title": title})
+    state = {"email": DEV_EMAIL, "password": password, "lab": DEV_LAB, "surveys": surveys}
+    data_dir.mkdir(parents=True, exist_ok=True)
+    fd = os.open(path, os.O_WRONLY | os.O_CREAT | os.O_EXCL, 0o600)
+    with os.fdopen(fd, "w", encoding="utf-8") as fh:
+        json.dump(state, fh, indent=2)
+    return state, True
+
+
+def dev_banner(
+    state: Mapping[str, Any],
+    created: bool,
+    *,
+    builder_url: str,
+    api_url: str,
+    participant_link: str | None,
+) -> str:
+    first = " (first run: dev login and surveys created)" if created else ""
+    lines = [
+        "",
+        "Open Survey Platform: local dev" + first,
+        "",
+        f"  Builder      {builder_url}",
+        f"  API health   {api_url}/api/health",
+        f"  API docs     {api_url}/api/docs",
+        "",
+        "  Sign in (dev only; two-factor not enrolled)",
+        f"    email      {state['email']}",
+        f"    password   {state['password']}",
+        "",
+        "  Seeded surveys",
+    ]
+    for s in state.get("surveys", []):
+        lines.append(f"    {s['title']}  ({s['fixture']})")
+        lines.append(f"      builder      {builder_url}/surveys/{s['surveyId']}")
+        if participant_link:
+            link = participant_link.replace("{slug}", s["slug"])
+            lines.append(f"      participant  {link}")
+        else:
+            lines.append(f"      plan (API)   {api_url}{s['planUrl']}")
+    if not participant_link:
+        lines.append("    participant app not built yet")
+    lines += ["", "  Ctrl+C stops everything. `make dev-reset` wipes .data/.", ""]
+    return "\n".join(lines)
+
+
 def _parser() -> argparse.ArgumentParser:
     p = argparse.ArgumentParser(prog="osp-cli", description=__doc__.split("\n\n")[0])
     sub = p.add_subparsers(dest="command", required=True)
@@ -134,6 +220,17 @@ def _parser() -> argparse.ArgumentParser:
     s.add_argument("--password", default=DEFAULT_PASSWORD)
     s.add_argument("--lab", default=DEFAULT_LAB, help="lab name, if the researcher is new")
     s.add_argument("--save-mode", choices=("every-page", "end-only"), default="every-page")
+    d = sub.add_parser("dev-seed", help="dev only: create the dev login and seed fixtures")
+    d.add_argument("fixture_dirs", type=Path, nargs="+")
+    d.add_argument("--db", default=os.environ.get("OSP_DATABASE_URL"), help="database URL")
+    d.add_argument("--data-dir", type=Path, default=Path(os.environ.get("OSP_DATA_DIR") or ".data"))
+    d.add_argument("--builder-url", default="http://localhost:5173")
+    d.add_argument("--api-url", default="http://localhost:8000")
+    d.add_argument(
+        "--participant-link",
+        default="",
+        help="participant link template with {slug}; empty: the app is not built",
+    )
     return p
 
 
@@ -145,6 +242,20 @@ def main(argv: Sequence[str] | None = None) -> int:
     try:
         if not args.db:
             raise CliError("give --db or set OSP_DATABASE_URL (e.g. sqlite:///.build/e2e.db)")
+        if args.command == "dev-seed":
+            state, created = dev_seed(
+                lambda: open_services(args.db), args.data_dir, args.fixture_dirs
+            )
+            print(
+                dev_banner(
+                    state,
+                    created,
+                    builder_url=args.builder_url.rstrip("/"),
+                    api_url=args.api_url.rstrip("/"),
+                    participant_link=args.participant_link or None,
+                )
+            )
+            return 0
         out = seed_fixture(
             open_services(args.db),
             args.fixture_dir,

@@ -12,7 +12,11 @@ dependencies = [
     "osp-runtime",
     "osp-spec",
     "osp-store",
+    "uvicorn>=0.35,<1",
 ]
+
+[project.scripts]
+osp-api = "osp_api.serve:main"
 
 [tool.uv.sources]
 osp-app = { workspace = true }
