@@ -251,7 +251,7 @@ _row(
     "Arith.kind",
     "approximated",
     "XPath numbers are IEEE doubles, not decimals (§2), so results can differ in the last "
-    "digits. Division by zero is guarded to give null (open question 1).",
+    "digits. Division by zero is guarded to give null (semantics §3, C1-1).",
 )
 _row("Arith.op", "native", "`+ - *`, and `/` as `div`.")
 _row("Arith.left", "native", "Operand.")

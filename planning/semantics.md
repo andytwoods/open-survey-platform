@@ -1,7 +1,7 @@
-# Survey logic semantics, v0 draft
+# Survey logic semantics, v0
 
-**Status:** draft for review · **Purpose:** the single definition of how a survey behaves. The engine, simulator, debugger, transpilers and the LimeSurvey harness are all tested against this. Agents implement from it and must not guess beyond it.
-Items marked **[verify: …]** are our intended behaviour, originally aligned with ODK XForms during the Enketo spike. Our own runtime (`runtime-design.md`) now implements this document directly, and the fixtures are the test.
+**Status:** decisions batch 1 folded in (16 Oct 2026) · **Purpose:** the single definition of how a survey behaves. The engine, simulator, debugger, transpilers and the LimeSurvey harness are all tested against this. Agents implement from it and must not guess beyond it.
+Items marked **[verify: …]** are our intended behaviour, originally aligned with ODK XForms during the Enketo spike. Our own runtime (`runtime-design.md`) now implements this document directly, and the fixtures are the test. Decision ids in brackets (C1-2, R6-4 …) point to `decisions-semantics-1.md`.
 
 ## 1. Question states
 
@@ -10,7 +10,7 @@ Every question in a session is in exactly one state:
 | State | Meaning | Stored value |
 |---|---|---|
 | `not-reached` | Flow never got to its page | absent |
-| `irrelevant` | Page reached, but display logic hid it | `null`, flagged irrelevant |
+| `irrelevant` | Page reached, but display logic hid it, or its block later dropped off the path (§3) | `null`, flagged irrelevant |
 | `unanswered` | Shown, left empty (only possible if not required) | `null` |
 | `answered` | Shown and answered | the value |
 
@@ -26,52 +26,88 @@ Exports always distinguish these states, and the codebook documents how. Data ar
 
 Raw `-99`-style codes are **never** written into CSV, where they would silently be averaged as real numbers.
 
+**Variables have states too** [C2-6, C3a-5]:
+
+- An **embedded** variable (a URL parameter) is captured once at session start and exported with a value and a state. A missing parameter takes its `default` (state `answered`), or is `unanswered` if there is no default. A malformed one (e.g. `12a` for an integer) is recorded as `unanswered` with a logged diagnostic; the participant is never blocked.
+- A **computed** variable exports a value and a `__state` column: a non-null value is `answered`; a null value is `not-reached` if every question it reads (following other computed variables) is not-reached, `irrelevant` if each is not-reached or irrelevant, and `unanswered` otherwise.
+- An **assigned** condition is always recorded with the response (§7), whether or not its `assign` node was reached.
+- **Notes** have no state and no column [C3a-1].
+
+**Exports** [M2-1 to M2-3]: the `_late` column is the server's flag (§10), not "after the survey closed" (that is the separate `_after_close` column). In a combined export of several versions, a question whose type or choices changed between versions gets separate columns `<name>_v<N>` per version, and the codebook notes the change.
+
 ## 2. Values and types
 
 - Types: `integer`, `decimal`, `text`, `single` (one choice value), `multi` (set of choice values), `date`.
 - Numbers are **decimal**, not binary float. Integer division isn't an operator. `/` returns a decimal.
-- Text answers follow **Enketo's behaviour** (decided 16 Oct 2026, replacing the earlier "no trimming" decision to avoid forking Enketo): leading/trailing whitespace is trimmed, and a whitespace-only answer counts as `unanswered`. Internal whitespace and line breaks are kept.
+- **Decimal precision** [R6-2]: arithmetic keeps **28 significant digits, rounding half-even** (Python's `decimal` default; the TS engine matches it exactly). `+ - *` on two integers stay exact integers. A decimal answer with more than 28 significant digits cannot be read exactly and is refused as unreadable input (§4).
+- **Decimals are stored and exported in canonical form** [R6-2]: no exponent, no `+`, no superfluous leading zeros, no trailing zeros after the point, `0` for any zero (`2.50` → `2.5`, `.5` → `0.5`, `-0.0` → `0`).
+- Text answers follow Enketo's behaviour (decided 16 Oct 2026): leading/trailing whitespace is trimmed, and a whitespace-only answer counts as `unanswered`. Internal whitespace and line breaks are kept.
+- **The trim set** [R6-1, R1-7] is exactly the Unicode `White_Space` characters plus U+FEFF (the byte-order mark): U+0009–U+000D, U+0020, U+0085, U+00A0, U+1680, U+2000–U+200A, U+2028, U+2029, U+202F, U+205F, U+3000, U+FEFF. Not the zero-width space U+200B, and not U+001C–U+001F. Python (`osp_expr.values.TRIM_CODE_POINTS`) and the TS engine use the same explicit list, checked against `contract/vectors/trim.json`. Text is **never Unicode-normalised**; the raw text is kept, so `café` (composed) and `café` (decomposed) are different answers.
 - Choice values are the codes defined in the survey, never display labels.
+- **Codes compare as text** [C2-8]: `1` and `"1"` are the same code, in conditions (`==`, `!=`, `contains`) as in answers. Codes contain no whitespace.
+- **Unreadable input** [R1-4]: input the runtime cannot read as the question's type (`12a` for an integer, `2026-02-30` for a date, an integer beyond ±(2^53 − 1), a decimal over 28 significant digits) is not stored; it blocks Next with an `invalid` error, even on an optional question.
 
 ## 3. Expressions and missing values
 
 - Expressions are pure: no randomness, time or I/O.
-- Comparing anything with `null` gives `false`, including `null == null`. Use `answered(x)` to test for presence.
-- Arithmetic with `null` gives `null`. A condition that evaluates to `null` counts as `false`.
+- **Two-valued logic** [C1-2, C3a-8]. Comparing anything with `null` gives `false`, including `null == null`. `contains(null, v)` is `false`. A condition that evaluates to `null` counts as `false`, and `not null` is `true`. So "did not pick X" (`not contains(c, "x")`) is true for someone who didn't answer: the builder warns when `not` wraps a question that may be unanswered and suggests `answered(c) and not …`. Use `answered(x)` to test for presence.
+- Arithmetic with `null` gives `null`.
 - `contains(multi, value)` tests a multi-choice answer.
+- **`if(cond, a, b)`** [C1-3, C2-9]: only the chosen branch is evaluated; a condition that is not `true` (including `null`) picks `b`. Both branches must have compatible types. Note that `if(age < 40, "young", "old")` gives `"old"` when `age` is unanswered; write `if(answered(age), …, null)` to keep it missing.
+- **Division by zero** [C1-1]: `x / 0` gives `null` and a logged diagnostic. A constant zero divisor is a type error, so it blocks publishing.
+- **Type mismatches** [C1-2] (`text == 5.5`, `text < "b"`, `text + 1`, `contains(non-multi, v)`, a number used as a condition) are type errors that block publishing. At runtime (hand-edited JSON) they give `null` plus a logged diagnostic, never a crash; inside `and` / `or` / `not` / `if` the mismatched operand counts as `null`. An integer and a text compared with `==` / `!=` are codes and compare as text (§2).
+- Runtime diagnostics are logged with the session (the engine's state and the response record), never shown to the participant.
 - Referring to a question that is `not-reached` or `irrelevant` gives `null`.
+- **An assigned condition is `null` to expressions and piping until its `assign` node is reached** [C3a-7], although the server fixes its value at session start and the response always records it.
+- **References** [C2-1, C2-2]: conditions, piping and flow refer to a question's stable `id`, never its export `name` (which can be renamed freely). A reference must point earlier in flow order (a depth-first walk: `then` before `else`, randomiser children, pages and items in document order); a forward reference is an error. **References between items on the same page are allowed in either direction**, but same-page `showIf` conditions that depend on each other in a loop are an error. A page-level `showIf` may refer only to earlier pages. Only a question's own `constraint` may refer to the question itself. A reference into the other arm of a branch, or into another child of the same randomiser, is a warning (it is often `null`).
 - **When a previously answered question becomes irrelevant** (for example after going back and changing an earlier answer), its value is **cleared on page submit** and its state becomes `irrelevant`. **[confirmed with a lowering, Enketo spike E8, 16 Oct 2026:** Enketo itself only clears non-relevant values at final submit, so the old value reappears if relevance returns. Our runtime calls `form.clearNonRelevant()` on every page change, which gives exactly this rule (P5c).**]**
+- **When a block drops off the path** [C3a-6]: if going back and changing an answer means a block that was already reached is no longer on the path (a branch now goes the other way, or an earlier `end` now ends the session), that block's answers become `irrelevant` and are **cleared on the submit** that changes the path. If the path later returns to the block, its questions are `unanswered` again.
 
 ## 4. Required and validation
 
 - `required` applies only while the question is relevant.
 - Constraints are checked only on answered values.
+- **Numeric `min` / `max`** [C2-9] on integer and decimal questions are inclusive bounds, checked only on answered values; an answer outside them blocks Next with a `range` error.
+- Unreadable input blocks Next with an `invalid` error, even on an optional question (§2).
 - Validation runs on page submit. The page can't advance until it passes.
 
-## 5. Navigation
+## 5. Navigation, saving and resuming
 
 - Back navigation is a per-survey setting (**default: allowed**, decided 16 Oct 2026).
 - Going back re-evaluates relevance for later pages when they are revisited. Values follow §3.
 - Refresh or resume returns to the same page with the same values, order and condition. **[confirmed, Enketo spike E7, 16 Oct 2026:** enketo-core has no persistence of its own. Our server autosaves the instance and the current page, and restores them on load (P6).**]**
+- **Save mode** [R6-5] is a survey setting, `saveMode`: `every-page` (default) saves to the server on every change; `end-only` sends nothing before the final submit and keeps its copy on the device as set by `localCopy`: `browser` (default; browser storage) or `memory`. If browser storage is unavailable, `end-only` falls back to memory, never to network saving.
+- **A memory-only copy is lost on refresh** [R6-5]: the session restarts from the first page with the **same seed and conditions** (so the same orders and assignment), and the participant is shown a notice.
+- **Resume links expire** [S-1] after **30 days without activity** by default, configurable per survey (`resumeExpiryDays`). This is separate from quota holds (§6).
+- **While a quota check is pending** [R6-4], the submitted page stays shown, answers and navigation (including back) are disabled, and a refresh re-sends the call with the same idempotency key, so the server answers it at most once.
+- **Two devices** [R6-6, S-3]: when a stale copy (an old tab on device A) saves after another device moved on, the server copy wins. Device A then shows the server's current page and values, with an explanation. The losing copy is kept in an encrypted conflicts table for a limited time, excluded from exports; the audit log stores only its id.
 
 ## 6. Flow
 
 - The flow is a tree of nodes: `block`, `branch`, `randomiser`, `assign`, `quotaCheck`, `end`. It is checked at validation time and has no cycles, so every session terminates.
-- Blocks with no relevant questions are skipped silently.
+- **A block appears at most once in the flow** [C2-3], so each question is one column with one state.
+- **Empty-page skipping is per page** [C3a-1, R1-6]: a page with no relevant item is skipped silently, and its questions become `irrelevant`. A relevant note counts as content, so a page holding only notes (a stimulus, a screen-out message) is shown.
+- **Page-level `showIf`** [C2-9]: a page whose `showIf` is false is skipped and its questions are `irrelevant`.
 - Reaching the end of the flow without an `end` node counts as `end: complete`.
+- **Quotas** [C3a-3, C2-7, R1-5]: counts are atomic on the server. A `quotaCheck` asks the server only while its quota's `when` is true. A place is **held** at the check, **used up on completion**, and released when the participant drops out (24 hours without activity). Resuming after the hold was released must take a place again; if the quota is full by then, the participant continues and the submit is late (§10). The result is recorded per node and **reused** on back, forward and replay, without a new call. When the quota is full, `onFull` shows **at most one block**, then ends the session with its `outcome` (a quota-full outcome such as `quota_full`). There is no `goto`. Only `countOn: complete` is modelled.
 
 ## 7. Randomisation and assignment
 
 - Each session has a `sessionSeed`, which must be a **positive integer** (decided 16 Oct 2026: Enketo throws on decimal or string seeds). Derived per-node seeds are integers too: `nodeSeed = (int.from_bytes(SHA-256(ns("osp-node-seed/1") + ns(surveyVersion) + ns(str(sessionSeed)) + ns(nodeId))[0:8], "big") mod (2^31 − 2)) + 1`, where `ns(s) = len(utf8(s)) + ":" + utf8(s) + ","` (a netstring). That gives 1 … 2^31 − 2, which Enketo accepts as a seed and uses as the Park–Miller state without reducing it (`osp_engine.random.node_seed`). Accepted session seeds are 1 … 2^53 − 1.
-- Each random decision uses its own stream: `PRNG(hash(surveyVersion, sessionSeed, nodeId))`. Changing one randomiser doesn't change the others.
+- **`surveyVersion`** in seeds [R1-1] is the published version number as decimal text (`"3"`), or `"draft"` for previews.
+- Each random decision uses its own stream: `PRNG(hash(surveyVersion, sessionSeed, nodeId))`. Changing one randomiser doesn't change the others. **Stream ids** [R1-2, C2-5]: a randomiser's id; a page's item order is keyed by the **page** id; a question's choice order by the question id; each assigned variable by `<assign node id>/<variable id>`.
+- **Randomiser `pick`** [C2-4]: a seeded shuffle of the children, taking the first `pick` (a uniform draw without replacement).
+- **Assignment** [C2-5]: each assigned variable is an independent, uniform seeded draw. Weighted or balanced allocation is not modelled in `osp-survey/0.1`.
 - The realised order and assignment are **fixed at first reach** and never re-rolled on back, refresh or resume.
-- Every response records: the allocation mode (`server` for our Enketo runtime | `limesurvey-native` for LSS exports), the assigned conditions, and the realised question, block and choice orders.
-- **Default (Enketo runtime):** our server assigns conditions and `sessionSeed` at session start and injects them into the form. Choice-order shuffles use XForms `randomize(nodeset, seed)`, and our engine reimplements its exact algorithm (inside-out Fisher–Yates + Park–Miller), so every order is reproducible. **[confirmed, Enketo spike E4, E5, 16 Oct 2026:** injection works, and Python matches Enketo on 900/1,000 seeds (every integer seed; the remainder truncates toward zero). Enketo rejects decimal and string seeds, so seeds must be integers.**]**
+- Every response records: the allocation mode (`server` for our runtime | `seeded` | `limesurvey-native` for LSS exports), the assigned conditions, and the realised question, block and choice orders.
+- **Default (our runtime):** our server assigns conditions and `sessionSeed` at session start and injects them. If the server did not assign a variable, the engine draws it from its stream and records **`allocation: "seeded"` for that variable** (`conditionSources`) [R1-8]. Choice-order shuffles use XForms `randomize(nodeset, seed)`, and our engine reimplements its exact algorithm (inside-out Fisher–Yates + Park–Miller), so every order is reproducible. **[confirmed, Enketo spike E4, E5, 16 Oct 2026:** injection works, and Python matches Enketo on 900/1,000 seeds (every integer seed; the remainder truncates toward zero). Enketo rejects decimal and string seeds, so seeds must be integers.**]**
 - **LSS export only:** a survey exported to LimeSurvey may use `limesurvey-native` allocation. There, LimeSurvey's own RNG decides, and we can record the outcome but not reproduce it.
 
 ## 8. Piping
 
 - `${questionId}` inserts the display label for choice answers and the raw value for others. The XLSForm exporter always emits a `jr:choice-name()` calculate for piped choice questions (Enketo inserts codes otherwise).
+- **A piped `multi` answer** [C3a-9, R1-3] inserts its choice labels in the order they were **displayed** (the realised choice order), joined with `", "`. **A piped decimal** is in canonical form (`2.5`); a computed number in plain notation; a boolean as `true` / `false`.
+- **Built-ins** [R6-3]: the `$` namespace is reserved. `${$trial}` is the 1-based number of the current page on the participant's path (pages skipped as empty don't count; after back it is the number of the page now shown). `${$position.index}` and `${$position.of}` give the 1-based position within the innermost randomiser and `of` = its `pick` (or its number of children); outside a randomiser they are empty. `$pagesDone`, `$language` and `$device` are also available.
 - Piping an unanswered, irrelevant or not-reached question inserts an empty string.
 - Piped text is HTML-escaped.
 
@@ -79,63 +115,18 @@ Raw `-99`-style codes are **never** written into CSV, where they would silently 
 
 - Each response is bound to exactly one published survey version, and that version's checksum.
 - Changing a published survey always creates a new version. Old versions' responses keep their own codebook.
+- **Variable names that differ only by case are an error** [C2-8] (SPSS, Stata and LimeSurvey fold case).
+- **Publishing needs a retention policy** (lead decision, 16 Oct 2026): `settings.retention` must be set (`days-after-close`, `after-date` or an explicit `indefinite`); there is no silent default. Published surveys can't be deleted.
+
+## 10. Submitting
+
+- **Late submits are accepted** [S-2]: a submit that arrives after the session's quota holds were released (24 hours idle) or after its resume link expired is stored, flagged `late` by the server, and **not counted toward quotas**. Rejecting it would lose data.
+- **Retries** [S-4]: a submit retry with identical data returns the original success (same response); different data for an already submitted session gives 409.
 
 ## Open questions (need a human decision)
 
-Resolved 16 Oct 2026: missing-value encoding (§1), back navigation default (§5), text trimming follows Enketo (§2).
+Resolved 16 Oct 2026: see `decisions-semantics-1.md` (C1-1 to C1-3, C3a-1 to C3a-9, C2-1 to C2-9, R6-1 to R6-6, R1-1 to R1-8, S-1 to S-4), plus the lead's M2-1 to M2-3. Earlier: missing-value encoding (§1), back navigation default (§5), text trimming follows Enketo (§2).
 
-Open (added by C1, `osp-expr`; the evaluator implements the **provisional** behaviour until a human decides):
+Deferred to `osp-survey/0.2` (decided, not modelled yet): dedicated `scores` (null unless every item is answered, or an explicit `minAnswered` is set; reversal is `min + max − value`) and reverse scoring [C3a-4], and page-order shuffling within a block [C2-9]. Use computed variables with `if()` meanwhile.
 
-1. **Division by zero (§2, §3).** What does `x / 0` give? **Provisional: `null`**, so it behaves like any other missing value (a condition using it is false). Note Enketo/XPath gives `Infinity` or `NaN` here.
-2. **Ill-typed operands at runtime (§3).** What happens when values of the wrong kinds meet, e.g. `text == 5`, `text < "b"`, `text + 1`, `contains(non-multi, v)`, or a number used directly as a condition (`not q3`)? **Provisional:** a test (comparison, `contains`) on mismatched kinds is `false`; ordering (`< <= > >=`) is defined only for numbers and for dates (not text); arithmetic on non-numbers is `null`; `and` / `or` / `not` treat any operand that is not `true` as false, so `not null` is `true` (consistent with `not (q > 5)` being true when `q` is null). `typecheck` reports all of these before publish, so they should only arise in hand-edited JSON.
-3. **Functions beyond `answered` and `contains`.** `planning/review.md` §2.3 uses `if(cond, a, b)` in the `age_band` calculate, but this document names no other functions. Not implemented until decided.
-
-Open, raised by task C3a (fixtures v0). Fixtures that depend on one are marked `"pending"` and are drafts, not assertions:
-
-- **C3a-1** Notes. Does a block holding only `note` items (a stimulus, a screen-out message) count as having "no relevant questions" and get skipped (§6)? Do notes have a state or a response column? Fixture 20 assumes the page is shown and notes have no state.
-- **C3a-2** `calculate` items (§2.3 `age_band`). Which state does a calculated value have, when is it evaluated (page submit? continuously?), is it a response column, and is `if(cond, a, b)` part of the expression language (C1's v0 grammar has no `if`)?
-- **C3a-3** `quotaCheck` (§6 lists the node, nothing defines it). Where do quota counts come from at runtime, what does `onFull: {goto: block}` do in a tree-shaped flow (after the goto block, is the session ended, and with which end code?), and is a quota hit recorded in the response?
-- **C3a-4** `scores` (§2.3 `att_score`, `mean` with `reverse`). How missing items are handled, the decimal precision of a mean like 13/3, and where the score is recorded.
-- **C3a-5** `embeddedData` from a URL parameter. Is it recorded in the response, with which state, and what happens when the parameter is missing (does `default` count as a value)?
-- **C3a-6** Branch path changes after back. If going back changes an answer so that a branch no longer leads to a block that was already answered, are that block's answers `not-reached` or `irrelevant`, and are they cleared (§3 only covers `showIf`)? No fixture yet.
-- **C3a-7** Referring to a condition variable (e.g. `framing`) before its `assign` node is reached. The server assigns it at session start (§7): is it visible to expressions and piping immediately, or `null` until the node? Fixtures only refer to conditions after the node, and record conditions even when the participant ends before reaching it (fixture 20, script `declined`).
-- **C3a-8** `contains(x, v)` when `x` is `null`, and `not` applied to `null`. Both only matter inside `not (...)`: `not contains(c, "red")` with `c` unanswered is `true` if `contains` gives `false`, undecided if it gives `null`. No fixture yet.
-- **C3a-9** Piping a `multi` answer (how several labels are joined) and piping a `decimal` (is `2.50` piped as typed or normalised?). No fixture yet.
-
-**Added by agent C2 (`osp-spec`), 16 Oct 2026. Open; the validator implements the proposed rule until a human decides.**
-
-- **C2-1 Reference order.** Proposed: number questions in flow order (depth-first walk of the flow tree; `then` before `else`; randomiser children, pages and items in document order). A condition or piped text may only refer to a question with a lower number than its own site (error `ref.forward`). Earlier items on the *same page* count as earlier (Enketo updates live). Only a question's own `constraint` may refer to itself. A target in another child of the same randomiser, or in the other arm of a branch, is legal but a warning, since it is often `null` (§3). An `assigned` variable is only available after its `assign` node; an `embedded` one from the start. Confirm?
-- **C2-2 References use stable ids.** Conditions, `${…}` piping and flow nodes refer to a question's stable `id`, not its human-readable variable `name` (which defaults to the id and is what exports use). So renaming a variable never breaks logic. Confirm §8's `${questionId}` means this id.
-- **C2-3 A block appears in the flow at most once**, even in two arms of one branch, so each question is one column with one state. Confirm, or define how a repeated block is stored.
-- **C2-4 Randomiser `pick`.** The model allows "show `pick` of N children" (common for between-subjects stimulus blocks). §7 doesn't say how the subset is chosen (uniform seeded draw? least-filled?). Needs a rule before C4 implements it.
-- **C2-5 Assignment method.** An `assign` node gives each listed variable one of its `levels`. Proposed: an independent, uniform seeded draw per variable (so a full factorial is balanced in expectation). Weighted or balanced allocation is not modelled (review §2.3: server state, post-MVP). Confirm.
-- **C2-6 Computed variables** (`kind: computed`, XLSForm `calculate`) are needed for the worked example (`age_band`). Proposed: recomputed from current values whenever read, `null` inputs propagate by §3, and they are exported as columns. Confirm, including whether they get a `__state` column.
-- **C2-7 Full quota.** Proposed: `onFull` may show one block, then ends the session with an `outcome` (review §2.3 used `goto`, which would allow loops). Only `countOn: complete` is modelled.
-- **C2-8 Choice codes.** Proposed: `1` and `"1"` are the same code (XForms stores text), and codes may not contain whitespace (multi answers are space-separated in XForms). Variable names that differ only by case are a warning (SPSS, Stata and LimeSurvey fold case).
-- **C2-9 Not modelled in `osp-survey/0.1`:** the worked example's `age_band` calculate (needs `if()`, see C1's question on functions; the fixture tests `age >= 40` instead), `scores` and `reverseScored` from review §2.3, page-level `showIf`, page-order shuffling within a block, and numeric `min`/`max` (use a `constraint`). Add them if wanted.
-
-**Added by agent R6 (adversarial fixtures 21–37), 16 Oct 2026. Open; fixtures that depend on one are marked `"pending"`:**
-
-- **R6-1** Which characters does §2 trimming remove, and is text normalised? Enketo is JavaScript, whose `trim()` removes NBSP (U+00A0), U+3000 and the BOM (U+FEFF) but not the zero-width space (U+200B); Python's `str.strip()` differs (it keeps U+FEFF). Is an answer of only NBSP or U+3000 `unanswered`? Is text NFC-normalised before it is stored and compared (`"café" == "café"`)? Fixture 27 (`unicode-edges`).
-- **R6-2** Decimal representation and precision (§2; runtime-design §3 says rounding rules belong here). Is a typed `2.50` stored and exported as `"2.50"` or `"2.5"`? How many digits may a decimal answer have, and what working precision and rounding does arithmetic use (decimal.js-light defaults to 20 significant digits, so a 29-digit answer would be rounded)? Fixture 26 (`trailing-zeros`, `precision`).
-- **R6-3** `$position` (runtime-design §7a). Is `index` 1-based (as `$trial` is)? What is `$position` on a page that is not inside a randomiser (`null`, absent, or `{index: 1, of: 1}`)? With `pick` (C2-4), is `of` the pick or the number of children, and does a skipped empty child count? Separately, `$`-names are not identifiers in `osp-survey/0.1`, so `${$trial}` is `pipe.invalid` until the model has a built-in namespace. Fixture 32 (`position`).
-- **R6-4** A pending effect (runtime-design §3 `next → effect`). While a quota call has no reply, which page does the participant see (the submitted page with a busy state?), may they go back, and does a refresh re-send the call by itself? Fixture 24 assumes: the submitted page stays, back is off, and only an explicit retry sends again. It also depends on C3a-3.
-- **R6-5** `end-only` save mode (runtime-design §5.0). `osp-survey/0.1` `settings` has no `saveMode` or `localCopy` field. And with storage blocked (fallback to `memory`), what does a refresh show: a fresh start of the same session (same seed and assignment), a new session, or an end? Fixture 33.
-- **R6-6** A stale second device (R-2: the server copy wins). When an old tab on device A submits a page after device B has moved on, A's save gets `409`: does A then show the server's current page and values, is A's page submit (and its answers) recorded anywhere but the audit log, and does A tell the participant? Fixture 25 (`stale-device-a`).
-
-**Added by agent R1 (TS engine `web/engine`), 16 Oct 2026. Open; the engine implements the provisional choice, marked `PROVISIONAL (R1-n)` in code:**
-
-- **R1-1 The `surveyVersion` string in `nodeSeed` (§7).** The formula takes a string but nothing says which. Provisional: the published version number as decimal text (`"3"`), or `"draft"` for an unpublished survey (preview). It is the plan's `survey.seedVersion` and R2's `RuntimeConfig.surveyVersion`, so server and browser agree. Including the survey id would make streams differ across surveys too.
-- **R1-2 Stream ids (§7) that nothing fixed.** Provisional: an assigned variable draws on `"<assign node id>/<variable id>"` (one stream per variable, C2-5; it is the `seedNode` R2's server uses); a randomiser with `pick` (C2-4, which had no rule) shows the first `pick` children of its seeded shuffle, a uniform draw without replacement; `itemOrder` is keyed by the **page** id, since `itemOrder` now lives on the page (fixtures/FORMAT.md asked the engine to decide).
-- **R1-3 Piping `multi` and `decimal` (C3a-9, no provisional given).** Provisional: a multi answer pipes its choice labels in choice-list order joined with `", "`; a decimal pipes as typed (trimmed, a leading `+` dropped). A computed number pipes in plain notation; a boolean as `true`/`false`.
-- **R1-4 Input the engine cannot read** (e.g. `12a` for an integer, `2026-02-30` for a date, an integer beyond ±(2^53 − 1)). Provisional: the stored value is cleared, and `next` is blocked with an error `{ kind: "invalid" }` on that question, even when it is optional. Semantics only defines `required` and `constraint` errors.
-- **R1-5 Quota checks (C3a-3, C2-7).** Provisional: a `quotaCheck` asks the server only while its quota's `when` is true; the result is recorded per node and reused on every later pass (back and forward, replay) without a new call; `when` is re-evaluated on each pass, so a participant who changes the answer it depends on passes. While the call is pending the submitted page stays, answers are refused, and `back` (if allowed) cancels the pending call (fixture 24 assumes back is off, R6-4).
-- **R1-6 Empty pages (§6) inside multi-page blocks, and notes (C3a-1).** Provisional: skipping is per page, and a relevant note counts as content, so a notes-only page is shown and a page whose only relevant items are notes is not skipped.
-- **R1-7 Text trimming (§2; see R6-1).** The engine trims exactly what Python's `str.strip()` trims, to match the reference evaluator (`osp_expr`). JavaScript's `trim()` differs (U+FEFF; U+001C–U+001F, U+0085). R6-1 asks which set is right.
-- **R1-8 `allocation` when the engine draws a condition itself.** Normally the server assigns every variable (R2). If a plan's assigned variable is missing from the server's list, the engine draws it from its `seedNode` and records `allocation: "seeded"` (with per-variable `conditionSources`) instead of `"server"`.
-
-**Added by agent M2 (response data export), 16 Oct 2026. Open; the export implements the provisional choice:**
-
-- **M2-1 The `late` flag.** Nothing defines "late". Provisional: `_late` is `true` when a response was submitted after the survey was closed (`surveys.closed_at`). Alternatives: after the publication closed, or after the session's inactivity expiry.
-- **M2-2 Missing values of embedded and computed variables** (C3a-5, C2-6). They get a value column but no `__state` column; an empty cell means "no value" (missing URL parameter, or a computed input was null). Confirm, or define their states.
-- **M2-3 Pooling versions.** The combined export keeps one column per variable name even when its type or choices changed between versions (the codebook lists such variables). Should a changed variable instead get a per-version column (e.g. `q1_v2`)?
+No question is open.

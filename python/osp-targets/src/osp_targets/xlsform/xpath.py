@@ -4,7 +4,7 @@ XPath on an empty node does not behave like our ``null``: ``'' = ''`` is true an
 ``'' != 5`` is true, but every comparison with ``null`` is false for us. So each
 comparison is guarded: it is true only if every reference in its operands has a value
 (``string-length(${x}) > 0``) and every divisor is non-zero (division by zero gives
-``null``, open question 1). Arithmetic in a ``calculate`` is wrapped as
+``null``, semantics §3 C1-1). Arithmetic in a ``calculate`` is wrapped as
 ``if(<guards>, value, '')`` so ``null`` in gives ``null`` (empty) out.
 """
 
@@ -227,7 +227,7 @@ class XPathWriter:
             case Ref() if self.ctx.types.get(e.id) == "boolean":
                 return f"{self._ref(e)} = 'true'"
             case _:
-                # A non-boolean operand used as a condition is not true (open question 2).
+                # A non-boolean operand used as a condition is not true (semantics §3, C1-2).
                 return FALSE
 
     def _coerce(self, v: _Value, other: _Value, op: str) -> str:
