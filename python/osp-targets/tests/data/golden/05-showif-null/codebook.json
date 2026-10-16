@@ -1,0 +1,370 @@
+{
+  "format": "osp-codebook/1",
+  "survey": {
+    "id": "f05_showif_null",
+    "title": {
+      "en": "showIf with null values"
+    },
+    "version": 1,
+    "checksum": "sha256:test-05-showif-null",
+    "languages": [
+      "en"
+    ],
+    "defaultLanguage": "en"
+  },
+  "csv": {
+    "stateColumns": true,
+    "multi": "columns",
+    "bom": false,
+    "escapeFormulas": true,
+    "columns": [
+      "_response_id",
+      "_session_id",
+      "_version",
+      "_version_checksum",
+      "_plan_checksum",
+      "_engine_version",
+      "_allocation_mode",
+      "_save_mode",
+      "_seed",
+      "_started_at",
+      "_submitted_at",
+      "_late",
+      "_end",
+      "_language",
+      "a",
+      "a__state",
+      "b",
+      "b__state",
+      "c_red",
+      "c_green",
+      "c_blue",
+      "c__state",
+      "p2_anchor",
+      "p2_anchor__state",
+      "s_gt",
+      "s_gt__state",
+      "s_not_gt",
+      "s_not_gt__state",
+      "s_eq",
+      "s_eq__state",
+      "s_neq",
+      "s_neq__state",
+      "s_arith",
+      "s_arith__state",
+      "s_unanswered",
+      "s_unanswered__state",
+      "s_contains",
+      "s_contains__state"
+    ]
+  },
+  "missingValues": {
+    "states": [
+      {
+        "state": "answered",
+        "meaning": "Shown and answered.",
+        "csv": "the value",
+        "json": "the value"
+      },
+      {
+        "state": "unanswered",
+        "meaning": "Shown, left empty (only possible when not required).",
+        "csv": "empty",
+        "json": "null"
+      },
+      {
+        "state": "irrelevant",
+        "meaning": "Its page was reached, but its show-if hid it.",
+        "csv": "empty",
+        "json": "null"
+      },
+      {
+        "state": "not-reached",
+        "meaning": "The flow never got to its page.",
+        "csv": "empty",
+        "json": "null"
+      }
+    ],
+    "csv": "Empty value cell plus the <var>__state column. No numeric missing codes (such as -99) are ever written.",
+    "json": "value null plus state per answer."
+  },
+  "saveMode": {
+    "mode": "every-page",
+    "implications": "Answers were saved to the server on every page change. Partial sessions exist on the server, so drop-outs are visible to the researcher, but this export holds only submitted responses."
+  },
+  "metaColumns": [
+    {
+      "column": "_response_id",
+      "meaning": "Response id (server)."
+    },
+    {
+      "column": "_session_id",
+      "meaning": "Participant session id (pseudonymous)."
+    },
+    {
+      "column": "_version",
+      "meaning": "Published survey version the response belongs to (semantics §9)."
+    },
+    {
+      "column": "_version_checksum",
+      "meaning": "Checksum of that version's survey document."
+    },
+    {
+      "column": "_plan_checksum",
+      "meaning": "Checksum of the runtime plan the participant's browser ran."
+    },
+    {
+      "column": "_engine_version",
+      "meaning": "Version of the participant engine (web/engine)."
+    },
+    {
+      "column": "_allocation_mode",
+      "meaning": "How conditions were assigned: server (our server, at session start), seeded (the engine drew at least one condition from the session seed), or limesurvey-native."
+    },
+    {
+      "column": "_save_mode",
+      "meaning": "every-page or end-only (runtime-design §5.0)."
+    },
+    {
+      "column": "_seed",
+      "meaning": "Session seed (positive integer, semantics §7); reproduces every order."
+    },
+    {
+      "column": "_started_at",
+      "meaning": "Session start, UTC, ISO 8601."
+    },
+    {
+      "column": "_submitted_at",
+      "meaning": "Submission accepted by the server, UTC, ISO 8601."
+    },
+    {
+      "column": "_late",
+      "meaning": "true if the response was submitted after the survey was closed (provisional, semantics open question M2-1)."
+    },
+    {
+      "column": "_end",
+      "meaning": "End outcome reached (e.g. complete); empty if none was recorded."
+    },
+    {
+      "column": "_language",
+      "meaning": "Language the participant used."
+    }
+  ],
+  "conditions": [],
+  "randomisers": [],
+  "orders": [],
+  "variables": [
+    {
+      "name": "a",
+      "id": "a",
+      "type": "integer",
+      "label": {
+        "en": "Pick any whole number (optional)."
+      },
+      "block": "p1",
+      "page": "p1_page",
+      "required": false,
+      "csvColumns": [
+        "a",
+        "a__state"
+      ],
+      "missing": "Answered: the value. Unanswered, irrelevant, not-reached: empty; a__state says which state applies."
+    },
+    {
+      "name": "b",
+      "id": "b",
+      "type": "integer",
+      "label": {
+        "en": "Pick another whole number (optional)."
+      },
+      "block": "p1",
+      "page": "p1_page",
+      "required": false,
+      "csvColumns": [
+        "b",
+        "b__state"
+      ],
+      "missing": "Answered: the value. Unanswered, irrelevant, not-reached: empty; b__state says which state applies."
+    },
+    {
+      "name": "c",
+      "id": "c",
+      "type": "multi",
+      "label": {
+        "en": "Pick some colours (optional)."
+      },
+      "block": "p1",
+      "page": "p1_page",
+      "required": false,
+      "choices": [
+        {
+          "code": "red",
+          "label": {
+            "en": "Red"
+          },
+          "column": "c_red"
+        },
+        {
+          "code": "green",
+          "label": {
+            "en": "Green"
+          },
+          "column": "c_green"
+        },
+        {
+          "code": "blue",
+          "label": {
+            "en": "Blue"
+          },
+          "column": "c_blue"
+        }
+      ],
+      "choiceOrder": "fixed",
+      "csvColumns": [
+        "c_red",
+        "c_green",
+        "c_blue",
+        "c__state"
+      ],
+      "missing": "Answered: 1 in each chosen choice's column, 0 in the others. Unanswered, irrelevant, not-reached: every choice column empty; c__state says which state applies."
+    },
+    {
+      "name": "p2_anchor",
+      "id": "p2_anchor",
+      "type": "text",
+      "label": {
+        "en": "This question is always shown."
+      },
+      "block": "p2",
+      "page": "p2_page",
+      "required": false,
+      "csvColumns": [
+        "p2_anchor",
+        "p2_anchor__state"
+      ],
+      "missing": "Answered: the value. Unanswered, irrelevant, not-reached: empty; p2_anchor__state says which state applies."
+    },
+    {
+      "name": "s_gt",
+      "id": "s_gt",
+      "type": "text",
+      "label": {
+        "en": "Shown when: a > 5"
+      },
+      "block": "p2",
+      "page": "p2_page",
+      "required": false,
+      "showIf": "a > 5",
+      "csvColumns": [
+        "s_gt",
+        "s_gt__state"
+      ],
+      "missing": "Answered: the value. Unanswered, irrelevant, not-reached: empty; s_gt__state says which state applies."
+    },
+    {
+      "name": "s_not_gt",
+      "id": "s_not_gt",
+      "type": "text",
+      "label": {
+        "en": "Shown when: not (a > 5)"
+      },
+      "block": "p2",
+      "page": "p2_page",
+      "required": false,
+      "showIf": "not a > 5",
+      "csvColumns": [
+        "s_not_gt",
+        "s_not_gt__state"
+      ],
+      "missing": "Answered: the value. Unanswered, irrelevant, not-reached: empty; s_not_gt__state says which state applies."
+    },
+    {
+      "name": "s_eq",
+      "id": "s_eq",
+      "type": "text",
+      "label": {
+        "en": "Shown when: a == b"
+      },
+      "block": "p2",
+      "page": "p2_page",
+      "required": false,
+      "showIf": "a == b",
+      "csvColumns": [
+        "s_eq",
+        "s_eq__state"
+      ],
+      "missing": "Answered: the value. Unanswered, irrelevant, not-reached: empty; s_eq__state says which state applies."
+    },
+    {
+      "name": "s_neq",
+      "id": "s_neq",
+      "type": "text",
+      "label": {
+        "en": "Shown when: a != 3"
+      },
+      "block": "p2",
+      "page": "p2_page",
+      "required": false,
+      "showIf": "a != 3",
+      "csvColumns": [
+        "s_neq",
+        "s_neq__state"
+      ],
+      "missing": "Answered: the value. Unanswered, irrelevant, not-reached: empty; s_neq__state says which state applies."
+    },
+    {
+      "name": "s_arith",
+      "id": "s_arith",
+      "type": "text",
+      "label": {
+        "en": "Shown when: a + b > 3"
+      },
+      "block": "p2",
+      "page": "p2_page",
+      "required": false,
+      "showIf": "a + b > 3",
+      "csvColumns": [
+        "s_arith",
+        "s_arith__state"
+      ],
+      "missing": "Answered: the value. Unanswered, irrelevant, not-reached: empty; s_arith__state says which state applies."
+    },
+    {
+      "name": "s_unanswered",
+      "id": "s_unanswered",
+      "type": "text",
+      "label": {
+        "en": "Shown when: not answered(a)"
+      },
+      "block": "p2",
+      "page": "p2_page",
+      "required": false,
+      "showIf": "not answered(a)",
+      "csvColumns": [
+        "s_unanswered",
+        "s_unanswered__state"
+      ],
+      "missing": "Answered: the value. Unanswered, irrelevant, not-reached: empty; s_unanswered__state says which state applies."
+    },
+    {
+      "name": "s_contains",
+      "id": "s_contains",
+      "type": "text",
+      "label": {
+        "en": "Shown when: contains(c, \"red\")"
+      },
+      "block": "p2",
+      "page": "p2_page",
+      "required": false,
+      "showIf": "contains(c, \"red\")",
+      "csvColumns": [
+        "s_contains",
+        "s_contains__state"
+      ],
+      "missing": "Answered: the value. Unanswered, irrelevant, not-reached: empty; s_contains__state says which state applies."
+    }
+  ],
+  "otherVariables": [],
+  "quotas": [],
+  "hooks": []
+}

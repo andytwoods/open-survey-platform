@@ -43,6 +43,7 @@ class Survey:
     created_at: datetime
     closed_at: datetime | None
     retention: RetentionPolicy
+    public_slug: str | None = None  # the participant link id, /s/<public_slug>
 
 
 @dataclass(frozen=True, slots=True)

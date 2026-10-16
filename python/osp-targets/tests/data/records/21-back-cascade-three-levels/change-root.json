@@ -1,0 +1,254 @@
+{
+ "format": "osp-response/1",
+ "surveyId": "f21_back_cascade",
+ "surveyVersion": 1,
+ "planVersion": "osp-runtime-plan/1",
+ "planChecksum": "sha256:a648d32dc818c3020bdd2c193d3212c459995716dec3f73d239267080f3a351e",
+ "engineVersion": "1",
+ "sessionSeed": 2101,
+ "sessionId": null,
+ "language": "en",
+ "device": null,
+ "end": "complete",
+ "endNode": null,
+ "allocation": "server",
+ "assigned": {},
+ "conditions": {},
+ "conditionSources": {},
+ "orders": {
+  "blocks": {},
+  "items": {},
+  "choices": {}
+ },
+ "answers": {
+  "a": {
+   "state": "answered",
+   "value": "no"
+  },
+  "b": {
+   "state": "irrelevant",
+   "value": null
+  },
+  "weather": {
+   "state": "answered",
+   "value": "windy"
+  },
+  "c": {
+   "state": "irrelevant",
+   "value": null
+  },
+  "colour": {
+   "state": "answered",
+   "value": "green"
+  },
+  "d": {
+   "state": "irrelevant",
+   "value": null
+  },
+  "final": {
+   "state": "answered",
+   "value": "done"
+  }
+ },
+ "csvState": {
+  "a__state": "answered",
+  "b__state": "irrelevant",
+  "weather__state": "answered",
+  "c__state": "irrelevant",
+  "colour__state": "answered",
+  "d__state": "irrelevant",
+  "final__state": "answered"
+ },
+ "embedded": {},
+ "computed": {},
+ "quotas": {},
+ "effects": [],
+ "urlParams": {},
+ "startedAt": 2000,
+ "endedAt": 20000,
+ "revision": 19,
+ "events": [
+  {
+   "type": "start",
+   "seq": 1,
+   "rev": 1,
+   "t": 2000,
+   "sessionSeed": 2101,
+   "assigned": {},
+   "language": "en",
+   "device": null,
+   "urlParams": {},
+   "sessionId": null
+  },
+  {
+   "type": "answer",
+   "t": 3000,
+   "item": "a",
+   "value": "yes",
+   "seq": 2,
+   "rev": 2
+  },
+  {
+   "type": "next",
+   "t": 4000,
+   "from": "p1_page",
+   "seq": 3,
+   "rev": 3,
+   "result": {
+    "outcome": "advanced",
+    "to": "p2_page"
+   }
+  },
+  {
+   "type": "answer",
+   "t": 5000,
+   "item": "b",
+   "value": 3,
+   "seq": 4,
+   "rev": 4
+  },
+  {
+   "type": "answer",
+   "t": 6000,
+   "item": "weather",
+   "value": "windy",
+   "seq": 5,
+   "rev": 5
+  },
+  {
+   "type": "next",
+   "t": 7000,
+   "from": "p2_page",
+   "seq": 6,
+   "rev": 6,
+   "result": {
+    "outcome": "advanced",
+    "to": "p3_page"
+   }
+  },
+  {
+   "type": "answer",
+   "t": 8000,
+   "item": "c",
+   "value": "the red one",
+   "seq": 7,
+   "rev": 7
+  },
+  {
+   "type": "answer",
+   "t": 9000,
+   "item": "colour",
+   "value": "green",
+   "seq": 8,
+   "rev": 8
+  },
+  {
+   "type": "next",
+   "t": 10000,
+   "from": "p3_page",
+   "seq": 9,
+   "rev": 9,
+   "result": {
+    "outcome": "advanced",
+    "to": "p4_page"
+   }
+  },
+  {
+   "type": "answer",
+   "t": 11000,
+   "item": "d",
+   "value": "it is fast",
+   "seq": 10,
+   "rev": 10
+  },
+  {
+   "type": "back",
+   "t": 12000,
+   "from": "p4_page",
+   "seq": 11,
+   "rev": 11,
+   "to": "p3_page"
+  },
+  {
+   "type": "back",
+   "t": 13000,
+   "from": "p3_page",
+   "seq": 12,
+   "rev": 12,
+   "to": "p2_page"
+  },
+  {
+   "type": "back",
+   "t": 14000,
+   "from": "p2_page",
+   "seq": 13,
+   "rev": 13,
+   "to": "p1_page"
+  },
+  {
+   "type": "answer",
+   "t": 15000,
+   "item": "a",
+   "value": "no",
+   "seq": 14,
+   "rev": 14
+  },
+  {
+   "type": "next",
+   "t": 16000,
+   "from": "p1_page",
+   "seq": 15,
+   "rev": 15,
+   "result": {
+    "outcome": "advanced",
+    "to": "p2_page"
+   }
+  },
+  {
+   "type": "next",
+   "t": 17000,
+   "from": "p2_page",
+   "seq": 16,
+   "rev": 16,
+   "result": {
+    "outcome": "advanced",
+    "to": "p3_page"
+   }
+  },
+  {
+   "type": "next",
+   "t": 18000,
+   "from": "p3_page",
+   "seq": 17,
+   "rev": 17,
+   "result": {
+    "outcome": "advanced",
+    "to": "p4_page"
+   }
+  },
+  {
+   "type": "answer",
+   "t": 19000,
+   "item": "final",
+   "value": "done",
+   "seq": 18,
+   "rev": 18
+  },
+  {
+   "type": "next",
+   "t": 20000,
+   "from": "p4_page",
+   "seq": 19,
+   "rev": 19,
+   "result": {
+    "outcome": "ended",
+    "to": null,
+    "effect": {
+     "kind": "end",
+     "outcome": "complete",
+     "nodeId": null
+    }
+   }
+  }
+ ]
+}

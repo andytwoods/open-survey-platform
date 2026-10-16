@@ -1,0 +1,243 @@
+{
+  "format": "osp-response-export/1",
+  "survey": {
+    "id": "f15_choice_order_shuffle",
+    "title": "Shuffled choice order",
+    "version": 1,
+    "checksum": "sha256:test-15-choice-order-shuffle"
+  },
+  "missingValues": "Every answer is {state, value}. state is answered, unanswered (shown, left empty), irrelevant (page reached, hidden by its show-if) or not-reached (the flow never got to its page); value is null unless state is answered. state is null only if the stored record has no entry for the question.",
+  "options": {
+    "events": true
+  },
+  "responses": [
+    {
+      "responseId": "resp-seed-large",
+      "sessionId": "sess-seed-large",
+      "version": 1,
+      "versionChecksum": "sha256:test-15-choice-order-shuffle",
+      "planChecksum": "sha256:053f38048892883fbbe19f72aadec9d42567f560b9686c4353e66dc23b8cdc69",
+      "engineVersion": "1",
+      "allocationMode": "server",
+      "saveMode": "every-page",
+      "seed": 2147483646,
+      "startedAt": "2026-10-16T09:30:00.000Z",
+      "submittedAt": "2026-10-16T09:30:30.250Z",
+      "late": false,
+      "end": "complete",
+      "language": "en",
+      "conditions": {},
+      "answers": {
+        "fav_colour": {
+          "state": "answered",
+          "value": "purple"
+        },
+        "fruits": {
+          "state": "answered",
+          "value": [
+            "apple",
+            "plum"
+          ]
+        },
+        "plain": {
+          "state": "answered",
+          "value": "yes"
+        }
+      },
+      "variables": {},
+      "orders": {
+        "blocks": {},
+        "items": {},
+        "choices": {
+          "fav_colour": [
+            "yellow",
+            "blue",
+            "red",
+            "purple",
+            "green"
+          ],
+          "fruits": [
+            "apple",
+            "mango",
+            "kiwi",
+            "plum",
+            "pear"
+          ]
+        }
+      },
+      "quotas": {},
+      "urlParams": {},
+      "events": [
+        {
+          "type": "start",
+          "seq": 1,
+          "rev": 1,
+          "t": 2000,
+          "sessionSeed": 2147483646,
+          "assigned": {},
+          "language": "en",
+          "device": null,
+          "urlParams": {},
+          "sessionId": null
+        },
+        {
+          "type": "answer",
+          "t": 3000,
+          "item": "fav_colour",
+          "value": "purple",
+          "seq": 2,
+          "rev": 2
+        },
+        {
+          "type": "answer",
+          "t": 4000,
+          "item": "fruits",
+          "value": [
+            "apple",
+            "plum"
+          ],
+          "seq": 3,
+          "rev": 3
+        },
+        {
+          "type": "answer",
+          "t": 5000,
+          "item": "plain",
+          "value": "yes",
+          "seq": 4,
+          "rev": 4
+        },
+        {
+          "type": "next",
+          "t": 6000,
+          "from": "p1_page",
+          "seq": 5,
+          "rev": 5,
+          "result": {
+            "outcome": "ended",
+            "to": null,
+            "effect": {
+              "kind": "end",
+              "outcome": "complete",
+              "nodeId": null
+            }
+          }
+        }
+      ]
+    },
+    {
+      "responseId": "resp-seed-small",
+      "sessionId": "sess-seed-small",
+      "version": 1,
+      "versionChecksum": "sha256:test-15-choice-order-shuffle",
+      "planChecksum": "sha256:053f38048892883fbbe19f72aadec9d42567f560b9686c4353e66dc23b8cdc69",
+      "engineVersion": "1",
+      "allocationMode": "server",
+      "saveMode": "every-page",
+      "seed": 1,
+      "startedAt": "2026-10-16T09:31:00.000Z",
+      "submittedAt": "2026-10-16T09:31:30.250Z",
+      "late": false,
+      "end": "complete",
+      "language": "en",
+      "conditions": {},
+      "answers": {
+        "fav_colour": {
+          "state": "answered",
+          "value": "purple"
+        },
+        "fruits": {
+          "state": "answered",
+          "value": [
+            "apple",
+            "plum"
+          ]
+        },
+        "plain": {
+          "state": "answered",
+          "value": "yes"
+        }
+      },
+      "variables": {},
+      "orders": {
+        "blocks": {},
+        "items": {},
+        "choices": {
+          "fav_colour": [
+            "red",
+            "yellow",
+            "purple",
+            "green",
+            "blue"
+          ],
+          "fruits": [
+            "plum",
+            "kiwi",
+            "mango",
+            "pear",
+            "apple"
+          ]
+        }
+      },
+      "quotas": {},
+      "urlParams": {},
+      "events": [
+        {
+          "type": "start",
+          "seq": 1,
+          "rev": 1,
+          "t": 2000,
+          "sessionSeed": 1,
+          "assigned": {},
+          "language": "en",
+          "device": null,
+          "urlParams": {},
+          "sessionId": null
+        },
+        {
+          "type": "answer",
+          "t": 3000,
+          "item": "fav_colour",
+          "value": "purple",
+          "seq": 2,
+          "rev": 2
+        },
+        {
+          "type": "answer",
+          "t": 4000,
+          "item": "fruits",
+          "value": [
+            "apple",
+            "plum"
+          ],
+          "seq": 3,
+          "rev": 3
+        },
+        {
+          "type": "answer",
+          "t": 5000,
+          "item": "plain",
+          "value": "yes",
+          "seq": 4,
+          "rev": 4
+        },
+        {
+          "type": "next",
+          "t": 6000,
+          "from": "p1_page",
+          "seq": 5,
+          "rev": 5,
+          "result": {
+            "outcome": "ended",
+            "to": null,
+            "effect": {
+              "kind": "end",
+              "outcome": "complete",
+              "nodeId": null
+            }
+          }
+        }
+      ]
+    }
+  ]
+}

@@ -110,7 +110,13 @@ class ParticipantRepo(Protocol):
         quotas: Mapping[str, int],
         balanced: Mapping[str, tuple[Any, ...]],
     ) -> PublicationRow: ...
-    def find_publication(self, slug: str) -> PublicationRow | None: ...
+    def find_publication(
+        self, slug: str, plan_checksum: str | None = None
+    ) -> PublicationRow | None:
+        """The newest version's publication under ``slug``; with ``plan_checksum``, the
+        one under ``slug`` with that plan (an older version a session is still on)."""
+        ...
+
     def get_publication(self, tenant_id: str, publication_id: str) -> PublicationRow: ...
     def start(
         self,
@@ -275,7 +281,8 @@ class SessionService:
         )
 
     def plan(self, slug: str, checksum: str) -> Any:
-        pub = self._repo.find_publication(slug)
+        """The immutable plan for ``(slug, checksum)``, also for an older version."""
+        pub = self._repo.find_publication(slug, checksum)
         if pub is None or pub.plan_checksum != checksum:
             raise NotFoundError("no such plan")
         return pub.plan

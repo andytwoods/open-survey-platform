@@ -1,0 +1,338 @@
+{
+  "format": "osp-codebook/1",
+  "survey": {
+    "id": "f27_unicode_text",
+    "title": {
+      "en": "Whitespace and Unicode text"
+    },
+    "version": 1,
+    "checksum": "sha256:test-27-unicode-text",
+    "languages": [
+      "en"
+    ],
+    "defaultLanguage": "en"
+  },
+  "csv": {
+    "stateColumns": true,
+    "multi": "columns",
+    "bom": false,
+    "escapeFormulas": true,
+    "columns": [
+      "_response_id",
+      "_session_id",
+      "_version",
+      "_version_checksum",
+      "_plan_checksum",
+      "_engine_version",
+      "_allocation_mode",
+      "_save_mode",
+      "_seed",
+      "_started_at",
+      "_submitted_at",
+      "_late",
+      "_end",
+      "_language",
+      "t_emoji",
+      "t_emoji__state",
+      "t_rtl",
+      "t_rtl__state",
+      "t_mixed",
+      "t_mixed__state",
+      "t_name",
+      "t_name__state",
+      "pipe_emoji",
+      "pipe_emoji__state",
+      "pipe_rtl",
+      "pipe_rtl__state",
+      "pipe_mixed",
+      "pipe_mixed__state",
+      "pipe_name",
+      "pipe_name__state",
+      "s_emoji",
+      "s_emoji__state",
+      "s_rtl",
+      "s_rtl__state",
+      "s_mixed_plain",
+      "s_mixed_plain__state"
+    ]
+  },
+  "missingValues": {
+    "states": [
+      {
+        "state": "answered",
+        "meaning": "Shown and answered.",
+        "csv": "the value",
+        "json": "the value"
+      },
+      {
+        "state": "unanswered",
+        "meaning": "Shown, left empty (only possible when not required).",
+        "csv": "empty",
+        "json": "null"
+      },
+      {
+        "state": "irrelevant",
+        "meaning": "Its page was reached, but its show-if hid it.",
+        "csv": "empty",
+        "json": "null"
+      },
+      {
+        "state": "not-reached",
+        "meaning": "The flow never got to its page.",
+        "csv": "empty",
+        "json": "null"
+      }
+    ],
+    "csv": "Empty value cell plus the <var>__state column. No numeric missing codes (such as -99) are ever written.",
+    "json": "value null plus state per answer."
+  },
+  "saveMode": {
+    "mode": "every-page",
+    "implications": "Answers were saved to the server on every page change. Partial sessions exist on the server, so drop-outs are visible to the researcher, but this export holds only submitted responses."
+  },
+  "metaColumns": [
+    {
+      "column": "_response_id",
+      "meaning": "Response id (server)."
+    },
+    {
+      "column": "_session_id",
+      "meaning": "Participant session id (pseudonymous)."
+    },
+    {
+      "column": "_version",
+      "meaning": "Published survey version the response belongs to (semantics §9)."
+    },
+    {
+      "column": "_version_checksum",
+      "meaning": "Checksum of that version's survey document."
+    },
+    {
+      "column": "_plan_checksum",
+      "meaning": "Checksum of the runtime plan the participant's browser ran."
+    },
+    {
+      "column": "_engine_version",
+      "meaning": "Version of the participant engine (web/engine)."
+    },
+    {
+      "column": "_allocation_mode",
+      "meaning": "How conditions were assigned: server (our server, at session start), seeded (the engine drew at least one condition from the session seed), or limesurvey-native."
+    },
+    {
+      "column": "_save_mode",
+      "meaning": "every-page or end-only (runtime-design §5.0)."
+    },
+    {
+      "column": "_seed",
+      "meaning": "Session seed (positive integer, semantics §7); reproduces every order."
+    },
+    {
+      "column": "_started_at",
+      "meaning": "Session start, UTC, ISO 8601."
+    },
+    {
+      "column": "_submitted_at",
+      "meaning": "Submission accepted by the server, UTC, ISO 8601."
+    },
+    {
+      "column": "_late",
+      "meaning": "true if the response was submitted after the survey was closed (provisional, semantics open question M2-1)."
+    },
+    {
+      "column": "_end",
+      "meaning": "End outcome reached (e.g. complete); empty if none was recorded."
+    },
+    {
+      "column": "_language",
+      "meaning": "Language the participant used."
+    }
+  ],
+  "conditions": [],
+  "randomisers": [],
+  "orders": [],
+  "variables": [
+    {
+      "name": "t_emoji",
+      "id": "t_emoji",
+      "type": "text",
+      "label": {
+        "en": "Describe your day with an emoji."
+      },
+      "block": "p1",
+      "page": "p1_page",
+      "required": false,
+      "csvColumns": [
+        "t_emoji",
+        "t_emoji__state"
+      ],
+      "missing": "Answered: the value. Unanswered, irrelevant, not-reached: empty; t_emoji__state says which state applies."
+    },
+    {
+      "name": "t_rtl",
+      "id": "t_rtl",
+      "type": "text",
+      "label": {
+        "en": "Write a greeting in Hebrew."
+      },
+      "block": "p1",
+      "page": "p1_page",
+      "required": false,
+      "csvColumns": [
+        "t_rtl",
+        "t_rtl__state"
+      ],
+      "missing": "Answered: the value. Unanswered, irrelevant, not-reached: empty; t_rtl__state says which state applies."
+    },
+    {
+      "name": "t_mixed",
+      "id": "t_mixed",
+      "type": "text",
+      "label": {
+        "en": "Write a product code."
+      },
+      "block": "p1",
+      "page": "p1_page",
+      "required": false,
+      "csvColumns": [
+        "t_mixed",
+        "t_mixed__state"
+      ],
+      "missing": "Answered: the value. Unanswered, irrelevant, not-reached: empty; t_mixed__state says which state applies."
+    },
+    {
+      "name": "t_name",
+      "id": "t_name",
+      "type": "text",
+      "label": {
+        "en": "Choose a display name."
+      },
+      "block": "p1",
+      "page": "p1_page",
+      "required": false,
+      "csvColumns": [
+        "t_name",
+        "t_name__state"
+      ],
+      "missing": "Answered: the value. Unanswered, irrelevant, not-reached: empty; t_name__state says which state applies."
+    },
+    {
+      "name": "pipe_emoji",
+      "id": "pipe_emoji",
+      "type": "text",
+      "label": {
+        "en": "Your day: ${t_emoji}"
+      },
+      "block": "p2",
+      "page": "p2_page",
+      "required": false,
+      "csvColumns": [
+        "pipe_emoji",
+        "pipe_emoji__state"
+      ],
+      "missing": "Answered: the value. Unanswered, irrelevant, not-reached: empty; pipe_emoji__state says which state applies."
+    },
+    {
+      "name": "pipe_rtl",
+      "id": "pipe_rtl",
+      "type": "text",
+      "label": {
+        "en": "Your greeting: ${t_rtl}"
+      },
+      "block": "p2",
+      "page": "p2_page",
+      "required": false,
+      "csvColumns": [
+        "pipe_rtl",
+        "pipe_rtl__state"
+      ],
+      "missing": "Answered: the value. Unanswered, irrelevant, not-reached: empty; pipe_rtl__state says which state applies."
+    },
+    {
+      "name": "pipe_mixed",
+      "id": "pipe_mixed",
+      "type": "text",
+      "label": {
+        "en": "Code: [${t_mixed}]"
+      },
+      "block": "p2",
+      "page": "p2_page",
+      "required": false,
+      "csvColumns": [
+        "pipe_mixed",
+        "pipe_mixed__state"
+      ],
+      "missing": "Answered: the value. Unanswered, irrelevant, not-reached: empty; pipe_mixed__state says which state applies."
+    },
+    {
+      "name": "pipe_name",
+      "id": "pipe_name",
+      "type": "text",
+      "label": {
+        "en": "Hello ${t_name}!"
+      },
+      "block": "p2",
+      "page": "p2_page",
+      "required": false,
+      "csvColumns": [
+        "pipe_name",
+        "pipe_name__state"
+      ],
+      "missing": "Answered: the value. Unanswered, irrelevant, not-reached: empty; pipe_name__state says which state applies."
+    },
+    {
+      "name": "s_emoji",
+      "id": "s_emoji",
+      "type": "text",
+      "label": {
+        "en": "Shown when t_emoji == \"👍🏽 great\""
+      },
+      "block": "p2",
+      "page": "p2_page",
+      "required": false,
+      "showIf": "t_emoji == \"👍🏽 great\"",
+      "csvColumns": [
+        "s_emoji",
+        "s_emoji__state"
+      ],
+      "missing": "Answered: the value. Unanswered, irrelevant, not-reached: empty; s_emoji__state says which state applies."
+    },
+    {
+      "name": "s_rtl",
+      "id": "s_rtl",
+      "type": "text",
+      "label": {
+        "en": "Shown when t_rtl == \"שלום עולם\""
+      },
+      "block": "p2",
+      "page": "p2_page",
+      "required": false,
+      "showIf": "t_rtl == \"שלום עולם\"",
+      "csvColumns": [
+        "s_rtl",
+        "s_rtl__state"
+      ],
+      "missing": "Answered: the value. Unanswered, irrelevant, not-reached: empty; s_rtl__state says which state applies."
+    },
+    {
+      "name": "s_mixed_plain",
+      "id": "s_mixed_plain",
+      "type": "text",
+      "label": {
+        "en": "Shown when t_mixed == \"AB 12X\" with plain characters (it must not be: the typed code has an NBSP and a zero-width space)"
+      },
+      "block": "p2",
+      "page": "p2_page",
+      "required": false,
+      "showIf": "t_mixed == \"AB 12X\"",
+      "csvColumns": [
+        "s_mixed_plain",
+        "s_mixed_plain__state"
+      ],
+      "missing": "Answered: the value. Unanswered, irrelevant, not-reached: empty; s_mixed_plain__state says which state applies."
+    }
+  ],
+  "otherVariables": [],
+  "quotas": [],
+  "hooks": []
+}

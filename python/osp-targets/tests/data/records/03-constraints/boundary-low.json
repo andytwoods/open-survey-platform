@@ -1,0 +1,88 @@
+{
+ "format": "osp-response/1",
+ "surveyId": "f03_constraints",
+ "surveyVersion": 1,
+ "planVersion": "osp-runtime-plan/1",
+ "planChecksum": "sha256:00c79f47c69f37d3ef9c702acc9ef700a073d6f08d6f99cb2cd6a7e21a55c9e2",
+ "engineVersion": "1",
+ "sessionSeed": 302,
+ "sessionId": null,
+ "language": "en",
+ "device": null,
+ "end": "complete",
+ "endNode": "end_complete",
+ "allocation": "server",
+ "assigned": {},
+ "conditions": {},
+ "conditionSources": {},
+ "orders": {
+  "blocks": {},
+  "items": {},
+  "choices": {}
+ },
+ "answers": {
+  "age": {
+   "state": "answered",
+   "value": 18
+  },
+  "score": {
+   "state": "unanswered",
+   "value": null
+  },
+  "nick": {
+   "state": "unanswered",
+   "value": null
+  }
+ },
+ "csvState": {
+  "age__state": "answered",
+  "score__state": "unanswered",
+  "nick__state": "unanswered"
+ },
+ "embedded": {},
+ "computed": {},
+ "quotas": {},
+ "effects": [],
+ "urlParams": {},
+ "startedAt": 2000,
+ "endedAt": 4000,
+ "revision": 3,
+ "events": [
+  {
+   "type": "start",
+   "seq": 1,
+   "rev": 1,
+   "t": 2000,
+   "sessionSeed": 302,
+   "assigned": {},
+   "language": "en",
+   "device": null,
+   "urlParams": {},
+   "sessionId": null
+  },
+  {
+   "type": "answer",
+   "t": 3000,
+   "item": "age",
+   "value": 18,
+   "seq": 2,
+   "rev": 2
+  },
+  {
+   "type": "next",
+   "t": 4000,
+   "from": "p1_page",
+   "seq": 3,
+   "rev": 3,
+   "result": {
+    "outcome": "ended",
+    "to": null,
+    "effect": {
+     "kind": "end",
+     "outcome": "complete",
+     "nodeId": "end_complete"
+    }
+   }
+  }
+ ]
+}

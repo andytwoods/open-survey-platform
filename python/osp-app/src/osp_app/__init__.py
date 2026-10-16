@@ -2,6 +2,7 @@
 
 from .builder import Builder, EditResult, ExportResult, HistoryEntry, PublishResult, SurveyView
 from .commands import COMMANDS, AppCommand, command, dispatch
+from .data_export import DataExport
 from .errors import (
     AppError,
     ConflictError,
@@ -12,6 +13,7 @@ from .errors import (
     RevisionConflictError,
     Unauthenticated,
 )
+from .runtime_repo import StoreParticipantRepo
 from .services import AppServices, build_services
 from .store_repos import StoreMembershipRepo, StoreSessionRepo, StoreUserRepo
 
@@ -22,6 +24,7 @@ __all__ = [
     "AppServices",
     "Builder",
     "ConflictError",
+    "DataExport",
     "EditResult",
     "ExportResult",
     "Forbidden",
@@ -32,6 +35,7 @@ __all__ = [
     "Rejected",
     "RevisionConflictError",
     "StoreMembershipRepo",
+    "StoreParticipantRepo",
     "StoreSessionRepo",
     "StoreUserRepo",
     "SurveyView",

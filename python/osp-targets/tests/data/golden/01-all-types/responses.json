@@ -1,0 +1,231 @@
+{
+  "format": "osp-response-export/1",
+  "survey": {
+    "id": "f01_all_types",
+    "title": "All question types",
+    "version": 1,
+    "checksum": "sha256:test-01-all-types"
+  },
+  "missingValues": "Every answer is {state, value}. state is answered, unanswered (shown, left empty), irrelevant (page reached, hidden by its show-if) or not-reached (the flow never got to its page); value is null unless state is answered. state is null only if the stored record has no entry for the question.",
+  "options": {
+    "events": true
+  },
+  "responses": [
+    {
+      "responseId": "resp-answered",
+      "sessionId": "sess-answered",
+      "version": 1,
+      "versionChecksum": "sha256:test-01-all-types",
+      "planChecksum": "sha256:34fd3c75e41296507270345e0f74e9f2500bdae356d471dd9176bbbd2402509e",
+      "engineVersion": "1",
+      "allocationMode": "server",
+      "saveMode": "every-page",
+      "seed": 101,
+      "startedAt": "2026-10-16T09:30:00.000Z",
+      "submittedAt": "2026-10-16T09:30:30.250Z",
+      "late": false,
+      "end": "complete",
+      "language": "en",
+      "conditions": {},
+      "answers": {
+        "n_int": {
+          "state": "answered",
+          "value": 3
+        },
+        "n_dec": {
+          "state": "answered",
+          "value": "2.8"
+        },
+        "t_text": {
+          "state": "answered",
+          "value": "Cloudy with sunny spells"
+        },
+        "s_single": {
+          "state": "answered",
+          "value": "banana"
+        },
+        "m_multi": {
+          "state": "answered",
+          "value": [
+            "red",
+            "blue"
+          ]
+        },
+        "d_date": {
+          "state": "answered",
+          "value": "2026-03-14"
+        }
+      },
+      "variables": {},
+      "orders": {
+        "blocks": {},
+        "items": {},
+        "choices": {}
+      },
+      "quotas": {},
+      "urlParams": {},
+      "events": [
+        {
+          "type": "start",
+          "seq": 1,
+          "rev": 1,
+          "t": 2000,
+          "sessionSeed": 101,
+          "assigned": {},
+          "language": "en",
+          "device": null,
+          "urlParams": {},
+          "sessionId": null
+        },
+        {
+          "type": "answer",
+          "t": 3000,
+          "item": "n_int",
+          "value": 3,
+          "seq": 2,
+          "rev": 2
+        },
+        {
+          "type": "answer",
+          "t": 4000,
+          "item": "n_dec",
+          "value": "2.8",
+          "seq": 3,
+          "rev": 3
+        },
+        {
+          "type": "answer",
+          "t": 5000,
+          "item": "t_text",
+          "value": "Cloudy with sunny spells",
+          "seq": 4,
+          "rev": 4
+        },
+        {
+          "type": "answer",
+          "t": 6000,
+          "item": "s_single",
+          "value": "banana",
+          "seq": 5,
+          "rev": 5
+        },
+        {
+          "type": "answer",
+          "t": 7000,
+          "item": "m_multi",
+          "value": [
+            "red",
+            "blue"
+          ],
+          "seq": 6,
+          "rev": 6
+        },
+        {
+          "type": "answer",
+          "t": 8000,
+          "item": "d_date",
+          "value": "2026-03-14",
+          "seq": 7,
+          "rev": 7
+        },
+        {
+          "type": "next",
+          "t": 9000,
+          "from": "p1_page",
+          "seq": 8,
+          "rev": 8,
+          "result": {
+            "outcome": "ended",
+            "to": null,
+            "effect": {
+              "kind": "end",
+              "outcome": "complete",
+              "nodeId": "end_complete"
+            }
+          }
+        }
+      ]
+    },
+    {
+      "responseId": "resp-empty",
+      "sessionId": "sess-empty",
+      "version": 1,
+      "versionChecksum": "sha256:test-01-all-types",
+      "planChecksum": "sha256:34fd3c75e41296507270345e0f74e9f2500bdae356d471dd9176bbbd2402509e",
+      "engineVersion": "1",
+      "allocationMode": "server",
+      "saveMode": "every-page",
+      "seed": 102,
+      "startedAt": "2026-10-16T09:31:00.000Z",
+      "submittedAt": "2026-10-16T09:31:30.250Z",
+      "late": false,
+      "end": "complete",
+      "language": "en",
+      "conditions": {},
+      "answers": {
+        "n_int": {
+          "state": "unanswered",
+          "value": null
+        },
+        "n_dec": {
+          "state": "unanswered",
+          "value": null
+        },
+        "t_text": {
+          "state": "unanswered",
+          "value": null
+        },
+        "s_single": {
+          "state": "unanswered",
+          "value": null
+        },
+        "m_multi": {
+          "state": "unanswered",
+          "value": null
+        },
+        "d_date": {
+          "state": "unanswered",
+          "value": null
+        }
+      },
+      "variables": {},
+      "orders": {
+        "blocks": {},
+        "items": {},
+        "choices": {}
+      },
+      "quotas": {},
+      "urlParams": {},
+      "events": [
+        {
+          "type": "start",
+          "seq": 1,
+          "rev": 1,
+          "t": 2000,
+          "sessionSeed": 102,
+          "assigned": {},
+          "language": "en",
+          "device": null,
+          "urlParams": {},
+          "sessionId": null
+        },
+        {
+          "type": "next",
+          "t": 3000,
+          "from": "p1_page",
+          "seq": 2,
+          "rev": 2,
+          "result": {
+            "outcome": "ended",
+            "to": null,
+            "effect": {
+              "kind": "end",
+              "outcome": "complete",
+              "nodeId": "end_complete"
+            }
+          }
+        }
+      ]
+    }
+  ]
+}

@@ -1,0 +1,128 @@
+{
+ "format": "osp-response/1",
+ "surveyId": "f18_multi_language",
+ "surveyVersion": 1,
+ "planVersion": "osp-runtime-plan/1",
+ "planChecksum": "sha256:6a8c6dbb6dd8daa90ad64e20064d9a0c80cb56941a64c0865ffe419193208fb4",
+ "engineVersion": "1",
+ "sessionSeed": 1801,
+ "sessionId": null,
+ "language": "en",
+ "device": null,
+ "end": "complete",
+ "endNode": null,
+ "allocation": "server",
+ "assigned": {},
+ "conditions": {},
+ "conditionSources": {},
+ "orders": {
+  "blocks": {},
+  "items": {},
+  "choices": {}
+ },
+ "answers": {
+  "drink": {
+   "state": "answered",
+   "value": "tea"
+  },
+  "cups": {
+   "state": "answered",
+   "value": 3
+  },
+  "why": {
+   "state": "answered",
+   "value": "Warm"
+  },
+  "again": {
+   "state": "answered",
+   "value": "yes"
+  }
+ },
+ "csvState": {
+  "drink__state": "answered",
+  "cups__state": "answered",
+  "why__state": "answered",
+  "again__state": "answered"
+ },
+ "embedded": {},
+ "computed": {},
+ "quotas": {},
+ "effects": [],
+ "urlParams": {},
+ "startedAt": 2000,
+ "endedAt": 8000,
+ "revision": 7,
+ "events": [
+  {
+   "type": "start",
+   "seq": 1,
+   "rev": 1,
+   "t": 2000,
+   "sessionSeed": 1801,
+   "assigned": {},
+   "language": "en",
+   "device": null,
+   "urlParams": {},
+   "sessionId": null
+  },
+  {
+   "type": "answer",
+   "t": 3000,
+   "item": "drink",
+   "value": "tea",
+   "seq": 2,
+   "rev": 2
+  },
+  {
+   "type": "answer",
+   "t": 4000,
+   "item": "cups",
+   "value": 3,
+   "seq": 3,
+   "rev": 3
+  },
+  {
+   "type": "next",
+   "t": 5000,
+   "from": "p1_page",
+   "seq": 4,
+   "rev": 4,
+   "result": {
+    "outcome": "advanced",
+    "to": "p2_page"
+   }
+  },
+  {
+   "type": "answer",
+   "t": 6000,
+   "item": "why",
+   "value": "Warm",
+   "seq": 5,
+   "rev": 5
+  },
+  {
+   "type": "answer",
+   "t": 7000,
+   "item": "again",
+   "value": "yes",
+   "seq": 6,
+   "rev": 6
+  },
+  {
+   "type": "next",
+   "t": 8000,
+   "from": "p2_page",
+   "seq": 7,
+   "rev": 7,
+   "result": {
+    "outcome": "ended",
+    "to": null,
+    "effect": {
+     "kind": "end",
+     "outcome": "complete",
+     "nodeId": null
+    }
+   }
+  }
+ ]
+}

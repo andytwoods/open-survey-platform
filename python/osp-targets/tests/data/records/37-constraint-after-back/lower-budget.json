@@ -1,0 +1,201 @@
+{
+ "format": "osp-response/1",
+ "surveyId": "f37_constraint_after_back",
+ "surveyVersion": 1,
+ "planVersion": "osp-runtime-plan/1",
+ "planChecksum": "sha256:4dc249efef55cbeca2db4cf63f69251796f12ad0dd02f568112d3ab7ff6ac903",
+ "engineVersion": "1",
+ "sessionSeed": 3701,
+ "sessionId": null,
+ "language": "en",
+ "device": null,
+ "end": "complete",
+ "endNode": null,
+ "allocation": "server",
+ "assigned": {},
+ "conditions": {},
+ "conditionSources": {},
+ "orders": {
+  "blocks": {},
+  "items": {},
+  "choices": {}
+ },
+ "answers": {
+  "budget": {
+   "state": "answered",
+   "value": 50
+  },
+  "spend": {
+   "state": "answered",
+   "value": 50
+  },
+  "rest": {
+   "state": "irrelevant",
+   "value": null
+  },
+  "comment": {
+   "state": "unanswered",
+   "value": null
+  }
+ },
+ "csvState": {
+  "budget__state": "answered",
+  "spend__state": "answered",
+  "rest__state": "irrelevant",
+  "comment__state": "unanswered"
+ },
+ "embedded": {},
+ "computed": {},
+ "quotas": {},
+ "effects": [],
+ "urlParams": {},
+ "startedAt": 2000,
+ "endedAt": 15000,
+ "revision": 14,
+ "events": [
+  {
+   "type": "start",
+   "seq": 1,
+   "rev": 1,
+   "t": 2000,
+   "sessionSeed": 3701,
+   "assigned": {},
+   "language": "en",
+   "device": null,
+   "urlParams": {},
+   "sessionId": null
+  },
+  {
+   "type": "answer",
+   "t": 3000,
+   "item": "budget",
+   "value": 100,
+   "seq": 2,
+   "rev": 2
+  },
+  {
+   "type": "next",
+   "t": 4000,
+   "from": "p1_page",
+   "seq": 3,
+   "rev": 3,
+   "result": {
+    "outcome": "advanced",
+    "to": "p2_page"
+   }
+  },
+  {
+   "type": "answer",
+   "t": 5000,
+   "item": "spend",
+   "value": 80,
+   "seq": 4,
+   "rev": 4
+  },
+  {
+   "type": "next",
+   "t": 6000,
+   "from": "p2_page",
+   "seq": 5,
+   "rev": 5,
+   "result": {
+    "outcome": "advanced",
+    "to": "p3_page"
+   }
+  },
+  {
+   "type": "answer",
+   "t": 7000,
+   "item": "rest",
+   "value": "save it",
+   "seq": 6,
+   "rev": 6
+  },
+  {
+   "type": "back",
+   "t": 8000,
+   "from": "p3_page",
+   "seq": 7,
+   "rev": 7,
+   "to": "p2_page"
+  },
+  {
+   "type": "back",
+   "t": 9000,
+   "from": "p2_page",
+   "seq": 8,
+   "rev": 8,
+   "to": "p1_page"
+  },
+  {
+   "type": "answer",
+   "t": 10000,
+   "item": "budget",
+   "value": 50,
+   "seq": 9,
+   "rev": 9
+  },
+  {
+   "type": "next",
+   "t": 11000,
+   "from": "p1_page",
+   "seq": 10,
+   "rev": 10,
+   "result": {
+    "outcome": "advanced",
+    "to": "p2_page"
+   }
+  },
+  {
+   "type": "next",
+   "t": 12000,
+   "from": "p2_page",
+   "seq": 11,
+   "rev": 11,
+   "result": {
+    "outcome": "invalid",
+    "to": "p2_page",
+    "errors": {
+     "spend": {
+      "kind": "constraint"
+     }
+    }
+   }
+  },
+  {
+   "type": "answer",
+   "t": 13000,
+   "item": "spend",
+   "value": 50,
+   "seq": 12,
+   "rev": 12
+  },
+  {
+   "type": "next",
+   "t": 14000,
+   "from": "p2_page",
+   "seq": 13,
+   "rev": 13,
+   "result": {
+    "outcome": "advanced",
+    "to": "p3_page"
+   }
+  },
+  {
+   "type": "next",
+   "t": 15000,
+   "from": "p3_page",
+   "seq": 14,
+   "rev": 14,
+   "result": {
+    "outcome": "ended",
+    "to": null,
+    "effect": {
+     "kind": "end",
+     "outcome": "complete",
+     "nodeId": null
+    }
+   }
+  }
+ ]
+}

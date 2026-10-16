@@ -39,12 +39,7 @@ interface Expected {
 type Status = 'passed' | 'pending' | 'failed';
 
 /** Expected files that contradict themselves; fixtures are not R1's to edit (reported to the lead). */
-const KNOWN_FIXTURE_BUGS: Record<string, { why: string; broken: string[] }> = {
-	'28-regression-order-refresh/refresh-before-answer': {
-		why: 'an `equal` invariant lists steps[12].visible, but its own steps[12] is p_end with visible ["outro"]',
-		broken: ['steps[12].visible = ["outro"] differs from steps[1].orders.items.p_att = ["att3","att1","att2","att4"]']
-	}
-};
+const KNOWN_FIXTURE_BUGS: Record<string, { why: string; broken: string[] }> = {}; // 28's steps[12].visible: fixed in R2b
 const report: Array<{
 	fixture: string;
 	script: string;

@@ -1,0 +1,261 @@
+{
+  "format": "osp-response-export/1",
+  "survey": {
+    "id": "f16_assign",
+    "title": "Server-assigned condition",
+    "version": 1,
+    "checksum": "sha256:test-16-assign"
+  },
+  "missingValues": "Every answer is {state, value}. state is answered, unanswered (shown, left empty), irrelevant (page reached, hidden by its show-if) or not-reached (the flow never got to its page); value is null unless state is answered. state is null only if the stored record has no entry for the question.",
+  "options": {
+    "events": true
+  },
+  "responses": [
+    {
+      "responseId": "resp-control",
+      "sessionId": "sess-control",
+      "version": 1,
+      "versionChecksum": "sha256:test-16-assign",
+      "planChecksum": "sha256:8c419ca10db234b5b35ed5fb29131811984bae140bf6223052d324f1ff2691f1",
+      "engineVersion": "1",
+      "allocationMode": "server",
+      "saveMode": "every-page",
+      "seed": 1601,
+      "startedAt": "2026-10-16T09:30:00.000Z",
+      "submittedAt": "2026-10-16T09:30:30.250Z",
+      "late": false,
+      "end": "complete",
+      "language": "en",
+      "conditions": {
+        "cond": "control"
+      },
+      "answers": {
+        "intro_q": {
+          "state": "answered",
+          "value": "yes"
+        },
+        "treat_q": {
+          "state": "not-reached",
+          "value": null
+        },
+        "ctrl_q": {
+          "state": "answered",
+          "value": "Four legs and a back"
+        },
+        "out_q": {
+          "state": "answered",
+          "value": "no"
+        }
+      },
+      "variables": {},
+      "orders": {
+        "blocks": {},
+        "items": {},
+        "choices": {}
+      },
+      "quotas": {},
+      "urlParams": {},
+      "events": [
+        {
+          "type": "start",
+          "seq": 1,
+          "rev": 1,
+          "t": 2000,
+          "sessionSeed": 1601,
+          "assigned": {
+            "cond": "control"
+          },
+          "language": "en",
+          "device": null,
+          "urlParams": {},
+          "sessionId": null
+        },
+        {
+          "type": "answer",
+          "t": 3000,
+          "item": "intro_q",
+          "value": "yes",
+          "seq": 2,
+          "rev": 2
+        },
+        {
+          "type": "next",
+          "t": 4000,
+          "from": "p_intro_page",
+          "seq": 3,
+          "rev": 3,
+          "result": {
+            "outcome": "advanced",
+            "to": "blk_ctrl_page"
+          }
+        },
+        {
+          "type": "answer",
+          "t": 5000,
+          "item": "ctrl_q",
+          "value": "Four legs and a back",
+          "seq": 4,
+          "rev": 4
+        },
+        {
+          "type": "next",
+          "t": 6000,
+          "from": "blk_ctrl_page",
+          "seq": 5,
+          "rev": 5,
+          "result": {
+            "outcome": "advanced",
+            "to": "p_out_page"
+          }
+        },
+        {
+          "type": "answer",
+          "t": 7000,
+          "item": "out_q",
+          "value": "no",
+          "seq": 6,
+          "rev": 6
+        },
+        {
+          "type": "next",
+          "t": 8000,
+          "from": "p_out_page",
+          "seq": 7,
+          "rev": 7,
+          "result": {
+            "outcome": "ended",
+            "to": null,
+            "effect": {
+              "kind": "end",
+              "outcome": "complete",
+              "nodeId": "end_complete"
+            }
+          }
+        }
+      ]
+    },
+    {
+      "responseId": "resp-treatment",
+      "sessionId": "sess-treatment",
+      "version": 1,
+      "versionChecksum": "sha256:test-16-assign",
+      "planChecksum": "sha256:8c419ca10db234b5b35ed5fb29131811984bae140bf6223052d324f1ff2691f1",
+      "engineVersion": "1",
+      "allocationMode": "server",
+      "saveMode": "every-page",
+      "seed": 1602,
+      "startedAt": "2026-10-16T09:31:00.000Z",
+      "submittedAt": "2026-10-16T09:31:30.250Z",
+      "late": false,
+      "end": "complete",
+      "language": "en",
+      "conditions": {
+        "cond": "treatment"
+      },
+      "answers": {
+        "intro_q": {
+          "state": "answered",
+          "value": "yes"
+        },
+        "treat_q": {
+          "state": "answered",
+          "value": "A chair that folds"
+        },
+        "ctrl_q": {
+          "state": "not-reached",
+          "value": null
+        },
+        "out_q": {
+          "state": "answered",
+          "value": "no"
+        }
+      },
+      "variables": {},
+      "orders": {
+        "blocks": {},
+        "items": {},
+        "choices": {}
+      },
+      "quotas": {},
+      "urlParams": {},
+      "events": [
+        {
+          "type": "start",
+          "seq": 1,
+          "rev": 1,
+          "t": 2000,
+          "sessionSeed": 1602,
+          "assigned": {
+            "cond": "treatment"
+          },
+          "language": "en",
+          "device": null,
+          "urlParams": {},
+          "sessionId": null
+        },
+        {
+          "type": "answer",
+          "t": 3000,
+          "item": "intro_q",
+          "value": "yes",
+          "seq": 2,
+          "rev": 2
+        },
+        {
+          "type": "next",
+          "t": 4000,
+          "from": "p_intro_page",
+          "seq": 3,
+          "rev": 3,
+          "result": {
+            "outcome": "advanced",
+            "to": "blk_treat_page"
+          }
+        },
+        {
+          "type": "answer",
+          "t": 5000,
+          "item": "treat_q",
+          "value": "A chair that folds",
+          "seq": 4,
+          "rev": 4
+        },
+        {
+          "type": "next",
+          "t": 6000,
+          "from": "blk_treat_page",
+          "seq": 5,
+          "rev": 5,
+          "result": {
+            "outcome": "advanced",
+            "to": "p_out_page"
+          }
+        },
+        {
+          "type": "answer",
+          "t": 7000,
+          "item": "out_q",
+          "value": "no",
+          "seq": 6,
+          "rev": 6
+        },
+        {
+          "type": "next",
+          "t": 8000,
+          "from": "p_out_page",
+          "seq": 7,
+          "rev": 7,
+          "result": {
+            "outcome": "ended",
+            "to": null,
+            "effect": {
+              "kind": "end",
+              "outcome": "complete",
+              "nodeId": "end_complete"
+            }
+          }
+        }
+      ]
+    }
+  ]
+}

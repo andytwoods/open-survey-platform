@@ -1,0 +1,154 @@
+{
+ "format": "osp-response/1",
+ "surveyId": "f24_quota_retry",
+ "surveyVersion": 1,
+ "planVersion": "osp-runtime-plan/1",
+ "planChecksum": "sha256:693ac15713009ea6c4869f63e0e554351c7e22d33a80002cc6ed539bf79e17d1",
+ "engineVersion": "1",
+ "sessionSeed": 2401,
+ "sessionId": null,
+ "language": "en",
+ "device": null,
+ "end": "complete",
+ "endNode": "end_complete",
+ "allocation": "server",
+ "assigned": {},
+ "conditions": {},
+ "conditionSources": {},
+ "orders": {
+  "blocks": {},
+  "items": {},
+  "choices": {}
+ },
+ "answers": {
+  "region": {
+   "state": "answered",
+   "value": "north"
+  },
+  "p2_q": {
+   "state": "answered",
+   "value": "quiet"
+  },
+  "full_q": {
+   "state": "not-reached",
+   "value": null
+  }
+ },
+ "csvState": {
+  "region__state": "answered",
+  "p2_q__state": "answered",
+  "full_q__state": "not-reached"
+ },
+ "embedded": {},
+ "computed": {},
+ "quotas": {
+  "qc_north": "open"
+ },
+ "effects": [
+  {
+   "kind": "quota",
+   "nodeId": "qc_north",
+   "quota": "q_north",
+   "result": "open"
+  }
+ ],
+ "urlParams": {},
+ "startedAt": 2000,
+ "endedAt": 9000,
+ "revision": 8,
+ "events": [
+  {
+   "type": "start",
+   "seq": 1,
+   "rev": 1,
+   "t": 2000,
+   "sessionSeed": 2401,
+   "assigned": {},
+   "language": "en",
+   "device": null,
+   "urlParams": {},
+   "sessionId": null
+  },
+  {
+   "type": "answer",
+   "t": 3000,
+   "item": "region",
+   "value": "north",
+   "seq": 2,
+   "rev": 2
+  },
+  {
+   "type": "next",
+   "t": 4000,
+   "from": "p1_page",
+   "seq": 3,
+   "rev": 3,
+   "result": {
+    "outcome": "effect",
+    "effect": {
+     "kind": "quota",
+     "nodeId": "qc_north",
+     "quota": "q_north"
+    }
+   }
+  },
+  {
+   "type": "resolve",
+   "t": 5000,
+   "effect": {
+    "kind": "quota",
+    "nodeId": "qc_north"
+   },
+   "value": "open",
+   "seq": 4,
+   "rev": 4,
+   "result": {
+    "outcome": "advanced",
+    "to": "p2_page"
+   }
+  },
+  {
+   "type": "back",
+   "t": 6000,
+   "from": "p2_page",
+   "seq": 5,
+   "rev": 5,
+   "to": "p1_page"
+  },
+  {
+   "type": "next",
+   "t": 7000,
+   "from": "p1_page",
+   "seq": 6,
+   "rev": 6,
+   "result": {
+    "outcome": "advanced",
+    "to": "p2_page"
+   }
+  },
+  {
+   "type": "answer",
+   "t": 8000,
+   "item": "p2_q",
+   "value": "quiet",
+   "seq": 7,
+   "rev": 7
+  },
+  {
+   "type": "next",
+   "t": 9000,
+   "from": "p2_page",
+   "seq": 8,
+   "rev": 8,
+   "result": {
+    "outcome": "ended",
+    "to": null,
+    "effect": {
+     "kind": "end",
+     "outcome": "complete",
+     "nodeId": "end_complete"
+    }
+   }
+  }
+ ]
+}

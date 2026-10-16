@@ -1,0 +1,151 @@
+{
+ "format": "osp-response/1",
+ "surveyId": "f05_showif_null",
+ "surveyVersion": 1,
+ "planVersion": "osp-runtime-plan/1",
+ "planChecksum": "sha256:d29eef77dfd7b48e98e657cd3ccf34c6270fe086a61916c7b1b092c8cf05e705",
+ "engineVersion": "1",
+ "sessionSeed": 502,
+ "sessionId": null,
+ "language": "en",
+ "device": null,
+ "end": "complete",
+ "endNode": null,
+ "allocation": "server",
+ "assigned": {},
+ "conditions": {},
+ "conditionSources": {},
+ "orders": {
+  "blocks": {},
+  "items": {},
+  "choices": {}
+ },
+ "answers": {
+  "a": {
+   "state": "answered",
+   "value": 7
+  },
+  "b": {
+   "state": "unanswered",
+   "value": null
+  },
+  "c": {
+   "state": "answered",
+   "value": [
+    "red"
+   ]
+  },
+  "p2_anchor": {
+   "state": "unanswered",
+   "value": null
+  },
+  "s_gt": {
+   "state": "unanswered",
+   "value": null
+  },
+  "s_not_gt": {
+   "state": "irrelevant",
+   "value": null
+  },
+  "s_eq": {
+   "state": "irrelevant",
+   "value": null
+  },
+  "s_neq": {
+   "state": "unanswered",
+   "value": null
+  },
+  "s_arith": {
+   "state": "irrelevant",
+   "value": null
+  },
+  "s_unanswered": {
+   "state": "irrelevant",
+   "value": null
+  },
+  "s_contains": {
+   "state": "unanswered",
+   "value": null
+  }
+ },
+ "csvState": {
+  "a__state": "answered",
+  "b__state": "unanswered",
+  "c__state": "answered",
+  "p2_anchor__state": "unanswered",
+  "s_gt__state": "unanswered",
+  "s_not_gt__state": "irrelevant",
+  "s_eq__state": "irrelevant",
+  "s_neq__state": "unanswered",
+  "s_arith__state": "irrelevant",
+  "s_unanswered__state": "irrelevant",
+  "s_contains__state": "unanswered"
+ },
+ "embedded": {},
+ "computed": {},
+ "quotas": {},
+ "effects": [],
+ "urlParams": {},
+ "startedAt": 2000,
+ "endedAt": 6000,
+ "revision": 5,
+ "events": [
+  {
+   "type": "start",
+   "seq": 1,
+   "rev": 1,
+   "t": 2000,
+   "sessionSeed": 502,
+   "assigned": {},
+   "language": "en",
+   "device": null,
+   "urlParams": {},
+   "sessionId": null
+  },
+  {
+   "type": "answer",
+   "t": 3000,
+   "item": "a",
+   "value": 7,
+   "seq": 2,
+   "rev": 2
+  },
+  {
+   "type": "answer",
+   "t": 4000,
+   "item": "c",
+   "value": [
+    "red"
+   ],
+   "seq": 3,
+   "rev": 3
+  },
+  {
+   "type": "next",
+   "t": 5000,
+   "from": "p1_page",
+   "seq": 4,
+   "rev": 4,
+   "result": {
+    "outcome": "advanced",
+    "to": "p2_page"
+   }
+  },
+  {
+   "type": "next",
+   "t": 6000,
+   "from": "p2_page",
+   "seq": 5,
+   "rev": 5,
+   "result": {
+    "outcome": "ended",
+    "to": null,
+    "effect": {
+     "kind": "end",
+     "outcome": "complete",
+     "nodeId": null
+    }
+   }
+  }
+ ]
+}

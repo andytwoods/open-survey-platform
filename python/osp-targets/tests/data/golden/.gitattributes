@@ -1,0 +1,2 @@
+# Golden exports are compared byte for byte (CRLF line ends, BOM): never convert them.
+* -text

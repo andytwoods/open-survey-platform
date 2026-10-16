@@ -1,0 +1,196 @@
+{
+ "format": "osp-response/1",
+ "surveyId": "f02_required",
+ "surveyVersion": 1,
+ "planVersion": "osp-runtime-plan/1",
+ "planChecksum": "sha256:64e153382715133c0f9347642dd9b372f5c92b094c6c1b7d2631b64a43442af6",
+ "engineVersion": "1",
+ "sessionSeed": 201,
+ "sessionId": null,
+ "language": "en",
+ "device": null,
+ "end": "complete",
+ "endNode": null,
+ "allocation": "server",
+ "assigned": {},
+ "conditions": {},
+ "conditionSources": {},
+ "orders": {
+  "blocks": {},
+  "items": {},
+  "choices": {}
+ },
+ "answers": {
+  "r_int": {
+   "state": "answered",
+   "value": 7
+  },
+  "r_single": {
+   "state": "answered",
+   "value": "yes"
+  },
+  "opt_text": {
+   "state": "unanswered",
+   "value": null
+  },
+  "r_multi": {
+   "state": "answered",
+   "value": [
+    "green"
+   ]
+  },
+  "r_follow": {
+   "state": "irrelevant",
+   "value": null
+  },
+  "r_date": {
+   "state": "answered",
+   "value": "2026-07-01"
+  }
+ },
+ "csvState": {
+  "r_int__state": "answered",
+  "r_single__state": "answered",
+  "opt_text__state": "unanswered",
+  "r_multi__state": "answered",
+  "r_follow__state": "irrelevant",
+  "r_date__state": "answered"
+ },
+ "embedded": {},
+ "computed": {},
+ "quotas": {},
+ "effects": [],
+ "urlParams": {},
+ "startedAt": 2000,
+ "endedAt": 11000,
+ "revision": 10,
+ "events": [
+  {
+   "type": "start",
+   "seq": 1,
+   "rev": 1,
+   "t": 2000,
+   "sessionSeed": 201,
+   "assigned": {},
+   "language": "en",
+   "device": null,
+   "urlParams": {},
+   "sessionId": null
+  },
+  {
+   "type": "next",
+   "t": 3000,
+   "from": "p1_page",
+   "seq": 2,
+   "rev": 2,
+   "result": {
+    "outcome": "invalid",
+    "to": "p1_page",
+    "errors": {
+     "r_int": {
+      "kind": "required"
+     },
+     "r_single": {
+      "kind": "required"
+     }
+    }
+   }
+  },
+  {
+   "type": "answer",
+   "t": 4000,
+   "item": "r_int",
+   "value": 7,
+   "seq": 3,
+   "rev": 3
+  },
+  {
+   "type": "next",
+   "t": 5000,
+   "from": "p1_page",
+   "seq": 4,
+   "rev": 4,
+   "result": {
+    "outcome": "invalid",
+    "to": "p1_page",
+    "errors": {
+     "r_single": {
+      "kind": "required"
+     }
+    }
+   }
+  },
+  {
+   "type": "answer",
+   "t": 6000,
+   "item": "r_single",
+   "value": "yes",
+   "seq": 5,
+   "rev": 5
+  },
+  {
+   "type": "next",
+   "t": 7000,
+   "from": "p1_page",
+   "seq": 6,
+   "rev": 6,
+   "result": {
+    "outcome": "advanced",
+    "to": "p2_page"
+   }
+  },
+  {
+   "type": "next",
+   "t": 8000,
+   "from": "p2_page",
+   "seq": 7,
+   "rev": 7,
+   "result": {
+    "outcome": "invalid",
+    "to": "p2_page",
+    "errors": {
+     "r_multi": {
+      "kind": "required"
+     },
+     "r_date": {
+      "kind": "required"
+     }
+    }
+   }
+  },
+  {
+   "type": "answer",
+   "t": 9000,
+   "item": "r_multi",
+   "value": [
+    "green"
+   ],
+   "seq": 8,
+   "rev": 8
+  },
+  {
+   "type": "answer",
+   "t": 10000,
+   "item": "r_date",
+   "value": "2026-07-01",
+   "seq": 9,
+   "rev": 9
+  },
+  {
+   "type": "next",
+   "t": 11000,
+   "from": "p2_page",
+   "seq": 10,
+   "rev": 10,
+   "result": {
+    "outcome": "ended",
+    "to": null,
+    "effect": {
+     "kind": "end",
+     "outcome": "complete",
+     "nodeId": null
+    }
+   }
+  }
+ ]
+}

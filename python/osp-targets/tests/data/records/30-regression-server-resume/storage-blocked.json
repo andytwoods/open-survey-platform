@@ -1,0 +1,150 @@
+{
+ "format": "osp-response/1",
+ "surveyId": "f30_server_resume",
+ "surveyVersion": 1,
+ "planVersion": "osp-runtime-plan/1",
+ "planChecksum": "sha256:831748a042d524e60dda04c83d04c5f49f896f35af46534f444310316ae4aaef",
+ "engineVersion": "1",
+ "sessionSeed": 3001,
+ "sessionId": null,
+ "language": "en",
+ "device": null,
+ "end": "complete",
+ "endNode": null,
+ "allocation": "server",
+ "assigned": {},
+ "conditions": {},
+ "conditionSources": {},
+ "orders": {
+  "blocks": {},
+  "items": {},
+  "choices": {}
+ },
+ "answers": {
+  "nick": {
+   "state": "answered",
+   "value": "Robin"
+  },
+  "n_books": {
+   "state": "answered",
+   "value": 3
+  },
+  "best": {
+   "state": "answered",
+   "value": "a long novel"
+  },
+  "outro": {
+   "state": "unanswered",
+   "value": null
+  }
+ },
+ "csvState": {
+  "nick__state": "answered",
+  "n_books__state": "answered",
+  "best__state": "answered",
+  "outro__state": "unanswered"
+ },
+ "embedded": {},
+ "computed": {},
+ "quotas": {},
+ "effects": [],
+ "urlParams": {},
+ "startedAt": 2000,
+ "endedAt": 10000,
+ "revision": 9,
+ "events": [
+  {
+   "type": "start",
+   "seq": 1,
+   "rev": 1,
+   "t": 2000,
+   "sessionSeed": 3001,
+   "assigned": {},
+   "language": "en",
+   "device": null,
+   "urlParams": {},
+   "sessionId": null
+  },
+  {
+   "type": "answer",
+   "t": 3000,
+   "item": "nick",
+   "value": "Robin",
+   "seq": 2,
+   "rev": 2
+  },
+  {
+   "type": "next",
+   "t": 4000,
+   "from": "p1_page",
+   "seq": 3,
+   "rev": 3,
+   "result": {
+    "outcome": "advanced",
+    "to": "p2_page"
+   }
+  },
+  {
+   "type": "answer",
+   "t": 5000,
+   "item": "n_books",
+   "value": 3,
+   "seq": 4,
+   "rev": 4
+  },
+  {
+   "type": "answer",
+   "t": 6000,
+   "item": "best",
+   "value": "a long novel",
+   "seq": 5,
+   "rev": 5
+  },
+  {
+   "type": "next",
+   "t": 7000,
+   "from": "p2_page",
+   "seq": 6,
+   "rev": 6,
+   "result": {
+    "outcome": "advanced",
+    "to": "p3_page"
+   }
+  },
+  {
+   "type": "back",
+   "t": 8000,
+   "from": "p3_page",
+   "seq": 7,
+   "rev": 7,
+   "to": "p2_page"
+  },
+  {
+   "type": "next",
+   "t": 9000,
+   "from": "p2_page",
+   "seq": 8,
+   "rev": 8,
+   "result": {
+    "outcome": "advanced",
+    "to": "p3_page"
+   }
+  },
+  {
+   "type": "next",
+   "t": 10000,
+   "from": "p3_page",
+   "seq": 9,
+   "rev": 9,
+   "result": {
+    "outcome": "ended",
+    "to": null,
+    "effect": {
+     "kind": "end",
+     "outcome": "complete",
+     "nodeId": null
+    }
+   }
+  }
+ ]
+}

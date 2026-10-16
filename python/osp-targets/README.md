@@ -19,4 +19,20 @@ xlsx_bytes, diagnostics = export_xlsform(survey)  # Survey model or JSON dict; n
 - **Not exportable:** quotas, quota checks, turning Back off, question and block order shuffles (approximated: document order), survey description, licence and DDI metadata.
 - Output is deterministic (fixed zip and document timestamps). Tests convert every fixture and the valid spec cases with `pyxform` (BSD-2, test-only).
 
+## Response data (`osp_targets.data`, task M2)
+
+```python
+from osp_targets.data import CsvOptions, StoredResponse, SurveyVersion, codebook, export_csv
+
+v = SurveyVersion(survey_json, number=3, checksum="…", save_mode="every-page")
+csv_bytes = export_csv(v, [StoredResponse("r1", record=engine_record)], CsvOptions.excel())
+book = codebook(v)  # book.markdown, book.data (JSON)
+```
+
+- **Missing values** (semantics §1): CSV = empty cell + `<var>__state` (switchable off); JSON = `null` + `state`. Never `-99`.
+- **Columns:** `_`-prefixed meta (response/session id, version + checksum, plan checksum, engine version, allocation and save mode, seed, UTC timestamps, `_late`, end, language), one column per condition, questions in plan order (multi: `<var>_<code>` 0/1, or codes in one cell), embedded/computed variables, then `_order.{blocks,items,choices}.<id>` realised orders.
+- **CSV:** RFC 4180 (CRLF), optional BOM, formula-injection escaping (`'` before `= + - @`, tab, CR; plain numbers untouched).
+- **Versions:** `export_csv_combined` / `export_json_combined` / `codebook_combined` union the columns with `_version`.
+- **Tests:** golden files in `tests/data/golden/` from engine records in `tests/data/records/` (regenerate those with `node --experimental-transform-types python/osp-targets/tests/data/dump_records.ts` after `make engine-fixtures`; goldens with `OSP_UPDATE_GOLDEN=1`).
+
 Internal package; not published.

@@ -10,9 +10,9 @@ from concurrent.futures import ThreadPoolExecutor
 from datetime import timedelta
 
 import pytest
-from osp_store import NotFound, ParticipantStore, SystemContext, TenantContext
+from osp_store import Conflict, NotFound, ParticipantStore, SystemContext, TenantContext
 from osp_store import schema as t
-from sqlalchemy import select
+from sqlalchemy import select, update
 
 ANS = {"q1": {"state": "answered", "value": 3}, "q2": {"state": "not-reached"}}
 SYS = SystemContext("system:test")
@@ -349,3 +349,55 @@ def test_tenant_context_is_required(ps, pub):
         ps.get(SYS, "x")  # type: ignore[arg-type]
     with pytest.raises(AccessDenied):
         ps.find_publication(TenantContext("t", "u"), "x")  # type: ignore[arg-type]
+
+
+# -- public slugs and republish (R2b, migration 0005) ---------------------------------
+
+
+def _publish(store, ps, ctx, survey, slug, checksum):
+    version = store.publish_version(ctx, survey.id, b"", meta={})
+    return ps.create_publication(
+        ctx, version.id, slug, {"checksum": checksum}, checksum, "every-page", {}
+    )
+
+
+def test_surveys_get_a_unique_public_slug(store, tenants):
+    a, b = tenants
+    slugs = {store.create_survey(ctx, "S", {})[0].public_slug for ctx in (a, b, a, b)}
+    assert len(slugs) == 4 and all(len(s) == 10 and s.isalnum() for s in slugs)
+    survey, _ = store.create_survey(a, "S", {})
+    assert store.ensure_public_slug(a, survey.id) == survey.public_slug
+    with store._tx() as conn:  # a pre-0005 row: no slug yet
+        conn.execute(update(t.surveys).where(t.surveys.c.id == survey.id).values(public_slug=None))
+    slug = store.ensure_public_slug(a, survey.id)
+    assert slug and slug != survey.public_slug
+    assert store.get_survey(a, survey.id).public_slug == slug
+    with pytest.raises(NotFound):
+        store.ensure_public_slug(b, survey.id)  # another tenant's survey
+
+
+def test_republish_under_one_slug_newest_version_wins(store, ps, tenants):
+    a, _ = tenants
+    survey, _ = store.create_survey(a, "S", {})
+    p1 = _publish(store, ps, a, survey, survey.public_slug, "c1")
+    p2 = _publish(store, ps, a, survey, survey.public_slug, "c2")
+    assert ps.find_publication(SYS, survey.public_slug).id == p2.id
+    assert ps.find_publication(SYS, survey.public_slug, "c1").id == p1.id
+    assert ps.find_publication(SYS, survey.public_slug, "c3") is None
+    other, _ = store.create_survey(a, "T", {})
+    with pytest.raises(Conflict):  # a slug belongs to one survey
+        _publish(store, ps, a, other, survey.public_slug, "c4")
+
+
+def test_publish_version_body_callable_gets_the_number(store, tenants):
+    a, _ = tenants
+    survey, _ = store.create_survey(a, "S", {})
+    seen = []
+
+    def body(n):
+        seen.append(n)
+        return {"version": n}
+
+    v1 = store.publish_version(a, survey.id, b"", body=body)
+    v2 = store.publish_version(a, survey.id, b"", body=body)
+    assert seen == [1, 2] and (v1.body, v2.body) == ({"version": 1}, {"version": 2})
