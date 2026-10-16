@@ -164,7 +164,10 @@ def test_decimal_literal_plain_notation() -> None:
 def test_bool_literals_as_conditions():
     assert cond({"kind": "bool", "value": True}) == "true()"
     assert cond({"kind": "bool", "value": False}) == "false()"
-    either = {"kind": "or", "args": [{"kind": "bool", "value": False}, {"kind": "bool", "value": True}]}
+    either = {
+        "kind": "or",
+        "args": [{"kind": "bool", "value": False}, {"kind": "bool", "value": True}],
+    }
     assert "true()" in cond(either)
 
 

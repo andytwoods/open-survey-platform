@@ -17,8 +17,8 @@ from decimal import Decimal
 from osp_expr.ast import (
     And,
     Answered,
-    BoolLit,
     Arith,
+    BoolLit,
     Compare,
     Contains,
     DecLit,
