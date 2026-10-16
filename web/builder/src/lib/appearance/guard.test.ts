@@ -85,7 +85,7 @@ describe('JSON import validation', () => {
 	});
 
 	it('points at the offending field', () => {
-		const t = structuredClone(THEME_PRESETS[0].theme) as Record<string, unknown>;
+		const t = structuredClone(THEME_PRESETS[0].theme) as unknown as Record<string, unknown>;
 		(t.colours as Record<string, Record<string, string>>).dark.accent = 'blue';
 		t.radius = 99;
 		t.css = 'body{}';

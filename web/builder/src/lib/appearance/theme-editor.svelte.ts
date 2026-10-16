@@ -178,9 +178,18 @@ export class ThemeEditor {
 		return { ok: true, problems: [] };
 	}
 
+	#draftChecked = false;
+
+	/** Load the draft the first time the editor is opened in this page; later calls do nothing. */
+	openOnce(): void {
+		if (this.#draftChecked) return;
+		this.#draftChecked = true;
+		this.loadDraft();
+	}
+
 	/** Load the local draft, if there is a valid one. Not undoable (it is the starting point). */
 	loadDraft(): boolean {
-		let text: string | null = null;
+		let text: string | null;
 		try {
 			text = this.#storage()?.getItem(DRAFT_KEY) ?? null;
 		} catch {
