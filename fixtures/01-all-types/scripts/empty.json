@@ -1,0 +1,13 @@
+{
+  "format": "osp-fixture-script/0",
+  "id": "empty",
+  "description": "Submit the page with nothing answered (nothing is required).",
+  "sessionSeed": 102,
+  "language": "en",
+  "actions": [
+    {
+      "expectPage": "p1",
+      "do": "next"
+    }
+  ]
+}

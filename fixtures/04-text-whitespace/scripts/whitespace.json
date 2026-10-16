@@ -1,0 +1,29 @@
+{
+  "format": "osp-fixture-script/0",
+  "id": "whitespace",
+  "description": "Whitespace-only required text fails as unanswered; values are trimmed; internal whitespace and line breaks are kept; whitespace-only optional text is unanswered, so answered(t_opt) is false.",
+  "sessionSeed": 401,
+  "language": "en",
+  "actions": [
+    {
+      "expectPage": "p1",
+      "set": {
+        "t_req": "   "
+      },
+      "do": "next"
+    },
+    {
+      "expectPage": "p1",
+      "set": {
+        "t_req": "  a quiet walk  ",
+        "t_opt": " \t\n ",
+        "t_lines": "  waves on the shore\n\n  gulls  overhead \n"
+      },
+      "do": "next"
+    },
+    {
+      "expectPage": "p2",
+      "do": "next"
+    }
+  ]
+}

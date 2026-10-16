@@ -1,0 +1,56 @@
+{
+  "format": "osp-fixture-script/0",
+  "id": "main",
+  "description": "Walk the shuffled blocks with back and refresh in the middle. Page order follows orders.blocks.r_blocks and never re-rolls.",
+  "sessionSeed": 777,
+  "language": "en",
+  "actions": [
+    {
+      "expectPage": "intro",
+      "set": {
+        "intro_q": "yes"
+      },
+      "do": "next"
+    },
+    {
+      "setIfShown": {
+        "q_x": 1,
+        "q_y": 2,
+        "q_z": 3
+      },
+      "do": "next"
+    },
+    {
+      "do": "back"
+    },
+    {
+      "do": "refresh"
+    },
+    {
+      "do": "next"
+    },
+    {
+      "setIfShown": {
+        "q_x": 1,
+        "q_y": 2,
+        "q_z": 3
+      },
+      "do": "next"
+    },
+    {
+      "setIfShown": {
+        "q_x": 1,
+        "q_y": 2,
+        "q_z": 3
+      },
+      "do": "next"
+    },
+    {
+      "expectPage": "outro",
+      "set": {
+        "outro_q": "done"
+      },
+      "do": "next"
+    }
+  ]
+}

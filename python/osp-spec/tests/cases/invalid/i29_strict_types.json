@@ -1,0 +1,44 @@
+{
+  "description": "Strict types: a string where an integer is required.",
+  "expect": [
+    {
+      "code": "schema.type",
+      "pointer": "/version"
+    }
+  ],
+  "survey": {
+    "specVersion": "osp-survey/0.1",
+    "id": "srv_case",
+    "metadata": {
+      "title": "Case",
+      "languages": [
+        "en"
+      ]
+    },
+    "blocks": [
+      {
+        "id": "b1",
+        "pages": [
+          {
+            "id": "p1",
+            "items": [
+              {
+                "id": "q1",
+                "type": "integer",
+                "label": "Question q1"
+              }
+            ]
+          }
+        ]
+      }
+    ],
+    "flow": [
+      {
+        "type": "block",
+        "id": "f_b1",
+        "block": "b1"
+      }
+    ],
+    "version": "3"
+  }
+}

@@ -1,0 +1,47 @@
+{
+  "format": "osp-fixture-script/0",
+  "id": "main",
+  "description": "Refresh with an unsubmitted value, later resume mid-page: same page, values, choice order, item order and condition.",
+  "sessionSeed": 4242,
+  "language": "en",
+  "server": {
+    "conditions": {
+      "cond": "B"
+    }
+  },
+  "actions": [
+    {
+      "expectPage": "p_colour",
+      "set": {
+        "fav_colour": "green"
+      },
+      "do": "refresh"
+    },
+    {
+      "expectPage": "p_colour",
+      "do": "next"
+    },
+    {
+      "expectPage": "stim_b",
+      "set": {
+        "stim_b_check": "yes"
+      },
+      "do": "next"
+    },
+    {
+      "expectPage": "p_items",
+      "set": {
+        "i1": 7
+      },
+      "do": "resume"
+    },
+    {
+      "expectPage": "p_items",
+      "set": {
+        "i2": 3,
+        "i3": 9
+      },
+      "do": "next"
+    }
+  ]
+}

@@ -1,0 +1,104 @@
+<h:xslt-warning-banner style="display: block; background-color: #d9534f; color: white; padding: 12px 44px; margin-bottom: 20px; font-size: 16px; font-weight: bold; text-align: center; font-family: sans-serif; position: relative; z-index: 2147483647; line-height: normal;"></h:xslt-warning-banner>
+  <model xmlns:odk="http://www.opendatakit.org/xforms" odk:xforms-version="1.0.0">
+    <instance>
+      <data xmlns:jr="http://openrosa.org/javarosa" xmlns:orx="http://openrosa.org/xforms" id="spike_enketo" version="2026101601">
+        <cond/>
+        <seed/>
+        <order_att/>
+        <order_blocks/>
+        <p_consent>
+          <consent/>
+        </p_consent>
+        <p_age>
+          <age/>
+        </p_age>
+        <p_stim_a>
+          <stim_a/>
+        </p_stim_a>
+        <p_stim_b>
+          <stim_b/>
+        </p_stim_b>
+        <p_att>
+          <att1/>
+          <att2/>
+          <att3/>
+        </p_att>
+        <att1_label/>
+        <p_follow>
+          <followup/>
+        </p_follow>
+        <p_colour>
+          <fav_colour/>
+        </p_colour>
+        <blk_x>
+          <q_x/>
+        </blk_x>
+        <blk_y>
+          <q_y/>
+        </blk_y>
+        <meta>
+          <instanceID/>
+        </meta>
+      </data>
+    </instance>
+    <instance id="yesno">
+      <root xmlns:jr="http://openrosa.org/javarosa" xmlns:orx="http://openrosa.org/xforms">
+        <item>
+          <name>yes</name>
+          <label>Yes</label>
+        </item>
+        <item>
+          <name>no</name>
+          <label>No</label>
+        </item>
+      </root>
+    </instance>
+    <instance id="likert">
+      <root xmlns:jr="http://openrosa.org/javarosa" xmlns:orx="http://openrosa.org/xforms">
+        <item>
+          <name>1</name>
+          <label>Strongly disagree</label>
+        </item>
+        <item>
+          <name>2</name>
+          <label>Disagree</label>
+        </item>
+        <item>
+          <name>3</name>
+          <label>Neutral</label>
+        </item>
+        <item>
+          <name>4</name>
+          <label>Agree</label>
+        </item>
+        <item>
+          <name>5</name>
+          <label>Strongly agree</label>
+        </item>
+      </root>
+    </instance>
+    <instance id="colour">
+      <root xmlns:jr="http://openrosa.org/javarosa" xmlns:orx="http://openrosa.org/xforms">
+        <item>
+          <name>red</name>
+          <label>Red</label>
+        </item>
+        <item>
+          <name>green</name>
+          <label>Green</label>
+        </item>
+        <item>
+          <name>blue</name>
+          <label>Blue</label>
+        </item>
+        <item>
+          <name>yellow</name>
+          <label>Yellow</label>
+        </item>
+        <item>
+          <name>purple</name>
+          <label>Purple</label>
+        </item>
+      </root>
+    </instance>
+  </model>

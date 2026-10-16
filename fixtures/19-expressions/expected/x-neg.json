@@ -1,0 +1,299 @@
+{
+  "format": "osp-fixture-expected/0",
+  "fixture": "19-expressions",
+  "script": "x-neg",
+  "pending": [],
+  "steps": [
+    {
+      "index": 0,
+      "page": "p1",
+      "visible": [
+        "x",
+        "y",
+        "tags"
+      ],
+      "errors": {},
+      "nav": {
+        "back": false
+      },
+      "questions": {
+        "x": {
+          "state": "unanswered",
+          "value": null
+        },
+        "y": {
+          "state": "unanswered",
+          "value": null
+        },
+        "tags": {
+          "state": "unanswered",
+          "value": null
+        },
+        "p2_anchor": {
+          "state": "not-reached",
+          "value": null
+        },
+        "e_sum": {
+          "state": "not-reached",
+          "value": null
+        },
+        "e_div": {
+          "state": "not-reached",
+          "value": null
+        },
+        "e_dec": {
+          "state": "not-reached",
+          "value": null
+        },
+        "e_and": {
+          "state": "not-reached",
+          "value": null
+        },
+        "e_or": {
+          "state": "not-reached",
+          "value": null
+        },
+        "e_not": {
+          "state": "not-reached",
+          "value": null
+        },
+        "e_prec": {
+          "state": "not-reached",
+          "value": null
+        },
+        "e_paren": {
+          "state": "not-reached",
+          "value": null
+        }
+      },
+      "orders": {
+        "blocks": {},
+        "items": {},
+        "choices": {}
+      },
+      "conditions": {},
+      "end": null
+    },
+    {
+      "index": 1,
+      "page": "p2",
+      "visible": [
+        "p2_anchor",
+        "e_or",
+        "e_not"
+      ],
+      "errors": {},
+      "nav": {
+        "back": true
+      },
+      "questions": {
+        "x": {
+          "state": "answered",
+          "value": -1
+        },
+        "y": {
+          "state": "unanswered",
+          "value": null
+        },
+        "tags": {
+          "state": "answered",
+          "value": [
+            "a",
+            "c"
+          ]
+        },
+        "p2_anchor": {
+          "state": "unanswered",
+          "value": null
+        },
+        "e_sum": {
+          "state": "irrelevant",
+          "value": null
+        },
+        "e_div": {
+          "state": "irrelevant",
+          "value": null
+        },
+        "e_dec": {
+          "state": "irrelevant",
+          "value": null
+        },
+        "e_and": {
+          "state": "irrelevant",
+          "value": null
+        },
+        "e_or": {
+          "state": "unanswered",
+          "value": null
+        },
+        "e_not": {
+          "state": "unanswered",
+          "value": null
+        },
+        "e_prec": {
+          "state": "irrelevant",
+          "value": null
+        },
+        "e_paren": {
+          "state": "irrelevant",
+          "value": null
+        }
+      },
+      "orders": {
+        "blocks": {},
+        "items": {},
+        "choices": {}
+      },
+      "conditions": {},
+      "end": null
+    },
+    {
+      "index": 2,
+      "page": null,
+      "visible": [],
+      "errors": {},
+      "nav": null,
+      "questions": {
+        "x": {
+          "state": "answered",
+          "value": -1
+        },
+        "y": {
+          "state": "unanswered",
+          "value": null
+        },
+        "tags": {
+          "state": "answered",
+          "value": [
+            "a",
+            "c"
+          ]
+        },
+        "p2_anchor": {
+          "state": "unanswered",
+          "value": null
+        },
+        "e_sum": {
+          "state": "irrelevant",
+          "value": null
+        },
+        "e_div": {
+          "state": "irrelevant",
+          "value": null
+        },
+        "e_dec": {
+          "state": "irrelevant",
+          "value": null
+        },
+        "e_and": {
+          "state": "irrelevant",
+          "value": null
+        },
+        "e_or": {
+          "state": "unanswered",
+          "value": null
+        },
+        "e_not": {
+          "state": "unanswered",
+          "value": null
+        },
+        "e_prec": {
+          "state": "irrelevant",
+          "value": null
+        },
+        "e_paren": {
+          "state": "irrelevant",
+          "value": null
+        }
+      },
+      "orders": {
+        "blocks": {},
+        "items": {},
+        "choices": {}
+      },
+      "conditions": {},
+      "end": "complete"
+    }
+  ],
+  "invariants": [],
+  "response": {
+    "surveyId": "f19_expressions",
+    "surveyVersion": 1,
+    "end": "complete",
+    "allocation": "server",
+    "sessionSeed": 1902,
+    "conditions": {},
+    "orders": {
+      "blocks": {},
+      "items": {},
+      "choices": {}
+    },
+    "answers": {
+      "x": {
+        "state": "answered",
+        "value": -1
+      },
+      "y": {
+        "state": "unanswered",
+        "value": null
+      },
+      "tags": {
+        "state": "answered",
+        "value": [
+          "a",
+          "c"
+        ]
+      },
+      "p2_anchor": {
+        "state": "unanswered",
+        "value": null
+      },
+      "e_sum": {
+        "state": "irrelevant",
+        "value": null
+      },
+      "e_div": {
+        "state": "irrelevant",
+        "value": null
+      },
+      "e_dec": {
+        "state": "irrelevant",
+        "value": null
+      },
+      "e_and": {
+        "state": "irrelevant",
+        "value": null
+      },
+      "e_or": {
+        "state": "unanswered",
+        "value": null
+      },
+      "e_not": {
+        "state": "unanswered",
+        "value": null
+      },
+      "e_prec": {
+        "state": "irrelevant",
+        "value": null
+      },
+      "e_paren": {
+        "state": "irrelevant",
+        "value": null
+      }
+    },
+    "csvState": {
+      "x__state": "answered",
+      "y__state": "unanswered",
+      "tags__state": "answered",
+      "p2_anchor__state": "unanswered",
+      "e_sum__state": "irrelevant",
+      "e_div__state": "irrelevant",
+      "e_dec__state": "irrelevant",
+      "e_and__state": "irrelevant",
+      "e_or__state": "unanswered",
+      "e_not__state": "unanswered",
+      "e_prec__state": "irrelevant",
+      "e_paren__state": "irrelevant"
+    }
+  }
+}

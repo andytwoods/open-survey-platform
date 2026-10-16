@@ -1,0 +1,45 @@
+{
+  "format": "osp-fixture-script/0",
+  "id": "refresh-at-start",
+  "description": "Refresh before answering anything, and again on the stimulus page after answering.",
+  "sessionSeed": 99,
+  "language": "en",
+  "server": {
+    "conditions": {
+      "cond": "A"
+    }
+  },
+  "actions": [
+    {
+      "expectPage": "p_colour",
+      "do": "refresh"
+    },
+    {
+      "expectPage": "p_colour",
+      "set": {
+        "fav_colour": "red"
+      },
+      "do": "next"
+    },
+    {
+      "expectPage": "stim_a",
+      "set": {
+        "stim_a_check": "yes"
+      },
+      "do": "refresh"
+    },
+    {
+      "expectPage": "stim_a",
+      "do": "next"
+    },
+    {
+      "expectPage": "p_items",
+      "set": {
+        "i1": 1,
+        "i2": 2,
+        "i3": 3
+      },
+      "do": "next"
+    }
+  ]
+}

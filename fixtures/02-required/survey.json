@@ -1,0 +1,95 @@
+{
+  "format": "osp-fixture-survey/0",
+  "description": "Required checks on submit; required applies only while relevant (§4).",
+  "id": "f02_required",
+  "version": 1,
+  "title": "Required questions",
+  "languages": [
+    "en"
+  ],
+  "settings": {
+    "backNavigation": true
+  },
+  "choiceLists": {
+    "yesno": [
+      {
+        "value": "yes",
+        "label": "Yes"
+      },
+      {
+        "value": "no",
+        "label": "No"
+      }
+    ],
+    "colour": [
+      {
+        "value": "red",
+        "label": "Red"
+      },
+      {
+        "value": "green",
+        "label": "Green"
+      },
+      {
+        "value": "blue",
+        "label": "Blue"
+      }
+    ]
+  },
+  "blocks": {
+    "p1": {
+      "items": [
+        {
+          "id": "r_int",
+          "type": "integer",
+          "label": "How many books did you read last month?",
+          "required": true
+        },
+        {
+          "id": "r_single",
+          "type": "single",
+          "label": "Do you own a bicycle?",
+          "choices": "yesno",
+          "required": true
+        },
+        {
+          "id": "opt_text",
+          "type": "text",
+          "label": "Any comment? (optional)"
+        }
+      ]
+    },
+    "p2": {
+      "items": [
+        {
+          "id": "r_multi",
+          "type": "multi",
+          "label": "Which colours do you like?",
+          "choices": "colour",
+          "required": true
+        },
+        {
+          "id": "r_follow",
+          "type": "integer",
+          "label": "You read more than ten books. How many were novels?",
+          "required": true,
+          "showIf": "r_int > 10"
+        },
+        {
+          "id": "r_date",
+          "type": "date",
+          "label": "Pick a date for a fictional picnic.",
+          "required": true
+        }
+      ]
+    }
+  },
+  "flow": [
+    {
+      "block": "p1"
+    },
+    {
+      "block": "p2"
+    }
+  ]
+}

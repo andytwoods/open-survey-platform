@@ -1,0 +1,41 @@
+{
+  "format": "osp-fixture-script/0",
+  "id": "main",
+  "description": "Shuffled item order stays the same after going back.",
+  "sessionSeed": 31,
+  "language": "en",
+  "actions": [
+    {
+      "expectPage": "p_pre",
+      "set": {
+        "pre_q": "yes"
+      },
+      "do": "next"
+    },
+    {
+      "expectPage": "p_att",
+      "set": {
+        "att1": 4,
+        "att2": 5,
+        "att3": 2,
+        "att4": 3
+      },
+      "do": "next"
+    },
+    {
+      "expectPage": "p_post",
+      "do": "back"
+    },
+    {
+      "expectPage": "p_att",
+      "do": "next"
+    },
+    {
+      "expectPage": "p_post",
+      "set": {
+        "post_q": "ok"
+      },
+      "do": "next"
+    }
+  ]
+}

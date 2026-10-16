@@ -1,0 +1,21 @@
+{
+  "format": "osp-fixture-script/0",
+  "id": "trimmed-optional",
+  "description": "A padded optional answer is trimmed and counts as answered.",
+  "sessionSeed": 402,
+  "language": "en",
+  "actions": [
+    {
+      "expectPage": "p1",
+      "set": {
+        "t_req": "x",
+        "t_opt": "  ok  "
+      },
+      "do": "next"
+    },
+    {
+      "expectPage": "p2",
+      "do": "next"
+    }
+  ]
+}

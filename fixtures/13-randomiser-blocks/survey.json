@@ -1,0 +1,97 @@
+{
+  "format": "osp-fixture-survey/0",
+  "description": "§7 randomiser node shuffling blocks; order fixed at first reach, stable on back/refresh.",
+  "id": "f13_randomiser_blocks",
+  "version": 1,
+  "title": "Block randomiser",
+  "languages": [
+    "en"
+  ],
+  "settings": {
+    "backNavigation": true
+  },
+  "choiceLists": {
+    "yesno": [
+      {
+        "value": "yes",
+        "label": "Yes"
+      },
+      {
+        "value": "no",
+        "label": "No"
+      }
+    ]
+  },
+  "blocks": {
+    "intro": {
+      "items": [
+        {
+          "id": "intro_q",
+          "type": "single",
+          "label": "Ready to start?",
+          "choices": "yesno"
+        }
+      ]
+    },
+    "blk_x": {
+      "items": [
+        {
+          "id": "q_x",
+          "type": "integer",
+          "label": "Block X: any number."
+        }
+      ]
+    },
+    "blk_y": {
+      "items": [
+        {
+          "id": "q_y",
+          "type": "integer",
+          "label": "Block Y: any number."
+        }
+      ]
+    },
+    "blk_z": {
+      "items": [
+        {
+          "id": "q_z",
+          "type": "integer",
+          "label": "Block Z: any number."
+        }
+      ]
+    },
+    "outro": {
+      "items": [
+        {
+          "id": "outro_q",
+          "type": "text",
+          "label": "Last question: say anything."
+        }
+      ]
+    }
+  },
+  "flow": [
+    {
+      "block": "intro"
+    },
+    {
+      "randomiser": {
+        "id": "r_blocks",
+        "shuffle": [
+          {
+            "block": "blk_x"
+          },
+          {
+            "block": "blk_y"
+          },
+          {
+            "block": "blk_z"
+          }
+        ]
+      }
+    },
+    {
+      "block": "outro"
+    }
+  ]
+}

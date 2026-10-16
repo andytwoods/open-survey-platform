@@ -1,0 +1,21 @@
+{
+  "format": "osp-fixture-script/0",
+  "id": "seed-large",
+  "description": "Two shuffled choice lists with sessionSeed 2147483646; values recorded are codes, not positions. 'plain' is not shuffled, so it has no recorded order.",
+  "sessionSeed": 2147483646,
+  "language": "en",
+  "actions": [
+    {
+      "expectPage": "p1",
+      "set": {
+        "fav_colour": "purple",
+        "fruits": [
+          "plum",
+          "apple"
+        ],
+        "plain": "yes"
+      },
+      "do": "next"
+    }
+  ]
+}

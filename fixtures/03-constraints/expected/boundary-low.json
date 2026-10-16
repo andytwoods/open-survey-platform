@@ -1,0 +1,103 @@
+{
+  "format": "osp-fixture-expected/0",
+  "fixture": "03-constraints",
+  "script": "boundary-low",
+  "pending": [],
+  "steps": [
+    {
+      "index": 0,
+      "page": "p1",
+      "visible": [
+        "age",
+        "score",
+        "nick"
+      ],
+      "errors": {},
+      "nav": {
+        "back": false
+      },
+      "questions": {
+        "age": {
+          "state": "unanswered",
+          "value": null
+        },
+        "score": {
+          "state": "unanswered",
+          "value": null
+        },
+        "nick": {
+          "state": "unanswered",
+          "value": null
+        }
+      },
+      "orders": {
+        "blocks": {},
+        "items": {},
+        "choices": {}
+      },
+      "conditions": {},
+      "end": null
+    },
+    {
+      "index": 1,
+      "page": null,
+      "visible": [],
+      "errors": {},
+      "nav": null,
+      "questions": {
+        "age": {
+          "state": "answered",
+          "value": 18
+        },
+        "score": {
+          "state": "unanswered",
+          "value": null
+        },
+        "nick": {
+          "state": "unanswered",
+          "value": null
+        }
+      },
+      "orders": {
+        "blocks": {},
+        "items": {},
+        "choices": {}
+      },
+      "conditions": {},
+      "end": "complete"
+    }
+  ],
+  "invariants": [],
+  "response": {
+    "surveyId": "f03_constraints",
+    "surveyVersion": 1,
+    "end": "complete",
+    "allocation": "server",
+    "sessionSeed": 302,
+    "conditions": {},
+    "orders": {
+      "blocks": {},
+      "items": {},
+      "choices": {}
+    },
+    "answers": {
+      "age": {
+        "state": "answered",
+        "value": 18
+      },
+      "score": {
+        "state": "unanswered",
+        "value": null
+      },
+      "nick": {
+        "state": "unanswered",
+        "value": null
+      }
+    },
+    "csvState": {
+      "age__state": "answered",
+      "score__state": "unanswered",
+      "nick__state": "unanswered"
+    }
+  }
+}

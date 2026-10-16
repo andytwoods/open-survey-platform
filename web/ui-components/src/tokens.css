@@ -1,0 +1,165 @@
+/*
+ * Design tokens for Open Survey Platform. Import once at the app root:
+ *   import '@osp/ui-components/tokens.css';
+ *
+ * Theme: light by default, dark when the OS prefers it, and a manual override via
+ * <html data-theme="light|dark"> (see theme.svelte.ts). Text/background pairs meet
+ * WCAG AA (4.5:1 body text, 3:1 for control borders and focus rings); the pairs are
+ * checked in both themes by web/builder/src/lib/theme/tokens.test.ts.
+ */
+
+:root {
+	/* Type */
+	--font-sans:
+		system-ui, -apple-system, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, 'Noto Sans',
+		sans-serif;
+	--font-mono: ui-monospace, 'SF Mono', Menlo, Consolas, 'Liberation Mono', monospace;
+	--text-xs: 0.75rem;
+	--text-sm: 0.875rem;
+	--text-md: 1rem;
+	--text-lg: 1.125rem;
+	--text-xl: 1.375rem;
+	--leading-tight: 1.25;
+	--leading-normal: 1.5;
+	--weight-normal: 400;
+	--weight-medium: 500;
+	--weight-bold: 650;
+
+	/* Spacing (4px grid) */
+	--space-0: 0;
+	--space-1: 0.25rem;
+	--space-2: 0.5rem;
+	--space-3: 0.75rem;
+	--space-4: 1rem;
+	--space-5: 1.5rem;
+	--space-6: 2rem;
+	--space-8: 3rem;
+
+	/* Radius */
+	--radius-sm: 4px;
+	--radius-md: 6px;
+	--radius-lg: 10px;
+	--radius-full: 999px;
+
+	/* Elevation and motion */
+	--shadow-sm: 0 1px 2px rgb(0 0 0 / 0.06);
+	--shadow-lg: 0 10px 30px rgb(0 0 0 / 0.18);
+	--duration-fast: 120ms;
+	--focus-ring-width: 2px;
+	--control-height: 2.25rem;
+
+	color-scheme: light;
+
+	/* Colour: light */
+	--color-bg: #ffffff;
+	--color-surface: #f6f7f9;
+	--color-surface-raised: #ffffff;
+	--color-surface-sunken: #eceef2;
+	--color-border: #d5dae1;
+	--color-border-strong: #7b8494;
+	--color-text: #1d2433;
+	--color-text-muted: #505a6b;
+	--color-accent: #2456c7;
+	--color-accent-hover: #1c47a8;
+	--color-on-accent: #ffffff;
+	--color-accent-subtle: #e7eefc;
+	--color-selected: #dce6fb;
+	--color-focus: #2456c7;
+	--color-danger: #b42318;
+	--color-success: #1a7f37;
+	--color-warning: #8a5300;
+	--color-overlay: rgb(16 20 28 / 0.45);
+}
+
+@media (prefers-color-scheme: dark) {
+	:root:not([data-theme='light']) {
+		color-scheme: dark;
+		--color-bg: #12151b;
+		--color-surface: #191d25;
+		--color-surface-raised: #212632;
+		--color-surface-sunken: #0d1015;
+		--color-border: #333a48;
+		--color-border-strong: #7c8699;
+		--color-text: #e6e9ef;
+		--color-text-muted: #a9b1bf;
+		--color-accent: #8fb0ff;
+		--color-accent-hover: #adc5ff;
+		--color-on-accent: #0b1220;
+		--color-accent-subtle: #1d2a45;
+		--color-selected: #253558;
+		--color-focus: #8fb0ff;
+		--color-danger: #ff8a80;
+		--color-success: #6fd08c;
+		--color-warning: #f2b357;
+		--color-overlay: rgb(0 0 0 / 0.6);
+		--shadow-sm: 0 1px 2px rgb(0 0 0 / 0.4);
+		--shadow-lg: 0 10px 30px rgb(0 0 0 / 0.55);
+	}
+}
+
+:root[data-theme='dark'] {
+	color-scheme: dark;
+	--color-bg: #12151b;
+	--color-surface: #191d25;
+	--color-surface-raised: #212632;
+	--color-surface-sunken: #0d1015;
+	--color-border: #333a48;
+	--color-border-strong: #7c8699;
+	--color-text: #e6e9ef;
+	--color-text-muted: #a9b1bf;
+	--color-accent: #8fb0ff;
+	--color-accent-hover: #adc5ff;
+	--color-on-accent: #0b1220;
+	--color-accent-subtle: #1d2a45;
+	--color-selected: #253558;
+	--color-focus: #8fb0ff;
+	--color-danger: #ff8a80;
+	--color-success: #6fd08c;
+	--color-warning: #f2b357;
+	--color-overlay: rgb(0 0 0 / 0.6);
+	--shadow-sm: 0 1px 2px rgb(0 0 0 / 0.4);
+	--shadow-lg: 0 10px 30px rgb(0 0 0 / 0.55);
+}
+
+/* Base */
+*,
+*::before,
+*::after {
+	box-sizing: border-box;
+}
+
+html,
+body {
+	margin: 0;
+	background: var(--color-bg);
+	color: var(--color-text);
+	font-family: var(--font-sans);
+	font-size: var(--text-md);
+	line-height: var(--leading-normal);
+}
+
+:focus-visible {
+	outline: var(--focus-ring-width) solid var(--color-focus);
+	outline-offset: 2px;
+}
+
+.osp-visually-hidden {
+	position: absolute !important;
+	width: 1px;
+	height: 1px;
+	padding: 0;
+	margin: -1px;
+	overflow: hidden;
+	clip: rect(0 0 0 0);
+	white-space: nowrap;
+	border: 0;
+}
+
+@media (prefers-reduced-motion: reduce) {
+	*,
+	*::before,
+	*::after {
+		transition-duration: 0ms !important;
+		animation-duration: 0ms !important;
+	}
+}

@@ -1,0 +1,35 @@
+{
+  "format": "osp-fixture-script/0",
+  "id": "control",
+  "description": "Server assigns cond = control; the branch and the piped label follow it.",
+  "sessionSeed": 1601,
+  "language": "en",
+  "server": {
+    "conditions": {
+      "cond": "control"
+    }
+  },
+  "actions": [
+    {
+      "expectPage": "p_intro",
+      "set": {
+        "intro_q": "yes"
+      },
+      "do": "next"
+    },
+    {
+      "expectPage": "blk_ctrl",
+      "set": {
+        "ctrl_q": "Four legs and a back"
+      },
+      "do": "next"
+    },
+    {
+      "expectPage": "p_out",
+      "set": {
+        "out_q": "no"
+      },
+      "do": "next"
+    }
+  ]
+}

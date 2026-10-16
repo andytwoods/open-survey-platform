@@ -1,0 +1,331 @@
+{
+  "format": "osp-fixture-expected/0",
+  "fixture": "07-back-navigation",
+  "script": "main",
+  "pending": [],
+  "steps": [
+    {
+      "index": 0,
+      "page": "p1",
+      "visible": [
+        "q1"
+      ],
+      "errors": {},
+      "nav": {
+        "back": false
+      },
+      "questions": {
+        "q1": {
+          "state": "unanswered",
+          "value": null
+        },
+        "q2": {
+          "state": "not-reached",
+          "value": null
+        },
+        "q3": {
+          "state": "not-reached",
+          "value": null
+        },
+        "q3b": {
+          "state": "not-reached",
+          "value": null
+        }
+      },
+      "orders": {
+        "blocks": {},
+        "items": {},
+        "choices": {}
+      },
+      "conditions": {},
+      "end": null
+    },
+    {
+      "index": 1,
+      "page": "p2",
+      "visible": [
+        "q2"
+      ],
+      "errors": {},
+      "nav": {
+        "back": true
+      },
+      "questions": {
+        "q1": {
+          "state": "answered",
+          "value": 4
+        },
+        "q2": {
+          "state": "unanswered",
+          "value": null
+        },
+        "q3": {
+          "state": "not-reached",
+          "value": null
+        },
+        "q3b": {
+          "state": "not-reached",
+          "value": null
+        }
+      },
+      "orders": {
+        "blocks": {},
+        "items": {},
+        "choices": {}
+      },
+      "conditions": {},
+      "end": null
+    },
+    {
+      "index": 2,
+      "page": "p3",
+      "visible": [
+        "q3"
+      ],
+      "errors": {},
+      "nav": {
+        "back": true
+      },
+      "questions": {
+        "q1": {
+          "state": "answered",
+          "value": 4
+        },
+        "q2": {
+          "state": "answered",
+          "value": "Thames"
+        },
+        "q3": {
+          "state": "unanswered",
+          "value": null
+        },
+        "q3b": {
+          "state": "irrelevant",
+          "value": null
+        }
+      },
+      "orders": {
+        "blocks": {},
+        "items": {},
+        "choices": {}
+      },
+      "conditions": {},
+      "end": null
+    },
+    {
+      "index": 3,
+      "page": "p2",
+      "visible": [
+        "q2"
+      ],
+      "errors": {},
+      "nav": {
+        "back": true
+      },
+      "questions": {
+        "q1": {
+          "state": "answered",
+          "value": 4
+        },
+        "q2": {
+          "state": "answered",
+          "value": "Thames"
+        },
+        "q3": {
+          "state": "unanswered",
+          "value": null
+        },
+        "q3b": {
+          "state": "irrelevant",
+          "value": null
+        }
+      },
+      "orders": {
+        "blocks": {},
+        "items": {},
+        "choices": {}
+      },
+      "conditions": {},
+      "end": null
+    },
+    {
+      "index": 4,
+      "page": "p1",
+      "visible": [
+        "q1"
+      ],
+      "errors": {},
+      "nav": {
+        "back": false
+      },
+      "questions": {
+        "q1": {
+          "state": "answered",
+          "value": 4
+        },
+        "q2": {
+          "state": "answered",
+          "value": "Thames"
+        },
+        "q3": {
+          "state": "unanswered",
+          "value": null
+        },
+        "q3b": {
+          "state": "irrelevant",
+          "value": null
+        }
+      },
+      "orders": {
+        "blocks": {},
+        "items": {},
+        "choices": {}
+      },
+      "conditions": {},
+      "end": null
+    },
+    {
+      "index": 5,
+      "page": "p2",
+      "visible": [
+        "q2"
+      ],
+      "errors": {},
+      "nav": {
+        "back": true
+      },
+      "questions": {
+        "q1": {
+          "state": "answered",
+          "value": 5
+        },
+        "q2": {
+          "state": "answered",
+          "value": "Thames"
+        },
+        "q3": {
+          "state": "unanswered",
+          "value": null
+        },
+        "q3b": {
+          "state": "unanswered",
+          "value": null
+        }
+      },
+      "orders": {
+        "blocks": {},
+        "items": {},
+        "choices": {}
+      },
+      "conditions": {},
+      "end": null
+    },
+    {
+      "index": 6,
+      "page": "p3",
+      "visible": [
+        "q3",
+        "q3b"
+      ],
+      "errors": {},
+      "nav": {
+        "back": true
+      },
+      "questions": {
+        "q1": {
+          "state": "answered",
+          "value": 5
+        },
+        "q2": {
+          "state": "answered",
+          "value": "Thames"
+        },
+        "q3": {
+          "state": "unanswered",
+          "value": null
+        },
+        "q3b": {
+          "state": "unanswered",
+          "value": null
+        }
+      },
+      "orders": {
+        "blocks": {},
+        "items": {},
+        "choices": {}
+      },
+      "conditions": {},
+      "end": null
+    },
+    {
+      "index": 7,
+      "page": null,
+      "visible": [],
+      "errors": {},
+      "nav": null,
+      "questions": {
+        "q1": {
+          "state": "answered",
+          "value": 5
+        },
+        "q2": {
+          "state": "answered",
+          "value": "Thames"
+        },
+        "q3": {
+          "state": "answered",
+          "value": "yes"
+        },
+        "q3b": {
+          "state": "answered",
+          "value": "north"
+        }
+      },
+      "orders": {
+        "blocks": {},
+        "items": {},
+        "choices": {}
+      },
+      "conditions": {},
+      "end": "complete"
+    }
+  ],
+  "invariants": [],
+  "response": {
+    "surveyId": "f07_back_navigation",
+    "surveyVersion": 1,
+    "end": "complete",
+    "allocation": "server",
+    "sessionSeed": 701,
+    "conditions": {},
+    "orders": {
+      "blocks": {},
+      "items": {},
+      "choices": {}
+    },
+    "answers": {
+      "q1": {
+        "state": "answered",
+        "value": 5
+      },
+      "q2": {
+        "state": "answered",
+        "value": "Thames"
+      },
+      "q3": {
+        "state": "answered",
+        "value": "yes"
+      },
+      "q3b": {
+        "state": "answered",
+        "value": "north"
+      }
+    },
+    "csvState": {
+      "q1__state": "answered",
+      "q2__state": "answered",
+      "q3__state": "answered",
+      "q3b__state": "answered"
+    }
+  }
+}

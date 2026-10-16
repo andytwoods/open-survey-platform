@@ -1,0 +1,13 @@
+{
+	"//": "Used only by dependency-cruiser. verbatimModuleSyntax stops TS from eliding imports that are used only in Svelte markup, which would hide them from the boundary rules.",
+	"compilerOptions": {
+		"target": "es2024",
+		"module": "esnext",
+		"moduleResolution": "bundler",
+		"verbatimModuleSyntax": true,
+		"allowJs": true,
+		"skipLibCheck": true,
+		"noEmit": true
+	},
+	"include": ["builder/src", "ui-components/src", "api-client/src"]
+}

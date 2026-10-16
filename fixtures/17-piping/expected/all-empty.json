@@ -1,0 +1,489 @@
+{
+  "format": "osp-fixture-expected/0",
+  "fixture": "17-piping",
+  "script": "all-empty",
+  "pending": [],
+  "steps": [
+    {
+      "index": 0,
+      "page": "p1",
+      "visible": [
+        "fav_fruit",
+        "n_pets",
+        "nickname",
+        "empty_q",
+        "skip_opt"
+      ],
+      "errors": {},
+      "nav": {
+        "back": false
+      },
+      "questions": {
+        "fav_fruit": {
+          "state": "unanswered",
+          "value": null
+        },
+        "n_pets": {
+          "state": "unanswered",
+          "value": null
+        },
+        "nickname": {
+          "state": "unanswered",
+          "value": null
+        },
+        "empty_q": {
+          "state": "unanswered",
+          "value": null
+        },
+        "skip_opt": {
+          "state": "unanswered",
+          "value": null
+        },
+        "pet_names": {
+          "state": "not-reached",
+          "value": null
+        },
+        "plants": {
+          "state": "not-reached",
+          "value": null
+        },
+        "opt_q": {
+          "state": "not-reached",
+          "value": null
+        },
+        "pipe_choice": {
+          "state": "not-reached",
+          "value": null
+        },
+        "pipe_int": {
+          "state": "not-reached",
+          "value": null
+        },
+        "pipe_text": {
+          "state": "not-reached",
+          "value": null
+        },
+        "pipe_empty": {
+          "state": "not-reached",
+          "value": null
+        },
+        "pipe_irr": {
+          "state": "not-reached",
+          "value": null
+        },
+        "pipe_nr": {
+          "state": "not-reached",
+          "value": null
+        }
+      },
+      "orders": {
+        "blocks": {},
+        "items": {},
+        "choices": {}
+      },
+      "conditions": {},
+      "end": null
+    },
+    {
+      "index": 1,
+      "page": "p1b",
+      "visible": [
+        "plants"
+      ],
+      "errors": {},
+      "nav": {
+        "back": true
+      },
+      "questions": {
+        "fav_fruit": {
+          "state": "unanswered",
+          "value": null
+        },
+        "n_pets": {
+          "state": "unanswered",
+          "value": null
+        },
+        "nickname": {
+          "state": "unanswered",
+          "value": null
+        },
+        "empty_q": {
+          "state": "unanswered",
+          "value": null
+        },
+        "skip_opt": {
+          "state": "answered",
+          "value": "no"
+        },
+        "pet_names": {
+          "state": "irrelevant",
+          "value": null
+        },
+        "plants": {
+          "state": "unanswered",
+          "value": null
+        },
+        "opt_q": {
+          "state": "not-reached",
+          "value": null
+        },
+        "pipe_choice": {
+          "state": "not-reached",
+          "value": null
+        },
+        "pipe_int": {
+          "state": "not-reached",
+          "value": null
+        },
+        "pipe_text": {
+          "state": "not-reached",
+          "value": null
+        },
+        "pipe_empty": {
+          "state": "not-reached",
+          "value": null
+        },
+        "pipe_irr": {
+          "state": "not-reached",
+          "value": null
+        },
+        "pipe_nr": {
+          "state": "not-reached",
+          "value": null
+        }
+      },
+      "orders": {
+        "blocks": {},
+        "items": {},
+        "choices": {}
+      },
+      "conditions": {},
+      "end": null
+    },
+    {
+      "index": 2,
+      "page": "p_opt",
+      "visible": [
+        "opt_q"
+      ],
+      "errors": {},
+      "nav": {
+        "back": true
+      },
+      "questions": {
+        "fav_fruit": {
+          "state": "unanswered",
+          "value": null
+        },
+        "n_pets": {
+          "state": "unanswered",
+          "value": null
+        },
+        "nickname": {
+          "state": "unanswered",
+          "value": null
+        },
+        "empty_q": {
+          "state": "unanswered",
+          "value": null
+        },
+        "skip_opt": {
+          "state": "answered",
+          "value": "no"
+        },
+        "pet_names": {
+          "state": "irrelevant",
+          "value": null
+        },
+        "plants": {
+          "state": "unanswered",
+          "value": null
+        },
+        "opt_q": {
+          "state": "unanswered",
+          "value": null
+        },
+        "pipe_choice": {
+          "state": "not-reached",
+          "value": null
+        },
+        "pipe_int": {
+          "state": "not-reached",
+          "value": null
+        },
+        "pipe_text": {
+          "state": "not-reached",
+          "value": null
+        },
+        "pipe_empty": {
+          "state": "not-reached",
+          "value": null
+        },
+        "pipe_irr": {
+          "state": "not-reached",
+          "value": null
+        },
+        "pipe_nr": {
+          "state": "not-reached",
+          "value": null
+        }
+      },
+      "orders": {
+        "blocks": {},
+        "items": {},
+        "choices": {}
+      },
+      "conditions": {},
+      "end": null
+    },
+    {
+      "index": 3,
+      "page": "p2",
+      "visible": [
+        "pipe_choice",
+        "pipe_int",
+        "pipe_text",
+        "pipe_empty",
+        "pipe_irr",
+        "pipe_nr"
+      ],
+      "errors": {},
+      "nav": {
+        "back": true
+      },
+      "questions": {
+        "fav_fruit": {
+          "state": "unanswered",
+          "value": null
+        },
+        "n_pets": {
+          "state": "unanswered",
+          "value": null
+        },
+        "nickname": {
+          "state": "unanswered",
+          "value": null
+        },
+        "empty_q": {
+          "state": "unanswered",
+          "value": null
+        },
+        "skip_opt": {
+          "state": "answered",
+          "value": "no"
+        },
+        "pet_names": {
+          "state": "irrelevant",
+          "value": null
+        },
+        "plants": {
+          "state": "unanswered",
+          "value": null
+        },
+        "opt_q": {
+          "state": "unanswered",
+          "value": null
+        },
+        "pipe_choice": {
+          "state": "unanswered",
+          "value": null
+        },
+        "pipe_int": {
+          "state": "unanswered",
+          "value": null
+        },
+        "pipe_text": {
+          "state": "unanswered",
+          "value": null
+        },
+        "pipe_empty": {
+          "state": "unanswered",
+          "value": null
+        },
+        "pipe_irr": {
+          "state": "unanswered",
+          "value": null
+        },
+        "pipe_nr": {
+          "state": "unanswered",
+          "value": null
+        }
+      },
+      "orders": {
+        "blocks": {},
+        "items": {},
+        "choices": {}
+      },
+      "conditions": {},
+      "end": null,
+      "labels": {
+        "pipe_choice": "You picked .",
+        "pipe_int": "You would like  pets.",
+        "pipe_text": "Hello !",
+        "pipe_empty": "Favourite word: []",
+        "pipe_irr": "Pet names: []",
+        "pipe_nr": "Optional page answer: []"
+      }
+    },
+    {
+      "index": 4,
+      "page": null,
+      "visible": [],
+      "errors": {},
+      "nav": null,
+      "questions": {
+        "fav_fruit": {
+          "state": "unanswered",
+          "value": null
+        },
+        "n_pets": {
+          "state": "unanswered",
+          "value": null
+        },
+        "nickname": {
+          "state": "unanswered",
+          "value": null
+        },
+        "empty_q": {
+          "state": "unanswered",
+          "value": null
+        },
+        "skip_opt": {
+          "state": "answered",
+          "value": "no"
+        },
+        "pet_names": {
+          "state": "irrelevant",
+          "value": null
+        },
+        "plants": {
+          "state": "unanswered",
+          "value": null
+        },
+        "opt_q": {
+          "state": "unanswered",
+          "value": null
+        },
+        "pipe_choice": {
+          "state": "unanswered",
+          "value": null
+        },
+        "pipe_int": {
+          "state": "unanswered",
+          "value": null
+        },
+        "pipe_text": {
+          "state": "unanswered",
+          "value": null
+        },
+        "pipe_empty": {
+          "state": "unanswered",
+          "value": null
+        },
+        "pipe_irr": {
+          "state": "unanswered",
+          "value": null
+        },
+        "pipe_nr": {
+          "state": "unanswered",
+          "value": null
+        }
+      },
+      "orders": {
+        "blocks": {},
+        "items": {},
+        "choices": {}
+      },
+      "conditions": {},
+      "end": "complete"
+    }
+  ],
+  "invariants": [],
+  "response": {
+    "surveyId": "f17_piping",
+    "surveyVersion": 1,
+    "end": "complete",
+    "allocation": "server",
+    "sessionSeed": 1702,
+    "conditions": {},
+    "orders": {
+      "blocks": {},
+      "items": {},
+      "choices": {}
+    },
+    "answers": {
+      "fav_fruit": {
+        "state": "unanswered",
+        "value": null
+      },
+      "n_pets": {
+        "state": "unanswered",
+        "value": null
+      },
+      "nickname": {
+        "state": "unanswered",
+        "value": null
+      },
+      "empty_q": {
+        "state": "unanswered",
+        "value": null
+      },
+      "skip_opt": {
+        "state": "answered",
+        "value": "no"
+      },
+      "pet_names": {
+        "state": "irrelevant",
+        "value": null
+      },
+      "plants": {
+        "state": "unanswered",
+        "value": null
+      },
+      "opt_q": {
+        "state": "unanswered",
+        "value": null
+      },
+      "pipe_choice": {
+        "state": "unanswered",
+        "value": null
+      },
+      "pipe_int": {
+        "state": "unanswered",
+        "value": null
+      },
+      "pipe_text": {
+        "state": "unanswered",
+        "value": null
+      },
+      "pipe_empty": {
+        "state": "unanswered",
+        "value": null
+      },
+      "pipe_irr": {
+        "state": "unanswered",
+        "value": null
+      },
+      "pipe_nr": {
+        "state": "unanswered",
+        "value": null
+      }
+    },
+    "csvState": {
+      "fav_fruit__state": "unanswered",
+      "n_pets__state": "unanswered",
+      "nickname__state": "unanswered",
+      "empty_q__state": "unanswered",
+      "skip_opt__state": "answered",
+      "pet_names__state": "irrelevant",
+      "plants__state": "unanswered",
+      "opt_q__state": "unanswered",
+      "pipe_choice__state": "unanswered",
+      "pipe_int__state": "unanswered",
+      "pipe_text__state": "unanswered",
+      "pipe_empty__state": "unanswered",
+      "pipe_irr__state": "unanswered",
+      "pipe_nr__state": "unanswered"
+    }
+  }
+}

@@ -1,0 +1,50 @@
+{
+  "format": "osp-fixture-survey/0",
+  "description": "Integer, decimal and text constraints with messages; unanswered values skip checks.",
+  "id": "f03_constraints",
+  "version": 1,
+  "title": "Constraints",
+  "languages": [
+    "en"
+  ],
+  "settings": {
+    "backNavigation": true
+  },
+  "choiceLists": {},
+  "blocks": {
+    "p1": {
+      "items": [
+        {
+          "id": "age",
+          "type": "integer",
+          "label": "How old are you?",
+          "required": true,
+          "constraint": "age >= 18 and age <= 120",
+          "constraintMessage": "Please enter an age between 18 and 120."
+        },
+        {
+          "id": "score",
+          "type": "decimal",
+          "label": "Give this survey a score from 0 to 10 (optional).",
+          "constraint": "score >= 0 and score <= 10",
+          "constraintMessage": "Please enter a score from 0 to 10."
+        },
+        {
+          "id": "nick",
+          "type": "text",
+          "label": "Choose a nickname (optional).",
+          "constraint": "nick != \"admin\"",
+          "constraintMessage": "That nickname is reserved."
+        }
+      ]
+    }
+  },
+  "flow": [
+    {
+      "block": "p1"
+    },
+    {
+      "end": "complete"
+    }
+  ]
+}

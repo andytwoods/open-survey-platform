@@ -1,0 +1,170 @@
+{
+  "format": "osp-fixture-expected/0",
+  "fixture": "04-text-whitespace",
+  "script": "trimmed-optional",
+  "pending": [],
+  "steps": [
+    {
+      "index": 0,
+      "page": "p1",
+      "visible": [
+        "t_req",
+        "t_opt",
+        "t_lines"
+      ],
+      "errors": {},
+      "nav": {
+        "back": false
+      },
+      "questions": {
+        "t_req": {
+          "state": "unanswered",
+          "value": null
+        },
+        "t_opt": {
+          "state": "unanswered",
+          "value": null
+        },
+        "t_lines": {
+          "state": "unanswered",
+          "value": null
+        },
+        "t_follow": {
+          "state": "not-reached",
+          "value": null
+        },
+        "p2_rating": {
+          "state": "not-reached",
+          "value": null
+        }
+      },
+      "orders": {
+        "blocks": {},
+        "items": {},
+        "choices": {}
+      },
+      "conditions": {},
+      "end": null
+    },
+    {
+      "index": 1,
+      "page": "p2",
+      "visible": [
+        "t_follow",
+        "p2_rating"
+      ],
+      "errors": {},
+      "nav": {
+        "back": true
+      },
+      "questions": {
+        "t_req": {
+          "state": "answered",
+          "value": "x"
+        },
+        "t_opt": {
+          "state": "answered",
+          "value": "ok"
+        },
+        "t_lines": {
+          "state": "unanswered",
+          "value": null
+        },
+        "t_follow": {
+          "state": "unanswered",
+          "value": null
+        },
+        "p2_rating": {
+          "state": "unanswered",
+          "value": null
+        }
+      },
+      "orders": {
+        "blocks": {},
+        "items": {},
+        "choices": {}
+      },
+      "conditions": {},
+      "end": null
+    },
+    {
+      "index": 2,
+      "page": null,
+      "visible": [],
+      "errors": {},
+      "nav": null,
+      "questions": {
+        "t_req": {
+          "state": "answered",
+          "value": "x"
+        },
+        "t_opt": {
+          "state": "answered",
+          "value": "ok"
+        },
+        "t_lines": {
+          "state": "unanswered",
+          "value": null
+        },
+        "t_follow": {
+          "state": "unanswered",
+          "value": null
+        },
+        "p2_rating": {
+          "state": "unanswered",
+          "value": null
+        }
+      },
+      "orders": {
+        "blocks": {},
+        "items": {},
+        "choices": {}
+      },
+      "conditions": {},
+      "end": "complete"
+    }
+  ],
+  "invariants": [],
+  "response": {
+    "surveyId": "f04_text_whitespace",
+    "surveyVersion": 1,
+    "end": "complete",
+    "allocation": "server",
+    "sessionSeed": 402,
+    "conditions": {},
+    "orders": {
+      "blocks": {},
+      "items": {},
+      "choices": {}
+    },
+    "answers": {
+      "t_req": {
+        "state": "answered",
+        "value": "x"
+      },
+      "t_opt": {
+        "state": "answered",
+        "value": "ok"
+      },
+      "t_lines": {
+        "state": "unanswered",
+        "value": null
+      },
+      "t_follow": {
+        "state": "unanswered",
+        "value": null
+      },
+      "p2_rating": {
+        "state": "unanswered",
+        "value": null
+      }
+    },
+    "csvState": {
+      "t_req__state": "answered",
+      "t_opt__state": "answered",
+      "t_lines__state": "unanswered",
+      "t_follow__state": "unanswered",
+      "p2_rating__state": "unanswered"
+    }
+  }
+}

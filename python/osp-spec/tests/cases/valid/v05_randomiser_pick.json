@@ -1,0 +1,110 @@
+{
+  "description": "Between-subjects by randomiser: present one of three stimulus blocks, then an outcome.",
+  "expect": [],
+  "survey": {
+    "specVersion": "osp-survey/0.1",
+    "id": "srv_case",
+    "metadata": {
+      "title": "Case",
+      "languages": [
+        "en"
+      ]
+    },
+    "blocks": [
+      {
+        "id": "s_a",
+        "pages": [
+          {
+            "id": "p_s_a",
+            "items": [
+              {
+                "id": "na",
+                "type": "note",
+                "label": "Question na"
+              }
+            ]
+          }
+        ]
+      },
+      {
+        "id": "s_b",
+        "pages": [
+          {
+            "id": "p_s_b",
+            "items": [
+              {
+                "id": "nb",
+                "type": "note",
+                "label": "Question nb"
+              }
+            ]
+          }
+        ]
+      },
+      {
+        "id": "s_c",
+        "pages": [
+          {
+            "id": "p_s_c",
+            "items": [
+              {
+                "id": "nc",
+                "type": "note",
+                "label": "Question nc"
+              }
+            ]
+          }
+        ]
+      },
+      {
+        "id": "dv",
+        "pages": [
+          {
+            "id": "p_dv",
+            "items": [
+              {
+                "id": "rating",
+                "type": "integer",
+                "label": "Question rating"
+              }
+            ]
+          }
+        ]
+      }
+    ],
+    "flow": [
+      {
+        "type": "randomiser",
+        "id": "f_rand",
+        "pick": 1,
+        "children": [
+          {
+            "type": "block",
+            "id": "f_a",
+            "block": "s_a"
+          },
+          {
+            "type": "block",
+            "id": "f_b",
+            "block": "s_b"
+          },
+          {
+            "type": "block",
+            "id": "f_c",
+            "block": "s_c"
+          }
+        ]
+      },
+      {
+        "type": "block",
+        "id": "f_dv",
+        "block": "dv"
+      },
+      {
+        "type": "end",
+        "id": "f_end",
+        "outcome": "complete"
+      }
+    ]
+  }
+}

@@ -1,0 +1,246 @@
+{
+  "participant": "P7",
+  "token": "tokp7",
+  "pages": [
+    {
+      "n": 1,
+      "label": "consent",
+      "t": 1792155513.511,
+      "questions": [
+        "consent"
+      ],
+      "questions_hidden_in_dom": [],
+      "markers": [],
+      "errors": [],
+      "thisstep": "1",
+      "has_prev": false,
+      "has_next": true,
+      "url": "http://localhost:8082/index.php?r=survey/index&sid=900001&token=tokp7&lang=en",
+      "screenshot": "screenshots/P7_01_consent.png",
+      "question_html": {
+        "consent": "<div id=\"ls-question-text-900001X1X1\" class=\" ls-label-question \">\n        Do you consent to take part in this (fake) study?\n    </div>"
+      }
+    },
+    {
+      "n": 2,
+      "label": "age",
+      "t": 1792155514.191,
+      "questions": [
+        "age"
+      ],
+      "questions_hidden_in_dom": [
+        "assigned",
+        "mode",
+        "rawrand"
+      ],
+      "markers": [],
+      "errors": [],
+      "thisstep": "2",
+      "has_prev": true,
+      "has_next": true,
+      "url": "http://localhost:8082/index.php?r=survey/index&sid=900001",
+      "screenshot": "screenshots/P7_02_age.png",
+      "question_html": {
+        "age": "<div id=\"ls-question-text-900001X2X4\" class=\" ls-label-question \">\n        How old are you?\n    </div>"
+      }
+    },
+    {
+      "n": 3,
+      "label": "stimulus",
+      "t": 1792155514.825,
+      "questions": [
+        "stimB"
+      ],
+      "questions_hidden_in_dom": [],
+      "markers": [
+        "STIMULUS-B"
+      ],
+      "errors": [],
+      "thisstep": "4",
+      "has_prev": true,
+      "has_next": true,
+      "url": "http://localhost:8082/index.php?r=survey/index&sid=900001",
+      "screenshot": "screenshots/P7_03_stimulus.png",
+      "question_html": {
+        "stimB": "<div id=\"ls-question-text-900001X4X9\" class=\" ls-label-question \">\n        <p>STIMULUS-B: a short story about a city.</p>\n    </div>"
+      }
+    },
+    {
+      "n": 4,
+      "label": "attitudes",
+      "t": 1792155515.468,
+      "questions": [
+        "att3",
+        "att1",
+        "att2"
+      ],
+      "questions_hidden_in_dom": [],
+      "markers": [
+        "PIPE[city story]"
+      ],
+      "errors": [],
+      "thisstep": "5",
+      "has_prev": true,
+      "has_next": true,
+      "url": "http://localhost:8082/index.php?r=survey/index&sid=900001",
+      "screenshot": "screenshots/P7_04_attitudes.png",
+      "question_html": {
+        "att1": "<div id=\"ls-question-text-900001X5X10\" class=\" ls-label-question \">\n        PIPE[city story] How calm did the story make you feel?\n    </div>",
+        "att2": "<div id=\"ls-question-text-900001X5X11\" class=\" ls-label-question \">\n        How interesting was the story?\n    </div>",
+        "att3": "<div id=\"ls-question-text-900001X5X12\" class=\" ls-label-question \">\n        How likely are you to recommend the story?\n    </div>"
+      }
+    },
+    {
+      "n": 5,
+      "label": "final",
+      "t": 1792155516.204,
+      "questions": [
+        "comments"
+      ],
+      "questions_hidden_in_dom": [],
+      "markers": [
+        "PIPEFU[]",
+        "PIPESHOWN[Yes]"
+      ],
+      "errors": [],
+      "thisstep": "7",
+      "has_prev": true,
+      "has_next": true,
+      "url": "http://localhost:8082/index.php?r=survey/index&sid=900001",
+      "screenshot": "screenshots/P7_05_final.png",
+      "question_html": {
+        "comments": "<div id=\"ls-question-text-900001X7X14\" class=\" ls-label-question \">\n        PIPEFU[] PIPESHOWN[Yes] Any comments? (optional)\n    </div>"
+      }
+    },
+    {
+      "n": 6,
+      "label": "end",
+      "t": 1792155516.809,
+      "questions": [],
+      "questions_hidden_in_dom": [],
+      "markers": [
+        "END-OF-SURVEY"
+      ],
+      "errors": [],
+      "thisstep": null,
+      "has_prev": false,
+      "has_next": false,
+      "url": "http://localhost:8082/index.php?r=survey/index&sid=900001",
+      "screenshot": "screenshots/P7_06_end.png",
+      "question_html": {},
+      "page_text": "END-OF-SURVEY"
+    },
+    {
+      "n": 7,
+      "label": "reenter-same-browser",
+      "t": 1792155517.455,
+      "questions": [],
+      "questions_hidden_in_dom": [],
+      "markers": [],
+      "errors": [
+        "This invitation has already been used."
+      ],
+      "thisstep": null,
+      "has_prev": false,
+      "has_next": false,
+      "url": "http://localhost:8082/index.php?r=survey/index&sid=900001&token=tokp7&lang=en",
+      "screenshot": "screenshots/P7_07_reenter-same-browser.png",
+      "question_html": {},
+      "page_text": "This invitation has already been used. We are sorry but you are not allowed to enter this survey. For further information please contact Spike Admin: admin@example.invalid"
+    },
+    {
+      "n": 8,
+      "label": "reenter-new-browser",
+      "t": 1792155518.073,
+      "questions": [],
+      "questions_hidden_in_dom": [],
+      "markers": [],
+      "errors": [
+        "This invitation has already been used."
+      ],
+      "thisstep": null,
+      "has_prev": false,
+      "has_next": false,
+      "url": "http://localhost:8082/index.php?r=survey/index&sid=900001&token=tokp7&lang=en",
+      "screenshot": "screenshots/P7_08_reenter-new-browser.png",
+      "question_html": {},
+      "page_text": "This invitation has already been used. We are sorry but you are not allowed to enter this survey. For further information please contact Spike Admin: admin@example.invalid"
+    },
+    {
+      "n": 9,
+      "label": "reenter-new-browser-with-cond",
+      "t": 1792155518.642,
+      "questions": [],
+      "questions_hidden_in_dom": [],
+      "markers": [],
+      "errors": [
+        "This invitation has already been used."
+      ],
+      "thisstep": null,
+      "has_prev": false,
+      "has_next": false,
+      "url": "http://localhost:8082/index.php?r=survey/index&sid=900001&token=tokp7&lang=en&cond=B&ospseed=7",
+      "screenshot": "screenshots/P7_09_reenter-new-browser-with-cond.png",
+      "question_html": {},
+      "page_text": "This invitation has already been used. We are sorry but you are not allowed to enter this survey. For further information please contact Spike Admin: admin@example.invalid"
+    }
+  ],
+  "notes": [
+    {
+      "db_after_finish": [
+        {
+          "id": "7",
+          "token": "tokp7",
+          "submitdate": "2026-10-16 12:58:36",
+          "lastpage": "7",
+          "startlanguage": "en",
+          "seed": "259293645",
+          "startdate": "2026-10-16 12:58:32",
+          "datestamp": "2026-10-16 12:58:36",
+          "consent": "Y",
+          "cond": "",
+          "ospseed": "",
+          "age": "61.0000000000",
+          "assigned": "B",
+          "mode": "limesurvey-native",
+          "rawrand": "695370",
+          "stimA": null,
+          "stimB": "",
+          "att1": "3",
+          "att2": "3",
+          "att3": "3",
+          "fu": null,
+          "comments": ""
+        }
+      ]
+    },
+    {
+      "db_after_reentry": [
+        {
+          "id": "7",
+          "token": "tokp7",
+          "submitdate": "2026-10-16 12:58:36",
+          "lastpage": "7",
+          "startlanguage": "en",
+          "seed": "259293645",
+          "startdate": "2026-10-16 12:58:32",
+          "datestamp": "2026-10-16 12:58:36",
+          "consent": "Y",
+          "cond": "",
+          "ospseed": "",
+          "age": "61.0000000000",
+          "assigned": "B",
+          "mode": "limesurvey-native",
+          "rawrand": "695370",
+          "stimA": null,
+          "stimB": "",
+          "att1": "3",
+          "att2": "3",
+          "att3": "3",
+          "fu": null,
+          "comments": ""
+        }
+      ]
+    }
+  ]
+}

@@ -1,0 +1,18 @@
+{
+  "format": "osp-fixture-script/0",
+  "id": "all-null",
+  "description": "Everything unanswered: every comparison with null is false (even a == b), not(false) is true, a + b is null so a + b > 3 is false.",
+  "sessionSeed": 501,
+  "language": "en",
+  "actions": [
+    {
+      "expectPage": "p1",
+      "set": {},
+      "do": "next"
+    },
+    {
+      "expectPage": "p2",
+      "do": "next"
+    }
+  ]
+}

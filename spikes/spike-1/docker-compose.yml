@@ -1,0 +1,41 @@
+# Spike 1: throwaway local LimeSurvey. LOCAL-ONLY credentials below; never reuse them.
+# Image tags are pinned exactly. Both images are multi-arch (amd64 + arm64): no emulation on Apple silicon.
+name: spike1
+services:
+  db:
+    image: mariadb:11.4.13
+    environment:
+      MARIADB_DATABASE: limesurvey
+      MARIADB_USER: limesurvey
+      MARIADB_PASSWORD: spike1-local-db-pw        # local-only throwaway
+      MARIADB_ROOT_PASSWORD: spike1-local-root-pw # local-only throwaway
+    healthcheck:
+      test: ["CMD", "healthcheck.sh", "--connect", "--innodb_initialized"]
+      interval: 3s
+      timeout: 5s
+      retries: 40
+    tmpfs:
+      - /var/lib/mysql   # fresh DB on every `up`; nothing persists
+  limesurvey:
+    image: martialblog/limesurvey:6.17.18-260831-apache
+    depends_on:
+      db:
+        condition: service_healthy
+    ports:
+      - "127.0.0.1:8082:8080"
+    environment:
+      DB_TYPE: mysql
+      DB_HOST: db
+      DB_PORT: "3306"
+      DB_NAME: limesurvey
+      DB_USERNAME: limesurvey
+      DB_PASSWORD: spike1-local-db-pw
+      DB_MYSQL_ENGINE: InnoDB
+      ADMIN_USER: admin
+      ADMIN_NAME: Spike Admin
+      ADMIN_EMAIL: admin@example.invalid
+      ADMIN_PASSWORD: spike1-local-admin-pw     # local-only throwaway
+      PUBLIC_URL: http://localhost:8082/
+      BASE_URL: http://localhost:8082/
+      URL_FORMAT: get
+      SHOW_SCRIPT_NAME: "true"

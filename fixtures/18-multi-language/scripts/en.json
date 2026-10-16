@@ -1,0 +1,25 @@
+{
+  "format": "osp-fixture-script/0",
+  "id": "en",
+  "description": "English session.",
+  "sessionSeed": 1801,
+  "language": "en",
+  "actions": [
+    {
+      "expectPage": "p1",
+      "set": {
+        "drink": "tea",
+        "cups": 3
+      },
+      "do": "next"
+    },
+    {
+      "expectPage": "p2",
+      "set": {
+        "why": "Warm",
+        "again": "yes"
+      },
+      "do": "next"
+    }
+  ]
+}

@@ -1,0 +1,139 @@
+# uv workspace root for the Python half of Open Survey Platform.
+# Virtual root (no [project]): it ties the member packages in python/ together
+# and holds shared tool config. Packages are internal; they are not published.
+
+[tool.uv.workspace]
+members = ["python/*"]
+
+[dependency-groups]
+dev = [
+    # Every workspace member, so a plain `uv sync` installs them all (editable).
+    "osp-expr",
+    "osp-spec",
+    "osp-engine",
+    "osp-ops",
+    "osp-targets",
+    "osp-qa",
+    "osp-runtime",
+    "osp-store",
+    "osp-app",
+    "osp-api",
+    "osp-cli",
+    "osp-mcp",
+    # Tooling (dev/test only).
+    "pytest>=9.1,<10",
+    "ruff>=0.17,<0.18",
+    "import-linter>=2.15,<3",
+    "httpx2>=2.13,<3",  # starlette TestClient
+]
+
+[tool.uv.sources]
+osp-expr = { workspace = true }
+osp-spec = { workspace = true }
+osp-engine = { workspace = true }
+osp-ops = { workspace = true }
+osp-targets = { workspace = true }
+osp-qa = { workspace = true }
+osp-runtime = { workspace = true }
+osp-store = { workspace = true }
+osp-app = { workspace = true }
+osp-api = { workspace = true }
+osp-cli = { workspace = true }
+osp-mcp = { workspace = true }
+
+# ---------------------------------------------------------------------------
+# Layers (AGENTS.md §2). A package may import only packages in LOWER layers.
+# Packages on the same line ("|") are independent: they may not import each
+# other. Every package in python/ must appear here (tests/test_layers.py).
+# ---------------------------------------------------------------------------
+[tool.importlinter]
+root_packages = [
+    "osp_expr",
+    "osp_spec",
+    "osp_engine",
+    "osp_ops",
+    "osp_targets",
+    "osp_qa",
+    "osp_runtime",
+    "osp_store",
+    "osp_app",
+    "osp_api",
+    "osp_cli",
+    "osp_mcp",
+]
+include_external_packages = true
+exclude_type_checking_imports = true
+
+[[tool.importlinter.contracts]]
+id = "layers"
+name = "Layers L0-L6: import only lower layers"
+type = "layers"
+layers = [
+    "osp_api | osp_cli | osp_mcp",   # L6
+    "osp_app",                       # L5
+    "osp_runtime | osp_store",       # L4
+    "osp_targets | osp_qa",          # L3
+    "osp_engine | osp_ops",          # L2
+    "osp_spec",                      # L1
+    "osp_expr",                      # L0
+]
+
+[[tool.importlinter.contracts]]
+id = "pure-core"
+name = "L0-L3 do no I/O (network, database, processes, global randomness)"
+type = "forbidden"
+source_modules = [
+    "osp_expr",
+    "osp_spec",
+    "osp_engine",
+    "osp_ops",
+    "osp_targets",
+    "osp_qa",
+]
+forbidden_modules = [
+    "socket",
+    "ssl",
+    "http",
+    "urllib",
+    "ftplib",
+    "smtplib",
+    "sqlite3",
+    "dbm",
+    "shelve",
+    "random",
+    "secrets",
+    "subprocess",
+    "multiprocessing",
+    "asyncio",
+    "httpx",
+    "httpx2",
+    "fastapi",
+    "starlette",
+]
+
+[[tool.importlinter.contracts]]
+id = "no-web-framework-below-l6"
+name = "Nothing below L6 imports the web framework"
+type = "forbidden"
+source_modules = [
+    "osp_runtime",
+    "osp_store",
+    "osp_app",
+]
+forbidden_modules = [
+    "fastapi",
+    "starlette",
+]
+
+[tool.ruff]
+target-version = "py314"
+line-length = 100
+extend-exclude = ["spikes", "web", "planning"]
+
+[tool.ruff.lint]
+select = ["E", "F", "W", "I", "B", "UP"]
+
+[tool.pytest.ini_options]
+testpaths = ["tests", "python"]
+addopts = ["--import-mode=importlib", "-q"]
+norecursedirs = ["spikes", "web", "node_modules", ".venv"]

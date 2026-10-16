@@ -1,0 +1,102 @@
+{
+  "format": "osp-fixture-survey/0",
+  "description": "§3: a previously answered question that becomes irrelevant is cleared on page submit.",
+  "id": "f06_clear_on_back",
+  "version": 1,
+  "title": "Value cleared when it becomes irrelevant",
+  "languages": [
+    "en"
+  ],
+  "settings": {
+    "backNavigation": true
+  },
+  "choiceLists": {
+    "pets": [
+      {
+        "value": "cat",
+        "label": "Cat"
+      },
+      {
+        "value": "dog",
+        "label": "Dog"
+      },
+      {
+        "value": "none",
+        "label": "No pet"
+      }
+    ],
+    "seasons": [
+      {
+        "value": "spring",
+        "label": "Spring"
+      },
+      {
+        "value": "summer",
+        "label": "Summer"
+      },
+      {
+        "value": "autumn",
+        "label": "Autumn"
+      },
+      {
+        "value": "winter",
+        "label": "Winter"
+      }
+    ]
+  },
+  "blocks": {
+    "p1": {
+      "items": [
+        {
+          "id": "pet",
+          "type": "single",
+          "label": "Which pet would you most like to have?",
+          "choices": "pets",
+          "required": true
+        }
+      ]
+    },
+    "p2": {
+      "items": [
+        {
+          "id": "pet_name",
+          "type": "text",
+          "label": "What would you name it?",
+          "showIf": "pet != \"none\""
+        },
+        {
+          "id": "season",
+          "type": "single",
+          "label": "Which season do you prefer?",
+          "choices": "seasons"
+        }
+      ]
+    },
+    "p3": {
+      "items": [
+        {
+          "id": "final",
+          "type": "text",
+          "label": "Why that name?",
+          "showIf": "answered(pet_name)"
+        },
+        {
+          "id": "comment",
+          "type": "text",
+          "label": "Any other comment?"
+        }
+      ]
+    }
+  },
+  "flow": [
+    {
+      "block": "p1"
+    },
+    {
+      "block": "p2"
+    },
+    {
+      "block": "p3"
+    }
+  ]
+}

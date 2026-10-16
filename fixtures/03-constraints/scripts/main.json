@@ -1,0 +1,46 @@
+{
+  "format": "osp-fixture-script/0",
+  "id": "main",
+  "description": "Fail each constraint in turn, then fix. Clearing nick removes its constraint check (constraints apply only to answered values).",
+  "sessionSeed": 301,
+  "language": "en",
+  "actions": [
+    {
+      "expectPage": "p1",
+      "set": {
+        "age": 15
+      },
+      "do": "next"
+    },
+    {
+      "expectPage": "p1",
+      "set": {
+        "age": 130
+      },
+      "do": "next"
+    },
+    {
+      "expectPage": "p1",
+      "set": {
+        "age": 30,
+        "score": "10.5"
+      },
+      "do": "next"
+    },
+    {
+      "expectPage": "p1",
+      "set": {
+        "score": "9.5",
+        "nick": "admin"
+      },
+      "do": "next"
+    },
+    {
+      "expectPage": "p1",
+      "set": {
+        "nick": null
+      },
+      "do": "next"
+    }
+  ]
+}

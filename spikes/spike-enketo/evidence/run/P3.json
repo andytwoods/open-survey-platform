@@ -1,0 +1,43 @@
+{
+ "id": "P3",
+ "sid": "00fc056b6ff7",
+ "pages": [
+  "/data/p_consent",
+  "/data/p_age",
+  "/data/p_stim_a",
+  "/data/p_att",
+  "/data/p_colour",
+  "/data/blk_y",
+  "/data/blk_x"
+ ],
+ "checks": [
+  {
+   "name": "consent -> p_age",
+   "expected": "/data/p_age",
+   "actual": "/data/p_age",
+   "ok": true
+  },
+  {
+   "name": "att1=2 skips follow-up",
+   "expected": "/data/p_colour",
+   "actual": "/data/p_colour",
+   "ok": true
+  },
+  {
+   "name": "pruned: no followup node",
+   "expected": false,
+   "actual": false,
+   "ok": true
+  },
+  {
+   "name": "raw: followup empty",
+   "expected": "",
+   "actual": "",
+   "ok": true
+  }
+ ],
+ "notes": [],
+ "console": [],
+ "pass": true,
+ "doc": "att1 = 2: follow-up not shown, not required."
+}

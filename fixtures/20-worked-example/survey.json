@@ -1,0 +1,253 @@
+{
+  "format": "osp-fixture-survey/0",
+  "description": "review.md §2.3 in full: consent gate, constraint, calculate, quota, 2x2 assign, branch, shuffled block, piping, score. Partly pending (C3a-1..5).",
+  "id": "srv_7f3c",
+  "version": 3,
+  "title": "Framing and incentive study",
+  "languages": [
+    "en",
+    "de"
+  ],
+  "settings": {
+    "backNavigation": true
+  },
+  "metadata": {
+    "license": "CC-BY-4.0",
+    "ddi": {
+      "universe": "UK adults 18+",
+      "studyUnit": "doi:10.xxxx/placeholder"
+    }
+  },
+  "embeddedData": [
+    {
+      "name": "source",
+      "from": "url",
+      "param": "src",
+      "default": "direct"
+    }
+  ],
+  "choiceLists": {
+    "yesno": [
+      {
+        "value": 1,
+        "label": {
+          "en": "Yes",
+          "de": "Ja"
+        }
+      },
+      {
+        "value": 0,
+        "label": {
+          "en": "No",
+          "de": "Nein"
+        }
+      }
+    ],
+    "agree5": [
+      {
+        "value": 1,
+        "label": "Strongly disagree"
+      },
+      {
+        "value": 2,
+        "label": "Disagree"
+      },
+      {
+        "value": 3,
+        "label": "Neutral"
+      },
+      {
+        "value": 4,
+        "label": "Agree"
+      },
+      {
+        "value": 5,
+        "label": "Strongly agree"
+      }
+    ]
+  },
+  "blocks": {
+    "consent": {
+      "items": [
+        {
+          "id": "consent",
+          "type": "single",
+          "label": {
+            "en": "Do you consent to take part?"
+          },
+          "choices": "yesno",
+          "required": true
+        }
+      ]
+    },
+    "demo": {
+      "items": [
+        {
+          "id": "age",
+          "type": "integer",
+          "required": true,
+          "constraint": "age >= 18 and age <= 120",
+          "constraintMessage": "Please enter an age between 18 and 120."
+        },
+        {
+          "id": "age_band",
+          "type": "calculate",
+          "expr": "if(age < 40, \"18-39\", \"40+\")"
+        }
+      ]
+    },
+    "stim_gain": {
+      "items": [
+        {
+          "id": "stim_g",
+          "type": "note",
+          "label": "Programme A saves 200 people…"
+        }
+      ]
+    },
+    "stim_loss": {
+      "items": [
+        {
+          "id": "stim_l",
+          "type": "note",
+          "label": "With Programme A, 400 people die…"
+        }
+      ]
+    },
+    "attitudes": {
+      "items": [
+        {
+          "id": "att1",
+          "type": "single",
+          "label": "With the ${incentive} you were offered, the programme seems fair.",
+          "choices": "agree5"
+        },
+        {
+          "id": "att2",
+          "type": "single",
+          "label": "I would support Programme A.",
+          "choices": "agree5",
+          "reverseScored": false
+        },
+        {
+          "id": "att3",
+          "type": "single",
+          "label": "Programme A is too risky.",
+          "choices": "agree5",
+          "reverseScored": true
+        }
+      ],
+      "itemOrder": "shuffle"
+    },
+    "screenout": {
+      "items": [
+        {
+          "id": "bye",
+          "type": "note",
+          "label": "Thank you. This study is now closed."
+        }
+      ]
+    }
+  },
+  "scores": [
+    {
+      "id": "att_score",
+      "method": "mean",
+      "items": [
+        "att1",
+        "att2",
+        "att3"
+      ],
+      "reverse": {
+        "max": 5,
+        "min": 1
+      }
+    }
+  ],
+  "design": {
+    "factors": [
+      {
+        "id": "framing",
+        "levels": [
+          "gain",
+          "loss"
+        ]
+      },
+      {
+        "id": "incentive",
+        "levels": [
+          "£5 voucher",
+          "charity donation"
+        ]
+      }
+    ],
+    "between": [
+      "framing",
+      "incentive"
+    ],
+    "allocation": {
+      "runtime": "server",
+      "method": "balanced",
+      "strata": [
+        "age_band"
+      ],
+      "fallback": "seeded-random"
+    }
+  },
+  "quotas": [
+    {
+      "id": "q_old",
+      "when": "age_band == \"40+\"",
+      "limit": 150,
+      "onFull": {
+        "goto": "screenout"
+      },
+      "countOn": "complete"
+    }
+  ],
+  "flow": [
+    {
+      "block": "consent"
+    },
+    {
+      "branch": {
+        "if": "consent == 0",
+        "then": [
+          {
+            "end": "declined"
+          }
+        ]
+      }
+    },
+    {
+      "block": "demo"
+    },
+    {
+      "quotaCheck": "q_old"
+    },
+    {
+      "assign": "design"
+    },
+    {
+      "branch": {
+        "if": "framing == \"gain\"",
+        "then": [
+          {
+            "block": "stim_gain"
+          }
+        ],
+        "else": [
+          {
+            "block": "stim_loss"
+          }
+        ]
+      }
+    },
+    {
+      "block": "attitudes"
+    },
+    {
+      "end": "complete"
+    }
+  ]
+}

@@ -1,0 +1,120 @@
+{
+  "description": "Computed variable built on another computed variable, used by a branch.",
+  "expect": [],
+  "survey": {
+    "specVersion": "osp-survey/0.1",
+    "id": "srv_case",
+    "metadata": {
+      "title": "Case",
+      "languages": [
+        "en"
+      ]
+    },
+    "blocks": [
+      {
+        "id": "demo",
+        "pages": [
+          {
+            "id": "p_demo",
+            "items": [
+              {
+                "id": "age",
+                "type": "integer",
+                "label": "Question age"
+              }
+            ]
+          }
+        ]
+      },
+      {
+        "id": "older",
+        "pages": [
+          {
+            "id": "p_older",
+            "items": [
+              {
+                "id": "pension",
+                "type": "single",
+                "label": "Question pension",
+                "choices": [
+                  {
+                    "value": 1,
+                    "label": "Yes"
+                  },
+                  {
+                    "value": 0,
+                    "label": "No"
+                  }
+                ]
+              }
+            ]
+          }
+        ]
+      }
+    ],
+    "flow": [
+      {
+        "type": "block",
+        "id": "f_demo",
+        "block": "demo"
+      },
+      {
+        "type": "branch",
+        "id": "f_br",
+        "if": {
+          "kind": "compare",
+          "op": ">",
+          "left": {
+            "kind": "ref",
+            "id": "months_next"
+          },
+          "right": {
+            "kind": "int",
+            "value": 600
+          }
+        },
+        "then": [
+          {
+            "type": "block",
+            "id": "f_older",
+            "block": "older"
+          }
+        ]
+      }
+    ],
+    "variables": [
+      {
+        "kind": "computed",
+        "id": "age_months",
+        "expr": {
+          "kind": "arith",
+          "op": "*",
+          "left": {
+            "kind": "ref",
+            "id": "age"
+          },
+          "right": {
+            "kind": "int",
+            "value": 12
+          }
+        }
+      },
+      {
+        "kind": "computed",
+        "id": "months_next",
+        "expr": {
+          "kind": "arith",
+          "op": "+",
+          "left": {
+            "kind": "ref",
+            "id": "age_months"
+          },
+          "right": {
+            "kind": "int",
+            "value": 12
+          }
+        }
+      }
+    ]
+  }
+}

@@ -1,0 +1,152 @@
+{
+  "description": "Branch with else and a nested branch; screen-out ends in one arm only.",
+  "expect": [],
+  "survey": {
+    "specVersion": "osp-survey/0.1",
+    "id": "srv_case",
+    "metadata": {
+      "title": "Case",
+      "languages": [
+        "en"
+      ]
+    },
+    "blocks": [
+      {
+        "id": "screen",
+        "pages": [
+          {
+            "id": "p_screen",
+            "items": [
+              {
+                "id": "student",
+                "type": "single",
+                "label": "Question student",
+                "choices": [
+                  {
+                    "value": 1,
+                    "label": "Yes"
+                  },
+                  {
+                    "value": 0,
+                    "label": "No"
+                  }
+                ]
+              }
+            ]
+          }
+        ]
+      },
+      {
+        "id": "uni",
+        "pages": [
+          {
+            "id": "p_uni",
+            "items": [
+              {
+                "id": "year",
+                "type": "integer",
+                "label": "Question year"
+              }
+            ]
+          }
+        ]
+      },
+      {
+        "id": "work",
+        "pages": [
+          {
+            "id": "p_work",
+            "items": [
+              {
+                "id": "job",
+                "type": "text",
+                "label": "Question job"
+              }
+            ]
+          }
+        ]
+      },
+      {
+        "id": "final",
+        "pages": [
+          {
+            "id": "p_final",
+            "items": [
+              {
+                "id": "done",
+                "type": "text",
+                "label": "Question done"
+              }
+            ]
+          }
+        ]
+      }
+    ],
+    "flow": [
+      {
+        "type": "block",
+        "id": "f_screen",
+        "block": "screen"
+      },
+      {
+        "type": "branch",
+        "id": "f_br",
+        "if": {
+          "kind": "compare",
+          "op": "==",
+          "left": {
+            "kind": "ref",
+            "id": "student"
+          },
+          "right": {
+            "kind": "int",
+            "value": 1
+          }
+        },
+        "then": [
+          {
+            "type": "block",
+            "id": "f_uni",
+            "block": "uni"
+          },
+          {
+            "type": "branch",
+            "id": "f_br2",
+            "if": {
+              "kind": "compare",
+              "op": ">",
+              "left": {
+                "kind": "ref",
+                "id": "year"
+              },
+              "right": {
+                "kind": "int",
+                "value": 6
+              }
+            },
+            "then": [
+              {
+                "type": "end",
+                "id": "f_out",
+                "outcome": "screenout",
+                "message": "Sorry, year ${year} is out of range."
+              }
+            ]
+          }
+        ],
+        "else": [
+          {
+            "type": "block",
+            "id": "f_work",
+            "block": "work"
+          }
+        ]
+      },
+      {
+        "type": "block",
+        "id": "f_final",
+        "block": "final"
+      }
+    ]
+  }
+}

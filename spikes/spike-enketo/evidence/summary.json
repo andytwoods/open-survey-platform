@@ -1,0 +1,120 @@
+{
+ "timings": {
+  "publish_s": 1.44,
+  "e5_s": 0.5,
+  "participants_s": 34.6,
+  "licences_s": 0.98,
+  "total_s": 37.73
+ },
+ "bundle": {
+  "app.js": {
+   "bytes": 930439,
+   "gzip": 264139
+  },
+  "app-slim.js": {
+   "bytes": 571980,
+   "gzip": 168536
+  },
+  "plain.css": {
+   "bytes": 140933,
+   "gzip": 23106
+  },
+  "xpath.js": {
+   "bytes": 313500,
+   "gzip": 86193
+  },
+  "transformer.js": {
+   "bytes": 1122463,
+   "gzip": 181892
+  }
+ },
+ "e5": {
+  "first_attempt_spec_only_floor_mod": {
+   "exact_matches": 3223,
+   "comparisons": 4000,
+   "seeds_matching_all_lengths": 800
+  },
+  "final_trunc_remainder": {
+   "exact_matches": 3600,
+   "comparisons": 4000,
+   "seeds_matching_all_lengths": 900
+  }
+ },
+ "participants": {
+  "P1": {
+   "pass": true,
+   "failed": []
+  },
+  "P2": {
+   "pass": false,
+   "failed": [
+    "E9 piping: ${att1} in label (semantics: label 'Strongly agree')",
+    "semantics \u00a72: whitespace-only counts as answered (advances)",
+    "sub pruned getDataStr({irrelevant:false}): text stored exactly (no trim)"
+   ]
+  },
+  "P3": {
+   "pass": true,
+   "failed": []
+  },
+  "P4": {
+   "pass": true,
+   "failed": []
+  },
+  "P4s": {
+   "pass": true,
+   "failed": []
+  },
+  "P5": {
+   "pass": false,
+   "failed": [
+    "semantics \u00a73: value gone when relevance returns after page submit"
+   ]
+  },
+  "P5b": {
+   "pass": false,
+   "failed": [
+    "semantics \u00a73: value gone when relevance returns after page submit"
+   ]
+  },
+  "P5c": {
+   "pass": true,
+   "failed": []
+  },
+  "P6": {
+   "pass": true,
+   "failed": []
+  },
+  "P9": {
+   "pass": true,
+   "failed": []
+  },
+  "P7": {
+   "pass": true,
+   "failed": []
+  }
+ },
+ "licences": {
+  "production": {
+   "packages": 106,
+   "flagged": {
+    "jquery-touchswipe@1.6.19": [
+     "MIT",
+     "GPL V2"
+    ],
+    "node-forge@1.4.0": "(BSD-3-Clause OR GPL-2.0)"
+   }
+  },
+  "all": {
+   "packages": 175,
+   "flagged": {
+    "axe-core@4.14.0": "MPL-2.0",
+    "jquery-touchswipe@1.6.19": [
+     "MIT",
+     "GPL V2"
+    ],
+    "node-forge@1.4.0": "(BSD-3-Clause OR GPL-2.0)"
+   }
+  }
+ }
+}

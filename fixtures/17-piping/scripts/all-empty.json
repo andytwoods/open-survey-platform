@@ -1,0 +1,28 @@
+{
+  "format": "osp-fixture-script/0",
+  "id": "all-empty",
+  "description": "Nothing answered except skip_opt = no: every pipe is empty, including opt_q which was reached but left unanswered.",
+  "sessionSeed": 1702,
+  "language": "en",
+  "actions": [
+    {
+      "expectPage": "p1",
+      "set": {
+        "skip_opt": "no"
+      },
+      "do": "next"
+    },
+    {
+      "expectPage": "p1b",
+      "do": "next"
+    },
+    {
+      "expectPage": "p_opt",
+      "do": "next"
+    },
+    {
+      "expectPage": "p2",
+      "do": "next"
+    }
+  ]
+}

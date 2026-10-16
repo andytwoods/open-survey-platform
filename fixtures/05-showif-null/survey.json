@@ -1,0 +1,110 @@
+{
+  "format": "osp-fixture-survey/0",
+  "description": "§3 null semantics in showIf: comparisons, not, arithmetic, answered(), contains().",
+  "id": "f05_showif_null",
+  "version": 1,
+  "title": "showIf with null values",
+  "languages": [
+    "en"
+  ],
+  "settings": {
+    "backNavigation": true
+  },
+  "choiceLists": {
+    "colour": [
+      {
+        "value": "red",
+        "label": "Red"
+      },
+      {
+        "value": "green",
+        "label": "Green"
+      },
+      {
+        "value": "blue",
+        "label": "Blue"
+      }
+    ]
+  },
+  "blocks": {
+    "p1": {
+      "items": [
+        {
+          "id": "a",
+          "type": "integer",
+          "label": "Pick any whole number (optional)."
+        },
+        {
+          "id": "b",
+          "type": "integer",
+          "label": "Pick another whole number (optional)."
+        },
+        {
+          "id": "c",
+          "type": "multi",
+          "label": "Pick some colours (optional).",
+          "choices": "colour"
+        }
+      ]
+    },
+    "p2": {
+      "items": [
+        {
+          "id": "p2_anchor",
+          "type": "text",
+          "label": "This question is always shown."
+        },
+        {
+          "id": "s_gt",
+          "type": "text",
+          "label": "Shown when: a > 5",
+          "showIf": "a > 5"
+        },
+        {
+          "id": "s_not_gt",
+          "type": "text",
+          "label": "Shown when: not (a > 5)",
+          "showIf": "not (a > 5)"
+        },
+        {
+          "id": "s_eq",
+          "type": "text",
+          "label": "Shown when: a == b",
+          "showIf": "a == b"
+        },
+        {
+          "id": "s_neq",
+          "type": "text",
+          "label": "Shown when: a != 3",
+          "showIf": "a != 3"
+        },
+        {
+          "id": "s_arith",
+          "type": "text",
+          "label": "Shown when: a + b > 3",
+          "showIf": "a + b > 3"
+        },
+        {
+          "id": "s_unanswered",
+          "type": "text",
+          "label": "Shown when: not answered(a)",
+          "showIf": "not answered(a)"
+        },
+        {
+          "id": "s_contains",
+          "type": "text",
+          "label": "Shown when: contains(c, \"red\")",
+          "showIf": "contains(c, \"red\")"
+        }
+      ]
+    }
+  },
+  "flow": [
+    {
+      "block": "p1"
+    },
+    {
+      "block": "p2"
+    }
+  ]
+}

@@ -1,0 +1,16 @@
+{
+  "format": "osp-fixture-script/0",
+  "id": "boundary-low",
+  "description": "age = 18 passes; empty optional score is not checked (null would make 'score >= 0' false).",
+  "sessionSeed": 302,
+  "language": "en",
+  "actions": [
+    {
+      "expectPage": "p1",
+      "set": {
+        "age": 18
+      },
+      "do": "next"
+    }
+  ]
+}

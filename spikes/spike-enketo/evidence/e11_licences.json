@@ -1,0 +1,60 @@
+{
+ "production": {
+  "packages": 106,
+  "by_licence": {
+   "MIT": 83,
+   "BSD-2-Clause": 8,
+   "ISC": 6,
+   "Apache-2.0": 4,
+   "MIT OR GPL V2": 1,
+   "CC0-1.0": 1,
+   "Beerware": 1,
+   "(BSD-3-Clause OR GPL-2.0)": 1,
+   "BSD-3-Clause": 1
+  },
+  "flagged": {
+   "jquery-touchswipe@1.6.19": [
+    "MIT",
+    "GPL V2"
+   ],
+   "node-forge@1.4.0": "(BSD-3-Clause OR GPL-2.0)"
+  }
+ },
+ "all": {
+  "packages": 175,
+  "by_licence": {
+   "MIT": 124,
+   "ISC": 24,
+   "BSD-2-Clause": 9,
+   "Apache-2.0": 7,
+   "BSD-3-Clause": 3,
+   "CC0-1.0": 2,
+   "MPL-2.0": 1,
+   "MIT OR GPL V2": 1,
+   "Beerware": 1,
+   "(BSD-3-Clause OR GPL-2.0)": 1,
+   "CC-BY-3.0": 1,
+   "(MIT AND CC-BY-3.0)": 1
+  },
+  "flagged": {
+   "axe-core@4.14.0": "MPL-2.0",
+   "jquery-touchswipe@1.6.19": [
+    "MIT",
+    "GPL V2"
+   ],
+   "node-forge@1.4.0": "(BSD-3-Clause OR GPL-2.0)"
+  }
+ },
+ "python": {
+  "pyxform": "",
+  "greenlet": "MIT AND PSF-2.0",
+  "lark": "MIT",
+  "defusedxml": "PSFL",
+  "openpyxl": "MIT",
+  "et_xmlfile": "MIT",
+  "playwright": "Apache-2.0",
+  "pyee": "MIT",
+  "xlrd": "BSD",
+  "typing_extensions": "PSF-2.0"
+ }
+}

@@ -1,0 +1,332 @@
+{
+  "participant": "P4",
+  "token": "tokp4",
+  "pages": [
+    {
+      "n": 1,
+      "label": "consent",
+      "t": 1792155491.615,
+      "questions": [
+        "consent"
+      ],
+      "questions_hidden_in_dom": [],
+      "markers": [],
+      "errors": [],
+      "thisstep": "1",
+      "has_prev": false,
+      "has_next": true,
+      "url": "http://localhost:8082/index.php?r=survey/index&sid=900001&token=tokp4&lang=en&cond=B&ospseed=123",
+      "screenshot": "screenshots/P4_01_consent.png",
+      "question_html": {
+        "consent": "<div id=\"ls-question-text-900001X1X1\" class=\" ls-label-question \">\n        Do you consent to take part in this (fake) study?\n    </div>"
+      }
+    },
+    {
+      "n": 2,
+      "label": "age",
+      "t": 1792155492.293,
+      "questions": [
+        "age"
+      ],
+      "questions_hidden_in_dom": [
+        "assigned",
+        "mode",
+        "rawrand"
+      ],
+      "markers": [],
+      "errors": [],
+      "thisstep": "2",
+      "has_prev": true,
+      "has_next": true,
+      "url": "http://localhost:8082/index.php?r=survey/index&sid=900001",
+      "screenshot": "screenshots/P4_02_age.png",
+      "question_html": {
+        "age": "<div id=\"ls-question-text-900001X2X4\" class=\" ls-label-question \">\n        How old are you?\n    </div>"
+      }
+    },
+    {
+      "n": 3,
+      "label": "back-to-consent",
+      "t": 1792155492.987,
+      "questions": [
+        "consent"
+      ],
+      "questions_hidden_in_dom": [],
+      "markers": [],
+      "errors": [],
+      "thisstep": "1",
+      "has_prev": false,
+      "has_next": true,
+      "url": "http://localhost:8082/index.php?r=survey/index&sid=900001",
+      "screenshot": "screenshots/P4_03_back-to-consent.png",
+      "question_html": {
+        "consent": "<div id=\"ls-question-text-900001X1X1\" class=\" ls-label-question \">\n        Do you consent to take part in this (fake) study?\n    </div>"
+      }
+    },
+    {
+      "n": 4,
+      "label": "reload-consent",
+      "t": 1792155493.582,
+      "questions": [
+        "consent"
+      ],
+      "questions_hidden_in_dom": [],
+      "markers": [],
+      "errors": [
+        "Please use the survey navigation buttons or index. It appears you attempted to use the browser back button to re-submit a page."
+      ],
+      "thisstep": "1",
+      "has_prev": false,
+      "has_next": true,
+      "url": "http://localhost:8082/index.php?r=survey/index&sid=900001",
+      "screenshot": "screenshots/P4_04_reload-consent.png",
+      "question_html": {
+        "consent": "<div id=\"ls-question-text-900001X1X1\" class=\" ls-label-question \">\n        Do you consent to take part in this (fake) study?\n    </div>"
+      }
+    },
+    {
+      "n": 5,
+      "label": "age-again",
+      "t": 1792155494.625,
+      "questions": [
+        "age"
+      ],
+      "questions_hidden_in_dom": [
+        "assigned",
+        "mode",
+        "rawrand"
+      ],
+      "markers": [],
+      "errors": [],
+      "thisstep": "2",
+      "has_prev": true,
+      "has_next": true,
+      "url": "http://localhost:8082/index.php?r=survey/index&sid=900001",
+      "screenshot": "screenshots/P4_05_age-again.png",
+      "question_html": {
+        "age": "<div id=\"ls-question-text-900001X2X4\" class=\" ls-label-question \">\n        How old are you?\n    </div>"
+      }
+    },
+    {
+      "n": 6,
+      "label": "stimulus",
+      "t": 1792155495.261,
+      "questions": [
+        "stimB"
+      ],
+      "questions_hidden_in_dom": [],
+      "markers": [
+        "STIMULUS-B"
+      ],
+      "errors": [],
+      "thisstep": "4",
+      "has_prev": true,
+      "has_next": true,
+      "url": "http://localhost:8082/index.php?r=survey/index&sid=900001",
+      "screenshot": "screenshots/P4_06_stimulus.png",
+      "question_html": {
+        "stimB": "<div id=\"ls-question-text-900001X4X9\" class=\" ls-label-question \">\n        <p>STIMULUS-B: a short story about a city.</p>\n    </div>"
+      }
+    },
+    {
+      "n": 7,
+      "label": "reentry-with-cond-A",
+      "t": 1792155495.999,
+      "questions": [
+        "stimA"
+      ],
+      "questions_hidden_in_dom": [],
+      "markers": [
+        "STIMULUS-A"
+      ],
+      "errors": [],
+      "thisstep": "3",
+      "has_prev": true,
+      "has_next": true,
+      "url": "http://localhost:8082/index.php?r=survey/index&sid=900001&token=tokp4&lang=en&cond=A&ospseed=999",
+      "screenshot": "screenshots/P4_07_reentry-with-cond-A.png",
+      "question_html": {
+        "stimA": "<div id=\"ls-question-text-900001X3X8\" class=\" ls-label-question \">\n        <p>STIMULUS-A: a short story about a river.</p>\n    </div>"
+      }
+    },
+    {
+      "n": 8,
+      "label": "walk",
+      "t": 1792155496.737,
+      "questions": [
+        "att3",
+        "att1",
+        "att2"
+      ],
+      "questions_hidden_in_dom": [],
+      "markers": [
+        "PIPE[river story]"
+      ],
+      "errors": [],
+      "thisstep": "5",
+      "has_prev": true,
+      "has_next": true,
+      "url": "http://localhost:8082/index.php?r=survey/index&sid=900001",
+      "screenshot": "screenshots/P4_08_walk.png",
+      "question_html": {
+        "att1": "<div id=\"ls-question-text-900001X5X10\" class=\" ls-label-question \">\n        PIPE[river story] How calm did the story make you feel?\n    </div>",
+        "att2": "<div id=\"ls-question-text-900001X5X11\" class=\" ls-label-question \">\n        How interesting was the story?\n    </div>",
+        "att3": "<div id=\"ls-question-text-900001X5X12\" class=\" ls-label-question \">\n        How likely are you to recommend the story?\n    </div>"
+      }
+    },
+    {
+      "n": 9,
+      "label": "walk",
+      "t": 1792155497.491,
+      "questions": [
+        "comments"
+      ],
+      "questions_hidden_in_dom": [],
+      "markers": [
+        "PIPEFU[]",
+        "PIPESHOWN[Yes]"
+      ],
+      "errors": [],
+      "thisstep": "7",
+      "has_prev": true,
+      "has_next": true,
+      "url": "http://localhost:8082/index.php?r=survey/index&sid=900001",
+      "screenshot": "screenshots/P4_09_walk.png",
+      "question_html": {
+        "comments": "<div id=\"ls-question-text-900001X7X14\" class=\" ls-label-question \">\n        PIPEFU[] PIPESHOWN[Yes] Any comments? (optional)\n    </div>"
+      }
+    },
+    {
+      "n": 10,
+      "label": "walk",
+      "t": 1792155498.113,
+      "questions": [],
+      "questions_hidden_in_dom": [],
+      "markers": [
+        "END-OF-SURVEY"
+      ],
+      "errors": [],
+      "thisstep": null,
+      "has_prev": false,
+      "has_next": false,
+      "url": "http://localhost:8082/index.php?r=survey/index&sid=900001",
+      "screenshot": "screenshots/P4_10_walk.png",
+      "question_html": {},
+      "page_text": "END-OF-SURVEY"
+    }
+  ],
+  "notes": [
+    {
+      "db_after_page1": [
+        {
+          "id": "4",
+          "token": "tokp4",
+          "submitdate": null,
+          "lastpage": "1",
+          "startlanguage": "en",
+          "seed": "577242985",
+          "startdate": "2026-10-16 12:58:11",
+          "datestamp": "2026-10-16 12:58:11",
+          "consent": "Y",
+          "cond": "B",
+          "ospseed": "123",
+          "age": null,
+          "assigned": "B",
+          "mode": "osp-redirect",
+          "rawrand": "832515",
+          "stimA": null,
+          "stimB": null,
+          "att1": null,
+          "att2": null,
+          "att3": null,
+          "fu": null,
+          "comments": null
+        }
+      ]
+    },
+    {
+      "db_after_stimulus": [
+        {
+          "id": "4",
+          "token": "tokp4",
+          "submitdate": null,
+          "lastpage": "3",
+          "startlanguage": "en",
+          "seed": "577242985",
+          "startdate": "2026-10-16 12:58:11",
+          "datestamp": "2026-10-16 12:58:14",
+          "consent": "Y",
+          "cond": "B",
+          "ospseed": "123",
+          "age": "40.0000000000",
+          "assigned": "B",
+          "mode": "osp-redirect",
+          "rawrand": "223649",
+          "stimA": null,
+          "stimB": null,
+          "att1": null,
+          "att2": null,
+          "att3": null,
+          "fu": null,
+          "comments": null
+        }
+      ]
+    },
+    {
+      "db_after_reentry_cond_A": [
+        {
+          "id": "4",
+          "token": "tokp4",
+          "submitdate": null,
+          "lastpage": "2",
+          "startlanguage": "en",
+          "seed": "577242985",
+          "startdate": "2026-10-16 12:58:11",
+          "datestamp": "2026-10-16 12:58:15",
+          "consent": "Y",
+          "cond": "A",
+          "ospseed": "999",
+          "age": "40.0000000000",
+          "assigned": "A",
+          "mode": "osp-redirect",
+          "rawrand": "708676",
+          "stimA": null,
+          "stimB": null,
+          "att1": null,
+          "att2": null,
+          "att3": null,
+          "fu": null,
+          "comments": null
+        }
+      ]
+    },
+    {
+      "db_final": [
+        {
+          "id": "4",
+          "token": "tokp4",
+          "submitdate": "2026-10-16 12:58:17",
+          "lastpage": "7",
+          "startlanguage": "en",
+          "seed": "577242985",
+          "startdate": "2026-10-16 12:58:11",
+          "datestamp": "2026-10-16 12:58:17",
+          "consent": "Y",
+          "cond": "A",
+          "ospseed": "999",
+          "age": "40.0000000000",
+          "assigned": "A",
+          "mode": "osp-redirect",
+          "rawrand": "708676",
+          "stimA": "",
+          "stimB": null,
+          "att1": "3",
+          "att2": "3",
+          "att3": "3",
+          "fu": null,
+          "comments": ""
+        }
+      ]
+    }
+  ]
+}

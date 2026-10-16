@@ -1,0 +1,159 @@
+{
+  "format": "osp-fixture-expected/0",
+  "fixture": "15-choice-order-shuffle",
+  "script": "seed-large",
+  "pending": [],
+  "steps": [
+    {
+      "index": 0,
+      "page": "p1",
+      "visible": [
+        "fav_colour",
+        "fruits",
+        "plain"
+      ],
+      "errors": {},
+      "nav": {
+        "back": false
+      },
+      "questions": {
+        "fav_colour": {
+          "state": "unanswered",
+          "value": null
+        },
+        "fruits": {
+          "state": "unanswered",
+          "value": null
+        },
+        "plain": {
+          "state": "unanswered",
+          "value": null
+        }
+      },
+      "orders": {
+        "blocks": {},
+        "items": {},
+        "choices": {
+          "fav_colour": "<engine>",
+          "fruits": "<engine>"
+        }
+      },
+      "conditions": {},
+      "end": null
+    },
+    {
+      "index": 1,
+      "page": null,
+      "visible": [],
+      "errors": {},
+      "nav": null,
+      "questions": {
+        "fav_colour": {
+          "state": "answered",
+          "value": "purple"
+        },
+        "fruits": {
+          "state": "answered",
+          "value": [
+            "apple",
+            "plum"
+          ]
+        },
+        "plain": {
+          "state": "answered",
+          "value": "yes"
+        }
+      },
+      "orders": {
+        "blocks": {},
+        "items": {},
+        "choices": {
+          "fav_colour": "<engine>",
+          "fruits": "<engine>"
+        }
+      },
+      "conditions": {},
+      "end": "complete"
+    }
+  ],
+  "invariants": [
+    {
+      "kind": "permutation",
+      "of": [
+        "red",
+        "green",
+        "blue",
+        "yellow",
+        "purple"
+      ],
+      "paths": [
+        "response.orders.choices.fav_colour"
+      ]
+    },
+    {
+      "kind": "permutation",
+      "of": [
+        "apple",
+        "kiwi",
+        "mango",
+        "pear",
+        "plum"
+      ],
+      "paths": [
+        "response.orders.choices.fruits"
+      ]
+    },
+    {
+      "kind": "equal",
+      "paths": [
+        "steps[0].orders.choices.fav_colour",
+        "response.orders.choices.fav_colour"
+      ]
+    },
+    {
+      "kind": "equal",
+      "paths": [
+        "steps[0].orders.choices.fruits",
+        "response.orders.choices.fruits"
+      ]
+    }
+  ],
+  "response": {
+    "surveyId": "f15_choice_order_shuffle",
+    "surveyVersion": 1,
+    "end": "complete",
+    "allocation": "server",
+    "sessionSeed": 2147483646,
+    "conditions": {},
+    "orders": {
+      "blocks": {},
+      "items": {},
+      "choices": {
+        "fav_colour": "<engine>",
+        "fruits": "<engine>"
+      }
+    },
+    "answers": {
+      "fav_colour": {
+        "state": "answered",
+        "value": "purple"
+      },
+      "fruits": {
+        "state": "answered",
+        "value": [
+          "apple",
+          "plum"
+        ]
+      },
+      "plain": {
+        "state": "answered",
+        "value": "yes"
+      }
+    },
+    "csvState": {
+      "fav_colour__state": "answered",
+      "fruits__state": "answered",
+      "plain__state": "answered"
+    }
+  }
+}

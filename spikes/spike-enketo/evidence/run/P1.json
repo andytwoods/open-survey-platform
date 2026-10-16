@@ -1,0 +1,47 @@
+{
+ "id": "P1",
+ "sid": "f5cee09f959c",
+ "pages": [
+  "/data/p_consent"
+ ],
+ "checks": [
+  {
+   "name": "Next hidden after 'no' (only page left)",
+   "expected": true,
+   "actual": true,
+   "ok": true
+  },
+  {
+   "name": "pruned: consent == no",
+   "expected": "no",
+   "actual": "no",
+   "ok": true
+  },
+  {
+   "name": "pruned: no age/att/followup/colour nodes",
+   "expected": [],
+   "actual": [],
+   "ok": true
+  },
+  {
+   "name": "raw: later answers empty",
+   "expected": true,
+   "actual": true,
+   "ok": true
+  },
+  {
+   "name": "pages seen",
+   "expected": [
+    "/data/p_consent"
+   ],
+   "actual": [
+    "/data/p_consent"
+   ],
+   "ok": true
+  }
+ ],
+ "notes": [],
+ "console": [],
+ "pass": true,
+ "doc": "Consent no -> ends immediately; no other answers stored."
+}

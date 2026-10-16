@@ -1,0 +1,3 @@
+spike1.lss is hand-authored (clean-room) from LimeSurvey's documented LSS layout and from
+observing an export of an empty survey from the running 6.17.18 instance. It is NOT generated
+from LimeSurvey code. Edit it by hand.

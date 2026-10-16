@@ -1,0 +1,13 @@
+{
+  "description": "Expression keywords (and, or, not, null, true, false) cannot be ids: no condition could refer to them.",
+  "expect": [{ "code": "id.reserved", "pointer": "/blocks/0/pages/0/items/0/id" }],
+  "survey": {
+    "specVersion": "osp-survey/0.1",
+    "id": "srv_case",
+    "metadata": { "title": "Case", "languages": ["en"] },
+    "blocks": [{ "id": "b1", "pages": [{ "id": "p1", "items": [
+      { "id": "not", "type": "text", "name": "notes", "label": "Any notes?" }
+    ] }] }],
+    "flow": [{ "type": "block", "id": "f_b1", "block": "b1" }]
+  }
+}

@@ -1,0 +1,50 @@
+{
+  "description": "Different ids, same variable name.",
+  "expect": [
+    {
+      "code": "name.duplicate",
+      "pointer": "/blocks/0/pages/0/items/1/name"
+    }
+  ],
+  "survey": {
+    "specVersion": "osp-survey/0.1",
+    "id": "srv_case",
+    "metadata": {
+      "title": "Case",
+      "languages": [
+        "en"
+      ]
+    },
+    "blocks": [
+      {
+        "id": "b1",
+        "pages": [
+          {
+            "id": "p1",
+            "items": [
+              {
+                "id": "q1",
+                "type": "integer",
+                "label": "Question q1",
+                "name": "age"
+              },
+              {
+                "id": "q2",
+                "type": "integer",
+                "label": "Question q2",
+                "name": "age"
+              }
+            ]
+          }
+        ]
+      }
+    ],
+    "flow": [
+      {
+        "type": "block",
+        "id": "f_b1",
+        "block": "b1"
+      }
+    ]
+  }
+}

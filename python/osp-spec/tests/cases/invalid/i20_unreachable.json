@@ -1,0 +1,67 @@
+{
+  "description": "Nodes after an end node are flagged unreachable.",
+  "expect": [
+    {
+      "code": "flow.unreachable",
+      "pointer": "/flow/2"
+    }
+  ],
+  "survey": {
+    "specVersion": "osp-survey/0.1",
+    "id": "srv_case",
+    "metadata": {
+      "title": "Case",
+      "languages": [
+        "en"
+      ]
+    },
+    "blocks": [
+      {
+        "id": "b1",
+        "pages": [
+          {
+            "id": "p_b1",
+            "items": [
+              {
+                "id": "q1",
+                "type": "integer",
+                "label": "Question q1"
+              }
+            ]
+          }
+        ]
+      },
+      {
+        "id": "b2",
+        "pages": [
+          {
+            "id": "p_b2",
+            "items": [
+              {
+                "id": "q2",
+                "type": "integer",
+                "label": "Question q2"
+              }
+            ]
+          }
+        ]
+      }
+    ],
+    "flow": [
+      {
+        "type": "block",
+        "id": "f1",
+        "block": "b1"
+      },
+      {
+        "type": "end",
+        "id": "f2"
+      },
+      {
+        "type": "block",
+        "id": "f3",
+        "block": "b2"
+      }
+    ]
+  }
+}

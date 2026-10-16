@@ -1,0 +1,350 @@
+{
+  "format": "osp-fixture-expected/0",
+  "fixture": "14-item-order-shuffle",
+  "script": "main",
+  "pending": [],
+  "steps": [
+    {
+      "index": 0,
+      "page": "p_pre",
+      "visible": [
+        "pre_q"
+      ],
+      "errors": {},
+      "nav": {
+        "back": false
+      },
+      "questions": {
+        "pre_q": {
+          "state": "unanswered",
+          "value": null
+        },
+        "att1": {
+          "state": "not-reached",
+          "value": null
+        },
+        "att2": {
+          "state": "not-reached",
+          "value": null
+        },
+        "att3": {
+          "state": "not-reached",
+          "value": null
+        },
+        "att4": {
+          "state": "not-reached",
+          "value": null
+        },
+        "post_q": {
+          "state": "not-reached",
+          "value": null
+        }
+      },
+      "orders": {
+        "blocks": {},
+        "items": {},
+        "choices": {}
+      },
+      "conditions": {},
+      "end": null
+    },
+    {
+      "index": 1,
+      "page": "p_att",
+      "visible": "<engine>",
+      "errors": {},
+      "nav": {
+        "back": true
+      },
+      "questions": {
+        "pre_q": {
+          "state": "answered",
+          "value": "yes"
+        },
+        "att1": {
+          "state": "unanswered",
+          "value": null
+        },
+        "att2": {
+          "state": "unanswered",
+          "value": null
+        },
+        "att3": {
+          "state": "unanswered",
+          "value": null
+        },
+        "att4": {
+          "state": "unanswered",
+          "value": null
+        },
+        "post_q": {
+          "state": "not-reached",
+          "value": null
+        }
+      },
+      "orders": {
+        "blocks": {},
+        "items": {
+          "p_att": "<engine>"
+        },
+        "choices": {}
+      },
+      "conditions": {},
+      "end": null
+    },
+    {
+      "index": 2,
+      "page": "p_post",
+      "visible": [
+        "post_q"
+      ],
+      "errors": {},
+      "nav": {
+        "back": true
+      },
+      "questions": {
+        "pre_q": {
+          "state": "answered",
+          "value": "yes"
+        },
+        "att1": {
+          "state": "answered",
+          "value": 4
+        },
+        "att2": {
+          "state": "answered",
+          "value": 5
+        },
+        "att3": {
+          "state": "answered",
+          "value": 2
+        },
+        "att4": {
+          "state": "answered",
+          "value": 3
+        },
+        "post_q": {
+          "state": "unanswered",
+          "value": null
+        }
+      },
+      "orders": {
+        "blocks": {},
+        "items": {
+          "p_att": "<engine>"
+        },
+        "choices": {}
+      },
+      "conditions": {},
+      "end": null
+    },
+    {
+      "index": 3,
+      "page": "p_att",
+      "visible": "<engine>",
+      "errors": {},
+      "nav": {
+        "back": true
+      },
+      "questions": {
+        "pre_q": {
+          "state": "answered",
+          "value": "yes"
+        },
+        "att1": {
+          "state": "answered",
+          "value": 4
+        },
+        "att2": {
+          "state": "answered",
+          "value": 5
+        },
+        "att3": {
+          "state": "answered",
+          "value": 2
+        },
+        "att4": {
+          "state": "answered",
+          "value": 3
+        },
+        "post_q": {
+          "state": "unanswered",
+          "value": null
+        }
+      },
+      "orders": {
+        "blocks": {},
+        "items": {
+          "p_att": "<engine>"
+        },
+        "choices": {}
+      },
+      "conditions": {},
+      "end": null
+    },
+    {
+      "index": 4,
+      "page": "p_post",
+      "visible": [
+        "post_q"
+      ],
+      "errors": {},
+      "nav": {
+        "back": true
+      },
+      "questions": {
+        "pre_q": {
+          "state": "answered",
+          "value": "yes"
+        },
+        "att1": {
+          "state": "answered",
+          "value": 4
+        },
+        "att2": {
+          "state": "answered",
+          "value": 5
+        },
+        "att3": {
+          "state": "answered",
+          "value": 2
+        },
+        "att4": {
+          "state": "answered",
+          "value": 3
+        },
+        "post_q": {
+          "state": "unanswered",
+          "value": null
+        }
+      },
+      "orders": {
+        "blocks": {},
+        "items": {
+          "p_att": "<engine>"
+        },
+        "choices": {}
+      },
+      "conditions": {},
+      "end": null
+    },
+    {
+      "index": 5,
+      "page": null,
+      "visible": [],
+      "errors": {},
+      "nav": null,
+      "questions": {
+        "pre_q": {
+          "state": "answered",
+          "value": "yes"
+        },
+        "att1": {
+          "state": "answered",
+          "value": 4
+        },
+        "att2": {
+          "state": "answered",
+          "value": 5
+        },
+        "att3": {
+          "state": "answered",
+          "value": 2
+        },
+        "att4": {
+          "state": "answered",
+          "value": 3
+        },
+        "post_q": {
+          "state": "answered",
+          "value": "ok"
+        }
+      },
+      "orders": {
+        "blocks": {},
+        "items": {
+          "p_att": "<engine>"
+        },
+        "choices": {}
+      },
+      "conditions": {},
+      "end": "complete"
+    }
+  ],
+  "invariants": [
+    {
+      "kind": "permutation",
+      "of": [
+        "att1",
+        "att2",
+        "att3",
+        "att4"
+      ],
+      "paths": [
+        "response.orders.items.p_att"
+      ]
+    },
+    {
+      "kind": "equal",
+      "paths": [
+        "steps[1].orders.items.p_att",
+        "steps[2].orders.items.p_att",
+        "steps[3].orders.items.p_att",
+        "steps[4].orders.items.p_att",
+        "steps[5].orders.items.p_att",
+        "response.orders.items.p_att",
+        "steps[1].visible",
+        "steps[3].visible"
+      ]
+    }
+  ],
+  "response": {
+    "surveyId": "f14_item_order_shuffle",
+    "surveyVersion": 1,
+    "end": "complete",
+    "allocation": "server",
+    "sessionSeed": 31,
+    "conditions": {},
+    "orders": {
+      "blocks": {},
+      "items": {
+        "p_att": "<engine>"
+      },
+      "choices": {}
+    },
+    "answers": {
+      "pre_q": {
+        "state": "answered",
+        "value": "yes"
+      },
+      "att1": {
+        "state": "answered",
+        "value": 4
+      },
+      "att2": {
+        "state": "answered",
+        "value": 5
+      },
+      "att3": {
+        "state": "answered",
+        "value": 2
+      },
+      "att4": {
+        "state": "answered",
+        "value": 3
+      },
+      "post_q": {
+        "state": "answered",
+        "value": "ok"
+      }
+    },
+    "csvState": {
+      "pre_q__state": "answered",
+      "att1__state": "answered",
+      "att2__state": "answered",
+      "att3__state": "answered",
+      "att4__state": "answered",
+      "post_q__state": "answered"
+    }
+  }
+}

@@ -1,0 +1,409 @@
+{
+  "format": "osp-fixture-expected/0",
+  "fixture": "13-randomiser-blocks",
+  "script": "main",
+  "pending": [],
+  "steps": [
+    {
+      "index": 0,
+      "page": "intro",
+      "visible": [
+        "intro_q"
+      ],
+      "errors": {},
+      "nav": {
+        "back": false
+      },
+      "questions": {
+        "intro_q": {
+          "state": "unanswered",
+          "value": null
+        },
+        "q_x": {
+          "state": "not-reached",
+          "value": null
+        },
+        "q_y": {
+          "state": "not-reached",
+          "value": null
+        },
+        "q_z": {
+          "state": "not-reached",
+          "value": null
+        },
+        "outro_q": {
+          "state": "not-reached",
+          "value": null
+        }
+      },
+      "orders": {
+        "blocks": {},
+        "items": {},
+        "choices": {}
+      },
+      "conditions": {},
+      "end": null
+    },
+    {
+      "index": 1,
+      "page": "<engine>",
+      "visible": "<engine>",
+      "errors": {},
+      "nav": {
+        "back": true
+      },
+      "questions": {
+        "intro_q": {
+          "state": "answered",
+          "value": "yes"
+        },
+        "q_x": "<engine>",
+        "q_y": "<engine>",
+        "q_z": "<engine>",
+        "outro_q": {
+          "state": "not-reached",
+          "value": null
+        }
+      },
+      "orders": {
+        "blocks": {
+          "r_blocks": "<engine>"
+        },
+        "items": {},
+        "choices": {}
+      },
+      "conditions": {},
+      "end": null
+    },
+    {
+      "index": 2,
+      "page": "<engine>",
+      "visible": "<engine>",
+      "errors": {},
+      "nav": {
+        "back": true
+      },
+      "questions": {
+        "intro_q": {
+          "state": "answered",
+          "value": "yes"
+        },
+        "q_x": "<engine>",
+        "q_y": "<engine>",
+        "q_z": "<engine>",
+        "outro_q": {
+          "state": "not-reached",
+          "value": null
+        }
+      },
+      "orders": {
+        "blocks": {
+          "r_blocks": "<engine>"
+        },
+        "items": {},
+        "choices": {}
+      },
+      "conditions": {},
+      "end": null
+    },
+    {
+      "index": 3,
+      "page": "<engine>",
+      "visible": "<engine>",
+      "errors": {},
+      "nav": {
+        "back": true
+      },
+      "questions": {
+        "intro_q": {
+          "state": "answered",
+          "value": "yes"
+        },
+        "q_x": "<engine>",
+        "q_y": "<engine>",
+        "q_z": "<engine>",
+        "outro_q": {
+          "state": "not-reached",
+          "value": null
+        }
+      },
+      "orders": {
+        "blocks": {
+          "r_blocks": "<engine>"
+        },
+        "items": {},
+        "choices": {}
+      },
+      "conditions": {},
+      "end": null
+    },
+    {
+      "index": 4,
+      "page": "<engine>",
+      "visible": "<engine>",
+      "errors": {},
+      "nav": {
+        "back": true
+      },
+      "questions": {
+        "intro_q": {
+          "state": "answered",
+          "value": "yes"
+        },
+        "q_x": "<engine>",
+        "q_y": "<engine>",
+        "q_z": "<engine>",
+        "outro_q": {
+          "state": "not-reached",
+          "value": null
+        }
+      },
+      "orders": {
+        "blocks": {
+          "r_blocks": "<engine>"
+        },
+        "items": {},
+        "choices": {}
+      },
+      "conditions": {},
+      "end": null
+    },
+    {
+      "index": 5,
+      "page": "<engine>",
+      "visible": "<engine>",
+      "errors": {},
+      "nav": {
+        "back": true
+      },
+      "questions": {
+        "intro_q": {
+          "state": "answered",
+          "value": "yes"
+        },
+        "q_x": "<engine>",
+        "q_y": "<engine>",
+        "q_z": "<engine>",
+        "outro_q": {
+          "state": "not-reached",
+          "value": null
+        }
+      },
+      "orders": {
+        "blocks": {
+          "r_blocks": "<engine>"
+        },
+        "items": {},
+        "choices": {}
+      },
+      "conditions": {},
+      "end": null
+    },
+    {
+      "index": 6,
+      "page": "<engine>",
+      "visible": "<engine>",
+      "errors": {},
+      "nav": {
+        "back": true
+      },
+      "questions": {
+        "intro_q": {
+          "state": "answered",
+          "value": "yes"
+        },
+        "q_x": "<engine>",
+        "q_y": "<engine>",
+        "q_z": "<engine>",
+        "outro_q": {
+          "state": "not-reached",
+          "value": null
+        }
+      },
+      "orders": {
+        "blocks": {
+          "r_blocks": "<engine>"
+        },
+        "items": {},
+        "choices": {}
+      },
+      "conditions": {},
+      "end": null
+    },
+    {
+      "index": 7,
+      "page": "outro",
+      "visible": [
+        "outro_q"
+      ],
+      "errors": {},
+      "nav": {
+        "back": true
+      },
+      "questions": {
+        "intro_q": {
+          "state": "answered",
+          "value": "yes"
+        },
+        "q_x": {
+          "state": "answered",
+          "value": 1
+        },
+        "q_y": {
+          "state": "answered",
+          "value": 2
+        },
+        "q_z": {
+          "state": "answered",
+          "value": 3
+        },
+        "outro_q": {
+          "state": "unanswered",
+          "value": null
+        }
+      },
+      "orders": {
+        "blocks": {
+          "r_blocks": "<engine>"
+        },
+        "items": {},
+        "choices": {}
+      },
+      "conditions": {},
+      "end": null
+    },
+    {
+      "index": 8,
+      "page": null,
+      "visible": [],
+      "errors": {},
+      "nav": null,
+      "questions": {
+        "intro_q": {
+          "state": "answered",
+          "value": "yes"
+        },
+        "q_x": {
+          "state": "answered",
+          "value": 1
+        },
+        "q_y": {
+          "state": "answered",
+          "value": 2
+        },
+        "q_z": {
+          "state": "answered",
+          "value": 3
+        },
+        "outro_q": {
+          "state": "answered",
+          "value": "done"
+        }
+      },
+      "orders": {
+        "blocks": {
+          "r_blocks": "<engine>"
+        },
+        "items": {},
+        "choices": {}
+      },
+      "conditions": {},
+      "end": "complete"
+    }
+  ],
+  "invariants": [
+    {
+      "kind": "permutation",
+      "of": [
+        "blk_x",
+        "blk_y",
+        "blk_z"
+      ],
+      "paths": [
+        "response.orders.blocks.r_blocks"
+      ]
+    },
+    {
+      "kind": "equal",
+      "paths": [
+        "steps[1].orders.blocks.r_blocks",
+        "steps[2].orders.blocks.r_blocks",
+        "steps[3].orders.blocks.r_blocks",
+        "steps[4].orders.blocks.r_blocks",
+        "steps[5].orders.blocks.r_blocks",
+        "steps[6].orders.blocks.r_blocks",
+        "steps[7].orders.blocks.r_blocks",
+        "steps[8].orders.blocks.r_blocks",
+        "response.orders.blocks.r_blocks"
+      ]
+    },
+    {
+      "kind": "equal",
+      "paths": [
+        "steps[1].page",
+        "steps[3].page",
+        "steps[4].page",
+        "response.orders.blocks.r_blocks[0]"
+      ]
+    },
+    {
+      "kind": "equal",
+      "paths": [
+        "steps[2].page",
+        "steps[5].page",
+        "response.orders.blocks.r_blocks[1]"
+      ]
+    },
+    {
+      "kind": "equal",
+      "paths": [
+        "steps[6].page",
+        "response.orders.blocks.r_blocks[2]"
+      ]
+    }
+  ],
+  "response": {
+    "surveyId": "f13_randomiser_blocks",
+    "surveyVersion": 1,
+    "end": "complete",
+    "allocation": "server",
+    "sessionSeed": 777,
+    "conditions": {},
+    "orders": {
+      "blocks": {
+        "r_blocks": "<engine>"
+      },
+      "items": {},
+      "choices": {}
+    },
+    "answers": {
+      "intro_q": {
+        "state": "answered",
+        "value": "yes"
+      },
+      "q_x": {
+        "state": "answered",
+        "value": 1
+      },
+      "q_y": {
+        "state": "answered",
+        "value": 2
+      },
+      "q_z": {
+        "state": "answered",
+        "value": 3
+      },
+      "outro_q": {
+        "state": "answered",
+        "value": "done"
+      }
+    },
+    "csvState": {
+      "intro_q__state": "answered",
+      "q_x__state": "answered",
+      "q_y__state": "answered",
+      "q_z__state": "answered",
+      "outro_q__state": "answered"
+    }
+  }
+}

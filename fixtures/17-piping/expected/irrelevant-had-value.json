@@ -1,0 +1,736 @@
+{
+  "format": "osp-fixture-expected/0",
+  "fixture": "17-piping",
+  "script": "irrelevant-had-value",
+  "pending": [],
+  "steps": [
+    {
+      "index": 0,
+      "page": "p1",
+      "visible": [
+        "fav_fruit",
+        "n_pets",
+        "nickname",
+        "empty_q",
+        "skip_opt"
+      ],
+      "errors": {},
+      "nav": {
+        "back": false
+      },
+      "questions": {
+        "fav_fruit": {
+          "state": "unanswered",
+          "value": null
+        },
+        "n_pets": {
+          "state": "unanswered",
+          "value": null
+        },
+        "nickname": {
+          "state": "unanswered",
+          "value": null
+        },
+        "empty_q": {
+          "state": "unanswered",
+          "value": null
+        },
+        "skip_opt": {
+          "state": "unanswered",
+          "value": null
+        },
+        "pet_names": {
+          "state": "not-reached",
+          "value": null
+        },
+        "plants": {
+          "state": "not-reached",
+          "value": null
+        },
+        "opt_q": {
+          "state": "not-reached",
+          "value": null
+        },
+        "pipe_choice": {
+          "state": "not-reached",
+          "value": null
+        },
+        "pipe_int": {
+          "state": "not-reached",
+          "value": null
+        },
+        "pipe_text": {
+          "state": "not-reached",
+          "value": null
+        },
+        "pipe_empty": {
+          "state": "not-reached",
+          "value": null
+        },
+        "pipe_irr": {
+          "state": "not-reached",
+          "value": null
+        },
+        "pipe_nr": {
+          "state": "not-reached",
+          "value": null
+        }
+      },
+      "orders": {
+        "blocks": {},
+        "items": {},
+        "choices": {}
+      },
+      "conditions": {},
+      "end": null
+    },
+    {
+      "index": 1,
+      "page": "p1b",
+      "visible": [
+        "pet_names",
+        "plants"
+      ],
+      "errors": {},
+      "nav": {
+        "back": true
+      },
+      "questions": {
+        "fav_fruit": {
+          "state": "answered",
+          "value": "cherry"
+        },
+        "n_pets": {
+          "state": "answered",
+          "value": 7
+        },
+        "nickname": {
+          "state": "answered",
+          "value": "Kit"
+        },
+        "empty_q": {
+          "state": "unanswered",
+          "value": null
+        },
+        "skip_opt": {
+          "state": "answered",
+          "value": "yes"
+        },
+        "pet_names": {
+          "state": "unanswered",
+          "value": null
+        },
+        "plants": {
+          "state": "unanswered",
+          "value": null
+        },
+        "opt_q": {
+          "state": "not-reached",
+          "value": null
+        },
+        "pipe_choice": {
+          "state": "not-reached",
+          "value": null
+        },
+        "pipe_int": {
+          "state": "not-reached",
+          "value": null
+        },
+        "pipe_text": {
+          "state": "not-reached",
+          "value": null
+        },
+        "pipe_empty": {
+          "state": "not-reached",
+          "value": null
+        },
+        "pipe_irr": {
+          "state": "not-reached",
+          "value": null
+        },
+        "pipe_nr": {
+          "state": "not-reached",
+          "value": null
+        }
+      },
+      "orders": {
+        "blocks": {},
+        "items": {},
+        "choices": {}
+      },
+      "conditions": {},
+      "end": null
+    },
+    {
+      "index": 2,
+      "page": "p2",
+      "visible": [
+        "pipe_choice",
+        "pipe_int",
+        "pipe_text",
+        "pipe_empty",
+        "pipe_irr",
+        "pipe_nr"
+      ],
+      "errors": {},
+      "nav": {
+        "back": true
+      },
+      "questions": {
+        "fav_fruit": {
+          "state": "answered",
+          "value": "cherry"
+        },
+        "n_pets": {
+          "state": "answered",
+          "value": 7
+        },
+        "nickname": {
+          "state": "answered",
+          "value": "Kit"
+        },
+        "empty_q": {
+          "state": "unanswered",
+          "value": null
+        },
+        "skip_opt": {
+          "state": "answered",
+          "value": "yes"
+        },
+        "pet_names": {
+          "state": "answered",
+          "value": "Rex and Tom"
+        },
+        "plants": {
+          "state": "answered",
+          "value": 1
+        },
+        "opt_q": {
+          "state": "not-reached",
+          "value": null
+        },
+        "pipe_choice": {
+          "state": "unanswered",
+          "value": null
+        },
+        "pipe_int": {
+          "state": "unanswered",
+          "value": null
+        },
+        "pipe_text": {
+          "state": "unanswered",
+          "value": null
+        },
+        "pipe_empty": {
+          "state": "unanswered",
+          "value": null
+        },
+        "pipe_irr": {
+          "state": "unanswered",
+          "value": null
+        },
+        "pipe_nr": {
+          "state": "unanswered",
+          "value": null
+        }
+      },
+      "orders": {
+        "blocks": {},
+        "items": {},
+        "choices": {}
+      },
+      "conditions": {},
+      "end": null,
+      "labels": {
+        "pipe_choice": "You picked Cherry.",
+        "pipe_int": "You would like 7 pets.",
+        "pipe_text": "Hello Kit!",
+        "pipe_empty": "Favourite word: []",
+        "pipe_irr": "Pet names: [Rex and Tom]",
+        "pipe_nr": "Optional page answer: []"
+      }
+    },
+    {
+      "index": 3,
+      "page": "p1b",
+      "visible": [
+        "pet_names",
+        "plants"
+      ],
+      "errors": {},
+      "nav": {
+        "back": true
+      },
+      "questions": {
+        "fav_fruit": {
+          "state": "answered",
+          "value": "cherry"
+        },
+        "n_pets": {
+          "state": "answered",
+          "value": 7
+        },
+        "nickname": {
+          "state": "answered",
+          "value": "Kit"
+        },
+        "empty_q": {
+          "state": "unanswered",
+          "value": null
+        },
+        "skip_opt": {
+          "state": "answered",
+          "value": "yes"
+        },
+        "pet_names": {
+          "state": "answered",
+          "value": "Rex and Tom"
+        },
+        "plants": {
+          "state": "answered",
+          "value": 1
+        },
+        "opt_q": {
+          "state": "not-reached",
+          "value": null
+        },
+        "pipe_choice": {
+          "state": "unanswered",
+          "value": null
+        },
+        "pipe_int": {
+          "state": "unanswered",
+          "value": null
+        },
+        "pipe_text": {
+          "state": "unanswered",
+          "value": null
+        },
+        "pipe_empty": {
+          "state": "unanswered",
+          "value": null
+        },
+        "pipe_irr": {
+          "state": "unanswered",
+          "value": null
+        },
+        "pipe_nr": {
+          "state": "unanswered",
+          "value": null
+        }
+      },
+      "orders": {
+        "blocks": {},
+        "items": {},
+        "choices": {}
+      },
+      "conditions": {},
+      "end": null
+    },
+    {
+      "index": 4,
+      "page": "p1",
+      "visible": [
+        "fav_fruit",
+        "n_pets",
+        "nickname",
+        "empty_q",
+        "skip_opt"
+      ],
+      "errors": {},
+      "nav": {
+        "back": false
+      },
+      "questions": {
+        "fav_fruit": {
+          "state": "answered",
+          "value": "cherry"
+        },
+        "n_pets": {
+          "state": "answered",
+          "value": 7
+        },
+        "nickname": {
+          "state": "answered",
+          "value": "Kit"
+        },
+        "empty_q": {
+          "state": "unanswered",
+          "value": null
+        },
+        "skip_opt": {
+          "state": "answered",
+          "value": "yes"
+        },
+        "pet_names": {
+          "state": "answered",
+          "value": "Rex and Tom"
+        },
+        "plants": {
+          "state": "answered",
+          "value": 1
+        },
+        "opt_q": {
+          "state": "not-reached",
+          "value": null
+        },
+        "pipe_choice": {
+          "state": "unanswered",
+          "value": null
+        },
+        "pipe_int": {
+          "state": "unanswered",
+          "value": null
+        },
+        "pipe_text": {
+          "state": "unanswered",
+          "value": null
+        },
+        "pipe_empty": {
+          "state": "unanswered",
+          "value": null
+        },
+        "pipe_irr": {
+          "state": "unanswered",
+          "value": null
+        },
+        "pipe_nr": {
+          "state": "unanswered",
+          "value": null
+        }
+      },
+      "orders": {
+        "blocks": {},
+        "items": {},
+        "choices": {}
+      },
+      "conditions": {},
+      "end": null
+    },
+    {
+      "index": 5,
+      "page": "p1b",
+      "visible": [
+        "plants"
+      ],
+      "errors": {},
+      "nav": {
+        "back": true
+      },
+      "questions": {
+        "fav_fruit": {
+          "state": "answered",
+          "value": "cherry"
+        },
+        "n_pets": {
+          "state": "answered",
+          "value": 2
+        },
+        "nickname": {
+          "state": "answered",
+          "value": "Kit"
+        },
+        "empty_q": {
+          "state": "unanswered",
+          "value": null
+        },
+        "skip_opt": {
+          "state": "answered",
+          "value": "yes"
+        },
+        "pet_names": {
+          "state": "irrelevant",
+          "value": null
+        },
+        "plants": {
+          "state": "answered",
+          "value": 1
+        },
+        "opt_q": {
+          "state": "not-reached",
+          "value": null
+        },
+        "pipe_choice": {
+          "state": "unanswered",
+          "value": null
+        },
+        "pipe_int": {
+          "state": "unanswered",
+          "value": null
+        },
+        "pipe_text": {
+          "state": "unanswered",
+          "value": null
+        },
+        "pipe_empty": {
+          "state": "unanswered",
+          "value": null
+        },
+        "pipe_irr": {
+          "state": "unanswered",
+          "value": null
+        },
+        "pipe_nr": {
+          "state": "unanswered",
+          "value": null
+        }
+      },
+      "orders": {
+        "blocks": {},
+        "items": {},
+        "choices": {}
+      },
+      "conditions": {},
+      "end": null
+    },
+    {
+      "index": 6,
+      "page": "p2",
+      "visible": [
+        "pipe_choice",
+        "pipe_int",
+        "pipe_text",
+        "pipe_empty",
+        "pipe_irr",
+        "pipe_nr"
+      ],
+      "errors": {},
+      "nav": {
+        "back": true
+      },
+      "questions": {
+        "fav_fruit": {
+          "state": "answered",
+          "value": "cherry"
+        },
+        "n_pets": {
+          "state": "answered",
+          "value": 2
+        },
+        "nickname": {
+          "state": "answered",
+          "value": "Kit"
+        },
+        "empty_q": {
+          "state": "unanswered",
+          "value": null
+        },
+        "skip_opt": {
+          "state": "answered",
+          "value": "yes"
+        },
+        "pet_names": {
+          "state": "irrelevant",
+          "value": null
+        },
+        "plants": {
+          "state": "answered",
+          "value": 1
+        },
+        "opt_q": {
+          "state": "not-reached",
+          "value": null
+        },
+        "pipe_choice": {
+          "state": "unanswered",
+          "value": null
+        },
+        "pipe_int": {
+          "state": "unanswered",
+          "value": null
+        },
+        "pipe_text": {
+          "state": "unanswered",
+          "value": null
+        },
+        "pipe_empty": {
+          "state": "unanswered",
+          "value": null
+        },
+        "pipe_irr": {
+          "state": "unanswered",
+          "value": null
+        },
+        "pipe_nr": {
+          "state": "unanswered",
+          "value": null
+        }
+      },
+      "orders": {
+        "blocks": {},
+        "items": {},
+        "choices": {}
+      },
+      "conditions": {},
+      "end": null,
+      "labels": {
+        "pipe_choice": "You picked Cherry.",
+        "pipe_int": "You would like 2 pets.",
+        "pipe_text": "Hello Kit!",
+        "pipe_empty": "Favourite word: []",
+        "pipe_irr": "Pet names: []",
+        "pipe_nr": "Optional page answer: []"
+      }
+    },
+    {
+      "index": 7,
+      "page": null,
+      "visible": [],
+      "errors": {},
+      "nav": null,
+      "questions": {
+        "fav_fruit": {
+          "state": "answered",
+          "value": "cherry"
+        },
+        "n_pets": {
+          "state": "answered",
+          "value": 2
+        },
+        "nickname": {
+          "state": "answered",
+          "value": "Kit"
+        },
+        "empty_q": {
+          "state": "unanswered",
+          "value": null
+        },
+        "skip_opt": {
+          "state": "answered",
+          "value": "yes"
+        },
+        "pet_names": {
+          "state": "irrelevant",
+          "value": null
+        },
+        "plants": {
+          "state": "answered",
+          "value": 1
+        },
+        "opt_q": {
+          "state": "not-reached",
+          "value": null
+        },
+        "pipe_choice": {
+          "state": "unanswered",
+          "value": null
+        },
+        "pipe_int": {
+          "state": "unanswered",
+          "value": null
+        },
+        "pipe_text": {
+          "state": "unanswered",
+          "value": null
+        },
+        "pipe_empty": {
+          "state": "unanswered",
+          "value": null
+        },
+        "pipe_irr": {
+          "state": "unanswered",
+          "value": null
+        },
+        "pipe_nr": {
+          "state": "unanswered",
+          "value": null
+        }
+      },
+      "orders": {
+        "blocks": {},
+        "items": {},
+        "choices": {}
+      },
+      "conditions": {},
+      "end": "complete"
+    }
+  ],
+  "invariants": [],
+  "response": {
+    "surveyId": "f17_piping",
+    "surveyVersion": 1,
+    "end": "complete",
+    "allocation": "server",
+    "sessionSeed": 1703,
+    "conditions": {},
+    "orders": {
+      "blocks": {},
+      "items": {},
+      "choices": {}
+    },
+    "answers": {
+      "fav_fruit": {
+        "state": "answered",
+        "value": "cherry"
+      },
+      "n_pets": {
+        "state": "answered",
+        "value": 2
+      },
+      "nickname": {
+        "state": "answered",
+        "value": "Kit"
+      },
+      "empty_q": {
+        "state": "unanswered",
+        "value": null
+      },
+      "skip_opt": {
+        "state": "answered",
+        "value": "yes"
+      },
+      "pet_names": {
+        "state": "irrelevant",
+        "value": null
+      },
+      "plants": {
+        "state": "answered",
+        "value": 1
+      },
+      "opt_q": {
+        "state": "not-reached",
+        "value": null
+      },
+      "pipe_choice": {
+        "state": "unanswered",
+        "value": null
+      },
+      "pipe_int": {
+        "state": "unanswered",
+        "value": null
+      },
+      "pipe_text": {
+        "state": "unanswered",
+        "value": null
+      },
+      "pipe_empty": {
+        "state": "unanswered",
+        "value": null
+      },
+      "pipe_irr": {
+        "state": "unanswered",
+        "value": null
+      },
+      "pipe_nr": {
+        "state": "unanswered",
+        "value": null
+      }
+    },
+    "csvState": {
+      "fav_fruit__state": "answered",
+      "n_pets__state": "answered",
+      "nickname__state": "answered",
+      "empty_q__state": "unanswered",
+      "skip_opt__state": "answered",
+      "pet_names__state": "irrelevant",
+      "plants__state": "answered",
+      "opt_q__state": "not-reached",
+      "pipe_choice__state": "unanswered",
+      "pipe_int__state": "unanswered",
+      "pipe_text__state": "unanswered",
+      "pipe_empty__state": "unanswered",
+      "pipe_irr__state": "unanswered",
+      "pipe_nr__state": "unanswered"
+    }
+  }
+}

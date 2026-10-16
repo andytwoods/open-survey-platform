@@ -1,0 +1,397 @@
+{
+  "format": "osp-fixture-expected/0",
+  "fixture": "09-refresh-resume",
+  "script": "main",
+  "pending": [],
+  "steps": [
+    {
+      "index": 0,
+      "page": "p_colour",
+      "visible": [
+        "fav_colour"
+      ],
+      "errors": {},
+      "nav": {
+        "back": false
+      },
+      "questions": {
+        "fav_colour": {
+          "state": "unanswered",
+          "value": null
+        },
+        "stim_a_check": {
+          "state": "not-reached",
+          "value": null
+        },
+        "stim_b_check": {
+          "state": "not-reached",
+          "value": null
+        },
+        "i1": {
+          "state": "not-reached",
+          "value": null
+        },
+        "i2": {
+          "state": "not-reached",
+          "value": null
+        },
+        "i3": {
+          "state": "not-reached",
+          "value": null
+        }
+      },
+      "orders": {
+        "blocks": {},
+        "items": {},
+        "choices": {
+          "fav_colour": "<engine>"
+        }
+      },
+      "conditions": {
+        "cond": "B"
+      },
+      "end": null
+    },
+    {
+      "index": 1,
+      "page": "p_colour",
+      "visible": [
+        "fav_colour"
+      ],
+      "errors": {},
+      "nav": {
+        "back": false
+      },
+      "questions": {
+        "fav_colour": {
+          "state": "answered",
+          "value": "green"
+        },
+        "stim_a_check": {
+          "state": "not-reached",
+          "value": null
+        },
+        "stim_b_check": {
+          "state": "not-reached",
+          "value": null
+        },
+        "i1": {
+          "state": "not-reached",
+          "value": null
+        },
+        "i2": {
+          "state": "not-reached",
+          "value": null
+        },
+        "i3": {
+          "state": "not-reached",
+          "value": null
+        }
+      },
+      "orders": {
+        "blocks": {},
+        "items": {},
+        "choices": {
+          "fav_colour": "<engine>"
+        }
+      },
+      "conditions": {
+        "cond": "B"
+      },
+      "end": null
+    },
+    {
+      "index": 2,
+      "page": "stim_b",
+      "visible": [
+        "stim_b_check"
+      ],
+      "errors": {},
+      "nav": {
+        "back": true
+      },
+      "questions": {
+        "fav_colour": {
+          "state": "answered",
+          "value": "green"
+        },
+        "stim_a_check": {
+          "state": "not-reached",
+          "value": null
+        },
+        "stim_b_check": {
+          "state": "unanswered",
+          "value": null
+        },
+        "i1": {
+          "state": "not-reached",
+          "value": null
+        },
+        "i2": {
+          "state": "not-reached",
+          "value": null
+        },
+        "i3": {
+          "state": "not-reached",
+          "value": null
+        }
+      },
+      "orders": {
+        "blocks": {},
+        "items": {},
+        "choices": {
+          "fav_colour": "<engine>"
+        }
+      },
+      "conditions": {
+        "cond": "B"
+      },
+      "end": null
+    },
+    {
+      "index": 3,
+      "page": "p_items",
+      "visible": "<engine>",
+      "errors": {},
+      "nav": {
+        "back": true
+      },
+      "questions": {
+        "fav_colour": {
+          "state": "answered",
+          "value": "green"
+        },
+        "stim_a_check": {
+          "state": "not-reached",
+          "value": null
+        },
+        "stim_b_check": {
+          "state": "answered",
+          "value": "yes"
+        },
+        "i1": {
+          "state": "unanswered",
+          "value": null
+        },
+        "i2": {
+          "state": "unanswered",
+          "value": null
+        },
+        "i3": {
+          "state": "unanswered",
+          "value": null
+        }
+      },
+      "orders": {
+        "blocks": {},
+        "items": {
+          "p_items": "<engine>"
+        },
+        "choices": {
+          "fav_colour": "<engine>"
+        }
+      },
+      "conditions": {
+        "cond": "B"
+      },
+      "end": null
+    },
+    {
+      "index": 4,
+      "page": "p_items",
+      "visible": "<engine>",
+      "errors": {},
+      "nav": {
+        "back": true
+      },
+      "questions": {
+        "fav_colour": {
+          "state": "answered",
+          "value": "green"
+        },
+        "stim_a_check": {
+          "state": "not-reached",
+          "value": null
+        },
+        "stim_b_check": {
+          "state": "answered",
+          "value": "yes"
+        },
+        "i1": {
+          "state": "answered",
+          "value": 7
+        },
+        "i2": {
+          "state": "unanswered",
+          "value": null
+        },
+        "i3": {
+          "state": "unanswered",
+          "value": null
+        }
+      },
+      "orders": {
+        "blocks": {},
+        "items": {
+          "p_items": "<engine>"
+        },
+        "choices": {
+          "fav_colour": "<engine>"
+        }
+      },
+      "conditions": {
+        "cond": "B"
+      },
+      "end": null
+    },
+    {
+      "index": 5,
+      "page": null,
+      "visible": [],
+      "errors": {},
+      "nav": null,
+      "questions": {
+        "fav_colour": {
+          "state": "answered",
+          "value": "green"
+        },
+        "stim_a_check": {
+          "state": "not-reached",
+          "value": null
+        },
+        "stim_b_check": {
+          "state": "answered",
+          "value": "yes"
+        },
+        "i1": {
+          "state": "answered",
+          "value": 7
+        },
+        "i2": {
+          "state": "answered",
+          "value": 3
+        },
+        "i3": {
+          "state": "answered",
+          "value": 9
+        }
+      },
+      "orders": {
+        "blocks": {},
+        "items": {
+          "p_items": "<engine>"
+        },
+        "choices": {
+          "fav_colour": "<engine>"
+        }
+      },
+      "conditions": {
+        "cond": "B"
+      },
+      "end": "complete"
+    }
+  ],
+  "invariants": [
+    {
+      "kind": "permutation",
+      "of": [
+        "red",
+        "green",
+        "blue",
+        "yellow",
+        "purple"
+      ],
+      "paths": [
+        "steps[0].orders.choices.fav_colour",
+        "response.orders.choices.fav_colour"
+      ]
+    },
+    {
+      "kind": "equal",
+      "paths": [
+        "steps[0].orders.choices.fav_colour",
+        "steps[1].orders.choices.fav_colour",
+        "steps[2].orders.choices.fav_colour",
+        "steps[3].orders.choices.fav_colour",
+        "steps[4].orders.choices.fav_colour",
+        "steps[5].orders.choices.fav_colour",
+        "response.orders.choices.fav_colour"
+      ]
+    },
+    {
+      "kind": "permutation",
+      "of": [
+        "i1",
+        "i2",
+        "i3"
+      ],
+      "paths": [
+        "steps[3].orders.items.p_items"
+      ]
+    },
+    {
+      "kind": "equal",
+      "paths": [
+        "steps[3].orders.items.p_items",
+        "steps[4].orders.items.p_items",
+        "steps[5].orders.items.p_items",
+        "response.orders.items.p_items",
+        "steps[3].visible",
+        "steps[4].visible"
+      ]
+    }
+  ],
+  "response": {
+    "surveyId": "f09_refresh_resume",
+    "surveyVersion": 1,
+    "end": "complete",
+    "allocation": "server",
+    "sessionSeed": 4242,
+    "conditions": {
+      "cond": "B"
+    },
+    "orders": {
+      "blocks": {},
+      "items": {
+        "p_items": "<engine>"
+      },
+      "choices": {
+        "fav_colour": "<engine>"
+      }
+    },
+    "answers": {
+      "fav_colour": {
+        "state": "answered",
+        "value": "green"
+      },
+      "stim_a_check": {
+        "state": "not-reached",
+        "value": null
+      },
+      "stim_b_check": {
+        "state": "answered",
+        "value": "yes"
+      },
+      "i1": {
+        "state": "answered",
+        "value": 7
+      },
+      "i2": {
+        "state": "answered",
+        "value": 3
+      },
+      "i3": {
+        "state": "answered",
+        "value": 9
+      }
+    },
+    "csvState": {
+      "fav_colour__state": "answered",
+      "stim_a_check__state": "not-reached",
+      "stim_b_check__state": "answered",
+      "i1__state": "answered",
+      "i2__state": "answered",
+      "i3__state": "answered"
+    }
+  }
+}

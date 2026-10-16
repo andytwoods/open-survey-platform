@@ -1,0 +1,172 @@
+{
+ "seeds": 1000,
+ "lengths": [
+  3,
+  5,
+  10,
+  26
+ ],
+ "note": "comparisons = seeds x lengths; kinds: small 0-99, random31 1..2^31-2, large 2^31..2^53, negative, decimal, string",
+ "first_attempt_spec_only_floor_mod": {
+  "comparisons": 4000,
+  "exact_matches": 3223,
+  "seeds_matching_all_lengths": 800,
+  "by_kind": {
+   "small": {
+    "match": 400,
+    "of": 400
+   },
+   "random31": {
+    "match": 2400,
+    "of": 2400
+   },
+   "large": {
+    "match": 400,
+    "of": 400
+   },
+   "negative": {
+    "match": 23,
+    "of": 400
+   },
+   "decimal": {
+    "match": 0,
+    "of": 200
+   },
+   "string": {
+    "match": 0,
+    "of": 200
+   }
+  },
+  "enketo_errors_by_kind": {
+   "decimal": {
+    "count": 200,
+    "example": "Invalid seed argument. Integer required, but got: 164875.05"
+   },
+   "string": {
+    "count": 200,
+    "example": "Invalid seed argument. Integer required, but got: NaN"
+   }
+  },
+  "mismatches_excluding_errors": 377,
+  "first_mismatches": [
+   {
+    "kind": "negative",
+    "seed": -1825833316,
+    "n": 3,
+    "order": [
+     2,
+     1,
+     0
+    ],
+    "python": [
+     1,
+     0,
+     2
+    ]
+   },
+   {
+    "kind": "negative",
+    "seed": -1766651926,
+    "n": 3,
+    "order": [
+     1,
+     2,
+     0
+    ],
+    "python": [
+     2,
+     0,
+     1
+    ]
+   },
+   {
+    "kind": "negative",
+    "seed": -1990700853,
+    "n": 3,
+    "order": [
+     0,
+     1,
+     2
+    ],
+    "python": [
+     0,
+     2,
+     1
+    ]
+   },
+   {
+    "kind": "negative",
+    "seed": -1148577166,
+    "n": 3,
+    "order": [
+     0,
+     2,
+     1
+    ],
+    "python": [
+     1,
+     2,
+     0
+    ]
+   },
+   {
+    "kind": "negative",
+    "seed": -27078037,
+    "n": 3,
+    "order": [
+     0,
+     2,
+     1
+    ],
+    "python": [
+     2,
+     1,
+     0
+    ]
+   }
+  ]
+ },
+ "final_trunc_remainder": {
+  "comparisons": 4000,
+  "exact_matches": 3600,
+  "seeds_matching_all_lengths": 900,
+  "by_kind": {
+   "small": {
+    "match": 400,
+    "of": 400
+   },
+   "random31": {
+    "match": 2400,
+    "of": 2400
+   },
+   "large": {
+    "match": 400,
+    "of": 400
+   },
+   "negative": {
+    "match": 400,
+    "of": 400
+   },
+   "decimal": {
+    "match": 0,
+    "of": 200
+   },
+   "string": {
+    "match": 0,
+    "of": 200
+   }
+  },
+  "enketo_errors_by_kind": {
+   "decimal": {
+    "count": 200,
+    "example": "Invalid seed argument. Integer required, but got: 164875.05"
+   },
+   "string": {
+    "count": 200,
+    "example": "Invalid seed argument. Integer required, but got: NaN"
+   }
+  },
+  "mismatches_excluding_errors": 0,
+  "first_mismatches": []
+ }
+}

@@ -1,0 +1,24 @@
+{
+  "format": "osp-fixture-script/0",
+  "id": "a3-b3",
+  "description": "a = b = 3.",
+  "sessionSeed": 503,
+  "language": "en",
+  "actions": [
+    {
+      "expectPage": "p1",
+      "set": {
+        "a": 3,
+        "b": 3,
+        "c": [
+          "blue"
+        ]
+      },
+      "do": "next"
+    },
+    {
+      "expectPage": "p2",
+      "do": "next"
+    }
+  ]
+}

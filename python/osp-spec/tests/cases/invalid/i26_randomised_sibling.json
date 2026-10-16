@@ -1,0 +1,81 @@
+{
+  "description": "Referring to another child of the same randomiser: order is not fixed (warning).",
+  "expect": [
+    {
+      "code": "ref.randomised_sibling",
+      "pointer": "/blocks/1/pages/0/items/0/showIf"
+    }
+  ],
+  "survey": {
+    "specVersion": "osp-survey/0.1",
+    "id": "srv_case",
+    "metadata": {
+      "title": "Case",
+      "languages": [
+        "en"
+      ]
+    },
+    "blocks": [
+      {
+        "id": "a",
+        "pages": [
+          {
+            "id": "p_a",
+            "items": [
+              {
+                "id": "qa",
+                "type": "integer",
+                "label": "Question qa"
+              }
+            ]
+          }
+        ]
+      },
+      {
+        "id": "b",
+        "pages": [
+          {
+            "id": "p_b",
+            "items": [
+              {
+                "id": "qb",
+                "type": "integer",
+                "label": "Question qb",
+                "showIf": {
+                  "kind": "compare",
+                  "op": ">",
+                  "left": {
+                    "kind": "ref",
+                    "id": "qa"
+                  },
+                  "right": {
+                    "kind": "int",
+                    "value": 1
+                  }
+                }
+              }
+            ]
+          }
+        ]
+      }
+    ],
+    "flow": [
+      {
+        "type": "randomiser",
+        "id": "f_r",
+        "children": [
+          {
+            "type": "block",
+            "id": "f_a",
+            "block": "a"
+          },
+          {
+            "type": "block",
+            "id": "f_b",
+            "block": "b"
+          }
+        ]
+      }
+    ]
+  }
+}

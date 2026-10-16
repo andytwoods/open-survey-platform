@@ -1,0 +1,20 @@
+{
+  "name": "spike-enketo-web",
+  "version": "0.0.0",
+  "private": true,
+  "license": "MIT",
+  "description": "Enketo spike bundle (throwaway)",
+  "dependencies": {
+    "enketo-core": "9.0.1",
+    "enketo-transformer": "4.2.0"
+  },
+  "devDependencies": {
+    "esbuild": "0.28.2",
+    "sass": "1.105.2",
+    "axe-core": "4.14.0",
+    "license-checker": "25.0.1"
+  },
+  "scripts": {
+    "build": "node build.mjs"
+  }
+}

@@ -1,0 +1,370 @@
+{
+  "format": "osp-fixture-expected/0",
+  "fixture": "06-clear-on-back",
+  "script": "main",
+  "pending": [],
+  "steps": [
+    {
+      "index": 0,
+      "page": "p1",
+      "visible": [
+        "pet"
+      ],
+      "errors": {},
+      "nav": {
+        "back": false
+      },
+      "questions": {
+        "pet": {
+          "state": "unanswered",
+          "value": null
+        },
+        "pet_name": {
+          "state": "not-reached",
+          "value": null
+        },
+        "season": {
+          "state": "not-reached",
+          "value": null
+        },
+        "final": {
+          "state": "not-reached",
+          "value": null
+        },
+        "comment": {
+          "state": "not-reached",
+          "value": null
+        }
+      },
+      "orders": {
+        "blocks": {},
+        "items": {},
+        "choices": {}
+      },
+      "conditions": {},
+      "end": null
+    },
+    {
+      "index": 1,
+      "page": "p2",
+      "visible": [
+        "pet_name",
+        "season"
+      ],
+      "errors": {},
+      "nav": {
+        "back": true
+      },
+      "questions": {
+        "pet": {
+          "state": "answered",
+          "value": "dog"
+        },
+        "pet_name": {
+          "state": "unanswered",
+          "value": null
+        },
+        "season": {
+          "state": "unanswered",
+          "value": null
+        },
+        "final": {
+          "state": "not-reached",
+          "value": null
+        },
+        "comment": {
+          "state": "not-reached",
+          "value": null
+        }
+      },
+      "orders": {
+        "blocks": {},
+        "items": {},
+        "choices": {}
+      },
+      "conditions": {},
+      "end": null
+    },
+    {
+      "index": 2,
+      "page": "p3",
+      "visible": [
+        "final",
+        "comment"
+      ],
+      "errors": {},
+      "nav": {
+        "back": true
+      },
+      "questions": {
+        "pet": {
+          "state": "answered",
+          "value": "dog"
+        },
+        "pet_name": {
+          "state": "answered",
+          "value": "Rex"
+        },
+        "season": {
+          "state": "answered",
+          "value": "summer"
+        },
+        "final": {
+          "state": "unanswered",
+          "value": null
+        },
+        "comment": {
+          "state": "unanswered",
+          "value": null
+        }
+      },
+      "orders": {
+        "blocks": {},
+        "items": {},
+        "choices": {}
+      },
+      "conditions": {},
+      "end": null
+    },
+    {
+      "index": 3,
+      "page": "p2",
+      "visible": [
+        "pet_name",
+        "season"
+      ],
+      "errors": {},
+      "nav": {
+        "back": true
+      },
+      "questions": {
+        "pet": {
+          "state": "answered",
+          "value": "dog"
+        },
+        "pet_name": {
+          "state": "answered",
+          "value": "Rex"
+        },
+        "season": {
+          "state": "answered",
+          "value": "summer"
+        },
+        "final": {
+          "state": "unanswered",
+          "value": null
+        },
+        "comment": {
+          "state": "unanswered",
+          "value": null
+        }
+      },
+      "orders": {
+        "blocks": {},
+        "items": {},
+        "choices": {}
+      },
+      "conditions": {},
+      "end": null
+    },
+    {
+      "index": 4,
+      "page": "p1",
+      "visible": [
+        "pet"
+      ],
+      "errors": {},
+      "nav": {
+        "back": false
+      },
+      "questions": {
+        "pet": {
+          "state": "answered",
+          "value": "dog"
+        },
+        "pet_name": {
+          "state": "answered",
+          "value": "Rex"
+        },
+        "season": {
+          "state": "answered",
+          "value": "summer"
+        },
+        "final": {
+          "state": "unanswered",
+          "value": null
+        },
+        "comment": {
+          "state": "unanswered",
+          "value": null
+        }
+      },
+      "orders": {
+        "blocks": {},
+        "items": {},
+        "choices": {}
+      },
+      "conditions": {},
+      "end": null
+    },
+    {
+      "index": 5,
+      "page": "p2",
+      "visible": [
+        "season"
+      ],
+      "errors": {},
+      "nav": {
+        "back": true
+      },
+      "questions": {
+        "pet": {
+          "state": "answered",
+          "value": "none"
+        },
+        "pet_name": {
+          "state": "irrelevant",
+          "value": null
+        },
+        "season": {
+          "state": "answered",
+          "value": "summer"
+        },
+        "final": {
+          "state": "irrelevant",
+          "value": null
+        },
+        "comment": {
+          "state": "unanswered",
+          "value": null
+        }
+      },
+      "orders": {
+        "blocks": {},
+        "items": {},
+        "choices": {}
+      },
+      "conditions": {},
+      "end": null
+    },
+    {
+      "index": 6,
+      "page": "p3",
+      "visible": [
+        "comment"
+      ],
+      "errors": {},
+      "nav": {
+        "back": true
+      },
+      "questions": {
+        "pet": {
+          "state": "answered",
+          "value": "none"
+        },
+        "pet_name": {
+          "state": "irrelevant",
+          "value": null
+        },
+        "season": {
+          "state": "answered",
+          "value": "summer"
+        },
+        "final": {
+          "state": "irrelevant",
+          "value": null
+        },
+        "comment": {
+          "state": "unanswered",
+          "value": null
+        }
+      },
+      "orders": {
+        "blocks": {},
+        "items": {},
+        "choices": {}
+      },
+      "conditions": {},
+      "end": null
+    },
+    {
+      "index": 7,
+      "page": null,
+      "visible": [],
+      "errors": {},
+      "nav": null,
+      "questions": {
+        "pet": {
+          "state": "answered",
+          "value": "none"
+        },
+        "pet_name": {
+          "state": "irrelevant",
+          "value": null
+        },
+        "season": {
+          "state": "answered",
+          "value": "summer"
+        },
+        "final": {
+          "state": "irrelevant",
+          "value": null
+        },
+        "comment": {
+          "state": "unanswered",
+          "value": null
+        }
+      },
+      "orders": {
+        "blocks": {},
+        "items": {},
+        "choices": {}
+      },
+      "conditions": {},
+      "end": "complete"
+    }
+  ],
+  "invariants": [],
+  "response": {
+    "surveyId": "f06_clear_on_back",
+    "surveyVersion": 1,
+    "end": "complete",
+    "allocation": "server",
+    "sessionSeed": 601,
+    "conditions": {},
+    "orders": {
+      "blocks": {},
+      "items": {},
+      "choices": {}
+    },
+    "answers": {
+      "pet": {
+        "state": "answered",
+        "value": "none"
+      },
+      "pet_name": {
+        "state": "irrelevant",
+        "value": null
+      },
+      "season": {
+        "state": "answered",
+        "value": "summer"
+      },
+      "final": {
+        "state": "irrelevant",
+        "value": null
+      },
+      "comment": {
+        "state": "unanswered",
+        "value": null
+      }
+    },
+    "csvState": {
+      "pet__state": "answered",
+      "pet_name__state": "irrelevant",
+      "season__state": "answered",
+      "final__state": "irrelevant",
+      "comment__state": "unanswered"
+    }
+  }
+}

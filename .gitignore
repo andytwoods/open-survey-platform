@@ -1,0 +1,37 @@
+# Python
+.venv/
+__pycache__/
+*.pyc
+.pytest_cache/
+.ruff_cache/
+
+# Node
+node_modules/
+dist/
+build/
+.svelte-kit/
+
+# Spike runtime data
+spikes/*/data/
+spikes/spike-enketo/build/
+
+# IDE
+
+# OS / secrets
+.DS_Store
+.env
+.env.*
+
+# Tooling caches
+.import_linter_cache/
+
+# Stop hook state (per checkout)
+.claude/.stop-hook-stamp
+.claude/.stop-hook-blocks
+.claude/settings.local.json
+
+# Claude Code
+.claude/worktrees/
+.claude/settings.local.json
+.claude/.stop-hook*
+.idea/

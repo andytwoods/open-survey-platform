@@ -1,0 +1,41 @@
+{
+  "format": "osp-fixture-script/0",
+  "id": "main",
+  "description": "Submit empty pages, see required errors, then fix them. r_follow is required but irrelevant, so it never blocks.",
+  "sessionSeed": 201,
+  "language": "en",
+  "actions": [
+    {
+      "expectPage": "p1",
+      "do": "next"
+    },
+    {
+      "expectPage": "p1",
+      "set": {
+        "r_int": 7
+      },
+      "do": "next"
+    },
+    {
+      "expectPage": "p1",
+      "set": {
+        "r_single": "yes"
+      },
+      "do": "next"
+    },
+    {
+      "expectPage": "p2",
+      "do": "next"
+    },
+    {
+      "expectPage": "p2",
+      "set": {
+        "r_multi": [
+          "green"
+        ],
+        "r_date": "2026-07-01"
+      },
+      "do": "next"
+    }
+  ]
+}

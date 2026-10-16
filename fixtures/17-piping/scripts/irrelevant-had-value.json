@@ -1,0 +1,50 @@
+{
+  "format": "osp-fixture-script/0",
+  "id": "irrelevant-had-value",
+  "description": "pet_names is answered and piped, then made irrelevant by going back: it is cleared and pipes as empty.",
+  "sessionSeed": 1703,
+  "language": "en",
+  "actions": [
+    {
+      "expectPage": "p1",
+      "set": {
+        "fav_fruit": "cherry",
+        "n_pets": 7,
+        "nickname": "Kit",
+        "skip_opt": "yes"
+      },
+      "do": "next"
+    },
+    {
+      "expectPage": "p1b",
+      "set": {
+        "pet_names": "Rex and Tom",
+        "plants": 1
+      },
+      "do": "next"
+    },
+    {
+      "expectPage": "p2",
+      "do": "back"
+    },
+    {
+      "expectPage": "p1b",
+      "do": "back"
+    },
+    {
+      "expectPage": "p1",
+      "set": {
+        "n_pets": 2
+      },
+      "do": "next"
+    },
+    {
+      "expectPage": "p1b",
+      "do": "next"
+    },
+    {
+      "expectPage": "p2",
+      "do": "next"
+    }
+  ]
+}

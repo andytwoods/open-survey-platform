@@ -1,0 +1,48 @@
+# Dependency licence policy (planning/review.md §12.2, AGENTS.md golden rule 5).
+# Enforced by scripts/licence_check.py, which `make check` runs (Python + JS).
+#
+# - A dependency passes if its SPDX expression is satisfiable from `allowed`
+#   (for "A OR B" one permissive option is enough: we take that option).
+# - `dev_only` licences pass only for dev/test/build dependencies, never for
+#   anything that ships at runtime.
+# - Anything denied, or that cannot be identified, fails. Fix unidentifiable
+#   metadata with an [[override]] that names the licence and says why. Never add
+#   an override to get round a copyleft licence: that is a "Needs human" item.
+
+allowed = [
+    "MIT",
+    "MIT-0",
+    "BSD-2-Clause",
+    "BSD-3-Clause",
+    "ISC",
+    "Apache-2.0",
+    "CC0-1.0",
+    "0BSD",
+    "Python-2.0",
+    "PSF-2.0",
+    "Unlicense",
+    "BlueOak-1.0.0",
+    "Beerware",
+    "WTFPL",
+    "CC-BY-4.0",  # data packages such as caniuse-lite (decided 16 Oct 2026)
+    "Zlib",
+    "BSL-1.0",  # Boost Software License, not Business Source (BUSL is denied)
+]
+
+dev_only = ["MPL-2.0"]
+
+# Listed for clearer error messages; anything not in `allowed`/`dev_only` fails anyway.
+denied_prefixes = ["GPL", "AGPL", "LGPL", "BUSL", "SSPL", "Commons-Clause"]
+
+# runtime_exceptions: named packages whose dev_only licence is accepted at
+# runtime too, because we use them unmodified. Human decision only.
+[[runtime_exception]]
+ecosystem = "python"
+name = "certifi"
+reason = "MPL-2.0 CA bundle used unmodified; file-level copyleft only (decided 16 Oct 2026)"
+
+# [[override]]
+# ecosystem = "python"        # or "js"
+# name = "some-package"
+# licence = "MIT"             # SPDX expression we verified by hand
+# reason = "metadata has the full licence text; LICENSE file in sdist is MIT"

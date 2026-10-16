@@ -1,0 +1,109 @@
+{
+  "format": "osp-fixture-survey/0",
+  "description": "Two languages: labels, choice labels, constraint messages and piping per session.",
+  "id": "f18_multi_language",
+  "version": 1,
+  "title": {
+    "en": "Drinks",
+    "de": "Getränke"
+  },
+  "languages": [
+    "en",
+    "de"
+  ],
+  "settings": {
+    "backNavigation": true
+  },
+  "choiceLists": {
+    "drinks": [
+      {
+        "value": "coffee",
+        "label": {
+          "en": "Coffee",
+          "de": "Kaffee"
+        }
+      },
+      {
+        "value": "tea",
+        "label": {
+          "en": "Tea",
+          "de": "Tee"
+        }
+      }
+    ],
+    "yesno": [
+      {
+        "value": "yes",
+        "label": {
+          "en": "Yes",
+          "de": "Ja"
+        }
+      },
+      {
+        "value": "no",
+        "label": {
+          "en": "No",
+          "de": "Nein"
+        }
+      }
+    ]
+  },
+  "blocks": {
+    "p1": {
+      "items": [
+        {
+          "id": "drink",
+          "type": "single",
+          "label": {
+            "en": "Which drink do you prefer?",
+            "de": "Welches Getränk bevorzugen Sie?"
+          },
+          "choices": "drinks",
+          "required": true
+        },
+        {
+          "id": "cups",
+          "type": "integer",
+          "label": {
+            "en": "How many cups per day?",
+            "de": "Wie viele Tassen pro Tag?"
+          },
+          "constraint": "cups <= 20",
+          "constraintMessage": {
+            "en": "Please enter 20 or fewer.",
+            "de": "Bitte geben Sie höchstens 20 ein."
+          }
+        }
+      ]
+    },
+    "p2": {
+      "items": [
+        {
+          "id": "why",
+          "type": "text",
+          "label": {
+            "en": "You chose ${drink}. Why?",
+            "de": "Sie haben ${drink} gewählt. Warum?"
+          }
+        },
+        {
+          "id": "again",
+          "type": "single",
+          "label": {
+            "en": "Would you choose it again?",
+            "de": "Würden Sie es wieder wählen?"
+          },
+          "choices": "yesno"
+        }
+      ]
+    }
+  },
+  "flow": [
+    {
+      "block": "p1"
+    },
+    {
+      "block": "p2"
+    }
+  ]
+}

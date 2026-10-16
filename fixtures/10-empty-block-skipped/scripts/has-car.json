@@ -1,0 +1,30 @@
+{
+  "format": "osp-fixture-script/0",
+  "id": "has-car",
+  "description": "p_car is shown when its questions are relevant.",
+  "sessionSeed": 1002,
+  "language": "en",
+  "actions": [
+    {
+      "expectPage": "p1",
+      "set": {
+        "has_car": "yes"
+      },
+      "do": "next"
+    },
+    {
+      "expectPage": "p_car",
+      "set": {
+        "car_colour": "green"
+      },
+      "do": "next"
+    },
+    {
+      "expectPage": "p3",
+      "set": {
+        "commute": "car"
+      },
+      "do": "next"
+    }
+  ]
+}

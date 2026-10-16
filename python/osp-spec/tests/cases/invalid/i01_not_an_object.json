@@ -1,0 +1,10 @@
+{
+  "description": "A survey must be a JSON object.",
+  "expect": [
+    {
+      "code": "schema.type",
+      "pointer": ""
+    }
+  ],
+  "survey": []
+}

@@ -1,0 +1,30 @@
+{
+  "format": "osp-fixture-script/0",
+  "id": "main",
+  "description": "Choice label, integer and HTML-escaped text are piped; unanswered, irrelevant and not-reached questions pipe as empty strings.",
+  "sessionSeed": 1701,
+  "language": "en",
+  "actions": [
+    {
+      "expectPage": "p1",
+      "set": {
+        "fav_fruit": "banana",
+        "n_pets": 3,
+        "nickname": "Sam & <Co>",
+        "skip_opt": "yes"
+      },
+      "do": "next"
+    },
+    {
+      "expectPage": "p1b",
+      "set": {
+        "plants": 2
+      },
+      "do": "next"
+    },
+    {
+      "expectPage": "p2",
+      "do": "next"
+    }
+  ]
+}

@@ -1,0 +1,59 @@
+{
+  "format": "osp-fixture-script/0",
+  "id": "loss-charity-back-refresh",
+  "description": "Age 45 (band 40+, quota open), loss framing; refresh and back on the attitudes page keep the item order.",
+  "sessionSeed": 303,
+  "language": "en",
+  "server": {
+    "conditions": {
+      "framing": "loss",
+      "incentive": "charity donation"
+    },
+    "quotas": {
+      "q_old": "open"
+    }
+  },
+  "actions": [
+    {
+      "expectPage": "consent",
+      "set": {
+        "consent": 1
+      },
+      "do": "next"
+    },
+    {
+      "expectPage": "demo",
+      "set": {
+        "age": 45
+      },
+      "do": "next"
+    },
+    {
+      "expectPage": "stim_loss",
+      "do": "next"
+    },
+    {
+      "expectPage": "attitudes",
+      "set": {
+        "att2": 3
+      },
+      "do": "refresh"
+    },
+    {
+      "expectPage": "attitudes",
+      "do": "back"
+    },
+    {
+      "expectPage": "stim_loss",
+      "do": "next"
+    },
+    {
+      "expectPage": "attitudes",
+      "set": {
+        "att1": 2,
+        "att3": 5
+      },
+      "do": "next"
+    }
+  ]
+}

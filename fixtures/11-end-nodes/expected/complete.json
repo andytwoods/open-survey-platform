@@ -1,0 +1,165 @@
+{
+  "format": "osp-fixture-expected/0",
+  "fixture": "11-end-nodes",
+  "script": "complete",
+  "pending": [],
+  "steps": [
+    {
+      "index": 0,
+      "page": "p1",
+      "visible": [
+        "eligible"
+      ],
+      "errors": {},
+      "nav": {
+        "back": false
+      },
+      "questions": {
+        "eligible": {
+          "state": "unanswered",
+          "value": null
+        },
+        "rating": {
+          "state": "not-reached",
+          "value": null
+        },
+        "extra": {
+          "state": "not-reached",
+          "value": null
+        }
+      },
+      "orders": {
+        "blocks": {},
+        "items": {},
+        "choices": {}
+      },
+      "conditions": {},
+      "end": null
+    },
+    {
+      "index": 1,
+      "page": "p2",
+      "visible": [
+        "rating"
+      ],
+      "errors": {},
+      "nav": {
+        "back": true
+      },
+      "questions": {
+        "eligible": {
+          "state": "answered",
+          "value": "yes"
+        },
+        "rating": {
+          "state": "unanswered",
+          "value": null
+        },
+        "extra": {
+          "state": "not-reached",
+          "value": null
+        }
+      },
+      "orders": {
+        "blocks": {},
+        "items": {},
+        "choices": {}
+      },
+      "conditions": {},
+      "end": null
+    },
+    {
+      "index": 2,
+      "page": "p3",
+      "visible": [
+        "extra"
+      ],
+      "errors": {},
+      "nav": {
+        "back": true
+      },
+      "questions": {
+        "eligible": {
+          "state": "answered",
+          "value": "yes"
+        },
+        "rating": {
+          "state": "answered",
+          "value": 8
+        },
+        "extra": {
+          "state": "unanswered",
+          "value": null
+        }
+      },
+      "orders": {
+        "blocks": {},
+        "items": {},
+        "choices": {}
+      },
+      "conditions": {},
+      "end": null
+    },
+    {
+      "index": 3,
+      "page": null,
+      "visible": [],
+      "errors": {},
+      "nav": null,
+      "questions": {
+        "eligible": {
+          "state": "answered",
+          "value": "yes"
+        },
+        "rating": {
+          "state": "answered",
+          "value": 8
+        },
+        "extra": {
+          "state": "answered",
+          "value": "Toast"
+        }
+      },
+      "orders": {
+        "blocks": {},
+        "items": {},
+        "choices": {}
+      },
+      "conditions": {},
+      "end": "complete"
+    }
+  ],
+  "invariants": [],
+  "response": {
+    "surveyId": "f11_end_nodes",
+    "surveyVersion": 1,
+    "end": "complete",
+    "allocation": "server",
+    "sessionSeed": 1103,
+    "conditions": {},
+    "orders": {
+      "blocks": {},
+      "items": {},
+      "choices": {}
+    },
+    "answers": {
+      "eligible": {
+        "state": "answered",
+        "value": "yes"
+      },
+      "rating": {
+        "state": "answered",
+        "value": 8
+      },
+      "extra": {
+        "state": "answered",
+        "value": "Toast"
+      }
+    },
+    "csvState": {
+      "eligible__state": "answered",
+      "rating__state": "answered",
+      "extra__state": "answered"
+    }
+  }
+}

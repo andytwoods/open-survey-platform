@@ -1,0 +1,105 @@
+{
+  "format": "osp-fixture-survey/0",
+  "description": "§7 assign: server-assigned condition drives a branch, is piped and is recorded.",
+  "id": "f16_assign",
+  "version": 1,
+  "title": "Server-assigned condition",
+  "languages": [
+    "en"
+  ],
+  "settings": {
+    "backNavigation": true
+  },
+  "choiceLists": {
+    "yesno": [
+      {
+        "value": "yes",
+        "label": "Yes"
+      },
+      {
+        "value": "no",
+        "label": "No"
+      }
+    ]
+  },
+  "design": {
+    "factors": [
+      {
+        "id": "cond",
+        "levels": [
+          "control",
+          "treatment"
+        ]
+      }
+    ]
+  },
+  "blocks": {
+    "p_intro": {
+      "items": [
+        {
+          "id": "intro_q",
+          "type": "single",
+          "label": "Are you ready to begin?",
+          "choices": "yesno"
+        }
+      ]
+    },
+    "blk_ctrl": {
+      "items": [
+        {
+          "id": "ctrl_q",
+          "type": "text",
+          "label": "Describe a chair."
+        }
+      ]
+    },
+    "blk_treat": {
+      "items": [
+        {
+          "id": "treat_q",
+          "type": "text",
+          "label": "Describe a chair you would design."
+        }
+      ]
+    },
+    "p_out": {
+      "items": [
+        {
+          "id": "out_q",
+          "type": "single",
+          "label": "You were in the ${cond} group. Did you guess that?",
+          "choices": "yesno"
+        }
+      ]
+    }
+  },
+  "flow": [
+    {
+      "block": "p_intro"
+    },
+    {
+      "assign": "design"
+    },
+    {
+      "branch": {
+        "if": "cond == \"treatment\"",
+        "then": [
+          {
+            "block": "blk_treat"
+          }
+        ],
+        "else": [
+          {
+            "block": "blk_ctrl"
+          }
+        ]
+      }
+    },
+    {
+      "block": "p_out"
+    },
+    {
+      "end": "complete"
+    }
+  ]
+}

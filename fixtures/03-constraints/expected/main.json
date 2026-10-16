@@ -1,0 +1,259 @@
+{
+  "format": "osp-fixture-expected/0",
+  "fixture": "03-constraints",
+  "script": "main",
+  "pending": [],
+  "steps": [
+    {
+      "index": 0,
+      "page": "p1",
+      "visible": [
+        "age",
+        "score",
+        "nick"
+      ],
+      "errors": {},
+      "nav": {
+        "back": false
+      },
+      "questions": {
+        "age": {
+          "state": "unanswered",
+          "value": null
+        },
+        "score": {
+          "state": "unanswered",
+          "value": null
+        },
+        "nick": {
+          "state": "unanswered",
+          "value": null
+        }
+      },
+      "orders": {
+        "blocks": {},
+        "items": {},
+        "choices": {}
+      },
+      "conditions": {},
+      "end": null
+    },
+    {
+      "index": 1,
+      "page": "p1",
+      "visible": [
+        "age",
+        "score",
+        "nick"
+      ],
+      "errors": {
+        "age": {
+          "kind": "constraint",
+          "message": "Please enter an age between 18 and 120."
+        }
+      },
+      "nav": {
+        "back": false
+      },
+      "questions": {
+        "age": {
+          "state": "answered",
+          "value": 15
+        },
+        "score": {
+          "state": "unanswered",
+          "value": null
+        },
+        "nick": {
+          "state": "unanswered",
+          "value": null
+        }
+      },
+      "orders": {
+        "blocks": {},
+        "items": {},
+        "choices": {}
+      },
+      "conditions": {},
+      "end": null
+    },
+    {
+      "index": 2,
+      "page": "p1",
+      "visible": [
+        "age",
+        "score",
+        "nick"
+      ],
+      "errors": {
+        "age": {
+          "kind": "constraint",
+          "message": "Please enter an age between 18 and 120."
+        }
+      },
+      "nav": {
+        "back": false
+      },
+      "questions": {
+        "age": {
+          "state": "answered",
+          "value": 130
+        },
+        "score": {
+          "state": "unanswered",
+          "value": null
+        },
+        "nick": {
+          "state": "unanswered",
+          "value": null
+        }
+      },
+      "orders": {
+        "blocks": {},
+        "items": {},
+        "choices": {}
+      },
+      "conditions": {},
+      "end": null
+    },
+    {
+      "index": 3,
+      "page": "p1",
+      "visible": [
+        "age",
+        "score",
+        "nick"
+      ],
+      "errors": {
+        "score": {
+          "kind": "constraint",
+          "message": "Please enter a score from 0 to 10."
+        }
+      },
+      "nav": {
+        "back": false
+      },
+      "questions": {
+        "age": {
+          "state": "answered",
+          "value": 30
+        },
+        "score": {
+          "state": "answered",
+          "value": "10.5"
+        },
+        "nick": {
+          "state": "unanswered",
+          "value": null
+        }
+      },
+      "orders": {
+        "blocks": {},
+        "items": {},
+        "choices": {}
+      },
+      "conditions": {},
+      "end": null
+    },
+    {
+      "index": 4,
+      "page": "p1",
+      "visible": [
+        "age",
+        "score",
+        "nick"
+      ],
+      "errors": {
+        "nick": {
+          "kind": "constraint",
+          "message": "That nickname is reserved."
+        }
+      },
+      "nav": {
+        "back": false
+      },
+      "questions": {
+        "age": {
+          "state": "answered",
+          "value": 30
+        },
+        "score": {
+          "state": "answered",
+          "value": "9.5"
+        },
+        "nick": {
+          "state": "answered",
+          "value": "admin"
+        }
+      },
+      "orders": {
+        "blocks": {},
+        "items": {},
+        "choices": {}
+      },
+      "conditions": {},
+      "end": null
+    },
+    {
+      "index": 5,
+      "page": null,
+      "visible": [],
+      "errors": {},
+      "nav": null,
+      "questions": {
+        "age": {
+          "state": "answered",
+          "value": 30
+        },
+        "score": {
+          "state": "answered",
+          "value": "9.5"
+        },
+        "nick": {
+          "state": "unanswered",
+          "value": null
+        }
+      },
+      "orders": {
+        "blocks": {},
+        "items": {},
+        "choices": {}
+      },
+      "conditions": {},
+      "end": "complete"
+    }
+  ],
+  "invariants": [],
+  "response": {
+    "surveyId": "f03_constraints",
+    "surveyVersion": 1,
+    "end": "complete",
+    "allocation": "server",
+    "sessionSeed": 301,
+    "conditions": {},
+    "orders": {
+      "blocks": {},
+      "items": {},
+      "choices": {}
+    },
+    "answers": {
+      "age": {
+        "state": "answered",
+        "value": 30
+      },
+      "score": {
+        "state": "answered",
+        "value": "9.5"
+      },
+      "nick": {
+        "state": "unanswered",
+        "value": null
+      }
+    },
+    "csvState": {
+      "age__state": "answered",
+      "score__state": "answered",
+      "nick__state": "unanswered"
+    }
+  }
+}

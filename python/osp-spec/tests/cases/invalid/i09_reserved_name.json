@@ -1,0 +1,53 @@
+{
+  "description": "Runtime column names are reserved (spike-1 Q2), case-insensitively.",
+  "expect": [
+    {
+      "code": "name.reserved",
+      "pointer": "/blocks/0/pages/0/items/0/id"
+    },
+    {
+      "code": "name.reserved",
+      "pointer": "/blocks/0/pages/0/items/1/name"
+    }
+  ],
+  "survey": {
+    "specVersion": "osp-survey/0.1",
+    "id": "srv_case",
+    "metadata": {
+      "title": "Case",
+      "languages": [
+        "en"
+      ]
+    },
+    "blocks": [
+      {
+        "id": "b1",
+        "pages": [
+          {
+            "id": "p1",
+            "items": [
+              {
+                "id": "seed",
+                "type": "integer",
+                "label": "Question seed"
+              },
+              {
+                "id": "q2",
+                "type": "integer",
+                "label": "Question q2",
+                "name": "SubmitDate"
+              }
+            ]
+          }
+        ]
+      }
+    ],
+    "flow": [
+      {
+        "type": "block",
+        "id": "f_b1",
+        "block": "b1"
+      }
+    ]
+  }
+}

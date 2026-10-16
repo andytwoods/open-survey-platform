@@ -1,0 +1,53 @@
+{
+  "description": "Codes may not contain whitespace.",
+  "expect": [
+    {
+      "code": "choice.invalid_value",
+      "pointer": "/blocks/0/pages/0/items/0/choices/0/value"
+    }
+  ],
+  "survey": {
+    "specVersion": "osp-survey/0.1",
+    "id": "srv_case",
+    "metadata": {
+      "title": "Case",
+      "languages": [
+        "en"
+      ]
+    },
+    "blocks": [
+      {
+        "id": "b1",
+        "pages": [
+          {
+            "id": "p1",
+            "items": [
+              {
+                "id": "q1",
+                "type": "multi",
+                "label": "Question q1",
+                "choices": [
+                  {
+                    "value": "a b",
+                    "label": "A"
+                  },
+                  {
+                    "value": "c",
+                    "label": "C"
+                  }
+                ]
+              }
+            ]
+          }
+        ]
+      }
+    ],
+    "flow": [
+      {
+        "type": "block",
+        "id": "f_b1",
+        "block": "b1"
+      }
+    ]
+  }
+}

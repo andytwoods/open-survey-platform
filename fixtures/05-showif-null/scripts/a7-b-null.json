@@ -1,0 +1,23 @@
+{
+  "format": "osp-fixture-script/0",
+  "id": "a7-b-null",
+  "description": "a = 7, b unanswered: a == b and a + b > 3 are false.",
+  "sessionSeed": 502,
+  "language": "en",
+  "actions": [
+    {
+      "expectPage": "p1",
+      "set": {
+        "a": 7,
+        "c": [
+          "red"
+        ]
+      },
+      "do": "next"
+    },
+    {
+      "expectPage": "p2",
+      "do": "next"
+    }
+  ]
+}

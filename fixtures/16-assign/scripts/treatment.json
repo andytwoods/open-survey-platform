@@ -1,0 +1,35 @@
+{
+  "format": "osp-fixture-script/0",
+  "id": "treatment",
+  "description": "Server assigns cond = treatment; the branch and the piped label follow it.",
+  "sessionSeed": 1602,
+  "language": "en",
+  "server": {
+    "conditions": {
+      "cond": "treatment"
+    }
+  },
+  "actions": [
+    {
+      "expectPage": "p_intro",
+      "set": {
+        "intro_q": "yes"
+      },
+      "do": "next"
+    },
+    {
+      "expectPage": "blk_treat",
+      "set": {
+        "treat_q": "A chair that folds"
+      },
+      "do": "next"
+    },
+    {
+      "expectPage": "p_out",
+      "set": {
+        "out_q": "no"
+      },
+      "do": "next"
+    }
+  ]
+}

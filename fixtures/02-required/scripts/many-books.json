@@ -1,0 +1,34 @@
+{
+  "format": "osp-fixture-script/0",
+  "id": "many-books",
+  "description": "r_int > 10 makes r_follow relevant, so its required check applies.",
+  "sessionSeed": 202,
+  "language": "en",
+  "actions": [
+    {
+      "expectPage": "p1",
+      "set": {
+        "r_int": 12,
+        "r_single": "no"
+      },
+      "do": "next"
+    },
+    {
+      "expectPage": "p2",
+      "set": {
+        "r_multi": [
+          "red"
+        ],
+        "r_date": "2026-08-02"
+      },
+      "do": "next"
+    },
+    {
+      "expectPage": "p2",
+      "set": {
+        "r_follow": 5
+      },
+      "do": "next"
+    }
+  ]
+}

@@ -1,0 +1,187 @@
+{
+  "format": "osp-fixture-expected/0",
+  "fixture": "10-empty-block-skipped",
+  "script": "has-car",
+  "pending": [],
+  "steps": [
+    {
+      "index": 0,
+      "page": "p1",
+      "visible": [
+        "has_car"
+      ],
+      "errors": {},
+      "nav": {
+        "back": false
+      },
+      "questions": {
+        "has_car": {
+          "state": "unanswered",
+          "value": null
+        },
+        "car_colour": {
+          "state": "not-reached",
+          "value": null
+        },
+        "car_age": {
+          "state": "not-reached",
+          "value": null
+        },
+        "commute": {
+          "state": "not-reached",
+          "value": null
+        }
+      },
+      "orders": {
+        "blocks": {},
+        "items": {},
+        "choices": {}
+      },
+      "conditions": {},
+      "end": null
+    },
+    {
+      "index": 1,
+      "page": "p_car",
+      "visible": [
+        "car_colour",
+        "car_age"
+      ],
+      "errors": {},
+      "nav": {
+        "back": true
+      },
+      "questions": {
+        "has_car": {
+          "state": "answered",
+          "value": "yes"
+        },
+        "car_colour": {
+          "state": "unanswered",
+          "value": null
+        },
+        "car_age": {
+          "state": "unanswered",
+          "value": null
+        },
+        "commute": {
+          "state": "not-reached",
+          "value": null
+        }
+      },
+      "orders": {
+        "blocks": {},
+        "items": {},
+        "choices": {}
+      },
+      "conditions": {},
+      "end": null
+    },
+    {
+      "index": 2,
+      "page": "p3",
+      "visible": [
+        "commute"
+      ],
+      "errors": {},
+      "nav": {
+        "back": true
+      },
+      "questions": {
+        "has_car": {
+          "state": "answered",
+          "value": "yes"
+        },
+        "car_colour": {
+          "state": "answered",
+          "value": "green"
+        },
+        "car_age": {
+          "state": "unanswered",
+          "value": null
+        },
+        "commute": {
+          "state": "unanswered",
+          "value": null
+        }
+      },
+      "orders": {
+        "blocks": {},
+        "items": {},
+        "choices": {}
+      },
+      "conditions": {},
+      "end": null
+    },
+    {
+      "index": 3,
+      "page": null,
+      "visible": [],
+      "errors": {},
+      "nav": null,
+      "questions": {
+        "has_car": {
+          "state": "answered",
+          "value": "yes"
+        },
+        "car_colour": {
+          "state": "answered",
+          "value": "green"
+        },
+        "car_age": {
+          "state": "unanswered",
+          "value": null
+        },
+        "commute": {
+          "state": "answered",
+          "value": "car"
+        }
+      },
+      "orders": {
+        "blocks": {},
+        "items": {},
+        "choices": {}
+      },
+      "conditions": {},
+      "end": "complete"
+    }
+  ],
+  "invariants": [],
+  "response": {
+    "surveyId": "f10_empty_block_skipped",
+    "surveyVersion": 1,
+    "end": "complete",
+    "allocation": "server",
+    "sessionSeed": 1002,
+    "conditions": {},
+    "orders": {
+      "blocks": {},
+      "items": {},
+      "choices": {}
+    },
+    "answers": {
+      "has_car": {
+        "state": "answered",
+        "value": "yes"
+      },
+      "car_colour": {
+        "state": "answered",
+        "value": "green"
+      },
+      "car_age": {
+        "state": "unanswered",
+        "value": null
+      },
+      "commute": {
+        "state": "answered",
+        "value": "car"
+      }
+    },
+    "csvState": {
+      "has_car__state": "answered",
+      "car_colour__state": "answered",
+      "car_age__state": "unanswered",
+      "commute__state": "answered"
+    }
+  }
+}

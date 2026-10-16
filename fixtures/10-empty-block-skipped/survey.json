@@ -1,0 +1,93 @@
+{
+  "format": "osp-fixture-survey/0",
+  "description": "§6: a block with no relevant questions is skipped silently (also on back).",
+  "id": "f10_empty_block_skipped",
+  "version": 1,
+  "title": "Empty block skipped",
+  "languages": [
+    "en"
+  ],
+  "settings": {
+    "backNavigation": true
+  },
+  "choiceLists": {
+    "yesno": [
+      {
+        "value": "yes",
+        "label": "Yes"
+      },
+      {
+        "value": "no",
+        "label": "No"
+      }
+    ],
+    "commute": [
+      {
+        "value": "walk",
+        "label": "Walk"
+      },
+      {
+        "value": "bus",
+        "label": "Bus"
+      },
+      {
+        "value": "train",
+        "label": "Train"
+      },
+      {
+        "value": "car",
+        "label": "Car"
+      }
+    ]
+  },
+  "blocks": {
+    "p1": {
+      "items": [
+        {
+          "id": "has_car",
+          "type": "single",
+          "label": "Do you have a car?",
+          "choices": "yesno",
+          "required": true
+        }
+      ]
+    },
+    "p_car": {
+      "items": [
+        {
+          "id": "car_colour",
+          "type": "text",
+          "label": "What colour is it?",
+          "showIf": "has_car == \"yes\""
+        },
+        {
+          "id": "car_age",
+          "type": "integer",
+          "label": "How old is it, in years?",
+          "showIf": "has_car == \"yes\""
+        }
+      ]
+    },
+    "p3": {
+      "items": [
+        {
+          "id": "commute",
+          "type": "single",
+          "label": "How do you usually travel?",
+          "choices": "commute"
+        }
+      ]
+    }
+  },
+  "flow": [
+    {
+      "block": "p1"
+    },
+    {
+      "block": "p_car"
+    },
+    {
+      "block": "p3"
+    }
+  ]
+}

@@ -1,0 +1,155 @@
+{
+  "format": "osp-fixture-survey/0",
+  "description": "§8 piping: choice label, raw values, HTML escaping, empty for missing values.",
+  "id": "f17_piping",
+  "version": 1,
+  "title": "Piping",
+  "languages": [
+    "en"
+  ],
+  "settings": {
+    "backNavigation": true
+  },
+  "choiceLists": {
+    "fruit3": [
+      {
+        "value": "apple",
+        "label": "Apple"
+      },
+      {
+        "value": "banana",
+        "label": "Banana"
+      },
+      {
+        "value": "cherry",
+        "label": "Cherry"
+      }
+    ],
+    "yesno": [
+      {
+        "value": "yes",
+        "label": "Yes"
+      },
+      {
+        "value": "no",
+        "label": "No"
+      }
+    ]
+  },
+  "blocks": {
+    "p1": {
+      "items": [
+        {
+          "id": "fav_fruit",
+          "type": "single",
+          "label": "Which fruit do you like best?",
+          "choices": "fruit3"
+        },
+        {
+          "id": "n_pets",
+          "type": "integer",
+          "label": "How many pets would you like?"
+        },
+        {
+          "id": "nickname",
+          "type": "text",
+          "label": "Choose a nickname."
+        },
+        {
+          "id": "empty_q",
+          "type": "text",
+          "label": "Optional: a favourite word."
+        },
+        {
+          "id": "skip_opt",
+          "type": "single",
+          "label": "Skip the optional page?",
+          "choices": "yesno",
+          "required": true
+        }
+      ]
+    },
+    "p1b": {
+      "items": [
+        {
+          "id": "pet_names",
+          "type": "text",
+          "label": "Name them.",
+          "showIf": "n_pets > 5"
+        },
+        {
+          "id": "plants",
+          "type": "integer",
+          "label": "How many plants do you have?"
+        }
+      ]
+    },
+    "p_opt": {
+      "items": [
+        {
+          "id": "opt_q",
+          "type": "text",
+          "label": "Optional page: type anything."
+        }
+      ]
+    },
+    "p2": {
+      "items": [
+        {
+          "id": "pipe_choice",
+          "type": "text",
+          "label": "You picked ${fav_fruit}."
+        },
+        {
+          "id": "pipe_int",
+          "type": "text",
+          "label": "You would like ${n_pets} pets."
+        },
+        {
+          "id": "pipe_text",
+          "type": "text",
+          "label": "Hello ${nickname}!"
+        },
+        {
+          "id": "pipe_empty",
+          "type": "text",
+          "label": "Favourite word: [${empty_q}]"
+        },
+        {
+          "id": "pipe_irr",
+          "type": "text",
+          "label": "Pet names: [${pet_names}]"
+        },
+        {
+          "id": "pipe_nr",
+          "type": "text",
+          "label": "Optional page answer: [${opt_q}]"
+        }
+      ]
+    }
+  },
+  "flow": [
+    {
+      "block": "p1"
+    },
+    {
+      "block": "p1b"
+    },
+    {
+      "branch": {
+        "if": "skip_opt == \"no\"",
+        "then": [
+          {
+            "block": "p_opt"
+          }
+        ]
+      }
+    },
+    {
+      "block": "p2"
+    },
+    {
+      "end": "complete"
+    }
+  ]
+}

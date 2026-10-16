@@ -1,0 +1,72 @@
+<form autocomplete="off" novalidate="novalidate" class="or clearfix pages theme-plain" dir="ltr" data-form-id="spike_enketo">
+<!--This form was created by transforming an ODK/OpenRosa-flavored (X)Form using an XSL stylesheet created by Enketo LLC.--><section class="form-logo"></section><h3 dir="auto" id="form-title">Enketo spike survey</h3>
+<section class="or-group or-appearance-field-list" name="/data/p_consent"><h4><span lang="" class="question-label active">Consent</span></h4>
+<fieldset class="question simple-select ">
+<fieldset>
+<legend>
+<span lang="" class="question-label active">Do you agree to take part in this (fake) study?</span><span class="required">*</span>
+                    </legend>
+<div class="option-wrapper">
+<label class="itemset-template" data-items-path="instance('yesno')/root/item"><input type="radio" name="/data/p_consent/consent" data-name="/data/p_consent/consent" data-required="true()" data-type-xml="string" value=""></label><span class="itemset-labels" data-value-ref="name" data-label-ref="label"> </span>
+</div>
+</fieldset>
+<span class="or-required-msg active" lang="" data-i18n="constraint.required">This field is required</span>
+</fieldset>
+            </section><!--end of group --><section class="or-group or-branch pre-init or-appearance-field-list" name="/data/p_age" data-relevant=" /data/p_consent/consent  = 'yes'"><h4><span lang="" class="question-label active">About you</span></h4>
+<label class="question non-select "><span lang="" class="question-label active">How old are you?</span><span class="required">*</span><input type="number" name="/data/p_age/age" data-required="true()" data-constraint=". &gt;= 18 and . &lt;= 120" data-type-xml="int"><span lang="" class="or-constraint-msg active">Age must be 18 to 120</span><span class="or-required-msg active" lang="" data-i18n="constraint.required">This field is required</span></label>
+            </section><!--end of group --><section class="or-group or-branch pre-init or-appearance-field-list" name="/data/p_stim_a" data-relevant=" /data/p_consent/consent  = 'yes' and  /data/cond  = 'A'"><h4><span lang="" class="question-label active">Stimulus</span></h4>
+<label class="question non-select "><span lang="" class="question-label active">STIMULUS-A: a short story about a red kite.</span><input type="text" name="/data/p_stim_a/stim_a" data-type-xml="string" readonly=""></label>
+            </section><!--end of group --><section class="or-group or-branch pre-init or-appearance-field-list" name="/data/p_stim_b" data-relevant=" /data/p_consent/consent  = 'yes' and  /data/cond  = 'B'"><h4><span lang="" class="question-label active">Stimulus</span></h4>
+<label class="question non-select "><span lang="" class="question-label active">STIMULUS-B: a short story about a blue whale.</span><input type="text" name="/data/p_stim_b/stim_b" data-type-xml="string" readonly=""></label>
+            </section><!--end of group --><section class="or-group or-branch pre-init or-appearance-field-list" name="/data/p_att" data-relevant=" /data/p_consent/consent  = 'yes'"><h4><span lang="" class="question-label active">Attitudes</span></h4>
+<fieldset class="question simple-select ">
+<fieldset>
+<legend>
+<span lang="" class="question-label active"> ATT1: After the condition <span class="or-output" data-value=" /data/cond "> </span> story, how much did you enjoy it? </span><span class="required">*</span>
+                    </legend>
+<div class="option-wrapper">
+<label class="itemset-template" data-items-path="instance('likert')/root/item"><input type="radio" name="/data/p_att/att1" data-name="/data/p_att/att1" data-required="true()" data-type-xml="string" value=""></label><span class="itemset-labels" data-value-ref="name" data-label-ref="label"> </span>
+</div>
+</fieldset>
+<span class="or-required-msg active" lang="" data-i18n="constraint.required">This field is required</span>
+</fieldset>
+<fieldset class="question simple-select ">
+<fieldset>
+<legend>
+<span lang="" class="question-label active">ATT2: How interesting was it?</span><span class="required">*</span>
+                    </legend>
+<div class="option-wrapper">
+<label class="itemset-template" data-items-path="instance('likert')/root/item"><input type="radio" name="/data/p_att/att2" data-name="/data/p_att/att2" data-required="true()" data-type-xml="string" value=""></label><span class="itemset-labels" data-value-ref="name" data-label-ref="label"> </span>
+</div>
+</fieldset>
+<span class="or-required-msg active" lang="" data-i18n="constraint.required">This field is required</span>
+</fieldset>
+<fieldset class="question simple-select ">
+<fieldset>
+<legend>
+<span lang="" class="question-label active">ATT3: How believable was it?</span><span class="required">*</span>
+                    </legend>
+<div class="option-wrapper">
+<label class="itemset-template" data-items-path="instance('likert')/root/item"><input type="radio" name="/data/p_att/att3" data-name="/data/p_att/att3" data-required="true()" data-type-xml="string" value=""></label><span class="itemset-labels" data-value-ref="name" data-label-ref="label"> </span>
+</div>
+</fieldset>
+<span class="or-required-msg active" lang="" data-i18n="constraint.required">This field is required</span>
+</fieldset>
+            </section><!--end of group --><section class="or-group or-branch pre-init or-appearance-field-list" name="/data/p_follow" data-relevant=" /data/p_consent/consent  = 'yes' and  /data/p_att/att1  &gt;= 4"><h4><span lang="" class="question-label active">Follow-up</span></h4>
+<label class="question non-select "><span lang="" class="question-label active"> FOLLOWUP: You chose <span class="or-output" data-value=" /data/p_att/att1 "> </span> (<span class="or-output" data-value=" /data/att1_label "> </span>). What did you enjoy? </span><span class="required">*</span><input type="text" name="/data/p_follow/followup" data-required="true()" data-type-xml="string"><span class="or-required-msg active" lang="" data-i18n="constraint.required">This field is required</span></label>
+            </section><!--end of group --><section class="or-group or-branch pre-init or-appearance-field-list" name="/data/p_colour" data-relevant=" /data/p_consent/consent  = 'yes'"><h4><span lang="" class="question-label active">Colours</span></h4>
+<fieldset class="question simple-select "><fieldset>
+<legend>
+<span lang="" class="question-label active">COLOUR: Pick a colour (choice order randomised with the session seed)</span>
+                    </legend>
+<div class="option-wrapper">
+<label class="itemset-template" data-items-path="randomize(instance('colour')/root/item, /data/seed)"><input type="radio" name="/data/p_colour/fav_colour" data-name="/data/p_colour/fav_colour" data-type-xml="string" value=""></label><span class="itemset-labels" data-value-ref="name" data-label-ref="label"> </span>
+</div>
+</fieldset></fieldset>
+            </section><!--end of group --><section class="or-group or-branch pre-init or-appearance-field-list" name="/data/blk_x" data-relevant=" /data/p_consent/consent  = 'yes'"><h4><span lang="" class="question-label active">Block X</span></h4>
+<label class="question non-select "><span lang="" class="question-label active">BLOCKX: Any number (optional)</span><input type="number" name="/data/blk_x/q_x" data-type-xml="int"></label>
+            </section><!--end of group --><section class="or-group or-branch pre-init or-appearance-field-list" name="/data/blk_y" data-relevant=" /data/p_consent/consent  = 'yes'"><h4><span lang="" class="question-label active">Block Y</span></h4>
+<label class="question non-select "><span lang="" class="question-label active">BLOCKY: Any number (optional)</span><input type="number" name="/data/blk_y/q_y" data-type-xml="int"></label>
+            </section><!--end of group --><fieldset id="or-preload-items" style="display:none;"><label class="calculation non-select "><input type="hidden" name="/data/meta/instanceID" data-preload="uid" data-preload-params="" data-type-xml="string"></label></fieldset>
+<fieldset id="or-calculated-items" style="display:none;"><label class="calculation non-select "><input type="hidden" name="/data/att1_label" data-calculate="jr:choice-name( /data/p_att/att1 , ' /data/p_att/att1 ')" data-type-xml="string"></label></fieldset>
+</form>

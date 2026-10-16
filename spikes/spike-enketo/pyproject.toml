@@ -1,0 +1,13 @@
+[project]
+name = "spike-enketo"
+version = "0.0.0"
+description = "Spike: Enketo as the participant runtime (throwaway)"
+requires-python = ">=3.14"
+dependencies = [
+    "openpyxl>=3.1.5",
+    "playwright>=1.64.0",
+    "pyxform>=4.5.0",
+]
+
+[tool.uv]
+package = false

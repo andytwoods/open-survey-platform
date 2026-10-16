@@ -1,0 +1,23 @@
+{
+  "format": "osp-fixture-script/0",
+  "id": "early-exit",
+  "description": "Second end node, reached after p2.",
+  "sessionSeed": 1102,
+  "language": "en",
+  "actions": [
+    {
+      "expectPage": "p1",
+      "set": {
+        "eligible": "yes"
+      },
+      "do": "next"
+    },
+    {
+      "expectPage": "p2",
+      "set": {
+        "rating": 2
+      },
+      "do": "next"
+    }
+  ]
+}

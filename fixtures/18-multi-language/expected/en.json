@@ -1,0 +1,184 @@
+{
+  "format": "osp-fixture-expected/0",
+  "fixture": "18-multi-language",
+  "script": "en",
+  "pending": [],
+  "steps": [
+    {
+      "index": 0,
+      "page": "p1",
+      "visible": [
+        "drink",
+        "cups"
+      ],
+      "errors": {},
+      "nav": {
+        "back": false
+      },
+      "questions": {
+        "drink": {
+          "state": "unanswered",
+          "value": null
+        },
+        "cups": {
+          "state": "unanswered",
+          "value": null
+        },
+        "why": {
+          "state": "not-reached",
+          "value": null
+        },
+        "again": {
+          "state": "not-reached",
+          "value": null
+        }
+      },
+      "orders": {
+        "blocks": {},
+        "items": {},
+        "choices": {}
+      },
+      "conditions": {},
+      "end": null,
+      "labels": {
+        "drink": "Which drink do you prefer?",
+        "cups": "How many cups per day?"
+      },
+      "choiceLabels": {
+        "drink": [
+          [
+            "coffee",
+            "Coffee"
+          ],
+          [
+            "tea",
+            "Tea"
+          ]
+        ]
+      }
+    },
+    {
+      "index": 1,
+      "page": "p2",
+      "visible": [
+        "why",
+        "again"
+      ],
+      "errors": {},
+      "nav": {
+        "back": true
+      },
+      "questions": {
+        "drink": {
+          "state": "answered",
+          "value": "tea"
+        },
+        "cups": {
+          "state": "answered",
+          "value": 3
+        },
+        "why": {
+          "state": "unanswered",
+          "value": null
+        },
+        "again": {
+          "state": "unanswered",
+          "value": null
+        }
+      },
+      "orders": {
+        "blocks": {},
+        "items": {},
+        "choices": {}
+      },
+      "conditions": {},
+      "end": null,
+      "labels": {
+        "why": "You chose Tea. Why?",
+        "again": "Would you choose it again?"
+      },
+      "choiceLabels": {
+        "again": [
+          [
+            "yes",
+            "Yes"
+          ],
+          [
+            "no",
+            "No"
+          ]
+        ]
+      }
+    },
+    {
+      "index": 2,
+      "page": null,
+      "visible": [],
+      "errors": {},
+      "nav": null,
+      "questions": {
+        "drink": {
+          "state": "answered",
+          "value": "tea"
+        },
+        "cups": {
+          "state": "answered",
+          "value": 3
+        },
+        "why": {
+          "state": "answered",
+          "value": "Warm"
+        },
+        "again": {
+          "state": "answered",
+          "value": "yes"
+        }
+      },
+      "orders": {
+        "blocks": {},
+        "items": {},
+        "choices": {}
+      },
+      "conditions": {},
+      "end": "complete"
+    }
+  ],
+  "invariants": [],
+  "response": {
+    "surveyId": "f18_multi_language",
+    "surveyVersion": 1,
+    "end": "complete",
+    "allocation": "server",
+    "sessionSeed": 1801,
+    "conditions": {},
+    "orders": {
+      "blocks": {},
+      "items": {},
+      "choices": {}
+    },
+    "answers": {
+      "drink": {
+        "state": "answered",
+        "value": "tea"
+      },
+      "cups": {
+        "state": "answered",
+        "value": 3
+      },
+      "why": {
+        "state": "answered",
+        "value": "Warm"
+      },
+      "again": {
+        "state": "answered",
+        "value": "yes"
+      }
+    },
+    "csvState": {
+      "drink__state": "answered",
+      "cups__state": "answered",
+      "why__state": "answered",
+      "again__state": "answered"
+    }
+  }
+}

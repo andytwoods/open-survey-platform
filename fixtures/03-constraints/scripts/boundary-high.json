@@ -1,0 +1,18 @@
+{
+  "format": "osp-fixture-script/0",
+  "id": "boundary-high",
+  "description": "Upper boundaries pass: age 120, score 10.",
+  "sessionSeed": 303,
+  "language": "en",
+  "actions": [
+    {
+      "expectPage": "p1",
+      "set": {
+        "age": 120,
+        "score": "10",
+        "nick": "kestrel"
+      },
+      "do": "next"
+    }
+  ]
+}

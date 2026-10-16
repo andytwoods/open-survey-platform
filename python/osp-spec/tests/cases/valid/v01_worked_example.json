@@ -1,0 +1,401 @@
+{
+  "description": "planning/review.md §2.3 worked example: consent gate, demographics, quota, 2x2 assignment, branch on condition, shuffled items, piping, a computed variable. The quota tests age directly: the age_band calculate needs if(), which osp-expr does not have yet (C1 open question 3). Scores and balanced/stratified allocation are out of scope for v0.1.",
+  "expect": [],
+  "survey": {
+    "specVersion": "osp-survey/0.1",
+    "id": "srv_7f3c",
+    "version": 3,
+    "metadata": {
+      "title": {
+        "en": "Framing and incentive study",
+        "de": "Framing- und Anreizstudie"
+      },
+      "languages": [
+        "en",
+        "de"
+      ],
+      "license": "CC-BY-4.0",
+      "ddi": {
+        "universe": "UK adults 18+",
+        "studyUnit": "doi:10.xxxx/placeholder"
+      }
+    },
+    "variables": [
+      {
+        "kind": "embedded",
+        "id": "source",
+        "param": "src",
+        "default": "direct"
+      },
+      {
+        "kind": "computed",
+        "id": "age_next_year",
+        "expr": {
+          "kind": "arith",
+          "op": "+",
+          "left": {
+            "kind": "ref",
+            "id": "age"
+          },
+          "right": {
+            "kind": "int",
+            "value": 1
+          }
+        }
+      },
+      {
+        "kind": "assigned",
+        "id": "framing",
+        "levels": [
+          "gain",
+          "loss"
+        ]
+      },
+      {
+        "kind": "assigned",
+        "id": "incentive",
+        "levels": [
+          "voucher",
+          "charity"
+        ]
+      }
+    ],
+    "choiceLists": [
+      {
+        "id": "yesno",
+        "choices": [
+          {
+            "value": 1,
+            "label": {
+              "en": "Yes",
+              "de": "Ja"
+            }
+          },
+          {
+            "value": 0,
+            "label": {
+              "en": "No",
+              "de": "Nein"
+            }
+          }
+        ]
+      },
+      {
+        "id": "agree5",
+        "choices": [
+          {
+            "value": 1,
+            "label": {
+              "en": "Strongly disagree",
+              "de": "Stimme gar nicht zu"
+            }
+          },
+          {
+            "value": 2,
+            "label": {
+              "en": "Disagree",
+              "de": "Stimme nicht zu"
+            }
+          },
+          {
+            "value": 3,
+            "label": {
+              "en": "Neutral",
+              "de": "Neutral"
+            }
+          },
+          {
+            "value": 4,
+            "label": {
+              "en": "Agree",
+              "de": "Stimme zu"
+            }
+          },
+          {
+            "value": 5,
+            "label": {
+              "en": "Strongly agree",
+              "de": "Stimme voll zu"
+            }
+          }
+        ]
+      }
+    ],
+    "blocks": [
+      {
+        "id": "b_consent",
+        "pages": [
+          {
+            "id": "p_consent",
+            "items": [
+              {
+                "id": "consent",
+                "type": "single",
+                "choiceList": "yesno",
+                "required": true,
+                "label": {
+                  "en": "Do you consent to take part?",
+                  "de": "Willigen Sie ein?"
+                }
+              }
+            ]
+          }
+        ]
+      },
+      {
+        "id": "b_demo",
+        "pages": [
+          {
+            "id": "p_demo",
+            "items": [
+              {
+                "id": "age",
+                "type": "integer",
+                "required": true,
+                "label": {
+                  "en": "How old are you?",
+                  "de": "Wie alt sind Sie?"
+                },
+                "constraint": {
+                  "kind": "and",
+                  "args": [
+                    {
+                      "kind": "compare",
+                      "op": ">=",
+                      "left": {
+                        "kind": "ref",
+                        "id": "age"
+                      },
+                      "right": {
+                        "kind": "int",
+                        "value": 18
+                      }
+                    },
+                    {
+                      "kind": "compare",
+                      "op": "<=",
+                      "left": {
+                        "kind": "ref",
+                        "id": "age"
+                      },
+                      "right": {
+                        "kind": "int",
+                        "value": 120
+                      }
+                    }
+                  ]
+                },
+                "constraintMessage": {
+                  "en": "Please enter an age between 18 and 120.",
+                  "de": "Bitte ein Alter zwischen 18 und 120."
+                }
+              }
+            ]
+          }
+        ]
+      },
+      {
+        "id": "b_stim_gain",
+        "pages": [
+          {
+            "id": "p_stim_gain",
+            "items": [
+              {
+                "id": "stim_g",
+                "type": "note",
+                "label": {
+                  "en": "Programme A saves 200 people.",
+                  "de": "Programm A rettet 200 Menschen."
+                }
+              }
+            ]
+          }
+        ]
+      },
+      {
+        "id": "b_stim_loss",
+        "pages": [
+          {
+            "id": "p_stim_loss",
+            "items": [
+              {
+                "id": "stim_l",
+                "type": "note",
+                "label": {
+                  "en": "With Programme A, 400 people die.",
+                  "de": "Mit Programm A sterben 400 Menschen."
+                }
+              }
+            ]
+          }
+        ]
+      },
+      {
+        "id": "b_attitudes",
+        "pages": [
+          {
+            "id": "p_attitudes",
+            "itemOrder": "shuffle",
+            "items": [
+              {
+                "id": "att1",
+                "type": "single",
+                "choiceList": "agree5",
+                "label": {
+                  "en": "With the ${incentive} you were offered, the programme seems fair.",
+                  "de": "Mit ${incentive} wirkt das Programm fair."
+                }
+              },
+              {
+                "id": "att2",
+                "type": "single",
+                "choiceList": "agree5",
+                "label": {
+                  "en": "I would support Programme A.",
+                  "de": "Ich würde Programm A unterstützen."
+                }
+              },
+              {
+                "id": "att3",
+                "type": "single",
+                "choiceList": "agree5",
+                "label": {
+                  "en": "Programme A is too risky.",
+                  "de": "Programm A ist zu riskant."
+                }
+              }
+            ]
+          }
+        ]
+      },
+      {
+        "id": "b_screenout",
+        "pages": [
+          {
+            "id": "p_screenout",
+            "items": [
+              {
+                "id": "bye",
+                "type": "note",
+                "label": {
+                  "en": "Thank you. This study is now closed.",
+                  "de": "Danke. Die Studie ist geschlossen."
+                }
+              }
+            ]
+          }
+        ]
+      }
+    ],
+    "quotas": [
+      {
+        "id": "q_old",
+        "when": {
+          "kind": "compare",
+          "op": ">=",
+          "left": {
+            "kind": "ref",
+            "id": "age"
+          },
+          "right": {
+            "kind": "int",
+            "value": 40
+          }
+        },
+        "limit": 150,
+        "onFull": {
+          "block": "b_screenout",
+          "outcome": "screenout"
+        }
+      }
+    ],
+    "flow": [
+      {
+        "type": "block",
+        "id": "f_consent",
+        "block": "b_consent"
+      },
+      {
+        "type": "branch",
+        "id": "f_gate",
+        "if": {
+          "kind": "compare",
+          "op": "==",
+          "left": {
+            "kind": "ref",
+            "id": "consent"
+          },
+          "right": {
+            "kind": "int",
+            "value": 0
+          }
+        },
+        "then": [
+          {
+            "type": "end",
+            "id": "f_declined",
+            "outcome": "declined"
+          }
+        ]
+      },
+      {
+        "type": "block",
+        "id": "f_demo",
+        "block": "b_demo"
+      },
+      {
+        "type": "quotaCheck",
+        "id": "f_quota",
+        "quota": "q_old"
+      },
+      {
+        "type": "assign",
+        "id": "f_assign",
+        "variables": [
+          "framing",
+          "incentive"
+        ]
+      },
+      {
+        "type": "branch",
+        "id": "f_framing",
+        "if": {
+          "kind": "compare",
+          "op": "==",
+          "left": {
+            "kind": "ref",
+            "id": "framing"
+          },
+          "right": {
+            "kind": "text",
+            "value": "gain"
+          }
+        },
+        "then": [
+          {
+            "type": "block",
+            "id": "f_gain",
+            "block": "b_stim_gain"
+          }
+        ],
+        "else": [
+          {
+            "type": "block",
+            "id": "f_loss",
+            "block": "b_stim_loss"
+          }
+        ]
+      },
+      {
+        "type": "block",
+        "id": "f_attitudes",
+        "block": "b_attitudes"
+      },
+      {
+        "type": "end",
+        "id": "f_complete",
+        "outcome": "complete"
+      }
+    ]
+  }
+}

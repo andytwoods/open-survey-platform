@@ -1,0 +1,62 @@
+{
+  "format": "osp-fixture-survey/0",
+  "description": "§6: reaching the end of the flow without an end node counts as end: complete.",
+  "id": "f12_implicit_end",
+  "version": 1,
+  "title": "Implicit end",
+  "languages": [
+    "en"
+  ],
+  "settings": {
+    "backNavigation": true
+  },
+  "choiceLists": {
+    "onetwo": [
+      {
+        "value": "one",
+        "label": "One"
+      },
+      {
+        "value": "two",
+        "label": "Two"
+      }
+    ]
+  },
+  "blocks": {
+    "p1": {
+      "items": [
+        {
+          "id": "x",
+          "type": "single",
+          "label": "Pick one or two.",
+          "choices": "onetwo",
+          "required": true
+        }
+      ]
+    },
+    "p2": {
+      "items": [
+        {
+          "id": "y",
+          "type": "text",
+          "label": "You picked one. Why?"
+        }
+      ]
+    }
+  },
+  "flow": [
+    {
+      "block": "p1"
+    },
+    {
+      "branch": {
+        "if": "x == \"one\"",
+        "then": [
+          {
+            "block": "p2"
+          }
+        ]
+      }
+    }
+  ]
+}

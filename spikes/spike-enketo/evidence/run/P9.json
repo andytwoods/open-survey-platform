@@ -1,0 +1,101 @@
+{
+ "id": "P9",
+ "sid": "25fd45157e0d",
+ "pages": [
+  "/data/p_consent",
+  "/data/p_age",
+  "/data/p_stim_a",
+  "/data/p_att",
+  "/data/p_colour",
+  "/data/blk_x",
+  "/data/blk_y"
+ ],
+ "checks": [
+  {
+   "name": "kb: consent",
+   "expected": true,
+   "actual": true,
+   "ok": true
+  },
+  {
+   "name": "kb: -> age",
+   "expected": "/data/p_age",
+   "actual": "/data/p_age",
+   "ok": true
+  },
+  {
+   "name": "kb: focus age",
+   "expected": true,
+   "actual": true,
+   "ok": true
+  },
+  {
+   "name": "kb: -> stim A",
+   "expected": "/data/p_stim_a",
+   "actual": "/data/p_stim_a",
+   "ok": true
+  },
+  {
+   "name": "kb: -> att",
+   "expected": "/data/p_att",
+   "actual": "/data/p_att",
+   "ok": true
+  },
+  {
+   "name": "kb: att1=2",
+   "expected": true,
+   "actual": true,
+   "ok": true
+  },
+  {
+   "name": "kb: att2=3",
+   "expected": true,
+   "actual": true,
+   "ok": true
+  },
+  {
+   "name": "kb: att3=1",
+   "expected": true,
+   "actual": true,
+   "ok": true
+  },
+  {
+   "name": "kb: -> colour",
+   "expected": "/data/p_colour",
+   "actual": "/data/p_colour",
+   "ok": true
+  },
+  {
+   "name": "kb: colour blue",
+   "expected": true,
+   "actual": true,
+   "ok": true
+  },
+  {
+   "name": "kb: focus submit",
+   "expected": true,
+   "actual": true,
+   "ok": true
+  },
+  {
+   "name": "kb: submission values",
+   "expected": [
+    "yes",
+    "25",
+    "2",
+    "blue"
+   ],
+   "actual": [
+    "yes",
+    "25",
+    "2",
+    "blue"
+   ],
+   "ok": true
+  }
+ ],
+ "notes": [],
+ "console": [],
+ "pass": true,
+ "doc": "E10: complete the survey with the keyboard only."
+}

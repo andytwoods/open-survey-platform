@@ -1,0 +1,222 @@
+{
+  "format": "osp-fixture-expected/0",
+  "fixture": "10-empty-block-skipped",
+  "script": "no-car",
+  "pending": [],
+  "steps": [
+    {
+      "index": 0,
+      "page": "p1",
+      "visible": [
+        "has_car"
+      ],
+      "errors": {},
+      "nav": {
+        "back": false
+      },
+      "questions": {
+        "has_car": {
+          "state": "unanswered",
+          "value": null
+        },
+        "car_colour": {
+          "state": "not-reached",
+          "value": null
+        },
+        "car_age": {
+          "state": "not-reached",
+          "value": null
+        },
+        "commute": {
+          "state": "not-reached",
+          "value": null
+        }
+      },
+      "orders": {
+        "blocks": {},
+        "items": {},
+        "choices": {}
+      },
+      "conditions": {},
+      "end": null
+    },
+    {
+      "index": 1,
+      "page": "p3",
+      "visible": [
+        "commute"
+      ],
+      "errors": {},
+      "nav": {
+        "back": true
+      },
+      "questions": {
+        "has_car": {
+          "state": "answered",
+          "value": "no"
+        },
+        "car_colour": {
+          "state": "irrelevant",
+          "value": null
+        },
+        "car_age": {
+          "state": "irrelevant",
+          "value": null
+        },
+        "commute": {
+          "state": "unanswered",
+          "value": null
+        }
+      },
+      "orders": {
+        "blocks": {},
+        "items": {},
+        "choices": {}
+      },
+      "conditions": {},
+      "end": null
+    },
+    {
+      "index": 2,
+      "page": "p1",
+      "visible": [
+        "has_car"
+      ],
+      "errors": {},
+      "nav": {
+        "back": false
+      },
+      "questions": {
+        "has_car": {
+          "state": "answered",
+          "value": "no"
+        },
+        "car_colour": {
+          "state": "irrelevant",
+          "value": null
+        },
+        "car_age": {
+          "state": "irrelevant",
+          "value": null
+        },
+        "commute": {
+          "state": "unanswered",
+          "value": null
+        }
+      },
+      "orders": {
+        "blocks": {},
+        "items": {},
+        "choices": {}
+      },
+      "conditions": {},
+      "end": null
+    },
+    {
+      "index": 3,
+      "page": "p3",
+      "visible": [
+        "commute"
+      ],
+      "errors": {},
+      "nav": {
+        "back": true
+      },
+      "questions": {
+        "has_car": {
+          "state": "answered",
+          "value": "no"
+        },
+        "car_colour": {
+          "state": "irrelevant",
+          "value": null
+        },
+        "car_age": {
+          "state": "irrelevant",
+          "value": null
+        },
+        "commute": {
+          "state": "unanswered",
+          "value": null
+        }
+      },
+      "orders": {
+        "blocks": {},
+        "items": {},
+        "choices": {}
+      },
+      "conditions": {},
+      "end": null
+    },
+    {
+      "index": 4,
+      "page": null,
+      "visible": [],
+      "errors": {},
+      "nav": null,
+      "questions": {
+        "has_car": {
+          "state": "answered",
+          "value": "no"
+        },
+        "car_colour": {
+          "state": "irrelevant",
+          "value": null
+        },
+        "car_age": {
+          "state": "irrelevant",
+          "value": null
+        },
+        "commute": {
+          "state": "answered",
+          "value": "bus"
+        }
+      },
+      "orders": {
+        "blocks": {},
+        "items": {},
+        "choices": {}
+      },
+      "conditions": {},
+      "end": "complete"
+    }
+  ],
+  "invariants": [],
+  "response": {
+    "surveyId": "f10_empty_block_skipped",
+    "surveyVersion": 1,
+    "end": "complete",
+    "allocation": "server",
+    "sessionSeed": 1001,
+    "conditions": {},
+    "orders": {
+      "blocks": {},
+      "items": {},
+      "choices": {}
+    },
+    "answers": {
+      "has_car": {
+        "state": "answered",
+        "value": "no"
+      },
+      "car_colour": {
+        "state": "irrelevant",
+        "value": null
+      },
+      "car_age": {
+        "state": "irrelevant",
+        "value": null
+      },
+      "commute": {
+        "state": "answered",
+        "value": "bus"
+      }
+    },
+    "csvState": {
+      "has_car__state": "answered",
+      "car_colour__state": "irrelevant",
+      "car_age__state": "irrelevant",
+      "commute__state": "answered"
+    }
+  }
+}

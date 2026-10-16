@@ -1,0 +1,101 @@
+{
+  "format": "osp-fixture-expected/0",
+  "fixture": "11-end-nodes",
+  "script": "ineligible",
+  "pending": [],
+  "steps": [
+    {
+      "index": 0,
+      "page": "p1",
+      "visible": [
+        "eligible"
+      ],
+      "errors": {},
+      "nav": {
+        "back": false
+      },
+      "questions": {
+        "eligible": {
+          "state": "unanswered",
+          "value": null
+        },
+        "rating": {
+          "state": "not-reached",
+          "value": null
+        },
+        "extra": {
+          "state": "not-reached",
+          "value": null
+        }
+      },
+      "orders": {
+        "blocks": {},
+        "items": {},
+        "choices": {}
+      },
+      "conditions": {},
+      "end": null
+    },
+    {
+      "index": 1,
+      "page": null,
+      "visible": [],
+      "errors": {},
+      "nav": null,
+      "questions": {
+        "eligible": {
+          "state": "answered",
+          "value": "no"
+        },
+        "rating": {
+          "state": "not-reached",
+          "value": null
+        },
+        "extra": {
+          "state": "not-reached",
+          "value": null
+        }
+      },
+      "orders": {
+        "blocks": {},
+        "items": {},
+        "choices": {}
+      },
+      "conditions": {},
+      "end": "ineligible"
+    }
+  ],
+  "invariants": [],
+  "response": {
+    "surveyId": "f11_end_nodes",
+    "surveyVersion": 1,
+    "end": "ineligible",
+    "allocation": "server",
+    "sessionSeed": 1101,
+    "conditions": {},
+    "orders": {
+      "blocks": {},
+      "items": {},
+      "choices": {}
+    },
+    "answers": {
+      "eligible": {
+        "state": "answered",
+        "value": "no"
+      },
+      "rating": {
+        "state": "not-reached",
+        "value": null
+      },
+      "extra": {
+        "state": "not-reached",
+        "value": null
+      }
+    },
+    "csvState": {
+      "eligible__state": "answered",
+      "rating__state": "not-reached",
+      "extra__state": "not-reached"
+    }
+  }
+}

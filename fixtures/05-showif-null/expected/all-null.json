@@ -1,0 +1,273 @@
+{
+  "format": "osp-fixture-expected/0",
+  "fixture": "05-showif-null",
+  "script": "all-null",
+  "pending": [],
+  "steps": [
+    {
+      "index": 0,
+      "page": "p1",
+      "visible": [
+        "a",
+        "b",
+        "c"
+      ],
+      "errors": {},
+      "nav": {
+        "back": false
+      },
+      "questions": {
+        "a": {
+          "state": "unanswered",
+          "value": null
+        },
+        "b": {
+          "state": "unanswered",
+          "value": null
+        },
+        "c": {
+          "state": "unanswered",
+          "value": null
+        },
+        "p2_anchor": {
+          "state": "not-reached",
+          "value": null
+        },
+        "s_gt": {
+          "state": "not-reached",
+          "value": null
+        },
+        "s_not_gt": {
+          "state": "not-reached",
+          "value": null
+        },
+        "s_eq": {
+          "state": "not-reached",
+          "value": null
+        },
+        "s_neq": {
+          "state": "not-reached",
+          "value": null
+        },
+        "s_arith": {
+          "state": "not-reached",
+          "value": null
+        },
+        "s_unanswered": {
+          "state": "not-reached",
+          "value": null
+        },
+        "s_contains": {
+          "state": "not-reached",
+          "value": null
+        }
+      },
+      "orders": {
+        "blocks": {},
+        "items": {},
+        "choices": {}
+      },
+      "conditions": {},
+      "end": null
+    },
+    {
+      "index": 1,
+      "page": "p2",
+      "visible": [
+        "p2_anchor",
+        "s_not_gt",
+        "s_unanswered"
+      ],
+      "errors": {},
+      "nav": {
+        "back": true
+      },
+      "questions": {
+        "a": {
+          "state": "unanswered",
+          "value": null
+        },
+        "b": {
+          "state": "unanswered",
+          "value": null
+        },
+        "c": {
+          "state": "unanswered",
+          "value": null
+        },
+        "p2_anchor": {
+          "state": "unanswered",
+          "value": null
+        },
+        "s_gt": {
+          "state": "irrelevant",
+          "value": null
+        },
+        "s_not_gt": {
+          "state": "unanswered",
+          "value": null
+        },
+        "s_eq": {
+          "state": "irrelevant",
+          "value": null
+        },
+        "s_neq": {
+          "state": "irrelevant",
+          "value": null
+        },
+        "s_arith": {
+          "state": "irrelevant",
+          "value": null
+        },
+        "s_unanswered": {
+          "state": "unanswered",
+          "value": null
+        },
+        "s_contains": {
+          "state": "irrelevant",
+          "value": null
+        }
+      },
+      "orders": {
+        "blocks": {},
+        "items": {},
+        "choices": {}
+      },
+      "conditions": {},
+      "end": null
+    },
+    {
+      "index": 2,
+      "page": null,
+      "visible": [],
+      "errors": {},
+      "nav": null,
+      "questions": {
+        "a": {
+          "state": "unanswered",
+          "value": null
+        },
+        "b": {
+          "state": "unanswered",
+          "value": null
+        },
+        "c": {
+          "state": "unanswered",
+          "value": null
+        },
+        "p2_anchor": {
+          "state": "unanswered",
+          "value": null
+        },
+        "s_gt": {
+          "state": "irrelevant",
+          "value": null
+        },
+        "s_not_gt": {
+          "state": "unanswered",
+          "value": null
+        },
+        "s_eq": {
+          "state": "irrelevant",
+          "value": null
+        },
+        "s_neq": {
+          "state": "irrelevant",
+          "value": null
+        },
+        "s_arith": {
+          "state": "irrelevant",
+          "value": null
+        },
+        "s_unanswered": {
+          "state": "unanswered",
+          "value": null
+        },
+        "s_contains": {
+          "state": "irrelevant",
+          "value": null
+        }
+      },
+      "orders": {
+        "blocks": {},
+        "items": {},
+        "choices": {}
+      },
+      "conditions": {},
+      "end": "complete"
+    }
+  ],
+  "invariants": [],
+  "response": {
+    "surveyId": "f05_showif_null",
+    "surveyVersion": 1,
+    "end": "complete",
+    "allocation": "server",
+    "sessionSeed": 501,
+    "conditions": {},
+    "orders": {
+      "blocks": {},
+      "items": {},
+      "choices": {}
+    },
+    "answers": {
+      "a": {
+        "state": "unanswered",
+        "value": null
+      },
+      "b": {
+        "state": "unanswered",
+        "value": null
+      },
+      "c": {
+        "state": "unanswered",
+        "value": null
+      },
+      "p2_anchor": {
+        "state": "unanswered",
+        "value": null
+      },
+      "s_gt": {
+        "state": "irrelevant",
+        "value": null
+      },
+      "s_not_gt": {
+        "state": "unanswered",
+        "value": null
+      },
+      "s_eq": {
+        "state": "irrelevant",
+        "value": null
+      },
+      "s_neq": {
+        "state": "irrelevant",
+        "value": null
+      },
+      "s_arith": {
+        "state": "irrelevant",
+        "value": null
+      },
+      "s_unanswered": {
+        "state": "unanswered",
+        "value": null
+      },
+      "s_contains": {
+        "state": "irrelevant",
+        "value": null
+      }
+    },
+    "csvState": {
+      "a__state": "unanswered",
+      "b__state": "unanswered",
+      "c__state": "unanswered",
+      "p2_anchor__state": "unanswered",
+      "s_gt__state": "irrelevant",
+      "s_not_gt__state": "unanswered",
+      "s_eq__state": "irrelevant",
+      "s_neq__state": "irrelevant",
+      "s_arith__state": "irrelevant",
+      "s_unanswered__state": "unanswered",
+      "s_contains__state": "irrelevant"
+    }
+  }
+}

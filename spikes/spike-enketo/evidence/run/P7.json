@@ -1,0 +1,35 @@
+{
+ "id": "P7",
+ "sid": "d2552561e1d3",
+ "pages": null,
+ "checks": [
+  {
+   "name": "re-entry shows already-completed",
+   "expected": true,
+   "actual": true,
+   "ok": true
+  },
+  {
+   "name": "second submit rejected",
+   "expected": 409,
+   "actual": 409,
+   "ok": true
+  },
+  {
+   "name": "no reallocation (cond/seed unchanged)",
+   "expected": [
+    "A",
+    725742004
+   ],
+   "actual": [
+    "A",
+    725742004
+   ],
+   "ok": true
+  }
+ ],
+ "notes": [],
+ "console": [],
+ "pass": true,
+ "doc": "Re-enter the survey link after finishing (uses P2's session)."
+}

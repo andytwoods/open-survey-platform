@@ -1,0 +1,72 @@
+{
+  "description": "Fully translated English/Welsh survey, shared choice list.",
+  "expect": [],
+  "survey": {
+    "specVersion": "osp-survey/0.1",
+    "id": "srv_case",
+    "metadata": {
+      "title": {
+        "en": "Mood",
+        "cy": "Hwyliau"
+      },
+      "languages": [
+        "en",
+        "cy"
+      ],
+      "defaultLanguage": "cy"
+    },
+    "blocks": [
+      {
+        "id": "b1",
+        "pages": [
+          {
+            "id": "p1",
+            "items": [
+              {
+                "id": "mood",
+                "type": "single",
+                "label": {
+                  "en": "How are you?",
+                  "cy": "Sut wyt ti?"
+                },
+                "help": {
+                  "en": "Pick one.",
+                  "cy": "Dewiswch un."
+                },
+                "choiceList": "good_bad"
+              }
+            ]
+          }
+        ]
+      }
+    ],
+    "flow": [
+      {
+        "type": "block",
+        "id": "f_b1",
+        "block": "b1"
+      }
+    ],
+    "choiceLists": [
+      {
+        "id": "good_bad",
+        "choices": [
+          {
+            "value": 1,
+            "label": {
+              "en": "Good",
+              "cy": "Da"
+            }
+          },
+          {
+            "value": 2,
+            "label": {
+              "en": "Bad",
+              "cy": "Drwg"
+            }
+          }
+        ]
+      }
+    ]
+  }
+}

@@ -1,0 +1,24 @@
+{
+  "format": "osp-fixture-script/0",
+  "id": "x10",
+  "description": "x = 10, y = 0.1, tags = [b]. Decimal arithmetic: 0.1 * 3 == 0.3 is true (false in binary float); 10 / 4 == 2.5; * binds tighter than -.",
+  "sessionSeed": 1901,
+  "language": "en",
+  "actions": [
+    {
+      "expectPage": "p1",
+      "set": {
+        "x": 10,
+        "y": "0.1",
+        "tags": [
+          "b"
+        ]
+      },
+      "do": "next"
+    },
+    {
+      "expectPage": "p2",
+      "do": "next"
+    }
+  ]
+}

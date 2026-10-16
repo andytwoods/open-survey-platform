@@ -1,0 +1,25 @@
+{
+  "format": "osp-fixture-script/0",
+  "id": "declined",
+  "description": "No consent: end 'declined'. Conditions were assigned by the server at session start (§7) so they are recorded even though assign was not reached.",
+  "sessionSeed": 101,
+  "language": "en",
+  "server": {
+    "conditions": {
+      "framing": "gain",
+      "incentive": "£5 voucher"
+    },
+    "quotas": {
+      "q_old": "open"
+    }
+  },
+  "actions": [
+    {
+      "expectPage": "consent",
+      "set": {
+        "consent": 0
+      },
+      "do": "next"
+    }
+  ]
+}

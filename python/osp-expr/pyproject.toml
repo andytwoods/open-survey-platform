@@ -1,0 +1,15 @@
+[project]
+name = "osp-expr"
+version = "0.0.0"
+description = "Open Survey Platform: osp-expr (layer L0)"
+readme = "README.md"
+license = "MIT"
+requires-python = ">=3.14"
+dependencies = ["pydantic>=2.14,<3"]
+
+[dependency-groups]
+dev = ["hypothesis>=6"]
+
+[build-system]
+requires = ["uv_build>=0.11,<0.12"]
+build-backend = "uv_build"

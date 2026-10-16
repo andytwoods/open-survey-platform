@@ -1,0 +1,58 @@
+{
+  "format": "osp-fixture-script/0",
+  "id": "relevance-returns",
+  "description": "After the value is cleared, making pet_name relevant again shows it empty: the old value 'Rex' does not come back (spike E8).",
+  "sessionSeed": 602,
+  "language": "en",
+  "actions": [
+    {
+      "expectPage": "p1",
+      "set": {
+        "pet": "dog"
+      },
+      "do": "next"
+    },
+    {
+      "expectPage": "p2",
+      "set": {
+        "pet_name": "Rex",
+        "season": "summer"
+      },
+      "do": "next"
+    },
+    {
+      "expectPage": "p3",
+      "do": "back"
+    },
+    {
+      "expectPage": "p2",
+      "do": "back"
+    },
+    {
+      "expectPage": "p1",
+      "set": {
+        "pet": "none"
+      },
+      "do": "next"
+    },
+    {
+      "expectPage": "p2",
+      "do": "back"
+    },
+    {
+      "expectPage": "p1",
+      "set": {
+        "pet": "cat"
+      },
+      "do": "next"
+    },
+    {
+      "expectPage": "p2",
+      "do": "next"
+    },
+    {
+      "expectPage": "p3",
+      "do": "next"
+    }
+  ]
+}

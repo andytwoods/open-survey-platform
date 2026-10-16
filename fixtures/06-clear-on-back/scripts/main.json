@@ -1,0 +1,47 @@
+{
+  "format": "osp-fixture-script/0",
+  "id": "main",
+  "description": "Answer pet_name, go back, change pet to 'none': pet_name becomes irrelevant and its value is cleared; final (answered(pet_name)) follows.",
+  "sessionSeed": 601,
+  "language": "en",
+  "actions": [
+    {
+      "expectPage": "p1",
+      "set": {
+        "pet": "dog"
+      },
+      "do": "next"
+    },
+    {
+      "expectPage": "p2",
+      "set": {
+        "pet_name": "Rex",
+        "season": "summer"
+      },
+      "do": "next"
+    },
+    {
+      "expectPage": "p3",
+      "do": "back"
+    },
+    {
+      "expectPage": "p2",
+      "do": "back"
+    },
+    {
+      "expectPage": "p1",
+      "set": {
+        "pet": "none"
+      },
+      "do": "next"
+    },
+    {
+      "expectPage": "p2",
+      "do": "next"
+    },
+    {
+      "expectPage": "p3",
+      "do": "next"
+    }
+  ]
+}

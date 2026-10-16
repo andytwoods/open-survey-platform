@@ -1,0 +1,107 @@
+[
+  {
+    "method": "get_session_key",
+    "error": null,
+    "result_type": "str"
+  },
+  {
+    "method": "get_site_settings",
+    "error": null,
+    "result_type": "str"
+  },
+  {
+    "method": "get_site_settings",
+    "error": null,
+    "result_type": "str"
+  },
+  {
+    "method": "get_site_settings",
+    "error": null,
+    "result_type": "dict"
+  },
+  {
+    "method": "get_site_settings",
+    "error": null,
+    "result_type": "str"
+  },
+  {
+    "method": "get_site_settings",
+    "error": null,
+    "result_type": "str"
+  },
+  {
+    "method": "get_site_settings",
+    "error": null,
+    "result_type": "int"
+  },
+  {
+    "method": "get_site_settings",
+    "error": null,
+    "result_type": "int"
+  },
+  {
+    "method": "import_survey",
+    "error": null,
+    "result_type": "int"
+  },
+  {
+    "method": "activate_survey",
+    "error": null,
+    "result_type": "dict"
+  },
+  {
+    "method": "activate_tokens",
+    "error": null,
+    "result_type": "dict"
+  },
+  {
+    "method": "add_participants",
+    "error": null,
+    "result_type": "list"
+  },
+  {
+    "method": "get_survey_properties",
+    "error": null,
+    "result_type": "dict"
+  },
+  {
+    "method": "list_questions",
+    "error": null,
+    "result_type": "list"
+  },
+  {
+    "method": "get_fieldmap",
+    "error": null,
+    "result_type": "dict"
+  },
+  {
+    "method": "export_responses",
+    "error": null,
+    "result_type": "str"
+  },
+  {
+    "method": "export_responses",
+    "error": null,
+    "result_type": "str"
+  },
+  {
+    "method": "export_responses",
+    "error": null,
+    "result_type": "str"
+  },
+  {
+    "method": "export_responses",
+    "error": null,
+    "result_type": "str"
+  },
+  {
+    "method": "list_participants",
+    "error": null,
+    "result_type": "list"
+  },
+  {
+    "method": "get_summary",
+    "error": null,
+    "result_type": "dict"
+  }
+]

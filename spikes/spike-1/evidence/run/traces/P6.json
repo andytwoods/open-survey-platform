@@ -1,0 +1,422 @@
+{
+  "participant": "P6",
+  "token": "tokp6",
+  "pages": [
+    {
+      "n": 1,
+      "label": "consent",
+      "t": 1792155505.621,
+      "questions": [
+        "consent"
+      ],
+      "questions_hidden_in_dom": [],
+      "markers": [],
+      "errors": [],
+      "thisstep": "1",
+      "has_prev": false,
+      "has_next": true,
+      "url": "http://localhost:8082/index.php?r=survey/index&sid=900001&token=tokp6&lang=en",
+      "screenshot": "screenshots/P6_01_consent.png",
+      "question_html": {
+        "consent": "<div id=\"ls-question-text-900001X1X1\" class=\" ls-label-question \">\n        Do you consent to take part in this (fake) study?\n    </div>"
+      }
+    },
+    {
+      "n": 2,
+      "label": "age",
+      "t": 1792155506.3,
+      "questions": [
+        "age"
+      ],
+      "questions_hidden_in_dom": [
+        "assigned",
+        "mode",
+        "rawrand"
+      ],
+      "markers": [],
+      "errors": [],
+      "thisstep": "2",
+      "has_prev": true,
+      "has_next": true,
+      "url": "http://localhost:8082/index.php?r=survey/index&sid=900001",
+      "screenshot": "screenshots/P6_02_age.png",
+      "question_html": {
+        "age": "<div id=\"ls-question-text-900001X2X4\" class=\" ls-label-question \">\n        How old are you?\n    </div>"
+      }
+    },
+    {
+      "n": 3,
+      "label": "stimulus",
+      "t": 1792155506.928,
+      "questions": [
+        "stimA"
+      ],
+      "questions_hidden_in_dom": [],
+      "markers": [
+        "STIMULUS-A"
+      ],
+      "errors": [],
+      "thisstep": "3",
+      "has_prev": true,
+      "has_next": true,
+      "url": "http://localhost:8082/index.php?r=survey/index&sid=900001",
+      "screenshot": "screenshots/P6_03_stimulus.png",
+      "question_html": {
+        "stimA": "<div id=\"ls-question-text-900001X3X8\" class=\" ls-label-question \">\n        <p>STIMULUS-A: a short story about a river.</p>\n    </div>"
+      }
+    },
+    {
+      "n": 4,
+      "label": "attitudes",
+      "t": 1792155507.576,
+      "questions": [
+        "att3",
+        "att1",
+        "att2"
+      ],
+      "questions_hidden_in_dom": [],
+      "markers": [
+        "PIPE[river story]"
+      ],
+      "errors": [],
+      "thisstep": "5",
+      "has_prev": true,
+      "has_next": true,
+      "url": "http://localhost:8082/index.php?r=survey/index&sid=900001",
+      "screenshot": "screenshots/P6_04_attitudes.png",
+      "question_html": {
+        "att1": "<div id=\"ls-question-text-900001X5X10\" class=\" ls-label-question \">\n        PIPE[river story] How calm did the story make you feel?\n    </div>",
+        "att2": "<div id=\"ls-question-text-900001X5X11\" class=\" ls-label-question \">\n        How interesting was the story?\n    </div>",
+        "att3": "<div id=\"ls-question-text-900001X5X12\" class=\" ls-label-question \">\n        How likely are you to recommend the story?\n    </div>"
+      }
+    },
+    {
+      "n": 5,
+      "label": "reload-attitudes",
+      "t": 1792155508.245,
+      "questions": [
+        "att3",
+        "att1",
+        "att2"
+      ],
+      "questions_hidden_in_dom": [],
+      "markers": [
+        "PIPE[river story]"
+      ],
+      "errors": [
+        "Please use the survey navigation buttons or index. It appears you attempted to use the browser back button to re-submit a page."
+      ],
+      "thisstep": "5",
+      "has_prev": true,
+      "has_next": true,
+      "url": "http://localhost:8082/index.php?r=survey/index&sid=900001",
+      "screenshot": "screenshots/P6_05_reload-attitudes.png",
+      "question_html": {
+        "att1": "<div id=\"ls-question-text-900001X5X10\" class=\" ls-label-question \">\n        PIPE[river story] How calm did the story make you feel?\n    </div>",
+        "att2": "<div id=\"ls-question-text-900001X5X11\" class=\" ls-label-question \">\n        How interesting was the story?\n    </div>",
+        "att3": "<div id=\"ls-question-text-900001X5X12\" class=\" ls-label-question \">\n        How likely are you to recommend the story?\n    </div>"
+      }
+    },
+    {
+      "n": 6,
+      "label": "reload-after-unsubmitted-answer",
+      "t": 1792155509.293,
+      "questions": [
+        "att3",
+        "att1",
+        "att2"
+      ],
+      "questions_hidden_in_dom": [],
+      "markers": [
+        "PIPE[river story]"
+      ],
+      "errors": [
+        "Please use the survey navigation buttons or index. It appears you attempted to use the browser back button to re-submit a page."
+      ],
+      "thisstep": "5",
+      "has_prev": true,
+      "has_next": true,
+      "url": "http://localhost:8082/index.php?r=survey/index&sid=900001",
+      "screenshot": "screenshots/P6_06_reload-after-unsubmitted-answer.png",
+      "question_html": {
+        "att1": "<div id=\"ls-question-text-900001X5X10\" class=\" ls-label-question \">\n        PIPE[river story] How calm did the story make you feel?\n    </div>",
+        "att2": "<div id=\"ls-question-text-900001X5X11\" class=\" ls-label-question \">\n        How interesting was the story?\n    </div>",
+        "att3": "<div id=\"ls-question-text-900001X5X12\" class=\" ls-label-question \">\n        How likely are you to recommend the story?\n    </div>"
+      }
+    },
+    {
+      "n": 7,
+      "label": "resume-new-session",
+      "t": 1792155510.106,
+      "questions": [
+        "att3",
+        "att1",
+        "att2"
+      ],
+      "questions_hidden_in_dom": [],
+      "markers": [
+        "PIPE[river story]"
+      ],
+      "errors": [],
+      "thisstep": "5",
+      "has_prev": true,
+      "has_next": true,
+      "url": "http://localhost:8082/index.php?r=survey/index&sid=900001&token=tokp6&lang=en",
+      "screenshot": "screenshots/P6_07_resume-new-session.png",
+      "question_html": {
+        "att1": "<div id=\"ls-question-text-900001X5X10\" class=\" ls-label-question \">\n        PIPE[river story] How calm did the story make you feel?\n    </div>",
+        "att2": "<div id=\"ls-question-text-900001X5X11\" class=\" ls-label-question \">\n        How interesting was the story?\n    </div>",
+        "att3": "<div id=\"ls-question-text-900001X5X12\" class=\" ls-label-question \">\n        How likely are you to recommend the story?\n    </div>"
+      }
+    },
+    {
+      "n": 8,
+      "label": "back-to-stimulus",
+      "t": 1792155510.748,
+      "questions": [
+        "stimA"
+      ],
+      "questions_hidden_in_dom": [],
+      "markers": [
+        "STIMULUS-A"
+      ],
+      "errors": [],
+      "thisstep": "3",
+      "has_prev": true,
+      "has_next": true,
+      "url": "http://localhost:8082/index.php?r=survey/index&sid=900001",
+      "screenshot": "screenshots/P6_08_back-to-stimulus.png",
+      "question_html": {
+        "stimA": "<div id=\"ls-question-text-900001X3X8\" class=\" ls-label-question \">\n        <p>STIMULUS-A: a short story about a river.</p>\n    </div>"
+      }
+    },
+    {
+      "n": 9,
+      "label": "forward-to-attitudes",
+      "t": 1792155511.39,
+      "questions": [
+        "att3",
+        "att1",
+        "att2"
+      ],
+      "questions_hidden_in_dom": [],
+      "markers": [
+        "PIPE[river story]"
+      ],
+      "errors": [],
+      "thisstep": "5",
+      "has_prev": true,
+      "has_next": true,
+      "url": "http://localhost:8082/index.php?r=survey/index&sid=900001",
+      "screenshot": "screenshots/P6_09_forward-to-attitudes.png",
+      "question_html": {
+        "att1": "<div id=\"ls-question-text-900001X5X10\" class=\" ls-label-question \">\n        PIPE[river story] How calm did the story make you feel?\n    </div>",
+        "att2": "<div id=\"ls-question-text-900001X5X11\" class=\" ls-label-question \">\n        How interesting was the story?\n    </div>",
+        "att3": "<div id=\"ls-question-text-900001X5X12\" class=\" ls-label-question \">\n        How likely are you to recommend the story?\n    </div>"
+      }
+    },
+    {
+      "n": 10,
+      "label": "final",
+      "t": 1792155512.166,
+      "questions": [
+        "comments"
+      ],
+      "questions_hidden_in_dom": [],
+      "markers": [
+        "PIPEFU[]",
+        "PIPESHOWN[Yes]"
+      ],
+      "errors": [],
+      "thisstep": "7",
+      "has_prev": true,
+      "has_next": true,
+      "url": "http://localhost:8082/index.php?r=survey/index&sid=900001",
+      "screenshot": "screenshots/P6_10_final.png",
+      "question_html": {
+        "comments": "<div id=\"ls-question-text-900001X7X14\" class=\" ls-label-question \">\n        PIPEFU[] PIPESHOWN[Yes] Any comments? (optional)\n    </div>"
+      }
+    },
+    {
+      "n": 11,
+      "label": "end",
+      "t": 1792155512.773,
+      "questions": [],
+      "questions_hidden_in_dom": [],
+      "markers": [
+        "END-OF-SURVEY"
+      ],
+      "errors": [],
+      "thisstep": null,
+      "has_prev": false,
+      "has_next": false,
+      "url": "http://localhost:8082/index.php?r=survey/index&sid=900001",
+      "screenshot": "screenshots/P6_11_end.png",
+      "question_html": {},
+      "page_text": "END-OF-SURVEY"
+    }
+  ],
+  "notes": [
+    {
+      "session_order_probe": {
+        "session_bytes": 127836,
+        "top_level_keys": [
+          "survey_900001",
+          "LEMlang",
+          "LEMsid",
+          "fieldmap-900001en",
+          "LSWebUser",
+          "LEMsingleton"
+        ],
+        "att_order_by_first_occurrence_per_key": {
+          "survey_900001": [
+            "att1",
+            "att2",
+            "att3"
+          ],
+          "fieldmap-900001en": [
+            "att3",
+            "att1",
+            "att2"
+          ],
+          "LEMsingleton": [
+            "att3",
+            "att1",
+            "att2"
+          ]
+        },
+        "seed_values_in_session": [
+          "0",
+          "3",
+          "9"
+        ]
+      }
+    },
+    {
+      "unsubmitted_att1_after_reload": ""
+    },
+    {
+      "db_mid": [
+        {
+          "id": "6",
+          "token": "tokp6",
+          "submitdate": null,
+          "lastpage": "4",
+          "startlanguage": "en",
+          "seed": "882704640",
+          "startdate": "2026-10-16 12:58:25",
+          "datestamp": "2026-10-16 12:58:26",
+          "consent": "Y",
+          "cond": "",
+          "ospseed": "",
+          "age": "33.0000000000",
+          "assigned": "A",
+          "mode": "limesurvey-native",
+          "rawrand": "791663",
+          "stimA": "",
+          "stimB": null,
+          "att1": null,
+          "att2": null,
+          "att3": null,
+          "fu": null,
+          "comments": null
+        }
+      ]
+    },
+    {
+      "resumed_on_questions": [
+        "att3",
+        "att1",
+        "att2"
+      ]
+    },
+    {
+      "stimulus_on_back": [
+        "STIMULUS-A"
+      ]
+    },
+    {
+      "db_after_back_forward": [
+        {
+          "id": "6",
+          "token": "tokp6",
+          "submitdate": null,
+          "lastpage": "4",
+          "startlanguage": "en",
+          "seed": "882704640",
+          "startdate": "2026-10-16 12:58:25",
+          "datestamp": "2026-10-16 12:58:30",
+          "consent": "Y",
+          "cond": "",
+          "ospseed": "",
+          "age": "33.0000000000",
+          "assigned": "A",
+          "mode": "limesurvey-native",
+          "rawrand": "369839",
+          "stimA": "",
+          "stimB": null,
+          "att1": "",
+          "att2": "",
+          "att3": "",
+          "fu": null,
+          "comments": null
+        }
+      ]
+    },
+    {
+      "orders": {
+        "first_view": [
+          "att3",
+          "att1",
+          "att2"
+        ],
+        "reload": [
+          "att3",
+          "att1",
+          "att2"
+        ],
+        "reload2": [
+          "att3",
+          "att1",
+          "att2"
+        ],
+        "resume_new_session": [
+          "att3",
+          "att1",
+          "att2"
+        ],
+        "after_back_forward": [
+          "att3",
+          "att1",
+          "att2"
+        ]
+      },
+      "db_final": [
+        {
+          "id": "6",
+          "token": "tokp6",
+          "submitdate": "2026-10-16 12:58:32",
+          "lastpage": "7",
+          "startlanguage": "en",
+          "seed": "882704640",
+          "startdate": "2026-10-16 12:58:25",
+          "datestamp": "2026-10-16 12:58:32",
+          "consent": "Y",
+          "cond": "",
+          "ospseed": "",
+          "age": "33.0000000000",
+          "assigned": "A",
+          "mode": "limesurvey-native",
+          "rawrand": "369839",
+          "stimA": "",
+          "stimB": null,
+          "att1": "1",
+          "att2": "1",
+          "att3": "1",
+          "fu": null,
+          "comments": ""
+        }
+      ]
+    }
+  ]
+}

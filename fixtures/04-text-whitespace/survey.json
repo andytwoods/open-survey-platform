@@ -1,0 +1,59 @@
+{
+  "format": "osp-fixture-survey/0",
+  "description": "§2 text: trim, whitespace-only = unanswered, internal whitespace kept.",
+  "id": "f04_text_whitespace",
+  "version": 1,
+  "title": "Text trimming and whitespace",
+  "languages": [
+    "en"
+  ],
+  "settings": {
+    "backNavigation": true
+  },
+  "choiceLists": {},
+  "blocks": {
+    "p1": {
+      "items": [
+        {
+          "id": "t_req",
+          "type": "text",
+          "label": "Describe your ideal weekend.",
+          "required": true
+        },
+        {
+          "id": "t_opt",
+          "type": "text",
+          "label": "Anything else? (optional)"
+        },
+        {
+          "id": "t_lines",
+          "type": "text",
+          "label": "Write two short lines about the sea (optional)."
+        }
+      ]
+    },
+    "p2": {
+      "items": [
+        {
+          "id": "t_follow",
+          "type": "text",
+          "label": "You added a comment. Can you say more?",
+          "showIf": "answered(t_opt)"
+        },
+        {
+          "id": "p2_rating",
+          "type": "integer",
+          "label": "Rate this survey from 1 to 5 (optional)."
+        }
+      ]
+    }
+  },
+  "flow": [
+    {
+      "block": "p1"
+    },
+    {
+      "block": "p2"
+    }
+  ]
+}

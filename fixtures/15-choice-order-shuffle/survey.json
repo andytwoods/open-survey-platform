@@ -1,0 +1,100 @@
+{
+  "format": "osp-fixture-survey/0",
+  "description": "§7 choice-order shuffle (XForms randomize) on single and multi questions.",
+  "id": "f15_choice_order_shuffle",
+  "version": 1,
+  "title": "Shuffled choice order",
+  "languages": [
+    "en"
+  ],
+  "settings": {
+    "backNavigation": true
+  },
+  "choiceLists": {
+    "colour5": [
+      {
+        "value": "red",
+        "label": "Red"
+      },
+      {
+        "value": "green",
+        "label": "Green"
+      },
+      {
+        "value": "blue",
+        "label": "Blue"
+      },
+      {
+        "value": "yellow",
+        "label": "Yellow"
+      },
+      {
+        "value": "purple",
+        "label": "Purple"
+      }
+    ],
+    "fruit5": [
+      {
+        "value": "apple",
+        "label": "Apple"
+      },
+      {
+        "value": "kiwi",
+        "label": "Kiwi"
+      },
+      {
+        "value": "mango",
+        "label": "Mango"
+      },
+      {
+        "value": "pear",
+        "label": "Pear"
+      },
+      {
+        "value": "plum",
+        "label": "Plum"
+      }
+    ],
+    "yesno": [
+      {
+        "value": "yes",
+        "label": "Yes"
+      },
+      {
+        "value": "no",
+        "label": "No"
+      }
+    ]
+  },
+  "blocks": {
+    "p1": {
+      "items": [
+        {
+          "id": "fav_colour",
+          "type": "single",
+          "label": "Pick a colour.",
+          "choices": "colour5",
+          "choiceOrder": "shuffle"
+        },
+        {
+          "id": "fruits",
+          "type": "multi",
+          "label": "Which fruits do you eat?",
+          "choices": "fruit5",
+          "choiceOrder": "shuffle"
+        },
+        {
+          "id": "plain",
+          "type": "single",
+          "label": "Is the sky blue today?",
+          "choices": "yesno"
+        }
+      ]
+    }
+  },
+  "flow": [
+    {
+      "block": "p1"
+    }
+  ]
+}

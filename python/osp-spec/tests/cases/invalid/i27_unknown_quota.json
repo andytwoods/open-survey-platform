@@ -1,0 +1,48 @@
+{
+  "description": "quotaCheck must name a quota.",
+  "expect": [
+    {
+      "code": "ref.unknown_quota",
+      "pointer": "/flow/1/quota"
+    }
+  ],
+  "survey": {
+    "specVersion": "osp-survey/0.1",
+    "id": "srv_case",
+    "metadata": {
+      "title": "Case",
+      "languages": [
+        "en"
+      ]
+    },
+    "blocks": [
+      {
+        "id": "b1",
+        "pages": [
+          {
+            "id": "p1",
+            "items": [
+              {
+                "id": "q1",
+                "type": "integer",
+                "label": "Question q1"
+              }
+            ]
+          }
+        ]
+      }
+    ],
+    "flow": [
+      {
+        "type": "block",
+        "id": "f1",
+        "block": "b1"
+      },
+      {
+        "type": "quotaCheck",
+        "id": "f2",
+        "quota": "q_none"
+      }
+    ]
+  }
+}

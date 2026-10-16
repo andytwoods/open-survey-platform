@@ -1,0 +1,24 @@
+{
+  "format": "osp-fixture-script/0",
+  "id": "answered",
+  "description": "Answer every type once, then submit.",
+  "sessionSeed": 101,
+  "language": "en",
+  "actions": [
+    {
+      "expectPage": "p1",
+      "set": {
+        "n_int": 3,
+        "n_dec": "2.8",
+        "t_text": "Cloudy with sunny spells",
+        "s_single": "banana",
+        "m_multi": [
+          "blue",
+          "red"
+        ],
+        "d_date": "2026-03-14"
+      },
+      "do": "next"
+    }
+  ]
+}

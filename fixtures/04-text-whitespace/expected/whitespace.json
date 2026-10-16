@@ -1,0 +1,215 @@
+{
+  "format": "osp-fixture-expected/0",
+  "fixture": "04-text-whitespace",
+  "script": "whitespace",
+  "pending": [],
+  "steps": [
+    {
+      "index": 0,
+      "page": "p1",
+      "visible": [
+        "t_req",
+        "t_opt",
+        "t_lines"
+      ],
+      "errors": {},
+      "nav": {
+        "back": false
+      },
+      "questions": {
+        "t_req": {
+          "state": "unanswered",
+          "value": null
+        },
+        "t_opt": {
+          "state": "unanswered",
+          "value": null
+        },
+        "t_lines": {
+          "state": "unanswered",
+          "value": null
+        },
+        "t_follow": {
+          "state": "not-reached",
+          "value": null
+        },
+        "p2_rating": {
+          "state": "not-reached",
+          "value": null
+        }
+      },
+      "orders": {
+        "blocks": {},
+        "items": {},
+        "choices": {}
+      },
+      "conditions": {},
+      "end": null
+    },
+    {
+      "index": 1,
+      "page": "p1",
+      "visible": [
+        "t_req",
+        "t_opt",
+        "t_lines"
+      ],
+      "errors": {
+        "t_req": {
+          "kind": "required"
+        }
+      },
+      "nav": {
+        "back": false
+      },
+      "questions": {
+        "t_req": {
+          "state": "unanswered",
+          "value": null
+        },
+        "t_opt": {
+          "state": "unanswered",
+          "value": null
+        },
+        "t_lines": {
+          "state": "unanswered",
+          "value": null
+        },
+        "t_follow": {
+          "state": "not-reached",
+          "value": null
+        },
+        "p2_rating": {
+          "state": "not-reached",
+          "value": null
+        }
+      },
+      "orders": {
+        "blocks": {},
+        "items": {},
+        "choices": {}
+      },
+      "conditions": {},
+      "end": null
+    },
+    {
+      "index": 2,
+      "page": "p2",
+      "visible": [
+        "p2_rating"
+      ],
+      "errors": {},
+      "nav": {
+        "back": true
+      },
+      "questions": {
+        "t_req": {
+          "state": "answered",
+          "value": "a quiet walk"
+        },
+        "t_opt": {
+          "state": "unanswered",
+          "value": null
+        },
+        "t_lines": {
+          "state": "answered",
+          "value": "waves on the shore\n\n  gulls  overhead"
+        },
+        "t_follow": {
+          "state": "irrelevant",
+          "value": null
+        },
+        "p2_rating": {
+          "state": "unanswered",
+          "value": null
+        }
+      },
+      "orders": {
+        "blocks": {},
+        "items": {},
+        "choices": {}
+      },
+      "conditions": {},
+      "end": null
+    },
+    {
+      "index": 3,
+      "page": null,
+      "visible": [],
+      "errors": {},
+      "nav": null,
+      "questions": {
+        "t_req": {
+          "state": "answered",
+          "value": "a quiet walk"
+        },
+        "t_opt": {
+          "state": "unanswered",
+          "value": null
+        },
+        "t_lines": {
+          "state": "answered",
+          "value": "waves on the shore\n\n  gulls  overhead"
+        },
+        "t_follow": {
+          "state": "irrelevant",
+          "value": null
+        },
+        "p2_rating": {
+          "state": "unanswered",
+          "value": null
+        }
+      },
+      "orders": {
+        "blocks": {},
+        "items": {},
+        "choices": {}
+      },
+      "conditions": {},
+      "end": "complete"
+    }
+  ],
+  "invariants": [],
+  "response": {
+    "surveyId": "f04_text_whitespace",
+    "surveyVersion": 1,
+    "end": "complete",
+    "allocation": "server",
+    "sessionSeed": 401,
+    "conditions": {},
+    "orders": {
+      "blocks": {},
+      "items": {},
+      "choices": {}
+    },
+    "answers": {
+      "t_req": {
+        "state": "answered",
+        "value": "a quiet walk"
+      },
+      "t_opt": {
+        "state": "unanswered",
+        "value": null
+      },
+      "t_lines": {
+        "state": "answered",
+        "value": "waves on the shore\n\n  gulls  overhead"
+      },
+      "t_follow": {
+        "state": "irrelevant",
+        "value": null
+      },
+      "p2_rating": {
+        "state": "unanswered",
+        "value": null
+      }
+    },
+    "csvState": {
+      "t_req__state": "answered",
+      "t_opt__state": "unanswered",
+      "t_lines__state": "answered",
+      "t_follow__state": "irrelevant",
+      "p2_rating__state": "unanswered"
+    }
+  }
+}

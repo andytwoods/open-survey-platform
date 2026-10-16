@@ -1,0 +1,11 @@
+{
+  "token_count": 7,
+  "token_invalid": 0,
+  "token_sent": 0,
+  "token_opted_out": 0,
+  "token_completed": 7,
+  "token_screenout": 0,
+  "completed_responses": 7,
+  "incomplete_responses": 0,
+  "full_responses": 7
+}

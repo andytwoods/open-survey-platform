@@ -1,0 +1,116 @@
+{
+  "format": "osp-fixture-expected/0",
+  "fixture": "08-back-disabled",
+  "script": "main",
+  "pending": [],
+  "steps": [
+    {
+      "index": 0,
+      "page": "p1",
+      "visible": [
+        "q1"
+      ],
+      "errors": {},
+      "nav": {
+        "back": false
+      },
+      "questions": {
+        "q1": {
+          "state": "unanswered",
+          "value": null
+        },
+        "q2": {
+          "state": "not-reached",
+          "value": null
+        }
+      },
+      "orders": {
+        "blocks": {},
+        "items": {},
+        "choices": {}
+      },
+      "conditions": {},
+      "end": null
+    },
+    {
+      "index": 1,
+      "page": "p2",
+      "visible": [
+        "q2"
+      ],
+      "errors": {},
+      "nav": {
+        "back": false
+      },
+      "questions": {
+        "q1": {
+          "state": "answered",
+          "value": "yes"
+        },
+        "q2": {
+          "state": "unanswered",
+          "value": null
+        }
+      },
+      "orders": {
+        "blocks": {},
+        "items": {},
+        "choices": {}
+      },
+      "conditions": {},
+      "end": null
+    },
+    {
+      "index": 2,
+      "page": null,
+      "visible": [],
+      "errors": {},
+      "nav": null,
+      "questions": {
+        "q1": {
+          "state": "answered",
+          "value": "yes"
+        },
+        "q2": {
+          "state": "answered",
+          "value": "fine"
+        }
+      },
+      "orders": {
+        "blocks": {},
+        "items": {},
+        "choices": {}
+      },
+      "conditions": {},
+      "end": "complete"
+    }
+  ],
+  "invariants": [],
+  "response": {
+    "surveyId": "f08_back_disabled",
+    "surveyVersion": 1,
+    "end": "complete",
+    "allocation": "server",
+    "sessionSeed": 801,
+    "conditions": {},
+    "orders": {
+      "blocks": {},
+      "items": {},
+      "choices": {}
+    },
+    "answers": {
+      "q1": {
+        "state": "answered",
+        "value": "yes"
+      },
+      "q2": {
+        "state": "answered",
+        "value": "fine"
+      }
+    },
+    "csvState": {
+      "q1__state": "answered",
+      "q2__state": "answered"
+    }
+  }
+}

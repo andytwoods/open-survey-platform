@@ -1,0 +1,54 @@
+{
+  "format": "osp-fixture-survey/0",
+  "description": "§5 per-survey setting backNavigation = false.",
+  "id": "f08_back_disabled",
+  "version": 1,
+  "title": "Back navigation disabled",
+  "languages": [
+    "en"
+  ],
+  "settings": {
+    "backNavigation": false
+  },
+  "choiceLists": {
+    "yesno": [
+      {
+        "value": "yes",
+        "label": "Yes"
+      },
+      {
+        "value": "no",
+        "label": "No"
+      }
+    ]
+  },
+  "blocks": {
+    "p1": {
+      "items": [
+        {
+          "id": "q1",
+          "type": "single",
+          "label": "Is it raining where you are?",
+          "choices": "yesno"
+        }
+      ]
+    },
+    "p2": {
+      "items": [
+        {
+          "id": "q2",
+          "type": "text",
+          "label": "How is your day going?"
+        }
+      ]
+    }
+  },
+  "flow": [
+    {
+      "block": "p1"
+    },
+    {
+      "block": "p2"
+    }
+  ]
+}

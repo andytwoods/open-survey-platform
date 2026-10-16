@@ -1,0 +1,32 @@
+{
+  "format": "osp-fixture-script/0",
+  "id": "de",
+  "description": "German session: labels, constraint message and the piped choice label are German; stored values are the same codes.",
+  "sessionSeed": 1802,
+  "language": "de",
+  "actions": [
+    {
+      "expectPage": "p1",
+      "set": {
+        "drink": "coffee",
+        "cups": 25
+      },
+      "do": "next"
+    },
+    {
+      "expectPage": "p1",
+      "set": {
+        "cups": 4
+      },
+      "do": "next"
+    },
+    {
+      "expectPage": "p2",
+      "set": {
+        "why": "Lecker",
+        "again": "no"
+      },
+      "do": "next"
+    }
+  ]
+}

@@ -1,0 +1,91 @@
+{
+  "format": "osp-fixture-survey/0",
+  "description": "§6: explicit end nodes with codes, inside branches and at the end of the flow.",
+  "id": "f11_end_nodes",
+  "version": 1,
+  "title": "End nodes",
+  "languages": [
+    "en"
+  ],
+  "settings": {
+    "backNavigation": true
+  },
+  "choiceLists": {
+    "yesno": [
+      {
+        "value": "yes",
+        "label": "Yes"
+      },
+      {
+        "value": "no",
+        "label": "No"
+      }
+    ]
+  },
+  "blocks": {
+    "p1": {
+      "items": [
+        {
+          "id": "eligible",
+          "type": "single",
+          "label": "Are you willing to answer two more questions?",
+          "choices": "yesno",
+          "required": true
+        }
+      ]
+    },
+    "p2": {
+      "items": [
+        {
+          "id": "rating",
+          "type": "integer",
+          "label": "Rate your breakfast today from 1 to 10.",
+          "required": true
+        }
+      ]
+    },
+    "p3": {
+      "items": [
+        {
+          "id": "extra",
+          "type": "text",
+          "label": "Anything else about breakfast?"
+        }
+      ]
+    }
+  },
+  "flow": [
+    {
+      "block": "p1"
+    },
+    {
+      "branch": {
+        "if": "eligible == \"no\"",
+        "then": [
+          {
+            "end": "ineligible"
+          }
+        ]
+      }
+    },
+    {
+      "block": "p2"
+    },
+    {
+      "branch": {
+        "if": "rating < 3",
+        "then": [
+          {
+            "end": "early_exit"
+          }
+        ]
+      }
+    },
+    {
+      "block": "p3"
+    },
+    {
+      "end": "complete"
+    }
+  ]
+}

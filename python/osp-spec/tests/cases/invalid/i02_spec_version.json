@@ -1,0 +1,43 @@
+{
+  "description": "Unknown specVersion is refused before anything else.",
+  "expect": [
+    {
+      "code": "spec.unsupported_version",
+      "pointer": "/specVersion"
+    }
+  ],
+  "survey": {
+    "specVersion": "osp-survey/9.0",
+    "id": "srv_case",
+    "metadata": {
+      "title": "Case",
+      "languages": [
+        "en"
+      ]
+    },
+    "blocks": [
+      {
+        "id": "b1",
+        "pages": [
+          {
+            "id": "p1",
+            "items": [
+              {
+                "id": "q1",
+                "type": "integer",
+                "label": "Question q1"
+              }
+            ]
+          }
+        ]
+      }
+    ],
+    "flow": [
+      {
+        "type": "block",
+        "id": "f_b1",
+        "block": "b1"
+      }
+    ]
+  }
+}

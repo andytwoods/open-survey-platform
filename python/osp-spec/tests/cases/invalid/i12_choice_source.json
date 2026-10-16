@@ -1,0 +1,69 @@
+{
+  "description": "A choice question sets exactly one of choiceList/choices.",
+  "expect": [
+    {
+      "code": "choice.source",
+      "pointer": "/blocks/0/pages/0/items/0"
+    }
+  ],
+  "survey": {
+    "specVersion": "osp-survey/0.1",
+    "id": "srv_case",
+    "metadata": {
+      "title": "Case",
+      "languages": [
+        "en"
+      ]
+    },
+    "blocks": [
+      {
+        "id": "b1",
+        "pages": [
+          {
+            "id": "p1",
+            "items": [
+              {
+                "id": "q1",
+                "type": "single",
+                "label": "Question q1",
+                "choiceList": "yn",
+                "choices": [
+                  {
+                    "value": 1,
+                    "label": "Yes"
+                  },
+                  {
+                    "value": 0,
+                    "label": "No"
+                  }
+                ]
+              }
+            ]
+          }
+        ]
+      }
+    ],
+    "flow": [
+      {
+        "type": "block",
+        "id": "f_b1",
+        "block": "b1"
+      }
+    ],
+    "choiceLists": [
+      {
+        "id": "yn",
+        "choices": [
+          {
+            "value": 1,
+            "label": "Yes"
+          },
+          {
+            "value": 0,
+            "label": "No"
+          }
+        ]
+      }
+    ]
+  }
+}

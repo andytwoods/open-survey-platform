@@ -1,0 +1,50 @@
+{
+  "format": "osp-fixture-script/0",
+  "id": "main",
+  "description": "Back twice keeps values; changing q1 makes q3b relevant on revisit.",
+  "sessionSeed": 701,
+  "language": "en",
+  "actions": [
+    {
+      "expectPage": "p1",
+      "set": {
+        "q1": 4
+      },
+      "do": "next"
+    },
+    {
+      "expectPage": "p2",
+      "set": {
+        "q2": "Thames"
+      },
+      "do": "next"
+    },
+    {
+      "expectPage": "p3",
+      "do": "back"
+    },
+    {
+      "expectPage": "p2",
+      "do": "back"
+    },
+    {
+      "expectPage": "p1",
+      "set": {
+        "q1": 5
+      },
+      "do": "next"
+    },
+    {
+      "expectPage": "p2",
+      "do": "next"
+    },
+    {
+      "expectPage": "p3",
+      "set": {
+        "q3": "yes",
+        "q3b": "north"
+      },
+      "do": "next"
+    }
+  ]
+}

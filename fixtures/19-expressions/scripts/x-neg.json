@@ -1,0 +1,24 @@
+{
+  "format": "osp-fixture-script/0",
+  "id": "x-neg",
+  "description": "x = -1, y unanswered, tags = [a, c].",
+  "sessionSeed": 1902,
+  "language": "en",
+  "actions": [
+    {
+      "expectPage": "p1",
+      "set": {
+        "x": -1,
+        "tags": [
+          "a",
+          "c"
+        ]
+      },
+      "do": "next"
+    },
+    {
+      "expectPage": "p2",
+      "do": "next"
+    }
+  ]
+}

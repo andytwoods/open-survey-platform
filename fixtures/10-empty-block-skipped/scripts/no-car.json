@@ -1,0 +1,31 @@
+{
+  "format": "osp-fixture-script/0",
+  "id": "no-car",
+  "description": "p_car has no relevant questions, so it is skipped going forward and going back.",
+  "sessionSeed": 1001,
+  "language": "en",
+  "actions": [
+    {
+      "expectPage": "p1",
+      "set": {
+        "has_car": "no"
+      },
+      "do": "next"
+    },
+    {
+      "expectPage": "p3",
+      "do": "back"
+    },
+    {
+      "expectPage": "p1",
+      "do": "next"
+    },
+    {
+      "expectPage": "p3",
+      "set": {
+        "commute": "bus"
+      },
+      "do": "next"
+    }
+  ]
+}

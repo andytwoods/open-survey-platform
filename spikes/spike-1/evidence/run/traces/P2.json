@@ -1,0 +1,366 @@
+{
+  "participant": "P2",
+  "token": "tokp2",
+  "pages": [
+    {
+      "n": 1,
+      "label": "consent",
+      "t": 1792155476.651,
+      "questions": [
+        "consent"
+      ],
+      "questions_hidden_in_dom": [],
+      "markers": [],
+      "errors": [],
+      "thisstep": "1",
+      "has_prev": false,
+      "has_next": true,
+      "url": "http://localhost:8082/index.php?r=survey/index&sid=900001&token=tokp2&lang=en",
+      "screenshot": "screenshots/P2_01_consent.png",
+      "question_html": {
+        "consent": "<div id=\"ls-question-text-900001X1X1\" class=\" ls-label-question \">\n        Do you consent to take part in this (fake) study?\n    </div>"
+      }
+    },
+    {
+      "n": 2,
+      "label": "consent-empty-submit",
+      "t": 1792155477.288,
+      "questions": [
+        "consent"
+      ],
+      "questions_hidden_in_dom": [],
+      "markers": [],
+      "errors": [
+        "Do you consent to take part in this (fake) study?\n This question is mandatory\nYes\nNo",
+        "This question is mandatory",
+        "One or more required questions have not been answered. You cannot proceed until these have been completed."
+      ],
+      "thisstep": "1",
+      "has_prev": false,
+      "has_next": true,
+      "url": "http://localhost:8082/index.php?r=survey/index&sid=900001",
+      "screenshot": "screenshots/P2_02_consent-empty-submit.png",
+      "question_html": {
+        "consent": "<div id=\"ls-question-text-900001X1X1\" class=\" ls-label-question \">\n        Do you consent to take part in this (fake) study?\n    </div>"
+      }
+    },
+    {
+      "n": 3,
+      "label": "age",
+      "t": 1792155478.379,
+      "questions": [
+        "age"
+      ],
+      "questions_hidden_in_dom": [
+        "assigned",
+        "mode",
+        "rawrand"
+      ],
+      "markers": [],
+      "errors": [],
+      "thisstep": "2",
+      "has_prev": true,
+      "has_next": true,
+      "url": "http://localhost:8082/index.php?r=survey/index&sid=900001",
+      "screenshot": "screenshots/P2_03_age.png",
+      "question_html": {
+        "age": "<div id=\"ls-question-text-900001X2X4\" class=\" ls-label-question \">\n        How old are you?\n    </div>"
+      }
+    },
+    {
+      "n": 4,
+      "label": "age-empty-submit",
+      "t": 1792155479.018,
+      "questions": [
+        "age"
+      ],
+      "questions_hidden_in_dom": [
+        "assigned",
+        "mode",
+        "rawrand"
+      ],
+      "markers": [],
+      "errors": [
+        "This question is mandatory",
+        "One or more required questions have not been answered. You cannot proceed until these have been completed."
+      ],
+      "thisstep": "2",
+      "has_prev": true,
+      "has_next": true,
+      "url": "http://localhost:8082/index.php?r=survey/index&sid=900001",
+      "screenshot": "screenshots/P2_04_age-empty-submit.png",
+      "question_html": {
+        "age": "<div id=\"ls-question-text-900001X2X4\" class=\" ls-label-question \">\n        How old are you?\n    </div>"
+      }
+    },
+    {
+      "n": 5,
+      "label": "age-17-submit",
+      "t": 1792155480.048,
+      "questions": [
+        "age"
+      ],
+      "questions_hidden_in_dom": [
+        "assigned",
+        "mode",
+        "rawrand"
+      ],
+      "markers": [],
+      "errors": [
+        "Your answer must be between 18 and 120",
+        "One or more questions have not been answered in a valid manner. You cannot proceed until these answers are valid."
+      ],
+      "thisstep": "2",
+      "has_prev": true,
+      "has_next": true,
+      "url": "http://localhost:8082/index.php?r=survey/index&sid=900001",
+      "screenshot": "screenshots/P2_05_age-17-submit.png",
+      "question_html": {
+        "age": "<div id=\"ls-question-text-900001X2X4\" class=\" ls-label-question \">\n        How old are you?\n    </div>"
+      }
+    },
+    {
+      "n": 6,
+      "label": "age-121-submit",
+      "t": 1792155481.072,
+      "questions": [
+        "age"
+      ],
+      "questions_hidden_in_dom": [
+        "assigned",
+        "mode",
+        "rawrand"
+      ],
+      "markers": [],
+      "errors": [
+        "Your answer must be between 18 and 120",
+        "One or more questions have not been answered in a valid manner. You cannot proceed until these answers are valid."
+      ],
+      "thisstep": "2",
+      "has_prev": true,
+      "has_next": true,
+      "url": "http://localhost:8082/index.php?r=survey/index&sid=900001",
+      "screenshot": "screenshots/P2_06_age-121-submit.png",
+      "question_html": {
+        "age": "<div id=\"ls-question-text-900001X2X4\" class=\" ls-label-question \">\n        How old are you?\n    </div>"
+      }
+    },
+    {
+      "n": 7,
+      "label": "age-30.5-submit",
+      "t": 1792155482.104,
+      "questions": [
+        "age"
+      ],
+      "questions_hidden_in_dom": [
+        "assigned",
+        "mode",
+        "rawrand"
+      ],
+      "markers": [],
+      "errors": [
+        "How old are you?\nYour answer must be between 18 and 120\nOnly an integer value may be entered in this field.",
+        "Only an integer value may be entered in this field.",
+        "One or more questions have not been answered in a valid manner. You cannot proceed until these answers are valid."
+      ],
+      "thisstep": "2",
+      "has_prev": true,
+      "has_next": true,
+      "url": "http://localhost:8082/index.php?r=survey/index&sid=900001",
+      "screenshot": "screenshots/P2_07_age-30.5-submit.png",
+      "question_html": {
+        "age": "<div id=\"ls-question-text-900001X2X4\" class=\" ls-label-question \">\n        How old are you?\n    </div>"
+      }
+    },
+    {
+      "n": 8,
+      "label": "stimulus",
+      "t": 1792155483.117,
+      "questions": [
+        "stimA"
+      ],
+      "questions_hidden_in_dom": [],
+      "markers": [
+        "STIMULUS-A"
+      ],
+      "errors": [],
+      "thisstep": "3",
+      "has_prev": true,
+      "has_next": true,
+      "url": "http://localhost:8082/index.php?r=survey/index&sid=900001",
+      "screenshot": "screenshots/P2_08_stimulus.png",
+      "question_html": {
+        "stimA": "<div id=\"ls-question-text-900001X3X8\" class=\" ls-label-question \">\n        <p>STIMULUS-A: a short story about a river.</p>\n    </div>"
+      }
+    },
+    {
+      "n": 9,
+      "label": "attitudes",
+      "t": 1792155483.78,
+      "questions": [
+        "att3",
+        "att2",
+        "att1"
+      ],
+      "questions_hidden_in_dom": [],
+      "markers": [
+        "PIPE[river story]"
+      ],
+      "errors": [],
+      "thisstep": "5",
+      "has_prev": true,
+      "has_next": true,
+      "url": "http://localhost:8082/index.php?r=survey/index&sid=900001",
+      "screenshot": "screenshots/P2_09_attitudes.png",
+      "question_html": {
+        "att1": "<div id=\"ls-question-text-900001X5X10\" class=\" ls-label-question \">\n        PIPE[river story] How calm did the story make you feel?\n    </div>",
+        "att2": "<div id=\"ls-question-text-900001X5X11\" class=\" ls-label-question \">\n        How interesting was the story?\n    </div>",
+        "att3": "<div id=\"ls-question-text-900001X5X12\" class=\" ls-label-question \">\n        How likely are you to recommend the story?\n    </div>"
+      }
+    },
+    {
+      "n": 10,
+      "label": "followup",
+      "t": 1792155484.51,
+      "questions": [
+        "fu"
+      ],
+      "questions_hidden_in_dom": [],
+      "markers": [
+        "PIPE[5]"
+      ],
+      "errors": [],
+      "thisstep": "6",
+      "has_prev": true,
+      "has_next": true,
+      "url": "http://localhost:8082/index.php?r=survey/index&sid=900001",
+      "screenshot": "screenshots/P2_10_followup.png",
+      "question_html": {
+        "fu": "<div id=\"ls-question-text-900001X6X13\" class=\" ls-label-question \">\n        PIPE[5] You rated calm highly. What made you feel that way?\n    </div>"
+      }
+    },
+    {
+      "n": 11,
+      "label": "followup-empty-submit",
+      "t": 1792155485.122,
+      "questions": [
+        "fu"
+      ],
+      "questions_hidden_in_dom": [],
+      "markers": [
+        "PIPE[5]"
+      ],
+      "errors": [
+        "PIPE[5] You rated calm highly. What made you feel that way?\n This question is mandatory",
+        "This question is mandatory",
+        "You cannot proceed until you enter some text for one or more questions."
+      ],
+      "thisstep": "6",
+      "has_prev": true,
+      "has_next": true,
+      "url": "http://localhost:8082/index.php?r=survey/index&sid=900001",
+      "screenshot": "screenshots/P2_11_followup-empty-submit.png",
+      "question_html": {
+        "fu": "<div id=\"ls-question-text-900001X6X13\" class=\" ls-label-question \">\n        PIPE[5] You rated calm highly. What made you feel that way?\n    </div>"
+      }
+    },
+    {
+      "n": 12,
+      "label": "final",
+      "t": 1792155486.123,
+      "questions": [
+        "comments"
+      ],
+      "questions_hidden_in_dom": [],
+      "markers": [
+        "PIPEFU[<b>bold</b> & <i>it</i>]",
+        "PIPESHOWN[Yes]"
+      ],
+      "errors": [],
+      "thisstep": "7",
+      "has_prev": true,
+      "has_next": true,
+      "url": "http://localhost:8082/index.php?r=survey/index&sid=900001",
+      "screenshot": "screenshots/P2_12_final.png",
+      "question_html": {
+        "comments": "<div id=\"ls-question-text-900001X7X14\" class=\" ls-label-question \">\n        PIPEFU[&lt;b&gt;bold&lt;/b&gt; &amp; &lt;i&gt;it&lt;/i&gt;] PIPESHOWN[Yes] Any comments? (optional)\n    </div>"
+      }
+    },
+    {
+      "n": 13,
+      "label": "end",
+      "t": 1792155486.794,
+      "questions": [],
+      "questions_hidden_in_dom": [],
+      "markers": [
+        "END-OF-SURVEY"
+      ],
+      "errors": [],
+      "thisstep": null,
+      "has_prev": false,
+      "has_next": false,
+      "url": "http://localhost:8082/index.php?r=survey/index&sid=900001",
+      "screenshot": "screenshots/P2_13_end.png",
+      "question_html": {},
+      "page_text": "END-OF-SURVEY"
+    }
+  ],
+  "notes": [
+    {
+      "db_before_submit": [
+        {
+          "id": "2",
+          "token": "tokp2",
+          "submitdate": null,
+          "lastpage": "6",
+          "startlanguage": "en",
+          "seed": "1901903913",
+          "startdate": "2026-10-16 12:57:56",
+          "datestamp": "2026-10-16 12:58:05",
+          "consent": "Y",
+          "cond": "",
+          "ospseed": "",
+          "age": "30.0000000000",
+          "assigned": "A",
+          "mode": "limesurvey-native",
+          "rawrand": "807189",
+          "stimA": "",
+          "stimB": null,
+          "att1": "5",
+          "att2": "4",
+          "att3": "3",
+          "fu": "<b>bold</b> & <i>it</i>",
+          "comments": null
+        }
+      ]
+    },
+    {
+      "db_final": [
+        {
+          "id": "2",
+          "token": "tokp2",
+          "submitdate": "2026-10-16 12:58:06",
+          "lastpage": "7",
+          "startlanguage": "en",
+          "seed": "1901903913",
+          "startdate": "2026-10-16 12:57:56",
+          "datestamp": "2026-10-16 12:58:06",
+          "consent": "Y",
+          "cond": "",
+          "ospseed": "",
+          "age": "30.0000000000",
+          "assigned": "A",
+          "mode": "limesurvey-native",
+          "rawrand": "807189",
+          "stimA": "",
+          "stimB": null,
+          "att1": "5",
+          "att2": "4",
+          "att3": "3",
+          "fu": "<b>bold</b> & <i>it</i>",
+          "comments": ""
+        }
+      ]
+    }
+  ]
+}

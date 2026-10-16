@@ -1,0 +1,48 @@
+{
+  "description": "Piping obeys the same ordering rule as conditions.",
+  "expect": [
+    {
+      "code": "ref.forward",
+      "pointer": "/blocks/0/pages/0/items/0/label"
+    }
+  ],
+  "survey": {
+    "specVersion": "osp-survey/0.1",
+    "id": "srv_case",
+    "metadata": {
+      "title": "Case",
+      "languages": [
+        "en"
+      ]
+    },
+    "blocks": [
+      {
+        "id": "b1",
+        "pages": [
+          {
+            "id": "p1",
+            "items": [
+              {
+                "id": "q1",
+                "type": "text",
+                "label": "Earlier you said ${q2}"
+              },
+              {
+                "id": "q2",
+                "type": "text",
+                "label": "Question q2"
+              }
+            ]
+          }
+        ]
+      }
+    ],
+    "flow": [
+      {
+        "type": "block",
+        "id": "f_b1",
+        "block": "b1"
+      }
+    ]
+  }
+}

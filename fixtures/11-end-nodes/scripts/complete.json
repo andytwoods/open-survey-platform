@@ -1,0 +1,30 @@
+{
+  "format": "osp-fixture-script/0",
+  "id": "complete",
+  "description": "Explicit end 'complete'.",
+  "sessionSeed": 1103,
+  "language": "en",
+  "actions": [
+    {
+      "expectPage": "p1",
+      "set": {
+        "eligible": "yes"
+      },
+      "do": "next"
+    },
+    {
+      "expectPage": "p2",
+      "set": {
+        "rating": 8
+      },
+      "do": "next"
+    },
+    {
+      "expectPage": "p3",
+      "set": {
+        "extra": "Toast"
+      },
+      "do": "next"
+    }
+  ]
+}

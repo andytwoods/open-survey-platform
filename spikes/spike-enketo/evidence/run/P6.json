@@ -1,0 +1,107 @@
+{
+ "id": "P6",
+ "sid": "21dd9a2510ff",
+ "pages": [
+  "/data/p_colour",
+  "/data/blk_y",
+  "/data/blk_x"
+ ],
+ "checks": [
+  {
+   "name": "consent -> p_age",
+   "expected": "/data/p_age",
+   "actual": "/data/p_age",
+   "ok": true
+  },
+  {
+   "name": "resume: same page",
+   "expected": "/data/p_att",
+   "actual": "/data/p_att",
+   "ok": true
+  },
+  {
+   "name": "resume: same question order",
+   "expected": [
+    "att2",
+    "att1",
+    "att3"
+   ],
+   "actual": [
+    "att2",
+    "att1",
+    "att3"
+   ],
+   "ok": true
+  },
+  {
+   "name": "resume: same cond",
+   "expected": "A",
+   "actual": "A",
+   "ok": true
+  },
+  {
+   "name": "resume: att1 still 4",
+   "expected": true,
+   "actual": true,
+   "ok": true
+  },
+  {
+   "name": "resume: age kept",
+   "expected": "41",
+   "actual": "41",
+   "ok": true
+  },
+  {
+   "name": "back after resume -> own stimulus",
+   "expected": "/data/p_stim_a",
+   "actual": "/data/p_stim_a",
+   "ok": true
+  },
+  {
+   "name": "resume on colour page",
+   "expected": "/data/p_colour",
+   "actual": "/data/p_colour",
+   "ok": true
+  },
+  {
+   "name": "colour order after reload == Python",
+   "expected": [
+    "yellow",
+    "red",
+    "blue",
+    "green",
+    "purple"
+   ],
+   "actual": [
+    "yellow",
+    "red",
+    "blue",
+    "green",
+    "purple"
+   ],
+   "ok": true
+  },
+  {
+   "name": "resume keeps text exactly (semantics \u00a72)",
+   "expected": "  x  ",
+   "actual": "  x  ",
+   "ok": true
+  },
+  {
+   "name": "sub: answers from before reload kept",
+   "expected": [
+    "41",
+    "4"
+   ],
+   "actual": [
+    "41",
+    "4"
+   ],
+   "ok": true
+  }
+ ],
+ "notes": [],
+ "console": [],
+ "pass": true,
+ "doc": "Refresh mid-page and resume: same page, values, order, condition (E7)."
+}

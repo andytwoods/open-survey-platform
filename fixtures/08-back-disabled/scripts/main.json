@@ -1,0 +1,23 @@
+{
+  "format": "osp-fixture-script/0",
+  "id": "main",
+  "description": "Back is never offered.",
+  "sessionSeed": 801,
+  "language": "en",
+  "actions": [
+    {
+      "expectPage": "p1",
+      "set": {
+        "q1": "yes"
+      },
+      "do": "next"
+    },
+    {
+      "expectPage": "p2",
+      "set": {
+        "q2": "fine"
+      },
+      "do": "next"
+    }
+  ]
+}

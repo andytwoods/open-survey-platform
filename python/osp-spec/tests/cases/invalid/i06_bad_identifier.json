@@ -1,0 +1,43 @@
+{
+  "description": "Ids must be identifiers.",
+  "expect": [
+    {
+      "code": "schema.pattern",
+      "pointer": "/blocks/0/pages/0/items/0/id"
+    }
+  ],
+  "survey": {
+    "specVersion": "osp-survey/0.1",
+    "id": "srv_case",
+    "metadata": {
+      "title": "Case",
+      "languages": [
+        "en"
+      ]
+    },
+    "blocks": [
+      {
+        "id": "b1",
+        "pages": [
+          {
+            "id": "p1",
+            "items": [
+              {
+                "id": "1st",
+                "type": "integer",
+                "label": "Question 1st"
+              }
+            ]
+          }
+        ]
+      }
+    ],
+    "flow": [
+      {
+        "type": "block",
+        "id": "f_b1",
+        "block": "b1"
+      }
+    ]
+  }
+}

@@ -1,0 +1,52 @@
+{
+  "format": "osp-fixture-script/0",
+  "id": "complete-gain",
+  "description": "Consent, fail the age constraint, then age 30 (band 18-39, quota not applicable), gain framing, shuffled attitudes with ${incentive} piped.",
+  "sessionSeed": 202,
+  "language": "en",
+  "server": {
+    "conditions": {
+      "framing": "gain",
+      "incentive": "£5 voucher"
+    },
+    "quotas": {
+      "q_old": "open"
+    }
+  },
+  "actions": [
+    {
+      "expectPage": "consent",
+      "set": {
+        "consent": 1
+      },
+      "do": "next"
+    },
+    {
+      "expectPage": "demo",
+      "set": {
+        "age": 17
+      },
+      "do": "next"
+    },
+    {
+      "expectPage": "demo",
+      "set": {
+        "age": 30
+      },
+      "do": "next"
+    },
+    {
+      "expectPage": "stim_gain",
+      "do": "next"
+    },
+    {
+      "expectPage": "attitudes",
+      "set": {
+        "att1": 4,
+        "att2": 5,
+        "att3": 2
+      },
+      "do": "next"
+    }
+  ]
+}

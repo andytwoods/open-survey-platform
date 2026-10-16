@@ -1,0 +1,53 @@
+{
+  "description": "Codes are unique within a list.",
+  "expect": [
+    {
+      "code": "choice.duplicate_value",
+      "pointer": "/blocks/0/pages/0/items/0/choices/1/value"
+    }
+  ],
+  "survey": {
+    "specVersion": "osp-survey/0.1",
+    "id": "srv_case",
+    "metadata": {
+      "title": "Case",
+      "languages": [
+        "en"
+      ]
+    },
+    "blocks": [
+      {
+        "id": "b1",
+        "pages": [
+          {
+            "id": "p1",
+            "items": [
+              {
+                "id": "q1",
+                "type": "single",
+                "label": "Question q1",
+                "choices": [
+                  {
+                    "value": 1,
+                    "label": "A"
+                  },
+                  {
+                    "value": 1,
+                    "label": "B"
+                  }
+                ]
+              }
+            ]
+          }
+        ]
+      }
+    ],
+    "flow": [
+      {
+        "type": "block",
+        "id": "f_b1",
+        "block": "b1"
+      }
+    ]
+  }
+}

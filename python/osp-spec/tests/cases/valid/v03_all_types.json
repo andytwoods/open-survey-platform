@@ -1,0 +1,90 @@
+{
+  "description": "Every question type on one page; inline choices; shuffled multi choices.",
+  "expect": [],
+  "survey": {
+    "specVersion": "osp-survey/0.1",
+    "id": "srv_case",
+    "metadata": {
+      "title": "Case",
+      "languages": [
+        "en"
+      ]
+    },
+    "blocks": [
+      {
+        "id": "b1",
+        "pages": [
+          {
+            "id": "p1",
+            "items": [
+              {
+                "id": "intro",
+                "type": "note",
+                "label": "Welcome"
+              },
+              {
+                "id": "n_kids",
+                "type": "integer",
+                "label": "Question n_kids"
+              },
+              {
+                "id": "height",
+                "type": "decimal",
+                "label": "Question height"
+              },
+              {
+                "id": "comment",
+                "type": "text",
+                "label": "Question comment"
+              },
+              {
+                "id": "colour",
+                "type": "single",
+                "label": "Question colour",
+                "choices": [
+                  {
+                    "value": "red",
+                    "label": "Red"
+                  },
+                  {
+                    "value": "blue",
+                    "label": "Blue"
+                  }
+                ]
+              },
+              {
+                "id": "pets",
+                "type": "multi",
+                "label": "Question pets",
+                "choiceOrder": "shuffle",
+                "choices": [
+                  {
+                    "value": "cat",
+                    "label": "Cat"
+                  },
+                  {
+                    "value": "dog",
+                    "label": "Dog"
+                  }
+                ]
+              },
+              {
+                "id": "dob",
+                "type": "date",
+                "label": "Question dob",
+                "required": true
+              }
+            ]
+          }
+        ]
+      }
+    ],
+    "flow": [
+      {
+        "type": "block",
+        "id": "f_b1",
+        "block": "b1"
+      }
+    ]
+  }
+}

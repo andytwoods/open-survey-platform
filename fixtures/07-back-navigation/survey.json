@@ -1,0 +1,72 @@
+{
+  "format": "osp-fixture-survey/0",
+  "description": "§5: back keeps values; relevance of later pages is re-evaluated.",
+  "id": "f07_back_navigation",
+  "version": 1,
+  "title": "Back navigation",
+  "languages": [
+    "en"
+  ],
+  "settings": {
+    "backNavigation": true
+  },
+  "choiceLists": {
+    "yesno": [
+      {
+        "value": "yes",
+        "label": "Yes"
+      },
+      {
+        "value": "no",
+        "label": "No"
+      }
+    ]
+  },
+  "blocks": {
+    "p1": {
+      "items": [
+        {
+          "id": "q1",
+          "type": "integer",
+          "label": "How many windows does your room have?"
+        }
+      ]
+    },
+    "p2": {
+      "items": [
+        {
+          "id": "q2",
+          "type": "text",
+          "label": "Name a river."
+        }
+      ]
+    },
+    "p3": {
+      "items": [
+        {
+          "id": "q3",
+          "type": "single",
+          "label": "Do you like rain?",
+          "choices": "yesno"
+        },
+        {
+          "id": "q3b",
+          "type": "text",
+          "label": "That is a lot of windows. Which way do they face?",
+          "showIf": "q1 > 4"
+        }
+      ]
+    }
+  },
+  "flow": [
+    {
+      "block": "p1"
+    },
+    {
+      "block": "p2"
+    },
+    {
+      "block": "p3"
+    }
+  ]
+}

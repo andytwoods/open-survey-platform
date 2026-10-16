@@ -1,0 +1,358 @@
+{
+  "format": "osp-fixture-expected/0",
+  "fixture": "20-worked-example",
+  "script": "complete-gain",
+  "pending": [
+    "C3a-1",
+    "C3a-2",
+    "C3a-3",
+    "C3a-4",
+    "C3a-5"
+  ],
+  "steps": [
+    {
+      "index": 0,
+      "page": "consent",
+      "visible": [
+        "consent"
+      ],
+      "errors": {},
+      "nav": {
+        "back": false
+      },
+      "questions": {
+        "consent": {
+          "state": "unanswered",
+          "value": null
+        },
+        "age": {
+          "state": "not-reached",
+          "value": null
+        },
+        "att1": {
+          "state": "not-reached",
+          "value": null
+        },
+        "att2": {
+          "state": "not-reached",
+          "value": null
+        },
+        "att3": {
+          "state": "not-reached",
+          "value": null
+        }
+      },
+      "orders": {
+        "blocks": {},
+        "items": {},
+        "choices": {}
+      },
+      "conditions": {
+        "framing": "gain",
+        "incentive": "£5 voucher"
+      },
+      "end": null
+    },
+    {
+      "index": 1,
+      "page": "demo",
+      "visible": [
+        "age"
+      ],
+      "errors": {},
+      "nav": {
+        "back": true
+      },
+      "questions": {
+        "consent": {
+          "state": "answered",
+          "value": 1
+        },
+        "age": {
+          "state": "unanswered",
+          "value": null
+        },
+        "att1": {
+          "state": "not-reached",
+          "value": null
+        },
+        "att2": {
+          "state": "not-reached",
+          "value": null
+        },
+        "att3": {
+          "state": "not-reached",
+          "value": null
+        }
+      },
+      "orders": {
+        "blocks": {},
+        "items": {},
+        "choices": {}
+      },
+      "conditions": {
+        "framing": "gain",
+        "incentive": "£5 voucher"
+      },
+      "end": null
+    },
+    {
+      "index": 2,
+      "page": "demo",
+      "visible": [
+        "age"
+      ],
+      "errors": {
+        "age": {
+          "kind": "constraint",
+          "message": "Please enter an age between 18 and 120."
+        }
+      },
+      "nav": {
+        "back": true
+      },
+      "questions": {
+        "consent": {
+          "state": "answered",
+          "value": 1
+        },
+        "age": {
+          "state": "answered",
+          "value": 17
+        },
+        "att1": {
+          "state": "not-reached",
+          "value": null
+        },
+        "att2": {
+          "state": "not-reached",
+          "value": null
+        },
+        "att3": {
+          "state": "not-reached",
+          "value": null
+        }
+      },
+      "orders": {
+        "blocks": {},
+        "items": {},
+        "choices": {}
+      },
+      "conditions": {
+        "framing": "gain",
+        "incentive": "£5 voucher"
+      },
+      "end": null
+    },
+    {
+      "index": 3,
+      "page": "stim_gain",
+      "visible": [
+        "stim_g"
+      ],
+      "errors": {},
+      "nav": {
+        "back": true
+      },
+      "questions": {
+        "consent": {
+          "state": "answered",
+          "value": 1
+        },
+        "age": {
+          "state": "answered",
+          "value": 30
+        },
+        "att1": {
+          "state": "not-reached",
+          "value": null
+        },
+        "att2": {
+          "state": "not-reached",
+          "value": null
+        },
+        "att3": {
+          "state": "not-reached",
+          "value": null
+        }
+      },
+      "orders": {
+        "blocks": {},
+        "items": {},
+        "choices": {}
+      },
+      "conditions": {
+        "framing": "gain",
+        "incentive": "£5 voucher"
+      },
+      "end": null
+    },
+    {
+      "index": 4,
+      "page": "attitudes",
+      "visible": "<engine>",
+      "errors": {},
+      "nav": {
+        "back": true
+      },
+      "questions": {
+        "consent": {
+          "state": "answered",
+          "value": 1
+        },
+        "age": {
+          "state": "answered",
+          "value": 30
+        },
+        "att1": {
+          "state": "unanswered",
+          "value": null
+        },
+        "att2": {
+          "state": "unanswered",
+          "value": null
+        },
+        "att3": {
+          "state": "unanswered",
+          "value": null
+        }
+      },
+      "orders": {
+        "blocks": {},
+        "items": {
+          "attitudes": "<engine>"
+        },
+        "choices": {}
+      },
+      "conditions": {
+        "framing": "gain",
+        "incentive": "£5 voucher"
+      },
+      "end": null,
+      "labels": {
+        "att1": "With the £5 voucher you were offered, the programme seems fair.",
+        "att2": "I would support Programme A.",
+        "att3": "Programme A is too risky."
+      }
+    },
+    {
+      "index": 5,
+      "page": null,
+      "visible": [],
+      "errors": {},
+      "nav": null,
+      "questions": {
+        "consent": {
+          "state": "answered",
+          "value": 1
+        },
+        "age": {
+          "state": "answered",
+          "value": 30
+        },
+        "att1": {
+          "state": "answered",
+          "value": 4
+        },
+        "att2": {
+          "state": "answered",
+          "value": 5
+        },
+        "att3": {
+          "state": "answered",
+          "value": 2
+        }
+      },
+      "orders": {
+        "blocks": {},
+        "items": {
+          "attitudes": "<engine>"
+        },
+        "choices": {}
+      },
+      "conditions": {
+        "framing": "gain",
+        "incentive": "£5 voucher"
+      },
+      "end": "complete"
+    }
+  ],
+  "invariants": [
+    {
+      "kind": "permutation",
+      "of": [
+        "att1",
+        "att2",
+        "att3"
+      ],
+      "paths": [
+        "response.orders.items.attitudes"
+      ]
+    },
+    {
+      "kind": "equal",
+      "paths": [
+        "steps[4].orders.items.attitudes",
+        "steps[5].orders.items.attitudes",
+        "steps[4].visible",
+        "response.orders.items.attitudes"
+      ]
+    }
+  ],
+  "response": {
+    "surveyId": "srv_7f3c",
+    "surveyVersion": 3,
+    "end": "complete",
+    "allocation": "server",
+    "sessionSeed": 202,
+    "conditions": {
+      "framing": "gain",
+      "incentive": "£5 voucher"
+    },
+    "orders": {
+      "blocks": {},
+      "items": {
+        "attitudes": "<engine>"
+      },
+      "choices": {}
+    },
+    "answers": {
+      "consent": {
+        "state": "answered",
+        "value": 1
+      },
+      "age": {
+        "state": "answered",
+        "value": 30
+      },
+      "att1": {
+        "state": "answered",
+        "value": 4
+      },
+      "att2": {
+        "state": "answered",
+        "value": 5
+      },
+      "att3": {
+        "state": "answered",
+        "value": 2
+      }
+    },
+    "csvState": {
+      "consent__state": "answered",
+      "age__state": "answered",
+      "att1__state": "answered",
+      "att2__state": "answered",
+      "att3__state": "answered"
+    },
+    "calculated": {
+      "age_band": "<pending:C3a-2>"
+    },
+    "scores": {
+      "att_score": "<pending:C3a-4>"
+    },
+    "embeddedData": {
+      "source": "<pending:C3a-5>"
+    }
+  }
+}

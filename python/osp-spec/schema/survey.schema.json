@@ -1,0 +1,2182 @@
+{
+  "$defs": {
+    "And": {
+      "additionalProperties": false,
+      "description": "N-ary conjunction (at least two operands).",
+      "properties": {
+        "args": {
+          "items": {
+            "discriminator": {
+              "mapping": {
+                "and": "#/$defs/And",
+                "answered": "#/$defs/Answered",
+                "arith": "#/$defs/Arith",
+                "compare": "#/$defs/Compare",
+                "contains": "#/$defs/Contains",
+                "decimal": "#/$defs/DecLit",
+                "int": "#/$defs/IntLit",
+                "not": "#/$defs/Not",
+                "null": "#/$defs/NullLit",
+                "or": "#/$defs/Or",
+                "ref": "#/$defs/Ref",
+                "text": "#/$defs/TextLit"
+              },
+              "propertyName": "kind"
+            },
+            "oneOf": [
+              {
+                "$ref": "#/$defs/IntLit"
+              },
+              {
+                "$ref": "#/$defs/DecLit"
+              },
+              {
+                "$ref": "#/$defs/TextLit"
+              },
+              {
+                "$ref": "#/$defs/NullLit"
+              },
+              {
+                "$ref": "#/$defs/Ref"
+              },
+              {
+                "$ref": "#/$defs/Compare"
+              },
+              {
+                "$ref": "#/$defs/Arith"
+              },
+              {
+                "$ref": "#/$defs/And"
+              },
+              {
+                "$ref": "#/$defs/Or"
+              },
+              {
+                "$ref": "#/$defs/Not"
+              },
+              {
+                "$ref": "#/$defs/Answered"
+              },
+              {
+                "$ref": "#/$defs/Contains"
+              }
+            ]
+          },
+          "minItems": 2,
+          "title": "Args",
+          "type": "array"
+        },
+        "kind": {
+          "const": "and",
+          "default": "and",
+          "title": "Kind",
+          "type": "string"
+        }
+      },
+      "required": [
+        "args"
+      ],
+      "title": "And",
+      "type": "object"
+    },
+    "Answered": {
+      "additionalProperties": false,
+      "description": "``answered(q)``: true iff ``q`` has a value; the way to test presence (§3).",
+      "properties": {
+        "kind": {
+          "const": "answered",
+          "default": "answered",
+          "title": "Kind",
+          "type": "string"
+        },
+        "ref": {
+          "$ref": "#/$defs/Ref"
+        }
+      },
+      "required": [
+        "ref"
+      ],
+      "title": "Answered",
+      "type": "object"
+    },
+    "Arith": {
+      "additionalProperties": false,
+      "description": "``left op right`` for ``+ - * /``. Null in, null out (§3). ``/`` is decimal (§2).",
+      "properties": {
+        "kind": {
+          "const": "arith",
+          "default": "arith",
+          "title": "Kind",
+          "type": "string"
+        },
+        "left": {
+          "discriminator": {
+            "mapping": {
+              "and": "#/$defs/And",
+              "answered": "#/$defs/Answered",
+              "arith": "#/$defs/Arith",
+              "compare": "#/$defs/Compare",
+              "contains": "#/$defs/Contains",
+              "decimal": "#/$defs/DecLit",
+              "int": "#/$defs/IntLit",
+              "not": "#/$defs/Not",
+              "null": "#/$defs/NullLit",
+              "or": "#/$defs/Or",
+              "ref": "#/$defs/Ref",
+              "text": "#/$defs/TextLit"
+            },
+            "propertyName": "kind"
+          },
+          "oneOf": [
+            {
+              "$ref": "#/$defs/IntLit"
+            },
+            {
+              "$ref": "#/$defs/DecLit"
+            },
+            {
+              "$ref": "#/$defs/TextLit"
+            },
+            {
+              "$ref": "#/$defs/NullLit"
+            },
+            {
+              "$ref": "#/$defs/Ref"
+            },
+            {
+              "$ref": "#/$defs/Compare"
+            },
+            {
+              "$ref": "#/$defs/Arith"
+            },
+            {
+              "$ref": "#/$defs/And"
+            },
+            {
+              "$ref": "#/$defs/Or"
+            },
+            {
+              "$ref": "#/$defs/Not"
+            },
+            {
+              "$ref": "#/$defs/Answered"
+            },
+            {
+              "$ref": "#/$defs/Contains"
+            }
+          ],
+          "title": "Left"
+        },
+        "op": {
+          "enum": [
+            "+",
+            "-",
+            "*",
+            "/"
+          ],
+          "title": "Op",
+          "type": "string"
+        },
+        "right": {
+          "discriminator": {
+            "mapping": {
+              "and": "#/$defs/And",
+              "answered": "#/$defs/Answered",
+              "arith": "#/$defs/Arith",
+              "compare": "#/$defs/Compare",
+              "contains": "#/$defs/Contains",
+              "decimal": "#/$defs/DecLit",
+              "int": "#/$defs/IntLit",
+              "not": "#/$defs/Not",
+              "null": "#/$defs/NullLit",
+              "or": "#/$defs/Or",
+              "ref": "#/$defs/Ref",
+              "text": "#/$defs/TextLit"
+            },
+            "propertyName": "kind"
+          },
+          "oneOf": [
+            {
+              "$ref": "#/$defs/IntLit"
+            },
+            {
+              "$ref": "#/$defs/DecLit"
+            },
+            {
+              "$ref": "#/$defs/TextLit"
+            },
+            {
+              "$ref": "#/$defs/NullLit"
+            },
+            {
+              "$ref": "#/$defs/Ref"
+            },
+            {
+              "$ref": "#/$defs/Compare"
+            },
+            {
+              "$ref": "#/$defs/Arith"
+            },
+            {
+              "$ref": "#/$defs/And"
+            },
+            {
+              "$ref": "#/$defs/Or"
+            },
+            {
+              "$ref": "#/$defs/Not"
+            },
+            {
+              "$ref": "#/$defs/Answered"
+            },
+            {
+              "$ref": "#/$defs/Contains"
+            }
+          ],
+          "title": "Right"
+        }
+      },
+      "required": [
+        "op",
+        "left",
+        "right"
+      ],
+      "title": "Arith",
+      "type": "object"
+    },
+    "AssignNode": {
+      "additionalProperties": false,
+      "description": "Assigns each listed `assigned` variable one of its levels (semantics.md §7).",
+      "properties": {
+        "id": {
+          "$ref": "#/$defs/Identifier"
+        },
+        "type": {
+          "const": "assign",
+          "title": "Type",
+          "type": "string"
+        },
+        "variables": {
+          "items": {
+            "$ref": "#/$defs/Identifier"
+          },
+          "minItems": 1,
+          "title": "Variables",
+          "type": "array"
+        }
+      },
+      "required": [
+        "type",
+        "id",
+        "variables"
+      ],
+      "title": "AssignNode",
+      "type": "object"
+    },
+    "AssignedVariable": {
+      "additionalProperties": false,
+      "description": "A between-subjects condition, set by an `assign` flow node (semantics.md §7).",
+      "properties": {
+        "id": {
+          "$ref": "#/$defs/Identifier"
+        },
+        "kind": {
+          "const": "assigned",
+          "title": "Kind",
+          "type": "string"
+        },
+        "levels": {
+          "items": {
+            "$ref": "#/$defs/ChoiceValue"
+          },
+          "minItems": 1,
+          "title": "Levels",
+          "type": "array"
+        },
+        "name": {
+          "anyOf": [
+            {
+              "$ref": "#/$defs/Identifier"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null
+        }
+      },
+      "required": [
+        "id",
+        "kind",
+        "levels"
+      ],
+      "title": "AssignedVariable",
+      "type": "object"
+    },
+    "Block": {
+      "additionalProperties": false,
+      "description": "A named run of pages, placed in the flow by a `block` node.",
+      "properties": {
+        "id": {
+          "$ref": "#/$defs/Identifier"
+        },
+        "pages": {
+          "items": {
+            "$ref": "#/$defs/Page"
+          },
+          "minItems": 1,
+          "title": "Pages",
+          "type": "array"
+        },
+        "title": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Title"
+        }
+      },
+      "required": [
+        "id",
+        "pages"
+      ],
+      "title": "Block",
+      "type": "object"
+    },
+    "BlockNode": {
+      "additionalProperties": false,
+      "properties": {
+        "block": {
+          "$ref": "#/$defs/Identifier"
+        },
+        "id": {
+          "$ref": "#/$defs/Identifier"
+        },
+        "type": {
+          "const": "block",
+          "title": "Type",
+          "type": "string"
+        }
+      },
+      "required": [
+        "type",
+        "id",
+        "block"
+      ],
+      "title": "BlockNode",
+      "type": "object"
+    },
+    "BranchNode": {
+      "additionalProperties": false,
+      "properties": {
+        "else": {
+          "items": {
+            "$ref": "#/$defs/FlowNode"
+          },
+          "title": "Else",
+          "type": "array"
+        },
+        "id": {
+          "$ref": "#/$defs/Identifier"
+        },
+        "if": {
+          "$ref": "#/$defs/Expression"
+        },
+        "then": {
+          "items": {
+            "$ref": "#/$defs/FlowNode"
+          },
+          "title": "Then",
+          "type": "array"
+        },
+        "type": {
+          "const": "branch",
+          "title": "Type",
+          "type": "string"
+        }
+      },
+      "required": [
+        "type",
+        "id",
+        "if",
+        "then"
+      ],
+      "title": "BranchNode",
+      "type": "object"
+    },
+    "Choice": {
+      "additionalProperties": false,
+      "description": "One option. `value` is the code stored in data (semantics.md §2) and the option's\nidentity within its list.",
+      "properties": {
+        "label": {
+          "$ref": "#/$defs/Text"
+        },
+        "value": {
+          "$ref": "#/$defs/ChoiceValue"
+        }
+      },
+      "required": [
+        "value",
+        "label"
+      ],
+      "title": "Choice",
+      "type": "object"
+    },
+    "ChoiceList": {
+      "additionalProperties": false,
+      "description": "A shared choice list, referenced by questions through `choiceList`.",
+      "properties": {
+        "choices": {
+          "items": {
+            "$ref": "#/$defs/Choice"
+          },
+          "minItems": 1,
+          "title": "Choices",
+          "type": "array"
+        },
+        "id": {
+          "$ref": "#/$defs/Identifier"
+        }
+      },
+      "required": [
+        "id",
+        "choices"
+      ],
+      "title": "ChoiceList",
+      "type": "object"
+    },
+    "ChoiceValue": {
+      "anyOf": [
+        {
+          "type": "integer"
+        },
+        {
+          "type": "string"
+        }
+      ]
+    },
+    "Compare": {
+      "additionalProperties": false,
+      "description": "``left op right``. Any comparison with null is false, even ``null == null`` (§3).",
+      "properties": {
+        "kind": {
+          "const": "compare",
+          "default": "compare",
+          "title": "Kind",
+          "type": "string"
+        },
+        "left": {
+          "discriminator": {
+            "mapping": {
+              "and": "#/$defs/And",
+              "answered": "#/$defs/Answered",
+              "arith": "#/$defs/Arith",
+              "compare": "#/$defs/Compare",
+              "contains": "#/$defs/Contains",
+              "decimal": "#/$defs/DecLit",
+              "int": "#/$defs/IntLit",
+              "not": "#/$defs/Not",
+              "null": "#/$defs/NullLit",
+              "or": "#/$defs/Or",
+              "ref": "#/$defs/Ref",
+              "text": "#/$defs/TextLit"
+            },
+            "propertyName": "kind"
+          },
+          "oneOf": [
+            {
+              "$ref": "#/$defs/IntLit"
+            },
+            {
+              "$ref": "#/$defs/DecLit"
+            },
+            {
+              "$ref": "#/$defs/TextLit"
+            },
+            {
+              "$ref": "#/$defs/NullLit"
+            },
+            {
+              "$ref": "#/$defs/Ref"
+            },
+            {
+              "$ref": "#/$defs/Compare"
+            },
+            {
+              "$ref": "#/$defs/Arith"
+            },
+            {
+              "$ref": "#/$defs/And"
+            },
+            {
+              "$ref": "#/$defs/Or"
+            },
+            {
+              "$ref": "#/$defs/Not"
+            },
+            {
+              "$ref": "#/$defs/Answered"
+            },
+            {
+              "$ref": "#/$defs/Contains"
+            }
+          ],
+          "title": "Left"
+        },
+        "op": {
+          "enum": [
+            "==",
+            "!=",
+            "<",
+            "<=",
+            ">",
+            ">="
+          ],
+          "title": "Op",
+          "type": "string"
+        },
+        "right": {
+          "discriminator": {
+            "mapping": {
+              "and": "#/$defs/And",
+              "answered": "#/$defs/Answered",
+              "arith": "#/$defs/Arith",
+              "compare": "#/$defs/Compare",
+              "contains": "#/$defs/Contains",
+              "decimal": "#/$defs/DecLit",
+              "int": "#/$defs/IntLit",
+              "not": "#/$defs/Not",
+              "null": "#/$defs/NullLit",
+              "or": "#/$defs/Or",
+              "ref": "#/$defs/Ref",
+              "text": "#/$defs/TextLit"
+            },
+            "propertyName": "kind"
+          },
+          "oneOf": [
+            {
+              "$ref": "#/$defs/IntLit"
+            },
+            {
+              "$ref": "#/$defs/DecLit"
+            },
+            {
+              "$ref": "#/$defs/TextLit"
+            },
+            {
+              "$ref": "#/$defs/NullLit"
+            },
+            {
+              "$ref": "#/$defs/Ref"
+            },
+            {
+              "$ref": "#/$defs/Compare"
+            },
+            {
+              "$ref": "#/$defs/Arith"
+            },
+            {
+              "$ref": "#/$defs/And"
+            },
+            {
+              "$ref": "#/$defs/Or"
+            },
+            {
+              "$ref": "#/$defs/Not"
+            },
+            {
+              "$ref": "#/$defs/Answered"
+            },
+            {
+              "$ref": "#/$defs/Contains"
+            }
+          ],
+          "title": "Right"
+        }
+      },
+      "required": [
+        "op",
+        "left",
+        "right"
+      ],
+      "title": "Compare",
+      "type": "object"
+    },
+    "ComputedVariable": {
+      "additionalProperties": false,
+      "description": "A value derived from other answers and variables (XLSForm `calculate`).",
+      "properties": {
+        "expr": {
+          "$ref": "#/$defs/Expression"
+        },
+        "id": {
+          "$ref": "#/$defs/Identifier"
+        },
+        "kind": {
+          "const": "computed",
+          "title": "Kind",
+          "type": "string"
+        },
+        "name": {
+          "anyOf": [
+            {
+              "$ref": "#/$defs/Identifier"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null
+        }
+      },
+      "required": [
+        "id",
+        "kind",
+        "expr"
+      ],
+      "title": "ComputedVariable",
+      "type": "object"
+    },
+    "Contains": {
+      "additionalProperties": false,
+      "description": "``contains(q, value)``: true iff multi-choice ``q`` includes ``value`` (§3).",
+      "properties": {
+        "kind": {
+          "const": "contains",
+          "default": "contains",
+          "title": "Kind",
+          "type": "string"
+        },
+        "ref": {
+          "$ref": "#/$defs/Ref"
+        },
+        "value": {
+          "discriminator": {
+            "mapping": {
+              "and": "#/$defs/And",
+              "answered": "#/$defs/Answered",
+              "arith": "#/$defs/Arith",
+              "compare": "#/$defs/Compare",
+              "contains": "#/$defs/Contains",
+              "decimal": "#/$defs/DecLit",
+              "int": "#/$defs/IntLit",
+              "not": "#/$defs/Not",
+              "null": "#/$defs/NullLit",
+              "or": "#/$defs/Or",
+              "ref": "#/$defs/Ref",
+              "text": "#/$defs/TextLit"
+            },
+            "propertyName": "kind"
+          },
+          "oneOf": [
+            {
+              "$ref": "#/$defs/IntLit"
+            },
+            {
+              "$ref": "#/$defs/DecLit"
+            },
+            {
+              "$ref": "#/$defs/TextLit"
+            },
+            {
+              "$ref": "#/$defs/NullLit"
+            },
+            {
+              "$ref": "#/$defs/Ref"
+            },
+            {
+              "$ref": "#/$defs/Compare"
+            },
+            {
+              "$ref": "#/$defs/Arith"
+            },
+            {
+              "$ref": "#/$defs/And"
+            },
+            {
+              "$ref": "#/$defs/Or"
+            },
+            {
+              "$ref": "#/$defs/Not"
+            },
+            {
+              "$ref": "#/$defs/Answered"
+            },
+            {
+              "$ref": "#/$defs/Contains"
+            }
+          ],
+          "title": "Value"
+        }
+      },
+      "required": [
+        "ref",
+        "value"
+      ],
+      "title": "Contains",
+      "type": "object"
+    },
+    "DateQuestion": {
+      "additionalProperties": false,
+      "properties": {
+        "constraint": {
+          "anyOf": [
+            {
+              "$ref": "#/$defs/Expression"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null
+        },
+        "constraintMessage": {
+          "anyOf": [
+            {
+              "$ref": "#/$defs/Text"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null
+        },
+        "help": {
+          "anyOf": [
+            {
+              "$ref": "#/$defs/Text"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null
+        },
+        "id": {
+          "$ref": "#/$defs/Identifier"
+        },
+        "label": {
+          "$ref": "#/$defs/Text"
+        },
+        "name": {
+          "anyOf": [
+            {
+              "$ref": "#/$defs/Identifier"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null
+        },
+        "required": {
+          "default": false,
+          "title": "Required",
+          "type": "boolean"
+        },
+        "showIf": {
+          "anyOf": [
+            {
+              "$ref": "#/$defs/Expression"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null
+        },
+        "type": {
+          "const": "date",
+          "title": "Type",
+          "type": "string"
+        }
+      },
+      "required": [
+        "id",
+        "label",
+        "type"
+      ],
+      "title": "DateQuestion",
+      "type": "object"
+    },
+    "DecLit": {
+      "additionalProperties": false,
+      "description": "Decimal literal, e.g. ``2.50``. Always finite; never a float (§2).",
+      "properties": {
+        "kind": {
+          "const": "decimal",
+          "default": "decimal",
+          "title": "Kind",
+          "type": "string"
+        },
+        "value": {
+          "anyOf": [
+            {
+              "type": "number"
+            },
+            {
+              "type": "string"
+            }
+          ],
+          "title": "Value"
+        }
+      },
+      "required": [
+        "value"
+      ],
+      "title": "DecLit",
+      "type": "object"
+    },
+    "DecimalQuestion": {
+      "additionalProperties": false,
+      "properties": {
+        "constraint": {
+          "anyOf": [
+            {
+              "$ref": "#/$defs/Expression"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null
+        },
+        "constraintMessage": {
+          "anyOf": [
+            {
+              "$ref": "#/$defs/Text"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null
+        },
+        "help": {
+          "anyOf": [
+            {
+              "$ref": "#/$defs/Text"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null
+        },
+        "id": {
+          "$ref": "#/$defs/Identifier"
+        },
+        "label": {
+          "$ref": "#/$defs/Text"
+        },
+        "name": {
+          "anyOf": [
+            {
+              "$ref": "#/$defs/Identifier"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null
+        },
+        "required": {
+          "default": false,
+          "title": "Required",
+          "type": "boolean"
+        },
+        "showIf": {
+          "anyOf": [
+            {
+              "$ref": "#/$defs/Expression"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null
+        },
+        "type": {
+          "const": "decimal",
+          "title": "Type",
+          "type": "string"
+        }
+      },
+      "required": [
+        "id",
+        "label",
+        "type"
+      ],
+      "title": "DecimalQuestion",
+      "type": "object"
+    },
+    "EmbeddedVariable": {
+      "additionalProperties": false,
+      "description": "A value supplied at session start, e.g. from a URL parameter.",
+      "properties": {
+        "default": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "integer"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Default"
+        },
+        "id": {
+          "$ref": "#/$defs/Identifier"
+        },
+        "kind": {
+          "const": "embedded",
+          "title": "Kind",
+          "type": "string"
+        },
+        "name": {
+          "anyOf": [
+            {
+              "$ref": "#/$defs/Identifier"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null
+        },
+        "param": {
+          "title": "Param",
+          "type": "string"
+        },
+        "source": {
+          "const": "url",
+          "default": "url",
+          "title": "Source",
+          "type": "string"
+        },
+        "valueType": {
+          "default": "text",
+          "enum": [
+            "text",
+            "integer",
+            "decimal"
+          ],
+          "title": "Valuetype",
+          "type": "string"
+        }
+      },
+      "required": [
+        "id",
+        "kind",
+        "param"
+      ],
+      "title": "EmbeddedVariable",
+      "type": "object"
+    },
+    "EndNode": {
+      "additionalProperties": false,
+      "properties": {
+        "id": {
+          "$ref": "#/$defs/Identifier"
+        },
+        "message": {
+          "anyOf": [
+            {
+              "$ref": "#/$defs/Text"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null
+        },
+        "outcome": {
+          "$ref": "#/$defs/Identifier",
+          "default": "complete"
+        },
+        "type": {
+          "const": "end",
+          "title": "Type",
+          "type": "string"
+        }
+      },
+      "required": [
+        "type",
+        "id"
+      ],
+      "title": "EndNode",
+      "type": "object"
+    },
+    "Expression": {
+      "discriminator": {
+        "mapping": {
+          "and": "#/$defs/And",
+          "answered": "#/$defs/Answered",
+          "arith": "#/$defs/Arith",
+          "compare": "#/$defs/Compare",
+          "contains": "#/$defs/Contains",
+          "decimal": "#/$defs/DecLit",
+          "int": "#/$defs/IntLit",
+          "not": "#/$defs/Not",
+          "null": "#/$defs/NullLit",
+          "or": "#/$defs/Or",
+          "ref": "#/$defs/Ref",
+          "text": "#/$defs/TextLit"
+        },
+        "propertyName": "kind"
+      },
+      "oneOf": [
+        {
+          "$ref": "#/$defs/IntLit"
+        },
+        {
+          "$ref": "#/$defs/DecLit"
+        },
+        {
+          "$ref": "#/$defs/TextLit"
+        },
+        {
+          "$ref": "#/$defs/NullLit"
+        },
+        {
+          "$ref": "#/$defs/Ref"
+        },
+        {
+          "$ref": "#/$defs/Compare"
+        },
+        {
+          "$ref": "#/$defs/Arith"
+        },
+        {
+          "$ref": "#/$defs/And"
+        },
+        {
+          "$ref": "#/$defs/Or"
+        },
+        {
+          "$ref": "#/$defs/Not"
+        },
+        {
+          "$ref": "#/$defs/Answered"
+        },
+        {
+          "$ref": "#/$defs/Contains"
+        }
+      ]
+    },
+    "FlowNode": {
+      "discriminator": {
+        "mapping": {
+          "assign": "#/$defs/AssignNode",
+          "block": "#/$defs/BlockNode",
+          "branch": "#/$defs/BranchNode",
+          "end": "#/$defs/EndNode",
+          "quotaCheck": "#/$defs/QuotaCheckNode",
+          "randomiser": "#/$defs/RandomiserNode"
+        },
+        "propertyName": "type"
+      },
+      "oneOf": [
+        {
+          "$ref": "#/$defs/BlockNode"
+        },
+        {
+          "$ref": "#/$defs/BranchNode"
+        },
+        {
+          "$ref": "#/$defs/RandomiserNode"
+        },
+        {
+          "$ref": "#/$defs/AssignNode"
+        },
+        {
+          "$ref": "#/$defs/QuotaCheckNode"
+        },
+        {
+          "$ref": "#/$defs/EndNode"
+        }
+      ]
+    },
+    "Identifier": {
+      "maxLength": 64,
+      "minLength": 1,
+      "pattern": "^[A-Za-z_][A-Za-z0-9_]*$",
+      "type": "string"
+    },
+    "IntLit": {
+      "additionalProperties": false,
+      "description": "Integer literal, e.g. ``5`` or ``-3``.",
+      "properties": {
+        "kind": {
+          "const": "int",
+          "default": "int",
+          "title": "Kind",
+          "type": "string"
+        },
+        "value": {
+          "title": "Value",
+          "type": "integer"
+        }
+      },
+      "required": [
+        "value"
+      ],
+      "title": "IntLit",
+      "type": "object"
+    },
+    "IntegerQuestion": {
+      "additionalProperties": false,
+      "properties": {
+        "constraint": {
+          "anyOf": [
+            {
+              "$ref": "#/$defs/Expression"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null
+        },
+        "constraintMessage": {
+          "anyOf": [
+            {
+              "$ref": "#/$defs/Text"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null
+        },
+        "help": {
+          "anyOf": [
+            {
+              "$ref": "#/$defs/Text"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null
+        },
+        "id": {
+          "$ref": "#/$defs/Identifier"
+        },
+        "label": {
+          "$ref": "#/$defs/Text"
+        },
+        "name": {
+          "anyOf": [
+            {
+              "$ref": "#/$defs/Identifier"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null
+        },
+        "required": {
+          "default": false,
+          "title": "Required",
+          "type": "boolean"
+        },
+        "showIf": {
+          "anyOf": [
+            {
+              "$ref": "#/$defs/Expression"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null
+        },
+        "type": {
+          "const": "integer",
+          "title": "Type",
+          "type": "string"
+        }
+      },
+      "required": [
+        "id",
+        "label",
+        "type"
+      ],
+      "title": "IntegerQuestion",
+      "type": "object"
+    },
+    "JsonValue": {},
+    "LanguageTag": {
+      "pattern": "^[A-Za-z]{2,3}(-[A-Za-z0-9]{1,8})*$",
+      "type": "string"
+    },
+    "Metadata": {
+      "additionalProperties": false,
+      "properties": {
+        "ddi": {
+          "anyOf": [
+            {
+              "additionalProperties": {
+                "$ref": "#/$defs/JsonValue"
+              },
+              "type": "object"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Ddi"
+        },
+        "defaultLanguage": {
+          "anyOf": [
+            {
+              "$ref": "#/$defs/LanguageTag"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null
+        },
+        "description": {
+          "anyOf": [
+            {
+              "$ref": "#/$defs/Text"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null
+        },
+        "languages": {
+          "items": {
+            "$ref": "#/$defs/LanguageTag"
+          },
+          "minItems": 1,
+          "title": "Languages",
+          "type": "array"
+        },
+        "license": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "License"
+        },
+        "title": {
+          "$ref": "#/$defs/Text"
+        }
+      },
+      "required": [
+        "title",
+        "languages"
+      ],
+      "title": "Metadata",
+      "type": "object"
+    },
+    "MultiQuestion": {
+      "additionalProperties": false,
+      "properties": {
+        "choiceList": {
+          "anyOf": [
+            {
+              "$ref": "#/$defs/Identifier"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null
+        },
+        "choiceOrder": {
+          "$ref": "#/$defs/Order",
+          "default": "fixed"
+        },
+        "choices": {
+          "anyOf": [
+            {
+              "items": {
+                "$ref": "#/$defs/Choice"
+              },
+              "minItems": 1,
+              "type": "array"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Choices"
+        },
+        "constraint": {
+          "anyOf": [
+            {
+              "$ref": "#/$defs/Expression"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null
+        },
+        "constraintMessage": {
+          "anyOf": [
+            {
+              "$ref": "#/$defs/Text"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null
+        },
+        "help": {
+          "anyOf": [
+            {
+              "$ref": "#/$defs/Text"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null
+        },
+        "id": {
+          "$ref": "#/$defs/Identifier"
+        },
+        "label": {
+          "$ref": "#/$defs/Text"
+        },
+        "name": {
+          "anyOf": [
+            {
+              "$ref": "#/$defs/Identifier"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null
+        },
+        "required": {
+          "default": false,
+          "title": "Required",
+          "type": "boolean"
+        },
+        "showIf": {
+          "anyOf": [
+            {
+              "$ref": "#/$defs/Expression"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null
+        },
+        "type": {
+          "const": "multi",
+          "title": "Type",
+          "type": "string"
+        }
+      },
+      "required": [
+        "id",
+        "label",
+        "type"
+      ],
+      "title": "MultiQuestion",
+      "type": "object"
+    },
+    "Not": {
+      "additionalProperties": false,
+      "description": "Negation.",
+      "properties": {
+        "arg": {
+          "discriminator": {
+            "mapping": {
+              "and": "#/$defs/And",
+              "answered": "#/$defs/Answered",
+              "arith": "#/$defs/Arith",
+              "compare": "#/$defs/Compare",
+              "contains": "#/$defs/Contains",
+              "decimal": "#/$defs/DecLit",
+              "int": "#/$defs/IntLit",
+              "not": "#/$defs/Not",
+              "null": "#/$defs/NullLit",
+              "or": "#/$defs/Or",
+              "ref": "#/$defs/Ref",
+              "text": "#/$defs/TextLit"
+            },
+            "propertyName": "kind"
+          },
+          "oneOf": [
+            {
+              "$ref": "#/$defs/IntLit"
+            },
+            {
+              "$ref": "#/$defs/DecLit"
+            },
+            {
+              "$ref": "#/$defs/TextLit"
+            },
+            {
+              "$ref": "#/$defs/NullLit"
+            },
+            {
+              "$ref": "#/$defs/Ref"
+            },
+            {
+              "$ref": "#/$defs/Compare"
+            },
+            {
+              "$ref": "#/$defs/Arith"
+            },
+            {
+              "$ref": "#/$defs/And"
+            },
+            {
+              "$ref": "#/$defs/Or"
+            },
+            {
+              "$ref": "#/$defs/Not"
+            },
+            {
+              "$ref": "#/$defs/Answered"
+            },
+            {
+              "$ref": "#/$defs/Contains"
+            }
+          ],
+          "title": "Arg"
+        },
+        "kind": {
+          "const": "not",
+          "default": "not",
+          "title": "Kind",
+          "type": "string"
+        }
+      },
+      "required": [
+        "arg"
+      ],
+      "title": "Not",
+      "type": "object"
+    },
+    "NoteQuestion": {
+      "additionalProperties": false,
+      "description": "Display-only text. Stores no value, so it has no `name`, `required` or `constraint`.",
+      "properties": {
+        "help": {
+          "anyOf": [
+            {
+              "$ref": "#/$defs/Text"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null
+        },
+        "id": {
+          "$ref": "#/$defs/Identifier"
+        },
+        "label": {
+          "$ref": "#/$defs/Text"
+        },
+        "showIf": {
+          "anyOf": [
+            {
+              "$ref": "#/$defs/Expression"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null
+        },
+        "type": {
+          "const": "note",
+          "title": "Type",
+          "type": "string"
+        }
+      },
+      "required": [
+        "id",
+        "label",
+        "type"
+      ],
+      "title": "NoteQuestion",
+      "type": "object"
+    },
+    "NullLit": {
+      "additionalProperties": false,
+      "description": "The missing value ``null`` (§3).",
+      "properties": {
+        "kind": {
+          "const": "null",
+          "default": "null",
+          "title": "Kind",
+          "type": "string"
+        }
+      },
+      "title": "NullLit",
+      "type": "object"
+    },
+    "Or": {
+      "additionalProperties": false,
+      "description": "N-ary disjunction (at least two operands).",
+      "properties": {
+        "args": {
+          "items": {
+            "discriminator": {
+              "mapping": {
+                "and": "#/$defs/And",
+                "answered": "#/$defs/Answered",
+                "arith": "#/$defs/Arith",
+                "compare": "#/$defs/Compare",
+                "contains": "#/$defs/Contains",
+                "decimal": "#/$defs/DecLit",
+                "int": "#/$defs/IntLit",
+                "not": "#/$defs/Not",
+                "null": "#/$defs/NullLit",
+                "or": "#/$defs/Or",
+                "ref": "#/$defs/Ref",
+                "text": "#/$defs/TextLit"
+              },
+              "propertyName": "kind"
+            },
+            "oneOf": [
+              {
+                "$ref": "#/$defs/IntLit"
+              },
+              {
+                "$ref": "#/$defs/DecLit"
+              },
+              {
+                "$ref": "#/$defs/TextLit"
+              },
+              {
+                "$ref": "#/$defs/NullLit"
+              },
+              {
+                "$ref": "#/$defs/Ref"
+              },
+              {
+                "$ref": "#/$defs/Compare"
+              },
+              {
+                "$ref": "#/$defs/Arith"
+              },
+              {
+                "$ref": "#/$defs/And"
+              },
+              {
+                "$ref": "#/$defs/Or"
+              },
+              {
+                "$ref": "#/$defs/Not"
+              },
+              {
+                "$ref": "#/$defs/Answered"
+              },
+              {
+                "$ref": "#/$defs/Contains"
+              }
+            ]
+          },
+          "minItems": 2,
+          "title": "Args",
+          "type": "array"
+        },
+        "kind": {
+          "const": "or",
+          "default": "or",
+          "title": "Kind",
+          "type": "string"
+        }
+      },
+      "required": [
+        "args"
+      ],
+      "title": "Or",
+      "type": "object"
+    },
+    "Order": {
+      "enum": [
+        "fixed",
+        "shuffle"
+      ],
+      "type": "string"
+    },
+    "Page": {
+      "additionalProperties": false,
+      "description": "One screen. Validation runs on page submit (semantics.md §4).",
+      "properties": {
+        "id": {
+          "$ref": "#/$defs/Identifier"
+        },
+        "itemOrder": {
+          "$ref": "#/$defs/Order",
+          "default": "fixed"
+        },
+        "items": {
+          "items": {
+            "$ref": "#/$defs/Question"
+          },
+          "minItems": 1,
+          "title": "Items",
+          "type": "array"
+        }
+      },
+      "required": [
+        "id",
+        "items"
+      ],
+      "title": "Page",
+      "type": "object"
+    },
+    "Question": {
+      "discriminator": {
+        "mapping": {
+          "date": "#/$defs/DateQuestion",
+          "decimal": "#/$defs/DecimalQuestion",
+          "integer": "#/$defs/IntegerQuestion",
+          "multi": "#/$defs/MultiQuestion",
+          "note": "#/$defs/NoteQuestion",
+          "single": "#/$defs/SingleQuestion",
+          "text": "#/$defs/TextQuestion"
+        },
+        "propertyName": "type"
+      },
+      "oneOf": [
+        {
+          "$ref": "#/$defs/IntegerQuestion"
+        },
+        {
+          "$ref": "#/$defs/DecimalQuestion"
+        },
+        {
+          "$ref": "#/$defs/TextQuestion"
+        },
+        {
+          "$ref": "#/$defs/SingleQuestion"
+        },
+        {
+          "$ref": "#/$defs/MultiQuestion"
+        },
+        {
+          "$ref": "#/$defs/DateQuestion"
+        },
+        {
+          "$ref": "#/$defs/NoteQuestion"
+        }
+      ]
+    },
+    "Quota": {
+      "additionalProperties": false,
+      "properties": {
+        "countOn": {
+          "const": "complete",
+          "default": "complete",
+          "title": "Counton",
+          "type": "string"
+        },
+        "id": {
+          "$ref": "#/$defs/Identifier"
+        },
+        "limit": {
+          "minimum": 0,
+          "title": "Limit",
+          "type": "integer"
+        },
+        "onFull": {
+          "$ref": "#/$defs/QuotaFull"
+        },
+        "when": {
+          "$ref": "#/$defs/Expression"
+        }
+      },
+      "required": [
+        "id",
+        "when",
+        "limit",
+        "onFull"
+      ],
+      "title": "Quota",
+      "type": "object"
+    },
+    "QuotaCheckNode": {
+      "additionalProperties": false,
+      "properties": {
+        "id": {
+          "$ref": "#/$defs/Identifier"
+        },
+        "quota": {
+          "$ref": "#/$defs/Identifier"
+        },
+        "type": {
+          "const": "quotaCheck",
+          "title": "Type",
+          "type": "string"
+        }
+      },
+      "required": [
+        "type",
+        "id",
+        "quota"
+      ],
+      "title": "QuotaCheckNode",
+      "type": "object"
+    },
+    "QuotaFull": {
+      "additionalProperties": false,
+      "description": "What happens to a participant who hits a full quota: optionally show `block`, then\nend with `outcome`.",
+      "properties": {
+        "block": {
+          "anyOf": [
+            {
+              "$ref": "#/$defs/Identifier"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null
+        },
+        "outcome": {
+          "$ref": "#/$defs/Identifier"
+        }
+      },
+      "required": [
+        "outcome"
+      ],
+      "title": "QuotaFull",
+      "type": "object"
+    },
+    "RandomiserNode": {
+      "additionalProperties": false,
+      "description": "Runs its children in a seeded random order, or `pick` of them (semantics.md §7).",
+      "properties": {
+        "children": {
+          "items": {
+            "$ref": "#/$defs/FlowNode"
+          },
+          "minItems": 1,
+          "title": "Children",
+          "type": "array"
+        },
+        "id": {
+          "$ref": "#/$defs/Identifier"
+        },
+        "pick": {
+          "anyOf": [
+            {
+              "minimum": 1,
+              "type": "integer"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Pick"
+        },
+        "type": {
+          "const": "randomiser",
+          "title": "Type",
+          "type": "string"
+        }
+      },
+      "required": [
+        "type",
+        "id",
+        "children"
+      ],
+      "title": "RandomiserNode",
+      "type": "object"
+    },
+    "Ref": {
+      "additionalProperties": false,
+      "description": "Reference to a question (or recorded variable) by id. Not-reached or\nirrelevant questions evaluate to null (§3).",
+      "properties": {
+        "id": {
+          "pattern": "^[A-Za-z_][A-Za-z0-9_]*$",
+          "title": "Id",
+          "type": "string"
+        },
+        "kind": {
+          "const": "ref",
+          "default": "ref",
+          "title": "Kind",
+          "type": "string"
+        }
+      },
+      "required": [
+        "id"
+      ],
+      "title": "Ref",
+      "type": "object"
+    },
+    "Settings": {
+      "additionalProperties": false,
+      "properties": {
+        "backNavigation": {
+          "default": true,
+          "title": "Backnavigation",
+          "type": "boolean"
+        }
+      },
+      "title": "Settings",
+      "type": "object"
+    },
+    "SingleQuestion": {
+      "additionalProperties": false,
+      "properties": {
+        "choiceList": {
+          "anyOf": [
+            {
+              "$ref": "#/$defs/Identifier"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null
+        },
+        "choiceOrder": {
+          "$ref": "#/$defs/Order",
+          "default": "fixed"
+        },
+        "choices": {
+          "anyOf": [
+            {
+              "items": {
+                "$ref": "#/$defs/Choice"
+              },
+              "minItems": 1,
+              "type": "array"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Choices"
+        },
+        "constraint": {
+          "anyOf": [
+            {
+              "$ref": "#/$defs/Expression"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null
+        },
+        "constraintMessage": {
+          "anyOf": [
+            {
+              "$ref": "#/$defs/Text"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null
+        },
+        "help": {
+          "anyOf": [
+            {
+              "$ref": "#/$defs/Text"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null
+        },
+        "id": {
+          "$ref": "#/$defs/Identifier"
+        },
+        "label": {
+          "$ref": "#/$defs/Text"
+        },
+        "name": {
+          "anyOf": [
+            {
+              "$ref": "#/$defs/Identifier"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null
+        },
+        "required": {
+          "default": false,
+          "title": "Required",
+          "type": "boolean"
+        },
+        "showIf": {
+          "anyOf": [
+            {
+              "$ref": "#/$defs/Expression"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null
+        },
+        "type": {
+          "const": "single",
+          "title": "Type",
+          "type": "string"
+        }
+      },
+      "required": [
+        "id",
+        "label",
+        "type"
+      ],
+      "title": "SingleQuestion",
+      "type": "object"
+    },
+    "Text": {
+      "anyOf": [
+        {
+          "type": "string"
+        },
+        {
+          "additionalProperties": {
+            "type": "string"
+          },
+          "propertyNames": {
+            "$ref": "#/$defs/LanguageTag"
+          },
+          "type": "object"
+        }
+      ]
+    },
+    "TextLit": {
+      "additionalProperties": false,
+      "description": "Text literal, e.g. ``\"b\"``. Also used for text choice codes (§2).",
+      "properties": {
+        "kind": {
+          "const": "text",
+          "default": "text",
+          "title": "Kind",
+          "type": "string"
+        },
+        "value": {
+          "title": "Value",
+          "type": "string"
+        }
+      },
+      "required": [
+        "value"
+      ],
+      "title": "TextLit",
+      "type": "object"
+    },
+    "TextQuestion": {
+      "additionalProperties": false,
+      "properties": {
+        "constraint": {
+          "anyOf": [
+            {
+              "$ref": "#/$defs/Expression"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null
+        },
+        "constraintMessage": {
+          "anyOf": [
+            {
+              "$ref": "#/$defs/Text"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null
+        },
+        "help": {
+          "anyOf": [
+            {
+              "$ref": "#/$defs/Text"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null
+        },
+        "id": {
+          "$ref": "#/$defs/Identifier"
+        },
+        "label": {
+          "$ref": "#/$defs/Text"
+        },
+        "name": {
+          "anyOf": [
+            {
+              "$ref": "#/$defs/Identifier"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null
+        },
+        "required": {
+          "default": false,
+          "title": "Required",
+          "type": "boolean"
+        },
+        "showIf": {
+          "anyOf": [
+            {
+              "$ref": "#/$defs/Expression"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null
+        },
+        "type": {
+          "const": "text",
+          "title": "Type",
+          "type": "string"
+        }
+      },
+      "required": [
+        "id",
+        "label",
+        "type"
+      ],
+      "title": "TextQuestion",
+      "type": "object"
+    },
+    "Variable": {
+      "discriminator": {
+        "mapping": {
+          "assigned": "#/$defs/AssignedVariable",
+          "computed": "#/$defs/ComputedVariable",
+          "embedded": "#/$defs/EmbeddedVariable"
+        },
+        "propertyName": "kind"
+      },
+      "oneOf": [
+        {
+          "$ref": "#/$defs/EmbeddedVariable"
+        },
+        {
+          "$ref": "#/$defs/AssignedVariable"
+        },
+        {
+          "$ref": "#/$defs/ComputedVariable"
+        }
+      ]
+    }
+  },
+  "$id": "urn:osp:schema:osp-survey:0.1:survey",
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "additionalProperties": false,
+  "description": "An `osp-survey` document. Reaching the end of `flow` means `end: complete` (§6).",
+  "properties": {
+    "blocks": {
+      "items": {
+        "$ref": "#/$defs/Block"
+      },
+      "title": "Blocks",
+      "type": "array"
+    },
+    "choiceLists": {
+      "items": {
+        "$ref": "#/$defs/ChoiceList"
+      },
+      "title": "Choicelists",
+      "type": "array"
+    },
+    "flow": {
+      "items": {
+        "$ref": "#/$defs/FlowNode"
+      },
+      "title": "Flow",
+      "type": "array"
+    },
+    "id": {
+      "$ref": "#/$defs/Identifier"
+    },
+    "metadata": {
+      "$ref": "#/$defs/Metadata"
+    },
+    "quotas": {
+      "items": {
+        "$ref": "#/$defs/Quota"
+      },
+      "title": "Quotas",
+      "type": "array"
+    },
+    "settings": {
+      "$ref": "#/$defs/Settings"
+    },
+    "specVersion": {
+      "const": "osp-survey/0.1",
+      "title": "Specversion",
+      "type": "string"
+    },
+    "variables": {
+      "items": {
+        "$ref": "#/$defs/Variable"
+      },
+      "title": "Variables",
+      "type": "array"
+    },
+    "version": {
+      "anyOf": [
+        {
+          "minimum": 1,
+          "type": "integer"
+        },
+        {
+          "type": "null"
+        }
+      ],
+      "default": null,
+      "title": "Version"
+    }
+  },
+  "required": [
+    "specVersion",
+    "id",
+    "metadata"
+  ],
+  "title": "Survey",
+  "type": "object"
+}

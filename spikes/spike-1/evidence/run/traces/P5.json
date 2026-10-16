@@ -1,0 +1,324 @@
+{
+  "participant": "P5",
+  "token": "tokp5",
+  "pages": [
+    {
+      "n": 1,
+      "label": "consent",
+      "t": 1792155498.847,
+      "questions": [
+        "consent"
+      ],
+      "questions_hidden_in_dom": [],
+      "markers": [],
+      "errors": [],
+      "thisstep": "1",
+      "has_prev": false,
+      "has_next": true,
+      "url": "http://localhost:8082/index.php?r=survey/index&sid=900001&token=tokp5&lang=en",
+      "screenshot": "screenshots/P5_01_consent.png",
+      "question_html": {
+        "consent": "<div id=\"ls-question-text-900001X1X1\" class=\" ls-label-question \">\n        Do you consent to take part in this (fake) study?\n    </div>"
+      }
+    },
+    {
+      "n": 2,
+      "label": "age",
+      "t": 1792155499.547,
+      "questions": [
+        "age"
+      ],
+      "questions_hidden_in_dom": [
+        "assigned",
+        "mode",
+        "rawrand"
+      ],
+      "markers": [],
+      "errors": [],
+      "thisstep": "2",
+      "has_prev": true,
+      "has_next": true,
+      "url": "http://localhost:8082/index.php?r=survey/index&sid=900001",
+      "screenshot": "screenshots/P5_02_age.png",
+      "question_html": {
+        "age": "<div id=\"ls-question-text-900001X2X4\" class=\" ls-label-question \">\n        How old are you?\n    </div>"
+      }
+    },
+    {
+      "n": 3,
+      "label": "stimulus",
+      "t": 1792155500.176,
+      "questions": [
+        "stimB"
+      ],
+      "questions_hidden_in_dom": [],
+      "markers": [
+        "STIMULUS-B"
+      ],
+      "errors": [],
+      "thisstep": "4",
+      "has_prev": true,
+      "has_next": true,
+      "url": "http://localhost:8082/index.php?r=survey/index&sid=900001",
+      "screenshot": "screenshots/P5_03_stimulus.png",
+      "question_html": {
+        "stimB": "<div id=\"ls-question-text-900001X4X9\" class=\" ls-label-question \">\n        <p>STIMULUS-B: a short story about a city.</p>\n    </div>"
+      }
+    },
+    {
+      "n": 4,
+      "label": "attitudes",
+      "t": 1792155500.817,
+      "questions": [
+        "att1",
+        "att3",
+        "att2"
+      ],
+      "questions_hidden_in_dom": [],
+      "markers": [
+        "PIPE[city story]"
+      ],
+      "errors": [],
+      "thisstep": "5",
+      "has_prev": true,
+      "has_next": true,
+      "url": "http://localhost:8082/index.php?r=survey/index&sid=900001",
+      "screenshot": "screenshots/P5_04_attitudes.png",
+      "question_html": {
+        "att1": "<div id=\"ls-question-text-900001X5X10\" class=\" ls-label-question \">\n        PIPE[city story] How calm did the story make you feel?\n    </div>",
+        "att2": "<div id=\"ls-question-text-900001X5X11\" class=\" ls-label-question \">\n        How interesting was the story?\n    </div>",
+        "att3": "<div id=\"ls-question-text-900001X5X12\" class=\" ls-label-question \">\n        How likely are you to recommend the story?\n    </div>"
+      }
+    },
+    {
+      "n": 5,
+      "label": "followup",
+      "t": 1792155501.563,
+      "questions": [
+        "fu"
+      ],
+      "questions_hidden_in_dom": [],
+      "markers": [
+        "PIPE[5]"
+      ],
+      "errors": [],
+      "thisstep": "6",
+      "has_prev": true,
+      "has_next": true,
+      "url": "http://localhost:8082/index.php?r=survey/index&sid=900001",
+      "screenshot": "screenshots/P5_05_followup.png",
+      "question_html": {
+        "fu": "<div id=\"ls-question-text-900001X6X13\" class=\" ls-label-question \">\n        PIPE[5] You rated calm highly. What made you feel that way?\n    </div>"
+      }
+    },
+    {
+      "n": 6,
+      "label": "final",
+      "t": 1792155502.195,
+      "questions": [
+        "comments"
+      ],
+      "questions_hidden_in_dom": [],
+      "markers": [
+        "PIPEFU[FU-VALUE-BEFORE-BACK]",
+        "PIPESHOWN[Yes]"
+      ],
+      "errors": [],
+      "thisstep": "7",
+      "has_prev": true,
+      "has_next": true,
+      "url": "http://localhost:8082/index.php?r=survey/index&sid=900001",
+      "screenshot": "screenshots/P5_06_final.png",
+      "question_html": {
+        "comments": "<div id=\"ls-question-text-900001X7X14\" class=\" ls-label-question \">\n        PIPEFU[FU-VALUE-BEFORE-BACK] PIPESHOWN[Yes] Any comments? (optional)\n    </div>"
+      }
+    },
+    {
+      "n": 7,
+      "label": "back-to-followup",
+      "t": 1792155502.888,
+      "questions": [
+        "fu"
+      ],
+      "questions_hidden_in_dom": [],
+      "markers": [
+        "PIPE[5]"
+      ],
+      "errors": [],
+      "thisstep": "6",
+      "has_prev": true,
+      "has_next": true,
+      "url": "http://localhost:8082/index.php?r=survey/index&sid=900001",
+      "screenshot": "screenshots/P5_07_back-to-followup.png",
+      "question_html": {
+        "fu": "<div id=\"ls-question-text-900001X6X13\" class=\" ls-label-question \">\n        PIPE[5] You rated calm highly. What made you feel that way?\n    </div>"
+      }
+    },
+    {
+      "n": 8,
+      "label": "back-to-attitudes",
+      "t": 1792155503.535,
+      "questions": [
+        "att1",
+        "att3",
+        "att2"
+      ],
+      "questions_hidden_in_dom": [],
+      "markers": [
+        "PIPE[city story]"
+      ],
+      "errors": [],
+      "thisstep": "5",
+      "has_prev": true,
+      "has_next": true,
+      "url": "http://localhost:8082/index.php?r=survey/index&sid=900001",
+      "screenshot": "screenshots/P5_08_back-to-attitudes.png",
+      "question_html": {
+        "att1": "<div id=\"ls-question-text-900001X5X10\" class=\" ls-label-question \">\n        PIPE[city story] How calm did the story make you feel?\n    </div>",
+        "att2": "<div id=\"ls-question-text-900001X5X11\" class=\" ls-label-question \">\n        How interesting was the story?\n    </div>",
+        "att3": "<div id=\"ls-question-text-900001X5X12\" class=\" ls-label-question \">\n        How likely are you to recommend the story?\n    </div>"
+      }
+    },
+    {
+      "n": 9,
+      "label": "after-att1-changed",
+      "t": 1792155504.21,
+      "questions": [
+        "comments"
+      ],
+      "questions_hidden_in_dom": [],
+      "markers": [
+        "PIPEFU[]",
+        "PIPESHOWN[Yes]"
+      ],
+      "errors": [],
+      "thisstep": "7",
+      "has_prev": true,
+      "has_next": true,
+      "url": "http://localhost:8082/index.php?r=survey/index&sid=900001",
+      "screenshot": "screenshots/P5_09_after-att1-changed.png",
+      "question_html": {
+        "comments": "<div id=\"ls-question-text-900001X7X14\" class=\" ls-label-question \">\n        PIPEFU[] PIPESHOWN[Yes] Any comments? (optional)\n    </div>"
+      }
+    },
+    {
+      "n": 10,
+      "label": "end",
+      "t": 1792155504.893,
+      "questions": [],
+      "questions_hidden_in_dom": [],
+      "markers": [
+        "END-OF-SURVEY"
+      ],
+      "errors": [],
+      "thisstep": null,
+      "has_prev": false,
+      "has_next": false,
+      "url": "http://localhost:8082/index.php?r=survey/index&sid=900001",
+      "screenshot": "screenshots/P5_10_end.png",
+      "question_html": {},
+      "page_text": "END-OF-SURVEY"
+    }
+  ],
+  "notes": [
+    {
+      "db_fu_submitted": [
+        {
+          "id": "5",
+          "token": "tokp5",
+          "submitdate": null,
+          "lastpage": "6",
+          "startlanguage": "en",
+          "seed": "1426797679",
+          "startdate": "2026-10-16 12:58:18",
+          "datestamp": "2026-10-16 12:58:21",
+          "consent": "Y",
+          "cond": "",
+          "ospseed": "",
+          "age": "52.0000000000",
+          "assigned": "B",
+          "mode": "limesurvey-native",
+          "rawrand": "575766",
+          "stimA": null,
+          "stimB": "",
+          "att1": "5",
+          "att2": "1",
+          "att3": "1",
+          "fu": "FU-VALUE-BEFORE-BACK",
+          "comments": null
+        }
+      ]
+    },
+    {
+      "fu_value_shown_on_back": "FU-VALUE-BEFORE-BACK"
+    },
+    {
+      "att_order_first": [
+        "att1",
+        "att3",
+        "att2"
+      ],
+      "att_order_on_back": [
+        "att1",
+        "att3",
+        "att2"
+      ]
+    },
+    {
+      "db_after_att1_changed_before_submit": [
+        {
+          "id": "5",
+          "token": "tokp5",
+          "submitdate": null,
+          "lastpage": "6",
+          "startlanguage": "en",
+          "seed": "1426797679",
+          "startdate": "2026-10-16 12:58:18",
+          "datestamp": "2026-10-16 12:58:23",
+          "consent": "Y",
+          "cond": "",
+          "ospseed": "",
+          "age": "52.0000000000",
+          "assigned": "B",
+          "mode": "limesurvey-native",
+          "rawrand": "575766",
+          "stimA": null,
+          "stimB": "",
+          "att1": "2",
+          "att2": "1",
+          "att3": "1",
+          "fu": null,
+          "comments": ""
+        }
+      ]
+    },
+    {
+      "db_final": [
+        {
+          "id": "5",
+          "token": "tokp5",
+          "submitdate": "2026-10-16 12:58:24",
+          "lastpage": "7",
+          "startlanguage": "en",
+          "seed": "1426797679",
+          "startdate": "2026-10-16 12:58:18",
+          "datestamp": "2026-10-16 12:58:24",
+          "consent": "Y",
+          "cond": "",
+          "ospseed": "",
+          "age": "52.0000000000",
+          "assigned": "B",
+          "mode": "limesurvey-native",
+          "rawrand": "575766",
+          "stimA": null,
+          "stimB": "",
+          "att1": "2",
+          "att2": "1",
+          "att3": "1",
+          "fu": null,
+          "comments": ""
+        }
+      ]
+    }
+  ]
+}

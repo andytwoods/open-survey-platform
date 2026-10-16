@@ -1,0 +1,79 @@
+{
+  "description": "showIf on an earlier item of the same page; a constraint may refer to its own question.",
+  "expect": [],
+  "survey": {
+    "specVersion": "osp-survey/0.1",
+    "id": "srv_case",
+    "metadata": {
+      "title": "Case",
+      "languages": [
+        "en"
+      ]
+    },
+    "blocks": [
+      {
+        "id": "b1",
+        "pages": [
+          {
+            "id": "p1",
+            "items": [
+              {
+                "id": "has_job",
+                "type": "single",
+                "label": "Question has_job",
+                "choices": [
+                  {
+                    "value": 1,
+                    "label": "Yes"
+                  },
+                  {
+                    "value": 0,
+                    "label": "No"
+                  }
+                ],
+                "required": true
+              },
+              {
+                "id": "hours",
+                "type": "integer",
+                "label": "Question hours",
+                "showIf": {
+                  "kind": "compare",
+                  "op": "==",
+                  "left": {
+                    "kind": "ref",
+                    "id": "has_job"
+                  },
+                  "right": {
+                    "kind": "int",
+                    "value": 1
+                  }
+                },
+                "constraint": {
+                  "kind": "compare",
+                  "op": "<=",
+                  "left": {
+                    "kind": "ref",
+                    "id": "hours"
+                  },
+                  "right": {
+                    "kind": "int",
+                    "value": 100
+                  }
+                },
+                "constraintMessage": "At most 100."
+              }
+            ]
+          }
+        ]
+      }
+    ],
+    "flow": [
+      {
+        "type": "block",
+        "id": "f_b1",
+        "block": "b1"
+      }
+    ]
+  }
+}

@@ -1,0 +1,284 @@
+{
+ "per_page": {
+  "p_consent": [
+   {
+    "id": "aria-roles",
+    "impact": "critical",
+    "tags": [
+     "wcag2a",
+     "wcag412"
+    ],
+    "help": "ARIA roles used must conform to valid values",
+    "nodes": 1,
+    "targets": [
+     ".current"
+    ]
+   },
+   {
+    "id": "page-has-heading-one",
+    "impact": "moderate",
+    "tags": [],
+    "help": "Page should contain a level-one heading",
+    "nodes": 1,
+    "targets": [
+     "html"
+    ]
+   },
+   {
+    "id": "tabindex",
+    "impact": "serious",
+    "tags": [],
+    "help": "Elements should not have tabindex greater than zero",
+    "nodes": 1,
+    "targets": [
+     ".current"
+    ]
+   }
+  ],
+  "p_age": [
+   {
+    "id": "aria-roles",
+    "impact": "critical",
+    "tags": [
+     "wcag2a",
+     "wcag412"
+    ],
+    "help": "ARIA roles used must conform to valid values",
+    "nodes": 1,
+    "targets": [
+     ".current"
+    ]
+   },
+   {
+    "id": "page-has-heading-one",
+    "impact": "moderate",
+    "tags": [],
+    "help": "Page should contain a level-one heading",
+    "nodes": 1,
+    "targets": [
+     "html"
+    ]
+   },
+   {
+    "id": "tabindex",
+    "impact": "serious",
+    "tags": [],
+    "help": "Elements should not have tabindex greater than zero",
+    "nodes": 1,
+    "targets": [
+     ".next-page"
+    ]
+   }
+  ],
+  "p_age_with_constraint_error": [
+   {
+    "id": "aria-roles",
+    "impact": "critical",
+    "tags": [
+     "wcag2a",
+     "wcag412"
+    ],
+    "help": "ARIA roles used must conform to valid values",
+    "nodes": 1,
+    "targets": [
+     ".current"
+    ]
+   },
+   {
+    "id": "page-has-heading-one",
+    "impact": "moderate",
+    "tags": [],
+    "help": "Page should contain a level-one heading",
+    "nodes": 1,
+    "targets": [
+     "html"
+    ]
+   },
+   {
+    "id": "tabindex",
+    "impact": "serious",
+    "tags": [],
+    "help": "Elements should not have tabindex greater than zero",
+    "nodes": 1,
+    "targets": [
+     ".next-page"
+    ]
+   }
+  ],
+  "p_stim_a": [
+   {
+    "id": "aria-roles",
+    "impact": "critical",
+    "tags": [
+     "wcag2a",
+     "wcag412"
+    ],
+    "help": "ARIA roles used must conform to valid values",
+    "nodes": 1,
+    "targets": [
+     ".current"
+    ]
+   },
+   {
+    "id": "page-has-heading-one",
+    "impact": "moderate",
+    "tags": [],
+    "help": "Page should contain a level-one heading",
+    "nodes": 1,
+    "targets": [
+     "html"
+    ]
+   },
+   {
+    "id": "tabindex",
+    "impact": "serious",
+    "tags": [],
+    "help": "Elements should not have tabindex greater than zero",
+    "nodes": 1,
+    "targets": [
+     ".next-page"
+    ]
+   }
+  ],
+  "p_att": [
+   {
+    "id": "aria-roles",
+    "impact": "critical",
+    "tags": [
+     "wcag2a",
+     "wcag412"
+    ],
+    "help": "ARIA roles used must conform to valid values",
+    "nodes": 1,
+    "targets": [
+     ".current"
+    ]
+   },
+   {
+    "id": "page-has-heading-one",
+    "impact": "moderate",
+    "tags": [],
+    "help": "Page should contain a level-one heading",
+    "nodes": 1,
+    "targets": [
+     "html"
+    ]
+   },
+   {
+    "id": "tabindex",
+    "impact": "serious",
+    "tags": [],
+    "help": "Elements should not have tabindex greater than zero",
+    "nodes": 1,
+    "targets": [
+     ".next-page"
+    ]
+   }
+  ],
+  "p_follow": [
+   {
+    "id": "aria-roles",
+    "impact": "critical",
+    "tags": [
+     "wcag2a",
+     "wcag412"
+    ],
+    "help": "ARIA roles used must conform to valid values",
+    "nodes": 1,
+    "targets": [
+     ".current"
+    ]
+   },
+   {
+    "id": "page-has-heading-one",
+    "impact": "moderate",
+    "tags": [],
+    "help": "Page should contain a level-one heading",
+    "nodes": 1,
+    "targets": [
+     "html"
+    ]
+   },
+   {
+    "id": "tabindex",
+    "impact": "serious",
+    "tags": [],
+    "help": "Elements should not have tabindex greater than zero",
+    "nodes": 1,
+    "targets": [
+     ".next-page"
+    ]
+   }
+  ],
+  "p_colour": [
+   {
+    "id": "aria-roles",
+    "impact": "critical",
+    "tags": [
+     "wcag2a",
+     "wcag412"
+    ],
+    "help": "ARIA roles used must conform to valid values",
+    "nodes": 1,
+    "targets": [
+     ".current"
+    ]
+   },
+   {
+    "id": "page-has-heading-one",
+    "impact": "moderate",
+    "tags": [],
+    "help": "Page should contain a level-one heading",
+    "nodes": 1,
+    "targets": [
+     "html"
+    ]
+   },
+   {
+    "id": "tabindex",
+    "impact": "serious",
+    "tags": [],
+    "help": "Elements should not have tabindex greater than zero",
+    "nodes": 1,
+    "targets": [
+     ".next-page"
+    ]
+   }
+  ]
+ },
+ "by_rule": {
+  "aria-roles": {
+   "impact": "critical",
+   "tags": [
+    "wcag2a",
+    "wcag412"
+   ],
+   "help": "ARIA roles used must conform to valid values",
+   "pages": 7,
+   "nodes": 7,
+   "targets": [
+    ".current"
+   ]
+  },
+  "page-has-heading-one": {
+   "impact": "moderate",
+   "tags": [],
+   "help": "Page should contain a level-one heading",
+   "pages": 7,
+   "nodes": 7,
+   "targets": [
+    "html"
+   ]
+  },
+  "tabindex": {
+   "impact": "serious",
+   "tags": [],
+   "help": "Elements should not have tabindex greater than zero",
+   "pages": 7,
+   "nodes": 7,
+   "targets": [
+    ".current"
+   ]
+  }
+ }
+}

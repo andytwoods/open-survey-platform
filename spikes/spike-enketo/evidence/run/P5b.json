@@ -1,0 +1,91 @@
+{
+ "id": "P5b",
+ "sid": "f1262f8fdc0c",
+ "pages": [
+  "/data/p_consent",
+  "/data/p_age",
+  "/data/p_stim_a",
+  "/data/p_att",
+  "/data/p_follow",
+  "/data/p_colour",
+  "/data/p_follow",
+  "/data/p_att",
+  "/data/p_colour",
+  "/data/p_att",
+  "/data/p_follow",
+  "/data/p_att",
+  "/data/p_colour",
+  "/data/blk_x",
+  "/data/blk_y"
+ ],
+ "checks": [
+  {
+   "name": "consent -> p_age",
+   "expected": "/data/p_age",
+   "actual": "/data/p_age",
+   "ok": true
+  },
+  {
+   "name": "follow-up -> colour",
+   "expected": "/data/p_colour",
+   "actual": "/data/p_colour",
+   "ok": true
+  },
+  {
+   "name": "back -> follow-up",
+   "expected": "/data/p_follow",
+   "actual": "/data/p_follow",
+   "ok": true
+  },
+  {
+   "name": "back -> att",
+   "expected": "/data/p_att",
+   "actual": "/data/p_att",
+   "ok": true
+  },
+  {
+   "name": "forward skips follow-up",
+   "expected": "/data/p_colour",
+   "actual": "/data/p_colour",
+   "ok": true
+  },
+  {
+   "name": "back -> att (2nd time)",
+   "expected": "/data/p_att",
+   "actual": "/data/p_att",
+   "ok": true
+  },
+  {
+   "name": "att1=5 again -> follow-up",
+   "expected": "/data/p_follow",
+   "actual": "/data/p_follow",
+   "ok": true
+  },
+  {
+   "name": "semantics \u00a73: value gone when relevance returns after page submit",
+   "expected": "",
+   "actual": "temporary answer",
+   "ok": false
+  },
+  {
+   "name": "E8 raw (after form.validate()): followup cleared",
+   "expected": "",
+   "actual": "",
+   "ok": true
+  },
+  {
+   "name": "E8 pruned: followup node absent",
+   "expected": false,
+   "actual": false,
+   "ok": true
+  }
+ ],
+ "notes": [
+  "model followup after irrelevance (before submit): ''",
+  "follow-up value shown when relevance returned: 'temporary answer'",
+  "raw getDataStr() followup=''; pruned getDataStr({irrelevant:false}) has node=False"
+ ],
+ "console": [],
+ "pass": false,
+ "doc": "P5 with config.excludeNonRelevant = true."
+}

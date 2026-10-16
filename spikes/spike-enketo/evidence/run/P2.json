@@ -1,0 +1,198 @@
+{
+ "id": "P2",
+ "sid": "d2552561e1d3",
+ "pages": [
+  "/data/p_consent",
+  "/data/p_age",
+  "/data/p_stim_a",
+  "/data/p_att",
+  "/data/p_follow",
+  "/data/p_colour",
+  "/data/blk_y",
+  "/data/blk_x"
+ ],
+ "checks": [
+  {
+   "name": "required: empty age blocks Next",
+   "expected": "/data/p_age",
+   "actual": "/data/p_age",
+   "ok": true
+  },
+  {
+   "name": "constraint: age 12 blocks Next",
+   "expected": "/data/p_age",
+   "actual": "/data/p_age",
+   "ok": true
+  },
+  {
+   "name": "cond A: stimulus page",
+   "expected": "/data/p_stim_a",
+   "actual": "/data/p_stim_a",
+   "ok": true
+  },
+  {
+   "name": "model cond == session cond",
+   "expected": "A",
+   "actual": "A",
+   "ok": true
+  },
+  {
+   "name": "att page reached",
+   "expected": "/data/p_att",
+   "actual": "/data/p_att",
+   "ok": true
+  },
+  {
+   "name": "E6: att question DOM order == server order (Python)",
+   "expected": [
+    "att1",
+    "att2",
+    "att3"
+   ],
+   "actual": [
+    "att1",
+    "att2",
+    "att3"
+   ],
+   "ok": true
+  },
+  {
+   "name": "E9 piping: att1 label shows cond",
+   "expected": true,
+   "actual": true,
+   "ok": true
+  },
+  {
+   "name": "att1>=4 -> follow-up page",
+   "expected": "/data/p_follow",
+   "actual": "/data/p_follow",
+   "ok": true
+  },
+  {
+   "name": "E9 piping: ${att1} in label (semantics: label 'Strongly agree')",
+   "expected": "FOLLOWUP: You chose Strongly agree",
+   "actual": "FOLLOWUP: You chose 5",
+   "ok": false
+  },
+  {
+   "name": "E9 piping lowered: jr:choice-name label in calculate",
+   "expected": true,
+   "actual": true,
+   "ok": true
+  },
+  {
+   "name": "required: empty follow-up blocks Next",
+   "expected": "/data/p_follow",
+   "actual": "/data/p_follow",
+   "ok": true
+  },
+  {
+   "name": "semantics \u00a72: whitespace-only counts as answered (advances)",
+   "expected": "/data/p_colour",
+   "actual": "/data/p_follow",
+   "ok": false
+  },
+  {
+   "name": "follow-up -> colour",
+   "expected": "/data/p_colour",
+   "actual": "/data/p_colour",
+   "ok": true
+  },
+  {
+   "name": "E5 in-form: colour choice order == Python randomize(seed)",
+   "expected": [
+    "red",
+    "green",
+    "purple",
+    "yellow",
+    "blue"
+   ],
+   "actual": [
+    "red",
+    "green",
+    "purple",
+    "yellow",
+    "blue"
+   ],
+   "ok": true
+  },
+  {
+   "name": "E6: block order == server order",
+   "expected": [
+    "blk_y",
+    "blk_x"
+   ],
+   "actual": [
+    "blk_y",
+    "blk_x"
+   ],
+   "ok": true
+  },
+  {
+   "name": "first block page is order_blocks[0]",
+   "expected": "/data/blk_y",
+   "actual": "/data/blk_y",
+   "ok": true
+  },
+  {
+   "name": "sub: cond",
+   "expected": "A",
+   "actual": "A",
+   "ok": true
+  },
+  {
+   "name": "sub: seed",
+   "expected": "725742004",
+   "actual": "725742004",
+   "ok": true
+  },
+  {
+   "name": "sub: order_att recorded",
+   "expected": "att1 att2 att3",
+   "actual": "att1 att2 att3",
+   "ok": true
+  },
+  {
+   "name": "sub: order_blocks recorded",
+   "expected": "blk_y blk_x",
+   "actual": "blk_y blk_x",
+   "ok": true
+  },
+  {
+   "name": "sub raw getDataStr(): text stored exactly (no trim)",
+   "expected": "  loved it  ",
+   "actual": "  loved it  ",
+   "ok": true
+  },
+  {
+   "name": "sub pruned getDataStr({irrelevant:false}): text stored exactly (no trim)",
+   "expected": "  loved it  ",
+   "actual": "loved it",
+   "ok": false
+  },
+  {
+   "name": "sub: att1_label",
+   "expected": "Strongly agree",
+   "actual": "Strongly agree",
+   "ok": true
+  },
+  {
+   "name": "sub: q_y unanswered present but empty",
+   "expected": "",
+   "actual": "",
+   "ok": true
+  },
+  {
+   "name": "sub: instanceID",
+   "expected": true,
+   "actual": true,
+   "ok": true
+  }
+ ],
+ "notes": [
+  "follow-up label rendered: 'FOLLOWUP: You chose 5 (Strongly agree). What did you enjoy?'"
+ ],
+ "console": [],
+ "pass": false,
+ "doc": "Server-assigned condition, straight through, att1=5: follow-up shown + required; orders recorded."
+}

@@ -1,0 +1,244 @@
+{
+  "format": "osp-fixture-expected/0",
+  "fixture": "02-required",
+  "script": "many-books",
+  "pending": [],
+  "steps": [
+    {
+      "index": 0,
+      "page": "p1",
+      "visible": [
+        "r_int",
+        "r_single",
+        "opt_text"
+      ],
+      "errors": {},
+      "nav": {
+        "back": false
+      },
+      "questions": {
+        "r_int": {
+          "state": "unanswered",
+          "value": null
+        },
+        "r_single": {
+          "state": "unanswered",
+          "value": null
+        },
+        "opt_text": {
+          "state": "unanswered",
+          "value": null
+        },
+        "r_multi": {
+          "state": "not-reached",
+          "value": null
+        },
+        "r_follow": {
+          "state": "not-reached",
+          "value": null
+        },
+        "r_date": {
+          "state": "not-reached",
+          "value": null
+        }
+      },
+      "orders": {
+        "blocks": {},
+        "items": {},
+        "choices": {}
+      },
+      "conditions": {},
+      "end": null
+    },
+    {
+      "index": 1,
+      "page": "p2",
+      "visible": [
+        "r_multi",
+        "r_follow",
+        "r_date"
+      ],
+      "errors": {},
+      "nav": {
+        "back": true
+      },
+      "questions": {
+        "r_int": {
+          "state": "answered",
+          "value": 12
+        },
+        "r_single": {
+          "state": "answered",
+          "value": "no"
+        },
+        "opt_text": {
+          "state": "unanswered",
+          "value": null
+        },
+        "r_multi": {
+          "state": "unanswered",
+          "value": null
+        },
+        "r_follow": {
+          "state": "unanswered",
+          "value": null
+        },
+        "r_date": {
+          "state": "unanswered",
+          "value": null
+        }
+      },
+      "orders": {
+        "blocks": {},
+        "items": {},
+        "choices": {}
+      },
+      "conditions": {},
+      "end": null
+    },
+    {
+      "index": 2,
+      "page": "p2",
+      "visible": [
+        "r_multi",
+        "r_follow",
+        "r_date"
+      ],
+      "errors": {
+        "r_follow": {
+          "kind": "required"
+        }
+      },
+      "nav": {
+        "back": true
+      },
+      "questions": {
+        "r_int": {
+          "state": "answered",
+          "value": 12
+        },
+        "r_single": {
+          "state": "answered",
+          "value": "no"
+        },
+        "opt_text": {
+          "state": "unanswered",
+          "value": null
+        },
+        "r_multi": {
+          "state": "answered",
+          "value": [
+            "red"
+          ]
+        },
+        "r_follow": {
+          "state": "unanswered",
+          "value": null
+        },
+        "r_date": {
+          "state": "answered",
+          "value": "2026-08-02"
+        }
+      },
+      "orders": {
+        "blocks": {},
+        "items": {},
+        "choices": {}
+      },
+      "conditions": {},
+      "end": null
+    },
+    {
+      "index": 3,
+      "page": null,
+      "visible": [],
+      "errors": {},
+      "nav": null,
+      "questions": {
+        "r_int": {
+          "state": "answered",
+          "value": 12
+        },
+        "r_single": {
+          "state": "answered",
+          "value": "no"
+        },
+        "opt_text": {
+          "state": "unanswered",
+          "value": null
+        },
+        "r_multi": {
+          "state": "answered",
+          "value": [
+            "red"
+          ]
+        },
+        "r_follow": {
+          "state": "answered",
+          "value": 5
+        },
+        "r_date": {
+          "state": "answered",
+          "value": "2026-08-02"
+        }
+      },
+      "orders": {
+        "blocks": {},
+        "items": {},
+        "choices": {}
+      },
+      "conditions": {},
+      "end": "complete"
+    }
+  ],
+  "invariants": [],
+  "response": {
+    "surveyId": "f02_required",
+    "surveyVersion": 1,
+    "end": "complete",
+    "allocation": "server",
+    "sessionSeed": 202,
+    "conditions": {},
+    "orders": {
+      "blocks": {},
+      "items": {},
+      "choices": {}
+    },
+    "answers": {
+      "r_int": {
+        "state": "answered",
+        "value": 12
+      },
+      "r_single": {
+        "state": "answered",
+        "value": "no"
+      },
+      "opt_text": {
+        "state": "unanswered",
+        "value": null
+      },
+      "r_multi": {
+        "state": "answered",
+        "value": [
+          "red"
+        ]
+      },
+      "r_follow": {
+        "state": "answered",
+        "value": 5
+      },
+      "r_date": {
+        "state": "answered",
+        "value": "2026-08-02"
+      }
+    },
+    "csvState": {
+      "r_int__state": "answered",
+      "r_single__state": "answered",
+      "opt_text__state": "unanswered",
+      "r_multi__state": "answered",
+      "r_follow__state": "answered",
+      "r_date__state": "answered"
+    }
+  }
+}

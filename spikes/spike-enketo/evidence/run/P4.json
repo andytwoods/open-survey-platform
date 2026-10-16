@@ -1,0 +1,95 @@
+{
+ "id": "P4",
+ "sid": "b776ca999dce",
+ "pages": [
+  "/data/p_consent",
+  "/data/p_age",
+  "/data/p_stim_b",
+  "/data/p_att",
+  "/data/p_colour",
+  "/data/blk_x",
+  "/data/blk_y"
+ ],
+ "checks": [
+  {
+   "name": "model cond injected",
+   "expected": "B",
+   "actual": "B",
+   "ok": true
+  },
+  {
+   "name": "model seed injected",
+   "expected": "123",
+   "actual": "123",
+   "ok": true
+  },
+  {
+   "name": "consent -> p_age",
+   "expected": "/data/p_age",
+   "actual": "/data/p_age",
+   "ok": true
+  },
+  {
+   "name": "cond B -> stimulus B",
+   "expected": "/data/p_stim_b",
+   "actual": "/data/p_stim_b",
+   "ok": true
+  },
+  {
+   "name": "stimulus B text visible",
+   "expected": true,
+   "actual": true,
+   "ok": true
+  },
+  {
+   "name": "E6 att order (seed 123)",
+   "expected": [
+    "att2",
+    "att1",
+    "att3"
+   ],
+   "actual": [
+    "att2",
+    "att1",
+    "att3"
+   ],
+   "ok": true
+  },
+  {
+   "name": "E5 in-form colour order (seed 123)",
+   "expected": [
+    "green",
+    "yellow",
+    "purple",
+    "red",
+    "blue"
+   ],
+   "actual": [
+    "green",
+    "yellow",
+    "purple",
+    "red",
+    "blue"
+   ],
+   "ok": true
+  },
+  {
+   "name": "sub cond/seed",
+   "expected": [
+    "B",
+    "123"
+   ],
+   "actual": [
+    "B",
+    "123"
+   ],
+   "ok": true
+  }
+ ],
+ "notes": [
+  "seed 123 colour order: ['green', 'yellow', 'purple', 'red', 'blue']"
+ ],
+ "console": [],
+ "pass": true,
+ "doc": "Server injects cond=B, seed=123 (E4)."
+}

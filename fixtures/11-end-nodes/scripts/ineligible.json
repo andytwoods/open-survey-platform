@@ -1,0 +1,16 @@
+{
+  "format": "osp-fixture-script/0",
+  "id": "ineligible",
+  "description": "End node inside a branch; later questions are not-reached.",
+  "sessionSeed": 1101,
+  "language": "en",
+  "actions": [
+    {
+      "expectPage": "p1",
+      "set": {
+        "eligible": "no"
+      },
+      "do": "next"
+    }
+  ]
+}

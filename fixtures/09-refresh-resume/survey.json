@@ -1,0 +1,140 @@
+{
+  "format": "osp-fixture-survey/0",
+  "description": "§5/§7: refresh and resume restore page, values, orders and condition.",
+  "id": "f09_refresh_resume",
+  "version": 1,
+  "title": "Refresh and resume",
+  "languages": [
+    "en"
+  ],
+  "settings": {
+    "backNavigation": true
+  },
+  "choiceLists": {
+    "colour5": [
+      {
+        "value": "red",
+        "label": "Red"
+      },
+      {
+        "value": "green",
+        "label": "Green"
+      },
+      {
+        "value": "blue",
+        "label": "Blue"
+      },
+      {
+        "value": "yellow",
+        "label": "Yellow"
+      },
+      {
+        "value": "purple",
+        "label": "Purple"
+      }
+    ],
+    "yesno": [
+      {
+        "value": "yes",
+        "label": "Yes"
+      },
+      {
+        "value": "no",
+        "label": "No"
+      }
+    ]
+  },
+  "design": {
+    "factors": [
+      {
+        "id": "cond",
+        "levels": [
+          "A",
+          "B"
+        ]
+      }
+    ]
+  },
+  "blocks": {
+    "p_colour": {
+      "items": [
+        {
+          "id": "fav_colour",
+          "type": "single",
+          "label": "Pick a colour.",
+          "choices": "colour5",
+          "choiceOrder": "shuffle"
+        }
+      ]
+    },
+    "stim_a": {
+      "items": [
+        {
+          "id": "stim_a_check",
+          "type": "single",
+          "label": "Story A was about a red kite. Did you read it?",
+          "choices": "yesno"
+        }
+      ]
+    },
+    "stim_b": {
+      "items": [
+        {
+          "id": "stim_b_check",
+          "type": "single",
+          "label": "Story B was about a blue whale. Did you read it?",
+          "choices": "yesno"
+        }
+      ]
+    },
+    "p_items": {
+      "items": [
+        {
+          "id": "i1",
+          "type": "integer",
+          "label": "Rate item one from 1 to 10."
+        },
+        {
+          "id": "i2",
+          "type": "integer",
+          "label": "Rate item two from 1 to 10."
+        },
+        {
+          "id": "i3",
+          "type": "integer",
+          "label": "Rate item three from 1 to 10."
+        }
+      ],
+      "itemOrder": "shuffle"
+    }
+  },
+  "flow": [
+    {
+      "block": "p_colour"
+    },
+    {
+      "assign": "design"
+    },
+    {
+      "branch": {
+        "if": "cond == \"A\"",
+        "then": [
+          {
+            "block": "stim_a"
+          }
+        ],
+        "else": [
+          {
+            "block": "stim_b"
+          }
+        ]
+      }
+    },
+    {
+      "block": "p_items"
+    },
+    {
+      "end": "complete"
+    }
+  ]
+}

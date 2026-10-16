@@ -1,0 +1,149 @@
+{
+  "format": "osp-fixture-expected/0",
+  "fixture": "20-worked-example",
+  "script": "declined",
+  "pending": [
+    "C3a-2",
+    "C3a-4",
+    "C3a-5"
+  ],
+  "steps": [
+    {
+      "index": 0,
+      "page": "consent",
+      "visible": [
+        "consent"
+      ],
+      "errors": {},
+      "nav": {
+        "back": false
+      },
+      "questions": {
+        "consent": {
+          "state": "unanswered",
+          "value": null
+        },
+        "age": {
+          "state": "not-reached",
+          "value": null
+        },
+        "att1": {
+          "state": "not-reached",
+          "value": null
+        },
+        "att2": {
+          "state": "not-reached",
+          "value": null
+        },
+        "att3": {
+          "state": "not-reached",
+          "value": null
+        }
+      },
+      "orders": {
+        "blocks": {},
+        "items": {},
+        "choices": {}
+      },
+      "conditions": {
+        "framing": "gain",
+        "incentive": "£5 voucher"
+      },
+      "end": null
+    },
+    {
+      "index": 1,
+      "page": null,
+      "visible": [],
+      "errors": {},
+      "nav": null,
+      "questions": {
+        "consent": {
+          "state": "answered",
+          "value": 0
+        },
+        "age": {
+          "state": "not-reached",
+          "value": null
+        },
+        "att1": {
+          "state": "not-reached",
+          "value": null
+        },
+        "att2": {
+          "state": "not-reached",
+          "value": null
+        },
+        "att3": {
+          "state": "not-reached",
+          "value": null
+        }
+      },
+      "orders": {
+        "blocks": {},
+        "items": {},
+        "choices": {}
+      },
+      "conditions": {
+        "framing": "gain",
+        "incentive": "£5 voucher"
+      },
+      "end": "declined"
+    }
+  ],
+  "invariants": [],
+  "response": {
+    "surveyId": "srv_7f3c",
+    "surveyVersion": 3,
+    "end": "declined",
+    "allocation": "server",
+    "sessionSeed": 101,
+    "conditions": {
+      "framing": "gain",
+      "incentive": "£5 voucher"
+    },
+    "orders": {
+      "blocks": {},
+      "items": {},
+      "choices": {}
+    },
+    "answers": {
+      "consent": {
+        "state": "answered",
+        "value": 0
+      },
+      "age": {
+        "state": "not-reached",
+        "value": null
+      },
+      "att1": {
+        "state": "not-reached",
+        "value": null
+      },
+      "att2": {
+        "state": "not-reached",
+        "value": null
+      },
+      "att3": {
+        "state": "not-reached",
+        "value": null
+      }
+    },
+    "csvState": {
+      "consent__state": "answered",
+      "age__state": "not-reached",
+      "att1__state": "not-reached",
+      "att2__state": "not-reached",
+      "att3__state": "not-reached"
+    },
+    "calculated": {
+      "age_band": "<pending:C3a-2>"
+    },
+    "scores": {
+      "att_score": "<pending:C3a-4>"
+    },
+    "embeddedData": {
+      "source": "<pending:C3a-5>"
+    }
+  }
+}

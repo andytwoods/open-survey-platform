@@ -1,0 +1,60 @@
+{
+  "description": "An assigned variable is null before its assign node, so earlier use is a forward ref.",
+  "expect": [
+    {
+      "code": "ref.forward",
+      "pointer": "/blocks/0/pages/0/items/0/label"
+    }
+  ],
+  "survey": {
+    "specVersion": "osp-survey/0.1",
+    "id": "srv_case",
+    "metadata": {
+      "title": "Case",
+      "languages": [
+        "en"
+      ]
+    },
+    "blocks": [
+      {
+        "id": "b1",
+        "pages": [
+          {
+            "id": "p_b1",
+            "items": [
+              {
+                "id": "q1",
+                "type": "integer",
+                "label": "You are in group ${grp}"
+              }
+            ]
+          }
+        ]
+      }
+    ],
+    "flow": [
+      {
+        "type": "block",
+        "id": "f1",
+        "block": "b1"
+      },
+      {
+        "type": "assign",
+        "id": "f2",
+        "variables": [
+          "grp"
+        ]
+      }
+    ],
+    "variables": [
+      {
+        "kind": "assigned",
+        "id": "grp",
+        "levels": [
+          "a",
+          "b"
+        ]
+      }
+    ]
+  }
+}

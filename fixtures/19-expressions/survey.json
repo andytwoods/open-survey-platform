@@ -1,0 +1,116 @@
+{
+  "format": "osp-fixture-survey/0",
+  "description": "§2/§3 expressions: + - * /, precedence, and/or/not, contains(), decimal (not float).",
+  "id": "f19_expressions",
+  "version": 1,
+  "title": "Expressions",
+  "languages": [
+    "en"
+  ],
+  "settings": {
+    "backNavigation": true
+  },
+  "choiceLists": {
+    "tags": [
+      {
+        "value": "a",
+        "label": "Tag A"
+      },
+      {
+        "value": "b",
+        "label": "Tag B"
+      },
+      {
+        "value": "c",
+        "label": "Tag C"
+      }
+    ]
+  },
+  "blocks": {
+    "p1": {
+      "items": [
+        {
+          "id": "x",
+          "type": "integer",
+          "label": "Enter a whole number."
+        },
+        {
+          "id": "y",
+          "type": "decimal",
+          "label": "Enter a decimal number (optional)."
+        },
+        {
+          "id": "tags",
+          "type": "multi",
+          "label": "Pick some tags.",
+          "choices": "tags"
+        }
+      ]
+    },
+    "p2": {
+      "items": [
+        {
+          "id": "p2_anchor",
+          "type": "text",
+          "label": "This question is always shown."
+        },
+        {
+          "id": "e_sum",
+          "type": "text",
+          "label": "Shown when: x + y > 10",
+          "showIf": "x + y > 10"
+        },
+        {
+          "id": "e_div",
+          "type": "text",
+          "label": "Shown when: x / 4 == 2.5",
+          "showIf": "x / 4 == 2.5"
+        },
+        {
+          "id": "e_dec",
+          "type": "text",
+          "label": "Shown when: y * 3 == 0.3",
+          "showIf": "y * 3 == 0.3"
+        },
+        {
+          "id": "e_and",
+          "type": "text",
+          "label": "Shown when: x > 5 and contains(tags, \"b\")",
+          "showIf": "x > 5 and contains(tags, \"b\")"
+        },
+        {
+          "id": "e_or",
+          "type": "text",
+          "label": "Shown when: x < 0 or contains(tags, \"c\")",
+          "showIf": "x < 0 or contains(tags, \"c\")"
+        },
+        {
+          "id": "e_not",
+          "type": "text",
+          "label": "Shown when: not (x == 10)",
+          "showIf": "not (x == 10)"
+        },
+        {
+          "id": "e_prec",
+          "type": "text",
+          "label": "Shown when: x - 2 * 3 == 4",
+          "showIf": "x - 2 * 3 == 4"
+        },
+        {
+          "id": "e_paren",
+          "type": "text",
+          "label": "Shown when: (x - 2) * 3 == 24",
+          "showIf": "(x - 2) * 3 == 24"
+        }
+      ]
+    }
+  },
+  "flow": [
+    {
+      "block": "p1"
+    },
+    {
+      "block": "p2"
+    }
+  ]
+}

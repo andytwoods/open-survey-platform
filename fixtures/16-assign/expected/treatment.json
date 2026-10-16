@@ -1,0 +1,199 @@
+{
+  "format": "osp-fixture-expected/0",
+  "fixture": "16-assign",
+  "script": "treatment",
+  "pending": [],
+  "steps": [
+    {
+      "index": 0,
+      "page": "p_intro",
+      "visible": [
+        "intro_q"
+      ],
+      "errors": {},
+      "nav": {
+        "back": false
+      },
+      "questions": {
+        "intro_q": {
+          "state": "unanswered",
+          "value": null
+        },
+        "ctrl_q": {
+          "state": "not-reached",
+          "value": null
+        },
+        "treat_q": {
+          "state": "not-reached",
+          "value": null
+        },
+        "out_q": {
+          "state": "not-reached",
+          "value": null
+        }
+      },
+      "orders": {
+        "blocks": {},
+        "items": {},
+        "choices": {}
+      },
+      "conditions": {
+        "cond": "treatment"
+      },
+      "end": null
+    },
+    {
+      "index": 1,
+      "page": "blk_treat",
+      "visible": [
+        "treat_q"
+      ],
+      "errors": {},
+      "nav": {
+        "back": true
+      },
+      "questions": {
+        "intro_q": {
+          "state": "answered",
+          "value": "yes"
+        },
+        "ctrl_q": {
+          "state": "not-reached",
+          "value": null
+        },
+        "treat_q": {
+          "state": "unanswered",
+          "value": null
+        },
+        "out_q": {
+          "state": "not-reached",
+          "value": null
+        }
+      },
+      "orders": {
+        "blocks": {},
+        "items": {},
+        "choices": {}
+      },
+      "conditions": {
+        "cond": "treatment"
+      },
+      "end": null
+    },
+    {
+      "index": 2,
+      "page": "p_out",
+      "visible": [
+        "out_q"
+      ],
+      "errors": {},
+      "nav": {
+        "back": true
+      },
+      "questions": {
+        "intro_q": {
+          "state": "answered",
+          "value": "yes"
+        },
+        "ctrl_q": {
+          "state": "not-reached",
+          "value": null
+        },
+        "treat_q": {
+          "state": "answered",
+          "value": "A chair that folds"
+        },
+        "out_q": {
+          "state": "unanswered",
+          "value": null
+        }
+      },
+      "orders": {
+        "blocks": {},
+        "items": {},
+        "choices": {}
+      },
+      "conditions": {
+        "cond": "treatment"
+      },
+      "end": null,
+      "labels": {
+        "out_q": "You were in the treatment group. Did you guess that?"
+      }
+    },
+    {
+      "index": 3,
+      "page": null,
+      "visible": [],
+      "errors": {},
+      "nav": null,
+      "questions": {
+        "intro_q": {
+          "state": "answered",
+          "value": "yes"
+        },
+        "ctrl_q": {
+          "state": "not-reached",
+          "value": null
+        },
+        "treat_q": {
+          "state": "answered",
+          "value": "A chair that folds"
+        },
+        "out_q": {
+          "state": "answered",
+          "value": "no"
+        }
+      },
+      "orders": {
+        "blocks": {},
+        "items": {},
+        "choices": {}
+      },
+      "conditions": {
+        "cond": "treatment"
+      },
+      "end": "complete"
+    }
+  ],
+  "invariants": [],
+  "response": {
+    "surveyId": "f16_assign",
+    "surveyVersion": 1,
+    "end": "complete",
+    "allocation": "server",
+    "sessionSeed": 1602,
+    "conditions": {
+      "cond": "treatment"
+    },
+    "orders": {
+      "blocks": {},
+      "items": {},
+      "choices": {}
+    },
+    "answers": {
+      "intro_q": {
+        "state": "answered",
+        "value": "yes"
+      },
+      "ctrl_q": {
+        "state": "not-reached",
+        "value": null
+      },
+      "treat_q": {
+        "state": "answered",
+        "value": "A chair that folds"
+      },
+      "out_q": {
+        "state": "answered",
+        "value": "no"
+      }
+    },
+    "csvState": {
+      "intro_q__state": "answered",
+      "ctrl_q__state": "not-reached",
+      "treat_q__state": "answered",
+      "out_q__state": "answered"
+    }
+  }
+}

@@ -1,0 +1,57 @@
+{
+  "description": "Only 'assigned' variables can be assigned.",
+  "expect": [
+    {
+      "code": "flow.assign_wrong_kind",
+      "pointer": "/flow/1/variables/0"
+    }
+  ],
+  "survey": {
+    "specVersion": "osp-survey/0.1",
+    "id": "srv_case",
+    "metadata": {
+      "title": "Case",
+      "languages": [
+        "en"
+      ]
+    },
+    "blocks": [
+      {
+        "id": "b1",
+        "pages": [
+          {
+            "id": "p1",
+            "items": [
+              {
+                "id": "q1",
+                "type": "integer",
+                "label": "Question q1"
+              }
+            ]
+          }
+        ]
+      }
+    ],
+    "flow": [
+      {
+        "type": "block",
+        "id": "f1",
+        "block": "b1"
+      },
+      {
+        "type": "assign",
+        "id": "f2",
+        "variables": [
+          "src"
+        ]
+      }
+    ],
+    "variables": [
+      {
+        "kind": "embedded",
+        "id": "src",
+        "param": "s"
+      }
+    ]
+  }
+}

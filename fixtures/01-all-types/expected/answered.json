@@ -1,0 +1,152 @@
+{
+  "format": "osp-fixture-expected/0",
+  "fixture": "01-all-types",
+  "script": "answered",
+  "pending": [],
+  "steps": [
+    {
+      "index": 0,
+      "page": "p1",
+      "visible": [
+        "note_intro",
+        "n_int",
+        "n_dec",
+        "t_text",
+        "s_single",
+        "m_multi",
+        "d_date"
+      ],
+      "errors": {},
+      "nav": {
+        "back": false
+      },
+      "questions": {
+        "n_int": {
+          "state": "unanswered",
+          "value": null
+        },
+        "n_dec": {
+          "state": "unanswered",
+          "value": null
+        },
+        "t_text": {
+          "state": "unanswered",
+          "value": null
+        },
+        "s_single": {
+          "state": "unanswered",
+          "value": null
+        },
+        "m_multi": {
+          "state": "unanswered",
+          "value": null
+        },
+        "d_date": {
+          "state": "unanswered",
+          "value": null
+        }
+      },
+      "orders": {
+        "blocks": {},
+        "items": {},
+        "choices": {}
+      },
+      "conditions": {},
+      "end": null
+    },
+    {
+      "index": 1,
+      "page": null,
+      "visible": [],
+      "errors": {},
+      "nav": null,
+      "questions": {
+        "n_int": {
+          "state": "answered",
+          "value": 3
+        },
+        "n_dec": {
+          "state": "answered",
+          "value": "2.8"
+        },
+        "t_text": {
+          "state": "answered",
+          "value": "Cloudy with sunny spells"
+        },
+        "s_single": {
+          "state": "answered",
+          "value": "banana"
+        },
+        "m_multi": {
+          "state": "answered",
+          "value": [
+            "red",
+            "blue"
+          ]
+        },
+        "d_date": {
+          "state": "answered",
+          "value": "2026-03-14"
+        }
+      },
+      "orders": {
+        "blocks": {},
+        "items": {},
+        "choices": {}
+      },
+      "conditions": {},
+      "end": "complete"
+    }
+  ],
+  "invariants": [],
+  "response": {
+    "surveyId": "f01_all_types",
+    "surveyVersion": 1,
+    "end": "complete",
+    "allocation": "server",
+    "sessionSeed": 101,
+    "conditions": {},
+    "orders": {
+      "blocks": {},
+      "items": {},
+      "choices": {}
+    },
+    "answers": {
+      "n_int": {
+        "state": "answered",
+        "value": 3
+      },
+      "n_dec": {
+        "state": "answered",
+        "value": "2.8"
+      },
+      "t_text": {
+        "state": "answered",
+        "value": "Cloudy with sunny spells"
+      },
+      "s_single": {
+        "state": "answered",
+        "value": "banana"
+      },
+      "m_multi": {
+        "state": "answered",
+        "value": [
+          "red",
+          "blue"
+        ]
+      },
+      "d_date": {
+        "state": "answered",
+        "value": "2026-03-14"
+      }
+    },
+    "csvState": {
+      "n_int__state": "answered",
+      "n_dec__state": "answered",
+      "t_text__state": "answered",
+      "s_single__state": "answered",
+      "m_multi__state": "answered",
+      "d_date__state": "answered"
+    }
+  }
+}

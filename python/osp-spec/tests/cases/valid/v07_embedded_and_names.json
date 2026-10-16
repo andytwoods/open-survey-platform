@@ -1,0 +1,60 @@
+{
+  "description": "Embedded URL variable used in the first showIf and piped; names differ from stable ids.",
+  "expect": [],
+  "survey": {
+    "specVersion": "osp-survey/0.1",
+    "id": "srv_case",
+    "metadata": {
+      "title": "Case",
+      "languages": [
+        "en"
+      ]
+    },
+    "blocks": [
+      {
+        "id": "b1",
+        "pages": [
+          {
+            "id": "p1",
+            "items": [
+              {
+                "id": "q_8a1f",
+                "type": "text",
+                "label": "Hello from ${src}. Your employer?",
+                "name": "employer",
+                "showIf": {
+                  "kind": "compare",
+                  "op": "==",
+                  "left": {
+                    "kind": "ref",
+                    "id": "src"
+                  },
+                  "right": {
+                    "kind": "text",
+                    "value": "panel"
+                  }
+                }
+              }
+            ]
+          }
+        ]
+      }
+    ],
+    "flow": [
+      {
+        "type": "block",
+        "id": "f_b1",
+        "block": "b1"
+      }
+    ],
+    "variables": [
+      {
+        "kind": "embedded",
+        "id": "src",
+        "name": "source",
+        "param": "s",
+        "default": "direct"
+      }
+    ]
+  }
+}

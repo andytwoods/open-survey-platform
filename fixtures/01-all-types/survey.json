@@ -1,0 +1,94 @@
+{
+  "format": "osp-fixture-survey/0",
+  "description": "One page with integer, decimal, text, single, multi, date and a note.",
+  "id": "f01_all_types",
+  "version": 1,
+  "title": "All question types",
+  "languages": [
+    "en"
+  ],
+  "settings": {
+    "backNavigation": true
+  },
+  "choiceLists": {
+    "fruit": [
+      {
+        "value": "apple",
+        "label": "Apple"
+      },
+      {
+        "value": "banana",
+        "label": "Banana"
+      },
+      {
+        "value": "cherry",
+        "label": "Cherry"
+      }
+    ],
+    "colour": [
+      {
+        "value": "red",
+        "label": "Red"
+      },
+      {
+        "value": "green",
+        "label": "Green"
+      },
+      {
+        "value": "blue",
+        "label": "Blue"
+      }
+    ]
+  },
+  "blocks": {
+    "p1": {
+      "items": [
+        {
+          "id": "note_intro",
+          "type": "note",
+          "label": "Please answer a few questions about everyday things."
+        },
+        {
+          "id": "n_int",
+          "type": "integer",
+          "label": "How many cups of tea did you drink yesterday?"
+        },
+        {
+          "id": "n_dec",
+          "type": "decimal",
+          "label": "What did your last coffee cost, in pounds?"
+        },
+        {
+          "id": "t_text",
+          "type": "text",
+          "label": "Describe the weather today."
+        },
+        {
+          "id": "s_single",
+          "type": "single",
+          "label": "Which fruit do you prefer?",
+          "choices": "fruit"
+        },
+        {
+          "id": "m_multi",
+          "type": "multi",
+          "label": "Which colours do you like?",
+          "choices": "colour"
+        },
+        {
+          "id": "d_date",
+          "type": "date",
+          "label": "Pick any date in 2026."
+        }
+      ]
+    }
+  },
+  "flow": [
+    {
+      "block": "p1"
+    },
+    {
+      "end": "complete"
+    }
+  ]
+}

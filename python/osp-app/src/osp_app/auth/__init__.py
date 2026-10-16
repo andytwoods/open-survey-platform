@@ -1,0 +1,80 @@
+"""Auth core for osp-app (layer L5): users, tenants, roles, passwords, TOTP,
+sessions and the permissions policy. No HTTP here; L6 shells call into it."""
+
+from .model import Membership, Role, Session, SessionStage, Tenant, User
+from .passwords import PasswordHasher, PasswordPolicy
+from .permissions import (
+    Action,
+    Actor,
+    PermissionDenied,
+    Resource,
+    ResourceKind,
+    authorize,
+    can,
+    requires,
+)
+from .ports import Clock, RandomSource, SystemClock, SystemRandom
+from .repos import (
+    InMemoryMembershipRepo,
+    InMemorySessionRepo,
+    InMemoryUserRepo,
+    MembershipRepo,
+    SessionRepo,
+    UserRepo,
+)
+from .service import (
+    GENERIC_FAILURE,
+    AuthError,
+    AuthService,
+    EmailTaken,
+    LockoutPolicy,
+    LoginFailed,
+    LoginOk,
+    LoginResult,
+    MfaRequired,
+    PasswordRejected,
+    TotpEnrolment,
+)
+from .sessions import SessionConfig, SessionManager
+
+__all__ = [
+    "GENERIC_FAILURE",
+    "Action",
+    "Actor",
+    "AuthError",
+    "AuthService",
+    "Clock",
+    "EmailTaken",
+    "InMemoryMembershipRepo",
+    "InMemorySessionRepo",
+    "InMemoryUserRepo",
+    "LockoutPolicy",
+    "LoginFailed",
+    "LoginOk",
+    "LoginResult",
+    "Membership",
+    "MembershipRepo",
+    "MfaRequired",
+    "PasswordHasher",
+    "PasswordPolicy",
+    "PasswordRejected",
+    "PermissionDenied",
+    "RandomSource",
+    "Resource",
+    "ResourceKind",
+    "Role",
+    "Session",
+    "SessionConfig",
+    "SessionManager",
+    "SessionRepo",
+    "SessionStage",
+    "SystemClock",
+    "SystemRandom",
+    "Tenant",
+    "TotpEnrolment",
+    "User",
+    "UserRepo",
+    "authorize",
+    "can",
+    "requires",
+]

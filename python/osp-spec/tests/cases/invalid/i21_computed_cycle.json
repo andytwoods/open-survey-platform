@@ -1,0 +1,77 @@
+{
+  "description": "Computed variables may not depend on themselves.",
+  "expect": [
+    {
+      "code": "variable.cycle",
+      "pointer": "/variables/1/expr"
+    }
+  ],
+  "survey": {
+    "specVersion": "osp-survey/0.1",
+    "id": "srv_case",
+    "metadata": {
+      "title": "Case",
+      "languages": [
+        "en"
+      ]
+    },
+    "blocks": [
+      {
+        "id": "b1",
+        "pages": [
+          {
+            "id": "p1",
+            "items": [
+              {
+                "id": "q1",
+                "type": "integer",
+                "label": "Question q1"
+              }
+            ]
+          }
+        ]
+      }
+    ],
+    "flow": [
+      {
+        "type": "block",
+        "id": "f_b1",
+        "block": "b1"
+      }
+    ],
+    "variables": [
+      {
+        "kind": "computed",
+        "id": "a",
+        "expr": {
+          "kind": "arith",
+          "op": "+",
+          "left": {
+            "kind": "ref",
+            "id": "b"
+          },
+          "right": {
+            "kind": "int",
+            "value": 1
+          }
+        }
+      },
+      {
+        "kind": "computed",
+        "id": "b",
+        "expr": {
+          "kind": "arith",
+          "op": "+",
+          "left": {
+            "kind": "ref",
+            "id": "a"
+          },
+          "right": {
+            "kind": "int",
+            "value": 1
+          }
+        }
+      }
+    ]
+  }
+}

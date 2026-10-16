@@ -1,0 +1,48 @@
+{
+  "description": "A block appears in the flow at most once.",
+  "expect": [
+    {
+      "code": "flow.block_reused",
+      "pointer": "/flow/1/block"
+    }
+  ],
+  "survey": {
+    "specVersion": "osp-survey/0.1",
+    "id": "srv_case",
+    "metadata": {
+      "title": "Case",
+      "languages": [
+        "en"
+      ]
+    },
+    "blocks": [
+      {
+        "id": "b1",
+        "pages": [
+          {
+            "id": "p1",
+            "items": [
+              {
+                "id": "q1",
+                "type": "integer",
+                "label": "Question q1"
+              }
+            ]
+          }
+        ]
+      }
+    ],
+    "flow": [
+      {
+        "type": "block",
+        "id": "f1",
+        "block": "b1"
+      },
+      {
+        "type": "block",
+        "id": "f2",
+        "block": "b1"
+      }
+    ]
+  }
+}

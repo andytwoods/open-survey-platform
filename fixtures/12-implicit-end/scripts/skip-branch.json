@@ -1,0 +1,16 @@
+{
+  "format": "osp-fixture-script/0",
+  "id": "skip-branch",
+  "description": "Branch not taken; the flow runs out: end = complete.",
+  "sessionSeed": 1201,
+  "language": "en",
+  "actions": [
+    {
+      "expectPage": "p1",
+      "set": {
+        "x": "two"
+      },
+      "do": "next"
+    }
+  ]
+}

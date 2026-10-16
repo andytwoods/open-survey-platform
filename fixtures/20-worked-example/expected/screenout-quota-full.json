@@ -1,0 +1,237 @@
+{
+  "format": "osp-fixture-expected/0",
+  "fixture": "20-worked-example",
+  "script": "screenout-quota-full",
+  "pending": [
+    "C3a-1",
+    "C3a-2",
+    "C3a-3",
+    "C3a-4",
+    "C3a-5"
+  ],
+  "steps": [
+    {
+      "index": 0,
+      "page": "consent",
+      "visible": [
+        "consent"
+      ],
+      "errors": {},
+      "nav": {
+        "back": false
+      },
+      "questions": {
+        "consent": {
+          "state": "unanswered",
+          "value": null
+        },
+        "age": {
+          "state": "not-reached",
+          "value": null
+        },
+        "att1": {
+          "state": "not-reached",
+          "value": null
+        },
+        "att2": {
+          "state": "not-reached",
+          "value": null
+        },
+        "att3": {
+          "state": "not-reached",
+          "value": null
+        }
+      },
+      "orders": {
+        "blocks": {},
+        "items": {},
+        "choices": {}
+      },
+      "conditions": {
+        "framing": "gain",
+        "incentive": "£5 voucher"
+      },
+      "end": null
+    },
+    {
+      "index": 1,
+      "page": "demo",
+      "visible": [
+        "age"
+      ],
+      "errors": {},
+      "nav": {
+        "back": true
+      },
+      "questions": {
+        "consent": {
+          "state": "answered",
+          "value": 1
+        },
+        "age": {
+          "state": "unanswered",
+          "value": null
+        },
+        "att1": {
+          "state": "not-reached",
+          "value": null
+        },
+        "att2": {
+          "state": "not-reached",
+          "value": null
+        },
+        "att3": {
+          "state": "not-reached",
+          "value": null
+        }
+      },
+      "orders": {
+        "blocks": {},
+        "items": {},
+        "choices": {}
+      },
+      "conditions": {
+        "framing": "gain",
+        "incentive": "£5 voucher"
+      },
+      "end": null
+    },
+    {
+      "index": 2,
+      "page": "screenout",
+      "visible": [
+        "bye"
+      ],
+      "errors": {},
+      "nav": {
+        "back": true
+      },
+      "questions": {
+        "consent": {
+          "state": "answered",
+          "value": 1
+        },
+        "age": {
+          "state": "answered",
+          "value": 60
+        },
+        "att1": {
+          "state": "not-reached",
+          "value": null
+        },
+        "att2": {
+          "state": "not-reached",
+          "value": null
+        },
+        "att3": {
+          "state": "not-reached",
+          "value": null
+        }
+      },
+      "orders": {
+        "blocks": {},
+        "items": {},
+        "choices": {}
+      },
+      "conditions": {
+        "framing": "gain",
+        "incentive": "£5 voucher"
+      },
+      "end": null
+    },
+    {
+      "index": 3,
+      "page": null,
+      "visible": [],
+      "errors": {},
+      "nav": null,
+      "questions": {
+        "consent": {
+          "state": "answered",
+          "value": 1
+        },
+        "age": {
+          "state": "answered",
+          "value": 60
+        },
+        "att1": {
+          "state": "not-reached",
+          "value": null
+        },
+        "att2": {
+          "state": "not-reached",
+          "value": null
+        },
+        "att3": {
+          "state": "not-reached",
+          "value": null
+        }
+      },
+      "orders": {
+        "blocks": {},
+        "items": {},
+        "choices": {}
+      },
+      "conditions": {
+        "framing": "gain",
+        "incentive": "£5 voucher"
+      },
+      "end": "<pending:C3a-3>"
+    }
+  ],
+  "invariants": [],
+  "response": {
+    "surveyId": "srv_7f3c",
+    "surveyVersion": 3,
+    "end": "<pending:C3a-3>",
+    "allocation": "server",
+    "sessionSeed": 404,
+    "conditions": {
+      "framing": "gain",
+      "incentive": "£5 voucher"
+    },
+    "orders": {
+      "blocks": {},
+      "items": {},
+      "choices": {}
+    },
+    "answers": {
+      "consent": {
+        "state": "answered",
+        "value": 1
+      },
+      "age": {
+        "state": "answered",
+        "value": 60
+      },
+      "att1": {
+        "state": "not-reached",
+        "value": null
+      },
+      "att2": {
+        "state": "not-reached",
+        "value": null
+      },
+      "att3": {
+        "state": "not-reached",
+        "value": null
+      }
+    },
+    "csvState": {
+      "consent__state": "answered",
+      "age__state": "answered",
+      "att1__state": "not-reached",
+      "att2__state": "not-reached",
+      "att3__state": "not-reached"
+    },
+    "calculated": {
+      "age_band": "<pending:C3a-2>"
+    },
+    "scores": {
+      "att_score": "<pending:C3a-4>"
+    },
+    "embeddedData": {
+      "source": "<pending:C3a-5>"
+    }
+  }
+}

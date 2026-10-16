@@ -1,0 +1,37 @@
+<data xmlns:jr="http://openrosa.org/javarosa" xmlns:orx="http://openrosa.org/xforms" id="spike_enketo" version="2026101601">
+        <cond>A</cond>
+        <seed>725742004</seed>
+        <order_att>att1 att2 att3</order_att>
+        <order_blocks>blk_y blk_x</order_blocks>
+        <p_consent>
+          <consent>yes</consent>
+        </p_consent>
+        <p_age>
+          <age>30</age>
+        </p_age>
+        <p_stim_a>
+          <stim_a/>
+        </p_stim_a>
+        
+        <p_att>
+          <att1>5</att1>
+          <att2>3</att2>
+          <att3>4</att3>
+        </p_att>
+        <att1_label>Strongly agree</att1_label>
+        <p_follow>
+          <followup>loved it</followup>
+        </p_follow>
+        <p_colour>
+          <fav_colour>red</fav_colour>
+        </p_colour>
+        <blk_x>
+          <q_x>7</q_x>
+        </blk_x>
+        <blk_y>
+          <q_y/>
+        </blk_y>
+        <meta>
+          <instanceID>uuid:27d7075e-d77b-4e9e-9d74-5e5696ca9469</instanceID>
+        </meta>
+      </data>
