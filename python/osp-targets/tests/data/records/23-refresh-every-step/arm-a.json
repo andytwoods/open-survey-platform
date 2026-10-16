@@ -1,0 +1,213 @@
+{
+ "format": "osp-response/1",
+ "surveyId": "f23_refresh_every_step",
+ "surveyVersion": 1,
+ "planVersion": "osp-runtime-plan/1",
+ "planChecksum": "sha256:6532158fb36a557942eb9984e0bb7ba2154393315e154f0de7b2a395e4309f0f",
+ "engineVersion": "1",
+ "sessionSeed": 2301,
+ "sessionId": null,
+ "language": "en",
+ "device": null,
+ "end": "complete",
+ "endNode": null,
+ "allocation": "server",
+ "assigned": {
+  "arm": "A"
+ },
+ "conditions": {
+  "arm": "A"
+ },
+ "conditionSources": {
+  "arm": "server"
+ },
+ "orders": {
+  "blocks": {},
+  "items": {},
+  "choices": {
+   "fruit": [
+    "fig",
+    "plum",
+    "apple",
+    "pear"
+   ]
+  }
+ },
+ "answers": {
+  "consent": {
+   "state": "answered",
+   "value": "yes"
+  },
+  "age": {
+   "state": "answered",
+   "value": 30
+  },
+  "fruit": {
+   "state": "answered",
+   "value": "plum"
+  },
+  "arm_b_q": {
+   "state": "not-reached",
+   "value": null
+  },
+  "comment": {
+   "state": "answered",
+   "value": "fine"
+  }
+ },
+ "csvState": {
+  "consent__state": "answered",
+  "age__state": "answered",
+  "fruit__state": "answered",
+  "arm_b_q__state": "not-reached",
+  "comment__state": "answered"
+ },
+ "embedded": {},
+ "computed": {},
+ "quotas": {},
+ "effects": [],
+ "urlParams": {},
+ "startedAt": 2000,
+ "endedAt": 14000,
+ "revision": 13,
+ "events": [
+  {
+   "type": "start",
+   "seq": 1,
+   "rev": 1,
+   "t": 2000,
+   "sessionSeed": 2301,
+   "assigned": {
+    "arm": "A"
+   },
+   "language": "en",
+   "device": null,
+   "urlParams": {},
+   "sessionId": null
+  },
+  {
+   "type": "answer",
+   "t": 3000,
+   "item": "consent",
+   "value": "yes",
+   "seq": 2,
+   "rev": 2
+  },
+  {
+   "type": "next",
+   "t": 4000,
+   "from": "p_start_page",
+   "seq": 3,
+   "rev": 3,
+   "result": {
+    "outcome": "advanced",
+    "to": "p_info_page"
+   }
+  },
+  {
+   "type": "answer",
+   "t": 5000,
+   "item": "age",
+   "value": 12,
+   "seq": 4,
+   "rev": 4
+  },
+  {
+   "type": "next",
+   "t": 6000,
+   "from": "p_info_page",
+   "seq": 5,
+   "rev": 5,
+   "result": {
+    "outcome": "invalid",
+    "to": "p_info_page",
+    "errors": {
+     "age": {
+      "kind": "constraint"
+     }
+    }
+   }
+  },
+  {
+   "type": "answer",
+   "t": 7000,
+   "item": "age",
+   "value": 30,
+   "seq": 6,
+   "rev": 6
+  },
+  {
+   "type": "next",
+   "t": 8000,
+   "from": "p_info_page",
+   "seq": 7,
+   "rev": 7,
+   "result": {
+    "outcome": "advanced",
+    "to": "p_a_page"
+   }
+  },
+  {
+   "type": "answer",
+   "t": 9000,
+   "item": "fruit",
+   "value": "plum",
+   "seq": 8,
+   "rev": 8
+  },
+  {
+   "type": "next",
+   "t": 10000,
+   "from": "p_a_page",
+   "seq": 9,
+   "rev": 9,
+   "result": {
+    "outcome": "advanced",
+    "to": "p_end_page"
+   }
+  },
+  {
+   "type": "back",
+   "t": 11000,
+   "from": "p_end_page",
+   "seq": 10,
+   "rev": 10,
+   "to": "p_a_page"
+  },
+  {
+   "type": "next",
+   "t": 12000,
+   "from": "p_a_page",
+   "seq": 11,
+   "rev": 11,
+   "result": {
+    "outcome": "advanced",
+    "to": "p_end_page"
+   }
+  },
+  {
+   "type": "answer",
+   "t": 13000,
+   "item": "comment",
+   "value": "fine",
+   "seq": 12,
+   "rev": 12
+  },
+  {
+   "type": "next",
+   "t": 14000,
+   "from": "p_end_page",
+   "seq": 13,
+   "rev": 13,
+   "result": {
+    "outcome": "ended",
+    "to": null,
+    "effect": {
+     "kind": "end",
+     "outcome": "complete",
+     "nodeId": null
+    }
+   }
+  }
+ ]
+}

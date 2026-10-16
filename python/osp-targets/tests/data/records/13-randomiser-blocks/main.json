@@ -1,0 +1,199 @@
+{
+ "format": "osp-response/1",
+ "surveyId": "f13_randomiser_blocks",
+ "surveyVersion": 1,
+ "planVersion": "osp-runtime-plan/1",
+ "planChecksum": "sha256:9539996a4a0726ca8060e3fbd7ad93f82f62ff1da7ccce4549eda6e56eedded8",
+ "engineVersion": "1",
+ "sessionSeed": 777,
+ "sessionId": null,
+ "language": "en",
+ "device": null,
+ "end": "complete",
+ "endNode": null,
+ "allocation": "server",
+ "assigned": {},
+ "conditions": {},
+ "conditionSources": {},
+ "orders": {
+  "blocks": {
+   "r_blocks": [
+    "n_blk_y",
+    "n_blk_x",
+    "n_blk_z"
+   ]
+  },
+  "items": {},
+  "choices": {}
+ },
+ "answers": {
+  "intro_q": {
+   "state": "answered",
+   "value": "yes"
+  },
+  "q_x": {
+   "state": "answered",
+   "value": 1
+  },
+  "q_y": {
+   "state": "answered",
+   "value": 2
+  },
+  "q_z": {
+   "state": "answered",
+   "value": 3
+  },
+  "outro_q": {
+   "state": "answered",
+   "value": "done"
+  }
+ },
+ "csvState": {
+  "intro_q__state": "answered",
+  "q_x__state": "answered",
+  "q_y__state": "answered",
+  "q_z__state": "answered",
+  "outro_q__state": "answered"
+ },
+ "embedded": {},
+ "computed": {},
+ "quotas": {},
+ "effects": [],
+ "urlParams": {},
+ "startedAt": 2000,
+ "endedAt": 14000,
+ "revision": 13,
+ "events": [
+  {
+   "type": "start",
+   "seq": 1,
+   "rev": 1,
+   "t": 2000,
+   "sessionSeed": 777,
+   "assigned": {},
+   "language": "en",
+   "device": null,
+   "urlParams": {},
+   "sessionId": null
+  },
+  {
+   "type": "answer",
+   "t": 3000,
+   "item": "intro_q",
+   "value": "yes",
+   "seq": 2,
+   "rev": 2
+  },
+  {
+   "type": "next",
+   "t": 4000,
+   "from": "intro_page",
+   "seq": 3,
+   "rev": 3,
+   "result": {
+    "outcome": "advanced",
+    "to": "blk_y_page"
+   }
+  },
+  {
+   "type": "answer",
+   "t": 5000,
+   "item": "q_y",
+   "value": 2,
+   "seq": 4,
+   "rev": 4
+  },
+  {
+   "type": "next",
+   "t": 6000,
+   "from": "blk_y_page",
+   "seq": 5,
+   "rev": 5,
+   "result": {
+    "outcome": "advanced",
+    "to": "blk_x_page"
+   }
+  },
+  {
+   "type": "back",
+   "t": 7000,
+   "from": "blk_x_page",
+   "seq": 6,
+   "rev": 6,
+   "to": "blk_y_page"
+  },
+  {
+   "type": "next",
+   "t": 8000,
+   "from": "blk_y_page",
+   "seq": 7,
+   "rev": 7,
+   "result": {
+    "outcome": "advanced",
+    "to": "blk_x_page"
+   }
+  },
+  {
+   "type": "answer",
+   "t": 9000,
+   "item": "q_x",
+   "value": 1,
+   "seq": 8,
+   "rev": 8
+  },
+  {
+   "type": "next",
+   "t": 10000,
+   "from": "blk_x_page",
+   "seq": 9,
+   "rev": 9,
+   "result": {
+    "outcome": "advanced",
+    "to": "blk_z_page"
+   }
+  },
+  {
+   "type": "answer",
+   "t": 11000,
+   "item": "q_z",
+   "value": 3,
+   "seq": 10,
+   "rev": 10
+  },
+  {
+   "type": "next",
+   "t": 12000,
+   "from": "blk_z_page",
+   "seq": 11,
+   "rev": 11,
+   "result": {
+    "outcome": "advanced",
+    "to": "outro_page"
+   }
+  },
+  {
+   "type": "answer",
+   "t": 13000,
+   "item": "outro_q",
+   "value": "done",
+   "seq": 12,
+   "rev": 12
+  },
+  {
+   "type": "next",
+   "t": 14000,
+   "from": "outro_page",
+   "seq": 13,
+   "rev": 13,
+   "result": {
+    "outcome": "ended",
+    "to": null,
+    "effect": {
+     "kind": "end",
+     "outcome": "complete",
+     "nodeId": null
+    }
+   }
+  }
+ ]
+}

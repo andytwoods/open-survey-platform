@@ -1,0 +1,481 @@
+{
+  "format": "osp-response-export/1",
+  "survey": {
+    "id": "srv_7f3c",
+    "title": "Framing and incentive study",
+    "version": 3,
+    "checksum": "sha256:test-20-worked-example"
+  },
+  "missingValues": "Every answer is {state, value}. state is answered, unanswered (shown, left empty), irrelevant (page reached, hidden by its show-if) or not-reached (the flow never got to its page); value is null unless state is answered. state is null only if the stored record has no entry for the question.",
+  "options": {
+    "events": true
+  },
+  "responses": [
+    {
+      "responseId": "resp-complete-gain",
+      "sessionId": "sess-complete-gain",
+      "version": 3,
+      "versionChecksum": "sha256:test-20-worked-example",
+      "planChecksum": "sha256:340014c7861d7df4c2920c876d9465181fdb23507d8b6d85222f367aa720c1fe",
+      "engineVersion": "1",
+      "allocationMode": "server",
+      "saveMode": "every-page",
+      "seed": 202,
+      "startedAt": "2026-10-16T09:30:00.000Z",
+      "submittedAt": "2026-10-16T09:30:30.250Z",
+      "late": false,
+      "end": "complete",
+      "language": "en",
+      "conditions": {
+        "framing": "gain",
+        "incentive": "£5 voucher"
+      },
+      "answers": {
+        "consent": {
+          "state": "answered",
+          "value": 1
+        },
+        "age": {
+          "state": "answered",
+          "value": 30
+        },
+        "att1": {
+          "state": "answered",
+          "value": 4
+        },
+        "att2": {
+          "state": "answered",
+          "value": 5
+        },
+        "att3": {
+          "state": "answered",
+          "value": 2
+        }
+      },
+      "variables": {
+        "source": "direct"
+      },
+      "orders": {
+        "blocks": {},
+        "items": {
+          "attitudes_page": [
+            "att1",
+            "att3",
+            "att2"
+          ]
+        },
+        "choices": {}
+      },
+      "quotas": {},
+      "urlParams": {},
+      "events": [
+        {
+          "type": "start",
+          "seq": 1,
+          "rev": 1,
+          "t": 2000,
+          "sessionSeed": 202,
+          "assigned": {
+            "framing": "gain",
+            "incentive": "£5 voucher"
+          },
+          "language": "en",
+          "device": null,
+          "urlParams": {},
+          "sessionId": null
+        },
+        {
+          "type": "answer",
+          "t": 3000,
+          "item": "consent",
+          "value": 1,
+          "seq": 2,
+          "rev": 2
+        },
+        {
+          "type": "next",
+          "t": 4000,
+          "from": "consent_blk_page",
+          "seq": 3,
+          "rev": 3,
+          "result": {
+            "outcome": "advanced",
+            "to": "demo_page"
+          }
+        },
+        {
+          "type": "answer",
+          "t": 5000,
+          "item": "age",
+          "value": 17,
+          "seq": 4,
+          "rev": 4
+        },
+        {
+          "type": "next",
+          "t": 6000,
+          "from": "demo_page",
+          "seq": 5,
+          "rev": 5,
+          "result": {
+            "outcome": "invalid",
+            "to": "demo_page",
+            "errors": {
+              "age": {
+                "kind": "constraint"
+              }
+            }
+          }
+        },
+        {
+          "type": "answer",
+          "t": 7000,
+          "item": "age",
+          "value": 30,
+          "seq": 6,
+          "rev": 6
+        },
+        {
+          "type": "next",
+          "t": 8000,
+          "from": "demo_page",
+          "seq": 7,
+          "rev": 7,
+          "result": {
+            "outcome": "advanced",
+            "to": "stim_gain_page"
+          }
+        },
+        {
+          "type": "next",
+          "t": 9000,
+          "from": "stim_gain_page",
+          "seq": 8,
+          "rev": 8,
+          "result": {
+            "outcome": "advanced",
+            "to": "attitudes_page"
+          }
+        },
+        {
+          "type": "answer",
+          "t": 10000,
+          "item": "att1",
+          "value": 4,
+          "seq": 9,
+          "rev": 9
+        },
+        {
+          "type": "answer",
+          "t": 11000,
+          "item": "att2",
+          "value": 5,
+          "seq": 10,
+          "rev": 10
+        },
+        {
+          "type": "answer",
+          "t": 12000,
+          "item": "att3",
+          "value": 2,
+          "seq": 11,
+          "rev": 11
+        },
+        {
+          "type": "next",
+          "t": 13000,
+          "from": "attitudes_page",
+          "seq": 12,
+          "rev": 12,
+          "result": {
+            "outcome": "ended",
+            "to": null,
+            "effect": {
+              "kind": "end",
+              "outcome": "complete",
+              "nodeId": "end_complete"
+            }
+          }
+        }
+      ]
+    },
+    {
+      "responseId": "resp-declined",
+      "sessionId": "sess-declined",
+      "version": 3,
+      "versionChecksum": "sha256:test-20-worked-example",
+      "planChecksum": "sha256:340014c7861d7df4c2920c876d9465181fdb23507d8b6d85222f367aa720c1fe",
+      "engineVersion": "1",
+      "allocationMode": "server",
+      "saveMode": "every-page",
+      "seed": 101,
+      "startedAt": "2026-10-16T09:31:00.000Z",
+      "submittedAt": "2026-10-16T09:31:30.250Z",
+      "late": false,
+      "end": "declined",
+      "language": "en",
+      "conditions": {
+        "framing": "gain",
+        "incentive": "£5 voucher"
+      },
+      "answers": {
+        "consent": {
+          "state": "answered",
+          "value": 0
+        },
+        "age": {
+          "state": "not-reached",
+          "value": null
+        },
+        "att1": {
+          "state": "not-reached",
+          "value": null
+        },
+        "att2": {
+          "state": "not-reached",
+          "value": null
+        },
+        "att3": {
+          "state": "not-reached",
+          "value": null
+        }
+      },
+      "variables": {
+        "source": "direct"
+      },
+      "orders": {
+        "blocks": {},
+        "items": {
+          "attitudes_page": null
+        },
+        "choices": {}
+      },
+      "quotas": {},
+      "urlParams": {},
+      "events": [
+        {
+          "type": "start",
+          "seq": 1,
+          "rev": 1,
+          "t": 2000,
+          "sessionSeed": 101,
+          "assigned": {
+            "framing": "gain",
+            "incentive": "£5 voucher"
+          },
+          "language": "en",
+          "device": null,
+          "urlParams": {},
+          "sessionId": null
+        },
+        {
+          "type": "answer",
+          "t": 3000,
+          "item": "consent",
+          "value": 0,
+          "seq": 2,
+          "rev": 2
+        },
+        {
+          "type": "next",
+          "t": 4000,
+          "from": "consent_blk_page",
+          "seq": 3,
+          "rev": 3,
+          "result": {
+            "outcome": "ended",
+            "to": null,
+            "effect": {
+              "kind": "end",
+              "outcome": "declined",
+              "nodeId": "end_declined"
+            }
+          }
+        }
+      ]
+    },
+    {
+      "responseId": "resp-loss-charity-back-refresh",
+      "sessionId": "sess-loss-charity-back-refresh",
+      "version": 3,
+      "versionChecksum": "sha256:test-20-worked-example",
+      "planChecksum": "sha256:340014c7861d7df4c2920c876d9465181fdb23507d8b6d85222f367aa720c1fe",
+      "engineVersion": "1",
+      "allocationMode": "server",
+      "saveMode": "every-page",
+      "seed": 303,
+      "startedAt": "2026-10-16T09:32:00.000Z",
+      "submittedAt": "2026-10-16T09:32:30.250Z",
+      "late": false,
+      "end": "complete",
+      "language": "en",
+      "conditions": {
+        "framing": "loss",
+        "incentive": "charity donation"
+      },
+      "answers": {
+        "consent": {
+          "state": "answered",
+          "value": 1
+        },
+        "age": {
+          "state": "answered",
+          "value": 45
+        },
+        "att1": {
+          "state": "answered",
+          "value": 2
+        },
+        "att2": {
+          "state": "answered",
+          "value": 3
+        },
+        "att3": {
+          "state": "answered",
+          "value": 5
+        }
+      },
+      "variables": {
+        "source": "direct"
+      },
+      "orders": {
+        "blocks": {},
+        "items": {
+          "attitudes_page": [
+            "att2",
+            "att1",
+            "att3"
+          ]
+        },
+        "choices": {}
+      },
+      "quotas": {},
+      "urlParams": {},
+      "events": [
+        {
+          "type": "start",
+          "seq": 1,
+          "rev": 1,
+          "t": 2000,
+          "sessionSeed": 303,
+          "assigned": {
+            "framing": "loss",
+            "incentive": "charity donation"
+          },
+          "language": "en",
+          "device": null,
+          "urlParams": {},
+          "sessionId": null
+        },
+        {
+          "type": "answer",
+          "t": 3000,
+          "item": "consent",
+          "value": 1,
+          "seq": 2,
+          "rev": 2
+        },
+        {
+          "type": "next",
+          "t": 4000,
+          "from": "consent_blk_page",
+          "seq": 3,
+          "rev": 3,
+          "result": {
+            "outcome": "advanced",
+            "to": "demo_page"
+          }
+        },
+        {
+          "type": "answer",
+          "t": 5000,
+          "item": "age",
+          "value": 45,
+          "seq": 4,
+          "rev": 4
+        },
+        {
+          "type": "next",
+          "t": 6000,
+          "from": "demo_page",
+          "seq": 5,
+          "rev": 5,
+          "result": {
+            "outcome": "advanced",
+            "to": "stim_loss_page"
+          }
+        },
+        {
+          "type": "next",
+          "t": 7000,
+          "from": "stim_loss_page",
+          "seq": 6,
+          "rev": 6,
+          "result": {
+            "outcome": "advanced",
+            "to": "attitudes_page"
+          }
+        },
+        {
+          "type": "answer",
+          "t": 8000,
+          "item": "att2",
+          "value": 3,
+          "seq": 7,
+          "rev": 7
+        },
+        {
+          "type": "back",
+          "t": 9000,
+          "from": "attitudes_page",
+          "seq": 8,
+          "rev": 8,
+          "to": "stim_loss_page"
+        },
+        {
+          "type": "next",
+          "t": 10000,
+          "from": "stim_loss_page",
+          "seq": 9,
+          "rev": 9,
+          "result": {
+            "outcome": "advanced",
+            "to": "attitudes_page"
+          }
+        },
+        {
+          "type": "answer",
+          "t": 11000,
+          "item": "att1",
+          "value": 2,
+          "seq": 10,
+          "rev": 10
+        },
+        {
+          "type": "answer",
+          "t": 12000,
+          "item": "att3",
+          "value": 5,
+          "seq": 11,
+          "rev": 11
+        },
+        {
+          "type": "next",
+          "t": 13000,
+          "from": "attitudes_page",
+          "seq": 12,
+          "rev": 12,
+          "result": {
+            "outcome": "ended",
+            "to": null,
+            "effect": {
+              "kind": "end",
+              "outcome": "complete",
+              "nodeId": "end_complete"
+            }
+          }
+        }
+      ]
+    }
+  ]
+}

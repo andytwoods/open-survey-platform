@@ -1,0 +1,185 @@
+{
+ "format": "osp-response/1",
+ "surveyId": "f07_back_navigation",
+ "surveyVersion": 1,
+ "planVersion": "osp-runtime-plan/1",
+ "planChecksum": "sha256:31bce0f2c403e0568d6990e6e498a8b29009d32c782663b11c29b122465a0fc5",
+ "engineVersion": "1",
+ "sessionSeed": 701,
+ "sessionId": null,
+ "language": "en",
+ "device": null,
+ "end": "complete",
+ "endNode": null,
+ "allocation": "server",
+ "assigned": {},
+ "conditions": {},
+ "conditionSources": {},
+ "orders": {
+  "blocks": {},
+  "items": {},
+  "choices": {}
+ },
+ "answers": {
+  "q1": {
+   "state": "answered",
+   "value": 5
+  },
+  "q2": {
+   "state": "answered",
+   "value": "Thames"
+  },
+  "q3": {
+   "state": "answered",
+   "value": "yes"
+  },
+  "q3b": {
+   "state": "answered",
+   "value": "north"
+  }
+ },
+ "csvState": {
+  "q1__state": "answered",
+  "q2__state": "answered",
+  "q3__state": "answered",
+  "q3b__state": "answered"
+ },
+ "embedded": {},
+ "computed": {},
+ "quotas": {},
+ "effects": [],
+ "urlParams": {},
+ "startedAt": 2000,
+ "endedAt": 14000,
+ "revision": 13,
+ "events": [
+  {
+   "type": "start",
+   "seq": 1,
+   "rev": 1,
+   "t": 2000,
+   "sessionSeed": 701,
+   "assigned": {},
+   "language": "en",
+   "device": null,
+   "urlParams": {},
+   "sessionId": null
+  },
+  {
+   "type": "answer",
+   "t": 3000,
+   "item": "q1",
+   "value": 4,
+   "seq": 2,
+   "rev": 2
+  },
+  {
+   "type": "next",
+   "t": 4000,
+   "from": "p1_page",
+   "seq": 3,
+   "rev": 3,
+   "result": {
+    "outcome": "advanced",
+    "to": "p2_page"
+   }
+  },
+  {
+   "type": "answer",
+   "t": 5000,
+   "item": "q2",
+   "value": "Thames",
+   "seq": 4,
+   "rev": 4
+  },
+  {
+   "type": "next",
+   "t": 6000,
+   "from": "p2_page",
+   "seq": 5,
+   "rev": 5,
+   "result": {
+    "outcome": "advanced",
+    "to": "p3_page"
+   }
+  },
+  {
+   "type": "back",
+   "t": 7000,
+   "from": "p3_page",
+   "seq": 6,
+   "rev": 6,
+   "to": "p2_page"
+  },
+  {
+   "type": "back",
+   "t": 8000,
+   "from": "p2_page",
+   "seq": 7,
+   "rev": 7,
+   "to": "p1_page"
+  },
+  {
+   "type": "answer",
+   "t": 9000,
+   "item": "q1",
+   "value": 5,
+   "seq": 8,
+   "rev": 8
+  },
+  {
+   "type": "next",
+   "t": 10000,
+   "from": "p1_page",
+   "seq": 9,
+   "rev": 9,
+   "result": {
+    "outcome": "advanced",
+    "to": "p2_page"
+   }
+  },
+  {
+   "type": "next",
+   "t": 11000,
+   "from": "p2_page",
+   "seq": 10,
+   "rev": 10,
+   "result": {
+    "outcome": "advanced",
+    "to": "p3_page"
+   }
+  },
+  {
+   "type": "answer",
+   "t": 12000,
+   "item": "q3",
+   "value": "yes",
+   "seq": 11,
+   "rev": 11
+  },
+  {
+   "type": "answer",
+   "t": 13000,
+   "item": "q3b",
+   "value": "north",
+   "seq": 12,
+   "rev": 12
+  },
+  {
+   "type": "next",
+   "t": 14000,
+   "from": "p3_page",
+   "seq": 13,
+   "rev": 13,
+   "result": {
+    "outcome": "ended",
+    "to": null,
+    "effect": {
+     "kind": "end",
+     "outcome": "complete",
+     "nodeId": null
+    }
+   }
+  }
+ ]
+}

@@ -1,0 +1,125 @@
+{
+ "format": "osp-response/1",
+ "surveyId": "f15_choice_order_shuffle",
+ "surveyVersion": 1,
+ "planVersion": "osp-runtime-plan/1",
+ "planChecksum": "sha256:053f38048892883fbbe19f72aadec9d42567f560b9686c4353e66dc23b8cdc69",
+ "engineVersion": "1",
+ "sessionSeed": 1,
+ "sessionId": null,
+ "language": "en",
+ "device": null,
+ "end": "complete",
+ "endNode": null,
+ "allocation": "server",
+ "assigned": {},
+ "conditions": {},
+ "conditionSources": {},
+ "orders": {
+  "blocks": {},
+  "items": {},
+  "choices": {
+   "fav_colour": [
+    "red",
+    "yellow",
+    "purple",
+    "green",
+    "blue"
+   ],
+   "fruits": [
+    "plum",
+    "kiwi",
+    "mango",
+    "pear",
+    "apple"
+   ]
+  }
+ },
+ "answers": {
+  "fav_colour": {
+   "state": "answered",
+   "value": "purple"
+  },
+  "fruits": {
+   "state": "answered",
+   "value": [
+    "apple",
+    "plum"
+   ]
+  },
+  "plain": {
+   "state": "answered",
+   "value": "yes"
+  }
+ },
+ "csvState": {
+  "fav_colour__state": "answered",
+  "fruits__state": "answered",
+  "plain__state": "answered"
+ },
+ "embedded": {},
+ "computed": {},
+ "quotas": {},
+ "effects": [],
+ "urlParams": {},
+ "startedAt": 2000,
+ "endedAt": 6000,
+ "revision": 5,
+ "events": [
+  {
+   "type": "start",
+   "seq": 1,
+   "rev": 1,
+   "t": 2000,
+   "sessionSeed": 1,
+   "assigned": {},
+   "language": "en",
+   "device": null,
+   "urlParams": {},
+   "sessionId": null
+  },
+  {
+   "type": "answer",
+   "t": 3000,
+   "item": "fav_colour",
+   "value": "purple",
+   "seq": 2,
+   "rev": 2
+  },
+  {
+   "type": "answer",
+   "t": 4000,
+   "item": "fruits",
+   "value": [
+    "apple",
+    "plum"
+   ],
+   "seq": 3,
+   "rev": 3
+  },
+  {
+   "type": "answer",
+   "t": 5000,
+   "item": "plain",
+   "value": "yes",
+   "seq": 4,
+   "rev": 4
+  },
+  {
+   "type": "next",
+   "t": 6000,
+   "from": "p1_page",
+   "seq": 5,
+   "rev": 5,
+   "result": {
+    "outcome": "ended",
+    "to": null,
+    "effect": {
+     "kind": "end",
+     "outcome": "complete",
+     "nodeId": null
+    }
+   }
+  }
+ ]
+}

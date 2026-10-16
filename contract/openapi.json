@@ -3544,6 +3544,306 @@
         ]
       }
     },
+    "/api/surveys/{survey_id}/export/codebook": {
+      "get": {
+        "operationId": "exportCodebook",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "survey_id",
+            "required": true,
+            "schema": {
+              "title": "Survey Id",
+              "type": "string"
+            }
+          },
+          {
+            "in": "query",
+            "name": "format",
+            "required": false,
+            "schema": {
+              "default": "md",
+              "enum": [
+                "md",
+                "json"
+              ],
+              "title": "Format",
+              "type": "string"
+            }
+          },
+          {
+            "description": "One published version; omitted: all versions combined",
+            "in": "query",
+            "name": "version",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "minimum": 1,
+                  "type": "integer"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "description": "One published version; omitted: all versions combined",
+              "title": "Version"
+            }
+          },
+          {
+            "description": "Add <var>__state columns (default on)",
+            "in": "query",
+            "name": "stateColumns",
+            "required": false,
+            "schema": {
+              "default": true,
+              "description": "Add <var>__state columns (default on)",
+              "title": "Statecolumns",
+              "type": "boolean"
+            }
+          },
+          {
+            "description": "multi answers: one 0/1 column per choice, or codes in one cell",
+            "in": "query",
+            "name": "multi",
+            "required": false,
+            "schema": {
+              "default": "columns",
+              "description": "multi answers: one 0/1 column per choice, or codes in one cell",
+              "enum": [
+                "columns",
+                "codes"
+              ],
+              "title": "Multi",
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object"
+                }
+              },
+              "text/markdown": {
+                "schema": {
+                  "type": "string"
+                }
+              }
+            },
+            "description": "Codebook as Markdown or JSON"
+          },
+          "401": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorBody"
+                }
+              }
+            },
+            "description": "Unauthorized"
+          },
+          "403": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorBody"
+                }
+              }
+            },
+            "description": "Forbidden"
+          },
+          "404": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorBody"
+                }
+              }
+            },
+            "description": "Not Found"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/RejectedBody"
+                }
+              }
+            },
+            "description": "Unprocessable Content"
+          }
+        },
+        "summary": "Export Codebook",
+        "tags": [
+          "surveys"
+        ]
+      }
+    },
+    "/api/surveys/{survey_id}/export/responses": {
+      "get": {
+        "operationId": "exportResponses",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "survey_id",
+            "required": true,
+            "schema": {
+              "title": "Survey Id",
+              "type": "string"
+            }
+          },
+          {
+            "in": "query",
+            "name": "format",
+            "required": false,
+            "schema": {
+              "default": "csv",
+              "enum": [
+                "csv",
+                "json"
+              ],
+              "title": "Format",
+              "type": "string"
+            }
+          },
+          {
+            "description": "One published version; omitted: all versions combined",
+            "in": "query",
+            "name": "version",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "minimum": 1,
+                  "type": "integer"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "description": "One published version; omitted: all versions combined",
+              "title": "Version"
+            }
+          },
+          {
+            "description": "Add <var>__state columns (default on)",
+            "in": "query",
+            "name": "stateColumns",
+            "required": false,
+            "schema": {
+              "default": true,
+              "description": "Add <var>__state columns (default on)",
+              "title": "Statecolumns",
+              "type": "boolean"
+            }
+          },
+          {
+            "description": "multi answers: one 0/1 column per choice, or codes in one cell",
+            "in": "query",
+            "name": "multi",
+            "required": false,
+            "schema": {
+              "default": "columns",
+              "description": "multi answers: one 0/1 column per choice, or codes in one cell",
+              "enum": [
+                "columns",
+                "codes"
+              ],
+              "title": "Multi",
+              "type": "string"
+            }
+          },
+          {
+            "description": "CSV for Excel: UTF-8 byte order mark (formulas always escaped)",
+            "in": "query",
+            "name": "excel",
+            "required": false,
+            "schema": {
+              "default": false,
+              "description": "CSV for Excel: UTF-8 byte order mark (formulas always escaped)",
+              "title": "Excel",
+              "type": "boolean"
+            }
+          },
+          {
+            "description": "JSON: include each event log",
+            "in": "query",
+            "name": "events",
+            "required": false,
+            "schema": {
+              "default": false,
+              "description": "JSON: include each event log",
+              "title": "Events",
+              "type": "boolean"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object"
+                }
+              },
+              "text/csv": {
+                "schema": {
+                  "type": "string"
+                }
+              }
+            },
+            "description": "Responses as CSV (empty cell + <var>__state) or JSON"
+          },
+          "401": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorBody"
+                }
+              }
+            },
+            "description": "Unauthorized"
+          },
+          "403": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorBody"
+                }
+              }
+            },
+            "description": "Forbidden"
+          },
+          "404": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorBody"
+                }
+              }
+            },
+            "description": "Not Found"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/RejectedBody"
+                }
+              }
+            },
+            "description": "Unprocessable Content"
+          }
+        },
+        "summary": "Export Responses",
+        "tags": [
+          "surveys"
+        ]
+      }
+    },
     "/api/surveys/{survey_id}/export/xlsform": {
       "get": {
         "operationId": "exportXlsform",

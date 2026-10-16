@@ -1,0 +1,300 @@
+{
+ "format": "osp-response/1",
+ "surveyId": "f21_back_cascade",
+ "surveyVersion": 1,
+ "planVersion": "osp-runtime-plan/1",
+ "planChecksum": "sha256:a648d32dc818c3020bdd2c193d3212c459995716dec3f73d239267080f3a351e",
+ "engineVersion": "1",
+ "sessionSeed": 2102,
+ "sessionId": null,
+ "language": "en",
+ "device": null,
+ "end": "complete",
+ "endNode": null,
+ "allocation": "server",
+ "assigned": {},
+ "conditions": {},
+ "conditionSources": {},
+ "orders": {
+  "blocks": {},
+  "items": {},
+  "choices": {}
+ },
+ "answers": {
+  "a": {
+   "state": "answered",
+   "value": "yes"
+  },
+  "b": {
+   "state": "answered",
+   "value": 2
+  },
+  "weather": {
+   "state": "unanswered",
+   "value": null
+  },
+  "c": {
+   "state": "unanswered",
+   "value": null
+  },
+  "colour": {
+   "state": "unanswered",
+   "value": null
+  },
+  "d": {
+   "state": "irrelevant",
+   "value": null
+  },
+  "final": {
+   "state": "unanswered",
+   "value": null
+  }
+ },
+ "csvState": {
+  "a__state": "answered",
+  "b__state": "answered",
+  "weather__state": "unanswered",
+  "c__state": "unanswered",
+  "colour__state": "unanswered",
+  "d__state": "irrelevant",
+  "final__state": "unanswered"
+ },
+ "embedded": {},
+ "computed": {},
+ "quotas": {},
+ "effects": [],
+ "urlParams": {},
+ "startedAt": 2000,
+ "endedAt": 24000,
+ "revision": 23,
+ "events": [
+  {
+   "type": "start",
+   "seq": 1,
+   "rev": 1,
+   "t": 2000,
+   "sessionSeed": 2102,
+   "assigned": {},
+   "language": "en",
+   "device": null,
+   "urlParams": {},
+   "sessionId": null
+  },
+  {
+   "type": "answer",
+   "t": 3000,
+   "item": "a",
+   "value": "yes",
+   "seq": 2,
+   "rev": 2
+  },
+  {
+   "type": "next",
+   "t": 4000,
+   "from": "p1_page",
+   "seq": 3,
+   "rev": 3,
+   "result": {
+    "outcome": "advanced",
+    "to": "p2_page"
+   }
+  },
+  {
+   "type": "answer",
+   "t": 5000,
+   "item": "b",
+   "value": 3,
+   "seq": 4,
+   "rev": 4
+  },
+  {
+   "type": "next",
+   "t": 6000,
+   "from": "p2_page",
+   "seq": 5,
+   "rev": 5,
+   "result": {
+    "outcome": "advanced",
+    "to": "p3_page"
+   }
+  },
+  {
+   "type": "answer",
+   "t": 7000,
+   "item": "c",
+   "value": "the red one",
+   "seq": 6,
+   "rev": 6
+  },
+  {
+   "type": "next",
+   "t": 8000,
+   "from": "p3_page",
+   "seq": 7,
+   "rev": 7,
+   "result": {
+    "outcome": "advanced",
+    "to": "p4_page"
+   }
+  },
+  {
+   "type": "back",
+   "t": 9000,
+   "from": "p4_page",
+   "seq": 8,
+   "rev": 8,
+   "to": "p3_page"
+  },
+  {
+   "type": "back",
+   "t": 10000,
+   "from": "p3_page",
+   "seq": 9,
+   "rev": 9,
+   "to": "p2_page"
+  },
+  {
+   "type": "back",
+   "t": 11000,
+   "from": "p2_page",
+   "seq": 10,
+   "rev": 10,
+   "to": "p1_page"
+  },
+  {
+   "type": "answer",
+   "t": 12000,
+   "item": "a",
+   "value": "no",
+   "seq": 11,
+   "rev": 11
+  },
+  {
+   "type": "next",
+   "t": 13000,
+   "from": "p1_page",
+   "seq": 12,
+   "rev": 12,
+   "result": {
+    "outcome": "advanced",
+    "to": "p2_page"
+   }
+  },
+  {
+   "type": "back",
+   "t": 14000,
+   "from": "p2_page",
+   "seq": 13,
+   "rev": 13,
+   "to": "p1_page"
+  },
+  {
+   "type": "answer",
+   "t": 15000,
+   "item": "a",
+   "value": "yes",
+   "seq": 14,
+   "rev": 14
+  },
+  {
+   "type": "next",
+   "t": 16000,
+   "from": "p1_page",
+   "seq": 15,
+   "rev": 15,
+   "result": {
+    "outcome": "advanced",
+    "to": "p2_page"
+   }
+  },
+  {
+   "type": "next",
+   "t": 17000,
+   "from": "p2_page",
+   "seq": 16,
+   "rev": 16,
+   "result": {
+    "outcome": "invalid",
+    "to": "p2_page",
+    "errors": {
+     "b": {
+      "kind": "required"
+     }
+    }
+   }
+  },
+  {
+   "type": "answer",
+   "t": 18000,
+   "item": "b",
+   "value": 1,
+   "seq": 17,
+   "rev": 17
+  },
+  {
+   "type": "next",
+   "t": 19000,
+   "from": "p2_page",
+   "seq": 18,
+   "rev": 18,
+   "result": {
+    "outcome": "advanced",
+    "to": "p3_page"
+   }
+  },
+  {
+   "type": "back",
+   "t": 20000,
+   "from": "p3_page",
+   "seq": 19,
+   "rev": 19,
+   "to": "p2_page"
+  },
+  {
+   "type": "answer",
+   "t": 21000,
+   "item": "b",
+   "value": 2,
+   "seq": 20,
+   "rev": 20
+  },
+  {
+   "type": "next",
+   "t": 22000,
+   "from": "p2_page",
+   "seq": 21,
+   "rev": 21,
+   "result": {
+    "outcome": "advanced",
+    "to": "p3_page"
+   }
+  },
+  {
+   "type": "next",
+   "t": 23000,
+   "from": "p3_page",
+   "seq": 22,
+   "rev": 22,
+   "result": {
+    "outcome": "advanced",
+    "to": "p4_page"
+   }
+  },
+  {
+   "type": "next",
+   "t": 24000,
+   "from": "p4_page",
+   "seq": 23,
+   "rev": 23,
+   "result": {
+    "outcome": "ended",
+    "to": null,
+    "effect": {
+     "kind": "end",
+     "outcome": "complete",
+     "nodeId": null
+    }
+   }
+  }
+ ]
+}

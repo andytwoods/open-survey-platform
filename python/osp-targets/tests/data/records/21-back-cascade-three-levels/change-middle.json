@@ -1,0 +1,219 @@
+{
+ "format": "osp-response/1",
+ "surveyId": "f21_back_cascade",
+ "surveyVersion": 1,
+ "planVersion": "osp-runtime-plan/1",
+ "planChecksum": "sha256:a648d32dc818c3020bdd2c193d3212c459995716dec3f73d239267080f3a351e",
+ "engineVersion": "1",
+ "sessionSeed": 2103,
+ "sessionId": null,
+ "language": "en",
+ "device": null,
+ "end": "complete",
+ "endNode": null,
+ "allocation": "server",
+ "assigned": {},
+ "conditions": {},
+ "conditionSources": {},
+ "orders": {
+  "blocks": {},
+  "items": {},
+  "choices": {}
+ },
+ "answers": {
+  "a": {
+   "state": "answered",
+   "value": "yes"
+  },
+  "b": {
+   "state": "answered",
+   "value": 1
+  },
+  "weather": {
+   "state": "answered",
+   "value": "windy"
+  },
+  "c": {
+   "state": "irrelevant",
+   "value": null
+  },
+  "colour": {
+   "state": "answered",
+   "value": "green"
+  },
+  "d": {
+   "state": "irrelevant",
+   "value": null
+  },
+  "final": {
+   "state": "unanswered",
+   "value": null
+  }
+ },
+ "csvState": {
+  "a__state": "answered",
+  "b__state": "answered",
+  "weather__state": "answered",
+  "c__state": "irrelevant",
+  "colour__state": "answered",
+  "d__state": "irrelevant",
+  "final__state": "unanswered"
+ },
+ "embedded": {},
+ "computed": {},
+ "quotas": {},
+ "effects": [],
+ "urlParams": {},
+ "startedAt": 2000,
+ "endedAt": 16000,
+ "revision": 15,
+ "events": [
+  {
+   "type": "start",
+   "seq": 1,
+   "rev": 1,
+   "t": 2000,
+   "sessionSeed": 2103,
+   "assigned": {},
+   "language": "en",
+   "device": null,
+   "urlParams": {},
+   "sessionId": null
+  },
+  {
+   "type": "answer",
+   "t": 3000,
+   "item": "a",
+   "value": "yes",
+   "seq": 2,
+   "rev": 2
+  },
+  {
+   "type": "next",
+   "t": 4000,
+   "from": "p1_page",
+   "seq": 3,
+   "rev": 3,
+   "result": {
+    "outcome": "advanced",
+    "to": "p2_page"
+   }
+  },
+  {
+   "type": "answer",
+   "t": 5000,
+   "item": "b",
+   "value": 3,
+   "seq": 4,
+   "rev": 4
+  },
+  {
+   "type": "answer",
+   "t": 6000,
+   "item": "weather",
+   "value": "windy",
+   "seq": 5,
+   "rev": 5
+  },
+  {
+   "type": "next",
+   "t": 7000,
+   "from": "p2_page",
+   "seq": 6,
+   "rev": 6,
+   "result": {
+    "outcome": "advanced",
+    "to": "p3_page"
+   }
+  },
+  {
+   "type": "answer",
+   "t": 8000,
+   "item": "c",
+   "value": "the red one",
+   "seq": 7,
+   "rev": 7
+  },
+  {
+   "type": "answer",
+   "t": 9000,
+   "item": "colour",
+   "value": "green",
+   "seq": 8,
+   "rev": 8
+  },
+  {
+   "type": "next",
+   "t": 10000,
+   "from": "p3_page",
+   "seq": 9,
+   "rev": 9,
+   "result": {
+    "outcome": "advanced",
+    "to": "p4_page"
+   }
+  },
+  {
+   "type": "back",
+   "t": 11000,
+   "from": "p4_page",
+   "seq": 10,
+   "rev": 10,
+   "to": "p3_page"
+  },
+  {
+   "type": "back",
+   "t": 12000,
+   "from": "p3_page",
+   "seq": 11,
+   "rev": 11,
+   "to": "p2_page"
+  },
+  {
+   "type": "answer",
+   "t": 13000,
+   "item": "b",
+   "value": 1,
+   "seq": 12,
+   "rev": 12
+  },
+  {
+   "type": "next",
+   "t": 14000,
+   "from": "p2_page",
+   "seq": 13,
+   "rev": 13,
+   "result": {
+    "outcome": "advanced",
+    "to": "p3_page"
+   }
+  },
+  {
+   "type": "next",
+   "t": 15000,
+   "from": "p3_page",
+   "seq": 14,
+   "rev": 14,
+   "result": {
+    "outcome": "advanced",
+    "to": "p4_page"
+   }
+  },
+  {
+   "type": "next",
+   "t": 16000,
+   "from": "p4_page",
+   "seq": 15,
+   "rev": 15,
+   "result": {
+    "outcome": "ended",
+    "to": null,
+    "effect": {
+     "kind": "end",
+     "outcome": "complete",
+     "nodeId": null
+    }
+   }
+  }
+ ]
+}

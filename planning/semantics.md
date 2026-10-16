@@ -133,3 +133,9 @@ Open, raised by task C3a (fixtures v0). Fixtures that depend on one are marked `
 - **R1-6 Empty pages (§6) inside multi-page blocks, and notes (C3a-1).** Provisional: skipping is per page, and a relevant note counts as content, so a notes-only page is shown and a page whose only relevant items are notes is not skipped.
 - **R1-7 Text trimming (§2; see R6-1).** The engine trims exactly what Python's `str.strip()` trims, to match the reference evaluator (`osp_expr`). JavaScript's `trim()` differs (U+FEFF; U+001C–U+001F, U+0085). R6-1 asks which set is right.
 - **R1-8 `allocation` when the engine draws a condition itself.** Normally the server assigns every variable (R2). If a plan's assigned variable is missing from the server's list, the engine draws it from its `seedNode` and records `allocation: "seeded"` (with per-variable `conditionSources`) instead of `"server"`.
+
+**Added by agent M2 (response data export), 16 Oct 2026. Open; the export implements the provisional choice:**
+
+- **M2-1 The `late` flag.** Nothing defines "late". Provisional: `_late` is `true` when a response was submitted after the survey was closed (`surveys.closed_at`). Alternatives: after the publication closed, or after the session's inactivity expiry.
+- **M2-2 Missing values of embedded and computed variables** (C3a-5, C2-6). They get a value column but no `__state` column; an empty cell means "no value" (missing URL parameter, or a computed input was null). Confirm, or define their states.
+- **M2-3 Pooling versions.** The combined export keeps one column per variable name even when its type or choices changed between versions (the codebook lists such variables). Should a changed variable instead get a per-version column (e.g. `q1_v2`)?

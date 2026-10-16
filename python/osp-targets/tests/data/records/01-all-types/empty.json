@@ -1,0 +1,95 @@
+{
+ "format": "osp-response/1",
+ "surveyId": "f01_all_types",
+ "surveyVersion": 1,
+ "planVersion": "osp-runtime-plan/1",
+ "planChecksum": "sha256:34fd3c75e41296507270345e0f74e9f2500bdae356d471dd9176bbbd2402509e",
+ "engineVersion": "1",
+ "sessionSeed": 102,
+ "sessionId": null,
+ "language": "en",
+ "device": null,
+ "end": "complete",
+ "endNode": "end_complete",
+ "allocation": "server",
+ "assigned": {},
+ "conditions": {},
+ "conditionSources": {},
+ "orders": {
+  "blocks": {},
+  "items": {},
+  "choices": {}
+ },
+ "answers": {
+  "n_int": {
+   "state": "unanswered",
+   "value": null
+  },
+  "n_dec": {
+   "state": "unanswered",
+   "value": null
+  },
+  "t_text": {
+   "state": "unanswered",
+   "value": null
+  },
+  "s_single": {
+   "state": "unanswered",
+   "value": null
+  },
+  "m_multi": {
+   "state": "unanswered",
+   "value": null
+  },
+  "d_date": {
+   "state": "unanswered",
+   "value": null
+  }
+ },
+ "csvState": {
+  "n_int__state": "unanswered",
+  "n_dec__state": "unanswered",
+  "t_text__state": "unanswered",
+  "s_single__state": "unanswered",
+  "m_multi__state": "unanswered",
+  "d_date__state": "unanswered"
+ },
+ "embedded": {},
+ "computed": {},
+ "quotas": {},
+ "effects": [],
+ "urlParams": {},
+ "startedAt": 2000,
+ "endedAt": 3000,
+ "revision": 2,
+ "events": [
+  {
+   "type": "start",
+   "seq": 1,
+   "rev": 1,
+   "t": 2000,
+   "sessionSeed": 102,
+   "assigned": {},
+   "language": "en",
+   "device": null,
+   "urlParams": {},
+   "sessionId": null
+  },
+  {
+   "type": "next",
+   "t": 3000,
+   "from": "p1_page",
+   "seq": 2,
+   "rev": 2,
+   "result": {
+    "outcome": "ended",
+    "to": null,
+    "effect": {
+     "kind": "end",
+     "outcome": "complete",
+     "nodeId": "end_complete"
+    }
+   }
+  }
+ ]
+}

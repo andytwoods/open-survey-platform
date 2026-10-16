@@ -1,0 +1,149 @@
+{
+ "format": "osp-response/1",
+ "surveyId": "f01_all_types",
+ "surveyVersion": 1,
+ "planVersion": "osp-runtime-plan/1",
+ "planChecksum": "sha256:34fd3c75e41296507270345e0f74e9f2500bdae356d471dd9176bbbd2402509e",
+ "engineVersion": "1",
+ "sessionSeed": 101,
+ "sessionId": null,
+ "language": "en",
+ "device": null,
+ "end": "complete",
+ "endNode": "end_complete",
+ "allocation": "server",
+ "assigned": {},
+ "conditions": {},
+ "conditionSources": {},
+ "orders": {
+  "blocks": {},
+  "items": {},
+  "choices": {}
+ },
+ "answers": {
+  "n_int": {
+   "state": "answered",
+   "value": 3
+  },
+  "n_dec": {
+   "state": "answered",
+   "value": "2.8"
+  },
+  "t_text": {
+   "state": "answered",
+   "value": "Cloudy with sunny spells"
+  },
+  "s_single": {
+   "state": "answered",
+   "value": "banana"
+  },
+  "m_multi": {
+   "state": "answered",
+   "value": [
+    "red",
+    "blue"
+   ]
+  },
+  "d_date": {
+   "state": "answered",
+   "value": "2026-03-14"
+  }
+ },
+ "csvState": {
+  "n_int__state": "answered",
+  "n_dec__state": "answered",
+  "t_text__state": "answered",
+  "s_single__state": "answered",
+  "m_multi__state": "answered",
+  "d_date__state": "answered"
+ },
+ "embedded": {},
+ "computed": {},
+ "quotas": {},
+ "effects": [],
+ "urlParams": {},
+ "startedAt": 2000,
+ "endedAt": 9000,
+ "revision": 8,
+ "events": [
+  {
+   "type": "start",
+   "seq": 1,
+   "rev": 1,
+   "t": 2000,
+   "sessionSeed": 101,
+   "assigned": {},
+   "language": "en",
+   "device": null,
+   "urlParams": {},
+   "sessionId": null
+  },
+  {
+   "type": "answer",
+   "t": 3000,
+   "item": "n_int",
+   "value": 3,
+   "seq": 2,
+   "rev": 2
+  },
+  {
+   "type": "answer",
+   "t": 4000,
+   "item": "n_dec",
+   "value": "2.8",
+   "seq": 3,
+   "rev": 3
+  },
+  {
+   "type": "answer",
+   "t": 5000,
+   "item": "t_text",
+   "value": "Cloudy with sunny spells",
+   "seq": 4,
+   "rev": 4
+  },
+  {
+   "type": "answer",
+   "t": 6000,
+   "item": "s_single",
+   "value": "banana",
+   "seq": 5,
+   "rev": 5
+  },
+  {
+   "type": "answer",
+   "t": 7000,
+   "item": "m_multi",
+   "value": [
+    "red",
+    "blue"
+   ],
+   "seq": 6,
+   "rev": 6
+  },
+  {
+   "type": "answer",
+   "t": 8000,
+   "item": "d_date",
+   "value": "2026-03-14",
+   "seq": 7,
+   "rev": 7
+  },
+  {
+   "type": "next",
+   "t": 9000,
+   "from": "p1_page",
+   "seq": 8,
+   "rev": 8,
+   "result": {
+    "outcome": "ended",
+    "to": null,
+    "effect": {
+     "kind": "end",
+     "outcome": "complete",
+     "nodeId": "end_complete"
+    }
+   }
+  }
+ ]
+}

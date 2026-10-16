@@ -1,0 +1,163 @@
+{
+ "format": "osp-response/1",
+ "surveyId": "f27_unicode_text",
+ "surveyVersion": 1,
+ "planVersion": "osp-runtime-plan/1",
+ "planChecksum": "sha256:49cdfd00ab1153a8689021c3574a8ec2355b9bd13dcb5c4e4c655be8e587f355",
+ "engineVersion": "1",
+ "sessionSeed": 2702,
+ "sessionId": null,
+ "language": "en",
+ "device": null,
+ "end": "complete",
+ "endNode": null,
+ "allocation": "server",
+ "assigned": {},
+ "conditions": {},
+ "conditionSources": {},
+ "orders": {
+  "blocks": {},
+  "items": {},
+  "choices": {}
+ },
+ "answers": {
+  "t_emoji": {
+   "state": "answered",
+   "value": "👍🏽 great"
+  },
+  "t_rtl": {
+   "state": "answered",
+   "value": "​שלום עולם​"
+  },
+  "t_mixed": {
+   "state": "unanswered",
+   "value": null
+  },
+  "t_name": {
+   "state": "answered",
+   "value": "﻿café"
+  },
+  "pipe_emoji": {
+   "state": "unanswered",
+   "value": null
+  },
+  "pipe_rtl": {
+   "state": "unanswered",
+   "value": null
+  },
+  "pipe_mixed": {
+   "state": "unanswered",
+   "value": null
+  },
+  "pipe_name": {
+   "state": "unanswered",
+   "value": null
+  },
+  "s_emoji": {
+   "state": "unanswered",
+   "value": null
+  },
+  "s_rtl": {
+   "state": "irrelevant",
+   "value": null
+  },
+  "s_mixed_plain": {
+   "state": "irrelevant",
+   "value": null
+  }
+ },
+ "csvState": {
+  "t_emoji__state": "answered",
+  "t_rtl__state": "answered",
+  "t_mixed__state": "unanswered",
+  "t_name__state": "answered",
+  "pipe_emoji__state": "unanswered",
+  "pipe_rtl__state": "unanswered",
+  "pipe_mixed__state": "unanswered",
+  "pipe_name__state": "unanswered",
+  "s_emoji__state": "unanswered",
+  "s_rtl__state": "irrelevant",
+  "s_mixed_plain__state": "irrelevant"
+ },
+ "embedded": {},
+ "computed": {},
+ "quotas": {},
+ "effects": [],
+ "urlParams": {},
+ "startedAt": 2000,
+ "endedAt": 8000,
+ "revision": 7,
+ "events": [
+  {
+   "type": "start",
+   "seq": 1,
+   "rev": 1,
+   "t": 2000,
+   "sessionSeed": 2702,
+   "assigned": {},
+   "language": "en",
+   "device": null,
+   "urlParams": {},
+   "sessionId": null
+  },
+  {
+   "type": "answer",
+   "t": 3000,
+   "item": "t_emoji",
+   "value": "👍🏽 great",
+   "seq": 2,
+   "rev": 2
+  },
+  {
+   "type": "answer",
+   "t": 4000,
+   "item": "t_rtl",
+   "value": "​שלום עולם​",
+   "seq": 3,
+   "rev": 3
+  },
+  {
+   "type": "answer",
+   "t": 5000,
+   "item": "t_mixed",
+   "value": null,
+   "seq": 4,
+   "rev": 4
+  },
+  {
+   "type": "answer",
+   "t": 6000,
+   "item": "t_name",
+   "value": "﻿café",
+   "seq": 5,
+   "rev": 5
+  },
+  {
+   "type": "next",
+   "t": 7000,
+   "from": "p1_page",
+   "seq": 6,
+   "rev": 6,
+   "result": {
+    "outcome": "advanced",
+    "to": "p2_page"
+   }
+  },
+  {
+   "type": "next",
+   "t": 8000,
+   "from": "p2_page",
+   "seq": 7,
+   "rev": 7,
+   "result": {
+    "outcome": "ended",
+    "to": null,
+    "effect": {
+     "kind": "end",
+     "outcome": "complete",
+     "nodeId": null
+    }
+   }
+  }
+ ]
+}

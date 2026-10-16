@@ -1,0 +1,127 @@
+{
+ "format": "osp-response/1",
+ "surveyId": "f24_quota_retry",
+ "surveyVersion": 1,
+ "planVersion": "osp-runtime-plan/1",
+ "planChecksum": "sha256:693ac15713009ea6c4869f63e0e554351c7e22d33a80002cc6ed539bf79e17d1",
+ "engineVersion": "1",
+ "sessionSeed": 2402,
+ "sessionId": null,
+ "language": "en",
+ "device": null,
+ "end": "quota_full",
+ "endNode": "qc_north",
+ "allocation": "server",
+ "assigned": {},
+ "conditions": {},
+ "conditionSources": {},
+ "orders": {
+  "blocks": {},
+  "items": {},
+  "choices": {}
+ },
+ "answers": {
+  "region": {
+   "state": "answered",
+   "value": "north"
+  },
+  "p2_q": {
+   "state": "not-reached",
+   "value": null
+  },
+  "full_q": {
+   "state": "unanswered",
+   "value": null
+  }
+ },
+ "csvState": {
+  "region__state": "answered",
+  "p2_q__state": "not-reached",
+  "full_q__state": "unanswered"
+ },
+ "embedded": {},
+ "computed": {},
+ "quotas": {
+  "qc_north": "full"
+ },
+ "effects": [
+  {
+   "kind": "quota",
+   "nodeId": "qc_north",
+   "quota": "q_north",
+   "result": "full"
+  }
+ ],
+ "urlParams": {},
+ "startedAt": 2000,
+ "endedAt": 6000,
+ "revision": 5,
+ "events": [
+  {
+   "type": "start",
+   "seq": 1,
+   "rev": 1,
+   "t": 2000,
+   "sessionSeed": 2402,
+   "assigned": {},
+   "language": "en",
+   "device": null,
+   "urlParams": {},
+   "sessionId": null
+  },
+  {
+   "type": "answer",
+   "t": 3000,
+   "item": "region",
+   "value": "north",
+   "seq": 2,
+   "rev": 2
+  },
+  {
+   "type": "next",
+   "t": 4000,
+   "from": "p1_page",
+   "seq": 3,
+   "rev": 3,
+   "result": {
+    "outcome": "effect",
+    "effect": {
+     "kind": "quota",
+     "nodeId": "qc_north",
+     "quota": "q_north"
+    }
+   }
+  },
+  {
+   "type": "resolve",
+   "t": 5000,
+   "effect": {
+    "kind": "quota",
+    "nodeId": "qc_north"
+   },
+   "value": "full",
+   "seq": 4,
+   "rev": 4,
+   "result": {
+    "outcome": "advanced",
+    "to": "full_blk_page"
+   }
+  },
+  {
+   "type": "next",
+   "t": 6000,
+   "from": "full_blk_page",
+   "seq": 5,
+   "rev": 5,
+   "result": {
+    "outcome": "ended",
+    "to": null,
+    "effect": {
+     "kind": "end",
+     "outcome": "quota_full",
+     "nodeId": "qc_north"
+    }
+   }
+  }
+ ]
+}

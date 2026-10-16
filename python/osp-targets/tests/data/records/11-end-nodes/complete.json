@@ -1,0 +1,126 @@
+{
+ "format": "osp-response/1",
+ "surveyId": "f11_end_nodes",
+ "surveyVersion": 1,
+ "planVersion": "osp-runtime-plan/1",
+ "planChecksum": "sha256:8e0edf3d6657dcb4852f31ded011882f632ea1a92f0dfa3482e23aad8742d123",
+ "engineVersion": "1",
+ "sessionSeed": 1103,
+ "sessionId": null,
+ "language": "en",
+ "device": null,
+ "end": "complete",
+ "endNode": "end_complete",
+ "allocation": "server",
+ "assigned": {},
+ "conditions": {},
+ "conditionSources": {},
+ "orders": {
+  "blocks": {},
+  "items": {},
+  "choices": {}
+ },
+ "answers": {
+  "eligible": {
+   "state": "answered",
+   "value": "yes"
+  },
+  "rating": {
+   "state": "answered",
+   "value": 8
+  },
+  "extra": {
+   "state": "answered",
+   "value": "Toast"
+  }
+ },
+ "csvState": {
+  "eligible__state": "answered",
+  "rating__state": "answered",
+  "extra__state": "answered"
+ },
+ "embedded": {},
+ "computed": {},
+ "quotas": {},
+ "effects": [],
+ "urlParams": {},
+ "startedAt": 2000,
+ "endedAt": 8000,
+ "revision": 7,
+ "events": [
+  {
+   "type": "start",
+   "seq": 1,
+   "rev": 1,
+   "t": 2000,
+   "sessionSeed": 1103,
+   "assigned": {},
+   "language": "en",
+   "device": null,
+   "urlParams": {},
+   "sessionId": null
+  },
+  {
+   "type": "answer",
+   "t": 3000,
+   "item": "eligible",
+   "value": "yes",
+   "seq": 2,
+   "rev": 2
+  },
+  {
+   "type": "next",
+   "t": 4000,
+   "from": "p1_page",
+   "seq": 3,
+   "rev": 3,
+   "result": {
+    "outcome": "advanced",
+    "to": "p2_page"
+   }
+  },
+  {
+   "type": "answer",
+   "t": 5000,
+   "item": "rating",
+   "value": 8,
+   "seq": 4,
+   "rev": 4
+  },
+  {
+   "type": "next",
+   "t": 6000,
+   "from": "p2_page",
+   "seq": 5,
+   "rev": 5,
+   "result": {
+    "outcome": "advanced",
+    "to": "p3_page"
+   }
+  },
+  {
+   "type": "answer",
+   "t": 7000,
+   "item": "extra",
+   "value": "Toast",
+   "seq": 6,
+   "rev": 6
+  },
+  {
+   "type": "next",
+   "t": 8000,
+   "from": "p3_page",
+   "seq": 7,
+   "rev": 7,
+   "result": {
+    "outcome": "ended",
+    "to": null,
+    "effect": {
+     "kind": "end",
+     "outcome": "complete",
+     "nodeId": "end_complete"
+    }
+   }
+  }
+ ]
+}
