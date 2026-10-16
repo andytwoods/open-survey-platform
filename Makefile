@@ -16,7 +16,7 @@ unexport VIRTUAL_ENV
 UV_RUN := uv run --locked
 PNPM := pnpm
 
-CHECKS := py-test py-layers py-lint web-check web-test web-build contract-check licence-check harness-quick engine-test
+CHECKS := py-test py-layers py-lint web-check web-test web-build contract-check licence-check harness-quick engine-test hooks-test
 
 .PHONY: install check $(CHECKS) contract
 
@@ -103,3 +103,15 @@ runtime-e2e:
 runtime-size:
 	$(PNPM) -C web/runtime exec vite build --logLevel warn
 	$(PNPM) -C web/runtime exec node scripts/size.mjs
+
+# Researcher hooks (task R7, runtime-design.md §7a). `hooks-test` (in `make check`): manifest,
+# action validation and engine integration in node. `hooks-e2e`: the adversarial gate in real
+# Chromium and WebKit (egress, forged messages, floods, loops, allocations, stale results,
+# refresh, duplicate submit, undeclared redirects/parent messages, escaped hook text). Needs
+# Playwright browsers: `pnpm -C web/hooks-sandbox exec playwright install chromium webkit`.
+.PHONY: hooks-test hooks-e2e
+hooks-test:
+	$(PNPM) -C web/hooks-sandbox exec vitest run
+
+hooks-e2e:
+	$(PNPM) -C web/hooks-sandbox exec playwright test $(E2E_ARGS)
