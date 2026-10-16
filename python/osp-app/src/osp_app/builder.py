@@ -23,7 +23,7 @@ import re
 import secrets
 from collections.abc import Sequence
 from dataclasses import dataclass, field
-from datetime import datetime
+from datetime import UTC, date, datetime, time
 from typing import Any
 
 from osp_ops import Draft as OpsDraft
@@ -31,7 +31,7 @@ from osp_ops import Invocation, apply_transaction
 from osp_runtime import InvalidPayload, RuntimeConfig, SessionService
 from osp_runtime.config import SAVE_MODES
 from osp_runtime.plan import ENGINE_VERSION, PLAN_VERSION, compile_survey, runtime_config
-from osp_spec import SPEC_VERSION, Diagnostic, parse, validate
+from osp_spec import SPEC_VERSION, Diagnostic, parse, publish_diagnostics
 from osp_store import (
     AccountStore,
     Conflict,
@@ -39,6 +39,7 @@ from osp_store import (
     NotFound,
     OpLogEntry,
     OpRecord,
+    RetentionPolicy,
     RevisionConflict,
     Store,
     Survey,
@@ -156,6 +157,17 @@ def xlsform_artefact(body: Any) -> bytes:
     except Exception:  # an export bug must not block publishing
         return b""
     return content or b""
+
+
+def _retention_policy(body: Any) -> RetentionPolicy:
+    """The store policy for the survey's `settings.retention` (validated before this)."""
+    r = body["settings"]["retention"]
+    if r["kind"] == "days-after-close":
+        return RetentionPolicy.days_after_close(r["days"])
+    if r["kind"] == "after-date":
+        until = datetime.combine(date.fromisoformat(r["until"]), time.min, tzinfo=UTC)
+        return RetentionPolicy.after_date(until)
+    return RetentionPolicy.none()  # "indefinite": kept until the researcher deletes it
 
 
 def _errors(diagnostics: Sequence[Diagnostic]) -> list[Diagnostic]:
@@ -435,17 +447,19 @@ class Builder:
         *,
         survey_id: str,
         base_revision: int | None = None,
-        save_mode: str = "every-page",
+        save_mode: str | None = None,
     ) -> PublishResult:
         ctx = self._locate(actor, survey_id, Action.SURVEY_PUBLISH)
-        if save_mode not in SAVE_MODES:
+        if save_mode is not None and save_mode not in SAVE_MODES:
             raise InvalidRequest(f"saveMode must be one of {', '.join(SAVE_MODES)}")
         draft = self._draft(ctx, survey_id)
         if base_revision is not None and base_revision != draft.revision:
             raise RevisionConflictError(base_revision, draft.revision)
-        diagnostics = validate(draft.body)
+        # Publishing also needs a retention policy (decided 16 Oct 2026, no silent default).
+        diagnostics = publish_diagnostics(draft.body)
         if _errors(diagnostics) or not isinstance(draft.body, dict):
             raise Rejected("Fix the errors before publishing.", diagnostics)
+        retention = _retention_policy(draft.body)
 
         # The plan's seed version is the published number (semantics R1-1), so compile
         # for the number this version will get; the store re-checks it atomically.
@@ -486,6 +500,7 @@ class Builder:
             },
             body=frozen,
         )
+        self.store.set_retention(ctx, survey_id, retention)
         try:
             self.sessions.publish(ctx.tenant_id, ctx.actor, version.id, slug, plan, config)
         except (InvalidPayload, Conflict) as exc:  # not expected: config was checked above

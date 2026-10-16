@@ -31,6 +31,7 @@ from osp_expr.ast import (
     Contains,
     DecLit,
     Expr,
+    If,
     IntLit,
     Not,
     NullLit,
@@ -200,6 +201,9 @@ class EMWriter:
                     return self._multi_value(rid)
                 r = self._ref(rid)
                 return _Value(r, [f"!is_empty({r})"], ref_id=rid)
+            case If(cond=c, then=t, else_=e):
+                tv, ev = self._value(t), self._value(e)
+                return _Value(f"if({self._cond(c)}, {tv.text}, {ev.text})")
             case Arith(op=op, left=left, right=right):
                 lv, rv = self._value(left), self._value(right)
                 guards = [*lv.guards, *rv.guards]
@@ -245,6 +249,8 @@ class EMWriter:
                 return self._contains(ref.id, value)
             case BoolLit(value=b):
                 return TRUE if b else FALSE
+            case If(cond=c, then=t, else_=e):
+                return f"if({self._cond(c)}, {self._cond(t)}, {self._cond(e)})"
             case Ref(id=rid) if self.ctx.types.get(rid) == "boolean":
                 return f"{self._ref(rid)} == 1"
             case _:

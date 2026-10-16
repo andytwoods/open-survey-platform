@@ -1162,11 +1162,9 @@ export interface components {
             baseRevision?: number | null;
             /**
              * Savemode
-             * @description Participant save mode (runtime-design section 5.0)
-             * @default every-page
-             * @enum {string}
+             * @description Participant save mode (runtime-design section 5.0); default: the survey's settings.saveMode
              */
-            saveMode: "every-page" | "end-only";
+            saveMode?: ("every-page" | "end-only") | null;
         };
         /** PublishResponse */
         PublishResponse: {
@@ -1459,7 +1457,16 @@ export interface components {
         };
         /** SubmitResponse */
         SubmitResponse: {
-            /** Replay */
+            /**
+             * Late
+             * @description Submitted after the session's quota holds were released or its resume link expired. Accepted, flagged, and not counted toward quotas.
+             * @default false
+             */
+            late: boolean;
+            /**
+             * Replay
+             * @description True for a retry with identical data: the original success.
+             */
             replay: boolean;
             /** Responseid */
             responseId: string;

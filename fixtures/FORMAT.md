@@ -38,14 +38,16 @@ the traces rely on:
 - **Id clashes.** Ids are unique across the whole survey, so a v0 choice list or block that
   shared an id with a question was renamed: `commute_list` (10), `tags_list` (19) and block
   `consent_blk` (20, which also changed that block's `page`/`expectPage` in its traces).
-- **PRNG node ids** (§7 streams): randomiser `id`, block id for `itemOrder`, question id for
-  `choiceOrder`. `itemOrder` now lives on the page, so C4 must decide whether its stream is
-  keyed by the page or the block id; every affected order is still `"<engine>"`.
+- **PRNG node ids** (§7 streams): randomiser `id`, **page** id for `itemOrder` (decided,
+  R1-2; `itemOrder` lives on the page), question id for `choiceOrder`,
+  `<assign node>/<variable>` for an assigned variable the engine draws itself.
+- **Survey settings** the runner reads from `survey.json`: `settings.saveMode` and
+  `settings.localCopy` (fixture 33).
 
 ### pending.json
 
 A fixture whose survey uses something `osp-survey/0.1` cannot express leaves that part out of
-`survey.json` and records it here (fixtures 20, 32 and 33 have one):
+`survey.json` and records it here (only fixture 20 has one, with no open question in it):
 
 ```jsonc
 {
@@ -71,7 +73,7 @@ A fixture whose survey uses something `osp-survey/0.1` cannot express leaves tha
   "language": "en",
   "server": {                                 // what our server injects at session start
     "conditions": { "cond": "B" },
-    "quotas": { "q_old": "open" | "full" }    // fixture 20 only, pending C3a-3
+    "quotas": { "q_old": "open" | "full" }    // fixtures 20 and 24
   },
   "actions": [
     { "expectPage": "p1", "set": { "q1": 4 }, "do": "next" },
@@ -99,11 +101,11 @@ should skip the script, not fail it.
 | Field | Where | Meaning |
 |---|---|---|
 | `"do": "switchDevice"` | action | Continue on another device (runtime-design §5.4). The runner takes `snapshot(state)` as the server holds it and calls `restore(plan, snapshot)` on a device with no local copy. `"device": "B"` names the device now in use. `"restoreFrom": "local"` instead revives that device's own last local copy without reloading (a stale tab; fixture 25) |
-| `"do": "retry"` | action | Send the pending effect again (runtime-design §3, §5.5). `next` sends the first call itself. In fixtures a pending effect is re-sent **only** by `retry`, not by `refresh`, so the number of calls is fixed |
+| `"do": "retry"` | action | Send the pending effect again (runtime-design §3, §5.5). `next` sends the first call itself. A `refresh` or `resume` also re-sends a pending effect once, with the same idempotency key (semantics §5, R6-4); nothing else does, so the number of calls is fixed |
 | `server.quotaCalls` | script | `{ quotaCheckNodeId: ["timeout" \| "lostReply" \| "ok", …] }`: what happens to the 1st, 2nd … call. `timeout`: the request never reaches the server. `lostReply`: the server records its result but the reply is lost. `ok`: the reply arrives. Calls past the list are `ok`. Idempotent per (session, node): once recorded, every reply carries the recorded result |
 | `server.quotas` | script | As before: `"open"` or `"full"`, the result the server records on the first call that reaches it |
 | `replay` | script | `{ "server": { … } }`: after the script, replay the response's event log through a fresh engine against this (different) server state. It must make **no** effect calls and must give exactly `response` |
-| `storage` | script | `"blocked"`: IndexedDB is unavailable (private mode). In `every-page` mode answers are saved to the server on every change (R-1); in `end-only` mode the copy falls back to memory (§5.0) |
+| `storage` | script | `"blocked"`: IndexedDB is unavailable (private mode). In `every-page` mode answers are saved to the server on every change (R-1); in `end-only` mode the copy falls back to memory (§5.0), so a `refresh` or `resume` restarts the session from the first page with the same seed and conditions (semantics §5, R6-5; step `notice: "restarted"`). `settings.localCopy: "memory"` does the same without `storage` |
 
 ## 3. expected/<id>.json
 
@@ -128,7 +130,7 @@ So `steps` has one more entry than `actions`.
 | `index` | Position in `steps` |
 | `page` | Id of the block shown (each fixture block has one page), or `null` once the session has ended |
 | `visible` | Item ids shown, in display order (notes included) |
-| `errors` | `{ id: { "kind": "required" } }` or `{ id: { "kind": "constraint", "message": "…" } }`; when non-empty the page did not advance |
+| `errors` | `{ id: { "kind": "required" } }`, `{ id: { "kind": "range" } }` (numeric `min`/`max`), `{ id: { "kind": "constraint", "message": "…" } }` or `{ id: { "kind": "invalid", "code": "…" } }` (unreadable input, e.g. `value.too_long`); when non-empty the page did not advance |
 | `nav` | `{ "back": bool }`; `null` after the end |
 | `questions` | Every question (not notes or calculates): `{ "state": …, "value": … }` |
 | `orders` | `{ "blocks": {randomiserId: [...]}, "items": {blockId: [...]}, "choices": {questionId: [...]} }`; only shuffled nodes, only once reached |
@@ -138,6 +140,7 @@ So `steps` has one more entry than `actions`.
 | `choiceLabels` | Optional. `[[value, label], …]` in display order |
 | `effect` | Optional (R6, fixture 24). The pending effect, `{ "kind": "quota", "nodeId": … }`, or `null` when none is waiting |
 | `device` | Optional (R6, fixture 25). The device the step happens on (`"A"`, `"B"`) |
+| `notice` | Optional (fixtures 25, 33). A runtime-layer message the runner reports, not engine state: `"restarted"` (a memory-only session restarted on refresh) or `"conflict"` (this device's save was stale; it now shows the server copy, semantics §5, R6-6) |
 | `builtins` | Optional (R6, fixture 32). Built-in variables (runtime-design §7a) on this page: `{ "trial": n, "position": { "randomiserId", "index", "of" } }`; `null` after the end |
 
 `errors` only ever comes from a `next` in that step's action: a step after `back`,
@@ -150,8 +153,9 @@ is `answered`.
 
 **Response** (§1, §7, §9): `surveyId`, `surveyVersion`, `end`, `allocation` (`"server"`),
 `sessionSeed`, `conditions`, `orders`, `answers` (the JSON export form: value + state per
-question) and `csvState` (the CSV companion columns `<id>__state`). Fixture 20 adds
-`calculated`, `scores` and `embeddedData`, all pending. Fixture 24 adds `effects`: the
+question) and `csvState` (the CSV companion columns `<id>__state`, also for embedded and
+computed variables). Fixture 20 adds the engine's `computed` and `embedded` values and
+`variableStates` (the export state of each embedded and computed variable). Fixture 24 adds `effects`: the
 recorded effect results, `[{ "kind": "quota", "nodeId", "quota", "result" }]`, which replay
 reuses.
 
@@ -164,9 +168,9 @@ node, `snapshotWrites` (snapshot PUTs before submit) and `submits`.
 - `"<engine>"`: depends on the PRNG. C4 fills it in from the engine; until then only the
   invariants are asserted. It can stand for an order, a `visible` list, a `page`, or a
   question's state object (fixture 13, where the page order decides which question is shown).
-- `"<pending:C3a-N>"`, `"<pending:R6-N>"`: undecided in semantics; see `planning/semantics.md`
-  "Open questions". It can stand for any value in a trace, including a whole step field or the
-  whole `response`.
+- `"<pending:…>"` marked a value an open question left undecided. No trace uses it since
+  decisions batch 1 (16 Oct 2026); a new open question may use it again, with the id in the
+  file's `pending` list.
 
 **Invariants**
 
@@ -187,7 +191,10 @@ These follow from semantics.md; they are written down so C4 and the harness agre
    reached. This is the §3 lowering (`clearNonRelevant()` on every page flip): a question made
    irrelevant by a changed answer is `irrelevant` and `null` from that submit on, even before
    its page is revisited; one made relevant again is `unanswered` until answered.
-2. **Once reached, a question never goes back to `not-reached`** (but see C3a-6).
+2. **Once reached, a question never goes back to `not-reached`.** If a submit after `back`
+   takes its block off the path (a branch now goes the other way), it becomes `irrelevant`
+   and its value is cleared on that submit; it is `unanswered` if the path later returns
+   (semantics §3, C3a-6; fixture 34).
 3. **A skipped empty block (§6) leaves its questions `irrelevant`**, not `not-reached`: the flow
    did get to the block; display logic hid every question. Back skips it too.
 4. **During a session**, a visible question with a value is `answered` even before submit and
@@ -195,8 +202,8 @@ These follow from semantics.md; they are written down so C4 and the harness agre
    holds values that passed validation.
 5. **Branches not taken and blocks after an `end`** leave their questions `not-reached`.
 6. **Conditions** are present from `steps[0]`, because the server assigns them at session
-   start (§7), and the response records them even if the `assign` node was never reached
-   (C3a-7 covers referring to them before the node).
+   start (§7), and the response records them even if the `assign` node was never reached.
+   Expressions and piping see them as `null` until the `assign` node is reached (C3a-7).
 
 R6 readings, used by fixtures 21–37 (they follow from the rules above):
 

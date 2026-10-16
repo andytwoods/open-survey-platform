@@ -8,7 +8,7 @@
  *   asserted.
  */
 
-import { writeFileSync } from 'node:fs';
+import { mkdirSync, writeFileSync } from 'node:fs';
 import { join } from 'node:path';
 import { afterAll, describe, expect, it } from 'vitest';
 import {
@@ -104,6 +104,12 @@ for (const name of fixtureNames()) {
 					if (!pending) throw e;
 					return;
 				}
+				// Full engine trace, for writing expected files by hand-checked tooling.
+				mkdirSync(join(BUILD, 'traces', name), { recursive: true });
+				writeFileSync(
+					join(BUILD, 'traces', name, `${script.id}.json`),
+					JSON.stringify({ steps: run.steps, response: run.response }, null, 1)
+				);
 				const diffs: Diff[] = [];
 				const realised: Realised[] = [];
 				const steps = expected.steps.map((exp, i) => {

@@ -30,6 +30,16 @@ properties:
     default: false
     group: Validation
     help: { en: "Participants must answer before continuing. Only enforced while the question is shown." }
+  min:
+    kind: number
+    label: { en: "Minimum" }
+    group: Validation
+    help: { en: "The smallest answer allowed (inclusive). Checked only when answered." }
+  max:
+    kind: number
+    label: { en: "Maximum" }
+    group: Validation
+    help: { en: "The largest answer allowed (inclusive). Checked only when answered." }
   constraint:
     kind: condition
     label: { en: "Constraint" }

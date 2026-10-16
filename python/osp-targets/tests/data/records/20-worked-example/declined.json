@@ -3,7 +3,7 @@
  "surveyId": "srv_7f3c",
  "surveyVersion": 3,
  "planVersion": "osp-runtime-plan/1",
- "planChecksum": "sha256:340014c7861d7df4c2920c876d9465181fdb23507d8b6d85222f367aa720c1fe",
+ "planChecksum": "sha256:394de5b57ae3a26652a8730279e6b1bdcca83ac4c7edf81c86a2734a361e83a3",
  "engineVersion": "1",
  "sessionSeed": 101,
  "sessionId": null,
@@ -56,13 +56,25 @@
   "age__state": "not-reached",
   "att1__state": "not-reached",
   "att2__state": "not-reached",
-  "att3__state": "not-reached"
+  "att3__state": "not-reached",
+  "source__state": "answered",
+  "age_band__state": "answered",
+  "att_score__state": "not-reached"
  },
  "embedded": {
   "source": "direct"
  },
- "computed": {},
+ "computed": {
+  "age_band": "40+",
+  "att_score": null
+ },
+ "variableStates": {
+  "source": "answered",
+  "age_band": "answered",
+  "att_score": "not-reached"
+ },
  "quotas": {},
+ "diagnostics": [],
  "effects": [],
  "urlParams": {},
  "startedAt": 2000,

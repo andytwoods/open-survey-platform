@@ -10,6 +10,7 @@ import {
 	back,
 	next,
 	resolve as resolveEffect,
+	restart,
 	restore,
 	result,
 	snapshot,
@@ -108,7 +109,7 @@ function renameOrders(plan: Plan, orders: ReturnType<typeof result>['orders']) {
 	return { blocks, items, choices: orders.choices };
 }
 
-export function trace(state: State, index: number, device = 'A') {
+export function trace(state: State, index: number, device = 'A', notice: string | null = null) {
 	const v = view(state);
 	const r = result(state);
 	const errors: Record<string, unknown> = {};
@@ -137,7 +138,8 @@ export function trace(state: State, index: number, device = 'A') {
 		choiceLabels,
 		effect: v.status === 'pending' && v.effect?.kind === 'quota' ? { kind: 'quota', nodeId: v.effect.nodeId } : null,
 		device,
-		builtins: v.status === 'ended' ? null : { trial: v.trial, position: v.position }
+		builtins: v.status === 'ended' ? null : { trial: v.trial, position: v.position },
+		notice
 	};
 }
 
@@ -185,7 +187,15 @@ export function play(plan: Plan, script: Script) {
 		return s;
 	};
 	const steps = [trace(state, 0, device)];
+	// semantics §5 (R6-5): an end-only session whose copy is only in memory (localCopy
+	// memory, or browser storage blocked) restarts on refresh or resume.
+	const memoryOnly =
+		plan.settings.saveMode === 'end-only' && (plan.settings.localCopy === 'memory' || script.storage === 'blocked');
+	// semantics §5 (R6-6): the server revision each device last saw; a device whose save is
+	// stale (another device moved on) shows the server copy instead, with a notice.
+	const seen: Record<string, number> = { A: state.data.revision };
 	script.actions.forEach((action, i) => {
+		let notice: string | null = null;
 		const v = view(state);
 		const shown = blockOfPage(plan, v.page);
 		if (action.expectPage !== undefined && shown !== action.expectPage) {
@@ -216,21 +226,41 @@ export function play(plan: Plan, script: Script) {
 				break;
 			case 'refresh':
 			case 'resume':
+				if (memoryOnly) {
+					state = restart(state, { clock });
+					notice = 'restarted';
+					break;
+				}
 				state = reload(plan, state, clock, i);
+				// semantics §5 (R6-4): a reload re-sends a pending call (same idempotency key).
+				if (view(state).status === 'pending') state = settle(state);
 				break;
 			case 'switchDevice': {
 				// every-page saves on every change, so the server holds this device's answers too.
 				serverCopy = state;
 				local[device] = state;
+				seen[device] = serverCopy.data.revision;
 				device = action.device ?? (device === 'A' ? 'B' : 'A');
 				const revived = local[device];
 				state = action.restoreFrom === 'local' && revived ? revived : reload(plan, serverCopy, clock, i);
-				break;
+				if (!(action.restoreFrom === 'local' && revived)) seen[device] = serverCopy.data.revision;
+				local[device] = state;
+				const switched = trace(state, i + 1, device, notice);
+				switched.errors = {};
+				steps.push(switched);
+				return;
 			}
 		}
+		if (action.do !== 'refresh' && action.do !== 'resume' && seen[device] !== undefined && seen[device] !== serverCopy.data.revision) {
+			// Stale: the save is refused (409); the server copy wins and this device shows it.
+			state = reload(plan, serverCopy, clock, i);
+			notice = 'conflict';
+		} else {
+			serverCopy = state;
+		}
+		seen[device] = serverCopy.data.revision;
 		local[device] = state;
-		serverCopy = state;
-		const step = trace(state, i + 1, device);
+		const step = trace(state, i + 1, device, notice);
 		// FORMAT.md §3: `errors` only ever comes from a `next` in that step's action. The
 		// engine keeps the last errors in the state (restore is exact); a reloaded page shows
 		// none, which is the runtime's choice (R3), so the trace reports none.

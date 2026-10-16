@@ -22,7 +22,7 @@ CODES: dict[str, Severity] = {
     "id.duplicate": "error",
     "id.reserved": "error",
     "name.duplicate": "error",
-    "name.case_collision": "warning",
+    "name.case_collision": "error",
     "name.reserved": "error",
     # Languages and text
     "lang.duplicate": "error",
@@ -48,6 +48,7 @@ CODES: dict[str, Severity] = {
     "ref.not_in_flow": "warning",
     "ref.randomised_sibling": "warning",
     "ref.other_branch": "warning",
+    "ref.cycle": "error",
     "pipe.invalid": "error",
     "expr.type": "error",
     # Flow
@@ -60,6 +61,12 @@ CODES: dict[str, Severity] = {
     "flow.variable_reassigned": "error",
     "block.unused": "warning",
     "quota.unused": "warning",
+    # Questions
+    "question.bounds": "error",
+    # Settings
+    "settings.retention": "error",
+    # Publishing only (publish_diagnostics; never from validate)
+    "publish.retention_required": "error",
     # Variables
     "variable.cycle": "error",
     "variable.never_assigned": "warning",

@@ -3,7 +3,7 @@
  "surveyId": "f34_branch_change",
  "surveyVersion": 1,
  "planVersion": "osp-runtime-plan/1",
- "planChecksum": "sha256:e45c9cb03ca470929aad9e747a1fef61e4f14672e8d292b4ae20b6fb4bcc08b8",
+ "planChecksum": "sha256:0a5aceb9f56ef5a30a4d3ba431b233a86c79139af50c799871cee260108f04b9",
  "engineVersion": "1",
  "sessionSeed": 3402,
  "sessionId": null,
@@ -26,16 +26,16 @@
    "value": "car"
   },
   "car_make": {
-   "state": "answered",
-   "value": "Volvo"
+   "state": "unanswered",
+   "value": null
   },
   "car_age": {
-   "state": "answered",
-   "value": 4
+   "state": "unanswered",
+   "value": null
   },
   "bus_line": {
-   "state": "answered",
-   "value": "42"
+   "state": "irrelevant",
+   "value": null
   },
   "comment": {
    "state": "unanswered",
@@ -44,14 +44,16 @@
  },
  "csvState": {
   "route__state": "answered",
-  "car_make__state": "answered",
-  "car_age__state": "answered",
-  "bus_line__state": "answered",
+  "car_make__state": "unanswered",
+  "car_age__state": "unanswered",
+  "bus_line__state": "irrelevant",
   "comment__state": "unanswered"
  },
  "embedded": {},
  "computed": {},
+ "variableStates": {},
  "quotas": {},
+ "diagnostics": [],
  "effects": [],
  "urlParams": {},
  "startedAt": 2000,

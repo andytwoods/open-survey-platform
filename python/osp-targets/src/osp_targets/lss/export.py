@@ -525,6 +525,10 @@ class _Exporter:
             out.append(self._escape(s[pos : m.start()], ptr))
             pos = m.end()
             qid = m.group(1).strip()
+            if qid.startswith("$"):
+                # Built-ins ($trial, $position.*; semantics §8) are our runtime's.
+                self.note("$pipe.builtin", ptr, f"${{{qid}}}")
+                continue
             if qid not in self.codes:
                 out.append(self._escape(m.group(0), ptr))
                 continue
@@ -785,7 +789,9 @@ class _Exporter:
                 if page.title is not None
                 else self._all_langs(page.id),
                 description=self._texts(page.title, pptr + "/title"),
-                relevance=alive,
+                relevance=alive
+                if page.showIf is None
+                else and_(alive, self.em.condition(page.showIf)),
             )
             index = len(self.groups)
             self.groups.append(group)
@@ -831,8 +837,15 @@ class _Exporter:
             item.relevance = self.em.condition(q.showIf)
         if not isinstance(q, NoteQuestion):
             item.mandatory = q.required
+            parts = [
+                f"{code}.NAOK {op} {bound}"
+                for op, bound in ((">=", getattr(q, "min", None)), ("<=", getattr(q, "max", None)))
+                if bound is not None
+            ]
             if q.constraint is not None:
-                check = or_(f"is_empty({code}.NAOK)", self.em.condition(q.constraint))
+                parts.append(self.em.condition(q.constraint))
+            if parts:
+                check = or_(f"is_empty({code}.NAOK)", and_(*parts))
                 item.attributes.append(("em_validation_q", check, None))
             for lang, tip in self._texts(q.constraintMessage, ptr + "/constraintMessage").items():
                 item.attributes.append(("em_validation_q_tip", tip, lang))

@@ -13,6 +13,7 @@ from .ast import (
     Contains,
     DecLit,
     Expr,
+    If,
     IntLit,
     Not,
     NullLit,
@@ -26,6 +27,7 @@ from .diagnostics import Diagnostic
 from .evaluate import Value, evaluate, evaluate_condition
 from .static import references, typecheck
 from .syntax import ParseResult, parse, to_text
+from .values import DECIMAL_DIGITS, TRIM_CHARS, canonical_decimal, trim
 
 __all__ = [
     "EXPR_ADAPTER",
@@ -36,16 +38,20 @@ __all__ = [
     "Compare",
     "Contains",
     "DecLit",
+    "DECIMAL_DIGITS",
     "Diagnostic",
     "Expr",
+    "If",
     "IntLit",
     "Not",
     "NullLit",
     "Or",
     "ParseResult",
     "Ref",
+    "TRIM_CHARS",
     "TextLit",
     "Value",
+    "canonical_decimal",
     "evaluate",
     "evaluate_condition",
     "expr_from_json",
@@ -53,5 +59,6 @@ __all__ = [
     "parse",
     "references",
     "to_text",
+    "trim",
     "typecheck",
 ]

@@ -35,7 +35,9 @@ class InvalidToken(SessionError):
 
 
 class SessionExpired(SessionError):
-    """Inactive too long: the token no longer works and quota slots were released (410)."""
+    """The resume token was idle past its resume expiry (30 days by default) and no
+    longer works for snapshots, quota checks or resume (410). Submit still accepts it
+    and flags the response ``late`` (decision S-2)."""
 
     code = "session.expired"
 

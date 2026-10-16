@@ -30,9 +30,9 @@ book = codebook(v)  # book.markdown, book.data (JSON)
 ```
 
 - **Missing values** (semantics §1): CSV = empty cell + `<var>__state` (switchable off); JSON = `null` + `state`. Never `-99`.
-- **Columns:** `_`-prefixed meta (response/session id, version + checksum, plan checksum, engine version, allocation and save mode, seed, UTC timestamps, `_late`, end, language), one column per condition, questions in plan order (multi: `<var>_<code>` 0/1, or codes in one cell), embedded/computed variables, then `_order.{blocks,items,choices}.<id>` realised orders.
+- **Columns:** `_`-prefixed meta (response/session id, version + checksum, plan checksum, engine version, allocation and save mode, seed, UTC timestamps, `_late` = the server's flag for a submit accepted after the session expired (S-2), `_after_close`, end, language), one column per condition, questions in plan order (multi: `<var>_<code>` 0/1, or codes in one cell), embedded/computed variables (each with `<var>__state`, C3a-5 / C2-6), then `_order.{blocks,items,choices}.<id>` realised orders.
 - **CSV:** RFC 4180 (CRLF), optional BOM, formula-injection escaping (`'` before `= + - @`, tab, CR; plain numbers untouched).
-- **Versions:** `export_csv_combined` / `export_json_combined` / `codebook_combined` union the columns with `_version`.
+- **Versions:** `export_csv_combined` / `export_json_combined` / `codebook_combined` union the columns with `_version`; a question whose type or choice codes changed between versions is split into per-version `<var>_v<N>` columns (M2-3), and the codebook says so.
 - **Tests:** golden files in `tests/data/golden/` from engine records in `tests/data/records/` (regenerate those with `node --experimental-transform-types python/osp-targets/tests/data/dump_records.ts` after `make engine-fixtures`; goldens with `OSP_UPDATE_GOLDEN=1`).
 
 Internal package; not published.

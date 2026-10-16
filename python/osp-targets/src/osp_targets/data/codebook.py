@@ -8,10 +8,17 @@ its data-export capabilities. Same input, same bytes: nothing here reads a clock
 
 from __future__ import annotations
 
-from collections.abc import Sequence
+from collections.abc import Collection, Sequence
 from typing import Any
 
-from .layout import META_COLUMNS, STATE_SUFFIX, QuestionInfo, build_layout, csv_columns
+from .layout import (
+    META_COLUMNS,
+    STATE_SUFFIX,
+    QuestionInfo,
+    build_layout,
+    csv_columns,
+    split_names,
+)
 from .model import Codebook, CsvOptions, SurveyVersion
 
 FORMAT = "osp-codebook/1"
@@ -54,8 +61,8 @@ SAVE_MODE_UNKNOWN = (
 
 TYPE_NOTES = {
     "integer": "Whole number.",
-    "decimal": "Exact decimal, exported as typed text (e.g. 2.50 stays 2.50) so no binary "
-    "rounding creeps in.",
+    "decimal": "Exact decimal, exported as canonical text (2.50 is stored as 2.5) so no "
+    "binary rounding creeps in.",
     "text": "Free text, trimmed.",
     "single": "One choice code.",
     "multi": "Any number of choice codes.",
@@ -121,9 +128,27 @@ def _encoding(q: QuestionInfo, opts: CsvOptions) -> str:
     return f"Answered: the value. Unanswered, irrelevant, not-reached: empty; {state}."
 
 
-def codebook_data(version: SurveyVersion, options: CsvOptions | None = None) -> dict[str, Any]:
+def _variable_missing(kind: str, opts: CsvOptions) -> str:
+    where = "its __state column" if opts.state_columns else "the JSON export"
+    if kind == "embedded":
+        return (
+            "Answered: the URL parameter, or its default when the parameter was missing. "
+            "Unanswered (empty): no parameter and no default, or a malformed parameter. "
+            f"See {where}."
+        )
+    return (
+        "Answered: the computed value. Empty when an input was null: not-reached if every "
+        "question it reads was not reached, irrelevant if each was not reached or hidden, "
+        f"otherwise unanswered. See {where}."
+    )
+
+
+def codebook_data(
+    version: SurveyVersion, options: CsvOptions | None = None, split: Collection[str] = ()
+) -> dict[str, Any]:
+    """The codebook as data. ``split``: names exported as ``<name>_v<N>`` (combined export)."""
     opts = options or CsvOptions()
-    lay = build_layout(version)
+    lay = build_layout(version, split)
     columns = csv_columns(lay, opts)  # also checks for clashing names
     langs = lay.languages
     save_mode = version.save_mode
@@ -219,6 +244,10 @@ def codebook_data(version: SurveyVersion, options: CsvOptions | None = None) -> 
                     "urlParam": x.param,
                     "default": x.default,
                     "expr": x.expr,
+                    "csvColumns": [x.name, x.name + STATE_SUFFIX]
+                    if opts.state_columns
+                    else [x.name],
+                    "missing": _variable_missing(x.kind, opts),
                 }.items()
                 if v is not None
             }
@@ -304,7 +333,9 @@ def _render(data: dict[str, Any], heading: str = "#") -> str:
             "spaces, in choice-list order."
         )
     add("- Timestamps are UTC, ISO 8601 with milliseconds (`2026-10-16T09:30:00.000Z`).")
-    add("- Decimals are exported exactly as typed (text), never as binary floats.")
+    add(
+        "- Decimals are exported as exact canonical text (`2.50` is `2.5`), never as binary floats."
+    )
     add(
         "- CSV is UTF-8, RFC 4180 (CRLF line ends, quoted fields)"
         + (", with a byte order mark for Excel" if csv_opts["bom"] else "")
@@ -432,7 +463,13 @@ def _render(data: dict[str, Any], heading: str = "#") -> str:
                 detail = f"computed as {_code(x.get('expr', ''))}"
             add(f"| `{x['name']}` | {x['kind']} | {detail} |")
         add("")
-        add("An empty cell means no value (missing parameter, or a computed input was null).")
+        add(
+            "Each has a `<var>__state` column like a question: `answered` when it has a "
+            "value; an embedded variable without a value (no parameter and no default, or a "
+            "malformed one) is `unanswered`; a computed one whose input was null is "
+            "`not-reached` if every question it reads was not reached, `irrelevant` if each "
+            "was not reached or hidden, otherwise `unanswered`."
+        )
     else:
         add("None.")
     add("")
@@ -483,7 +520,8 @@ def codebook_combined(
     of columns with the versions each appears in, then every version's own codebook."""
     opts = options or CsvOptions()
     ordered = sorted(versions, key=lambda v: (v.number or 0, v.checksum or ""))
-    books = [codebook_data(v, opts) for v in ordered]
+    split = sorted(split_names([build_layout(v) for v in ordered]))
+    books = [codebook_data(v, opts, split) for v in ordered]
     if len(books) == 1:
         return Codebook(_render(books[0]), books[0])
     union: list[str] = []
@@ -496,9 +534,13 @@ def codebook_combined(
             where[c].append(b["survey"]["version"])
     defs: dict[str, dict[Any, Any]] = {}
     for b in books:
+        suffix = f"_v{b['survey']['version'] if b['survey']['version'] is not None else 0}"
         for v in b["variables"]:
             key = {k: v.get(k) for k in ("type", "choices", "showIf", "required", "constraint")}
-            defs.setdefault(v["name"], {})[b["survey"]["version"]] = key
+            name = v["name"]
+            if name.endswith(suffix) and name[: -len(suffix)] in split:
+                name = name[: -len(suffix)]  # compare a split question under its own name
+            defs.setdefault(name, {})[b["survey"]["version"]] = key
     changed = sorted(n for n, per in defs.items() if len({repr(x) for x in per.values()}) > 1)
     all_versions = [b["survey"]["version"] for b in books]
     data = {
@@ -507,6 +549,7 @@ def codebook_combined(
         "versions": all_versions,
         "columns": [{"column": c, "versions": where[c]} for c in union],
         "changedVariables": changed,
+        "splitVariables": split,
         "codebooks": books,
     }
     first = books[0]["survey"]
@@ -526,10 +569,20 @@ def codebook_combined(
         "- **A column that a response's version does not have is empty, including its "
         "`__state` cell.** An empty `__state` therefore means *not in this version*, never "
         "one of the four states.",
-        "- A variable whose definition changed between versions keeps one column; compare "
-        "the per-version codebooks before pooling it.",
+        "- **A question whose type or choice codes changed between versions is split:** "
+        "each version exports it under its own columns, `<var>_v<N>` (N = version), so "
+        "differently coded data is never pooled in one column.",
+        "- Any other change (wording, display logic, required flag, constraint) keeps one "
+        "column; compare the per-version codebooks before pooling it.",
         "",
     ]
+    if split:
+        out.append(
+            "Split into per-version columns (type or choices changed): "
+            + ", ".join(f"`{n}`" for n in split)
+            + "."
+        )
+        out.append("")
     if changed:
         out.append(
             "Variables whose type, choices, display logic, required flag or constraint "

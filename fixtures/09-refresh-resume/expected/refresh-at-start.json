@@ -44,7 +44,13 @@
         "blocks": {},
         "items": {},
         "choices": {
-          "fav_colour": "<engine>"
+          "fav_colour": [
+            "purple",
+            "red",
+            "green",
+            "yellow",
+            "blue"
+          ]
         }
       },
       "conditions": {
@@ -92,7 +98,13 @@
         "blocks": {},
         "items": {},
         "choices": {
-          "fav_colour": "<engine>"
+          "fav_colour": [
+            "purple",
+            "red",
+            "green",
+            "yellow",
+            "blue"
+          ]
         }
       },
       "conditions": {
@@ -140,7 +152,13 @@
         "blocks": {},
         "items": {},
         "choices": {
-          "fav_colour": "<engine>"
+          "fav_colour": [
+            "purple",
+            "red",
+            "green",
+            "yellow",
+            "blue"
+          ]
         }
       },
       "conditions": {
@@ -188,7 +206,13 @@
         "blocks": {},
         "items": {},
         "choices": {
-          "fav_colour": "<engine>"
+          "fav_colour": [
+            "purple",
+            "red",
+            "green",
+            "yellow",
+            "blue"
+          ]
         }
       },
       "conditions": {
@@ -199,7 +223,11 @@
     {
       "index": 4,
       "page": "p_items",
-      "visible": "<engine>",
+      "visible": [
+        "i1",
+        "i3",
+        "i2"
+      ],
       "errors": {},
       "nav": {
         "back": true
@@ -233,10 +261,20 @@
       "orders": {
         "blocks": {},
         "items": {
-          "p_items": "<engine>"
+          "p_items": [
+            "i1",
+            "i3",
+            "i2"
+          ]
         },
         "choices": {
-          "fav_colour": "<engine>"
+          "fav_colour": [
+            "purple",
+            "red",
+            "green",
+            "yellow",
+            "blue"
+          ]
         }
       },
       "conditions": {
@@ -279,10 +317,20 @@
       "orders": {
         "blocks": {},
         "items": {
-          "p_items": "<engine>"
+          "p_items": [
+            "i1",
+            "i3",
+            "i2"
+          ]
         },
         "choices": {
-          "fav_colour": "<engine>"
+          "fav_colour": [
+            "purple",
+            "red",
+            "green",
+            "yellow",
+            "blue"
+          ]
         }
       },
       "conditions": {
@@ -350,10 +398,20 @@
     "orders": {
       "blocks": {},
       "items": {
-        "p_items": "<engine>"
+        "p_items": [
+          "i1",
+          "i3",
+          "i2"
+        ]
       },
       "choices": {
-        "fav_colour": "<engine>"
+        "fav_colour": [
+          "purple",
+          "red",
+          "green",
+          "yellow",
+          "blue"
+        ]
       }
     },
     "answers": {

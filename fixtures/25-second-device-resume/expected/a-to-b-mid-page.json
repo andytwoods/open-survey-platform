@@ -40,7 +40,12 @@
         "blocks": {},
         "items": {},
         "choices": {
-          "colour": "<engine>"
+          "colour": [
+            "green",
+            "red",
+            "grey",
+            "blue"
+          ]
         }
       },
       "conditions": {
@@ -86,7 +91,12 @@
         "blocks": {},
         "items": {},
         "choices": {
-          "colour": "<engine>"
+          "colour": [
+            "green",
+            "red",
+            "grey",
+            "blue"
+          ]
         }
       },
       "conditions": {
@@ -132,7 +142,12 @@
         "blocks": {},
         "items": {},
         "choices": {
-          "colour": "<engine>"
+          "colour": [
+            "green",
+            "red",
+            "grey",
+            "blue"
+          ]
         }
       },
       "conditions": {
@@ -177,7 +192,12 @@
         "blocks": {},
         "items": {},
         "choices": {
-          "colour": "<engine>"
+          "colour": [
+            "green",
+            "red",
+            "grey",
+            "blue"
+          ]
         }
       },
       "conditions": {
@@ -223,7 +243,12 @@
         "blocks": {},
         "items": {},
         "choices": {
-          "colour": "<engine>"
+          "colour": [
+            "green",
+            "red",
+            "grey",
+            "blue"
+          ]
         }
       },
       "conditions": {
@@ -268,7 +293,12 @@
         "blocks": {},
         "items": {},
         "choices": {
-          "colour": "<engine>"
+          "colour": [
+            "green",
+            "red",
+            "grey",
+            "blue"
+          ]
         }
       },
       "conditions": {
@@ -314,7 +344,12 @@
         "blocks": {},
         "items": {},
         "choices": {
-          "colour": "<engine>"
+          "colour": [
+            "green",
+            "red",
+            "grey",
+            "blue"
+          ]
         }
       },
       "conditions": {
@@ -359,7 +394,12 @@
         "blocks": {},
         "items": {},
         "choices": {
-          "colour": "<engine>"
+          "colour": [
+            "green",
+            "red",
+            "grey",
+            "blue"
+          ]
         }
       },
       "conditions": {
@@ -404,7 +444,12 @@
         "blocks": {},
         "items": {},
         "choices": {
-          "colour": "<engine>"
+          "colour": [
+            "green",
+            "red",
+            "grey",
+            "blue"
+          ]
         }
       },
       "conditions": {
@@ -445,7 +490,12 @@
         "blocks": {},
         "items": {},
         "choices": {
-          "colour": "<engine>"
+          "colour": [
+            "green",
+            "red",
+            "grey",
+            "blue"
+          ]
         }
       },
       "conditions": {
@@ -498,7 +548,12 @@
       "blocks": {},
       "items": {},
       "choices": {
-        "colour": "<engine>"
+        "colour": [
+          "green",
+          "red",
+          "grey",
+          "blue"
+        ]
       }
     },
     "answers": {

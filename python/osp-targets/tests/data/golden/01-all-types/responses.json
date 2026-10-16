@@ -6,7 +6,7 @@
     "version": 1,
     "checksum": "sha256:test-01-all-types"
   },
-  "missingValues": "Every answer is {state, value}. state is answered, unanswered (shown, left empty), irrelevant (page reached, hidden by its show-if) or not-reached (the flow never got to its page); value is null unless state is answered. state is null only if the stored record has no entry for the question.",
+  "missingValues": "Every answer is {state, value}. state is answered, unanswered (shown, left empty), irrelevant (page reached, hidden by its show-if) or not-reached (the flow never got to its page); value is null unless state is answered. state is null only if the stored record has no entry for the question. Embedded and computed variables are {state, value} too: answered when they have a value; otherwise unanswered, or (computed) irrelevant / not-reached when every question they read is.",
   "options": {
     "events": true
   },
@@ -16,7 +16,7 @@
       "sessionId": "sess-answered",
       "version": 1,
       "versionChecksum": "sha256:test-01-all-types",
-      "planChecksum": "sha256:34fd3c75e41296507270345e0f74e9f2500bdae356d471dd9176bbbd2402509e",
+      "planChecksum": "sha256:cc9e3fcba4b01ab661ce9884fc8eed01b48160b7af9af50fd2e8ac0481e892af",
       "engineVersion": "1",
       "allocationMode": "server",
       "saveMode": "every-page",
@@ -24,6 +24,7 @@
       "startedAt": "2026-10-16T09:30:00.000Z",
       "submittedAt": "2026-10-16T09:30:30.250Z",
       "late": false,
+      "afterClose": null,
       "end": "complete",
       "language": "en",
       "conditions": {},
@@ -151,7 +152,7 @@
       "sessionId": "sess-empty",
       "version": 1,
       "versionChecksum": "sha256:test-01-all-types",
-      "planChecksum": "sha256:34fd3c75e41296507270345e0f74e9f2500bdae356d471dd9176bbbd2402509e",
+      "planChecksum": "sha256:cc9e3fcba4b01ab661ce9884fc8eed01b48160b7af9af50fd2e8ac0481e892af",
       "engineVersion": "1",
       "allocationMode": "server",
       "saveMode": "every-page",
@@ -159,6 +160,7 @@
       "startedAt": "2026-10-16T09:31:00.000Z",
       "submittedAt": "2026-10-16T09:31:30.250Z",
       "late": false,
+      "afterClose": null,
       "end": "complete",
       "language": "en",
       "conditions": {},

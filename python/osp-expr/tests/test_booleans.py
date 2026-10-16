@@ -69,9 +69,9 @@ def test_true_and_false_are_still_not_question_ids():
         ("true != false", True, True),
         ("answered(name) == false", True, True),
         ("answered(age) == true", True, True),
-        ("true < false", False, False),  # ordering only for numbers and dates (OQ 2)
-        ("true == 1", False, False),  # ill-typed test is false (OQ 2)
-        ("true + 1", None, False),  # arithmetic on non-numbers is null (OQ 2)
+        ("true < false", None, False),  # ordering only for numbers and dates: mismatch, null
+        ("true == 1", None, False),  # type mismatch: null (semantics §3)
+        ("true + 1", None, False),  # arithmetic on non-numbers: mismatch, null
         ("ghost == true", False, False),  # §3: comparing null is false
     ],
 )

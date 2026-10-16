@@ -109,6 +109,7 @@ class StoreParticipantRepo:
         record_checksum: str,
         realised_orders: object,
         engine_version: str | None,
+        late: bool = False,
     ) -> Any:
         return self.ps.submit(
             _participant(tenant_id, session_id),
@@ -118,6 +119,7 @@ class StoreParticipantRepo:
             record_checksum=record_checksum,
             realised_orders=realised_orders,
             engine_version=engine_version,
+            late=late,
         )
 
     def release_inactive(self, cutoff: datetime) -> Any:

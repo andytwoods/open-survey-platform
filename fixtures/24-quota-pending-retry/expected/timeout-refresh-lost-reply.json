@@ -2,10 +2,7 @@
   "format": "osp-fixture-expected/0",
   "fixture": "24-quota-pending-retry",
   "script": "timeout-refresh-lost-reply",
-  "pending": [
-    "C3a-3",
-    "R6-4"
-  ],
+  "pending": [],
   "steps": [
     {
       "index": 0,
@@ -114,13 +111,13 @@
     },
     {
       "index": 3,
-      "page": "p1",
+      "page": "p2",
       "visible": [
-        "region"
+        "p2_q"
       ],
       "errors": {},
       "nav": {
-        "back": false
+        "back": true
       },
       "questions": {
         "region": {
@@ -128,7 +125,7 @@
           "value": "north"
         },
         "p2_q": {
-          "state": "not-reached",
+          "state": "unanswered",
           "value": null
         },
         "full_q": {
@@ -143,20 +140,17 @@
       },
       "conditions": {},
       "end": null,
-      "effect": {
-        "kind": "quota",
-        "nodeId": "qc_north"
-      }
+      "effect": null
     },
     {
       "index": 4,
-      "page": "p2",
+      "page": "p1",
       "visible": [
-        "p2_q"
+        "region"
       ],
       "errors": {},
       "nav": {
-        "back": true
+        "back": false
       },
       "questions": {
         "region": {
@@ -183,39 +177,6 @@
     },
     {
       "index": 5,
-      "page": "p1",
-      "visible": [
-        "region"
-      ],
-      "errors": {},
-      "nav": {
-        "back": false
-      },
-      "questions": {
-        "region": {
-          "state": "answered",
-          "value": "north"
-        },
-        "p2_q": {
-          "state": "unanswered",
-          "value": null
-        },
-        "full_q": {
-          "state": "not-reached",
-          "value": null
-        }
-      },
-      "orders": {
-        "blocks": {},
-        "items": {},
-        "choices": {}
-      },
-      "conditions": {},
-      "end": null,
-      "effect": null
-    },
-    {
-      "index": 6,
       "page": "p2",
       "visible": [
         "p2_q"
@@ -248,7 +209,7 @@
       "effect": null
     },
     {
-      "index": 7,
+      "index": 6,
       "page": null,
       "visible": [],
       "errors": {},

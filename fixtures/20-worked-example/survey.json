@@ -86,6 +86,73 @@
         "£5 voucher",
         "charity donation"
       ]
+    },
+    {
+      "kind": "computed",
+      "id": "age_band",
+      "expr": {
+        "kind": "if",
+        "cond": {
+          "kind": "compare",
+          "op": "<",
+          "left": {
+            "kind": "ref",
+            "id": "age"
+          },
+          "right": {
+            "kind": "int",
+            "value": 40
+          }
+        },
+        "then": {
+          "kind": "text",
+          "value": "18-39"
+        },
+        "else": {
+          "kind": "text",
+          "value": "40+"
+        }
+      }
+    },
+    {
+      "kind": "computed",
+      "id": "att_score",
+      "expr": {
+        "kind": "arith",
+        "op": "/",
+        "left": {
+          "kind": "arith",
+          "op": "+",
+          "left": {
+            "kind": "arith",
+            "op": "+",
+            "left": {
+              "kind": "ref",
+              "id": "att1"
+            },
+            "right": {
+              "kind": "ref",
+              "id": "att2"
+            }
+          },
+          "right": {
+            "kind": "arith",
+            "op": "-",
+            "left": {
+              "kind": "int",
+              "value": 6
+            },
+            "right": {
+              "kind": "ref",
+              "id": "att3"
+            }
+          }
+        },
+        "right": {
+          "kind": "int",
+          "value": 3
+        }
+      }
     }
   ],
   "blocks": [
@@ -264,6 +331,11 @@
       "block": "demo"
     },
     {
+      "type": "quotaCheck",
+      "id": "qc_old",
+      "quota": "q_old"
+    },
+    {
       "type": "assign",
       "id": "assign_design",
       "variables": [
@@ -309,6 +381,29 @@
     {
       "type": "end",
       "id": "end_complete"
+    }
+  ],
+  "quotas": [
+    {
+      "id": "q_old",
+      "when": {
+        "kind": "compare",
+        "op": "==",
+        "left": {
+          "kind": "ref",
+          "id": "age_band"
+        },
+        "right": {
+          "kind": "text",
+          "value": "40+"
+        }
+      },
+      "limit": 150,
+      "countOn": "complete",
+      "onFull": {
+        "block": "screenout",
+        "outcome": "quota_full"
+      }
     }
   ]
 }

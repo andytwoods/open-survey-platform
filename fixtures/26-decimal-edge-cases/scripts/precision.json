@@ -1,7 +1,7 @@
 {
   "format": "osp-fixture-script/0",
   "id": "precision",
-  "description": "big = 12345678901234567890.123456789 (29 significant digits). With exact arithmetic big > 2^53 holds and big + 1 is not 2^53 + 2; a fixed working precision (decimal.js-light defaults to 20 significant digits) could round big on input. Precision, input limits and rounding are R6-2.",
+  "description": "big = 12345678901234567890.123456789 has 29 significant digits: it cannot be read exactly, so next is blocked with an invalid error (semantics §2). With 28 digits (12345678901234567890.12345678) it is accepted and compared exactly: big > 2^53 holds and big + 1 is not 2^53 + 2.",
   "sessionSeed": 2603,
   "language": "en",
   "actions": [
@@ -12,6 +12,13 @@
         "b": "0.2",
         "big": "12345678901234567890.123456789",
         "z": "1"
+      },
+      "do": "next"
+    },
+    {
+      "expectPage": "p1",
+      "set": {
+        "big": "12345678901234567890.12345678"
       },
       "do": "next"
     },

@@ -6,7 +6,7 @@
     "version": 1,
     "checksum": "sha256:test-27-unicode-text"
   },
-  "missingValues": "Every answer is {state, value}. state is answered, unanswered (shown, left empty), irrelevant (page reached, hidden by its show-if) or not-reached (the flow never got to its page); value is null unless state is answered. state is null only if the stored record has no entry for the question.",
+  "missingValues": "Every answer is {state, value}. state is answered, unanswered (shown, left empty), irrelevant (page reached, hidden by its show-if) or not-reached (the flow never got to its page); value is null unless state is answered. state is null only if the stored record has no entry for the question. Embedded and computed variables are {state, value} too: answered when they have a value; otherwise unanswered, or (computed) irrelevant / not-reached when every question they read is.",
   "options": {
     "events": true
   },
@@ -16,7 +16,7 @@
       "sessionId": "sess-kept-as-typed",
       "version": 1,
       "versionChecksum": "sha256:test-27-unicode-text",
-      "planChecksum": "sha256:49cdfd00ab1153a8689021c3574a8ec2355b9bd13dcb5c4e4c655be8e587f355",
+      "planChecksum": "sha256:62b22afe80c3afbd8df166bde5ee38336065bb578305e369b473d7444bdbb213",
       "engineVersion": "1",
       "allocationMode": "server",
       "saveMode": "every-page",
@@ -24,6 +24,7 @@
       "startedAt": "2026-10-16T09:30:00.000Z",
       "submittedAt": "2026-10-16T09:30:30.250Z",
       "late": false,
+      "afterClose": null,
       "end": "complete",
       "language": "en",
       "conditions": {},
@@ -160,7 +161,7 @@
       "sessionId": "sess-unicode-edges",
       "version": 1,
       "versionChecksum": "sha256:test-27-unicode-text",
-      "planChecksum": "sha256:49cdfd00ab1153a8689021c3574a8ec2355b9bd13dcb5c4e4c655be8e587f355",
+      "planChecksum": "sha256:62b22afe80c3afbd8df166bde5ee38336065bb578305e369b473d7444bdbb213",
       "engineVersion": "1",
       "allocationMode": "server",
       "saveMode": "every-page",
@@ -168,6 +169,7 @@
       "startedAt": "2026-10-16T09:31:00.000Z",
       "submittedAt": "2026-10-16T09:31:30.250Z",
       "late": false,
+      "afterClose": null,
       "end": "complete",
       "language": "en",
       "conditions": {},
@@ -186,7 +188,7 @@
         },
         "t_name": {
           "state": "answered",
-          "value": "﻿café"
+          "value": "café"
         },
         "pipe_emoji": {
           "state": "unanswered",
@@ -266,7 +268,7 @@
           "type": "answer",
           "t": 6000,
           "item": "t_name",
-          "value": "﻿café",
+          "value": "café",
           "seq": 5,
           "rev": 5
         },
