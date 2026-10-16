@@ -707,6 +707,7 @@ dependencies = [
     { name = "osp-runtime" },
     { name = "osp-spec" },
     { name = "osp-store" },
+    { name = "osp-targets" },
     { name = "uvicorn" },
 ]
 
@@ -718,6 +719,7 @@ requires-dist = [
     { name = "osp-runtime", editable = "python/osp-runtime" },
     { name = "osp-spec", editable = "python/osp-spec" },
     { name = "osp-store", editable = "python/osp-store" },
+    { name = "osp-targets", editable = "python/osp-targets" },
     { name = "uvicorn", specifier = ">=0.35,<1" },
 ]
 
