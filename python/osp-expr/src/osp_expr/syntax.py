@@ -10,7 +10,7 @@ Grammar (lowest precedence first)::
     sum      := product (("+" | "-") product)*  left-associative
     product  := unary (("*" | "/") unary)*      left-associative
     unary    := "-" NUMBER | primary            minus only on numeric literals
-    primary  := NUMBER | STRING | "null" | IDENT
+    primary  := NUMBER | STRING | "null" | "true" | "false" | IDENT
               | "answered" "(" IDENT ")"
               | "contains" "(" IDENT "," expr ")"
               | "(" expr ")"
@@ -38,6 +38,7 @@ from .ast import (
     And,
     Answered,
     Arith,
+    BoolLit,
     Compare,
     Contains,
     DecLit,
@@ -361,11 +362,8 @@ class _Parser:
                 self.advance()
                 return NullLit(), 1
             if tok.text in ("true", "false"):
-                raise _SyntaxError(
-                    "reserved-word",
-                    f"'{tok.text}' is reserved; boolean literals are not supported",
-                    *_span(tok),
-                )
+                self.advance()
+                return BoolLit(value=tok.text == "true"), 1
             raise _SyntaxError("expected", f"expected a value, found {_describe(tok)}", *_span(tok))
         if tok.kind == "ident":
             self.advance()
@@ -510,6 +508,8 @@ def _print(node: Expr, min_prec: int) -> str:
             text = _decimal_literal(v)
         case TextLit(value=v):
             text = _text_literal(v)
+        case BoolLit(value=v):
+            text = "true" if v else "false"
         case NullLit():
             text = "null"
         case Ref(id=i):

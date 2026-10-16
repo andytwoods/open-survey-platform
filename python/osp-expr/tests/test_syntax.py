@@ -124,7 +124,7 @@ def test_precedence_shapes():
         ("foo(q3)", "unknown-function", 0, 3),
         ("answered(5)", "expected-question", 9, 10),
         ("contains(q7)", "expected", 11, 12),
-        ("q3 == true", "reserved-word", 6, 10),
+        ("true(q3)", "unexpected", 4, 5),
         ("q3 and", "expected", 6, 6),
         ("q3 # 1", "unexpected-char", 3, 4),
     ],

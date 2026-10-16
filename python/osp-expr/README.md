@@ -13,7 +13,7 @@
 
 Text syntax, e.g. `q3 > 5 and contains(q7, "b")`, `not answered(age) or age >= 18`,
 `(score1 + score2) / 2 >= 3.5`. Operators by precedence: `or`, `and`, `not`,
-`== != < <= > >=` (no chaining), `+ -`, `* /`. Literals: `5`, `-3`, `2.50`, `"text"`, `null`.
+`== != < <= > >=` (no chaining), `+ -`, `* /`. Literals: `5`, `-3`, `2.50`, `"text"`, `true`, `false`, `null`.
 Full grammar in `syntax.py`.
 
 Internal package; not published.

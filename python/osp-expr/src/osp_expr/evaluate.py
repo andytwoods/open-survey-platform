@@ -36,6 +36,7 @@ from .ast import (
     And,
     Answered,
     Arith,
+    BoolLit,
     Compare,
     Contains,
     DecLit,
@@ -127,7 +128,7 @@ class _Evaluator:
 
     def eval(self, node: Expr) -> Value:
         match node:
-            case IntLit(value=v) | DecLit(value=v) | TextLit(value=v):
+            case IntLit(value=v) | DecLit(value=v) | TextLit(value=v) | BoolLit(value=v):
                 return v
             case NullLit():
                 return None
