@@ -123,6 +123,40 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
+    "/api/meta/expressions/parse": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /** Parse */
+        post: operations["parseExpression"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/meta/expressions/print": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /** Print */
+        post: operations["printExpression"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
     "/api/meta/ops": {
         parameters: {
             query?: never;
@@ -932,6 +966,39 @@ export interface components {
             /** Label */
             label: string;
         };
+        /** ExprDiagnostic */
+        ExprDiagnostic: {
+            /** Code */
+            code: string;
+            /**
+             * End
+             * @description Exclusive end offset (parse errors)
+             */
+            end?: number | null;
+            /** Message */
+            message: string;
+            /**
+             * Path
+             * @description JSON pointer into the AST (type errors)
+             */
+            path?: string | null;
+            /**
+             * Questionid
+             * @description The question or variable it is about
+             */
+            questionId?: string | null;
+            /**
+             * Severity
+             * @default error
+             * @enum {string}
+             */
+            severity: "error" | "warning" | "info";
+            /**
+             * Start
+             * @description 0-based character offset (parse errors)
+             */
+            start?: number | null;
+        };
         /** @enum {string} */
         ExprField: "showIf" | "constraint" | "if" | "when" | "expr";
         /** HTTPValidationError */
@@ -1114,7 +1181,7 @@ export interface components {
             };
         };
         /** @enum {string} */
-        OpErrorCode: "op.cascade_blocked" | "op.conflict" | "op.dangling_ref" | "op.duplicate_id" | "op.expr_syntax" | "op.internal" | "op.invalid_result" | "op.invalid_survey" | "op.not_allowed" | "op.not_found" | "op.params" | "op.patch" | "op.unknown";
+        OpErrorCode: "op.cascade_blocked" | "op.conflict" | "op.dangling_ref" | "op.duplicate_id" | "op.expr_syntax" | "op.internal" | "op.invalid_result" | "op.invalid_survey" | "op.not_allowed" | "op.not_applicable" | "op.not_found" | "op.params" | "op.patch" | "op.unknown";
         /** @enum {string} */
         OpId: "add_block" | "add_choice" | "add_page" | "add_question" | "add_variable" | "apply_patch" | "bulk_paste_choices" | "create_choice_list" | "delete_block" | "delete_choice" | "delete_choice_list" | "delete_flow_node" | "delete_page" | "delete_question" | "delete_variable" | "duplicate_question" | "insert_flow_node" | "move_block" | "move_choice" | "move_flow_node" | "move_page" | "move_question" | "rename_block" | "rename_page" | "replace_survey" | "set_choice" | "set_condition" | "set_languages" | "set_property" | "set_title";
         /** OpsRequest */
@@ -1132,6 +1199,70 @@ export interface components {
              */
             transactionId?: string | null;
         };
+        /** ParseExpressionRequest */
+        ParseExpressionRequest: {
+            /**
+             * Field
+             * @description Default: showIf / if / when / expr
+             */
+            field?: ("showIf" | "constraint" | "if" | "when" | "expr") | null;
+            /**
+             * Surveyid
+             * @description Type-check against this survey's draft
+             */
+            surveyId?: string | null;
+            /**
+             * Target
+             * @description Check in place: the question, branch, quota or variable it is for
+             */
+            target?: string | null;
+            /** Text */
+            text: string;
+        };
+        /** ParseExpressionResponse */
+        ParseExpressionResponse: {
+            /**
+             * Ast
+             * @description Expression AST (osp-expr JSON)
+             */
+            ast?: {
+                [key: string]: unknown;
+            } | null;
+            /** Diagnostics */
+            diagnostics?: components["schemas"]["ExprDiagnostic"][];
+            /**
+             * Ok
+             * @description True iff the text parsed (ast is set)
+             */
+            ok: boolean;
+            /**
+             * References
+             * @description Ids the expression uses
+             */
+            references?: string[];
+            /**
+             * Text
+             * @description Canonical text of the AST
+             */
+            text?: string | null;
+        };
+        /** PrintExpressionRequest */
+        PrintExpressionRequest: {
+            /** Ast */
+            ast: {
+                [key: string]: unknown;
+            };
+        };
+        /** PrintExpressionResponse */
+        PrintExpressionResponse: {
+            /** Diagnostics */
+            diagnostics?: components["schemas"]["ExprDiagnostic"][];
+            /**
+             * Text
+             * @description Canonical text; null if the AST is invalid
+             */
+            text?: string | null;
+        };
         /** PublishRequest */
         PublishRequest: {
             /**
@@ -1141,11 +1272,9 @@ export interface components {
             baseRevision?: number | null;
             /**
              * Savemode
-             * @description Participant save mode (runtime-design section 5.0)
-             * @default every-page
-             * @enum {string}
+             * @description Participant save mode (runtime-design section 5.0); default: the survey's settings.saveMode
              */
-            saveMode: "every-page" | "end-only";
+            saveMode?: ("every-page" | "end-only") | null;
         };
         /** PublishResponse */
         PublishResponse: {
@@ -1438,7 +1567,16 @@ export interface components {
         };
         /** SubmitResponse */
         SubmitResponse: {
-            /** Replay */
+            /**
+             * Late
+             * @description Submitted after the session's quota holds were released or its resume link expired. Accepted, flagged, and not counted toward quotas.
+             * @default false
+             */
+            late: boolean;
+            /**
+             * Replay
+             * @description True for a retry with identical data: the original success.
+             */
             replay: boolean;
             /** Responseid */
             responseId: string;
@@ -1879,6 +2017,108 @@ export interface operations {
                 };
                 content: {
                     "application/json": components["schemas"]["Health"];
+                };
+            };
+        };
+    };
+    parseExpression: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["ParseExpressionRequest"];
+            };
+        };
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ParseExpressionResponse"];
+                };
+            };
+            /** @description Unauthorized */
+            401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorBody"];
+                };
+            };
+            /** @description Forbidden */
+            403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorBody"];
+                };
+            };
+            /** @description Not Found */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorBody"];
+                };
+            };
+            /** @description Unprocessable Content */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["RejectedBody"];
+                };
+            };
+        };
+    };
+    printExpression: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["PrintExpressionRequest"];
+            };
+        };
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["PrintExpressionResponse"];
+                };
+            };
+            /** @description Unauthorized */
+            401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorBody"];
+                };
+            };
+            /** @description Unprocessable Content */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["RejectedBody"];
                 };
             };
         };

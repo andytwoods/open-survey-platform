@@ -30,6 +30,7 @@
       "_started_at",
       "_submitted_at",
       "_late",
+      "_after_close",
       "_end",
       "_language",
       "t_emoji",
@@ -137,7 +138,11 @@
     },
     {
       "column": "_late",
-      "meaning": "true if the response was submitted after the survey was closed (provisional, semantics open question M2-1)."
+      "meaning": "true if the server accepted the submit after the session had expired (its quota holds were released or its resume link had expired); a late response is not counted toward quotas (semantics S-2). Set by the server, never by the browser."
+    },
+    {
+      "column": "_after_close",
+      "meaning": "true if the response was submitted after the survey was closed; empty if not known."
     },
     {
       "column": "_end",

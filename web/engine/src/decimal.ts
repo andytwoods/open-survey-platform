@@ -4,8 +4,8 @@
  * - integer `+ - *` integer stays an exact integer (Python ints are unbounded);
  * - every other operation is a Python `Decimal` operation in a context with 28 significant
  *   digits and ROUND_HALF_EVEN: the exact result rounded once to 28 significant digits;
- * - `/` always gives a decimal; division by zero gives null (provisional, semantics.md
- *   Open questions 1).
+ * - `/` always gives a decimal; division by zero gives null (semantics.md §3, C1-1; the
+ *   evaluator logs the diagnostic).
  *
  * big.js (MIT) does exact `plus`, `minus`, `times` and comparison. Division is rounded
  * correctly by computing a truncated quotient with guard digits and a sticky digit, then

@@ -4,6 +4,22 @@ The atomic primitives behind the session API in ``osp-runtime``: publications,
 runtime sessions with a revision counter, conditional snapshot writes, quota and
 balanced-assignment counters, submit-once, and the inactivity release job.
 
+Holds and late submits (semantics decisions S-1, S-2, C3a-3, 16 Oct 2026)
+- ``release_inactive`` gives back the quota places and balanced-assignment counts of a
+  session idle for 24 h and sets ``expired_at``, which now means **"holds released"**.
+  It no longer ends the session: the resume token has its own, longer expiry, checked
+  by ``osp-runtime``. Every write only requires the session to be unsubmitted.
+- When a session whose holds were released becomes active again (``touch`` on resume,
+  a snapshot write, a quota check) it takes its quota places again (``used < cap``,
+  all or nothing) and its balanced counts, and ``expired_at`` is cleared. If a quota is
+  full by then, nothing is taken and ``expired_at`` stays set: the participant carries
+  on, and the submit will be late.
+- A quota check on a session whose holds are still released records its result but
+  holds no place (the claim is stored as released), so it is re-taken with the others.
+- ``submit`` is accepted for an unsubmitted session even when its holds were released.
+  Such a submit is ``late``; a late submit is not counted toward quotas: any holds it
+  still has are released at submit, as the release job would.
+
 Expected outcomes (a stale write, a repeated submit, a full quota) come back as
 ``status`` values, not exceptions, so ``osp-runtime`` (same layer, cannot import
 this package) can act on them. Misuse (bad context, a row in another tenant, bad
@@ -64,7 +80,8 @@ class SessionCredential:
     token_hash: str
     last_active_at: datetime
     submitted_at: datetime | None
-    expired_at: datetime | None
+    expired_at: datetime | None  # holds released (not the token's expiry)
+    publication_id: str
 
 
 @dataclass(frozen=True, slots=True)
@@ -88,7 +105,7 @@ class ParticipantSession:
 
 @dataclass(frozen=True, slots=True)
 class SnapshotWrite:
-    status: Literal["ok", "replay", "stale", "submitted", "expired", "end-only"]
+    status: Literal["ok", "replay", "stale", "submitted", "end-only"]
     revision: int
     snapshot: Any = None  # the server copy, for "stale"
     conflict_id: str | None = None
@@ -96,7 +113,7 @@ class SnapshotWrite:
 
 @dataclass(frozen=True, slots=True)
 class QuotaClaim:
-    status: Literal["ok", "replay", "submitted", "expired"]
+    status: Literal["ok", "replay", "submitted"]
     node_id: str
     quota_id: str
     result: Literal["admitted", "full"] | None
@@ -104,9 +121,10 @@ class QuotaClaim:
 
 @dataclass(frozen=True, slots=True)
 class SubmitResult:
-    status: Literal["ok", "replay", "mismatch", "expired"]
+    status: Literal["ok", "replay", "mismatch"]
     response_id: str | None
     submitted_at: datetime | None
+    late: bool = False  # submitted after the session's holds were released (S-2)
 
 
 @dataclass(frozen=True, slots=True)
@@ -446,6 +464,7 @@ class ParticipantStore:
                     ps.last_active_at,
                     ps.submitted_at,
                     ps.expired_at,
+                    ps.publication_id,
                 ).where(where)
             ).first()
         return None if r is None else SessionCredential(*r)
@@ -463,19 +482,133 @@ class ParticipantStore:
             return None
         return self._credential(t.participant_sessions.c.id == session_id)
 
-    def _live(self, ctx: TenantContext, session_id: str) -> Any:
+    def _open(self, ctx: TenantContext, session_id: str) -> Any:
+        """Unsubmitted. Released holds (``expired_at``) do not close a session."""
         ps = t.participant_sessions.c
-        return self._ps_where(ctx, session_id) & ps.submitted_at.is_(None) & ps.expired_at.is_(None)
+        return self._ps_where(ctx, session_id) & ps.submitted_at.is_(None)
+
+    def _release(
+        self, conn: Connection, tenant_id: str, actor: str, sid: str, now: datetime, action: str
+    ) -> tuple[int, int]:
+        """Give back the session's held quota places and balanced counts and set
+        ``expired_at``. The caller holds the session row. Returns (quota, assignment)."""
+        ps, cl = t.participant_sessions.c, t.quota_claims.c
+        conn.execute(update(t.participant_sessions).where(ps.id == sid).values(expired_at=now))
+        row = conn.execute(select(ps.publication_id, ps.balanced).where(ps.id == sid)).one()
+        claims = conn.execute(
+            select(cl.node_id, cl.quota_id).where(
+                (cl.session_id == sid) & (cl.result == "admitted") & cl.released_at.is_(None)
+            )
+        ).all()
+        qc = t.quota_counters.c
+        for node_id, quota_id in claims:
+            conn.execute(
+                update(t.quota_counters)
+                .where(
+                    (qc.publication_id == row.publication_id)
+                    & (qc.quota_id == quota_id)
+                    & (qc.used > 0)
+                )
+                .values(used=qc.used - 1)
+            )
+            conn.execute(
+                update(t.quota_claims)
+                .where((cl.session_id == sid) & (cl.node_id == node_id))
+                .values(released_at=now)
+            )
+        assignment = 0
+        ac = t.assignment_counters.c
+        for variable, key in (row.balanced or {}).items():
+            assignment += conn.execute(
+                update(t.assignment_counters)
+                .where(
+                    (ac.publication_id == row.publication_id)
+                    & (ac.variable == variable)
+                    & (ac.level == key)
+                    & (ac.count > 0)
+                )
+                .values(count=ac.count - 1)
+            ).rowcount
+        self._s._audit(
+            conn, tenant_id, actor, action, "session", sid, {"quota_released": len(claims)}
+        )
+        return len(claims), assignment
+
+    def _reacquire(self, conn: Connection, ctx: TenantContext, sid: str) -> bool:
+        """A session whose holds were released is active again: take its quota places
+        back (all or nothing) and its balanced counts, and clear ``expired_at``. False,
+        with nothing changed, if a quota is full. The caller holds the session row."""
+        ps, cl = t.participant_sessions.c, t.quota_claims.c
+        row = conn.execute(
+            select(ps.expired_at, ps.publication_id, ps.balanced).where(self._ps_where(ctx, sid))
+        ).one()
+        if row.expired_at is None:
+            return True
+        qc = t.quota_counters.c
+        claims = conn.execute(
+            select(cl.node_id, cl.quota_id).where(
+                (cl.session_id == sid) & (cl.result == "admitted") & cl.released_at.is_not(None)
+            )
+        ).all()
+        taken: list[str] = []
+        for _node_id, quota_id in claims:
+            mine = (qc.publication_id == row.publication_id) & (qc.quota_id == quota_id)
+            got = conn.execute(
+                update(t.quota_counters).where(mine & (qc.used < qc.cap)).values(used=qc.used + 1)
+            ).rowcount
+            if got != 1:
+                for q in taken:  # all or nothing: give back what this call took
+                    conn.execute(
+                        update(t.quota_counters)
+                        .where((qc.publication_id == row.publication_id) & (qc.quota_id == q))
+                        .values(used=qc.used - 1)
+                    )
+                return False
+            taken.append(quota_id)
+        if claims:
+            conn.execute(
+                update(t.quota_claims)
+                .where((cl.session_id == sid) & (cl.result == "admitted"))
+                .values(released_at=None)
+            )
+        ac = t.assignment_counters.c
+        for variable, key in (row.balanced or {}).items():
+            conn.execute(
+                update(t.assignment_counters)
+                .where(
+                    (ac.publication_id == row.publication_id)
+                    & (ac.variable == variable)
+                    & (ac.level == key)
+                )
+                .values(count=ac.count + 1)
+            )
+        conn.execute(
+            update(t.participant_sessions).where(self._ps_where(ctx, sid)).values(expired_at=None)
+        )
+        self._s._audit(
+            conn,
+            ctx.tenant_id,
+            ctx.actor,
+            "session.reactivate",
+            "session",
+            sid,
+            {"quota_reacquired": len(claims)},
+        )
+        return True
 
     def touch(self, ctx: TenantContext, session_id: str) -> bool:
-        """Record activity on a live session (resume). False if submitted or expired."""
+        """Record activity on an unsubmitted session (resume), taking back released holds
+        where possible. False if submitted."""
         ctx = require_ctx(ctx)
+        sid = _id(session_id)
         with self._s._tx() as conn:
             n = conn.execute(
                 update(t.participant_sessions)
-                .where(self._live(ctx, session_id))
+                .where(self._open(ctx, sid))
                 .values(last_active_at=self._s._now())
             ).rowcount
+            if n == 1:
+                self._reacquire(conn, ctx, sid)
         return n == 1
 
     def write_snapshot(
@@ -498,13 +631,14 @@ class ParticipantStore:
             n = conn.execute(
                 update(t.participant_sessions)
                 .where(
-                    self._live(ctx, sid)
+                    self._open(ctx, sid)
                     & (ps.save_mode == "every-page")
                     & (ps.revision == base_revision)
                 )
                 .values(revision=ps.revision + 1, last_active_at=now)
             ).rowcount
             if n == 1:
+                self._reacquire(conn, ctx, sid)
                 blob, kid = self._s._enc(body, "sessions", "instance", sid)
                 conn.execute(
                     update(t.sessions)
@@ -515,8 +649,6 @@ class ParticipantStore:
             cur = self._get(conn, ctx, sid)  # NotFound for another tenant's session
             if cur.submitted_at is not None:
                 return SnapshotWrite("submitted", cur.revision)
-            if cur.expired_at is not None:
-                return SnapshotWrite("expired", cur.revision)
             if cur.save_mode != "every-page":
                 return SnapshotWrite("end-only", cur.revision)
             if base_revision == cur.revision - 1 and canonical_json(body) == canonical_json(
@@ -579,7 +711,10 @@ class ParticipantStore:
     def claim_quota(
         self, ctx: TenantContext, session_id: str, node_id: str, quota_id: str
     ) -> QuotaClaim:
-        """Atomic and idempotent per (session, node): a repeat returns the recorded result."""
+        """Atomic and idempotent per (session, node): a repeat returns the recorded result.
+
+        If the session's holds are released and cannot be taken back, the result is
+        recorded without holding a place (the claim is stored as released)."""
         ctx = require_ctx(ctx)
         sid = _id(session_id)
         node_id = _name(node_id, "node id")
@@ -590,13 +725,13 @@ class ParticipantStore:
             # First write: serialises calls for this session (row lock / SQLite write lock).
             n = conn.execute(
                 update(t.participant_sessions)
-                .where(self._live(ctx, sid))
+                .where(self._open(ctx, sid))
                 .values(last_active_at=now)
             ).rowcount
             if n == 0:
-                cur = self._get(conn, ctx, sid)
-                status = "submitted" if cur.submitted_at is not None else "expired"
-                return QuotaClaim(status, node_id, quota_id, None)
+                self._get(conn, ctx, sid)  # NotFound for another tenant's session
+                return QuotaClaim("submitted", node_id, quota_id, None)
+            holding = self._reacquire(conn, ctx, sid)
             prior = conn.execute(
                 select(cl.quota_id, cl.result).where(
                     (cl.session_id == sid) & (cl.node_id == node_id)
@@ -610,9 +745,15 @@ class ParticipantStore:
             mine = (qc.publication_id == pub_id) & (qc.quota_id == quota_id)
             if conn.execute(select(qc.cap).where(mine)).first() is None:
                 raise NotFound(f"no quota {quota_id!r} in this publication")
-            got = conn.execute(
-                update(t.quota_counters).where(mine & (qc.used < qc.cap)).values(used=qc.used + 1)
-            ).rowcount
+            if holding:
+                got = conn.execute(
+                    update(t.quota_counters)
+                    .where(mine & (qc.used < qc.cap))
+                    .values(used=qc.used + 1)
+                ).rowcount
+            else:  # holds released and not taken back: answer, but hold no place
+                room = conn.execute(select(qc.cap).where(mine & (qc.used < qc.cap))).first()
+                got = 0 if room is None else 1
             result = "admitted" if got == 1 else "full"
             conn.execute(
                 insert(t.quota_claims).values(
@@ -623,6 +764,7 @@ class ParticipantStore:
                     quota_id=quota_id,
                     result=result,
                     at=now,
+                    released_at=None if holding else now,
                 )
             )
             return QuotaClaim("ok", node_id, quota_id, result)
@@ -666,10 +808,18 @@ class ParticipantStore:
         record_checksum: str,
         realised_orders: object,
         engine_version: str | None,
+        late: bool = False,
     ) -> SubmitResult:
         """Store the response once. A repeat with the same ``record_checksum`` is a
-        ``replay`` of the first; a different payload is a ``mismatch``. After this,
-        snapshots for the session are rejected and its server snapshot is cleared."""
+        ``replay`` of the first (same response id and time); a different payload is a
+        ``mismatch``. After this, snapshots for the session are rejected and its server
+        snapshot is cleared.
+
+        Accepted even when the session's holds were released (decision S-2). The submit
+        is ``late`` if they were, or if the caller says so (``late=True``: the resume
+        token had expired). A late submit is not counted toward quotas, so any holds the
+        session still has are released now. If ``record`` is an object with a
+        ``server`` object, its ``late`` field is set to the final flag."""
         ctx = require_ctx(ctx)
         sid = _id(session_id)
         ans = _answers(answers)
@@ -680,9 +830,10 @@ class ParticipantStore:
             engine_version = _name(engine_version, "engine_version", 64)
         rid, now = str(uuid.uuid4()), self._s._now()
         with self._s._tx() as conn:
+            ps = t.participant_sessions.c
             n = conn.execute(
                 update(t.participant_sessions)
-                .where(self._live(ctx, sid))
+                .where(self._open(ctx, sid))
                 .values(
                     submitted_at=now,
                     last_active_at=now,
@@ -691,19 +842,25 @@ class ParticipantStore:
                 )
             ).rowcount
             if n == 0:
-                ps = t.participant_sessions.c
                 cur = self._s._one(
                     conn,
-                    select(ps.submitted_at, ps.response_id, ps.submission_checksum).where(
-                        self._ps_where(ctx, sid)
-                    ),
+                    select(
+                        ps.response_id, ps.submitted_at, ps.submission_checksum, ps.expired_at
+                    ).where(self._ps_where(ctx, sid)),
                 )
-                if cur["submitted_at"] is None:
-                    return SubmitResult("expired", None, None)
                 same = cur["submission_checksum"] == record_checksum
                 return SubmitResult(
-                    "replay" if same else "mismatch", cur["response_id"], cur["submitted_at"]
+                    "replay" if same else "mismatch",
+                    cur["response_id"],
+                    cur["submitted_at"],
+                    cur["expired_at"] is not None,
                 )
+            released = conn.execute(select(ps.expired_at).where(ps.id == sid)).scalar_one()
+            late = bool(late) or released is not None
+            if late and released is None:
+                self._release(conn, ctx.tenant_id, ctx.actor, sid, now, "session.late_submit")
+            if isinstance(rec, dict) and isinstance(rec.get("server"), dict):
+                rec = {**rec, "server": {**rec["server"], "late": late}}
             srow = self._s._one(conn, select(t.sessions).where(self._s._session_where(ctx, sid)))
             vrow = self._s._one(
                 conn,
@@ -749,7 +906,7 @@ class ParticipantStore:
             self._s._audit(
                 conn, ctx.tenant_id, ctx.actor, "response.submit", "response", rid, {"session": sid}
             )
-            return SubmitResult("ok", rid, now)
+            return SubmitResult("ok", rid, now, late)
 
     def get_record(self, ctx: TenantContext, response_id: str) -> Any:
         """The full submitted ResponseRecord (decrypted); audited like a response read."""
@@ -770,12 +927,14 @@ class ParticipantStore:
     # -- inactivity release (decision R-3) -------------------------------------------
 
     def release_inactive(self, sys: SystemContext, cutoff: datetime) -> ReleaseReport:
-        """Expire every unsubmitted session idle since ``cutoff`` or earlier, and give back
-        its quota slots and balanced-assignment counts. Re-running is a no-op."""
+        """Release the holds of every unsubmitted session idle since ``cutoff`` or earlier:
+        give back its quota slots and balanced-assignment counts and set ``expired_at``.
+        The session itself stays open (its resume token expires separately). Re-running
+        is a no-op."""
         sys = require_system(sys)
         if not isinstance(cutoff, datetime) or cutoff.tzinfo is None:
             raise InvalidInput("cutoff must be a timezone-aware datetime")
-        ps, cl = t.participant_sessions.c, t.quota_claims.c
+        ps = t.participant_sessions.c
         idle = ps.submitted_at.is_(None) & ps.expired_at.is_(None) & (ps.last_active_at <= cutoff)
         with self._s._engine.connect() as conn:
             candidates = conn.execute(select(ps.id, ps.tenant_id).where(idle)).all()
@@ -791,50 +950,7 @@ class ParticipantStore:
                 if n == 0:
                     continue  # became active, or another job got it
                 expired += 1
-                row = conn.execute(select(ps.publication_id, ps.balanced).where(ps.id == sid)).one()
-                claims = conn.execute(
-                    select(cl.node_id, cl.quota_id).where(
-                        (cl.session_id == sid)
-                        & (cl.result == "admitted")
-                        & cl.released_at.is_(None)
-                    )
-                ).all()
-                qc = t.quota_counters.c
-                for node_id, quota_id in claims:
-                    conn.execute(
-                        update(t.quota_counters)
-                        .where(
-                            (qc.publication_id == row.publication_id)
-                            & (qc.quota_id == quota_id)
-                            & (qc.used > 0)
-                        )
-                        .values(used=qc.used - 1)
-                    )
-                    conn.execute(
-                        update(t.quota_claims)
-                        .where((cl.session_id == sid) & (cl.node_id == node_id))
-                        .values(released_at=now)
-                    )
-                    quota += 1
-                ac = t.assignment_counters.c
-                for variable, key in (row.balanced or {}).items():
-                    assignment += conn.execute(
-                        update(t.assignment_counters)
-                        .where(
-                            (ac.publication_id == row.publication_id)
-                            & (ac.variable == variable)
-                            & (ac.level == key)
-                            & (ac.count > 0)
-                        )
-                        .values(count=ac.count - 1)
-                    ).rowcount
-                self._s._audit(
-                    conn,
-                    tenant_id,
-                    sys.actor,
-                    "session.expire",
-                    "session",
-                    sid,
-                    {"quota_released": len(claims)},
-                )
+                q, a = self._release(conn, tenant_id, sys.actor, sid, now, "session.expire")
+                quota += q
+                assignment += a
         return ReleaseReport(expired, quota, assignment)

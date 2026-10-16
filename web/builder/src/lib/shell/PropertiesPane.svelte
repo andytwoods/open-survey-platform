@@ -19,6 +19,9 @@
 	import { api } from '../api';
 	import PropertyPanel from '../properties/PropertyPanel.svelte';
 	import { propertySchemas, schemaFor } from '../properties/schemas.svelte';
+	import type { OpenEditorRequest } from '../properties/types';
+	import { ChoiceListDialog, editorInputs } from '../choices';
+	import { ConditionDialog, apiExpressionService, questionsFromSurvey, type ConditionField, type ExprNode } from '../conditions';
 
 	/**
 	 * Shows what is selected and its schema-driven property panel (B4). Until the property
@@ -110,6 +113,36 @@
 		propertyFocus.done(r.seq);
 	}
 
+	// -- specialised editors (builder-design §3), opened by a field's "Edit …" button ------
+	// Each kind maps to an opener; a kind without one says it is not available yet. A new
+	// editor (e.g. expressions) adds a dialog below and one entry here.
+	let choicesFor = $state<string | null>(null);
+	let choicesOpen = $state(false);
+	let conditionReq = $state<OpenEditorRequest | null>(null);
+	let conditionOpen = $state(false);
+	const CONDITION_FIELDS: readonly string[] = ['showIf', 'constraint', 'if', 'when', 'expr'];
+	const expressionService = apiExpressionService(api);
+
+	const editors: Partial<Record<OpenEditorRequest['kind'], (r: OpenEditorRequest) => void>> = {
+		choicelist: (r) => {
+			choicesFor = r.target;
+			choicesOpen = true;
+		},
+		condition: (r) => {
+			conditionReq = r;
+			conditionOpen = true;
+		}
+	};
+
+	function openEditor(r: OpenEditorRequest) {
+		const open = editors[r.kind];
+		if (open && store) open(r);
+		else announce(`The ${r.kind} editor is not available yet.`);
+	}
+
+	const choiceInputs = $derived(store && choicesFor ? editorInputs(store.survey, choicesFor) : null);
+	const allDiagnostics = $derived(store ? [...store.diagnostics, ...(store.rejection?.diagnostics ?? [])] : []);
+
 	const nodeDiagnostics = $derived.by(() => {
 		if (!store || !node) return [];
 		const base = pointerOf(store.survey, node.id);
@@ -135,7 +168,7 @@
 						survey={store.survey}
 						groups={propertySchemas.doc.groups}
 						onOp={(op) => store?.submit([op])}
-						onOpenEditor={(r) => announce(`The ${r.kind} editor is not available yet.`)}
+						onOpenEditor={openEditor}
 						onDirty={(d) => store?.markDirty(d)}
 					/>
 				</div>
@@ -197,6 +230,34 @@
 		<p class="muted">Select an item in the outline or on the canvas to see its properties.</p>
 	{/if}
 </div>
+
+{#if store && choiceInputs?.question}
+	<ChoiceListDialog
+		bind:open={choicesOpen}
+		question={choiceInputs.question}
+		choiceLists={choiceInputs.choiceLists}
+		usage={choiceInputs.usage}
+		pointer={choiceInputs.pointer}
+		{lang}
+		defaultLanguage={choiceInputs.defaultLanguage}
+		diagnostics={allDiagnostics}
+		onOps={(ops) => void store?.submit(ops)}
+	/>
+{/if}
+
+{#if store && conditionReq}
+	<ConditionDialog
+		bind:open={conditionOpen}
+		description={findNode(roots, conditionReq.target)?.label}
+		questions={questionsFromSurvey(store.survey, lang)}
+		value={(conditionReq.value ?? null) as ExprNode | null}
+		target={conditionReq.target}
+		field={CONDITION_FIELDS.includes(conditionReq.path) ? (conditionReq.path as ConditionField) : undefined}
+		surveyId={store.surveyId}
+		service={expressionService}
+		onOps={(ops) => void store?.submit(ops)}
+	/>
+{/if}
 
 <style>
 	.properties {

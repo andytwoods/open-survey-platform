@@ -47,7 +47,7 @@ from .model import (
 )
 from .reserved import RESERVED_NAMES
 from .schema import json_schema
-from .validate import parse, validate
+from .validate import BUILTIN_PIPES, parse, publish_diagnostics, validate
 
 __all__ = [
     "CODES",
@@ -95,5 +95,7 @@ __all__ = [
     "has_errors",
     "json_schema",
     "parse",
+    "publish_diagnostics",
+    "BUILTIN_PIPES",
     "validate",
 ]

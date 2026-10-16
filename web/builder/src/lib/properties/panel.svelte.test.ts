@@ -92,6 +92,10 @@ describe('every MVP property is editable', () => {
 					expect(last, key).not.toBe('');
 					await fireEvent.change(select, { target: { value: last } });
 					expect(t.ops.slice(before), key).toEqual([{ op: 'set_property', params: { ...address, value: last } }]);
+				} else if (spec.kind === 'number') {
+					await fireEvent.input(el, { target: { value: '7' } });
+					await fireEvent.blur(el);
+					expect(t.ops.slice(before), key).toEqual([{ op: 'set_property', params: { ...address, value: 7 } }]);
 				} else {
 					throw new Error(`no test for kind ${spec.kind}`);
 				}

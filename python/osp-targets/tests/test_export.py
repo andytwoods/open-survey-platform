@@ -285,3 +285,33 @@ def test_mutated_cases_never_raise() -> None:
             data = copy.deepcopy(base)
             del data[key]
             export_xlsform(data)
+
+
+def test_page_showif_min_max_and_if_are_lowered() -> None:
+    """Decisions batch 1 (C2-9, C1-3): page relevant, min/max joined into constraint, if()."""
+    gt = {"kind": "compare", "op": ">", "left": {"kind": "ref", "id": "n"},
+          "right": {"kind": "int", "value": 1}}  # fmt: skip
+    data = {
+        "specVersion": "osp-survey/0.1",
+        "id": "srv",
+        "metadata": {"title": "T", "languages": ["en"]},
+        "variables": [{"kind": "computed", "id": "band", "expr": {
+            "kind": "if", "cond": gt, "then": {"kind": "text", "value": "hi"},
+            "else": {"kind": "text", "value": "lo"}}}],  # fmt: skip
+        "blocks": [
+            {"id": "b1", "pages": [
+                {"id": "p1", "items": [{"id": "n", "type": "integer", "label": "N",
+                                        "min": 1, "max": 9, "constraint": gt}]},
+                {"id": "p2", "showIf": gt, "items": [{"id": "t", "type": "text", "label": "T"}]},
+            ]},
+        ],
+        "flow": [{"type": "block", "id": "f1", "block": "b1"}],
+    }  # fmt: skip
+    form, diags = build_xlsform(data)
+    assert form is not None, diags
+    rows = {r.get("name"): r for r in form.survey}
+    assert rows["n"]["constraint"].startswith("(. >= 1) and (. <= 9) and (")
+    assert "${n}" in rows["p2"]["relevant"]
+    assert rows["band"]["calculation"].startswith("if(")
+    content, _ = export_xlsform(data)
+    assert "if(" in _xform(content)

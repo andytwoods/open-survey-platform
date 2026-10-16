@@ -375,6 +375,10 @@ class _Exporter:
 
         def repl(m: re.Match[str]) -> str:
             qid = m.group(1).strip()
+            if qid.startswith("$"):
+                # Built-ins ($trial, $position.*; semantics §8) are our runtime's.
+                self.note("$pipe.builtin", ptr, f"${{{qid}}}")
+                return ""
             if qid not in self.names:
                 return m.group(0)
             self.note("$pipe.escaping", ptr)
@@ -567,9 +571,14 @@ class _Exporter:
             row["relevant"] = alive
         self.rows.append(row)
         for pi, page in enumerate(block.pages):
-            self.rows.append(
-                {"type": "begin group", "name": self._alloc(page.id), "appearance": "field-list"}
-            )
+            group = {
+                "type": "begin group",
+                "name": self._alloc(page.id),
+                "appearance": "field-list",
+            }
+            if page.showIf is not None:
+                group["relevant"] = self._xpath().condition(page.showIf)
+            self.rows.append(group)
             for qi, q in enumerate(page.items):
                 self._question(q, pointer("blocks", bi, "pages", pi, "items", qi))
             self.rows.append({"type": "end group"})
@@ -598,8 +607,15 @@ class _Exporter:
         if not isinstance(q, NoteQuestion):
             if q.required:
                 row["required"] = "yes"
+            parts = []
+            for key, op in (("min", ">="), ("max", "<=")):
+                bound = getattr(q, key, None)
+                if bound is not None:
+                    parts.append(f". {op} {bound}")
             if q.constraint is not None:
-                row["constraint"] = self._xpath(self_id=q.id).condition(q.constraint)
+                parts.append(self._xpath(self_id=q.id).condition(q.constraint))
+            if parts:
+                row["constraint"] = " and ".join(p if len(parts) == 1 else f"({p})" for p in parts)
             self._labelled(
                 row, "constraint_message", q.constraintMessage, ptr + "/constraintMessage"
             )

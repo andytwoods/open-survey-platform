@@ -3,7 +3,7 @@
  "surveyId": "f25_second_device",
  "surveyVersion": 1,
  "planVersion": "osp-runtime-plan/1",
- "planChecksum": "sha256:b9ee4d93ff41678a7175ce980501e739ee9f24dd360d282f22262115adcbd6c1",
+ "planChecksum": "sha256:4c86362d9ca94d64cd2278a81c08456428847e9ab8b712eb7e9605018bbb8427",
  "engineVersion": "1",
  "sessionSeed": 2502,
  "sessionId": null,
@@ -44,7 +44,7 @@
   },
   "t1": {
    "state": "answered",
-   "value": "the bedroom"
+   "value": "the kitchen"
   },
   "t2": {
    "state": "unanswered",
@@ -64,7 +64,9 @@
  },
  "embedded": {},
  "computed": {},
+ "variableStates": {},
  "quotas": {},
+ "diagnostics": [],
  "effects": [],
  "urlParams": {},
  "startedAt": 2000,
@@ -114,15 +116,15 @@
   },
   {
    "type": "answer",
-   "t": 8000,
+   "t": 6000,
    "item": "t1",
-   "value": "the bedroom",
+   "value": "the kitchen",
    "seq": 5,
    "rev": 5
   },
   {
    "type": "next",
-   "t": 9000,
+   "t": 7000,
    "from": "p2_page",
    "seq": 6,
    "rev": 6,

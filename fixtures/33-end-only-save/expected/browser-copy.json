@@ -2,9 +2,7 @@
   "format": "osp-fixture-expected/0",
   "fixture": "33-end-only-save",
   "script": "browser-copy",
-  "pending": [
-    "R6-5"
-  ],
+  "pending": [],
   "steps": [
     {
       "index": 0,

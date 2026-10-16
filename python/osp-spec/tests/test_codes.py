@@ -10,7 +10,7 @@ from pathlib import Path
 from typing import Any
 
 import pytest
-from osp_spec import CODES, RESERVED_NAMES, validate
+from osp_spec import CODES, RESERVED_NAMES, publish_diagnostics, validate
 
 CASES = Path(__file__).parent / "cases"
 P0 = "/blocks/0/pages/0/items"
@@ -149,6 +149,33 @@ def m_reserved_prefix(s):
     _items(s)[0]["name"] = "_order"
 
 
+def gt(qid: str, n: int) -> dict:
+    return {"kind": "compare", "op": ">", "left": {"kind": "ref", "id": qid},
+            "right": {"kind": "int", "value": n}}  # fmt: skip
+
+
+def m_same_page_cycle(s):
+    _items(s)[0]["showIf"] = gt("q2", 1)
+    _items(s)[1]["showIf"] = gt("q1", 1)
+
+
+def m_bounds(s):
+    _items(s)[0].update({"min": 5, "max": 1})
+
+
+def m_decimal_bound_too_long(s):
+    _items(s)[1] = {"id": "q2", "type": "decimal", "label": "Q2",
+                    "max": "12345678901234567890.123456789"}  # fmt: skip
+
+
+def m_retention(s):
+    s["settings"] = {"retention": {"kind": "after-date"}}
+
+
+def m_page_showif_own_item(s):
+    s["blocks"][0]["pages"][0]["showIf"] = answered("q1")
+
+
 def m_quota_forward(s):
     _add_block(s, "b2", "q3")
     s["quotas"] = [{"id": "qt", "when": answered("q3"), "limit": 5,
@@ -181,6 +208,11 @@ TABLE: list[tuple[Callable[[dict], None], list[tuple[str, str]]]] = [
     (m_reserved_suffix, [("name.reserved", f"{P0}/0/name")]),
     (m_reserved_prefix, [("name.reserved", f"{P0}/0/name")]),
     (m_quota_forward, [("ref.forward", "/quotas/0/when")]),
+    (m_same_page_cycle, [("ref.cycle", f"{P0}/0/showIf")]),
+    (m_bounds, [("question.bounds", f"{P0}/0/min")]),
+    (m_decimal_bound_too_long, [("question.bounds", f"{P0}/1/max")]),
+    (m_retention, [("settings.retention", "/settings/retention")]),
+    (m_page_showif_own_item, [("ref.forward", "/blocks/0/pages/0/showIf")]),
 ]
 
 
@@ -200,8 +232,35 @@ def test_every_code_is_exercised() -> None:
     covered = {code for _, exp in TABLE for code, _ in exp}
     for path in CASES.glob("*/*.json"):
         covered |= {e["code"] for e in json.loads(path.read_text(encoding="utf-8"))["expect"]}
+    covered.add("publish.retention_required")  # test_publish_needs_a_retention_policy
     assert covered <= set(CODES)
     assert set(CODES) - covered == UNTESTABLE
+
+
+def test_same_page_references_go_either_way() -> None:
+    s = base()
+    _items(s)[0]["showIf"] = gt("q2", 1)  # a later item on the same page (C2-1)
+    _items(s)[1]["label"] = "You said ${q1}"
+    assert validate(s) == []
+
+
+def test_builtin_pipes_are_valid() -> None:
+    s = base()
+    _items(s)[0]["label"] = "Trial ${$trial}, ${$position.index} of ${$position.of}"
+    assert validate(s) == []
+
+
+def test_case_collision_is_an_error() -> None:
+    assert CODES["name.case_collision"] == "error"
+
+
+def test_publish_needs_a_retention_policy() -> None:
+    s = base()
+    assert [d.code for d in publish_diagnostics(s)] == ["publish.retention_required"]
+    s["settings"] = {"retention": {"kind": "days-after-close", "days": 365}}
+    assert publish_diagnostics(s) == []
+    s["settings"] = {"retention": {"kind": "indefinite"}}
+    assert publish_diagnostics(s) == [] == validate(s)
 
 
 def test_reserved_names_include_the_obvious_ones() -> None:

@@ -58,9 +58,33 @@ contract-check:
 licence-check:
 	$(UV_RUN) python scripts/licence_check.py
 
-# Enketo equivalence harness on touched fixtures (task C8). Stub until fixtures exist.
+# Fixture harness (task R4, web/harness): every fixture script played through the real
+# participant app (web/runtime) in a real browser against osp-api on a fresh SQLite store
+# (web/harness/server.py), compared with the expected traces. Pending traces are reported,
+# never failed; known runtime bugs are expected failures (web/harness/src/known.ts).
+# Report: .build/harness/report.md. Needs Playwright browsers:
+#   pnpm -C web/harness exec playwright install chromium            (quick)
+#   pnpm -C web/harness exec playwright install chromium webkit firefox   (full)
+#
+# harness-quick: fixtures touched since main's merge base (committed, staged, unstaged or
+# untracked), or all of them if none; desktop Chromium only. Override with
+# OSP_HARNESS_FIXTURES=06,25 (folder names or number prefixes).
+HARNESS_BASE = $(shell git merge-base HEAD main 2>/dev/null || git merge-base HEAD origin/main 2>/dev/null)
+HARNESS_TOUCHED = $(shell { $(if $(HARNESS_BASE),git diff --name-only $(HARNESS_BASE) -- fixtures;) \
+	git ls-files --others --exclude-standard -- fixtures; } 2>/dev/null \
+	| sed -n 's|^fixtures/\([0-9][0-9]-[^/]*\)/.*|\1|p' | sort -u | paste -sd, -)
+
+.PHONY: harness-full
 harness-quick:
-	@echo "harness-quick: no fixtures yet"
+	@fx="$${OSP_HARNESS_FIXTURES-$(HARNESS_TOUCHED)}"; \
+	echo "harness-quick: fixtures: $${fx:-all}"; \
+	OSP_HARNESS_FIXTURES="$$fx" $(PNPM) -C web/harness exec playwright test --project=desktop-chromium
+
+# Every fixture × every device project (iPhone SE/WebKit, Pixel 7/Chromium, desktop Firefox,
+# desktop Chromium). engine-test first, so the report can tell runtime divergences (engine
+# passes, app fails) from fixture or engine failures.
+harness-full: engine-test
+	OSP_HARNESS_FIXTURES= $(PNPM) -C web/harness exec playwright test $(HARNESS_ARGS)
 
 # osp-store tests against a throwaway Postgres container (task C9). Needs Docker
 # (Colima); skips with a message if Docker isn't running. `make check` runs the

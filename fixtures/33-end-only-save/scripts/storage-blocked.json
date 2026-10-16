@@ -1,7 +1,7 @@
 {
   "format": "osp-fixture-script/0",
   "id": "storage-blocked",
-  "description": "end-only with storage blocked: it falls back to memory (never to network saving). What the refresh then shows (a fresh start with the same seed and assignment, or an end) is R6-5.",
+  "description": "end-only with storage blocked: the copy falls back to memory (never to network saving). A refresh loses it, so the session restarts from the first page with the same seed and conditions, and the participant sees a notice (semantics §5). Nothing reaches the server before the one final submit.",
   "sessionSeed": 3302,
   "language": "en",
   "storage": "blocked",
@@ -21,7 +21,17 @@
       "do": "refresh"
     },
     {
+      "expectPage": "p1",
+      "set": {
+        "consent": "yes"
+      },
+      "do": "next"
+    },
+    {
       "expectPage": "p2",
+      "set": {
+        "q_a": 7
+      },
       "do": "next"
     },
     {
@@ -29,10 +39,6 @@
       "set": {
         "q_b": "fine"
       },
-      "do": "resume"
-    },
-    {
-      "expectPage": "p3",
       "do": "next"
     }
   ]

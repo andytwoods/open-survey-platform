@@ -2,13 +2,7 @@
   "format": "osp-fixture-expected/0",
   "fixture": "20-worked-example",
   "script": "loss-charity-back-refresh",
-  "pending": [
-    "C3a-1",
-    "C3a-2",
-    "C3a-3",
-    "C3a-4",
-    "C3a-5"
-  ],
+  "pending": [],
   "steps": [
     {
       "index": 0,
@@ -142,7 +136,11 @@
     {
       "index": 3,
       "page": "attitudes",
-      "visible": "<engine>",
+      "visible": [
+        "att2",
+        "att1",
+        "att3"
+      ],
       "errors": {},
       "nav": {
         "back": true
@@ -172,7 +170,11 @@
       "orders": {
         "blocks": {},
         "items": {
-          "attitudes": "<engine>"
+          "attitudes": [
+            "att2",
+            "att1",
+            "att3"
+          ]
         },
         "choices": {}
       },
@@ -190,7 +192,11 @@
     {
       "index": 4,
       "page": "attitudes",
-      "visible": "<engine>",
+      "visible": [
+        "att2",
+        "att1",
+        "att3"
+      ],
       "errors": {},
       "nav": {
         "back": true
@@ -220,7 +226,11 @@
       "orders": {
         "blocks": {},
         "items": {
-          "attitudes": "<engine>"
+          "attitudes": [
+            "att2",
+            "att1",
+            "att3"
+          ]
         },
         "choices": {}
       },
@@ -270,7 +280,11 @@
       "orders": {
         "blocks": {},
         "items": {
-          "attitudes": "<engine>"
+          "attitudes": [
+            "att2",
+            "att1",
+            "att3"
+          ]
         },
         "choices": {}
       },
@@ -283,7 +297,11 @@
     {
       "index": 6,
       "page": "attitudes",
-      "visible": "<engine>",
+      "visible": [
+        "att2",
+        "att1",
+        "att3"
+      ],
       "errors": {},
       "nav": {
         "back": true
@@ -313,7 +331,11 @@
       "orders": {
         "blocks": {},
         "items": {
-          "attitudes": "<engine>"
+          "attitudes": [
+            "att2",
+            "att1",
+            "att3"
+          ]
         },
         "choices": {}
       },
@@ -359,7 +381,11 @@
       "orders": {
         "blocks": {},
         "items": {
-          "attitudes": "<engine>"
+          "attitudes": [
+            "att2",
+            "att1",
+            "att3"
+          ]
         },
         "choices": {}
       },
@@ -410,7 +436,11 @@
     "orders": {
       "blocks": {},
       "items": {
-        "attitudes": "<engine>"
+        "attitudes": [
+          "att2",
+          "att1",
+          "att3"
+        ]
       },
       "choices": {}
     },
@@ -441,16 +471,22 @@
       "age__state": "answered",
       "att1__state": "answered",
       "att2__state": "answered",
-      "att3__state": "answered"
+      "att3__state": "answered",
+      "source__state": "answered",
+      "age_band__state": "answered",
+      "att_score__state": "answered"
     },
-    "calculated": {
-      "age_band": "<pending:C3a-2>"
+    "computed": {
+      "age_band": "40+",
+      "att_score": "2"
     },
-    "scores": {
-      "att_score": "<pending:C3a-4>"
+    "embedded": {
+      "source": "direct"
     },
-    "embeddedData": {
-      "source": "<pending:C3a-5>"
+    "variableStates": {
+      "source": "answered",
+      "age_band": "answered",
+      "att_score": "answered"
     }
   }
 }

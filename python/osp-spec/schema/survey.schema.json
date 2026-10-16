@@ -15,6 +15,7 @@
                 "compare": "#/$defs/Compare",
                 "contains": "#/$defs/Contains",
                 "decimal": "#/$defs/DecLit",
+                "if": "#/$defs/If",
                 "int": "#/$defs/IntLit",
                 "not": "#/$defs/Not",
                 "null": "#/$defs/NullLit",
@@ -63,6 +64,9 @@
               },
               {
                 "$ref": "#/$defs/Contains"
+              },
+              {
+                "$ref": "#/$defs/If"
               }
             ]
           },
@@ -123,6 +127,7 @@
               "compare": "#/$defs/Compare",
               "contains": "#/$defs/Contains",
               "decimal": "#/$defs/DecLit",
+              "if": "#/$defs/If",
               "int": "#/$defs/IntLit",
               "not": "#/$defs/Not",
               "null": "#/$defs/NullLit",
@@ -171,6 +176,9 @@
             },
             {
               "$ref": "#/$defs/Contains"
+            },
+            {
+              "$ref": "#/$defs/If"
             }
           ],
           "title": "Left"
@@ -195,6 +203,7 @@
               "compare": "#/$defs/Compare",
               "contains": "#/$defs/Contains",
               "decimal": "#/$defs/DecLit",
+              "if": "#/$defs/If",
               "int": "#/$defs/IntLit",
               "not": "#/$defs/Not",
               "null": "#/$defs/NullLit",
@@ -243,6 +252,9 @@
             },
             {
               "$ref": "#/$defs/Contains"
+            },
+            {
+              "$ref": "#/$defs/If"
             }
           ],
           "title": "Right"
@@ -513,6 +525,7 @@
               "compare": "#/$defs/Compare",
               "contains": "#/$defs/Contains",
               "decimal": "#/$defs/DecLit",
+              "if": "#/$defs/If",
               "int": "#/$defs/IntLit",
               "not": "#/$defs/Not",
               "null": "#/$defs/NullLit",
@@ -561,6 +574,9 @@
             },
             {
               "$ref": "#/$defs/Contains"
+            },
+            {
+              "$ref": "#/$defs/If"
             }
           ],
           "title": "Left"
@@ -587,6 +603,7 @@
               "compare": "#/$defs/Compare",
               "contains": "#/$defs/Contains",
               "decimal": "#/$defs/DecLit",
+              "if": "#/$defs/If",
               "int": "#/$defs/IntLit",
               "not": "#/$defs/Not",
               "null": "#/$defs/NullLit",
@@ -635,6 +652,9 @@
             },
             {
               "$ref": "#/$defs/Contains"
+            },
+            {
+              "$ref": "#/$defs/If"
             }
           ],
           "title": "Right"
@@ -693,6 +713,7 @@
           "compare": "#/$defs/Compare",
           "contains": "#/$defs/Contains",
           "decimal": "#/$defs/DecLit",
+          "if": "#/$defs/If",
           "int": "#/$defs/IntLit",
           "not": "#/$defs/Not",
           "null": "#/$defs/NullLit",
@@ -741,6 +762,9 @@
         },
         {
           "$ref": "#/$defs/Contains"
+        },
+        {
+          "$ref": "#/$defs/If"
         }
       ]
     },
@@ -767,6 +791,7 @@
               "compare": "#/$defs/Compare",
               "contains": "#/$defs/Contains",
               "decimal": "#/$defs/DecLit",
+              "if": "#/$defs/If",
               "int": "#/$defs/IntLit",
               "not": "#/$defs/Not",
               "null": "#/$defs/NullLit",
@@ -815,6 +840,9 @@
             },
             {
               "$ref": "#/$defs/Contains"
+            },
+            {
+              "$ref": "#/$defs/If"
             }
           ],
           "title": "Value"
@@ -826,6 +854,10 @@
       ],
       "title": "Contains",
       "type": "object"
+    },
+    "Date": {
+      "pattern": "^\\d{4}-\\d{2}-\\d{2}$",
+      "type": "string"
     },
     "DateQuestion": {
       "additionalProperties": false,
@@ -980,6 +1012,36 @@
         "label": {
           "$ref": "#/$defs/Text"
         },
+        "max": {
+          "anyOf": [
+            {
+              "type": "integer"
+            },
+            {
+              "$ref": "#/$defs/DecimalText"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Max"
+        },
+        "min": {
+          "anyOf": [
+            {
+              "type": "integer"
+            },
+            {
+              "$ref": "#/$defs/DecimalText"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Min"
+        },
         "name": {
           "anyOf": [
             {
@@ -1020,6 +1082,11 @@
       ],
       "title": "DecimalQuestion",
       "type": "object"
+    },
+    "DecimalText": {
+      "maxLength": 64,
+      "pattern": "^-?(\\d+(\\.\\d+)?)$",
+      "type": "string"
     },
     "EmbeddedVariable": {
       "additionalProperties": false,
@@ -1132,6 +1199,7 @@
           "compare": "#/$defs/Compare",
           "contains": "#/$defs/Contains",
           "decimal": "#/$defs/DecLit",
+          "if": "#/$defs/If",
           "int": "#/$defs/IntLit",
           "not": "#/$defs/Not",
           "null": "#/$defs/NullLit",
@@ -1180,6 +1248,9 @@
         },
         {
           "$ref": "#/$defs/Contains"
+        },
+        {
+          "$ref": "#/$defs/If"
         }
       ]
     },
@@ -1221,6 +1292,223 @@
       "minLength": 1,
       "pattern": "^[A-Za-z_][A-Za-z0-9_]*$",
       "type": "string"
+    },
+    "If": {
+      "additionalProperties": false,
+      "description": "``if(cond, a, b)``: ``a`` when ``cond`` is true, else ``b`` (semantics.md §3).\n\nLazy: only the chosen branch is evaluated. A null (or non-boolean) condition picks\n``b``, like any condition that is not true. JSON: ``{\"kind\": \"if\", \"cond\": …,\n\"then\": …, \"else\": …}``.",
+      "properties": {
+        "cond": {
+          "discriminator": {
+            "mapping": {
+              "and": "#/$defs/And",
+              "answered": "#/$defs/Answered",
+              "arith": "#/$defs/Arith",
+              "bool": "#/$defs/BoolLit",
+              "compare": "#/$defs/Compare",
+              "contains": "#/$defs/Contains",
+              "decimal": "#/$defs/DecLit",
+              "if": "#/$defs/If",
+              "int": "#/$defs/IntLit",
+              "not": "#/$defs/Not",
+              "null": "#/$defs/NullLit",
+              "or": "#/$defs/Or",
+              "ref": "#/$defs/Ref",
+              "text": "#/$defs/TextLit"
+            },
+            "propertyName": "kind"
+          },
+          "oneOf": [
+            {
+              "$ref": "#/$defs/IntLit"
+            },
+            {
+              "$ref": "#/$defs/DecLit"
+            },
+            {
+              "$ref": "#/$defs/TextLit"
+            },
+            {
+              "$ref": "#/$defs/BoolLit"
+            },
+            {
+              "$ref": "#/$defs/NullLit"
+            },
+            {
+              "$ref": "#/$defs/Ref"
+            },
+            {
+              "$ref": "#/$defs/Compare"
+            },
+            {
+              "$ref": "#/$defs/Arith"
+            },
+            {
+              "$ref": "#/$defs/And"
+            },
+            {
+              "$ref": "#/$defs/Or"
+            },
+            {
+              "$ref": "#/$defs/Not"
+            },
+            {
+              "$ref": "#/$defs/Answered"
+            },
+            {
+              "$ref": "#/$defs/Contains"
+            },
+            {
+              "$ref": "#/$defs/If"
+            }
+          ],
+          "title": "Cond"
+        },
+        "else": {
+          "discriminator": {
+            "mapping": {
+              "and": "#/$defs/And",
+              "answered": "#/$defs/Answered",
+              "arith": "#/$defs/Arith",
+              "bool": "#/$defs/BoolLit",
+              "compare": "#/$defs/Compare",
+              "contains": "#/$defs/Contains",
+              "decimal": "#/$defs/DecLit",
+              "if": "#/$defs/If",
+              "int": "#/$defs/IntLit",
+              "not": "#/$defs/Not",
+              "null": "#/$defs/NullLit",
+              "or": "#/$defs/Or",
+              "ref": "#/$defs/Ref",
+              "text": "#/$defs/TextLit"
+            },
+            "propertyName": "kind"
+          },
+          "oneOf": [
+            {
+              "$ref": "#/$defs/IntLit"
+            },
+            {
+              "$ref": "#/$defs/DecLit"
+            },
+            {
+              "$ref": "#/$defs/TextLit"
+            },
+            {
+              "$ref": "#/$defs/BoolLit"
+            },
+            {
+              "$ref": "#/$defs/NullLit"
+            },
+            {
+              "$ref": "#/$defs/Ref"
+            },
+            {
+              "$ref": "#/$defs/Compare"
+            },
+            {
+              "$ref": "#/$defs/Arith"
+            },
+            {
+              "$ref": "#/$defs/And"
+            },
+            {
+              "$ref": "#/$defs/Or"
+            },
+            {
+              "$ref": "#/$defs/Not"
+            },
+            {
+              "$ref": "#/$defs/Answered"
+            },
+            {
+              "$ref": "#/$defs/Contains"
+            },
+            {
+              "$ref": "#/$defs/If"
+            }
+          ],
+          "title": "Else"
+        },
+        "kind": {
+          "const": "if",
+          "default": "if",
+          "title": "Kind",
+          "type": "string"
+        },
+        "then": {
+          "discriminator": {
+            "mapping": {
+              "and": "#/$defs/And",
+              "answered": "#/$defs/Answered",
+              "arith": "#/$defs/Arith",
+              "bool": "#/$defs/BoolLit",
+              "compare": "#/$defs/Compare",
+              "contains": "#/$defs/Contains",
+              "decimal": "#/$defs/DecLit",
+              "if": "#/$defs/If",
+              "int": "#/$defs/IntLit",
+              "not": "#/$defs/Not",
+              "null": "#/$defs/NullLit",
+              "or": "#/$defs/Or",
+              "ref": "#/$defs/Ref",
+              "text": "#/$defs/TextLit"
+            },
+            "propertyName": "kind"
+          },
+          "oneOf": [
+            {
+              "$ref": "#/$defs/IntLit"
+            },
+            {
+              "$ref": "#/$defs/DecLit"
+            },
+            {
+              "$ref": "#/$defs/TextLit"
+            },
+            {
+              "$ref": "#/$defs/BoolLit"
+            },
+            {
+              "$ref": "#/$defs/NullLit"
+            },
+            {
+              "$ref": "#/$defs/Ref"
+            },
+            {
+              "$ref": "#/$defs/Compare"
+            },
+            {
+              "$ref": "#/$defs/Arith"
+            },
+            {
+              "$ref": "#/$defs/And"
+            },
+            {
+              "$ref": "#/$defs/Or"
+            },
+            {
+              "$ref": "#/$defs/Not"
+            },
+            {
+              "$ref": "#/$defs/Answered"
+            },
+            {
+              "$ref": "#/$defs/Contains"
+            },
+            {
+              "$ref": "#/$defs/If"
+            }
+          ],
+          "title": "Then"
+        }
+      },
+      "required": [
+        "cond",
+        "then",
+        "else"
+      ],
+      "title": "If",
+      "type": "object"
     },
     "IntLit": {
       "additionalProperties": false,
@@ -1284,6 +1572,30 @@
         },
         "label": {
           "$ref": "#/$defs/Text"
+        },
+        "max": {
+          "anyOf": [
+            {
+              "type": "integer"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Max"
+        },
+        "min": {
+          "anyOf": [
+            {
+              "type": "integer"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Min"
         },
         "name": {
           "anyOf": [
@@ -1530,6 +1842,7 @@
               "compare": "#/$defs/Compare",
               "contains": "#/$defs/Contains",
               "decimal": "#/$defs/DecLit",
+              "if": "#/$defs/If",
               "int": "#/$defs/IntLit",
               "not": "#/$defs/Not",
               "null": "#/$defs/NullLit",
@@ -1578,6 +1891,9 @@
             },
             {
               "$ref": "#/$defs/Contains"
+            },
+            {
+              "$ref": "#/$defs/If"
             }
           ],
           "title": "Arg"
@@ -1670,6 +1986,7 @@
                 "compare": "#/$defs/Compare",
                 "contains": "#/$defs/Contains",
                 "decimal": "#/$defs/DecLit",
+                "if": "#/$defs/If",
                 "int": "#/$defs/IntLit",
                 "not": "#/$defs/Not",
                 "null": "#/$defs/NullLit",
@@ -1718,6 +2035,9 @@
               },
               {
                 "$ref": "#/$defs/Contains"
+              },
+              {
+                "$ref": "#/$defs/If"
               }
             ]
           },
@@ -1763,6 +2083,17 @@
           "minItems": 1,
           "title": "Items",
           "type": "array"
+        },
+        "showIf": {
+          "anyOf": [
+            {
+              "$ref": "#/$defs/Condition"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null
         },
         "title": {
           "anyOf": [
@@ -1878,7 +2209,7 @@
     },
     "QuotaFull": {
       "additionalProperties": false,
-      "description": "What happens to a participant who hits a full quota: optionally show `block`, then\nend with `outcome`.",
+      "description": "What happens to a participant who hits a full quota (semantics.md §6): optionally\nshow `block` (at most one), then end with `outcome`. There is no `goto`.",
       "properties": {
         "block": {
           "anyOf": [
@@ -1965,6 +2296,50 @@
       "title": "Ref",
       "type": "object"
     },
+    "Retention": {
+      "additionalProperties": false,
+      "description": "How long participant data is kept (decided 16 Oct 2026: required before publishing,\nno silent default). Maps onto the store's retention policy (`osp_store.retention`):\n\n- `days-after-close`: delete `days` days after the survey closes;\n- `after-date`: delete after `until` (a calendar date);\n- `indefinite`: keep until the researcher deletes it (an explicit choice).",
+      "properties": {
+        "days": {
+          "anyOf": [
+            {
+              "minimum": 0,
+              "type": "integer"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Days"
+        },
+        "kind": {
+          "enum": [
+            "days-after-close",
+            "after-date",
+            "indefinite"
+          ],
+          "title": "Kind",
+          "type": "string"
+        },
+        "until": {
+          "anyOf": [
+            {
+              "$ref": "#/$defs/Date"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null
+        }
+      },
+      "required": [
+        "kind"
+      ],
+      "title": "Retention",
+      "type": "object"
+    },
     "Settings": {
       "additionalProperties": false,
       "properties": {
@@ -1972,6 +2347,42 @@
           "default": true,
           "title": "Backnavigation",
           "type": "boolean"
+        },
+        "localCopy": {
+          "default": "browser",
+          "enum": [
+            "browser",
+            "memory"
+          ],
+          "title": "Localcopy",
+          "type": "string"
+        },
+        "resumeExpiryDays": {
+          "default": 30,
+          "maximum": 3650,
+          "minimum": 1,
+          "title": "Resumeexpirydays",
+          "type": "integer"
+        },
+        "retention": {
+          "anyOf": [
+            {
+              "$ref": "#/$defs/Retention"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null
+        },
+        "saveMode": {
+          "default": "every-page",
+          "enum": [
+            "every-page",
+            "end-only"
+          ],
+          "title": "Savemode",
+          "type": "string"
         }
       },
       "title": "Settings",

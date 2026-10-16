@@ -10,7 +10,9 @@
     ]
   },
   "settings": {
-    "backNavigation": true
+    "backNavigation": true,
+    "saveMode": "end-only",
+    "localCopy": "browser"
   },
   "choiceLists": [
     {

@@ -215,10 +215,99 @@ def test_release_after_inactivity_gives_slots_back(ps, pub, tenants, clock):
     assert report.assignment_slots_released == 1
     assert ps.quota_usage(a, pub.id)["women"] == (1, 50)  # the submitted one stays counted
     assert ps.assignment_counts(a, pub.id)["arm"] == {"a": 0, "b": 1, "c": 0}
-    assert ps.write_snapshot(a, idle.id, 0, {"v": 1}).status == "expired"
-    assert ps.claim_quota(a, idle.id, "qc2", "women").status == "expired"
     assert ps.get(a, active.id).expired_at is None
     assert ps.release_inactive(SYS, clock.now - timedelta(hours=24)).sessions_expired == 0
+    # Releasing holds does not close the session (decision S-1): writes still work, and
+    # the first one takes the released places back.
+    assert ps.get(a, idle.id).expired_at is not None
+    assert ps.write_snapshot(a, idle.id, 0, {"v": 1}).status == "ok"
+    assert ps.get(a, idle.id).expired_at is None
+    assert ps.quota_usage(a, pub.id)["women"] == (2, 50)
+    assert ps.assignment_counts(a, pub.id)["arm"] == {"a": 1, "b": 1, "c": 0}
+
+
+def _small_pub(store, ps, ctx, cap):
+    survey, _ = store.create_survey(ctx, "S", {"blocks": []})
+    version = store.publish_version(ctx, survey.id, b"", meta={})
+    return ps.create_publication(
+        ctx,
+        version.id,
+        "slug-" + uuid.uuid4().hex[:8],
+        {"checksum": "abc"},
+        "abc",
+        "every-page",
+        {"surveyVersion": "1"},
+        quotas={"women": cap},
+        balanced={"arm": ["a", "b"]},
+    )
+
+
+def _submit(ps, ctx, sid, checksum="c", **kw):
+    return ps.submit(ctx, sid, answers=ANS, record={"r": 1, "server": {"late": False}},
+                     record_checksum=checksum * 64, realised_orders={},
+                     engine_version=None, **kw)  # fmt: skip
+
+
+def test_resume_retakes_released_holds(store, ps, tenants, clock):
+    a, _ = tenants
+    p = _small_pub(store, ps, a, cap=1)
+    s = start(ps, a, p, balanced=("arm",))
+    assert ps.claim_quota(a, s.id, "qc1", "women").result == "admitted"
+    clock.advance(hours=25)
+    assert ps.release_inactive(SYS, clock.now - timedelta(hours=24)).quota_slots_released == 1
+    assert ps.quota_usage(a, p.id)["women"] == (0, 1)
+    assert ps.touch(a, s.id) is True
+    got = ps.get(a, s.id)
+    assert got.expired_at is None
+    assert ps.quota_usage(a, p.id)["women"] == (1, 1)
+    assert ps.assignment_counts(a, p.id)["arm"] == {"a": 1, "b": 0}
+    assert ps.touch(a, s.id) is True  # idempotent: nothing taken twice
+    assert ps.quota_usage(a, p.id)["women"] == (1, 1)
+    assert ps.claim_quota(a, s.id, "qc1", "women").status == "replay"
+    r = _submit(ps, a, s.id)
+    assert (r.status, r.late) == ("ok", False)
+    assert ps.quota_usage(a, p.id)["women"] == (1, 1)  # used up on completion
+
+
+def test_place_taken_meanwhile_leaves_holds_released_and_submit_is_late(store, ps, tenants, clock):
+    a, _ = tenants
+    p = _small_pub(store, ps, a, cap=1)
+    s = start(ps, a, p, balanced=("arm",))
+    ps.claim_quota(a, s.id, "qc1", "women")
+    clock.advance(hours=25)
+    ps.release_inactive(SYS, clock.now - timedelta(hours=24))
+    other = start(ps, a, p)
+    assert ps.claim_quota(a, other.id, "qc1", "women").result == "admitted"
+    # Resuming finds the quota full: nothing is taken, the participant carries on.
+    assert ps.touch(a, s.id) is True
+    assert ps.get(a, s.id).expired_at is not None
+    assert ps.quota_usage(a, p.id)["women"] == (1, 1)
+    assert ps.assignment_counts(a, p.id)["arm"] == {"a": 0, "b": 0}
+    assert ps.write_snapshot(a, s.id, 0, {"v": 1}).status == "ok"
+    # A new check while holds are released answers, but holds no place.
+    assert ps.claim_quota(a, s.id, "qc2", "women").result == "full"
+    r = _submit(ps, a, s.id)
+    assert (r.status, r.late) == ("ok", True)
+    assert ps.quota_usage(a, p.id)["women"] == (1, 1)  # not counted
+    assert ps.get_record(a, r.response_id)["server"]["late"] is True
+    # Identical retry: the original success, still late; different data: mismatch.
+    again = _submit(ps, a, s.id)
+    assert (again.status, again.response_id, again.submitted_at, again.late) == (
+        "replay", r.response_id, r.submitted_at, True
+    )  # fmt: skip
+    assert _submit(ps, a, s.id, checksum="d").status == "mismatch"
+
+
+def test_late_flag_from_caller_releases_remaining_holds(store, ps, tenants):
+    a, _ = tenants
+    p = _small_pub(store, ps, a, cap=5)
+    s = start(ps, a, p, balanced=("arm",))
+    ps.claim_quota(a, s.id, "qc1", "women")
+    r = _submit(ps, a, s.id, late=True)
+    assert (r.status, r.late) == ("ok", True)
+    assert ps.quota_usage(a, p.id)["women"] == (0, 5)  # a late submit is not counted
+    assert ps.assignment_counts(a, p.id)["arm"] == {"a": 0, "b": 0}
+    assert ps.get_record(a, r.response_id) == {"r": 1, "server": {"late": True}}
 
 
 def test_withdrawal_removes_runtime_rows(ps, pub, tenants, store, engine):

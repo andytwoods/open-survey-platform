@@ -2,10 +2,7 @@
   "format": "osp-fixture-expected/0",
   "fixture": "24-quota-pending-retry",
   "script": "full",
-  "pending": [
-    "C3a-3",
-    "R6-4"
-  ],
+  "pending": [],
   "steps": [
     {
       "index": 0,
@@ -47,7 +44,9 @@
         "full_q"
       ],
       "errors": {},
-      "nav": "<pending:C3a-3>",
+      "nav": {
+        "back": true
+      },
       "questions": {
         "region": {
           "state": "answered",

@@ -8,11 +8,11 @@ Exports use each variable's ``name`` (default: its ``id``); records are keyed by
 
 from __future__ import annotations
 
-from collections.abc import Callable
+from collections.abc import Callable, Collection, Sequence
 from dataclasses import dataclass, field
 from typing import Any
 
-from osp_expr import to_text
+from osp_expr import references, to_text
 from osp_expr.ast import EXPR_ADAPTER
 from osp_spec import (
     AssignedVariable,
@@ -68,6 +68,9 @@ class VariableInfo:
     param: str | None = None
     default: Any = None
     expr: str | None = None
+    # computed: the question ids it reads, following other computed variables (for its
+    # state when the record has none, semantics C2-6)
+    inputs: tuple[str, ...] = ()
 
 
 @dataclass(frozen=True)
@@ -151,7 +154,9 @@ def parse_version(version: SurveyVersion) -> Survey:
     return model
 
 
-def build_layout(version: SurveyVersion) -> Layout:
+def build_layout(version: SurveyVersion, split: Collection[str] = ()) -> Layout:
+    """The layout of one version. ``split``: export names exported as ``<name>_v<N>`` in
+    this version (a combined export of versions whose type or choices differ, M2-3)."""
     s = parse_version(version)
     md = s.metadata
     lay = Layout(
@@ -170,6 +175,13 @@ def build_layout(version: SurveyVersion) -> Layout:
                     lay.names[q.id] = q.name or q.id
     for v in s.variables:
         lay.names[v.id] = v.name or v.id
+    if split:
+        suffix = version_suffix(lay)
+        for b in s.blocks:
+            for p in b.pages:
+                for q in p.items:
+                    if q.id in lay.names and lay.names[q.id] in split:
+                        lay.names[q.id] += suffix
     seen_blocks: set[str] = set()
 
     def add_block(block_id: str) -> None:
@@ -194,7 +206,7 @@ def build_layout(version: SurveyVersion) -> Layout:
                     choices = [ChoiceInfo(c.value, lay.text(c.label)) for c in source or []]
                     order = q.choiceOrder
                     if order == "shuffle":
-                        name = q.name or q.id
+                        name = lay.names[q.id]
                         lay.orders.append(
                             OrderInfo(
                                 f"_order.choices.{name}",
@@ -206,7 +218,7 @@ def build_layout(version: SurveyVersion) -> Layout:
                 lay.questions.append(
                     QuestionInfo(
                         id=q.id,
-                        name=q.name or q.id,
+                        name=lay.names[q.id],
                         type=q.type,
                         label=lay.text(q.label),
                         help=lay.text(q.help) if q.help is not None else None,
@@ -288,9 +300,59 @@ def build_layout(version: SurveyVersion) -> Layout:
                 )
             case ComputedVariable():
                 lay.computed.append(
-                    VariableInfo(v.id, name, "computed", expr=lay.expr_text(v.expr))
+                    VariableInfo(
+                        v.id,
+                        name,
+                        "computed",
+                        expr=lay.expr_text(v.expr),
+                        inputs=_question_inputs(s, v.id),
+                    )
                 )
     return lay
+
+
+def _question_inputs(s: Survey, var_id: str) -> tuple[str, ...]:
+    """Question ids a computed variable reads, following computed variables (cycles cut)."""
+    exprs = {v.id: v.expr for v in s.variables if isinstance(v, ComputedVariable)}
+    questions = {q.id for b in s.blocks for p in b.pages for q in p.items}
+    out: list[str] = []
+    seen: set[str] = set()
+    stack = [var_id]
+    while stack:
+        vid = stack.pop()
+        if vid in seen or vid not in exprs:
+            continue
+        seen.add(vid)
+        for ref in references(exprs[vid]):
+            if ref in questions and ref not in out:
+                out.append(ref)
+            elif ref in exprs:
+                stack.append(ref)
+    return tuple(out)
+
+
+# -- pooling versions (semantics M2-3) ----------------------------------------------------
+
+
+def _definition(q: QuestionInfo) -> tuple[str, tuple[str, ...] | None]:
+    """What makes a question's data comparable across versions: its type and choice codes."""
+    codes = None if q.choices is None else tuple(sorted(str(c.code) for c in q.choices))
+    return (q.type, codes)
+
+
+def split_names(layouts: Sequence[Layout]) -> set[str]:
+    """Export names of questions whose type or choice codes differ between versions; each
+    version exports them under its own ``<name>_v<N>`` columns."""
+    defs: dict[str, set[tuple[str, tuple[str, ...] | None]]] = {}
+    for lay in layouts:
+        for q in lay.questions:
+            defs.setdefault(q.name, set()).add(_definition(q))
+    return {name for name, d in defs.items() if len(d) > 1}
+
+
+def version_suffix(lay: Layout) -> str:
+    """``_v<N>``, N the version number (0 for a draft)."""
+    return f"_v{lay.number if lay.number is not None else 0}"
 
 
 # -- CSV columns ------------------------------------------------------------------------
@@ -323,8 +385,13 @@ META_COLUMNS: list[tuple[str, str]] = [
     ("_submitted_at", "Submission accepted by the server, UTC, ISO 8601."),
     (
         "_late",
-        "true if the response was submitted after the survey was closed (provisional, "
-        "semantics open question M2-1).",
+        "true if the server accepted the submit after the session had expired (its quota "
+        "holds were released or its resume link had expired); a late response is not "
+        "counted toward quotas (semantics S-2). Set by the server, never by the browser.",
+    ),
+    (
+        "_after_close",
+        "true if the response was submitted after the survey was closed; empty if not known.",
     ),
     ("_end", "End outcome reached (e.g. complete); empty if none was recorded."),
     ("_language", "Language the participant used."),
@@ -356,6 +423,15 @@ def csv_columns(lay: Layout, opts: CsvOptions) -> list[Column]:
             )
     for v in [*lay.embedded, *lay.computed]:
         cols.append(Column(v.name, "variable", v.name, lambda r, i=v.id: r.variable(i)))
+        if opts.state_columns:
+            cols.append(
+                Column(
+                    v.name + STATE_SUFFIX,
+                    "state",
+                    v.name,
+                    lambda r, i=v.id: r.variable_state(i),
+                )
+            )
     for o in lay.orders:
         cols.append(Column(o.column, "order", None, lambda r, o=o: r.order(o)))
     clashes = _clashes([c.header for c in cols])

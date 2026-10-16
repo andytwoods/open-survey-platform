@@ -38,6 +38,7 @@ OP_CODES: dict[str, str] = {
     "op.invalid_survey": "the input survey is not structurally valid",
     "op.not_found": "the target id does not exist (or is the wrong kind of object)",
     "op.not_allowed": "the edit is not allowed in this state",
+    "op.not_applicable": "the target's type has no such property or condition",
     "op.duplicate_id": "the edit would create a duplicate id",
     "op.dangling_ref": "the delete would leave references to deleted objects",
     "op.cascade_blocked": "cascade cannot repair a required expression",

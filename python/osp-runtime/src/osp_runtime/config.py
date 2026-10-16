@@ -13,8 +13,14 @@ The runtime plan (``plan.py``, task R1) is opaque here: the server reads only it
         {"variable": "arm", "levels": ["a", "b", "c"], "method": "balanced",
          "seedNode": "assign1/arm"}
       ],
-      "quotas": [{"node": "qc1", "quota": "women", "limit": 50}]
+      "quotas": [{"node": "qc1", "quota": "women", "limit": 50}],
+      "resumeExpiryDays": 30                      # optional; see below
     }
+
+``resumeExpiryDays`` (optional, a positive integer up to 3650) is how long a resume
+link keeps working without activity (decision S-1). Absent: the server default
+(``SessionPolicy.resume_expiry``, 30 days). Quota holds are released separately, after
+24 h idle.
 
 ``seedNode`` is the ``node_id`` passed to ``osp_engine.random.node_seed``. The plan
 compiler decides it, and the browser engine must use the same string. Several
@@ -28,6 +34,8 @@ from dataclasses import dataclass
 from typing import Any, Literal
 
 from .errors import InvalidPayload
+
+MAX_RESUME_EXPIRY_DAYS = 3650
 
 SaveMode = Literal["every-page", "end-only"]
 SAVE_MODES: tuple[SaveMode, ...] = ("every-page", "end-only")
@@ -62,6 +70,7 @@ class RuntimeConfig:
     save_mode: SaveMode = "every-page"
     assignments: tuple[Assignment, ...] = ()
     quotas: tuple[QuotaNode, ...] = ()
+    resume_expiry_days: int | None = None
 
     @property
     def quota_by_node(self) -> dict[str, QuotaNode]:
@@ -142,11 +151,22 @@ class RuntimeConfig:
             if any(x.node == node for x in quotas):
                 raise InvalidPayload(f"quota node {node!r} is listed twice", "config.invalid")
             quotas.append(QuotaNode(node, quota, limit))
+        expiry = data.get("resumeExpiryDays")
+        if expiry is not None and (
+            isinstance(expiry, bool)
+            or not isinstance(expiry, int)
+            or not 1 <= expiry <= MAX_RESUME_EXPIRY_DAYS
+        ):
+            raise InvalidPayload(
+                f"resumeExpiryDays must be an integer from 1 to {MAX_RESUME_EXPIRY_DAYS}",
+                "config.invalid",
+            )
         return cls(
             _str(data.get("surveyVersion"), "surveyVersion"),
             save_mode,
             tuple(assignments),
             tuple(quotas),
+            expiry,
         )
 
     def to_json(self) -> dict[str, Any]:
@@ -164,4 +184,9 @@ class RuntimeConfig:
                 for a in self.assignments
             ],
             "quotas": [{"node": q.node, "quota": q.quota, "limit": q.limit} for q in self.quotas],
+            **(
+                {"resumeExpiryDays": self.resume_expiry_days}
+                if self.resume_expiry_days is not None
+                else {}
+            ),
         }

@@ -23,6 +23,7 @@ from osp_expr.ast import (
     Compare,
     Contains,
     Expr,
+    If,
     IntLit,
     Not,
     Or,
@@ -57,6 +58,10 @@ def _children(node: BaseModel) -> Iterator[BaseModel]:
         case Contains(ref=ref, value=value):
             yield ref
             yield value
+        case If(cond=c, then=t, else_=e):
+            yield c
+            yield t
+            yield e
 
 
 def references(expr: Expression) -> list[str]:
@@ -101,6 +106,10 @@ def _children_with_paths(node: BaseModel) -> Iterator[tuple[str, BaseModel]]:
             yield "/arg", arg
         case Contains(value=value):
             yield "/value", value
+        case If(cond=c, then=t, else_=e):
+            yield "/cond", c
+            yield "/then", t
+            yield "/else", e
 
 
 def typecheck(expr: Expression, env: Mapping[str, str], *, boolean: bool) -> list[tuple[str, str]]:

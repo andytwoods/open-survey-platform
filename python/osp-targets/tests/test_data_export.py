@@ -131,7 +131,8 @@ def test_fixture_01_header() -> None:
     header = export_csv(_version("01-all-types"), []).decode("utf-8").split("\r\n")[0]
     assert header == (
         "_response_id,_session_id,_version,_version_checksum,_plan_checksum,_engine_version,"
-        "_allocation_mode,_save_mode,_seed,_started_at,_submitted_at,_late,_end,_language,"
+        "_allocation_mode,_save_mode,_seed,_started_at,_submitted_at,_late,_after_close,_end,"
+        "_language,"
         "n_int,n_int__state,n_dec,n_dec__state,t_text,t_text__state,s_single,s_single__state,"
         "m_multi_red,m_multi_green,m_multi_blue,m_multi__state,d_date,d_date__state"
     )
@@ -382,15 +383,48 @@ def test_combined_csv_unions_columns() -> None:
     data = export_csv_combined([(v2, [_v2_response()]), (v1, r1)])
     rows = _rows(data)
     header = data.decode("utf-8").split("\r\n")[0].split(",")
-    assert header.index("m_multi_pink") > header.index("d_date__state")  # v2-only, appended
+    # M2-3: m_multi's choices changed (pink added), so each version has its own columns
+    assert "m_multi_red" not in header and "m_multi__state" not in header
+    assert header.index("m_multi_v2_pink") > header.index("d_date__state")  # v2-only, appended
+    assert header.index("m_multi_v1_red") < header.index("m_multi_v1__state")
     assert [r["_version"] for r in rows] == ["1", "1", "2"]
     v2row = rows[2]
     assert v2row["d_date"] == "" and v2row["d_date__state"] == ""  # not in version 2
-    assert v2row["m_multi_pink"] == "1" and v2row["m_multi_red"] == "0"
+    assert v2row["m_multi_v2_pink"] == "1" and v2row["m_multi_v2_red"] == "0"
+    assert v2row["m_multi_v1_red"] == "" and v2row["m_multi_v1__state"] == ""
+    assert v2row["m_multi_v2__state"] == "answered"
     assert v2row["n_new"] == "7"
-    assert rows[0]["m_multi_pink"] == "" and rows[0]["n_new__state"] == ""
+    by = {r["_response_id"]: r for r in rows}
+    assert by["resp-answered"]["m_multi_v1_red"] == "1"
+    assert by["resp-answered"]["m_multi_v2_pink"] == ""
+    assert rows[0]["n_new__state"] == ""
+    # an unchanged question keeps one column across versions
+    assert v2row["n_int"] == by["resp-answered"]["n_int"] != ""
     # one version combined == the single-version export
     assert export_csv_combined([(v1, r1)]) == export_csv(v1, r1)
+
+
+def test_wording_change_keeps_one_column() -> None:
+    """M2-3: only a type or choice-code change splits a variable; new wording does not."""
+    v1 = _version("01-all-types", number=1)
+    s = _survey("01-all-types")
+    item = next(i for i in s["blocks"][0]["pages"][0]["items"] if i["id"] == "n_int")
+    item["label"] = "Reworded"
+    v2 = SurveyVersion(s, number=2, checksum="sha256:v2b")
+    header = export_csv_combined([(v1, []), (v2, [])]).decode("utf-8").split("\r\n")[0]
+    assert header == export_csv(v1, []).decode("utf-8").split("\r\n")[0]
+    assert codebook_combined([v1, v2]).data["splitVariables"] == []
+
+
+def test_type_change_splits() -> None:
+    v1 = _version("01-all-types", number=1)
+    s = _survey("01-all-types")
+    item = next(i for i in s["blocks"][0]["pages"][0]["items"] if i["id"] == "n_int")
+    item["type"] = "decimal"
+    v2 = SurveyVersion(s, number=2, checksum="sha256:v2c")
+    header = export_csv_combined([(v1, []), (v2, [])]).decode("utf-8").split("\r\n")[0]
+    cols = header.split(",")
+    assert "n_int" not in cols and {"n_int_v1", "n_int_v2", "n_int_v2__state"} <= set(cols)
 
 
 def test_combined_codebook_and_json() -> None:
@@ -398,6 +432,10 @@ def test_combined_codebook_and_json() -> None:
     book = codebook_combined([v2, v1])
     assert book.data["versions"] == [1, 2]
     assert "m_multi" in book.data["changedVariables"]
+    assert book.data["splitVariables"] == ["m_multi"]
+    assert "Split into per-version columns (type or choices changed): `m_multi`." in book.markdown
+    v1_names = [x["name"] for x in book.data["codebooks"][0]["variables"]]
+    assert "m_multi_v1" in v1_names and "n_int" in v1_names
     assert "not in this version" in book.markdown
     assert "## Codebook: All question types" in book.markdown
     assert len(book.data["codebooks"]) == 2
@@ -407,7 +445,124 @@ def test_combined_codebook_and_json() -> None:
     assert [v["version"] for v in doc["versions"]] == [1, 2]
     last = doc["responses"][-1]
     assert last["version"] == 2 and "d_date" not in last["answers"]
+    assert last["answers"]["m_multi_v2"] == {"state": "answered", "value": ["pink"]}
     assert codebook_combined([v1]).markdown == codebook(v1).markdown
+
+
+# -- late flag and variable states (M2-1, M2-2) -------------------------------------------------
+
+
+def test_late_is_the_server_flag() -> None:
+    v = _version("01-all-types")
+    rec = json.loads((RECORDS / "01-all-types/answered.json").read_text(encoding="utf-8"))
+    rs = [
+        StoredResponse("a", record=rec, late=True, after_close=False),
+        StoredResponse("b", record=rec),  # no flag: not late; after-close not known
+    ]
+    rows = {r["_response_id"]: r for r in _rows(export_csv(v, rs))}
+    assert (rows["a"]["_late"], rows["a"]["_after_close"]) == ("true", "false")
+    assert (rows["b"]["_late"], rows["b"]["_after_close"]) == ("false", "")
+    doc = {r["responseId"]: r for r in json.loads(export_json(v, rs))["responses"]}
+    assert doc["a"]["late"] is True and doc["b"]["late"] is False
+
+
+def _with_variables() -> SurveyVersion:
+    s = _survey("05-showif-null")
+    qids = [q["id"] for b in s["blocks"] for p in b["pages"] for q in p["items"]]
+    a = qids[0]
+    s["variables"] = [
+        {"kind": "embedded", "id": "src", "param": "src"},
+        {"kind": "embedded", "id": "src_d", "param": "srcd", "default": "direct"},
+        {
+            "kind": "computed",
+            "id": "a2",
+            "expr": {
+                "kind": "arith",
+                "op": "*",
+                "left": {"kind": "ref", "id": a},
+                "right": {"kind": "int", "value": 2},
+            },
+        },
+        {
+            "kind": "computed",
+            "id": "a4",
+            "expr": {
+                "kind": "arith",
+                "op": "*",
+                "left": {"kind": "ref", "id": "a2"},
+                "right": {"kind": "int", "value": 2},
+            },
+        },
+    ]
+    return SurveyVersion(s, number=1, checksum="sha256:vars")
+
+
+def _answers(state: str) -> dict[str, Any]:
+    s = _survey("05-showif-null")
+    qids = [
+        q["id"] for b in s["blocks"] for p in b["pages"] for q in p["items"] if q["type"] != "note"
+    ]
+    return {q: {"state": state, "value": None} for q in qids}
+
+
+@pytest.mark.parametrize(
+    ("record", "want"),
+    [
+        # the record's own variableStates win
+        (
+            {
+                "answers": _answers("unanswered"),
+                "embedded": {"src": None},
+                "variableStates": {
+                    "src": "unanswered",
+                    "src_d": "answered",
+                    "a2": "irrelevant",
+                    "a4": "irrelevant",
+                },
+            },
+            {"src": "unanswered", "src_d": "answered", "a2": "irrelevant", "a4": "irrelevant"},
+        ),
+        # derived for an older record: inputs not reached -> not-reached (through a2)
+        (
+            {
+                "answers": _answers("not-reached"),
+                "embedded": {"src": None, "src_d": "direct"},
+                "computed": {"a2": None, "a4": None},
+            },
+            {"src": "unanswered", "src_d": "answered", "a2": "not-reached", "a4": "not-reached"},
+        ),
+        (
+            {"answers": _answers("irrelevant"), "computed": {"a2": None, "a4": None}},
+            {"src": "unanswered", "src_d": "unanswered", "a2": "irrelevant", "a4": "irrelevant"},
+        ),
+        (
+            {"answers": _answers("unanswered"), "computed": {"a2": None, "a4": None}},
+            {"src": "unanswered", "src_d": "unanswered", "a2": "unanswered", "a4": "unanswered"},
+        ),
+        (
+            {"answers": _answers("unanswered"), "computed": {"a2": "4", "a4": "8"}},
+            {"src": "unanswered", "src_d": "unanswered", "a2": "answered", "a4": "answered"},
+        ),
+    ],
+)
+def test_variable_state_columns(record: dict[str, Any], want: dict[str, str]) -> None:
+    v = _with_variables()
+    row = _rows(export_csv(v, [StoredResponse("r", record=record)]))[0]
+    assert {k: row[f"{k}__state"] for k in want} == want
+    for k, st in want.items():
+        if st != "answered":
+            assert row[k] == ""
+    doc = json.loads(export_json(v, [StoredResponse("r", record=record)]))
+    assert {k: x["state"] for k, x in doc["responses"][0]["variables"].items()} == want
+    assert not any(
+        k.endswith("__state")
+        for k in _rows(
+            export_csv(v, [StoredResponse("r", record=record)], CsvOptions(state_columns=False))
+        )[0]
+    )
+    other = {x["name"]: x for x in codebook(v).data["otherVariables"]}
+    assert other["a2"]["csvColumns"] == ["a2", "a2__state"]
+    assert "not-reached" in other["a2"]["missing"]
 
 
 # -- codebook ----------------------------------------------------------------------------------
@@ -435,7 +590,7 @@ def test_codebook_contents() -> None:
     renamed = codebook(SurveyVersion(s05))
     gt = next(x for x in renamed.data["variables"] if x["name"] == "s_gt")
     assert gt["showIf"] == "first_a > 5"
-    assert renamed.data["csv"]["columns"][14:16] == ["first_a", "first_a__state"]
+    assert renamed.data["csv"]["columns"][15:17] == ["first_a", "first_a__state"]
     ml = codebook(_version("18-multi-language")).markdown
     assert "Label (en) | Label (de)" in ml and "Kaffee" in ml
     end_only = codebook(_version("01-all-types", save_mode="end-only")).markdown

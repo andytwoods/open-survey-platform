@@ -116,7 +116,14 @@ class ResponseRecordIn(BaseModel):
 class SubmitResponse(BaseModel):
     responseId: str
     submittedAt: datetime
-    replay: bool
+    replay: bool = Field(description="True for a retry with identical data: the original success.")
+    late: bool = Field(
+        default=False,
+        description=(
+            "Submitted after the session's quota holds were released or its resume link "
+            "expired. Accepted, flagged, and not counted toward quotas."
+        ),
+    )
 
 
 class ResumeResponse(BaseModel):
@@ -238,7 +245,10 @@ def install(app: FastAPI, service: SessionService | None) -> None:
         record = body.model_dump(mode="json")
         ack = s.submit(session_id, _token(token), record)
         return SubmitResponse(
-            responseId=ack.response_id, submittedAt=ack.submitted_at, replay=ack.replay
+            responseId=ack.response_id,
+            submittedAt=ack.submitted_at,
+            replay=ack.replay,
+            late=ack.late,
         )
 
     @r.get("/sessions/resume", operation_id="resumeSession", responses=_errors(401, 410, 429))

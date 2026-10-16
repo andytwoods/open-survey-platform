@@ -58,7 +58,7 @@ export function makePlan(spec: Spec): Plan {
 		languages: spec.languages ?? ['en'],
 		defaultLanguage: (spec.languages ?? ['en'])[0]!,
 		title: t('Test'),
-		settings: { backNavigation: spec.backNavigation ?? true },
+		settings: { backNavigation: spec.backNavigation ?? true, saveMode: 'every-page', localCopy: 'browser', resumeExpiryDays: 30 },
 		items,
 		questions,
 		pages,

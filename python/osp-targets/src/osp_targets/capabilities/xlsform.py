@@ -63,6 +63,13 @@ _row("Metadata.defaultLanguage", "native", "settings `default_language`.")
 _row("Metadata.license", "unsupported", "No licence field in XLSForm; dropped.")
 _row("Metadata.ddi", "unsupported", "No study-metadata block in XLSForm; dropped.")
 _row("Settings.backNavigation", "native", "Back navigation is allowed by default in ODK/Enketo.")
+_row("Settings.saveMode", "unsupported", "Our runtime's save mode; ODK/Enketo manage saving.")
+_row("Settings.localCopy", "unsupported", "Our runtime's local copy; ODK/Enketo manage drafts.")
+_row("Settings.resumeExpiryDays", "unsupported", "Resume links are our server's; not in the form.")
+_row("Settings.retention", "unsupported", "Data retention is a platform policy, not the form's.")
+_row("Retention.kind", "unsupported", "See Settings.retention.")
+_row("Retention.days", "unsupported", "See Settings.retention.")
+_row("Retention.until", "unsupported", "See Settings.retention.")
 _row(
     "Settings.backNavigation=false",
     "unsupported",
@@ -91,6 +98,18 @@ _rows(ANSWERABLE, "required", "native", "`required`; XForms applies it only whil
 _rows(ANSWERABLE, "constraint", "native", "`constraint`; checked only on non-empty values (§4).")
 _rows(ANSWERABLE, "constraintMessage", "native", "`constraint_message::<language>`.")
 _row("IntegerQuestion.type", "native", "`integer`.")
+_rows(
+    ("IntegerQuestion", "DecimalQuestion"),
+    "min",
+    "lowered",
+    "Joined into `constraint` as `. >= min`; the constraint message covers both.",
+)
+_rows(
+    ("IntegerQuestion", "DecimalQuestion"),
+    "max",
+    "lowered",
+    "Joined into `constraint` as `. <= max`; the constraint message covers both.",
+)
 _row("DecimalQuestion.type", "native", "`decimal`.")
 _row("TextQuestion.type", "native", "`text`; trimming follows Enketo (§2).")
 _row("SingleQuestion.type", "native", "`select_one <list>`.")
@@ -119,6 +138,7 @@ _row(
     "Not exported yet (C2b added the field); the field-list group's `label` could carry it.",
 )
 _row("Page.itemOrder", "native", "`fixed`: sheet order.")
+_row("Page.showIf", "native", "`relevant` on the page's field-list group.")
 _row(
     "Page.itemOrder=shuffle",
     "approximated",
@@ -231,7 +251,7 @@ _row(
     "Arith.kind",
     "approximated",
     "XPath numbers are IEEE doubles, not decimals (§2), so results can differ in the last "
-    "digits. Division by zero is guarded to give null (open question 1).",
+    "digits. Division by zero is guarded to give null (semantics §3, C1-1).",
 )
 _row("Arith.op", "native", "`+ - *`, and `/` as `div`.")
 _row("Arith.left", "native", "Operand.")
@@ -243,6 +263,10 @@ _row("Or.args", "native", "Operands.")
 _row("Not.kind", "native", "`not()`.")
 _row("Not.arg", "native", "Operand.")
 _row("Answered.kind", "lowered", "`string-length(${q}) > 0`.")
+_row("If.kind", "native", "XPath `if(cond, a, b)`.")
+_row("If.cond", "native", "The XPath condition.")
+_row("If.then", "native", "The XPath value.")
+_row("If.else", "native", "The XPath value.")
 _row("Answered.ref", "native", "`${q}`.")
 _row("Contains.kind", "lowered", "`selected(${q}, value)`.")
 _row("Contains.ref", "native", "`${q}`.")
@@ -250,6 +274,11 @@ _row("Contains.value", "native", "The code, as an XPath string.")
 
 # --- Behaviours that are not a single field ----------------------------------------------
 _row("$pipe.value", "native", "`${q}` in a label inserts the raw value (§8).")
+_row(
+    "$pipe.builtin",
+    "unsupported",
+    "`${$trial}`, `${$position.index}` … are our runtime's built-ins; dropped from the label.",
+)
 _row(
     "$pipe.choiceLabel",
     "lowered",

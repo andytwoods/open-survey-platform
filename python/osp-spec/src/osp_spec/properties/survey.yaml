@@ -29,12 +29,37 @@ properties:
     default: true
     group: Basics
     help: { en: "Participants can return to earlier pages and change answers." }
+  settings.saveMode:
+    kind: enum
+    label: { en: "Saving" }
+    options:
+      - { value: every-page, label: { en: "Save to the server on every page" } }
+      - { value: end-only, label: { en: "Send nothing until the end" } }
+    default: every-page
+    group: Advanced
+    help: { en: "End-only keeps answers on the participant's device until they submit." }
+  settings.localCopy:
+    kind: enum
+    label: { en: "Copy kept on the device (end-only)" }
+    options:
+      - { value: browser, label: { en: "Browser storage" } }
+      - { value: memory, label: { en: "Memory only" } }
+    default: browser
+    group: Advanced
+    help: { en: "With memory only, refreshing the page restarts the survey (same conditions and order)." }
+  settings.resumeExpiryDays:
+    kind: number
+    label: { en: "Resume link expires after (days)" }
+    default: 30
+    group: Advanced
+    help: { en: "Days without activity after which a participant can no longer resume." }
   metadata.license:
     kind: text
     label: { en: "Licence" }
     group: Advanced
     help: { en: "Licence of the questionnaire itself, e.g. CC-BY-4.0." }
 hidden:
+  settings.retention: "Chosen in the publish dialog; publishing is refused until it is set."
   specVersion: "Format version, written by the platform."
   id: "Stable survey identity, assigned at creation."
   version: "Published version number, set by publishing."

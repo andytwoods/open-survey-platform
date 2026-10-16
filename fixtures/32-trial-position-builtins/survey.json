@@ -81,7 +81,7 @@
             {
               "type": "integer",
               "id": "r1",
-              "label": "Stimulus 1: rate it from 1 to 9.",
+              "label": "Trial ${$trial}, stimulus ${$position.index} of ${$position.of}: rate it from 1 to 9.",
               "required": true
             }
           ]

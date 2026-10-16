@@ -12,6 +12,11 @@ from osp_store import TenantContext
 
 FIXTURES = Path(__file__).resolve().parents[3] / "fixtures"
 SET_TITLE = {"op": "set_title", "params": {"title": {"en": "Mood study"}}}
+# Publishing needs an explicit retention policy (semantics decisions, 16 Oct 2026).
+RETENTION = {
+    "op": "set_property",
+    "params": {"target": "/settings", "property": "retention", "value": {"kind": "indefinite"}},
+}
 
 
 def _plan_checksum(plan: dict) -> str:
@@ -23,7 +28,8 @@ def test_create_ops_publish_start_fetch_plan(benv):
     c = benv.login("editor@a.example")
     s = c.post("/api/surveys", json={"title": "First"}).json()
     assert s["publicSlug"]  # generated at creation
-    r = c.post(f"/api/surveys/{s['id']}/ops", json={"ops": [SET_TITLE], "baseRevision": 0})
+    ops = {"ops": [SET_TITLE, RETENTION], "baseRevision": 0}
+    r = c.post(f"/api/surveys/{s['id']}/ops", json=ops)
     assert r.status_code == 200, r.text
 
     pub = c.post(f"/api/surveys/{s['id']}/publish", json={"baseRevision": 1})
@@ -57,11 +63,15 @@ def test_create_ops_publish_start_fetch_plan(benv):
 def test_republish_keeps_the_slug_and_old_plans_stay_servable(benv):
     c = benv.login("editor@a.example")
     s = c.post("/api/surveys", json={"title": "First"}).json()
+    no_retention = c.post(f"/api/surveys/{s['id']}/publish")
+    assert no_retention.status_code == 422
+    assert "publish.retention_required" in no_retention.text
+    c.post(f"/api/surveys/{s['id']}/ops", json={"ops": [RETENTION], "baseRevision": 0})
     v1 = c.post(f"/api/surveys/{s['id']}/publish").json()
     participant = benv.client()
     old = participant.post(f"/api/s/{v1['slug']}/sessions").json()
 
-    c.post(f"/api/surveys/{s['id']}/ops", json={"ops": [SET_TITLE], "baseRevision": 0})
+    c.post(f"/api/surveys/{s['id']}/ops", json={"ops": [SET_TITLE], "baseRevision": 1})
     v2 = c.post(f"/api/surveys/{s['id']}/publish", json={"saveMode": "end-only"}).json()
     assert v2["slug"] == v1["slug"] and v2["planChecksum"] != v1["planChecksum"]
 
@@ -75,6 +85,7 @@ def test_republish_keeps_the_slug_and_old_plans_stay_servable(benv):
 def test_fixture_with_assignment_publishes_a_runnable_config(benv):
     c = benv.login("editor@a.example")
     survey = json.loads((FIXTURES / "16-assign" / "survey.json").read_text())
+    survey["settings"] = {**survey.get("settings", {}), "retention": {"kind": "indefinite"}}
     s = c.post("/api/surveys", json={"title": "Assign", "survey": survey})
     assert s.status_code == 201, s.text
     pub = c.post(f"/api/surveys/{s.json()['id']}/publish").json()

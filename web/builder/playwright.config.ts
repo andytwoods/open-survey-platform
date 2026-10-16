@@ -1,7 +1,8 @@
 import { defineConfig, devices } from '@playwright/test';
 
 // End-to-end tests for the builder: `make web-e2e` (not part of `make check`). Needs `uv`.
-// Override when another checkout already serves these ports (parallel worktrees).
+// Override the ports (OSP_E2E_PORT / OSP_E2E_API_PORT) to run beside another checkout's
+// servers: an existing server on the port is reused, whatever it was built from.
 const PORT = Number(process.env.OSP_E2E_PORT ?? 4317);
 const API_PORT = Number(process.env.OSP_E2E_API_PORT ?? 4318);
 

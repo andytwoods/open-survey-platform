@@ -2,9 +2,7 @@
   "format": "osp-fixture-expected/0",
   "fixture": "33-end-only-save",
   "script": "storage-blocked",
-  "pending": [
-    "R6-5"
-  ],
+  "pending": [],
   "steps": [
     {
       "index": 0,
@@ -72,69 +70,165 @@
     },
     {
       "index": 2,
-      "page": "<pending:R6-5>",
-      "visible": "<pending:R6-5>",
+      "page": "p1",
+      "visible": [
+        "consent"
+      ],
       "errors": {},
-      "nav": "<pending:R6-5>",
-      "questions": "<pending:R6-5>",
+      "nav": {
+        "back": false
+      },
+      "questions": {
+        "consent": {
+          "state": "unanswered",
+          "value": null
+        },
+        "q_a": {
+          "state": "not-reached",
+          "value": null
+        },
+        "q_b": {
+          "state": "not-reached",
+          "value": null
+        }
+      },
       "orders": {
         "blocks": {},
         "items": {},
         "choices": {}
       },
       "conditions": {},
-      "end": "<pending:R6-5>"
+      "end": null,
+      "notice": "restarted"
     },
     {
       "index": 3,
-      "page": "<pending:R6-5>",
-      "visible": "<pending:R6-5>",
+      "page": "p2",
+      "visible": [
+        "q_a"
+      ],
       "errors": {},
-      "nav": "<pending:R6-5>",
-      "questions": "<pending:R6-5>",
+      "nav": {
+        "back": true
+      },
+      "questions": {
+        "consent": {
+          "state": "answered",
+          "value": "yes"
+        },
+        "q_a": {
+          "state": "unanswered",
+          "value": null
+        },
+        "q_b": {
+          "state": "not-reached",
+          "value": null
+        }
+      },
       "orders": {
         "blocks": {},
         "items": {},
         "choices": {}
       },
       "conditions": {},
-      "end": "<pending:R6-5>"
+      "end": null
     },
     {
       "index": 4,
-      "page": "<pending:R6-5>",
-      "visible": "<pending:R6-5>",
+      "page": "p3",
+      "visible": [
+        "q_b"
+      ],
       "errors": {},
-      "nav": "<pending:R6-5>",
-      "questions": "<pending:R6-5>",
+      "nav": {
+        "back": true
+      },
+      "questions": {
+        "consent": {
+          "state": "answered",
+          "value": "yes"
+        },
+        "q_a": {
+          "state": "answered",
+          "value": 7
+        },
+        "q_b": {
+          "state": "unanswered",
+          "value": null
+        }
+      },
       "orders": {
         "blocks": {},
         "items": {},
         "choices": {}
       },
       "conditions": {},
-      "end": "<pending:R6-5>"
+      "end": null
     },
     {
       "index": 5,
-      "page": "<pending:R6-5>",
-      "visible": "<pending:R6-5>",
+      "page": null,
+      "visible": [],
       "errors": {},
-      "nav": "<pending:R6-5>",
-      "questions": "<pending:R6-5>",
+      "nav": null,
+      "questions": {
+        "consent": {
+          "state": "answered",
+          "value": "yes"
+        },
+        "q_a": {
+          "state": "answered",
+          "value": 7
+        },
+        "q_b": {
+          "state": "answered",
+          "value": "fine"
+        }
+      },
       "orders": {
         "blocks": {},
         "items": {},
         "choices": {}
       },
       "conditions": {},
-      "end": "<pending:R6-5>"
+      "end": "complete"
     }
   ],
   "invariants": [],
-  "response": "<pending:R6-5>",
+  "response": {
+    "surveyId": "f33_end_only",
+    "surveyVersion": 1,
+    "end": "complete",
+    "allocation": "server",
+    "sessionSeed": 3302,
+    "conditions": {},
+    "orders": {
+      "blocks": {},
+      "items": {},
+      "choices": {}
+    },
+    "answers": {
+      "consent": {
+        "state": "answered",
+        "value": "yes"
+      },
+      "q_a": {
+        "state": "answered",
+        "value": 7
+      },
+      "q_b": {
+        "state": "answered",
+        "value": "fine"
+      }
+    },
+    "csvState": {
+      "consent__state": "answered",
+      "q_a__state": "answered",
+      "q_b__state": "answered"
+    }
+  },
   "network": {
     "snapshotWrites": 0,
-    "submits": "<pending:R6-5>"
+    "submits": 1
   }
 }
