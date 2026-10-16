@@ -957,6 +957,7 @@
       },
       "hidden": {
         "settings.retention": "Chosen in the publish dialog; publishing is refused until it is set.",
+        "consent": "The consent page (text, button labels, decline outcome, decline count); edited in the JSON view until the builder has a consent editor.",
         "specVersion": "Format version, written by the platform.",
         "id": "Stable survey identity, assigned at creation.",
         "version": "Published version number, set by publishing.",

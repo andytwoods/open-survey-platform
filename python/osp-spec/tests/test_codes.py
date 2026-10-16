@@ -184,6 +184,14 @@ def m_quota_forward(s):
                  {"type": "quotaCheck", "id": "f2", "quota": "qt"},
                  {"type": "block", "id": "f3", "block": "b2"}]  # fmt: skip
 
+def m_consent_pipe(s: dict) -> None:
+    s["consent"] = {"text": "Consent?", "agreeLabel": "Yes, ${q1}"}
+
+
+def m_consent_outcome(s: dict) -> None:
+    s["consent"] = {"text": "Consent?", "declineOutcome": "complete"}
+
+
 
 TABLE: list[tuple[Callable[[dict], None], list[tuple[str, str]]]] = [
     (m_lang_dup, [("lang.duplicate", "/metadata/languages/1")]),
@@ -213,6 +221,8 @@ TABLE: list[tuple[Callable[[dict], None], list[tuple[str, str]]]] = [
     (m_decimal_bound_too_long, [("question.bounds", f"{P0}/1/max")]),
     (m_retention, [("settings.retention", "/settings/retention")]),
     (m_page_showif_own_item, [("ref.forward", "/blocks/0/pages/0/showIf")]),
+    (m_consent_pipe, [("consent.pipe", "/consent/agreeLabel")]),
+    (m_consent_outcome, [("consent.outcome", "/consent/declineOutcome")]),
 ]
 
 
