@@ -1,8 +1,9 @@
 import { defineConfig, devices } from '@playwright/test';
 
 // End-to-end tests for the builder: `make web-e2e` (not part of `make check`). Needs `uv`.
-const PORT = 4317;
-const API_PORT = 4318;
+// Override when another checkout already serves these ports (parallel worktrees).
+const PORT = Number(process.env.OSP_E2E_PORT ?? 4317);
+const API_PORT = Number(process.env.OSP_E2E_API_PORT ?? 4318);
 
 export default defineConfig({
 	testDir: 'e2e',

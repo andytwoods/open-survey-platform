@@ -1,5 +1,8 @@
 <script lang="ts">
 	import { Tabs, announce } from '@osp/ui-components';
+	import { tick, untrack } from 'svelte';
+	import { propertyFocus, type FocusRequest } from '../diagnostics/focus.svelte';
+	import { SURVEY_ID } from '../diagnostics/model';
 	import {
 		defaultLanguage,
 		findObject,
@@ -28,7 +31,14 @@
 		store = null
 	}: { roots: OutlineNode[]; selection: SelectionStore; store?: SurveyStore | null } = $props();
 
-	const node = $derived(selection.id ? findNode(roots, selection.id) : undefined);
+	// The survey itself is selected (from the diagnostics strip) as SURVEY_ID.
+	const node = $derived(
+		selection.id === SURVEY_ID && store
+			? ({ id: SURVEY_ID, type: 'survey', label: 'Survey' } satisfies OutlineNode)
+			: selection.id
+				? findNode(roots, selection.id)
+				: undefined
+	);
 	const raw = $derived(store && node ? findObject(store.survey, node.id) : undefined);
 	const lang = $derived(store ? defaultLanguage(store.survey) : 'en');
 	let tab = $state('details');
@@ -79,6 +89,26 @@
 	$effect(() => {
 		if (store) return store.registerBuffer({ flush: () => panel?.flush() });
 	});
+
+	// "Go to property" from the diagnostics strip or an export badge (B10).
+	$effect(() => {
+		const r = propertyFocus.request;
+		if (!r || !node || node.id !== r.id) return;
+		// Wait for the panel when its schema is there but it has not mounted yet.
+		if (schema && propertySchemas.doc && !panel) return;
+		const p = panel;
+		untrack(() => void focusRequested(r, p));
+	});
+
+	async function focusRequested(r: FocusRequest, p: PropertyPanel | null) {
+		tab = 'details';
+		await tick();
+		for (const key of r.properties) {
+			if (p && (await p.focusProperty(key))) return propertyFocus.done(r.seq);
+		}
+		document.getElementById('properties-heading')?.focus();
+		propertyFocus.done(r.seq);
+	}
 
 	const nodeDiagnostics = $derived.by(() => {
 		if (!store || !node) return [];
