@@ -1,0 +1,47 @@
+# Property schema for survey settings (planning/builder-design.md §1).
+# Dotted keys reach into nested objects: `metadata.title` is Survey.metadata.title.
+type: survey
+entity: survey
+label: { en: "Survey settings" }
+icon: settings
+properties:
+  metadata.title:
+    kind: text
+    label: { en: "Title" }
+    translatable: true
+    required: true
+    default: "Untitled survey"
+    group: Basics
+  metadata.description:
+    kind: richtext
+    label: { en: "Description" }
+    translatable: true
+    group: Basics
+  metadata.defaultLanguage:
+    kind: enum
+    label: { en: "Default language" }
+    optionsFrom: metadata.languages
+    group: Basics
+    help: { en: "The language participants see first. The first survey language when empty." }
+  settings.backNavigation:
+    kind: bool
+    label: { en: "Allow going back" }
+    default: true
+    group: Basics
+    help: { en: "Participants can return to earlier pages and change answers." }
+  metadata.license:
+    kind: text
+    label: { en: "Licence" }
+    group: Advanced
+    help: { en: "Licence of the questionnaire itself, e.g. CC-BY-4.0." }
+hidden:
+  specVersion: "Format version, written by the platform."
+  id: "Stable survey identity, assigned at creation."
+  version: "Published version number, set by publishing."
+  metadata.languages: "Edited in the translation grid, which adds and removes language columns."
+  metadata.ddi: "Free-form DDI study metadata; edited in the JSON view."
+  choiceLists: "Shared lists are edited in the choice list editor."
+  variables: "Edited in the flow editor and variables view."
+  blocks: "Edited in the outline tree."
+  quotas: "Edited in the flow editor."
+  flow: "Edited in the flow editor."
