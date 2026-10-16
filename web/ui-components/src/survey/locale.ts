@@ -80,7 +80,7 @@ function asciiDigits(s: string): string {
 
 function normaliseSigns(s: string): string {
 	return asciiDigits(s)
-		.replace(/[\s  ]/g, '')
+		.replace(/[\s\u00a0\u202f]/g, '')
 		.replace(/[−‒–]/g, '-');
 }
 

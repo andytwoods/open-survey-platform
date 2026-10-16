@@ -28,10 +28,7 @@
 	}: SingleChoiceProps = $props();
 
 	// Bits holds the selection; it follows `value` and reports changes through onchange.
-	let current = $state('');
-	$effect.pre(() => {
-		current = value ?? '';
-	});
+	let current = $derived(value ?? '');
 
 	function select(v: string) {
 		current = v;

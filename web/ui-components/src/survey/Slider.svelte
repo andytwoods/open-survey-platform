@@ -33,13 +33,10 @@
 	}: SliderProps = $props();
 
 	const m = $derived(messagesFor(messages));
-	const answered = $derived(value !== null && value !== undefined);
 	// Where Bits keeps the (invisible) thumb before the first touch.
 	const resting = $derived(min + Math.round((max - min) / 2 / step) * step);
-	let shown = $state<number | null>(null);
-	$effect.pre(() => {
-		shown = value ?? null;
-	});
+	// What the track shows: follows `value`, and updates at once while dragging.
+	let shown = $derived<number | null>(value ?? null);
 
 	const numberFormat = $derived(new Intl.NumberFormat(lang, { maximumFractionDigits: 6 }));
 	const valueText = $derived(shown === null ? m.notAnswered : numberFormat.format(shown));

@@ -1,4 +1,5 @@
 <script lang="ts">
+	import { resolve } from '$app/paths';
 	import { page } from '$app/state';
 	import { Announcer, Button, theme } from '@osp/ui-components';
 	import {
@@ -66,9 +67,9 @@
 <main class="gallery" lang={c.lang} dir={dirFor(c.lang)}>
 	<h1>{c.title}</h1>
 	<nav aria-label="Language variants" lang="en" dir="ltr">
-		<a href="?variant=en" aria-current={variant === 'en' ? 'page' : undefined}>English</a>
-		<a href="?variant=de" aria-current={variant === 'de' ? 'page' : undefined}>Deutsch (long labels)</a>
-		<a href="?variant=ar" aria-current={variant === 'ar' ? 'page' : undefined}>العربية (RTL)</a>
+		<a href="{resolve('/dev/widgets')}?variant=en" aria-current={variant === 'en' ? 'page' : undefined}>English</a>
+		<a href="{resolve('/dev/widgets')}?variant=de" aria-current={variant === 'de' ? 'page' : undefined}>Deutsch (long labels)</a>
+		<a href="{resolve('/dev/widgets')}?variant=ar" aria-current={variant === 'ar' ? 'page' : undefined}>العربية (RTL)</a>
 	</nav>
 
 	{#key variant}

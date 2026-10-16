@@ -27,13 +27,11 @@
 		choiceStyle = 'list'
 	}: MultiChoiceProps = $props();
 
-	const selected = $derived(new Set(value ?? []));
+	const selected = $derived(value ?? []);
 
 	function toggle(choice: string, on: boolean) {
-		const next = new Set(selected);
-		if (on) next.add(choice);
-		else next.delete(choice);
-		onchange?.(choices.map((c) => c.value).filter((v) => next.has(v)));
+		const keep = (v: string) => (v === choice ? on : selected.includes(v));
+		onchange?.(choices.map((c) => c.value).filter(keep));
 	}
 </script>
 
@@ -44,7 +42,7 @@
 				<Checkbox.Root
 					id="{id}-c-{safeId(choice.value)}"
 					class="osp-choice"
-					checked={selected.has(choice.value)}
+					checked={selected.includes(choice.value)}
 					onCheckedChange={(on) => toggle(choice.value, on)}
 					disabled={disabled || choice.disabled}
 					aria-invalid={ctx.invalid ? 'true' : undefined}

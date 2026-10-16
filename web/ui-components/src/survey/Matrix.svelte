@@ -56,13 +56,12 @@
 	});
 
 	// Per-row selection held for Bits; follows `value`, reports through onchange.
-	let current = $state<Record<string, string>>({});
-	$effect.pre(() => {
-		current = Object.fromEntries(rows.map((r) => [r.value, value?.[r.value] ?? '']));
-	});
+	let current = $derived<Record<string, string>>(
+		Object.fromEntries(rows.map((r) => [r.value, value?.[r.value] ?? '']))
+	);
 
 	function setRow(row: string, col: string) {
-		current[row] = col;
+		current = { ...current, [row]: col };
 		const next: Record<string, string | null> = {};
 		for (const r of rows) next[r.value] = current[r.value] || null;
 		onchange?.(next);
@@ -81,7 +80,7 @@
 				{@const legendId = `${id}-r-${safeId(row.value)}`}
 				{@const arrows = arrowsFor(row.value)}
 				<RadioGroup.Root
-					bind:value={() => current[row.value] ?? '', (v) => (current[row.value] = v)}
+					bind:value={() => current[row.value] ?? '', (v) => (current = { ...current, [row.value]: v })}
 					onValueChange={(v) => setRow(row.value, v)}
 					orientation="horizontal"
 					disabled={disabled || row.disabled}
