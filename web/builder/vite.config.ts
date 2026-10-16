@@ -2,9 +2,11 @@ import { defineConfig } from 'vitest/config';
 import adapter from '@sveltejs/adapter-static';
 import { sveltekit } from '@sveltejs/kit/vite';
 
-// Builder API calls go to `osp-api` on the same origin (cookie auth + CSRF origin check).
-// In dev and preview, proxy /api to it; `make web-e2e` starts a throwaway one on 4318.
-const apiTarget = process.env.OSP_API_URL ?? 'http://127.0.0.1:4318';
+// Builder API calls go to `osp-api` on the same origin (cookie auth + CSRF origin check),
+// so in dev and preview /api is proxied to it and the browser needs no CORS. The default is
+// `make dev`'s `osp-api serve` on 8000; `make web-e2e` points OSP_API_URL at its own on 4318.
+// changeOrigin stays false: the API's origin check compares Origin with the Host it sees.
+const apiTarget = process.env.OSP_API_URL ?? 'http://127.0.0.1:8000';
 const proxy = { '/api': { target: apiTarget, changeOrigin: false } };
 
 export default defineConfig({

@@ -6,7 +6,8 @@ import json
 from pathlib import Path
 
 import pytest
-from osp_cli.main import main, open_services, seed_fixture
+from osp_app.auth.service import LoginOk
+from osp_cli.main import main, open_services, researcher, seed_fixture
 from osp_store import generate_key
 
 FIXTURES = Path(__file__).resolve().parents[3] / "fixtures"
@@ -61,3 +62,38 @@ def test_errors_are_messages_not_tracebacks(tmp_path, keys, monkeypatch, capsys)
     assert "gen-key" in capsys.readouterr().err
     assert main(["gen-key"]) == 0
     assert capsys.readouterr().out.startswith("OSP_STORE_KEYS=k1:")
+
+
+DEV_FIXTURES = [FIXTURES / n for n in ("01-all-types", "13-randomiser-blocks", "18-multi-language")]
+
+
+def test_dev_seed_creates_once_then_reprints(tmp_path, keys, capsys, monkeypatch):
+    monkeypatch.delenv("OSP_ENV", raising=False)
+    db = f"sqlite:///{tmp_path / 'dev.db'}"
+    argv = ["dev-seed", *map(str, DEV_FIXTURES), "--db", db, "--data-dir", str(tmp_path)]
+    assert main(argv) == 0
+    first = capsys.readouterr().out
+    assert "first run" in first and "dev@osp.example" in first
+    assert "participant app not built yet" in first
+    state = json.loads((tmp_path / "dev-seed.json").read_text())
+    assert [s["fixture"] for s in state["surveys"]] == [p.name for p in DEV_FIXTURES]
+    assert state["password"] in first
+    assert (tmp_path / "dev-seed.json").stat().st_mode & 0o077 == 0
+
+    # The login works (no second factor), and a second run reuses everything.
+    services = open_services(db)
+    assert isinstance(services.auth.login(state["email"], state["password"]), LoginOk)
+    assert main([*argv, "--participant-url", "http://localhost:5174"]) == 0
+    again = capsys.readouterr().out
+    assert "first run" not in again
+    assert f"localhost:5174/s/{state['surveys'][0]['slug']}" in again
+    actor = researcher(services, state["email"], state["password"], state["lab"])
+    assert len(services.builder.run("survey.list", actor)) == 3
+
+
+def test_dev_seed_refused_in_production(tmp_path, keys, capsys, monkeypatch):
+    monkeypatch.setenv("OSP_ENV", "production")
+    db = f"sqlite:///{tmp_path / 'dev.db'}"
+    assert main(["dev-seed", str(DEV_FIXTURES[0]), "--db", db, "--data-dir", str(tmp_path)]) == 2
+    assert "development only" in capsys.readouterr().err
+    assert not (tmp_path / "dev-seed.json").exists()
