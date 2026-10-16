@@ -6,7 +6,7 @@
     "version": 1,
     "checksum": "sha256:test-15-choice-order-shuffle"
   },
-  "missingValues": "Every answer is {state, value}. state is answered, unanswered (shown, left empty), irrelevant (page reached, hidden by its show-if) or not-reached (the flow never got to its page); value is null unless state is answered. state is null only if the stored record has no entry for the question.",
+  "missingValues": "Every answer is {state, value}. state is answered, unanswered (shown, left empty), irrelevant (page reached, hidden by its show-if) or not-reached (the flow never got to its page); value is null unless state is answered. state is null only if the stored record has no entry for the question. Embedded and computed variables are {state, value} too: answered when they have a value; otherwise unanswered, or (computed) irrelevant / not-reached when every question they read is.",
   "options": {
     "events": true
   },
@@ -16,7 +16,7 @@
       "sessionId": "sess-seed-large",
       "version": 1,
       "versionChecksum": "sha256:test-15-choice-order-shuffle",
-      "planChecksum": "sha256:053f38048892883fbbe19f72aadec9d42567f560b9686c4353e66dc23b8cdc69",
+      "planChecksum": "sha256:31765aa85f06d070e41143cbe9e694d4af49eb9511352bb8f1ce2dc6a8127a80",
       "engineVersion": "1",
       "allocationMode": "server",
       "saveMode": "every-page",
@@ -24,6 +24,7 @@
       "startedAt": "2026-10-16T09:30:00.000Z",
       "submittedAt": "2026-10-16T09:30:30.250Z",
       "late": false,
+      "afterClose": null,
       "end": "complete",
       "language": "en",
       "conditions": {},
@@ -130,7 +131,7 @@
       "sessionId": "sess-seed-small",
       "version": 1,
       "versionChecksum": "sha256:test-15-choice-order-shuffle",
-      "planChecksum": "sha256:053f38048892883fbbe19f72aadec9d42567f560b9686c4353e66dc23b8cdc69",
+      "planChecksum": "sha256:31765aa85f06d070e41143cbe9e694d4af49eb9511352bb8f1ce2dc6a8127a80",
       "engineVersion": "1",
       "allocationMode": "server",
       "saveMode": "every-page",
@@ -138,6 +139,7 @@
       "startedAt": "2026-10-16T09:31:00.000Z",
       "submittedAt": "2026-10-16T09:31:30.250Z",
       "late": false,
+      "afterClose": null,
       "end": "complete",
       "language": "en",
       "conditions": {},

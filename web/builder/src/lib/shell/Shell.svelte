@@ -8,13 +8,18 @@
 	import { flowCommands } from '../flow/commands';
 	import { requestAddNode } from '../flow/flow-ui.svelte';
 	import FlowView from '../flow/FlowView.svelte';
-	import { onDestroy, onMount } from 'svelte';
+	import { onDestroy, onMount, untrack } from 'svelte';
 	import { CommandRegistry } from '../commands/registry';
 	import { detectMac } from '../commands/shortcut';
 	import { health } from '../health.svelte';
 	import { MOCK_SURVEY } from '../mock/survey';
 	import { addedQuestionId, allIds, outlineFromSurvey, surveyTitle, targetPage } from '../model/outline';
 	import { selection } from '../selection.svelte';
+	import MoveToDialog from '../outline/MoveToDialog.svelte';
+	import { OutlineMover } from '../outline/mover.svelte';
+	import type { DropTarget } from '../outline/moves';
+	import { outlineSelection } from '../outline/multi-select.svelte';
+	import { findNode } from '../outline/tree-nav';
 	import type { SurveyStore } from '../sync/survey-store.svelte';
 	import ConflictBanner from './ConflictBanner.svelte';
 	import CanvasPane from './CanvasPane.svelte';
@@ -38,10 +43,25 @@
 
 	const registry = new CommandRegistry({
 		isMac: detectMac(),
-		isModalOpen: () => paletteOpen || previewOpen
+		isModalOpen: () => paletteOpen || previewOpen || moveToOpen
 	});
 	const mockPages = MOCK_SURVEY.children ?? [];
-	const pages = $derived(store ? outlineFromSurvey(store.survey) : mockPages);
+	// Outline moves show at once (optimistic) and are reconciled with the server's reply.
+	const mover = new OutlineMover();
+	const serverPages = $derived(store ? outlineFromSurvey(store.survey) : mockPages);
+	const pages = $derived(mover.view(serverPages));
+
+	function moveItems(ids: string[], target: DropTarget) {
+		if (!store) return;
+		const s = store;
+		return mover.move((ops) => s.submit(ops), pages, ids, target);
+	}
+
+	let moveToOpen = $state(false);
+	const canMoveSelection = () => {
+		const t = selection.id ? findNode(pages, selection.id)?.type : undefined;
+		return editing && !!store && (t === 'question' || t === 'page' || t === 'block');
+	};
 	const title = $derived(store ? surveyTitle(store.survey) || store.title : MOCK_SURVEY.label);
 
 	// Selection survives patches; it is cleared only when its object is gone (deleted, undone).
@@ -54,9 +74,12 @@
 		const r = store?.rejection;
 		if (!r) return;
 		const n = r.diagnostics.length;
-		toast(n ? `${r.message} ${n === 1 ? r.diagnostics[0].message : `${n} problems.`}` : r.message, {
-			kind: 'error'
-		});
+		// untrack: toast() reads and writes the toast list, which must not re-run this effect.
+		untrack(() =>
+			toast(n ? `${r.message} ${n === 1 ? r.diagnostics[0].message : `${n} problems.`}` : r.message, {
+				kind: 'error'
+			})
+		);
 	});
 
 	async function addQuestion(pageId?: string) {
@@ -138,6 +161,14 @@
 			canEdit: () => editing && !!store
 		})
 	);
+	const offOutline = registry.register({
+		id: 'outline.moveTo',
+		label: 'Move to…',
+		group: 'Edit',
+		keywords: ['move', 'reorder', 'page', 'block'],
+		enabled: canMoveSelection,
+		run: () => (moveToOpen = true)
+	});
 	const offAppearance = registry.registerAll(
 		appearanceCommands({
 			view: () => view,
@@ -158,6 +189,7 @@
 		offCommands();
 		offAppearance();
 		offFlow();
+		offOutline();
 	});
 
 	onMount(() => {
@@ -220,7 +252,12 @@
 				<div class="pane-scroll">
 					<h2 id="outline-heading" class="pane-heading">Outline</h2>
 					{#key store?.surveyId}
-						<OutlineTree roots={pages} {selection} />
+						<OutlineTree
+							roots={pages}
+							{selection}
+							multi={outlineSelection}
+							onMove={store ? moveItems : undefined}
+						/>
 					{/key}
 				</div>
 				{#if !outlineCollapsible}
@@ -276,6 +313,10 @@
 </div>
 
 <CommandPalette bind:open={paletteOpen} {registry} />
+
+{#if store}
+	<MoveToDialog bind:open={moveToOpen} roots={pages} ids={outlineSelection.ids} onMove={(ids, t) => void moveItems(ids, t)} />
+{/if}
 
 <Dialog
 	bind:open={previewOpen}

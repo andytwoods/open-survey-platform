@@ -44,7 +44,13 @@
         "blocks": {},
         "items": {},
         "choices": {
-          "fav_colour": "<engine>"
+          "fav_colour": [
+            "green",
+            "purple",
+            "yellow",
+            "blue",
+            "red"
+          ]
         }
       },
       "conditions": {
@@ -92,7 +98,13 @@
         "blocks": {},
         "items": {},
         "choices": {
-          "fav_colour": "<engine>"
+          "fav_colour": [
+            "green",
+            "purple",
+            "yellow",
+            "blue",
+            "red"
+          ]
         }
       },
       "conditions": {
@@ -140,7 +152,13 @@
         "blocks": {},
         "items": {},
         "choices": {
-          "fav_colour": "<engine>"
+          "fav_colour": [
+            "green",
+            "purple",
+            "yellow",
+            "blue",
+            "red"
+          ]
         }
       },
       "conditions": {
@@ -151,7 +169,11 @@
     {
       "index": 3,
       "page": "p_items",
-      "visible": "<engine>",
+      "visible": [
+        "i3",
+        "i2",
+        "i1"
+      ],
       "errors": {},
       "nav": {
         "back": true
@@ -185,10 +207,20 @@
       "orders": {
         "blocks": {},
         "items": {
-          "p_items": "<engine>"
+          "p_items": [
+            "i3",
+            "i2",
+            "i1"
+          ]
         },
         "choices": {
-          "fav_colour": "<engine>"
+          "fav_colour": [
+            "green",
+            "purple",
+            "yellow",
+            "blue",
+            "red"
+          ]
         }
       },
       "conditions": {
@@ -199,7 +231,11 @@
     {
       "index": 4,
       "page": "p_items",
-      "visible": "<engine>",
+      "visible": [
+        "i3",
+        "i2",
+        "i1"
+      ],
       "errors": {},
       "nav": {
         "back": true
@@ -233,10 +269,20 @@
       "orders": {
         "blocks": {},
         "items": {
-          "p_items": "<engine>"
+          "p_items": [
+            "i3",
+            "i2",
+            "i1"
+          ]
         },
         "choices": {
-          "fav_colour": "<engine>"
+          "fav_colour": [
+            "green",
+            "purple",
+            "yellow",
+            "blue",
+            "red"
+          ]
         }
       },
       "conditions": {
@@ -279,10 +325,20 @@
       "orders": {
         "blocks": {},
         "items": {
-          "p_items": "<engine>"
+          "p_items": [
+            "i3",
+            "i2",
+            "i1"
+          ]
         },
         "choices": {
-          "fav_colour": "<engine>"
+          "fav_colour": [
+            "green",
+            "purple",
+            "yellow",
+            "blue",
+            "red"
+          ]
         }
       },
       "conditions": {
@@ -353,10 +409,20 @@
     "orders": {
       "blocks": {},
       "items": {
-        "p_items": "<engine>"
+        "p_items": [
+          "i3",
+          "i2",
+          "i1"
+        ]
       },
       "choices": {
-        "fav_colour": "<engine>"
+        "fav_colour": [
+          "green",
+          "purple",
+          "yellow",
+          "blue",
+          "red"
+        ]
       }
     },
     "answers": {

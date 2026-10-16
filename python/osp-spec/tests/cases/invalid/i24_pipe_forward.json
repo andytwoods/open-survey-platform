@@ -1,5 +1,5 @@
 {
-  "description": "Piping obeys the same ordering rule as conditions.",
+  "description": "Piping obeys the same ordering rule as conditions (a later page; same-page references may go either way).",
   "expect": [
     {
       "code": "ref.forward",
@@ -26,7 +26,12 @@
                 "id": "q1",
                 "type": "text",
                 "label": "Earlier you said ${q2}"
-              },
+              }
+            ]
+          },
+          {
+            "id": "p2",
+            "items": [
               {
                 "id": "q2",
                 "type": "text",

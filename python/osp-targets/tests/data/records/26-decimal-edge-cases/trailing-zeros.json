@@ -3,7 +3,7 @@
  "surveyId": "f26_decimal_edges",
  "surveyVersion": 1,
  "planVersion": "osp-runtime-plan/1",
- "planChecksum": "sha256:080761ffea534933203eda960cdd5cce5968191d74e3a9ba077cc92d72957804",
+ "planChecksum": "sha256:9584edcfabe26ed60d6a17103ea33421f499f44976df0162014398e1dab6c7ec",
  "engineVersion": "1",
  "sessionSeed": 2602,
  "sessionId": null,
@@ -23,19 +23,19 @@
  "answers": {
   "a": {
    "state": "answered",
-   "value": "0.10"
+   "value": "0.1"
   },
   "b": {
    "state": "answered",
-   "value": "0.20"
+   "value": "0.2"
   },
   "big": {
    "state": "answered",
-   "value": "9007199254740993.000"
+   "value": "9007199254740993"
   },
   "z": {
    "state": "answered",
-   "value": "0.300"
+   "value": "0.3"
   },
   "p2_anchor": {
    "state": "unanswered",
@@ -86,7 +86,9 @@
  },
  "embedded": {},
  "computed": {},
+ "variableStates": {},
  "quotas": {},
+ "diagnostics": [],
  "effects": [],
  "urlParams": {},
  "startedAt": 2000,
@@ -109,7 +111,7 @@
    "type": "answer",
    "t": 3000,
    "item": "a",
-   "value": "0.10",
+   "value": "0.1",
    "seq": 2,
    "rev": 2
   },
@@ -117,7 +119,7 @@
    "type": "answer",
    "t": 4000,
    "item": "b",
-   "value": "0.20",
+   "value": "0.2",
    "seq": 3,
    "rev": 3
   },
@@ -125,7 +127,7 @@
    "type": "answer",
    "t": 5000,
    "item": "big",
-   "value": "9007199254740993.000",
+   "value": "9007199254740993",
    "seq": 4,
    "rev": 4
   },
@@ -133,7 +135,7 @@
    "type": "answer",
    "t": 6000,
    "item": "z",
-   "value": "0.300",
+   "value": "0.3",
    "seq": 5,
    "rev": 5
   },

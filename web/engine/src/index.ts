@@ -19,6 +19,7 @@ export {
 	next,
 	replay,
 	resolve,
+	restart,
 	restore,
 	result,
 	setLanguage,
@@ -33,7 +34,14 @@ export {
 	withChecksum,
 	type Rejection
 } from './engine.ts';
-export { evaluate, evaluateCondition, type Value, type Lookup } from './expr.ts';
+export {
+	evaluate,
+	evaluateCondition,
+	type DiagnosticSink,
+	type ExprDiagnostic,
+	type Value,
+	type Lookup
+} from './expr.ts';
 export { canonicalJson, planChecksum } from './canonical.ts';
 export {
 	assign,
@@ -48,5 +56,13 @@ export {
 	RandomInputError
 } from './random.ts';
 export { sha256, toHex, utf8 } from './sha256.ts';
-export { checkAnswer, pyStrip, type Stored } from './values.ts';
+export {
+	canonicalDecimal,
+	checkAnswer,
+	DECIMAL_DIGITS,
+	pyStrip,
+	trimAnswer,
+	TRIM_CODE_POINTS,
+	type Stored
+} from './values.ts';
 export { DECIMAL_PRECISION } from './decimal.ts';

@@ -1,7 +1,7 @@
 {
   "format": "osp-fixture-script/0",
   "id": "car-bus-car",
-  "description": "As car-then-bus, then back to p1 and route = car again: do the old car answers come back, and what happens to bus_line? (C3a-6)",
+  "description": "As car-then-bus, then back to p1 and route = car again: the old car answers do not come back (they were cleared; the questions are unanswered), and bus_line, typed but left with back, is now off the path, so it is irrelevant and cleared (semantics §3, C3a-6).",
   "sessionSeed": 3402,
   "language": "en",
   "actions": [

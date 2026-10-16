@@ -3,7 +3,7 @@
  "surveyId": "f26_decimal_edges",
  "surveyVersion": 1,
  "planVersion": "osp-runtime-plan/1",
- "planChecksum": "sha256:080761ffea534933203eda960cdd5cce5968191d74e3a9ba077cc92d72957804",
+ "planChecksum": "sha256:9584edcfabe26ed60d6a17103ea33421f499f44976df0162014398e1dab6c7ec",
  "engineVersion": "1",
  "sessionSeed": 2603,
  "sessionId": null,
@@ -31,7 +31,7 @@
   },
   "big": {
    "state": "answered",
-   "value": "12345678901234567890.123456789"
+   "value": "12345678901234567890.12345678"
   },
   "z": {
    "state": "answered",
@@ -86,12 +86,14 @@
  },
  "embedded": {},
  "computed": {},
+ "variableStates": {},
  "quotas": {},
+ "diagnostics": [],
  "effects": [],
  "urlParams": {},
  "startedAt": 2000,
- "endedAt": 8000,
- "revision": 7,
+ "endedAt": 10000,
+ "revision": 9,
  "events": [
   {
    "type": "start",
@@ -125,7 +127,8 @@
    "type": "answer",
    "t": 5000,
    "item": "big",
-   "value": "12345678901234567890.123456789",
+   "value": null,
+   "invalid": "value.too_long",
    "seq": 4,
    "rev": 4
   },
@@ -144,16 +147,41 @@
    "seq": 6,
    "rev": 6,
    "result": {
+    "outcome": "invalid",
+    "to": "p1_page",
+    "errors": {
+     "big": {
+      "kind": "invalid",
+      "code": "value.too_long"
+     }
+    }
+   }
+  },
+  {
+   "type": "answer",
+   "t": 8000,
+   "item": "big",
+   "value": "12345678901234567890.12345678",
+   "seq": 7,
+   "rev": 7
+  },
+  {
+   "type": "next",
+   "t": 9000,
+   "from": "p1_page",
+   "seq": 8,
+   "rev": 8,
+   "result": {
     "outcome": "advanced",
     "to": "p2_page"
    }
   },
   {
    "type": "next",
-   "t": 8000,
+   "t": 10000,
    "from": "p2_page",
-   "seq": 7,
-   "rev": 7,
+   "seq": 9,
+   "rev": 9,
    "result": {
     "outcome": "ended",
     "to": null,

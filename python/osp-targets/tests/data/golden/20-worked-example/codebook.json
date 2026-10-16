@@ -32,6 +32,7 @@
       "_started_at",
       "_submitted_at",
       "_late",
+      "_after_close",
       "_end",
       "_language",
       "framing",
@@ -47,6 +48,11 @@
       "att3",
       "att3__state",
       "source",
+      "source__state",
+      "age_band",
+      "age_band__state",
+      "att_score",
+      "att_score__state",
       "_order.items.attitudes_page"
     ]
   },
@@ -131,7 +137,11 @@
     },
     {
       "column": "_late",
-      "meaning": "true if the response was submitted after the survey was closed (provisional, semantics open question M2-1)."
+      "meaning": "true if the server accepted the submit after the session had expired (its quota holds were released or its resume link had expired); a late response is not counted toward quotas (semantics S-2). Set by the server, never by the browser."
+    },
+    {
+      "column": "_after_close",
+      "meaning": "true if the response was submitted after the survey was closed; empty if not known."
     },
     {
       "column": "_end",
@@ -403,9 +413,47 @@
       "kind": "embedded",
       "valueType": "text",
       "urlParam": "src",
-      "default": "direct"
+      "default": "direct",
+      "csvColumns": [
+        "source",
+        "source__state"
+      ],
+      "missing": "Answered: the URL parameter, or its default when the parameter was missing. Unanswered (empty): no parameter and no default, or a malformed parameter. See its __state column."
+    },
+    {
+      "name": "age_band",
+      "id": "age_band",
+      "kind": "computed",
+      "expr": "if(age < 40, \"18-39\", \"40+\")",
+      "csvColumns": [
+        "age_band",
+        "age_band__state"
+      ],
+      "missing": "Answered: the computed value. Empty when an input was null: not-reached if every question it reads was not reached, irrelevant if each was not reached or hidden, otherwise unanswered. See its __state column."
+    },
+    {
+      "name": "att_score",
+      "id": "att_score",
+      "kind": "computed",
+      "expr": "(att1 + att2 + (6 - att3)) / 3",
+      "csvColumns": [
+        "att_score",
+        "att_score__state"
+      ],
+      "missing": "Answered: the computed value. Empty when an input was null: not-reached if every question it reads was not reached, irrelevant if each was not reached or hidden, otherwise unanswered. See its __state column."
     }
   ],
-  "quotas": [],
+  "quotas": [
+    {
+      "id": "q_old",
+      "when": "age_band == \"40+\"",
+      "limit": 150,
+      "countOn": "complete",
+      "onFull": {
+        "block": "screenout",
+        "outcome": "quota_full"
+      }
+    }
+  ],
   "hooks": []
 }

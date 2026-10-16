@@ -15,7 +15,7 @@ import re
 from collections.abc import Sequence
 from typing import Any
 
-from .layout import Column, Layout, build_layout, csv_columns
+from .layout import Column, Layout, build_layout, csv_columns, split_names
 from .model import CsvOptions, StoredResponse, SurveyVersion
 from .view import ResponseView
 
@@ -90,16 +90,18 @@ def export_csv_combined(
 ) -> bytes:
     """Several versions in one file: the union of their columns (first appearance, versions
     in ascending number), ``_version`` on every row. A column a version does not have is
-    empty in its rows, *including* its ``__state`` cell (the codebook says so). Rows are
-    grouped by version, then ordered as in ``export_csv``. One version gives exactly the
-    single-version export."""
+    empty in its rows, *including* its ``__state`` cell (the codebook says so). A question
+    whose type or choice codes differ between versions gets separate ``<name>_v<N>``
+    columns per version (semantics M2-3). Rows are grouped by version, then ordered as in
+    ``export_csv``. One version gives exactly the single-version export."""
     opts = options or CsvOptions()
     ordered = sorted(versions, key=lambda vr: _version_key(vr[0]))
+    split = split_names([build_layout(v) for v, _ in ordered])
     headers: list[str] = []
     seen: set[str] = set()
     per_version: list[tuple[dict[str, Column], list[ResponseView]]] = []
     for version, responses in ordered:
-        lay = build_layout(version)
+        lay = build_layout(version, split)
         cols = csv_columns(lay, opts)
         for c in cols:
             if c.header not in seen:

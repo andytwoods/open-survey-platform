@@ -298,18 +298,24 @@ def test_cross_tenant_and_cross_session_access_fails(tmp_path):
     assert env.count(t.sessions, t.sessions.c.instance_ct.is_not(None)) == 0
 
 
-def test_resume_token_expires_after_inactivity_and_slots_are_released(env):
+def test_quota_holds_are_released_after_24h_but_the_resume_link_lasts_30_days(env):
     st = env.start()
     sid = st["sessionId"]
+    pub_id = env.repo.find_publication("demo").id
     assert (
         env.client.post(f"/api/sessions/{sid}/quota/qc1", headers=auth(st)).json()["result"]
         == "admitted"
     )
-    env.clock.now += timedelta(hours=23)
-    assert env.client.get("/api/sessions/resume", headers=auth(st)).status_code == 200  # touches
-    env.clock.now += timedelta(hours=23, minutes=59)
+    env.clock.now += timedelta(hours=25)
+    report = env.service.release_inactive()
+    assert (report.sessions_expired, report.quota_slots_released) == (1, 1)
+    assert env.repo.ps.quota_usage(env.tenants[0], pub_id) == {"women": (0, 2)}
+    # Resuming after the hold was released takes the place again (S-1).
+    env.clock.now += timedelta(days=20)
     assert env.client.get("/api/sessions/resume", headers=auth(st)).status_code == 200
-    env.clock.now += timedelta(hours=24)
+    assert env.repo.ps.quota_usage(env.tenants[0], pub_id) == {"women": (1, 2)}
+    # 30 days without activity: the link no longer works for resume or snapshots.
+    env.clock.now += timedelta(days=30)
     r = env.client.get("/api/sessions/resume", headers=auth(st))
     assert r.status_code == 410 and r.json()["code"] == "session.expired"
     snap = {"baseRevision": 0, "snapshot": {"x": 1}}
@@ -317,11 +323,66 @@ def test_resume_token_expires_after_inactivity_and_slots_are_released(env):
         env.client.put(f"/api/sessions/{sid}/snapshot", json=snap, headers=auth(st)).status_code
         == 410
     )
-    report = env.service.release_inactive()
-    assert (report.sessions_expired, report.quota_slots_released) == (1, 1)
-    usage = env.repo.ps.quota_usage(env.tenants[0], env.repo.find_publication("demo").id)
-    assert usage == {"women": (0, 2)}
+    assert env.client.post(f"/api/sessions/{sid}/quota/qc1", headers=auth(st)).status_code == 410
+
+
+def test_resume_expiry_is_configurable_per_survey(tmp_path):
+    env = Env(tmp_path)
+    env.publish("short", resumeExpiryDays=2)
+    st = env.start("short")
+    env.clock.now += timedelta(days=1, hours=23)
+    assert env.client.get("/api/sessions/resume", headers=auth(st)).status_code == 200
+    env.clock.now += timedelta(days=2)
     assert env.client.get("/api/sessions/resume", headers=auth(st)).status_code == 410
+
+
+def test_late_submit_is_accepted_flagged_and_not_counted(env):
+    st = env.start()
+    sid = st["sessionId"]
+    pub_id = env.repo.find_publication("demo").id
+    env.client.post(f"/api/sessions/{sid}/quota/qc1", headers=auth(st))
+    env.clock.now += timedelta(days=31)  # past the resume expiry; the job has not run
+    url = f"/api/sessions/{sid}/submit"
+    first = env.client.post(url, json=record(st), headers=auth(st))
+    assert first.status_code == 200, first.text
+    assert (first.json()["late"], first.json()["replay"]) == (True, False)
+    assert env.repo.ps.quota_usage(env.tenants[0], pub_id) == {"women": (0, 2)}
+    full = env.repo.ps.get_record(env.tenants[0], first.json()["responseId"])
+    assert full["server"]["late"] is True
+    # S-4: an identical retry returns the original success; different data is 409.
+    again = env.client.post(url, json=record(st), headers=auth(st))
+    assert again.status_code == 200
+    assert {k: again.json()[k] for k in ("responseId", "submittedAt", "late")} == {
+        k: first.json()[k] for k in ("responseId", "submittedAt", "late")
+    }
+    assert again.json()["replay"] is True
+    changed = env.client.post(url, json=record(st, engineVersion="9"), headers=auth(st))
+    assert changed.status_code == 409 and changed.json()["code"] == "submit.mismatch"
+    assert env.count(t.responses) == 1
+
+
+def test_submit_after_holds_released_is_late_and_retries_return_the_original(env):
+    st = env.start()
+    sid = st["sessionId"]
+    env.client.post(f"/api/sessions/{sid}/quota/qc1", headers=auth(st))
+    env.clock.now += timedelta(hours=25)
+    env.service.release_inactive()
+    url = f"/api/sessions/{sid}/submit"
+    first = env.client.post(url, json=record(st), headers=auth(st))
+    assert first.status_code == 200 and first.json()["late"] is True
+    again = env.client.post(url, json=record(st), headers=auth(st))
+    assert again.json()["responseId"] == first.json()["responseId"]
+    assert again.json()["replay"] is True and again.json()["late"] is True
+
+
+def test_on_time_submit_is_not_late_and_counts(env):
+    st = env.start()
+    sid = st["sessionId"]
+    env.client.post(f"/api/sessions/{sid}/quota/qc1", headers=auth(st))
+    r = env.client.post(f"/api/sessions/{sid}/submit", json=record(st), headers=auth(st))
+    assert r.status_code == 200 and r.json()["late"] is False
+    usage = env.repo.ps.quota_usage(env.tenants[0], env.repo.find_publication("demo").id)
+    assert usage == {"women": (1, 2)}
 
 
 def test_session_start_is_rate_limited(tmp_path):

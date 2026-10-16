@@ -135,5 +135,7 @@ select = ["E", "F", "W", "I", "B", "UP"]
 
 [tool.pytest.ini_options]
 testpaths = ["tests", "python"]
-addopts = ["--import-mode=importlib", "-q"]
-norecursedirs = ["spikes", "web", "node_modules", ".venv"]
+# `nightly` tests (big Hypothesis runs) are deselected; run them with `pytest -m nightly`.
+addopts = ["--import-mode=importlib", "-q", "-m", "not nightly"]
+markers = ["nightly: slow, high-example-count property tests (deselected by default)"]
+norecursedirs = [".*", "spikes", "web", "node_modules"]  # ".*": .venv, .hypothesis, .git

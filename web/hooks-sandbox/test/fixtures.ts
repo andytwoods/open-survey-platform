@@ -41,7 +41,7 @@ export function hookPlan(): Plan {
 		languages: ['en'],
 		defaultLanguage: 'en',
 		title: t('Hooks'),
-		settings: { backNavigation: true },
+		settings: { backNavigation: true, saveMode: 'every-page', localCopy: 'browser', resumeExpiryDays: 30 },
 		items,
 		questions: ['q1', 'q2', 'q5', 'q3', 'q4'],
 		pages,

@@ -373,6 +373,7 @@
 		value={(condRow.node.if ?? null) as ExprNode | null}
 		target={condRow.id}
 		field="if"
+		heading="Branch if…"
 		surveyId={store.surveyId}
 		{service}
 		onOps={(ops) => void applyCondition(ops)}

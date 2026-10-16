@@ -37,6 +37,7 @@ export type Expr =
 	| { kind: 'int'; value: number | string } // text beyond ±(2^53 − 1)
 	| { kind: 'decimal'; value: string }
 	| { kind: 'text'; value: string }
+	| { kind: 'bool'; value: boolean }
 	| { kind: 'null' }
 	| RefExpr
 	| { kind: 'compare'; op: CompareOp; left: Expr; right: Expr }
@@ -45,7 +46,8 @@ export type Expr =
 	| { kind: 'or'; args: Expr[] }
 	| { kind: 'not'; arg: Expr }
 	| { kind: 'answered'; ref: RefExpr }
-	| { kind: 'contains'; ref: RefExpr; value: Expr };
+	| { kind: 'contains'; ref: RefExpr; value: Expr }
+	| { kind: 'if'; cond: Expr; then: Expr; else: Expr };
 
 // --- Items, pages, blocks ------------------------------------------------------------
 
@@ -79,6 +81,9 @@ export interface QuestionItem extends ItemBase {
 	/** Present for `single` and `multi`. */
 	choices?: Choice[];
 	choiceOrder?: Order;
+	/** Inclusive bounds for `integer` (integers) and `decimal` (integers or decimal text). */
+	min?: number | string;
+	max?: number | string;
 }
 
 export type Item = NoteItem | QuestionItem;
@@ -88,6 +93,8 @@ export interface Page {
 	block: Id;
 	items: Id[];
 	itemOrder: Order;
+	/** Page-level display logic: when false the page is skipped and its items are irrelevant. */
+	showIf?: Expr;
 }
 
 export interface Block {
@@ -207,7 +214,15 @@ export interface Plan {
 	languages: LanguageTag[];
 	defaultLanguage: LanguageTag;
 	title: Text;
-	settings: { backNavigation: boolean };
+	settings: {
+		backNavigation: boolean;
+		/** `every-page`: autosave to the server; `end-only`: nothing until submit (runtime-design §5.0). */
+		saveMode: 'every-page' | 'end-only';
+		/** Where an `end-only` session keeps its copy; `memory` restarts on refresh (semantics.md §5). */
+		localCopy: 'browser' | 'memory';
+		/** Days of inactivity after which a resume link stops working. */
+		resumeExpiryDays: number;
+	};
 	items: Record<Id, Item>;
 	/** Answerable question ids in flow order (export column order). */
 	questions: Id[];

@@ -1,7 +1,7 @@
 {
   "format": "osp-fixture-script/0",
   "id": "screenout-quota-full",
-  "description": "Age 60 (band 40+) with quota q_old full: onFull goto screenout. Drafted only: quota semantics are undecided.",
+  "description": "Age 60 gives age_band 40+, so quota q_old applies; the server says it is full, so the onFull block screenout is shown once and the session ends with outcome quota_full (semantics §6). The attitude questions are never reached.",
   "sessionSeed": 404,
   "language": "en",
   "server": {

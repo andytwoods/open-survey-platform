@@ -19,6 +19,7 @@ from .ast import (
     Contains,
     DecLit,
     Expr,
+    If,
     IntLit,
     Not,
     NullLit,
@@ -47,6 +48,10 @@ def children(node: Expr) -> Iterator[tuple[str, Expr]]:
         case Contains(ref=r, value=v):
             yield "/ref", r
             yield "/value", v
+        case If(cond=c, then=t, else_=e):
+            yield "/cond", c
+            yield "/then", t
+            yield "/else", e
 
 
 def references(expr: Expr) -> tuple[str, ...]:
@@ -77,6 +82,26 @@ def _compatible_eq(a: str, b: str) -> bool:
     if "any" in (a, b) or a == b:
         return True
     return {a, b} in ({"code", "number"}, {"code", "text"})
+
+
+def _branch_type(a: str, b: str) -> str | None:
+    """The type of ``if(c, a, b)`` when the branch types are compatible, else None.
+    ``null`` fits any branch type; a number and a code (single choice) give a code."""
+    if a == b:
+        return a
+    if "any" in (a, b):
+        return "any"
+    if a == "null":
+        return b
+    if b == "null":
+        return a
+    if {a, b} in ({"code", "number"}, {"code", "text"}):
+        return "code"
+    return None
+
+
+def _is_zero(node: Expr) -> bool:
+    return isinstance(node, IntLit | DecLit) and node.value == 0
 
 
 def _orderable(a: str, b: str) -> bool:
@@ -179,6 +204,12 @@ class _Checker:
                             f"'{op}' needs numbers; {side} is {t}",
                             f"{path}/{side}",
                         )
+                if op == "/" and _is_zero(right):
+                    self.add(
+                        "division-by-zero",
+                        "dividing by the constant 0 always gives null",
+                        path + "/right",
+                    )
                 return "number"
             case And(args=args) | Or(args=args):
                 word = "and" if isinstance(node, And) else "or"
@@ -188,6 +219,19 @@ class _Checker:
             case Not(arg=a):
                 self.boolean_operand(a, path + "/arg", "'not'")
                 return "boolean"
+            case If(cond=c, then=t, else_=e):
+                self.boolean_operand(c, path + "/cond", "if()")
+                tt = self.check(t, path + "/then")
+                et = self.check(e, path + "/else")
+                joined = _branch_type(tt, et)
+                if joined is None:
+                    self.add(
+                        "type-mismatch",
+                        f"if() branches must have compatible types, not {tt} and {et}",
+                        path,
+                    )
+                    return "any"
+                return joined
         return "any"
 
     def boolean_operand(self, node: Expr, path: str, where: str) -> None:

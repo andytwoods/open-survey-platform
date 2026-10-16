@@ -2,9 +2,7 @@
   "format": "osp-fixture-expected/0",
   "fixture": "27-unicode-text",
   "script": "unicode-edges",
-  "pending": [
-    "R6-1"
-  ],
+  "pending": [],
   "steps": [
     {
       "index": 0,
@@ -82,16 +80,34 @@
     {
       "index": 1,
       "page": "p2",
-      "visible": "<pending:R6-1>",
+      "visible": [
+        "pipe_emoji",
+        "pipe_rtl",
+        "pipe_mixed",
+        "pipe_name",
+        "s_emoji"
+      ],
       "errors": {},
       "nav": {
         "back": true
       },
       "questions": {
-        "t_emoji": "<pending:R6-1>",
-        "t_rtl": "<pending:R6-1>",
-        "t_mixed": "<pending:R6-1>",
-        "t_name": "<pending:R6-1>",
+        "t_emoji": {
+          "state": "answered",
+          "value": "👍🏽 great"
+        },
+        "t_rtl": {
+          "state": "answered",
+          "value": "​שלום עולם​"
+        },
+        "t_mixed": {
+          "state": "unanswered",
+          "value": null
+        },
+        "t_name": {
+          "state": "answered",
+          "value": "café"
+        },
         "pipe_emoji": {
           "state": "unanswered",
           "value": null
@@ -108,9 +124,18 @@
           "state": "unanswered",
           "value": null
         },
-        "s_emoji": "<pending:R6-1>",
-        "s_rtl": "<pending:R6-1>",
-        "s_mixed_plain": "<pending:R6-1>"
+        "s_emoji": {
+          "state": "unanswered",
+          "value": null
+        },
+        "s_rtl": {
+          "state": "irrelevant",
+          "value": null
+        },
+        "s_mixed_plain": {
+          "state": "irrelevant",
+          "value": null
+        }
       },
       "orders": {
         "blocks": {},
@@ -119,7 +144,13 @@
       },
       "conditions": {},
       "end": null,
-      "labels": "<pending:R6-1>"
+      "labels": {
+        "pipe_emoji": "Your day: 👍🏽 great",
+        "pipe_rtl": "Your greeting: ​שלום עולם​",
+        "pipe_mixed": "Code: []",
+        "pipe_name": "Hello café!",
+        "s_emoji": "Shown when t_emoji == \"👍🏽 great\""
+      }
     },
     {
       "index": 2,
@@ -128,10 +159,22 @@
       "errors": {},
       "nav": null,
       "questions": {
-        "t_emoji": "<pending:R6-1>",
-        "t_rtl": "<pending:R6-1>",
-        "t_mixed": "<pending:R6-1>",
-        "t_name": "<pending:R6-1>",
+        "t_emoji": {
+          "state": "answered",
+          "value": "👍🏽 great"
+        },
+        "t_rtl": {
+          "state": "answered",
+          "value": "​שלום עולם​"
+        },
+        "t_mixed": {
+          "state": "unanswered",
+          "value": null
+        },
+        "t_name": {
+          "state": "answered",
+          "value": "café"
+        },
         "pipe_emoji": {
           "state": "unanswered",
           "value": null
@@ -148,9 +191,18 @@
           "state": "unanswered",
           "value": null
         },
-        "s_emoji": "<pending:R6-1>",
-        "s_rtl": "<pending:R6-1>",
-        "s_mixed_plain": "<pending:R6-1>"
+        "s_emoji": {
+          "state": "unanswered",
+          "value": null
+        },
+        "s_rtl": {
+          "state": "irrelevant",
+          "value": null
+        },
+        "s_mixed_plain": {
+          "state": "irrelevant",
+          "value": null
+        }
       },
       "orders": {
         "blocks": {},
@@ -175,10 +227,22 @@
       "choices": {}
     },
     "answers": {
-      "t_emoji": "<pending:R6-1>",
-      "t_rtl": "<pending:R6-1>",
-      "t_mixed": "<pending:R6-1>",
-      "t_name": "<pending:R6-1>",
+      "t_emoji": {
+        "state": "answered",
+        "value": "👍🏽 great"
+      },
+      "t_rtl": {
+        "state": "answered",
+        "value": "​שלום עולם​"
+      },
+      "t_mixed": {
+        "state": "unanswered",
+        "value": null
+      },
+      "t_name": {
+        "state": "answered",
+        "value": "café"
+      },
       "pipe_emoji": {
         "state": "unanswered",
         "value": null
@@ -195,22 +259,31 @@
         "state": "unanswered",
         "value": null
       },
-      "s_emoji": "<pending:R6-1>",
-      "s_rtl": "<pending:R6-1>",
-      "s_mixed_plain": "<pending:R6-1>"
+      "s_emoji": {
+        "state": "unanswered",
+        "value": null
+      },
+      "s_rtl": {
+        "state": "irrelevant",
+        "value": null
+      },
+      "s_mixed_plain": {
+        "state": "irrelevant",
+        "value": null
+      }
     },
     "csvState": {
-      "t_emoji__state": "<pending:R6-1>",
-      "t_rtl__state": "<pending:R6-1>",
-      "t_mixed__state": "<pending:R6-1>",
-      "t_name__state": "<pending:R6-1>",
+      "t_emoji__state": "answered",
+      "t_rtl__state": "answered",
+      "t_mixed__state": "unanswered",
+      "t_name__state": "answered",
       "pipe_emoji__state": "unanswered",
       "pipe_rtl__state": "unanswered",
       "pipe_mixed__state": "unanswered",
       "pipe_name__state": "unanswered",
-      "s_emoji__state": "<pending:R6-1>",
-      "s_rtl__state": "<pending:R6-1>",
-      "s_mixed_plain__state": "<pending:R6-1>"
+      "s_emoji__state": "unanswered",
+      "s_rtl__state": "irrelevant",
+      "s_mixed_plain__state": "irrelevant"
     }
   }
 }

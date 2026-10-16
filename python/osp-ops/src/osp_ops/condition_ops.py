@@ -10,6 +10,7 @@ from osp_expr.ast import EXPR_ADAPTER
 from pydantic import JsonValue, ValidationError
 
 from .doc import NODE, QUESTION, QUOTA, VARIABLE, get, locate
+from .property_ops import QUESTION_CLASSES, model_fields
 from .registry import Ctx, Invocation, OpError, Params, diag, op
 
 type ExprField = Literal["showIf", "constraint", "if", "when", "expr"]
@@ -67,12 +68,19 @@ def set_condition(ctx: Ctx, p: SetCondition) -> Invocation:
     else:
         kind = str(obj.get("type") if loc.kind == NODE else obj.get("kind"))
     fields = FIELDS.get(kind)
-    if fields is None:
-        raise OpError("op.not_allowed", f"'{p.target}' ({kind}) has no condition", loc.pointer)
+    if fields is not None and loc.kind == QUESTION:
+        # Not every question type has every question field: a note has no `constraint`.
+        # Checked against the model, so set and clear both reject alike (and the inverse,
+        # a `set_property`, is always accepted).
+        kind = str(obj.get("type"))
+        cls = QUESTION_CLASSES.get(kind)
+        fields = tuple(f for f in fields if cls is not None and f in model_fields(cls))
+    if not fields:
+        raise OpError("op.not_applicable", f"'{p.target}' ({kind}) has no condition", loc.pointer)
     field = p.field or fields[0]
     if field not in fields:
         raise OpError(
-            "op.not_allowed",
+            "op.not_applicable",
             f"'{p.target}' ({kind}) has no '{field}'; it has {', '.join(fields)}",
             loc.pointer,
         )

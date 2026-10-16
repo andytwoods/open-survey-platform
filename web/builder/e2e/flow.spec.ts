@@ -157,6 +157,7 @@ test('build the §2.3 example flow with the mouse', async ({ page }) => {
 	// Edit the branch condition through the condition builder (B7).
 	await card(page, 'Branch: if consent == 0').getByRole('button', { name: 'Edit condition…', exact: true }).first().click();
 	await expect(page.getByRole('dialog', { name: 'Edit branch condition' })).toBeVisible();
+	await expect(page.getByRole('heading', { name: 'Branch if…' })).toBeVisible();
 	expect(await axe(page)).toEqual([]);
 	await page.keyboard.press('Escape');
 	await expect(page.getByRole('dialog', { name: 'Edit branch condition' })).toBeHidden();

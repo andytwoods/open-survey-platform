@@ -54,7 +54,7 @@ class ResponseView:
 
     @property
     def allocation_mode(self) -> Any:
-        if self.rec.get("allocation") == "seeded":  # PROVISIONAL R1-8: engine drew a condition
+        if self.rec.get("allocation") == "seeded":  # semantics §7 (R1-8): engine drew one
             return "seeded"
         return self._first(self.resp.allocation_mode, self.rec.get("allocation"))
 
@@ -84,7 +84,9 @@ class ResponseView:
             case "_submitted_at":
                 return iso_utc(r.submitted_at)
             case "_late":
-                return r.late
+                return bool(r.late)  # server-set (S-2); no flag means not late
+            case "_after_close":
+                return r.after_close
             case "_end":
                 return rec.get("end")
             case "_language":
@@ -132,6 +134,26 @@ class ResponseView:
             if var_id in values:
                 return values[var_id]
         return None
+
+    def variable_state(self, var_id: str) -> str | None:
+        """An embedded or computed variable's state (semantics C3a-5, C2-6): the record's
+        ``variableStates`` if it has one, else derived from its value and inputs."""
+        state = _map(self.rec.get("variableStates")).get(var_id)
+        if state in STATES:
+            return state
+        info = next((v for v in [*self.lay.embedded, *self.lay.computed] if v.id == var_id), None)
+        if info is None:
+            return None
+        if self.variable(var_id) is not None:
+            return "answered"
+        if info.kind == "embedded":
+            return "unanswered"
+        inputs = [self.state(q) or "not-reached" for q in info.inputs]
+        if inputs and all(s == "not-reached" for s in inputs):
+            return "not-reached"
+        if inputs and all(s in ("not-reached", "irrelevant") for s in inputs):
+            return "irrelevant"
+        return "unanswered"
 
     def orders(self) -> Mapping[str, Any]:
         return _map(self._first(self.rec.get("orders"), self.resp.orders))

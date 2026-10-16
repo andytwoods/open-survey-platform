@@ -1,7 +1,7 @@
 {
   "format": "osp-fixture-script/0",
   "id": "trailing-zeros",
-  "description": "a = 0.10, b = 0.20, z = 0.300, big = 9007199254740993.000: numerically the same as script exact, so the same questions show. Whether the stored and exported values keep the trailing zeros is R6-2.",
+  "description": "a = 0.10, b = 0.20, z = 0.300, big = 9007199254740993.000: numerically the same as script exact, so the same questions show. Values are stored and exported in canonical form, without trailing zeros (0.1, 0.2, 0.3, 9007199254740993; semantics §2).",
   "sessionSeed": 2602,
   "language": "en",
   "actions": [

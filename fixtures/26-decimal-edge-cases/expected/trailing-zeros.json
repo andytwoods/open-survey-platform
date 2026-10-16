@@ -2,9 +2,7 @@
   "format": "osp-fixture-expected/0",
   "fixture": "26-decimal-edge-cases",
   "script": "trailing-zeros",
-  "pending": [
-    "R6-2"
-  ],
+  "pending": [],
   "steps": [
     {
       "index": 0,
@@ -95,19 +93,19 @@
       "questions": {
         "a": {
           "state": "answered",
-          "value": "<pending:R6-2>"
+          "value": "0.1"
         },
         "b": {
           "state": "answered",
-          "value": "<pending:R6-2>"
+          "value": "0.2"
         },
         "big": {
           "state": "answered",
-          "value": "<pending:R6-2>"
+          "value": "9007199254740993"
         },
         "z": {
           "state": "answered",
-          "value": "<pending:R6-2>"
+          "value": "0.3"
         },
         "p2_anchor": {
           "state": "unanswered",
@@ -159,19 +157,19 @@
       "questions": {
         "a": {
           "state": "answered",
-          "value": "<pending:R6-2>"
+          "value": "0.1"
         },
         "b": {
           "state": "answered",
-          "value": "<pending:R6-2>"
+          "value": "0.2"
         },
         "big": {
           "state": "answered",
-          "value": "<pending:R6-2>"
+          "value": "9007199254740993"
         },
         "z": {
           "state": "answered",
-          "value": "<pending:R6-2>"
+          "value": "0.3"
         },
         "p2_anchor": {
           "state": "unanswered",
@@ -231,19 +229,19 @@
     "answers": {
       "a": {
         "state": "answered",
-        "value": "<pending:R6-2>"
+        "value": "0.1"
       },
       "b": {
         "state": "answered",
-        "value": "<pending:R6-2>"
+        "value": "0.2"
       },
       "big": {
         "state": "answered",
-        "value": "<pending:R6-2>"
+        "value": "9007199254740993"
       },
       "z": {
         "state": "answered",
-        "value": "<pending:R6-2>"
+        "value": "0.3"
       },
       "p2_anchor": {
         "state": "unanswered",

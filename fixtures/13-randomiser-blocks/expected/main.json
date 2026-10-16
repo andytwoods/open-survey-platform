@@ -46,8 +46,10 @@
     },
     {
       "index": 1,
-      "page": "<engine>",
-      "visible": "<engine>",
+      "page": "blk_y",
+      "visible": [
+        "q_y"
+      ],
       "errors": {},
       "nav": {
         "back": true
@@ -57,9 +59,18 @@
           "state": "answered",
           "value": "yes"
         },
-        "q_x": "<engine>",
-        "q_y": "<engine>",
-        "q_z": "<engine>",
+        "q_x": {
+          "state": "not-reached",
+          "value": null
+        },
+        "q_y": {
+          "state": "unanswered",
+          "value": null
+        },
+        "q_z": {
+          "state": "not-reached",
+          "value": null
+        },
         "outro_q": {
           "state": "not-reached",
           "value": null
@@ -67,7 +78,11 @@
       },
       "orders": {
         "blocks": {
-          "r_blocks": "<engine>"
+          "r_blocks": [
+            "blk_y",
+            "blk_x",
+            "blk_z"
+          ]
         },
         "items": {},
         "choices": {}
@@ -77,8 +92,10 @@
     },
     {
       "index": 2,
-      "page": "<engine>",
-      "visible": "<engine>",
+      "page": "blk_x",
+      "visible": [
+        "q_x"
+      ],
       "errors": {},
       "nav": {
         "back": true
@@ -88,9 +105,18 @@
           "state": "answered",
           "value": "yes"
         },
-        "q_x": "<engine>",
-        "q_y": "<engine>",
-        "q_z": "<engine>",
+        "q_x": {
+          "state": "unanswered",
+          "value": null
+        },
+        "q_y": {
+          "state": "answered",
+          "value": 2
+        },
+        "q_z": {
+          "state": "not-reached",
+          "value": null
+        },
         "outro_q": {
           "state": "not-reached",
           "value": null
@@ -98,7 +124,11 @@
       },
       "orders": {
         "blocks": {
-          "r_blocks": "<engine>"
+          "r_blocks": [
+            "blk_y",
+            "blk_x",
+            "blk_z"
+          ]
         },
         "items": {},
         "choices": {}
@@ -108,8 +138,10 @@
     },
     {
       "index": 3,
-      "page": "<engine>",
-      "visible": "<engine>",
+      "page": "blk_y",
+      "visible": [
+        "q_y"
+      ],
       "errors": {},
       "nav": {
         "back": true
@@ -119,9 +151,18 @@
           "state": "answered",
           "value": "yes"
         },
-        "q_x": "<engine>",
-        "q_y": "<engine>",
-        "q_z": "<engine>",
+        "q_x": {
+          "state": "unanswered",
+          "value": null
+        },
+        "q_y": {
+          "state": "answered",
+          "value": 2
+        },
+        "q_z": {
+          "state": "not-reached",
+          "value": null
+        },
         "outro_q": {
           "state": "not-reached",
           "value": null
@@ -129,7 +170,11 @@
       },
       "orders": {
         "blocks": {
-          "r_blocks": "<engine>"
+          "r_blocks": [
+            "blk_y",
+            "blk_x",
+            "blk_z"
+          ]
         },
         "items": {},
         "choices": {}
@@ -139,8 +184,10 @@
     },
     {
       "index": 4,
-      "page": "<engine>",
-      "visible": "<engine>",
+      "page": "blk_y",
+      "visible": [
+        "q_y"
+      ],
       "errors": {},
       "nav": {
         "back": true
@@ -150,9 +197,18 @@
           "state": "answered",
           "value": "yes"
         },
-        "q_x": "<engine>",
-        "q_y": "<engine>",
-        "q_z": "<engine>",
+        "q_x": {
+          "state": "unanswered",
+          "value": null
+        },
+        "q_y": {
+          "state": "answered",
+          "value": 2
+        },
+        "q_z": {
+          "state": "not-reached",
+          "value": null
+        },
         "outro_q": {
           "state": "not-reached",
           "value": null
@@ -160,7 +216,11 @@
       },
       "orders": {
         "blocks": {
-          "r_blocks": "<engine>"
+          "r_blocks": [
+            "blk_y",
+            "blk_x",
+            "blk_z"
+          ]
         },
         "items": {},
         "choices": {}
@@ -170,8 +230,10 @@
     },
     {
       "index": 5,
-      "page": "<engine>",
-      "visible": "<engine>",
+      "page": "blk_x",
+      "visible": [
+        "q_x"
+      ],
       "errors": {},
       "nav": {
         "back": true
@@ -181,9 +243,18 @@
           "state": "answered",
           "value": "yes"
         },
-        "q_x": "<engine>",
-        "q_y": "<engine>",
-        "q_z": "<engine>",
+        "q_x": {
+          "state": "unanswered",
+          "value": null
+        },
+        "q_y": {
+          "state": "answered",
+          "value": 2
+        },
+        "q_z": {
+          "state": "not-reached",
+          "value": null
+        },
         "outro_q": {
           "state": "not-reached",
           "value": null
@@ -191,7 +262,11 @@
       },
       "orders": {
         "blocks": {
-          "r_blocks": "<engine>"
+          "r_blocks": [
+            "blk_y",
+            "blk_x",
+            "blk_z"
+          ]
         },
         "items": {},
         "choices": {}
@@ -201,8 +276,10 @@
     },
     {
       "index": 6,
-      "page": "<engine>",
-      "visible": "<engine>",
+      "page": "blk_z",
+      "visible": [
+        "q_z"
+      ],
       "errors": {},
       "nav": {
         "back": true
@@ -212,9 +289,18 @@
           "state": "answered",
           "value": "yes"
         },
-        "q_x": "<engine>",
-        "q_y": "<engine>",
-        "q_z": "<engine>",
+        "q_x": {
+          "state": "answered",
+          "value": 1
+        },
+        "q_y": {
+          "state": "answered",
+          "value": 2
+        },
+        "q_z": {
+          "state": "unanswered",
+          "value": null
+        },
         "outro_q": {
           "state": "not-reached",
           "value": null
@@ -222,7 +308,11 @@
       },
       "orders": {
         "blocks": {
-          "r_blocks": "<engine>"
+          "r_blocks": [
+            "blk_y",
+            "blk_x",
+            "blk_z"
+          ]
         },
         "items": {},
         "choices": {}
@@ -264,7 +354,11 @@
       },
       "orders": {
         "blocks": {
-          "r_blocks": "<engine>"
+          "r_blocks": [
+            "blk_y",
+            "blk_x",
+            "blk_z"
+          ]
         },
         "items": {},
         "choices": {}
@@ -302,7 +396,11 @@
       },
       "orders": {
         "blocks": {
-          "r_blocks": "<engine>"
+          "r_blocks": [
+            "blk_y",
+            "blk_x",
+            "blk_z"
+          ]
         },
         "items": {},
         "choices": {}
@@ -371,7 +469,11 @@
     "conditions": {},
     "orders": {
       "blocks": {
-        "r_blocks": "<engine>"
+        "r_blocks": [
+          "blk_y",
+          "blk_x",
+          "blk_z"
+        ]
       },
       "items": {},
       "choices": {}

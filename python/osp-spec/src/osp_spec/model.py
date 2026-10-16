@@ -39,6 +39,9 @@ type LanguageTag = Annotated[str, StringConstraints(pattern=r"^[A-Za-z]{2,3}(-[A
 type Text = StrictStr | dict[LanguageTag, StrictStr]
 type ChoiceValue = StrictInt | StrictStr
 type Order = Literal["fixed", "shuffle"]
+# A decimal written as text, so no binary float sneaks in (semantics.md §2).
+type DecimalText = Annotated[str, StringConstraints(pattern=r"^-?(\d+(\.\d+)?)$", max_length=64)]
+type Date = Annotated[str, StringConstraints(pattern=r"^\d{4}-\d{2}-\d{2}$")]
 
 
 class Model(BaseModel):
@@ -63,8 +66,29 @@ class Metadata(Model):
     ddi: dict[str, JsonValue] | None = None  # free-form DDI study metadata
 
 
+class Retention(Model):
+    """How long participant data is kept (decided 16 Oct 2026: required before publishing,
+    no silent default). Maps onto the store's retention policy (`osp_store.retention`):
+
+    - `days-after-close`: delete `days` days after the survey closes;
+    - `after-date`: delete after `until` (a calendar date);
+    - `indefinite`: keep until the researcher deletes it (an explicit choice).
+    """
+
+    kind: Literal["days-after-close", "after-date", "indefinite"]
+    days: StrictInt | None = Field(default=None, ge=0)
+    until: Date | None = None
+
+
 class Settings(Model):
     backNavigation: bool = True  # semantics.md §5
+    # semantics.md §5 (R6-5): `every-page` saves to the server on every change; `end-only`
+    # sends nothing before the final submit and keeps its copy in `localCopy`.
+    saveMode: Literal["every-page", "end-only"] = "every-page"
+    localCopy: Literal["browser", "memory"] = "browser"
+    # semantics.md §5 (S-1): a resume link stops working after this many idle days.
+    resumeExpiryDays: StrictInt = Field(default=30, ge=1, le=3650)
+    retention: Retention | None = None  # required at publish (osp_spec.publish_diagnostics)
 
 
 # --- Choices ----------------------------------------------------------------------------
@@ -104,10 +128,14 @@ class _AnswerableBase(_QuestionBase):
 
 class IntegerQuestion(_AnswerableBase):
     type: Literal["integer"]
+    min: StrictInt | None = None  # inclusive; checked only on answered values (§4)
+    max: StrictInt | None = None
 
 
 class DecimalQuestion(_AnswerableBase):
     type: Literal["decimal"]
+    min: StrictInt | DecimalText | None = None  # inclusive; checked only on answered values
+    max: StrictInt | DecimalText | None = None
 
 
 class TextQuestion(_AnswerableBase):
@@ -164,6 +192,7 @@ class Page(Model):
 
     id: Identifier
     title: Text | None = None  # optional heading shown above the page's items
+    showIf: Condition | None = None  # false: the page is skipped, its items irrelevant (§6)
     items: list[Question] = Field(min_length=1)
     itemOrder: Order = "fixed"  # realised order fixed at first reach (semantics.md §7)
 
@@ -217,8 +246,8 @@ type Variable = Annotated[
 
 
 class QuotaFull(Model):
-    """What happens to a participant who hits a full quota: optionally show `block`, then
-    end with `outcome`."""
+    """What happens to a participant who hits a full quota (semantics.md §6): optionally
+    show `block` (at most one), then end with `outcome`. There is no `goto`."""
 
     block: Identifier | None = None
     outcome: Identifier
