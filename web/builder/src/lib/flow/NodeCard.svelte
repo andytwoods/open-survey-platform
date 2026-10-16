@@ -62,10 +62,31 @@
 		ctx.moveBy(id, e.key === 'ArrowUp' ? -1 : 1);
 	}
 
-	function ondragstart(e: DragEvent) {
-		e.dataTransfer?.setData('text/plain', id);
-		if (e.dataTransfer) e.dataTransfer.effectAllowed = 'move';
-		ctx.dragStart(id);
+	// Pointer drag on the handle: past a small threshold it becomes a drag; the gap under
+	// the pointer (a `data-gap` element not inside the dragged node) is the drop target.
+	let press: { x: number; y: number; pointer: number } | null = null;
+	function onpointerdown(e: PointerEvent) {
+		if (e.button !== 0) return;
+		press = { x: e.clientX, y: e.clientY, pointer: e.pointerId };
+		(e.currentTarget as HTMLElement).setPointerCapture?.(e.pointerId);
+	}
+	function onpointermove(e: PointerEvent) {
+		if (!press || e.pointerId !== press.pointer) return;
+		if (ctx.dragging !== id) {
+			if (Math.hypot(e.clientX - press.x, e.clientY - press.y) < 4) return;
+			ctx.dragStart(id);
+		}
+		const gap = document.elementFromPoint(e.clientX, e.clientY)?.closest<HTMLElement>('[data-gap]:not([data-blocked])');
+		ctx.dragOver(gap?.dataset.gap ?? null);
+	}
+	function onpointerup(e: PointerEvent) {
+		if (!press || e.pointerId !== press.pointer) return;
+		press = null;
+		if (ctx.dragging === id) ctx.drop();
+	}
+	function cancelDrag() {
+		press = null;
+		if (ctx.dragging === id) ctx.dragEnd();
 	}
 
 	// Field data
@@ -96,13 +117,18 @@
 		<button
 			type="button"
 			class="handle"
-			draggable="true"
 			data-flow-handle={id}
 			aria-label="Move {label}"
 			aria-describedby="flow-move-hint"
 			aria-keyshortcuts="Alt+ArrowUp Alt+ArrowDown"
-			{ondragstart}
-			ondragend={() => ctx.dragEnd()}
+			{onpointerdown}
+			{onpointermove}
+			{onpointerup}
+			onpointercancel={cancelDrag}
+			onlostpointercapture={() => ctx.dragging === id && press && cancelDrag()}
+			onkeydown={(e) => {
+				if (e.key === 'Escape' && ctx.dragging === id) cancelDrag();
+			}}
 		>
 			<GripVertical size={16} aria-hidden="true" />
 		</button>
@@ -120,9 +146,9 @@
 		{/if}
 		<span class="icon" aria-hidden="true"><Icon size={16} /></span>
 		<svelte:element this={`h${level}`} id="{uid}-h" class="title">
-			<span class="kind">{TYPE_LABEL[type]}</span>
-			<span class="osp-visually-hidden">:</span>
-			<span class="summary">{label.slice(label.indexOf(':') + 1).trim()}</span>
+			<span class="kind">{TYPE_LABEL[type]}:</span> <span class="summary"
+				>{label.slice(label.indexOf(':') + 1).trim()}</span
+			>
 		</svelte:element>
 		{#each flags as f (f.code + f.explanation)}
 			<Tooltip text={f.explanation} side="top">
@@ -140,16 +166,16 @@
 
 	<div class="body">
 		{#if type === 'block'}
-			<label class="field">
-				<span>Block</span>
-				<select value={String(node.block ?? '')} onchange={(e) => void set('block', e.currentTarget.value)}>
+			<div class="field">
+				<label for="{uid}-f1">Block</label>
+				<select id="{uid}-f1" value={String(node.block ?? '')} onchange={(e) => void set('block', e.currentTarget.value)}>
 					{#each blockList as b (b.id)}
 						<option value={b.id}>
 							{b.label} ({b.questions} {b.questions === 1 ? 'question' : 'questions'}){b.placed && b.id !== node.block ? ', already in the flow' : ''}
 						</option>
 					{/each}
 				</select>
-			</label>
+			</div>
 		{:else if type === 'branch'}
 			<p class="condition">
 				<span class="kw">If</span>
@@ -157,9 +183,9 @@
 			</p>
 			<Button size="sm" onclick={() => ctx.openCondition(id)}>Edit condition…</Button>
 		{:else if type === 'randomiser'}
-			<label class="field">
-				<span>Show</span>
-				<select
+			<div class="field">
+				<label for="{uid}-f2">Show</label>
+				<select id="{uid}-f2"
 					value={typeof node.pick === 'number' ? String(node.pick) : ''}
 					onchange={(e) => void set('pick', e.currentTarget.value ? Number(e.currentTarget.value) : undefined)}
 				>
@@ -168,7 +194,7 @@
 						<option value={String(k)}>{k} of {children_n}, chosen at random</option>
 					{/each}
 				</select>
-			</label>
+			</div>
 		{:else if type === 'assign'}
 			<fieldset class="field">
 				<legend>Variables to assign</legend>
@@ -190,12 +216,12 @@
 			</fieldset>
 			<p class="muted hint">Each participant gets one level of each, recorded in their response.</p>
 		{:else if type === 'quotaCheck'}
-			<label class="field">
-				<span>Quota</span>
-				<select value={String(node.quota ?? '')} onchange={(e) => void set('quota', e.currentTarget.value)}>
+			<div class="field">
+				<label for="{uid}-f3">Quota</label>
+				<select id="{uid}-f3" value={String(node.quota ?? '')} onchange={(e) => void set('quota', e.currentTarget.value)}>
 					{#each quotaList as q (q.id)}<option value={q.id}>{q.id}</option>{/each}
 				</select>
-			</label>
+			</div>
 			{#if quota}
 				<p class="muted hint">
 					Limit {quota.limit ?? '?'} · counts when <code>{quota.when}</code> · when full: {quota.onFull}
@@ -276,6 +302,7 @@
 		background: transparent;
 		color: var(--color-text-muted);
 		cursor: grab;
+		touch-action: none;
 	}
 	.toggle {
 		cursor: pointer;
@@ -308,7 +335,6 @@
 		color: var(--color-text);
 	}
 	.summary {
-		margin-inline-start: var(--space-1);
 		font-weight: normal;
 		color: var(--color-text-muted);
 	}
@@ -358,7 +384,7 @@
 		padding: 0;
 		color: var(--color-text-muted);
 	}
-	.field > span {
+	.field > label {
 		color: var(--color-text-muted);
 	}
 	select {

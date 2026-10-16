@@ -15,9 +15,14 @@ export interface FlowCtx {
 	openAdd(at: ListRef & { index: number }): void;
 	remove(id: string): void;
 	moveBy(id: string, dir: -1 | 1): void;
+	/** Key (`data-gap`) of the gap under the pointer while dragging. */
+	readonly overGap: string | null;
 	dragStart(id: string): void;
+	dragOver(gap: string | null): void;
+	/** Cancel a drag. */
 	dragEnd(): void;
-	drop(gap: ListRef & { index: number }): void;
+	/** Drop the dragged node on the gap under the pointer, if any. */
+	drop(): void;
 	openCondition(id: string): void;
 }
 

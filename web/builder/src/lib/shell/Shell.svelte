@@ -5,6 +5,9 @@
 	import AppearanceView from '../appearance/AppearanceView.svelte';
 	import { appearanceCommands, type BuilderView } from '../appearance/commands';
 	import { themeEditor } from '../appearance/theme-editor.svelte';
+	import { flowCommands } from '../flow/commands';
+	import { requestAddNode } from '../flow/flow-ui.svelte';
+	import FlowView from '../flow/FlowView.svelte';
 	import { onDestroy, onMount } from 'svelte';
 	import { CommandRegistry } from '../commands/registry';
 	import { detectMac } from '../commands/shortcut';
@@ -79,6 +82,7 @@
 	const routeOf = (v: BuilderView) => {
 		if (store) {
 			const id = store.surveyId;
+			if (v === 'flow') return resolve('/surveys/[id]/flow', { id });
 			return v === 'appearance'
 				? resolve('/surveys/[id]/appearance', { id })
 				: resolve('/surveys/[id]', { id });
@@ -141,9 +145,19 @@
 			open: (v) => goto(routeOf(v))
 		})
 	);
+	const offFlow = registry.registerAll(
+		flowCommands({
+			inFlow: () => view === 'flow',
+			canOpen: () => !!store,
+			// eslint-disable-next-line svelte/no-navigation-without-resolve -- routeOf resolves
+			open: () => goto(routeOf('flow')),
+			addNode: requestAddNode
+		})
+	);
 	onDestroy(() => {
 		offCommands();
 		offAppearance();
+		offFlow();
 	});
 
 	onMount(() => {
@@ -166,6 +180,7 @@
 		{title}
 		saveState={store?.saveState ?? 'saved'}
 		{view}
+		viewTabs={!!store}
 		{registry}
 		health={health.state}
 		{outlineCollapsible}
@@ -184,6 +199,10 @@
 	{#if view === 'appearance'}
 		<main id="pane-appearance" class="appearance" aria-label="Appearance">
 			<AppearanceView />
+		</main>
+	{:else if view === 'flow' && store}
+		<main id="pane-flow" class="flow" aria-labelledby="flow-heading">
+			<FlowView {store} />
 		</main>
 	{:else}
 	<div class="panes">
@@ -278,10 +297,15 @@
 		height: 100dvh;
 		overflow: hidden;
 	}
-	.appearance {
+	.appearance,
+	.flow {
 		flex: 1;
 		min-height: 0;
 		overflow: hidden;
+	}
+	.flow {
+		overflow: auto;
+		background: var(--color-bg);
 	}
 	.panes {
 		position: relative;

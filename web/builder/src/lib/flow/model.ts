@@ -467,3 +467,12 @@ export function describeSlot(survey: unknown, slot: ListRef & { index: number })
 			: `${ARM_LABEL[slot.arm ?? 'then']} of ${nodeLabel(walk(survey).find((r) => r.id === slot.parent)?.node, survey)}`;
 	return `${where}, position ${slot.index + 1}`;
 }
+
+/** A gap's `data-gap` key ("flow::2", "branch_1:then:0") back to a place, or null. */
+export function parseGap(key: string | null | undefined): (ListRef & { index: number }) | null {
+	if (typeof key !== 'string') return null;
+	const m = /^([A-Za-z_][A-Za-z0-9_]*):(then|else|children)?:(\d+)$/.exec(key);
+	if (!m) return null;
+	if (!m[2]) return m[1] === 'flow' ? { parent: null, arm: null, index: Number(m[3]) } : null;
+	return { parent: m[1], arm: m[2] as ArmName, index: Number(m[3]) };
+}
