@@ -2,9 +2,7 @@
   "format": "osp-fixture-expected/0",
   "fixture": "32-trial-position-builtins",
   "script": "position",
-  "pending": [
-    "R6-3"
-  ],
+  "pending": [],
   "steps": [
     {
       "index": 0,
@@ -51,7 +49,7 @@
       "end": null,
       "builtins": {
         "trial": 1,
-        "position": "<pending:R6-3>"
+        "position": null
       }
     },
     {
@@ -402,7 +400,7 @@
       "end": null,
       "builtins": {
         "trial": 5,
-        "position": "<pending:R6-3>"
+        "position": null
       }
     },
     {
@@ -504,7 +502,7 @@
       "end": null,
       "builtins": {
         "trial": 5,
-        "position": "<pending:R6-3>"
+        "position": null
       }
     },
     {

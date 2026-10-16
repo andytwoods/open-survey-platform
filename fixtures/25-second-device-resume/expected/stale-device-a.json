@@ -2,9 +2,7 @@
   "format": "osp-fixture-expected/0",
   "fixture": "25-second-device-resume",
   "script": "stale-device-a",
-  "pending": [
-    "R6-6"
-  ],
+  "pending": [],
   "steps": [
     {
       "index": 0,
@@ -236,25 +234,126 @@
     },
     {
       "index": 5,
-      "page": "<pending:R6-6>",
-      "visible": "<pending:R6-6>",
-      "errors": "<pending:R6-6>",
-      "nav": "<pending:R6-6>",
-      "questions": "<pending:R6-6>",
+      "page": "p3",
+      "visible": [
+        "t2"
+      ],
+      "errors": {},
+      "nav": {
+        "back": true
+      },
+      "questions": {
+        "colour": {
+          "state": "answered",
+          "value": "green"
+        },
+        "n1": {
+          "state": "answered",
+          "value": 5
+        },
+        "t1": {
+          "state": "answered",
+          "value": "the kitchen"
+        },
+        "t2": {
+          "state": "unanswered",
+          "value": null
+        },
+        "t3": {
+          "state": "not-reached",
+          "value": null
+        }
+      },
       "orders": {
         "blocks": {},
         "items": {},
         "choices": {
-          "colour": "<engine>"
+          "colour": [
+            "blue",
+            "green",
+            "red",
+            "grey"
+          ]
         }
       },
       "conditions": {
         "framing": "loss"
       },
-      "end": "<pending:R6-6>",
-      "device": "A"
+      "end": null,
+      "device": "A",
+      "notice": "conflict"
     }
   ],
-  "invariants": [],
-  "response": "<pending:R6-6>"
+  "invariants": [
+    {
+      "kind": "permutation",
+      "of": [
+        "red",
+        "green",
+        "blue",
+        "grey"
+      ],
+      "paths": [
+        "response.orders.choices.colour"
+      ]
+    },
+    {
+      "kind": "equal",
+      "paths": [
+        "steps[0].orders.choices.colour",
+        "steps[1].orders.choices.colour",
+        "steps[2].orders.choices.colour",
+        "steps[3].orders.choices.colour",
+        "steps[4].orders.choices.colour",
+        "steps[5].orders.choices.colour",
+        "response.orders.choices.colour"
+      ]
+    }
+  ],
+  "response": {
+    "surveyId": "f25_second_device",
+    "surveyVersion": 1,
+    "end": null,
+    "allocation": "server",
+    "sessionSeed": 2502,
+    "conditions": {
+      "framing": "loss"
+    },
+    "orders": {
+      "blocks": {},
+      "items": {},
+      "choices": {
+        "colour": "<engine>"
+      }
+    },
+    "answers": {
+      "colour": {
+        "state": "answered",
+        "value": "green"
+      },
+      "n1": {
+        "state": "answered",
+        "value": 5
+      },
+      "t1": {
+        "state": "answered",
+        "value": "the kitchen"
+      },
+      "t2": {
+        "state": "unanswered",
+        "value": null
+      },
+      "t3": {
+        "state": "not-reached",
+        "value": null
+      }
+    },
+    "csvState": {
+      "colour__state": "answered",
+      "n1__state": "answered",
+      "t1__state": "answered",
+      "t2__state": "unanswered",
+      "t3__state": "not-reached"
+    }
+  }
 }

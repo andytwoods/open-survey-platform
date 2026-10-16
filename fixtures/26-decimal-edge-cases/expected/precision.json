@@ -2,9 +2,7 @@
   "format": "osp-fixture-expected/0",
   "fixture": "26-decimal-edge-cases",
   "script": "precision",
-  "pending": [
-    "R6-2"
-  ],
+  "pending": [],
   "steps": [
     {
       "index": 0,
@@ -79,6 +77,82 @@
     },
     {
       "index": 1,
+      "page": "p1",
+      "visible": [
+        "a",
+        "b",
+        "big",
+        "z"
+      ],
+      "errors": {
+        "big": {
+          "kind": "invalid",
+          "code": "value.too_long"
+        }
+      },
+      "nav": {
+        "back": false
+      },
+      "questions": {
+        "a": {
+          "state": "answered",
+          "value": "0.000000001"
+        },
+        "b": {
+          "state": "answered",
+          "value": "0.2"
+        },
+        "big": {
+          "state": "unanswered",
+          "value": null
+        },
+        "z": {
+          "state": "answered",
+          "value": "1"
+        },
+        "p2_anchor": {
+          "state": "not-reached",
+          "value": null
+        },
+        "s_sum_eq": {
+          "state": "not-reached",
+          "value": null
+        },
+        "s_sum_gt": {
+          "state": "not-reached",
+          "value": null
+        },
+        "s_mul": {
+          "state": "not-reached",
+          "value": null
+        },
+        "s_sub": {
+          "state": "not-reached",
+          "value": null
+        },
+        "s_big_gt": {
+          "state": "not-reached",
+          "value": null
+        },
+        "s_big_eq": {
+          "state": "not-reached",
+          "value": null
+        },
+        "s_big_plus": {
+          "state": "not-reached",
+          "value": null
+        }
+      },
+      "orders": {
+        "blocks": {},
+        "items": {},
+        "choices": {}
+      },
+      "conditions": {},
+      "end": null
+    },
+    {
+      "index": 2,
       "page": "p2",
       "visible": [
         "p2_anchor",
@@ -99,7 +173,7 @@
         },
         "big": {
           "state": "answered",
-          "value": "<pending:R6-2>"
+          "value": "12345678901234567890.12345678"
         },
         "z": {
           "state": "answered",
@@ -147,7 +221,7 @@
       "end": null
     },
     {
-      "index": 2,
+      "index": 3,
       "page": null,
       "visible": [],
       "errors": {},
@@ -163,7 +237,7 @@
         },
         "big": {
           "state": "answered",
-          "value": "<pending:R6-2>"
+          "value": "12345678901234567890.12345678"
         },
         "z": {
           "state": "answered",
@@ -235,7 +309,7 @@
       },
       "big": {
         "state": "answered",
-        "value": "<pending:R6-2>"
+        "value": "12345678901234567890.12345678"
       },
       "z": {
         "state": "answered",

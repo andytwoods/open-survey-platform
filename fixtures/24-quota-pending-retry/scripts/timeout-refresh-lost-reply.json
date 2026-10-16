@@ -1,7 +1,7 @@
 {
   "format": "osp-fixture-script/0",
   "id": "timeout-refresh-lost-reply",
-  "description": "next sends the quota call: it times out (no reply, effect pending). A refresh restores the pending effect without re-rolling or re-sending. Retry 1: the server records 'open' but the reply is lost. Retry 2: the server returns the recorded 'open'. Back and next pass qc_north again using the recorded result (no new call). Replay with the quota now full still gives the same response.",
+  "description": "next sends the quota call: it times out (no reply, effect pending, back disabled). A refresh restores the pending effect and re-sends the call with the same idempotency key: the server records 'open' but the reply is lost. A retry gets the recorded 'open'. Back and next pass qc_north again using the recorded result (no new call). Replay with the quota now full still gives the same response.",
   "sessionSeed": 2401,
   "language": "en",
   "replay": {
@@ -34,10 +34,6 @@
     {
       "expectPage": "p1",
       "do": "refresh"
-    },
-    {
-      "expectPage": "p1",
-      "do": "retry"
     },
     {
       "expectPage": "p1",

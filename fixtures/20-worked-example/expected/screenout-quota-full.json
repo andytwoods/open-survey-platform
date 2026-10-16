@@ -2,13 +2,7 @@
   "format": "osp-fixture-expected/0",
   "fixture": "20-worked-example",
   "script": "screenout-quota-full",
-  "pending": [
-    "C3a-1",
-    "C3a-2",
-    "C3a-3",
-    "C3a-4",
-    "C3a-5"
-  ],
+  "pending": [],
   "steps": [
     {
       "index": 0,
@@ -176,14 +170,14 @@
         "framing": "gain",
         "incentive": "£5 voucher"
       },
-      "end": "<pending:C3a-3>"
+      "end": "quota_full"
     }
   ],
   "invariants": [],
   "response": {
     "surveyId": "srv_7f3c",
     "surveyVersion": 3,
-    "end": "<pending:C3a-3>",
+    "end": "quota_full",
     "allocation": "server",
     "sessionSeed": 404,
     "conditions": {
@@ -222,16 +216,22 @@
       "age__state": "answered",
       "att1__state": "not-reached",
       "att2__state": "not-reached",
-      "att3__state": "not-reached"
+      "att3__state": "not-reached",
+      "source__state": "answered",
+      "age_band__state": "answered",
+      "att_score__state": "not-reached"
     },
-    "calculated": {
-      "age_band": "<pending:C3a-2>"
+    "computed": {
+      "age_band": "40+",
+      "att_score": null
     },
-    "scores": {
-      "att_score": "<pending:C3a-4>"
+    "embedded": {
+      "source": "direct"
     },
-    "embeddedData": {
-      "source": "<pending:C3a-5>"
+    "variableStates": {
+      "source": "answered",
+      "age_band": "answered",
+      "att_score": "not-reached"
     }
   }
 }

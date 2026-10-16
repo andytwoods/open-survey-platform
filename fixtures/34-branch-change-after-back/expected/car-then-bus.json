@@ -2,9 +2,7 @@
   "format": "osp-fixture-expected/0",
   "fixture": "34-branch-change-after-back",
   "script": "car-then-bus",
-  "pending": [
-    "C3a-6"
-  ],
+  "pending": [],
   "steps": [
     {
       "index": 0,
@@ -223,8 +221,14 @@
           "state": "answered",
           "value": "bus"
         },
-        "car_make": "<pending:C3a-6>",
-        "car_age": "<pending:C3a-6>",
+        "car_make": {
+          "state": "irrelevant",
+          "value": null
+        },
+        "car_age": {
+          "state": "irrelevant",
+          "value": null
+        },
         "bus_line": {
           "state": "unanswered",
           "value": null
@@ -257,8 +261,14 @@
           "state": "answered",
           "value": "bus"
         },
-        "car_make": "<pending:C3a-6>",
-        "car_age": "<pending:C3a-6>",
+        "car_make": {
+          "state": "irrelevant",
+          "value": null
+        },
+        "car_age": {
+          "state": "irrelevant",
+          "value": null
+        },
         "bus_line": {
           "state": "answered",
           "value": "42"
@@ -287,8 +297,14 @@
           "state": "answered",
           "value": "bus"
         },
-        "car_make": "<pending:C3a-6>",
-        "car_age": "<pending:C3a-6>",
+        "car_make": {
+          "state": "irrelevant",
+          "value": null
+        },
+        "car_age": {
+          "state": "irrelevant",
+          "value": null
+        },
         "bus_line": {
           "state": "answered",
           "value": "42"
@@ -325,8 +341,14 @@
         "state": "answered",
         "value": "bus"
       },
-      "car_make": "<pending:C3a-6>",
-      "car_age": "<pending:C3a-6>",
+      "car_make": {
+        "state": "irrelevant",
+        "value": null
+      },
+      "car_age": {
+        "state": "irrelevant",
+        "value": null
+      },
       "bus_line": {
         "state": "answered",
         "value": "42"
@@ -338,8 +360,8 @@
     },
     "csvState": {
       "route__state": "answered",
-      "car_make__state": "<pending:C3a-6>",
-      "car_age__state": "<pending:C3a-6>",
+      "car_make__state": "irrelevant",
+      "car_age__state": "irrelevant",
       "bus_line__state": "answered",
       "comment__state": "unanswered"
     }
