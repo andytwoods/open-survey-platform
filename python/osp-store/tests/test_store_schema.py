@@ -20,6 +20,14 @@ EXPECTED_TABLES = {
     "sessions",
     "responses",
     "audit_log",
+    # participant runtime (R2, migration 0002)
+    "publications",
+    "participant_sessions",
+    "quota_counters",
+    "quota_claims",
+    "assignment_counters",
+    "session_conflicts",
+    "response_records",
 }
 
 # Anything that would let us store where a participant connected from or with what.

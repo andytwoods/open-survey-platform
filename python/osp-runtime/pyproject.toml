@@ -5,7 +5,10 @@ description = "Open Survey Platform: osp-runtime (layer L4)"
 readme = "README.md"
 license = "MIT"
 requires-python = ">=3.14"
-dependencies = []
+dependencies = ["osp-engine"]
+
+[tool.uv.sources]
+osp-engine = { workspace = true }
 
 [build-system]
 requires = ["uv_build>=0.11,<0.12"]
