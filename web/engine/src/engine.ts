@@ -17,7 +17,7 @@
  *   page submit (`next`).
  * - §5 back keeps values and re-evaluates later pages when they are reached again.
  * - §6 a page with no relevant item is skipped and its questions become irrelevant
- *   (PROVISIONAL C3a-1: notes count as content, so a notes-only page is shown). Running off
+ *   (PROVISIONAL R1-6, C3a-1: notes count as content, so a notes-only page is shown). Running off
  *   the end of the flow is `end: complete`.
  * - §7 realised orders are computed at first reach and stored before the page renders.
  */
@@ -381,7 +381,7 @@ function walk(plan: Plan, d: Data, cursor: Frame[], t: number): WalkOutcome {
 				break;
 			case 'quotaCheck': {
 				const quota = plan.quotas[node.quota];
-				// PROVISIONAL (C3a-3, C2-7): the check applies only while `when` is true;
+				// PROVISIONAL (R1-5, C3a-3, C2-7): the check applies only while `when` is true;
 				// the server result is asked once per node and then reused (idempotent);
 				// `full` shows the onFull block's pages, then ends with its outcome.
 				const applies = quota ? evaluateCondition(quota.when, new Env(plan, d, cursor).lookup) : false;
@@ -439,6 +439,7 @@ function validate(plan: Plan, d: Data, pageId: Id): Record<Id, PageError> {
 	for (const id of displayOrder(plan, d, pageId)) {
 		const item = plan.items[id];
 		if (!item || !isQuestion(item) || !env.relevant(id)) continue;
+		// PROVISIONAL (R1-4): unreadable input blocks the page, even on an optional question.
 		const bad = d.invalid[id];
 		if (bad !== undefined) errors[id] = { kind: 'invalid', code: bad };
 		else if (env.value(id) === null) {
@@ -804,7 +805,7 @@ function pipeText(plan: Plan, d: Data, env: Env, id: string): string {
 			return c ? plainText(plan, d.language, c.label) : String(code);
 		};
 		if (item.type === 'single') return label(stored);
-		// PROVISIONAL (R1-4, C3a-9): a multi answer pipes its labels in choice-list order,
+		// PROVISIONAL (R1-3, C3a-9): a multi answer pipes its labels in choice-list order,
 		// joined with ", "; a decimal pipes as typed.
 		if (item.type === 'multi') return (stored as ChoiceValue[]).map(label).join(', ');
 		return String(stored);
@@ -975,7 +976,7 @@ export function result(state: State): ResponseRecord {
 		device: d.device,
 		end: d.ended?.outcome ?? null,
 		endNode: d.ended?.nodeId ?? null,
-		// PROVISIONAL (R1-5): `seeded` when the engine drew any condition itself.
+		// PROVISIONAL (R1-8): `seeded` when the engine drew any condition itself.
 		allocation: sources.includes('seeded') ? 'seeded' : 'server',
 		assigned: serverAssigned(d),
 		conditions: { ...d.conditions },

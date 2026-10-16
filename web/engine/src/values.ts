@@ -18,7 +18,7 @@ export type Stored = null | number | string | Code[];
 /**
  * Python's `str.strip()` whitespace (str.isspace), so trimming matches the reference
  * evaluator: JS `trim()` differs (it strips U+FEFF; it keeps U+001C–U+001F and U+0085).
- * Semantics.md Open questions R1-3.
+ * Semantics.md Open questions R1-7 (and R6-1).
  */
 const PY_WS =
 	'\\t\\n\\v\\f\\r\\u001c-\\u001f \\u0085\\u00a0\\u1680\\u2000-\\u200a\\u2028\\u2029\\u202f\\u205f\\u3000';
