@@ -40,7 +40,9 @@ export interface Orders {
 export type PageError =
 	| { kind: 'required' }
 	| { kind: 'constraint' }
-	| { kind: 'invalid'; code: string };
+	| { kind: 'invalid'; code: string }
+	/** From a hook's `rejectPage` (R7). The message is untrusted text: always escaped. */
+	| { kind: 'hook'; text: string };
 
 export interface QuotaEffect {
 	kind: 'quota';
@@ -54,9 +56,10 @@ export interface EndEffect {
 	nodeId: Id | null;
 }
 /**
- * Seam for researcher hooks (task R7, runtime-design.md §7a): every hook call will be an
- * engine effect with an invocation id and the state revision it saw. The v1 engine never
- * emits one; `resolve` rejects hook results until R7 defines their actions.
+ * A researcher hook call (task R7, runtime-design.md §7a): an effect with an invocation id
+ * and the state revision it saw. The hook runner (`web/hooks-sandbox`) creates it, runs the
+ * hook, and records the validated outcome with `resolve(state, effect, HookResolution)`.
+ * A result for any other revision is stale and refused.
  */
 export interface HookEffect {
 	kind: 'hook';
@@ -64,6 +67,39 @@ export interface HookEffect {
 	event: string;
 	revision: number;
 }
+
+/** The actions a hook may take, after host-side validation (runtime-design.md §7a). */
+export type HookAction =
+	| { kind: 'setVariable'; id: Id; value: string | number | boolean | null }
+	| { kind: 'addParadata'; key: string; value: string | number | boolean | null }
+	| { kind: 'rejectPage'; itemId: Id | null; message: string }
+	| { kind: 'setEndRedirect'; templateId: string; params: Record<string, string> }
+	| { kind: 'postToParent'; type: string; payload: unknown };
+
+/**
+ * A hook outcome as recorded in the event log. `failed`: the hook failed and the session
+ * goes on (non-critical, or a flow-critical hook before its retry). `fatal`: a flow-critical
+ * hook failed after its retry; the session ends with outcome `hook-failed`.
+ */
+export interface HookResolution {
+	status: 'ok' | 'failed' | 'fatal';
+	actions: HookAction[];
+	/** The seed of the hook's `ctx.random()` and the injected `ctx.now()`, as used. */
+	seed: number;
+	now: number;
+	error?: string;
+	/** Actions the host refused, as short codes (logged, never applied). */
+	diagnostics?: string[];
+}
+
+export interface HookData {
+	vars: Record<Id, string | number | boolean | null>;
+	paradata: Array<{ key: string; value: string | number | boolean | null; event: string }>;
+	redirect: { templateId: string; params: Record<string, string> } | null;
+	/** Parent messages sent (the payloads are in the event log). */
+	parentMessages: number;
+}
+
 export type Effect = QuotaEffect | EndEffect | HookEffect;
 
 export interface HistoryEntry {
@@ -106,7 +142,7 @@ export type EngineEvent =
 	| (EventBase & { type: 'back'; from: Id | null; to?: Id | null })
 	| (EventBase & {
 			type: 'resolve';
-			effect: { kind: string; nodeId?: Id; invocationId?: string };
+			effect: { kind: string; nodeId?: Id; invocationId?: string; event?: string; revision?: number };
 			value: unknown;
 			result?: StepResult;
 	  })
@@ -148,6 +184,8 @@ export interface Data {
 	frozen: Record<Id, QuestionState>;
 	ended: { outcome: Id; nodeId: Id | null; at: number } | null;
 	events: EngineEvent[];
+	/** What researcher hooks recorded (R7). Absent until the first hook result. */
+	hooks?: HookData;
 }
 
 export interface State {
@@ -243,6 +281,8 @@ export interface ResponseRecord {
 	endedAt: number | null;
 	revision: number;
 	events: EngineEvent[];
+	/** Hook variables, paradata and the chosen end redirect (R7). Present once a hook ran. */
+	hooks?: { vars: HookData['vars']; paradata: HookData['paradata']; redirect: HookData['redirect'] };
 }
 
 export interface Ctx {

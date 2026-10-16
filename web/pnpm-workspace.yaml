@@ -3,3 +3,5 @@ packages:
   - api-client
   - ui-components
   - engine
+  - runtime
+  - hooks-sandbox
