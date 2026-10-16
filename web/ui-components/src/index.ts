@@ -17,3 +17,5 @@ export { announcer, announce, toast } from './live-region.svelte';
 export type { Politeness, ToastKind, ToastItem } from './live-region.svelte';
 export { theme } from './theme.svelte';
 export type { ThemePreference, ResolvedTheme } from './theme.svelte';
+// Survey themes: types, presets, themeToCssVars (runtime-design §6a).
+export * from './theme/index';

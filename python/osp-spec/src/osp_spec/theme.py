@@ -234,6 +234,7 @@ PAIRS: tuple[tuple[str, str, float, str, str], ...] = (
     ("accent", "bg", TEXT_RATIO, "link text / filled button label", "accent"),
     ("accent", "surface", TEXT_RATIO, "link text on a card", "accent"),
     ("accent", "selected", UI_RATIO, "selected choice border", "accent"),
+    ("accent", "accent-subtle", TEXT_RATIO, "outline button label on hover", "accent"),
     ("on-accent", "accent-hover", TEXT_RATIO, "button label on hover", "accent"),
     ("danger", "bg", TEXT_RATIO, "error message", "error"),
     ("danger", "surface", TEXT_RATIO, "error message on a card", "error"),
