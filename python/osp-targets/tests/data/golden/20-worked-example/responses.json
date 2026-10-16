@@ -6,7 +6,7 @@
     "version": 3,
     "checksum": "sha256:test-20-worked-example"
   },
-  "missingValues": "Every answer is {state, value}. state is answered, unanswered (shown, left empty), irrelevant (page reached, hidden by its show-if) or not-reached (the flow never got to its page); value is null unless state is answered. state is null only if the stored record has no entry for the question.",
+  "missingValues": "Every answer is {state, value}. state is answered, unanswered (shown, left empty), irrelevant (page reached, hidden by its show-if) or not-reached (the flow never got to its page); value is null unless state is answered. state is null only if the stored record has no entry for the question. Embedded and computed variables are {state, value} too: answered when they have a value; otherwise unanswered, or (computed) irrelevant / not-reached when every question they read is.",
   "options": {
     "events": true
   },
@@ -24,6 +24,7 @@
       "startedAt": "2026-10-16T09:30:00.000Z",
       "submittedAt": "2026-10-16T09:30:30.250Z",
       "late": false,
+      "afterClose": null,
       "end": "complete",
       "language": "en",
       "conditions": {
@@ -53,7 +54,10 @@
         }
       },
       "variables": {
-        "source": "direct"
+        "source": {
+          "state": "answered",
+          "value": "direct"
+        }
       },
       "orders": {
         "blocks": {},
@@ -212,6 +216,7 @@
       "startedAt": "2026-10-16T09:31:00.000Z",
       "submittedAt": "2026-10-16T09:31:30.250Z",
       "late": false,
+      "afterClose": null,
       "end": "declined",
       "language": "en",
       "conditions": {
@@ -241,7 +246,10 @@
         }
       },
       "variables": {
-        "source": "direct"
+        "source": {
+          "state": "answered",
+          "value": "direct"
+        }
       },
       "orders": {
         "blocks": {},
@@ -307,6 +315,7 @@
       "startedAt": "2026-10-16T09:32:00.000Z",
       "submittedAt": "2026-10-16T09:32:30.250Z",
       "late": false,
+      "afterClose": null,
       "end": "complete",
       "language": "en",
       "conditions": {
@@ -336,7 +345,10 @@
         }
       },
       "variables": {
-        "source": "direct"
+        "source": {
+          "state": "answered",
+          "value": "direct"
+        }
       },
       "orders": {
         "blocks": {},

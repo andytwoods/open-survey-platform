@@ -1031,11 +1031,9 @@ export interface components {
             baseRevision?: number | null;
             /**
              * Savemode
-             * @description Participant save mode (runtime-design section 5.0)
-             * @default every-page
-             * @enum {string}
+             * @description Participant save mode (runtime-design section 5.0); default: the survey's settings.saveMode
              */
-            saveMode: "every-page" | "end-only";
+            saveMode?: ("every-page" | "end-only") | null;
         };
         /** PublishResponse */
         PublishResponse: {

@@ -12,6 +12,8 @@ from osp_store import ParticipantStore, TenantContext
 
 REPO = Path(__file__).resolve().parents[3]
 SURVEY = json.loads((REPO / "fixtures/01-all-types/survey.json").read_text(encoding="utf-8"))
+# Publishing needs an explicit retention policy (semantics decisions, 16 Oct 2026).
+SURVEY["settings"] = {**SURVEY.get("settings", {}), "retention": {"kind": "indefinite"}}
 RECORDS = REPO / "python/osp-targets/tests/data/records/01-all-types"
 
 
@@ -25,7 +27,7 @@ def _published(benv) -> tuple[str, TenantContext, str]:
     return sid, TenantContext(benv.tenants["A"], "system:test"), pub.json()["versionId"]
 
 
-def _submit(benv, ctx: TenantContext, version_id: str) -> str:
+def _submit(benv, ctx: TenantContext, version_id: str, *, late: bool = False) -> str:
     """One response through the participant store (with its full engine record)."""
     rec = json.loads((RECORDS / "answered.json").read_text(encoding="utf-8"))
     ps = ParticipantStore(benv.store)
@@ -42,6 +44,7 @@ def _submit(benv, ctx: TenantContext, version_id: str) -> str:
         record_checksum="a" * 64,
         realised_orders=rec["orders"],
         engine_version=rec["engineVersion"],
+        late=late,
     )
     assert res.status == "ok"
     return res.response_id
@@ -96,10 +99,24 @@ def test_export_csv_json_and_codebook(benv):
     assert cj["saveMode"]["mode"] == "end-only"
     assert [v["name"] for v in cj["variables"]][:2] == ["n_int", "n_dec"]
 
-    # closing the survey before a submission marks it late (provisional, M2-1)
+    # closing the survey before a submission marks it _after_close, not late: _late is
+    # the server's flag for a submit after the session expired (semantics S-2, M2-1)
     benv.store.close_survey(ctx, sid, datetime(2000, 1, 1, tzinfo=UTC))
-    late = _rows(c.get(f"/api/surveys/{sid}/export/responses").content)
-    assert {row["_late"] for row in late} == {"true"}
+    after = _rows(c.get(f"/api/surveys/{sid}/export/responses").content)
+    assert {row["_after_close"] for row in after} == {"true"}
+    assert {row["_late"] for row in after} == {"false"}
+
+
+def test_late_column_reads_the_server_flag(benv):
+    sid, ctx, vid = _published(benv)
+    rid = _submit(benv, ctx, vid, late=True)  # accepted after the session expired (S-2)
+    c = benv.login("editor@a.example")
+    row = {
+        r["_response_id"]: r for r in _rows(c.get(f"/api/surveys/{sid}/export/responses").content)
+    }
+    assert row[rid]["_late"] == "true" and row[rid]["_after_close"] == "false"
+    doc = c.get(f"/api/surveys/{sid}/export/responses?format=json").json()
+    assert doc["responses"][0]["late"] is True
 
 
 def test_export_errors(benv):

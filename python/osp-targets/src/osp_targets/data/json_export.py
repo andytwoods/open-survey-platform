@@ -11,7 +11,7 @@ import json
 from collections.abc import Mapping, Sequence
 from typing import Any
 
-from .layout import Layout, build_layout
+from .layout import Layout, build_layout, split_names
 from .model import JsonOptions, StoredResponse, SurveyVersion
 from .view import ResponseView, _map
 
@@ -21,7 +21,9 @@ MISSING_VALUES = (
     "Every answer is {state, value}. state is answered, unanswered (shown, left empty), "
     "irrelevant (page reached, hidden by its show-if) or not-reached (the flow never got to "
     "its page); value is null unless state is answered. state is null only if the stored "
-    "record has no entry for the question."
+    "record has no entry for the question. Embedded and computed variables are {state, "
+    "value} too: answered when they have a value; otherwise unanswered, or (computed) "
+    "irrelevant / not-reached when every question they read is."
 )
 
 _META_KEYS = {
@@ -37,6 +39,7 @@ _META_KEYS = {
     "_started_at": "startedAt",
     "_submitted_at": "submittedAt",
     "_late": "late",
+    "_after_close": "afterClose",
     "_end": "end",
     "_language": "language",
 }
@@ -63,7 +66,8 @@ def response_json(view: ResponseView, opts: JsonOptions) -> dict[str, Any]:
         answers[q.name] = {"state": state, "value": _json_value(value)}
     out["answers"] = answers
     out["variables"] = {
-        v.name: _json_value(view.variable(v.id)) for v in [*lay.embedded, *lay.computed]
+        v.name: {"state": view.variable_state(v.id), "value": _json_value(view.variable(v.id))}
+        for v in [*lay.embedded, *lay.computed]
     }
     orders: dict[str, dict[str, Any]] = {"blocks": {}, "items": {}, "choices": {}}
     for o in lay.orders:
@@ -117,15 +121,19 @@ def export_json_combined(
     options: JsonOptions | None = None,
 ) -> bytes:
     """Several versions: ``versions`` lists each one, and every response carries
-    ``version`` and the answers of *its* version's questions only."""
+    ``version`` and the answers of *its* version's questions only. A question whose type or
+    choice codes differ between versions is keyed ``<name>_v<N>`` (semantics M2-3), as in
+    the combined CSV and codebook."""
     opts = options or JsonOptions()
     out_versions: list[dict[str, Any]] = []
     out_responses: list[dict[str, Any]] = []
-    for version, responses in sorted(
+    ordered = sorted(
         versions,
         key=lambda vr: (vr[0].number if vr[0].number is not None else 0, vr[0].checksum or ""),
-    ):
-        lay = build_layout(version)
+    )
+    split = split_names([build_layout(v) for v, _ in ordered])
+    for version, responses in ordered:
+        lay = build_layout(version, split)
         out_versions.append(_survey_json(lay))
         views = sorted(
             (ResponseView(r, lay, version.save_mode) for r in responses),

@@ -62,7 +62,8 @@ class StoredResponse:
     engine_version: str | None = None
     started_at: datetime | None = None
     submitted_at: datetime | None = None
-    late: bool | None = None
+    late: bool | None = None  # the server's flag (stored record ``server.late``); None = false
+    after_close: bool | None = None  # submitted after the survey closed; None = not known
 
 
 @dataclass(frozen=True)

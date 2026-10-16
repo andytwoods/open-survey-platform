@@ -1304,14 +1304,20 @@
             "title": "Baserevision"
           },
           "saveMode": {
-            "default": "every-page",
-            "description": "Participant save mode (runtime-design section 5.0)",
-            "enum": [
-              "every-page",
-              "end-only"
+            "anyOf": [
+              {
+                "enum": [
+                  "every-page",
+                  "end-only"
+                ],
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
             ],
-            "title": "Savemode",
-            "type": "string"
+            "description": "Participant save mode (runtime-design section 5.0); default: the survey's settings.saveMode",
+            "title": "Savemode"
           }
         },
         "title": "PublishRequest",

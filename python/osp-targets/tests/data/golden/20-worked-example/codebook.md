@@ -21,7 +21,7 @@ Every question is in exactly one state. The value cell is filled only when the s
 - **JSON:** every answer is `{state, value}`; `value` is `null` unless answered.
 - **Multiple choice** questions get one 0/1 column per choice, `<var>_<code>`, plus `<var>__state`.
 - Timestamps are UTC, ISO 8601 with milliseconds (`2026-10-16T09:30:00.000Z`).
-- Decimals are exported exactly as typed (text), never as binary floats.
+- Decimals are exported as exact canonical text (`2.50` is `2.5`), never as binary floats.
 - CSV is UTF-8, RFC 4180 (CRLF line ends, quoted fields).
 - **Formula protection is on:** a cell starting with `=`, `+`, `-`, `@`, tab or carriage return gets a leading `'` so a spreadsheet shows it as text. Plain numbers such as `-3` are not changed. Strip one leading `'` from text cells to get the participant's exact input.
 
@@ -44,7 +44,8 @@ Mode: **every-page**. Answers were saved to the server on every page change. Par
 | `_seed` | Session seed (positive integer, semantics §7); reproduces every order. |
 | `_started_at` | Session start, UTC, ISO 8601. |
 | `_submitted_at` | Submission accepted by the server, UTC, ISO 8601. |
-| `_late` | true if the response was submitted after the survey was closed (provisional, semantics open question M2-1). |
+| `_late` | true if the server accepted the submit after the session had expired (its quota holds were released or its resume link had expired); a late response is not counted toward quotas (semantics S-2). Set by the server, never by the browser. |
+| `_after_close` | true if the response was submitted after the survey was closed; empty if not known. |
 | `_end` | End outcome reached (e.g. complete); empty if none was recorded. |
 | `_language` | Language the participant used. |
 
@@ -155,7 +156,7 @@ In survey (flow) order. Conditions refer to other variables by export name.
 |---|---|---|
 | `source` | embedded | URL parameter `src`, text, default `direct` |
 
-An empty cell means no value (missing parameter, or a computed input was null).
+Each has a `<var>__state` column like a question: `answered` when it has a value; an embedded variable without a value (no parameter and no default, or a malformed one) is `unanswered`; a computed one whose input was null is `not-reached` if every question it reads was not reached, `irrelevant` if each was not reached or hidden, otherwise `unanswered`.
 
 ## Custom code (hooks) and data exports
 

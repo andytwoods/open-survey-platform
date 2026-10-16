@@ -49,8 +49,8 @@ class DataExport(ExportResult):
     media_type: str = "application/octet-stream"
 
 
-def _late(survey: Survey, r: Response) -> bool:
-    """PROVISIONAL (semantics open question M2-1): submitted after the survey was closed."""
+def _after_close(survey: Survey, r: Response) -> bool:
+    """Submitted after the survey was closed (``_after_close``; not the same as late)."""
     return survey.closed_at is not None and r.submitted_at > survey.closed_at
 
 
@@ -81,7 +81,10 @@ def _stored(builder: Builder, ctx: TenantContext, survey: Survey, v: Version) ->
                 engine_version=r.engine_version,
                 started_at=r.started_at,
                 submitted_at=r.submitted_at,
-                late=_late(survey, r),
+                # semantics S-2 / M2-1: the server's own flag, set when it accepted a
+                # submit after the session expired; a record without one is not late.
+                late=server.get("late") is True,
+                after_close=_after_close(survey, r),
             )
         )
     return out
