@@ -1,0 +1,262 @@
+"""Theme model, contrast guard, presets, and the generated files the web bridge reads.
+
+Regenerate the committed files with:
+    OSP_REGEN_THEME=1 uv run pytest python/osp-spec/tests/test_theme.py
+"""
+
+from __future__ import annotations
+
+import json
+import os
+from pathlib import Path
+
+import pytest
+from hypothesis import given, settings
+from hypothesis import strategies as st
+from osp_spec.theme import (
+    DERIVATION,
+    PAIRS,
+    PRESET_NAMES,
+    PRESETS,
+    Palette,
+    Theme,
+    check_theme,
+    contrast_ratio,
+    derive_palette,
+    hex_to_oklch,
+    mix,
+    oklch_to_hex,
+    theme_json_schema,
+    validate_theme,
+)
+
+GENERATED = (
+    Path(__file__).resolve().parents[3] / "web" / "ui-components" / "src" / "theme" / "generated"
+)
+
+# Extra palettes (some failing) so the TS bridge is cross-checked beyond the presets.
+CROSS_CHECK_PALETTES = {
+    "pale-accent": {
+        "accent": "#66aaff",
+        "background": "#ffffff",
+        "surface": "#f6f7f9",
+        "text": "#1d2433",
+        "muted": "#999999",
+        "error": "#e06666",
+        "focus": "#66aaff",
+    },
+    "saturated": {
+        "accent": "#ff00aa",
+        "background": "#00ff00",
+        "surface": "#0000ff",
+        "text": "#ffff00",
+        "muted": "#00ffff",
+        "error": "#ff0000",
+        "focus": "#123456",
+    },
+    "greys": {
+        "accent": "#777777",
+        "background": "#808080",
+        "surface": "#7f7f7f",
+        "text": "#010101",
+        "muted": "#fefefe",
+        "error": "#404040",
+        "focus": "#c0c0c0",
+    },
+}
+
+
+def _dump(value: object) -> str:
+    return json.dumps(value, indent=2, sort_keys=True, ensure_ascii=False) + "\n"
+
+
+def generated_files() -> dict[str, str]:
+    palettes = {
+        name: {m: derive_palette(getattr(t.colours, m)) for m in ("light", "dark")}
+        for name, t in PRESETS.items()
+    }
+    cross = {
+        name: {"input": p, "tokens": derive_palette(p)} for name, p in CROSS_CHECK_PALETTES.items()
+    }
+    return {
+        "theme.schema.json": _dump(theme_json_schema()),
+        "presets.json": _dump(
+            [
+                {"id": k, "name": PRESET_NAMES[k], "theme": t.model_dump(exclude_none=True)}
+                for k, t in PRESETS.items()
+            ]
+        ),
+        "palettes.golden.json": _dump({"presets": palettes, "crossCheck": cross}),
+    }
+
+
+def test_generated_files_are_current() -> None:
+    files = generated_files()
+    if os.environ.get("OSP_REGEN_THEME") == "1":
+        GENERATED.mkdir(parents=True, exist_ok=True)
+        for name, text in files.items():
+            (GENERATED / name).write_text(text, encoding="utf-8")
+    stale = [n for n, text in files.items() if not (GENERATED / n).is_file()
+             or (GENERATED / n).read_text(encoding="utf-8") != text]  # fmt: skip
+    assert stale == [], (
+        f"stale generated theme files {stale}; regenerate with "
+        "`OSP_REGEN_THEME=1 uv run pytest python/osp-spec/tests/test_theme.py`"
+    )
+
+
+# --- Model --------------------------------------------------------------------------------
+
+
+def test_schema_shape() -> None:
+    schema = theme_json_schema()
+    assert schema["$schema"].endswith("2020-12/schema")
+    assert schema["additionalProperties"] is False
+    assert schema["required"] == ["colours"]
+    props = schema["properties"]
+    assert set(props) == {
+        "themeVersion", "preset", "colours", "logoAssetId", "headerText", "font", "baseSize",
+        "lineSpacing", "radius", "density", "buttonStyle", "choiceStyle", "mode",
+    }  # fmt: skip
+    palette = schema["$defs"]["Palette"]
+    assert set(palette["required"]) == {
+        "accent", "background", "surface", "text", "muted", "error", "focus"
+    }  # fmt: skip
+
+
+def test_defaults_and_round_trip() -> None:
+    theme = Theme.model_validate({"colours": PRESETS["clean"].colours.model_dump()})
+    assert theme.mode == "auto" and theme.baseSize == 16 and theme.font == "system-sans"
+    assert Theme.model_validate(theme.model_dump()) == theme
+    assert Theme.model_validate_json(theme.model_dump_json()) == theme
+
+
+@pytest.mark.parametrize(
+    "patch",
+    [
+        {"colours": {"light": {"accent": "red"}}},
+        {"font": "Comic Sans"},
+        {"radius": -1},
+        {"mode": "sepia"},
+        {"css": "body{}"},
+        {"logoAssetId": "../../etc/passwd"},
+        {"baseSize": "16"},
+    ],
+)
+def test_validate_theme_rejects_bad_input_with_diagnostics(patch: dict) -> None:
+    data = PRESETS["clean"].model_dump()
+    for key, value in patch.items():
+        if key == "colours":
+            data["colours"]["light"].update(value["light"])
+        else:
+            data[key] = value
+    theme, diags = validate_theme(data)
+    assert theme is None
+    assert diags and all(d.code == "theme.schema" and d.pointer.startswith("/") for d in diags)
+
+
+@settings(max_examples=150, deadline=None)
+@given(st.recursive(st.none() | st.booleans() | st.integers() | st.text(max_size=8),
+                    lambda c: st.lists(c, max_size=3) | st.dictionaries(st.text(max_size=8), c,
+                                                                        max_size=4)))  # fmt: skip
+def test_validate_theme_never_raises(data: object) -> None:
+    theme, diags = validate_theme(data)
+    assert theme is not None or diags
+
+
+# --- Colour maths -------------------------------------------------------------------------
+
+
+def test_contrast_known_values() -> None:
+    assert contrast_ratio("#000000", "#ffffff") == pytest.approx(21.0)
+    assert contrast_ratio("#ffffff", "#ffffff") == pytest.approx(1.0)
+    assert contrast_ratio("#777777", "#ffffff") == pytest.approx(4.48, abs=0.01)
+
+
+@pytest.mark.parametrize("hex_colour", ["#2456c7", "#000000", "#ffffff", "#ff8a80", "#1c1713"])
+def test_oklch_round_trip(hex_colour: str) -> None:
+    assert oklch_to_hex(*hex_to_oklch(hex_colour)) == hex_colour
+
+
+def test_mix_endpoints() -> None:
+    assert mix("#2456c7", "#ffffff", 0) == "#2456c7"
+    assert mix("#2456c7", "#ffffff", 1) == "#ffffff"
+
+
+def test_pairs_only_use_derived_tokens() -> None:
+    for fg, bg, _, _, adjust in PAIRS:
+        assert fg in DERIVATION and bg in DERIVATION
+        assert adjust in Palette.model_fields
+
+
+# --- Guard --------------------------------------------------------------------------------
+
+
+def _with(base: Theme, mode: str, **colours: str) -> Theme:
+    data = base.model_dump()
+    data["colours"][mode].update(colours)
+    return Theme.model_validate(data)
+
+
+def test_failing_pair_reports_pointer_and_a_passing_suggestion() -> None:
+    theme = _with(PRESETS["clean"], "light", muted="#999999")
+    diags = [d for d in check_theme(theme) if d.code == "theme.contrast"]
+    assert diags and {d.pointer for d in diags} == {"/colours/light/muted"}
+    hint = next(d for d in diags if "hint text" in d.message and "on bg" in d.message)
+    assert hint.ratio == pytest.approx(2.85) and hint.required == 4.5
+    fixed = _with(theme, "light", muted=hint.suggestion)
+    assert check_theme(fixed) == []
+    # Nearest: only lightness moves, and hue/chroma are kept (grey stays grey).
+    L0, C0, _ = hex_to_oklch("#999999")
+    L1, C1, _ = hex_to_oklch(hint.suggestion)
+    assert L1 < L0 and C1 == pytest.approx(C0, abs=0.002)
+
+
+@pytest.mark.parametrize(
+    ("field", "value"),
+    [("accent", "#66aaff"), ("text", "#8a8f99"), ("error", "#ff6666"), ("focus", "#e0e4ff")],
+)
+def test_one_click_fix_passes_for_each_field(field: str, value: str) -> None:
+    theme = _with(PRESETS["clean"], "light", **{field: value})
+    diags = check_theme(theme)
+    assert diags and all(d.pointer == f"/colours/light/{field}" for d in diags)
+    suggestion = diags[0].suggestion
+    assert isinstance(suggestion, str)
+    assert check_theme(_with(theme, "light", **{field: suggestion})) == []
+
+
+def test_dark_mode_checked_when_auto_but_not_when_light_only() -> None:
+    theme = _with(PRESETS["clean"], "dark", muted="#3a3f48")
+    assert any(d.pointer == "/colours/dark/muted" for d in check_theme(theme))
+    light_only = Theme.model_validate({**theme.model_dump(), "mode": "light"})
+    assert check_theme(light_only) == []
+
+
+def test_no_suggestion_when_nothing_passes() -> None:
+    # Dark page, light cards: no hint colour reaches 4.5:1 on both, in either direction.
+    theme = _with(PRESETS["clean"], "light", background="#595959", surface="#a0a0a0")
+    diags = [d for d in check_theme(theme) if d.pointer == "/colours/light/muted"]
+    assert diags and all(d.suggestion is None for d in diags)
+
+
+def test_input_font_size_minimum() -> None:
+    theme = Theme.model_validate({**PRESETS["clean"].model_dump(), "baseSize": 14})
+    [diag] = check_theme(theme)
+    assert diag.code == "theme.input_font_size" and diag.pointer == "/baseSize"
+    assert diag.suggestion == 16
+
+
+# --- Presets ------------------------------------------------------------------------------
+
+
+def test_five_presets() -> None:
+    assert list(PRESETS) == ["clean", "warm", "high-contrast", "dark", "compact"]
+    assert [PRESET_NAMES[k] for k in PRESETS] == [
+        "Clean", "Warm", "High contrast", "Dark", "Compact"
+    ]  # fmt: skip
+    for key, theme in PRESETS.items():
+        assert theme.preset == key
+
+
+@pytest.mark.parametrize("key", list(PRESETS))
+def test_preset_passes_guard_in_both_modes(key: str) -> None:
+    assert check_theme(PRESETS[key], modes=("light", "dark")) == []

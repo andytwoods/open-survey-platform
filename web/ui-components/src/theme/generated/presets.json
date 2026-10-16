@@ -1,0 +1,182 @@
+[
+  {
+    "id": "clean",
+    "name": "Clean",
+    "theme": {
+      "baseSize": 16,
+      "buttonStyle": "filled",
+      "choiceStyle": "list",
+      "colours": {
+        "dark": {
+          "accent": "#8fb0ff",
+          "background": "#12151b",
+          "error": "#ff8a80",
+          "focus": "#8fb0ff",
+          "muted": "#a9b1bf",
+          "surface": "#191d25",
+          "text": "#e6e9ef"
+        },
+        "light": {
+          "accent": "#2456c7",
+          "background": "#ffffff",
+          "error": "#b42318",
+          "focus": "#2456c7",
+          "muted": "#505a6b",
+          "surface": "#f6f7f9",
+          "text": "#1d2433"
+        }
+      },
+      "density": "comfortable",
+      "font": "system-sans",
+      "lineSpacing": 1.5,
+      "mode": "auto",
+      "preset": "clean",
+      "radius": 6,
+      "themeVersion": "osp-theme/0.1"
+    }
+  },
+  {
+    "id": "warm",
+    "name": "Warm",
+    "theme": {
+      "baseSize": 16,
+      "buttonStyle": "filled",
+      "choiceStyle": "cards",
+      "colours": {
+        "dark": {
+          "accent": "#f2a571",
+          "background": "#1c1713",
+          "error": "#ff8f84",
+          "focus": "#f2a571",
+          "muted": "#c4b4a2",
+          "surface": "#262019",
+          "text": "#f3eadf"
+        },
+        "light": {
+          "accent": "#a3431a",
+          "background": "#fdf8f1",
+          "error": "#a8201a",
+          "focus": "#a3431a",
+          "muted": "#65544a",
+          "surface": "#f5ecdf",
+          "text": "#2b2118"
+        }
+      },
+      "density": "comfortable",
+      "font": "system-serif",
+      "lineSpacing": 1.6,
+      "mode": "auto",
+      "preset": "warm",
+      "radius": 12,
+      "themeVersion": "osp-theme/0.1"
+    }
+  },
+  {
+    "id": "high-contrast",
+    "name": "High contrast",
+    "theme": {
+      "baseSize": 18,
+      "buttonStyle": "outline",
+      "choiceStyle": "buttons",
+      "colours": {
+        "dark": {
+          "accent": "#ffd75e",
+          "background": "#000000",
+          "error": "#ff9d9d",
+          "focus": "#ffffff",
+          "muted": "#e0e0e0",
+          "surface": "#000000",
+          "text": "#ffffff"
+        },
+        "light": {
+          "accent": "#0030b8",
+          "background": "#ffffff",
+          "error": "#9e0000",
+          "focus": "#000000",
+          "muted": "#2e2e2e",
+          "surface": "#ffffff",
+          "text": "#000000"
+        }
+      },
+      "density": "comfortable",
+      "font": "system-sans",
+      "lineSpacing": 1.6,
+      "mode": "auto",
+      "preset": "high-contrast",
+      "radius": 4,
+      "themeVersion": "osp-theme/0.1"
+    }
+  },
+  {
+    "id": "dark",
+    "name": "Dark",
+    "theme": {
+      "baseSize": 16,
+      "buttonStyle": "filled",
+      "choiceStyle": "cards",
+      "colours": {
+        "dark": {
+          "accent": "#9db8ff",
+          "background": "#0f1115",
+          "error": "#ff8a80",
+          "focus": "#c3d3ff",
+          "muted": "#adb4c0",
+          "surface": "#181b21",
+          "text": "#eceef2"
+        },
+        "light": {
+          "accent": "#2456c7",
+          "background": "#ffffff",
+          "error": "#b42318",
+          "focus": "#2456c7",
+          "muted": "#505a6b",
+          "surface": "#f6f7f9",
+          "text": "#1d2433"
+        }
+      },
+      "density": "comfortable",
+      "font": "system-sans",
+      "lineSpacing": 1.5,
+      "mode": "dark",
+      "preset": "dark",
+      "radius": 6,
+      "themeVersion": "osp-theme/0.1"
+    }
+  },
+  {
+    "id": "compact",
+    "name": "Compact",
+    "theme": {
+      "baseSize": 16,
+      "buttonStyle": "filled",
+      "choiceStyle": "list",
+      "colours": {
+        "dark": {
+          "accent": "#8fb0ff",
+          "background": "#12151b",
+          "error": "#ff8a80",
+          "focus": "#8fb0ff",
+          "muted": "#a9b1bf",
+          "surface": "#191d25",
+          "text": "#e6e9ef"
+        },
+        "light": {
+          "accent": "#2456c7",
+          "background": "#ffffff",
+          "error": "#b42318",
+          "focus": "#2456c7",
+          "muted": "#505a6b",
+          "surface": "#f6f7f9",
+          "text": "#1d2433"
+        }
+      },
+      "density": "compact",
+      "font": "system-sans",
+      "lineSpacing": 1.4,
+      "mode": "auto",
+      "preset": "compact",
+      "radius": 4,
+      "themeVersion": "osp-theme/0.1"
+    }
+  }
+]
