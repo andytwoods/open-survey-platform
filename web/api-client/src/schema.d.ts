@@ -995,6 +995,13 @@ export interface components {
              * @description If given, publish only if the draft is still at it
              */
             baseRevision?: number | null;
+            /**
+             * Savemode
+             * @description Participant save mode (runtime-design §5.0)
+             * @default every-page
+             * @enum {string}
+             */
+            saveMode: "every-page" | "end-only";
         };
         /** PublishResponse */
         PublishResponse: {
@@ -1004,6 +1011,13 @@ export interface components {
             diagnostics: components["schemas"]["Diagnostic"][];
             /** Number */
             number: number;
+            /** Planchecksum */
+            planChecksum: string;
+            /**
+             * Planurl
+             * @description Where the immutable runtime plan is served
+             */
+            planUrl: string;
             /**
              * Publishedat
              * Format: date-time
@@ -1012,10 +1026,15 @@ export interface components {
             /** Revision */
             revision: number;
             /**
-             * Runtimeplan
-             * @description Not compiled yet (R1); always null for now
+             * Savemode
+             * @enum {string}
              */
-            runtimePlan?: unknown;
+            saveMode: "every-page" | "end-only";
+            /**
+             * Slug
+             * @description The survey's public slug: participants start at /s/{slug}
+             */
+            slug: string;
             /** Versionid */
             versionId: string;
         };
@@ -1298,6 +1317,11 @@ export interface components {
             createdBy: string;
             /** Id */
             id: string;
+            /**
+             * Publicslug
+             * @description Participant link id: /s/{publicSlug}
+             */
+            publicSlug?: string | null;
             /** Revision */
             revision: number;
             /**
@@ -1332,6 +1356,11 @@ export interface components {
             createdBy: string;
             /** Id */
             id: string;
+            /**
+             * Publicslug
+             * @description Participant link id: /s/{publicSlug}
+             */
+            publicSlug?: string | null;
             /** Tenantid */
             tenantId: string;
             /** Title */

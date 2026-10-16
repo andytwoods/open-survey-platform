@@ -12,6 +12,7 @@ from __future__ import annotations
 
 import hashlib
 import json
+import secrets
 import uuid
 from collections.abc import Callable, Iterator, Mapping, Sequence
 from contextlib import contextmanager
@@ -63,6 +64,14 @@ class _Unset:
 
 
 UNSET: Any = _Unset()
+
+_SLUG_ALPHABET = "abcdefghijkmnpqrstuvwxyz23456789"  # no 0/o, 1/l: read aloud, typed by hand
+_SLUG_LEN = 10  # 50 bits: unguessable enough for a public link, short enough to share
+
+
+def new_public_slug() -> str:
+    """A random participant-link id (``/s/<slug>``)."""
+    return "".join(secrets.choice(_SLUG_ALPHABET) for _ in range(_SLUG_LEN))
 
 
 def is_constraint_violation(exc: DBAPIError) -> bool:
@@ -372,6 +381,7 @@ class Store(ThemeLibrary):  # theme-library methods: themes.py
             r["created_at"],
             r["closed_at"],
             policy,
+            r["public_slug"],
         )
 
     def _survey_where(self, ctx: TenantContext, survey_id: object) -> Any:
@@ -393,6 +403,7 @@ class Store(ThemeLibrary):  # theme-library methods: themes.py
                     title=title,
                     created_by=ctx.actor,
                     created_at=now,
+                    public_slug=new_public_slug(),
                 )
             )
             conn.execute(
@@ -415,6 +426,26 @@ class Store(ThemeLibrary):  # theme-library methods: themes.py
             return self._survey(
                 self._one(conn, select(t.surveys).where(self._survey_where(ctx, survey_id)))
             )
+
+    def ensure_public_slug(self, ctx: TenantContext, survey_id: str) -> str:
+        """The survey's public slug, generating one for a pre-0005 row that has none."""
+        ctx = require_ctx(ctx)
+        for _ in range(5):
+            survey = self.get_survey(ctx, survey_id)
+            if survey.public_slug:
+                return survey.public_slug
+            try:
+                with self._tx() as conn:
+                    conn.execute(
+                        update(t.surveys)
+                        .where(
+                            self._survey_where(ctx, survey_id) & t.surveys.c.public_slug.is_(None)
+                        )
+                        .values(public_slug=new_public_slug())
+                    )
+            except Conflict:  # a slug collision (or a concurrent writer): try again
+                continue
+        raise Conflict("could not allocate a public slug")
 
     def list_surveys(self, ctx: TenantContext) -> list[Survey]:
         ctx = require_ctx(ctx)
@@ -589,7 +620,11 @@ class Store(ThemeLibrary):  # theme-library methods: themes.py
         meta: object = None,
         body: object = UNSET,
     ) -> Version:
-        """Freeze ``body`` (default: the current draft) as the next immutable version."""
+        """Freeze ``body`` (default: the current draft) as the next immutable version.
+
+        ``body`` may be a callable ``(number) -> body``: it is called inside the
+        transaction with the number this version gets, for a body that records it.
+        """
         ctx = require_ctx(ctx)
         sid = _id(survey_id)
         if not isinstance(xform, bytes | bytearray):
@@ -604,13 +639,15 @@ class Store(ThemeLibrary):  # theme-library methods: themes.py
                         (t.drafts.c.tenant_id == ctx.tenant_id) & (t.drafts.c.survey_id == sid)
                     )
                 ).scalar_one()
-            text = canonical_json(_json(body, "survey body"))
             number = (
                 conn.execute(
                     select(func.max(t.versions.c.number)).where(t.versions.c.survey_id == sid)
                 ).scalar()
                 or 0
             ) + 1
+            if callable(body):
+                body = body(number)
+            text = canonical_json(_json(body, "survey body"))
             conn.execute(
                 insert(t.versions).values(
                     id=vid,

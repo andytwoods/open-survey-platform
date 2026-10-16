@@ -31,7 +31,24 @@ Auth core, no HTTP. Built against repository Protocols (`UserRepo`, `MembershipR
 - `builder.Builder`: `survey.create/list/get/delete`, `survey.apply_ops` (load draft ->
   `osp_ops.apply_transaction` -> `save_draft` + op_log with per-op inverses), `survey.undo` /
   `survey.redo` (by transaction id; undo ids `u:…`, redo ids `r:…`), `survey.history`,
-  `survey.publish` (validate -> freeze version + checksum; runtime plan compile is a TODO hook,
-  `compile_runtime_plan`, until R1 lands), `survey.export_xlsform` (osp-targets).
+  `survey.publish` (below), `survey.export_xlsform` (osp-targets).
   Surveys in tenants the actor can't read are `NotFoundError`; missing permission is `Forbidden`.
-- `services.build_services(store, ...)` wires `AuthService` + `Builder`.
+- `services.build_services(store, ...)` wires `AuthService` + `Builder` + one
+  `osp_runtime.SessionService` (over `runtime_repo.StoreParticipantRepo`), shared by publish
+  and the participant API.
+
+## Publish (task R2b)
+
+`survey.publish(survey_id, base_revision=None, save_mode="every-page")`:
+
+1. `osp_spec.validate` the draft; any error -> `Rejected`.
+2. Compile the runtime plan (`osp_runtime.plan.compile_survey`) for the body with `version` set
+   to the number this version gets (the plan's seed version, semantics R1-1), and derive its
+   `runtime_config` (assignments, quotas, save mode); an unrunnable config -> `Rejected`.
+3. Freeze the version: that body, its checksum, `meta` with `planChecksum`, `planVersion`,
+   `engineVersion`, `runtimeConfig` and `slug`; `versions.xform` holds the XLSForm export as an
+   artefact (`meta.xform == "xlsform"`; empty if it can't be exported). The store re-checks the
+   number inside its transaction; a concurrent publish -> `ConflictError`.
+4. Register the publication under the survey's public slug (`surveys.public_slug`, generated at
+   creation). A republish keeps the slug: new sessions start on the newest version, and older
+   plans stay servable at `GET /api/s/{slug}/plan/{checksum}` for sessions already on them.

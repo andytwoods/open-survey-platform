@@ -6,7 +6,7 @@ Edits to a draft go through ``/ops`` (``ops.py``), never through a PUT of the bo
 from __future__ import annotations
 
 from datetime import datetime
-from typing import Any
+from typing import Any, Literal
 
 from fastapi import APIRouter, Response
 from osp_app import SurveyView
@@ -14,6 +14,7 @@ from osp_spec import Diagnostic
 from osp_store import Survey
 from pydantic import BaseModel, ConfigDict, Field
 
+from ..participant import plan_url
 from .common import Auth, Services, errors
 
 XLSX = "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet"
@@ -26,6 +27,7 @@ class SurveySummary(BaseModel):
     createdBy: str
     createdAt: datetime
     closedAt: datetime | None = None
+    publicSlug: str | None = Field(None, description="Participant link id: /s/{publicSlug}")
 
 
 class SurveyDetail(SurveySummary):
@@ -49,6 +51,9 @@ class PublishRequest(BaseModel):
     baseRevision: int | None = Field(
         None, ge=0, description="If given, publish only if the draft is still at it"
     )
+    saveMode: Literal["every-page", "end-only"] = Field(
+        "every-page", description="Participant save mode (runtime-design §5.0)"
+    )
 
 
 class PublishResponse(BaseModel):
@@ -58,7 +63,10 @@ class PublishResponse(BaseModel):
     publishedAt: datetime
     revision: int
     diagnostics: list[Diagnostic]
-    runtimePlan: Any = Field(None, description="Not compiled yet (R1); always null for now")
+    slug: str = Field(description="The survey's public slug: participants start at /s/{slug}")
+    planChecksum: str
+    planUrl: str = Field(description="Where the immutable runtime plan is served")
+    saveMode: Literal["every-page", "end-only"]
 
 
 class HistoryItem(BaseModel):
@@ -78,6 +86,7 @@ def summary(s: Survey) -> SurveySummary:
         createdBy=s.created_by,
         createdAt=s.created_at,
         closedAt=s.closed_at,
+        publicSlug=s.public_slug,
     )
 
 
@@ -158,6 +167,7 @@ def publish(
         auth.actor,
         survey_id=survey_id,
         base_revision=None if body is None else body.baseRevision,
+        save_mode="every-page" if body is None else body.saveMode,
     )
     return PublishResponse(
         versionId=r.version_id,
@@ -166,7 +176,10 @@ def publish(
         publishedAt=r.published_at,
         revision=r.revision,
         diagnostics=r.diagnostics,
-        runtimePlan=r.runtime_plan,
+        slug=r.slug,
+        planChecksum=r.plan_checksum,
+        planUrl=plan_url(r.slug, r.plan_checksum),
+        saveMode=r.runtime_config["saveMode"],
     )
 
 

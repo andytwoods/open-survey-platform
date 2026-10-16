@@ -123,9 +123,12 @@ def test_publish_freezes_a_version(benv):
     r = c.post(f"/api/surveys/{s['id']}/publish", json={"baseRevision": 0})
     assert r.status_code == 201, r.text
     v = r.json()
-    assert v["number"] == 1 and len(v["checksum"]) == 64 and v["runtimePlan"] is None
+    assert v["number"] == 1 and len(v["checksum"]) == 64
+    assert v["planUrl"] == f"/api/s/{v['slug']}/plan/{v['planChecksum']}"
     again = c.post(f"/api/surveys/{s['id']}/publish").json()
-    assert again["number"] == 2 and again["checksum"] == v["checksum"]
+    # The frozen body records its number (the plan's seed version), so both checksums move.
+    assert again["number"] == 2 and again["slug"] == v["slug"]
+    assert again["checksum"] != v["checksum"] and again["planChecksum"] != v["planChecksum"]
     owner = benv.login("owner@a.example")
     assert owner.delete(f"/api/surveys/{s['id']}").status_code == 409  # research record
 

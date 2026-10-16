@@ -24,7 +24,7 @@ Every method takes a context first. `TenantContext(tenant_id, actor)` scopes eve
 |---|---|
 | `tenants` | organisations / labs |
 | `users` | email (globally unique, lower-cased), password hash (opaque), TOTP secret (encrypted), role, login-failure counter + lock |
-| `surveys` | title, owner actor, `closed_at`, retention policy |
+| `surveys` | title, owner actor, `closed_at`, retention policy, `public_slug` (participant link id, generated, unique; migration `0005_public_slug`) |
 | `drafts` | opaque survey JSON + `revision` (stale base revision → `RevisionConflict`) |
 | `op_log` | op id, params, inverse (opaque JSON), resulting revision, seq, `txn_id` (undo unit) |
 | `versions` | immutable: number, canonical JSON text, SHA-256 checksum (verified on every read), XForm blob, tool-version meta |
