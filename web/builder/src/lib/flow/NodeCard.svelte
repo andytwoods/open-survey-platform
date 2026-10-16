@@ -7,7 +7,7 @@
 	import GripVertical from '@lucide/svelte/icons/grip-vertical';
 	import Layers from '@lucide/svelte/icons/layers';
 	import Shuffle from '@lucide/svelte/icons/shuffle';
-	import Trash2 from '@lucide/svelte/icons/trash-2';
+	import Trash from '@lucide/svelte/icons/trash';
 	import TriangleAlert from '@lucide/svelte/icons/triangle-alert';
 	import Users from '@lucide/svelte/icons/users';
 	import { Button, IconButton, Tooltip } from '@osp/ui-components';
@@ -161,7 +161,7 @@
 			</Tooltip>
 		{/each}
 		<span class="spacer"></span>
-		<IconButton icon={Trash2} label="Delete {label}" tooltipSide="top" onclick={() => ctx.remove(id)} />
+		<IconButton icon={Trash} label="Delete {label}" tooltipSide="top" onclick={() => ctx.remove(id)} />
 	</header>
 
 	<div class="body">

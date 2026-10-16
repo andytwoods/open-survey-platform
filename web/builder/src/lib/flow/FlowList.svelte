@@ -1,42 +1,40 @@
 <script lang="ts">
 	import Plus from '@lucide/svelte/icons/plus';
 	import { flowCtx } from './context';
-	import FlowList from './FlowList.svelte';
 	import { ARM_LABEL, armsOf, isNodeType, walk, inSubtree, type ArmName, type FlowNodeType, type Json } from './model';
 	import NodeCard from './NodeCard.svelte';
 
-	/** One node list (the top-level flow or an arm), with "+" gaps that are also drop zones. */
-	let {
-		nodes,
-		parent = null,
-		arm = null,
-		depth = 0,
-		label
-	}: { nodes: unknown[]; parent?: string | null; arm?: ArmName | null; depth?: number; label: string } = $props();
+	/**
+	 * The flow as nested node lists (the top level and each branch/randomiser arm), with
+	 * "+" gaps that are also drop targets. Recursion is a snippet, not a self-import.
+	 */
+	let { nodes, label }: { nodes: unknown[]; label: string } = $props();
 
 	const ctx = flowCtx();
-	const items = $derived(
-		nodes.filter((n): n is Json => typeof n === 'object' && n !== null && isNodeType((n as Json).type))
-	);
+	const rows = $derived(walk(ctx.survey));
+	const nodesOf = (v: unknown): Json[] =>
+		Array.isArray(v)
+			? v.filter((n): n is Json => typeof n === 'object' && n !== null && isNodeType((n as Json).type))
+			: [];
 	// While dragging, gaps inside the dragged node are not valid drop targets.
-	const blocked = $derived(
-		ctx.dragging !== null && parent !== null && inSubtree(walk(ctx.survey), parent, ctx.dragging)
-	);
-	const key = (index: number) => `${parent ?? 'flow'}:${arm ?? ''}:${index}`;
+	const isBlocked = (parent: string | null) =>
+		ctx.dragging !== null && parent !== null && inSubtree(rows, parent, ctx.dragging);
+	const key = (parent: string | null, arm: ArmName | null, index: number) => `${parent ?? 'flow'}:${arm ?? ''}:${index}`;
 </script>
 
-{#snippet gap(index: number)}
+{#snippet gap(parent: string | null, arm: ArmName | null, index: number, listLabel: string)}
+	{@const blocked = isBlocked(parent)}
 	<div
 		class="gap"
 		class:dropzone={ctx.dragging !== null && !blocked}
-		class:over={ctx.overGap === key(index)}
-		data-gap={key(index)}
+		class:over={ctx.overGap === key(parent, arm, index)}
+		data-gap={key(parent, arm, index)}
 		data-blocked={blocked || undefined}
 	>
 		<button
 			type="button"
 			class="add"
-			aria-label="Add node to {label} at position {index + 1}"
+			aria-label="Add node to {listLabel} at position {index + 1}"
 			title="Add a node here"
 			onclick={() => ctx.openAdd({ parent, arm, index })}
 		>
@@ -45,35 +43,33 @@
 	</div>
 {/snippet}
 
-<div class="flow-list" data-depth={depth}>
-	{#if items.length}
-		<ol aria-label={label}>
-			{#each items as node, i (node.id ?? i)}
-				{@const type = node.type as FlowNodeType}
-				<li>
-					{@render gap(i)}
-					<NodeCard {node} {type} {depth}>
-						{#each armsOf(type) as a (a)}
-							<section class="arm" aria-label="{ARM_LABEL[a]} of {String(node.id)}">
-								<p class="arm-label" aria-hidden="true">{ARM_LABEL[a]}</p>
-								<FlowList
-									nodes={Array.isArray(node[a]) ? (node[a] as unknown[]) : []}
-									parent={String(node.id)}
-									arm={a}
-									depth={depth + 1}
-									label="{ARM_LABEL[a]} of {String(node.id)}"
-								/>
-							</section>
-						{/each}
-					</NodeCard>
-				</li>
-			{/each}
-		</ol>
-	{:else}
-		<p class="empty">{depth === 0 ? 'The flow is empty.' : 'No nodes yet.'}</p>
-	{/if}
-	{@render gap(items.length)}
-</div>
+{#snippet list(items: Json[], parent: string | null, arm: ArmName | null, depth: number, listLabel: string)}
+	<div class="flow-list" data-depth={depth}>
+		{#if items.length}
+			<ol aria-label={listLabel}>
+				{#each items as node, i (node.id ?? i)}
+					{@const type = node.type as FlowNodeType}
+					<li>
+						{@render gap(parent, arm, i, listLabel)}
+						<NodeCard {node} {type} {depth}>
+							{#each armsOf(type) as a (a)}
+								<section class="arm" aria-label="{ARM_LABEL[a]} of {String(node.id)}">
+									<p class="arm-label" aria-hidden="true">{ARM_LABEL[a]}</p>
+									{@render list(nodesOf(node[a]), String(node.id), a, depth + 1, `${ARM_LABEL[a]} of ${String(node.id)}`)}
+								</section>
+							{/each}
+						</NodeCard>
+					</li>
+				{/each}
+			</ol>
+		{:else}
+			<p class="empty">{depth === 0 ? 'The flow is empty.' : 'No nodes yet.'}</p>
+		{/if}
+		{@render gap(parent, arm, items.length, listLabel)}
+	</div>
+{/snippet}
+
+{@render list(nodesOf(nodes), null, null, 0, label)}
 
 <style>
 	.flow-list {
