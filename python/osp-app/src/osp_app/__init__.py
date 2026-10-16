@@ -2,6 +2,7 @@
 
 from .builder import Builder, EditResult, ExportResult, HistoryEntry, PublishResult, SurveyView
 from .commands import COMMANDS, AppCommand, command, dispatch
+from .data_export import DataExport
 from .errors import (
     AppError,
     ConflictError,
@@ -22,6 +23,7 @@ __all__ = [
     "AppServices",
     "Builder",
     "ConflictError",
+    "DataExport",
     "EditResult",
     "ExportResult",
     "Forbidden",

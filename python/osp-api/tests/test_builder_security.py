@@ -25,6 +25,8 @@ ROUTES: list[tuple[str, str, dict | None]] = [
     ("POST", f"/api/surveys/{SID}/redo", {"transactionId": "u:t", "baseRevision": 0}),
     ("POST", f"/api/surveys/{SID}/publish", {}),
     ("GET", f"/api/surveys/{SID}/export/xlsform", None),
+    ("GET", f"/api/surveys/{SID}/export/responses", None),
+    ("GET", f"/api/surveys/{SID}/export/codebook", None),
     ("GET", "/api/meta/ops", None),
     ("GET", "/api/meta/property-schemas", None),
     ("GET", "/api/meta/survey-schema", None),
@@ -108,6 +110,8 @@ def test_viewer_cannot_create_or_export(benv, survey_a):
     c = benv.login("viewer@a.example")
     assert c.post("/api/surveys", json={"title": "x"}).status_code == 403
     assert c.get(f"/api/surveys/{survey_a}/export/xlsform").status_code == 403
+    assert c.get(f"/api/surveys/{survey_a}/export/responses").status_code == 403
+    assert c.get(f"/api/surveys/{survey_a}/export/codebook").status_code == 403
 
 
 def test_unknown_role_fails_closed(benv, survey_a):
