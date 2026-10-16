@@ -12,11 +12,11 @@ from __future__ import annotations
 from collections.abc import Mapping
 from typing import Any
 
-from ..lss.capabilities import LSS  # noqa: E402  (lss.capabilities only imports .base)
 from .base import LEVELS, Capability, Level
 from .xlsform import XLSFORM
 
-TABLES: dict[str, dict[str, Capability]] = {"xlsform": XLSFORM, "lss": LSS}
+# Other targets register themselves in osp_targets/__init__.py (avoids import cycles).
+TABLES: dict[str, dict[str, Capability]] = {"xlsform": XLSFORM}
 
 
 def schema_fields(schema: Mapping[str, Any]) -> set[str]:

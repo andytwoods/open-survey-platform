@@ -5,8 +5,10 @@ See README.md.
 
 from .capabilities import LEVELS, TABLES, XLSFORM, Capability, Level
 from .diagnostics import ExportDiagnostic
-from .lss import build_lss, export_lss
+from .lss import LSS, build_lss, export_lss
 from .xlsform import build_xlsform, export_xlsform
+
+TABLES.setdefault("lss", LSS)
 
 __all__ = [
     "LEVELS",
