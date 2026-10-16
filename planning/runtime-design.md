@@ -10,7 +10,8 @@
 2. Behaviour follows `semantics.md` exactly. No lowerings or workarounds: the engine *is* the semantics.
 3. One engine implementation for the runtime, the builder preview, the debugger and the simulator.
 4. Every response is reproducible: survey version, plan checksum, seed, assignment, realised orders, event history and engine version are recorded.
-5. **No lost answers.** Local-first persistence; the server acknowledges every save.
+5. **No lost answers in `every-page` mode.** Local-first persistence; the server acknowledges every save. (`end-only` trades this away by design, §5.0.)
+7. **Easy to make it look like your lab's survey** (§6a), without breaking accessibility.
 6. Small and boring: a single static bundle; the server only stores and counts.
 
 **Non-goals (MVP)**
@@ -71,9 +72,12 @@ python/osp-runtime publish: validated survey → "runtime plan" JSON; session/sa
 ## 5. Session protocol and data safety
 
 0. **Save mode (per survey, researcher's choice).**
-   - `every-page` (default): the network saves in steps 3–4 below. Partial responses are kept, and drop-outs are visible.
-   - `end-only`: nothing reaches the server until submit. The browser still keeps a local copy, so a refresh resumes; it is deleted on submit or expiry. This suits ethics protocols that say "close the window and nothing is kept". The trade-offs are no cross-device resume and no data from drop-outs. Session start (seed, assignment) is still recorded, as an anonymous session row with no answers, so counts and quotas stay correct.
-   - The builder explains the trade-off when the setting is switched. The setting is recorded in every response and in the codebook.
+   - `every-page` (default): network saves as in steps 2–4. Partial responses are kept, and drop-outs are visible.
+   - `end-only`: **no response data is uploaded before submit**. This covers answers, hook output, paradata and URL parameters such as Prolific IDs, which stay in the browser until submit. The server still sees session start (seed, assignment) and quota checks. This is disclosed in the consent-text template, because a session row may still be pseudonymous data under GDPR.
+     - A local copy option is available: `browser` (IndexedDB, so a refresh resumes; deleted on submit and cleaned up on the next load after expiry) or `memory` (closing or refreshing the window loses everything, which is the strict "nothing is kept" promise).
+     - If storage is blocked, it falls back to `memory`, disclosed on screen. It never falls back to network saving.
+     - The trade-offs are no cross-device resume, no drop-out data (attrition is invisible), and loss on crash or storage eviction. The builder spells these out when the setting is switched.
+   - The mode is recorded in every response and in the codebook.
 1. **Start.** `POST /s/{slug}/sessions` → `{ sessionId, resumeToken, sessionSeed, assigned, planUrl, planChecksum, revision: 0 }`. The server records seed and assignment *before* replying; the browser writes them to IndexedDB *before* showing the first page. Refreshing can't re-roll anything. URL parameters are recorded, never trusted for assignment.
 2. **Local-first save.** Every answer change writes the snapshot to IndexedDB immediately.
 3. **Network save.** `PUT /sessions/{id}/snapshot` with `baseRevision`:
@@ -109,6 +113,29 @@ Mobile-first. Test at 320, 375, 768, 1024 and 1440 CSS px, portrait and landscap
 
 **Testing:** Playwright device profiles (iPhone SE, Pixel 7, iPad, desktop Chrome/Firefox/WebKit), axe-core per widget × width, visual snapshots per widget × width, network-interruption and tab-kill tests. **Real-device** VoiceOver (iOS) and TalkBack (Android) passes are acceptance gates before the pilot; Playwright and axe don't replace them.
 
+## 6a. Appearance: easy customisation
+
+Researchers style a survey **by editing design tokens in the builder, not by writing CSS**. Every survey page is drawn from the same tokens (`ui-components`), so a theme can't break the layout or accessibility rules in §6.
+
+**Theme editor (builder):**
+1. **Start from a preset:** 4–6 calm presets (e.g. Clean, Warm, High contrast, Dark, Compact).
+2. **Brand:** logo (uploaded and served from our origin), accent colour, background colour or image, and header text.
+3. **Type:** a system font stack or one of a few bundled open-licence fonts (OFL), base size, and line spacing.
+4. **Shape and density:** corner radius, spacing (comfortable / compact), button style (filled / outline), and choice style (list / cards / buttons).
+5. **Mode:** light, dark, or follow the participant's device.
+
+- **Live preview** shows phone, tablet and desktop side by side, plus any question type picked from the survey.
+- **Guard rails:** every colour pair is checked for WCAG AA contrast as you edit. A failing pair shows the nearest passing colour with a one-click fix, and publishing is blocked until it passes. Text size can't go below 16 px on inputs.
+- **Reuse:** themes are saved to the lab (tenant) theme library. One click applies a theme to any survey, and a lab default applies to new surveys.
+- **Per page:** pages use the survey theme. A page can switch to a "full-bleed" layout for stimuli (e.g. a centred image or video).
+
+**Advanced: custom CSS** (opt-in, owner/editor, clearly labelled "may break accessibility"):
+- It is applied after the tokens and scoped to the survey container.
+- It is sanitised at save: no `@import`, and no `url()` except assets uploaded to the survey. Those rules block CSS-based data leaks. There is also a size limit.
+- The preview runs axe on save and shows any new violations.
+
+**Export:** themes map to the closest equivalent in each export target (e.g. SurveyJS theme JSON, LimeSurvey theme options), and anything that doesn't map is reported as `approximated`.
+
 ## 7. Security and data
 
 - Researcher HTML in labels sanitised at save (allow-list); participant values HTML-escaped when piped; strict CSP (no inline scripts, no third-party origins).
@@ -121,17 +148,28 @@ Mobile-first. Test at 320, 375, 768, 1024 and 1440 CSS px, portrait and landscap
 
 Researchers can attach their own JavaScript to key events, similar to SurveyJS's `onValueChanged` / `onCurrentPageChanged` / `onComplete`. Examples: computing a score, logging extra paradata, calling a lab's own API at the end, or talking to an embedding page.
 
-**Where it runs:** a **Web Worker inside a sandboxed, opaque-origin iframe**. It has no DOM, no access to the participant page, cookies or storage, and no network by default (the iframe's CSP has `connect-src 'none'`). Network access is an opt-in per survey, with an explicit origin allowlist shown to the researcher at publish.
+**Where it runs:**
+- **The sandbox:** a Web Worker inside an iframe with `sandbox="allow-scripts"` only. That means no same-origin, popups, navigation, forms or downloads.
+- **CSP:** the iframe and worker CSP is `default-src 'none'`, with the hook script loaded only from the published version (no `importScripts` from elsewhere, no nested workers).
+- **Messaging:** the host and the worker talk only over a dedicated `MessagePort`. Origin `"null"` is never treated as authentication.
+- **Host validation:** the host checks every action (type, size, nesting depth, rate, allowed variable ids).
+- **Deadlines:** the host enforces deadlines from outside and **terminates and respawns** the worker on timeout or flooding. That also bounds CPU and memory.
+- **Deterministic inside:** `Math.random` and `Date` inside the worker are replaced by `ctx.random()` (seeded per hook) and `ctx.now()` (injected clock), and both are logged.
 
 **Events** (each receives a read-only, structured-clone copy):
 
 | Event | Payload |
 |---|---|
 | `onStart` | `ctx` + URL parameters |
+| `onResume` | `ctx` (after refresh or cross-device resume) |
+| `onPageInit` | `ctx`, before the page renders; can set variables used on that page |
 | `onPageShown` | `ctx` + visible items, realised orders |
 | `onAnswer` | `ctx` + item id, new value, old value |
-| `onPageNext` | `ctx` |
-| `onComplete` | `ctx` + the full `ResponseRecord` (before submit) |
+| `onPageNext` | `ctx`; may `rejectPage` |
+| `onBack` | `ctx` |
+| `onValidationError` | `ctx` + failed items and messages |
+| `onBeforeSubmit` | `ctx` + the full `ResponseRecord` |
+| `onSubmitted` | `ctx`, after the server acknowledges; side effects to external systems belong here |
 
 
 **Context object (`ctx`), passed to every hook** (read-only, always up to date):
@@ -154,18 +192,35 @@ The same position fields are **built-in variables in expressions and piping**: `
 **What a hook may return** (a short list of actions; anything else is ignored with a logged diagnostic):
 - `setVariable(id, value)`: only for `embedded`/`hook`-kind variables declared in the survey (typed and validated), never for questions.
 - `addParadata(key, value)`: stored with the response.
-- `setEndRedirect(url)`: only for allowlisted origins.
-- `postToParent(message)`: for embedded surveys (`window.parent.postMessage` with a declared target origin).
+- `rejectPage({ itemId?, message })`: from `onPageNext` only; it blocks advancing with a custom validation error (e.g. "must sum to 100"). The message is shown as a validation error.
+- `setEndRedirect(templateId, params)`: picks one of the redirect URL templates declared at publish (e.g. Prolific completion URL). Only declared placeholders may be filled, and there is no free-form URL.
+- `postToParent(type, payload)`: only message types declared at publish, with a typed schema, to the declared parent origin.
+
+**Data-export capabilities.** Network access, redirects and parent messages can all carry participant data off the platform, so they are treated as data exports:
+- owner-only
+- listed in the codebook and the consent-text template
+- audited
+- re-confirmed by an owner whenever hook code changes
 
 **Rules:**
+- **Declared reads.** Each hook declares which questions and variables it reads; `ctx.results` contains only those.
 - **Hooks never decide flow directly.** They can set declared variables, which conditions may then read, so the engine stays the single place where flow happens.
-- **Async with timeouts.** The engine waits for `onPageNext`/`onComplete` hooks up to a declared timeout (default 2 s), then continues and records `hook.timeout`. Other events are fire-and-forget.
+- **Ordered engine effects.** Every hook call is an engine effect with an invocation id and the state revision it saw. Results that arrive after the state has moved on are rejected and logged. Actions never trigger further hooks, so there are no loops.
+- **Timeouts and failure.**
+  - The default timeout is 2 s.
+  - If a hook's variable is read by any condition or branch (flow-critical, detected at publish), a timeout or error shows a retry prompt. After that it ends with outcome `hook-failed`. It **never silently takes a different path**, because that would create device-speed bias.
+  - Non-critical hooks (paradata, logging) fail open.
 - **Reproducible.** Every hook action is recorded in the event log with its result, so replay and verification use the recorded actions and don't re-run the code.
-- **Errors never break the survey.** A thrown error or timeout is logged in paradata and the survey continues.
+- **Hook-set text is untrusted.** It's always HTML-escaped and can't be piped into consent text, platform UI or error banners. It is visually just answer-style text.
 - **Versioned with the survey.** The code is part of the published version and its checksum. The builder shows a "this survey runs custom code" badge. Exports to other platforms report hooks as `unsupported` (or map to SurveyJS events where possible).
 - **Permissions.** Only `owner`/`editor` roles may add hooks, and adding one is an audited op.
 
-Later (not MVP): custom **expression functions** (sync, pure, usable in conditions), which would need a different sandbox.
+- **Acceptance gate (before hooks ship):** adversarial tests for:
+  - egress bypasses, forged port messages, floods, infinite loops, oversized allocations
+  - stale results, refresh during a hook, duplicate submit
+  - `end-only` mode with blocked storage
+
+Later (not MVP): custom **expression functions** (sync, pure, usable in conditions), and jsPsych-style trial timing (stimulus onset, response latency at frame accuracy), which needs its own design. Qualtrics-style DOM manipulation is deliberately unsupported.
 
 ## 8. Scope for the pilot (acceptance gates)
 
@@ -188,7 +243,8 @@ Gates before the pilot:
 | C8 Enketo harness | **R4** Playwright harness: fixtures through `web/runtime` on device profiles + interruption tests |
 | — | **R5** pilot widgets × responsive/a11y rules (§6), axe + snapshots |
 | — | **R6** adversarial fixtures (§4) |
-| — | **R7** researcher hooks: sandbox, event API, actions, timeouts, event-log recording (§7a) |
+| — | **R7** researcher hooks: sandbox, event API, actions, effects, timeouts, adversarial gate (§7a) |
+| — | **R8** theme tokens + theme editor + contrast guard + theme library (§6a); custom CSS sanitiser later |
 | B11 Enketo preview | Preview embeds `web/runtime` with the draft plan; debugger steps the same engine |
 
 ## 10. Review log (16 Oct 2026)
@@ -219,12 +275,31 @@ Adopted:
 
 Not adopted: none rejected. The bundle budget became a target, per GPT.
 
+**Second review (save mode + hooks), 16 Oct 2026:** all three reviewers said APPROVE WITH CHANGES on both.
+
+Adopted:
+- the full sandbox spec (iframe flags, CSP, `MessagePort`, host-side validation, terminate/respawn)
+- redirects as declared templates
+- typed parent messages
+- network, redirect and parent messages treated as data exports
+- ordered effects with invocation ids and stale-result rejection
+- flow-critical hooks that never silently change path
+- seeded `ctx.random`/`ctx.now`
+- declared reads
+- `rejectPage` for custom validation
+- `onPageInit`, `onResume`, `onBack`, `onValidationError`, `onBeforeSubmit`/`onSubmitted`
+- an adversarial acceptance gate
+- `end-only` redefined as "no response data before submit", with a memory-only option, no network fallback, URL identifiers kept local, and GDPR disclosure
+
+GPT suggested shipping hooks after the pilot; the design now gates them (R-6).
+
 ## 11. Open questions (need a human decision)
 
-- **R-1** Default autosave also on every answer when IndexedDB is blocked (private mode). Proposed: yes.
+- **R-1** In `every-page` mode, when IndexedDB is blocked (private mode), save to the server on every answer. Proposed: yes. (`end-only` never does this; it falls back to memory.)
 - **R-2** Two-device conflict: proposed rule is "server copy wins, the other is kept in the audit log". OK?
 - **R-3** Quotas and balanced assignment: when is a slot consumed (at assignment or at completion), and when does an abandoned session release it (proposed: consumed at assignment, released after 24 h of inactivity)?
 - **R-5** Save-mode default: `every-page` (proposed) or `end-only`?
 - **R-7** Built-in `$` variables: names OK, and should `$trial` count re-visited pages after back (proposed: no)?
-- **R-6** Hooks in the MVP, or straight after the pilot? Proposed: MVP, with network access off by default.
+- **R-6** Hooks in the MVP, or straight after the pilot? Proposed: build them in the MVP, but enable them for the pilot only if the adversarial gate passes; network access stays off by default.
+- **R-8** Custom CSS in the MVP? Proposed: no; token-based themes first, custom CSS after the pilot.
 - **R-4** Paradata default: page-level timings + device class (phone/tablet/desktop) on by default. OK?
