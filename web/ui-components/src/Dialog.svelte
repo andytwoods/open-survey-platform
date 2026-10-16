@@ -15,6 +15,7 @@
 		size = 'md',
 		placement = 'center',
 		showClose = true,
+		onOpenAutoFocus,
 		onCloseAutoFocus,
 		children,
 		footer
@@ -26,19 +27,47 @@
 		size?: 'sm' | 'md' | 'lg';
 		placement?: 'center' | 'top';
 		showClose?: boolean;
+		onOpenAutoFocus?: (e: Event) => void;
 		onCloseAutoFocus?: (e: Event) => void;
 		children?: Snippet;
 		footer?: Snippet;
 	} = $props();
+
+	let content = $state<HTMLElement | null>(null);
+
+	const TABBABLE =
+		'input:not([disabled]):not([type="hidden"]), select:not([disabled]), textarea:not([disabled]), button:not([disabled]), a[href], [tabindex]:not([tabindex="-1"])';
+
+	/*
+	 * Move focus into the dialog ourselves. Bits UI's own open auto-focus is skipped when its
+	 * focus scope is not the top of a global stack, and every open Tooltip pushes a
+	 * (non-trapping) scope onto that stack. A tooltip that mounts just after the dialog (e.g.
+	 * the opener's own tooltip, shown on keyboard focus) would leave focus behind the modal.
+	 */
+	function handleOpenAutoFocus(e: Event) {
+		onOpenAutoFocus?.(e);
+		if (e.defaultPrevented) return;
+		e.preventDefault();
+		requestAnimationFrame(() => {
+			const el = content;
+			if (!el?.isConnected || el.contains(document.activeElement)) return;
+			const first = [...el.querySelectorAll<HTMLElement>(TABBABLE)].find(
+				(n) => n.getClientRects().length > 0
+			);
+			(first ?? el).focus();
+		});
+	}
 </script>
 
 <Dialog.Root bind:open>
 	<Dialog.Portal>
 		<Dialog.Overlay class="osp-dialog-overlay" />
 		<Dialog.Content
+			bind:ref={content}
 			class="osp-dialog"
 			data-size={size}
 			data-placement={placement}
+			onOpenAutoFocus={handleOpenAutoFocus}
 			{onCloseAutoFocus}
 		>
 			<div class="osp-dialog-header" class:osp-visually-hidden={hideTitle}>
