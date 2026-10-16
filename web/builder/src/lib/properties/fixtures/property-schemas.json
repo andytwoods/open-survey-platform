@@ -212,6 +212,30 @@
             "en": "Participants must answer before continuing. Only enforced while the question is shown."
           }
         },
+        "min": {
+          "kind": "number",
+          "label": {
+            "en": "Minimum"
+          },
+          "required": false,
+          "translatable": false,
+          "group": "Validation",
+          "help": {
+            "en": "The smallest answer allowed (inclusive). Checked only when answered."
+          }
+        },
+        "max": {
+          "kind": "number",
+          "label": {
+            "en": "Maximum"
+          },
+          "required": false,
+          "translatable": false,
+          "group": "Validation",
+          "help": {
+            "en": "The largest answer allowed (inclusive). Checked only when answered."
+          }
+        },
         "constraint": {
           "kind": "condition",
           "label": {
@@ -311,6 +335,30 @@
           "group": "Validation",
           "help": {
             "en": "Participants must answer before continuing. Only enforced while the question is shown."
+          }
+        },
+        "min": {
+          "kind": "number",
+          "label": {
+            "en": "Minimum"
+          },
+          "required": false,
+          "translatable": false,
+          "group": "Validation",
+          "help": {
+            "en": "The smallest answer allowed (inclusive). Checked only when answered."
+          }
+        },
+        "max": {
+          "kind": "number",
+          "label": {
+            "en": "Maximum"
+          },
+          "required": false,
+          "translatable": false,
+          "group": "Validation",
+          "help": {
+            "en": "The largest answer allowed (inclusive). Checked only when answered."
           }
         },
         "constraint": {
@@ -578,6 +626,18 @@
             "en": "An optional heading shown above the page's questions."
           }
         },
+        "showIf": {
+          "kind": "condition",
+          "label": {
+            "en": "Show page if"
+          },
+          "required": false,
+          "translatable": false,
+          "group": "Logic",
+          "help": {
+            "en": "Show the page only when this condition is true; otherwise it is skipped and its questions are not asked. May refer only to earlier pages."
+          }
+        },
         "itemOrder": {
           "kind": "enum",
           "label": {
@@ -815,6 +875,73 @@
             "en": "Participants can return to earlier pages and change answers."
           }
         },
+        "settings.saveMode": {
+          "kind": "enum",
+          "label": {
+            "en": "Saving"
+          },
+          "required": false,
+          "default": "every-page",
+          "translatable": false,
+          "group": "Advanced",
+          "help": {
+            "en": "End-only keeps answers on the participant's device until they submit."
+          },
+          "options": [
+            {
+              "value": "every-page",
+              "label": {
+                "en": "Save to the server on every page"
+              }
+            },
+            {
+              "value": "end-only",
+              "label": {
+                "en": "Send nothing until the end"
+              }
+            }
+          ]
+        },
+        "settings.localCopy": {
+          "kind": "enum",
+          "label": {
+            "en": "Copy kept on the device (end-only)"
+          },
+          "required": false,
+          "default": "browser",
+          "translatable": false,
+          "group": "Advanced",
+          "help": {
+            "en": "With memory only, refreshing the page restarts the survey (same conditions and order)."
+          },
+          "options": [
+            {
+              "value": "browser",
+              "label": {
+                "en": "Browser storage"
+              }
+            },
+            {
+              "value": "memory",
+              "label": {
+                "en": "Memory only"
+              }
+            }
+          ]
+        },
+        "settings.resumeExpiryDays": {
+          "kind": "number",
+          "label": {
+            "en": "Resume link expires after (days)"
+          },
+          "required": false,
+          "default": 30,
+          "translatable": false,
+          "group": "Advanced",
+          "help": {
+            "en": "Days without activity after which a participant can no longer resume."
+          }
+        },
         "metadata.license": {
           "kind": "text",
           "label": {
@@ -829,6 +956,7 @@
         }
       },
       "hidden": {
+        "settings.retention": "Chosen in the publish dialog; publishing is refused until it is set.",
         "specVersion": "Format version, written by the platform.",
         "id": "Stable survey identity, assigned at creation.",
         "version": "Published version number, set by publishing.",
