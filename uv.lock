@@ -727,6 +727,26 @@ source = { editable = "python/osp-mcp" }
 name = "osp-ops"
 version = "0.0.0"
 source = { editable = "python/osp-ops" }
+dependencies = [
+    { name = "osp-expr" },
+    { name = "osp-spec" },
+    { name = "pydantic" },
+]
+
+[package.dev-dependencies]
+dev = [
+    { name = "hypothesis" },
+]
+
+[package.metadata]
+requires-dist = [
+    { name = "osp-expr", editable = "python/osp-expr" },
+    { name = "osp-spec", editable = "python/osp-spec" },
+    { name = "pydantic", specifier = ">=2.12,<3" },
+]
+
+[package.metadata.requires-dev]
+dev = [{ name = "hypothesis", specifier = ">=6.140,<7" }]
 
 [[package]]
 name = "osp-qa"
