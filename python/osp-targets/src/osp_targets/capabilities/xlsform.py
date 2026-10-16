@@ -211,10 +211,10 @@ _row("TextLit.kind", "native", "XPath string literal.")
 _row("TextLit.value", "native", "Quoted; `concat()` when it holds both quote kinds.")
 _row(
     "BoolLit.kind",
-    "unsupported",
-    "Not exported yet (C2b added the literal); the XPath is `true()` / `false()`.",
+    "lowered",
+    "`true()` / `false()` as a condition; the strings `'true'` / `'false'` as a value.",
 )
-_row("BoolLit.value", "unsupported", "See BoolLit.kind.")
+_row("BoolLit.value", "lowered", "See BoolLit.kind.")
 _row("NullLit.kind", "lowered", "`''` as a value; any comparison with it is `false()`.")
 _row("Ref.kind", "native", "`${name}`.")
 _row("Ref.id", "native", "Rewritten to the target's variable name.")

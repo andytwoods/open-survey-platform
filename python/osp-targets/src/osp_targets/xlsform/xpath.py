@@ -17,6 +17,7 @@ from decimal import Decimal
 from osp_expr.ast import (
     And,
     Answered,
+    BoolLit,
     Arith,
     Compare,
     Contains,
@@ -172,6 +173,9 @@ class XPathWriter:
                 return _Value(string_literal(v))
             case NullLit():
                 return _Value("''", is_null=True)
+            case BoolLit(value=b):
+                # Boolean values are stored as the strings 'true'/'false' in the instance.
+                return _Value("'true'" if b else "'false'")
             case Ref():
                 r = self._ref(e)
                 # A constraint only runs on a non-empty value, so `.` needs no guard.
@@ -212,6 +216,8 @@ class XPathWriter:
                     return FALSE
                 text = string_literal(str(value.value)) if isinstance(value, IntLit) else v.text
                 return and_(*v.guards, f"selected({self._ref(ref)}, {text})")
+            case BoolLit(value=b):
+                return TRUE if b else FALSE
             case Ref() if self.ctx.types.get(e.id) == "boolean":
                 return f"{self._ref(e)} = 'true'"
             case _:

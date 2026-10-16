@@ -159,3 +159,15 @@ def test_assign_calc_shape() -> None:
 
 def test_decimal_literal_plain_notation() -> None:
     assert value({"kind": "decimal", "value": str(Decimal("1E+2"))}) == "100"
+
+
+def test_bool_literals_as_conditions():
+    assert cond({"kind": "bool", "value": True}) == "true()"
+    assert cond({"kind": "bool", "value": False}) == "false()"
+    either = {"kind": "or", "args": [{"kind": "bool", "value": False}, {"kind": "bool", "value": True}]}
+    assert "true()" in cond(either)
+
+
+def test_bool_literal_as_value_is_the_stored_string():
+    w = XPathWriter(XPathContext(NAMES, TYPES, None))
+    assert w.value(ex({"kind": "bool", "value": True})) == "'true'"
