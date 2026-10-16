@@ -37,7 +37,7 @@ from osp_engine.random import (
     randomize,
 )
 from osp_expr import EXPR_ADAPTER, evaluate
-from osp_runtime.plan import compile_survey
+from osp_runtime.plan import compile_survey, expr_json
 
 ROOT = Path(__file__).resolve().parents[3]
 FIXTURES = ROOT / "fixtures"
@@ -238,7 +238,7 @@ def expr_vectors(n: int = 6000) -> dict:
         ast = _rand_expr(r, r.randint(1, 4))
         expr = EXPR_ADAPTER.validate_python(ast)
         out = evaluate(expr, env)
-        rows.append([expr.model_dump(mode="json"), {k: _json_env(v) for k, v in env.items()}, _json_result(out)])
+        rows.append([expr_json(expr), {k: _json_env(v) for k, v in env.items()}, _json_result(out)])
     return {"source": "osp_expr.evaluate", "rows": rows}
 
 

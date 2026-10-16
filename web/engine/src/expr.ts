@@ -126,8 +126,11 @@ function arith(op: string, left: Value, right: Value): Value {
 
 function evalNode(node: Expr, lookup: Lookup): Value {
 	switch (node.kind) {
-		case 'int':
-			return Number.isInteger(node.value) ? num(dec.fromInteger(node.value), true) : null;
+		case 'int': {
+			const v = node.value;
+			if (typeof v === 'number') return Number.isSafeInteger(v) ? num(dec.fromInteger(v), true) : null;
+			return typeof v === 'string' && /^-?\d+$/.test(v) ? num(dec.fromInteger(BigInt(v)), true) : null;
+		}
 		case 'decimal': {
 			const d = typeof node.value === 'string' ? dec.parseDecimal(node.value) : null;
 			return d === null ? null : num(d, false);

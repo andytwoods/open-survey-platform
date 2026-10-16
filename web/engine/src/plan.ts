@@ -34,7 +34,7 @@ export type ArithOp = '+' | '-' | '*' | '/';
 
 export type RefExpr = { kind: 'ref'; id: string };
 export type Expr =
-	| { kind: 'int'; value: number }
+	| { kind: 'int'; value: number | string } // text beyond ±(2^53 − 1)
 	| { kind: 'decimal'; value: string }
 	| { kind: 'text'; value: string }
 	| { kind: 'null' }

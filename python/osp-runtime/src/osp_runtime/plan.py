@@ -51,6 +51,7 @@ __all__ = [
     "checksum",
     "compile_plan",
     "compile_survey",
+    "expr_json",
     "runtime_config",
     "seed_node",
     "seed_version",
@@ -92,6 +93,27 @@ def checksum(plan: Json) -> str:
     """`sha256:<hex>` of the canonical JSON of `plan` without its `checksum` field."""
     body = {k: v for k, v in plan.items() if k != "checksum"}
     return "sha256:" + hashlib.sha256(canonical_json(body).encode("utf-8")).hexdigest()
+
+
+MAX_SAFE_INT = 2**53 - 1
+
+
+def _safe_ints(node: Json) -> Json:
+    if isinstance(node, dict):
+        out = {k: _safe_ints(v) for k, v in node.items()}
+        v = out.get("value")
+        if out.get("kind") == "int" and isinstance(v, int) and abs(v) > MAX_SAFE_INT:
+            out["value"] = str(v)
+        return out
+    if isinstance(node, list):
+        return [_safe_ints(x) for x in node]
+    return node
+
+
+def expr_json(expr: Any) -> Json:
+    """An `osp-expr` AST as plan JSON. An integer literal beyond ±(2^53 − 1) is written as
+    decimal text, because a browser's JSON parser would round it to a double."""
+    return _safe_ints(expr.model_dump(mode="json", by_alias=True))
 
 
 def seed_node(assign_node_id: str, variable_id: str) -> str:
@@ -203,7 +225,7 @@ class _Compiler:
 
     @staticmethod
     def expr(e: Any) -> Json:
-        return None if e is None else e.model_dump(mode="json", by_alias=True)
+        return None if e is None else expr_json(e)
 
     def choices(self, choices: list[Choice]) -> list[Json]:
         return [{"value": c.value, "label": self.text(c.label)} for c in choices]

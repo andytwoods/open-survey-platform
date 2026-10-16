@@ -144,7 +144,7 @@
       "type": "object",
       "additionalProperties": false,
       "required": ["kind", "value"],
-      "properties": { "kind": { "const": "int" }, "value": { "type": "integer" } }
+      "properties": { "kind": { "const": "int" }, "value": { "oneOf": [{ "type": "integer", "minimum": -9007199254740991, "maximum": 9007199254740991 }, { "type": "string", "pattern": "^-?[0-9]+$" }], "description": "An integer beyond ±(2^53 − 1) is decimal text, so a browser never rounds it." } }
     },
     "exprDecimal": {
       "type": "object",

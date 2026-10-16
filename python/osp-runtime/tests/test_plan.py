@@ -197,6 +197,17 @@ def test_runtime_config_is_what_the_session_service_reads() -> None:
     assert runtime_config(plan, save_mode="end-only")["saveMode"] == "end-only"
 
 
+def test_unsafe_integer_literals_become_text() -> None:
+    from osp_expr import parse as parse_expr
+    from osp_runtime.plan import expr_json
+
+    e = parse_expr("x > 9007199254740993 and x < 5").expr
+    assert e is not None
+    out = expr_json(e)
+    assert out["args"][0]["right"] == {"kind": "int", "value": "9007199254740993"}
+    assert out["args"][1]["right"] == {"kind": "int", "value": 5}
+
+
 @pytest.mark.parametrize("path", VALID, ids=lambda p: p.stem)
 def test_runtime_config_for_every_valid_case(path: Path) -> None:
     plan, _ = compile_survey(_survey(path))
