@@ -359,6 +359,39 @@ response_records = Table(
     Column("record_key_id", String(32), nullable=False),
 )
 
+# --- Theme library (R8, migration 0002_themes) ----------------------------------------
+# A lab's saved survey themes. ``body`` is opaque theme JSON (osp_spec.theme validates it).
+
+themes = Table(
+    "themes",
+    metadata,
+    Column("id", ID, primary_key=True),
+    Column("tenant_id", ID, ForeignKey("tenants.id"), nullable=False, index=True),
+    Column("name", String(200), nullable=False),
+    Column("body", JsonType, nullable=False),
+    Column("created_by", String(80), nullable=False),
+    _ts("created_at"),
+    Column("updated_by", String(80), nullable=False),
+    _ts("updated_at"),
+    UniqueConstraint("tenant_id", "id"),
+    UniqueConstraint("tenant_id", "name"),
+    CheckConstraint("name <> ''", name="name_not_empty"),
+)
+
+# At most one lab default per tenant (the primary key); it must be one of the tenant's
+# own themes (composite foreign key), and deleting that theme clears the default.
+lab_theme_defaults = Table(
+    "lab_theme_defaults",
+    metadata,
+    Column("tenant_id", ID, ForeignKey("tenants.id"), primary_key=True),
+    Column("theme_id", ID, nullable=False),
+    Column("set_by", String(80), nullable=False),
+    _ts("set_at"),
+    ForeignKeyConstraint(
+        ["tenant_id", "theme_id"], ["themes.tenant_id", "themes.id"], ondelete="CASCADE"
+    ),
+)
+
 #: (table, ciphertext column, key-id column) for every encrypted field. The AEAD field
 #: name is the ciphertext column without ``_ct``; the row id is the table's ``id``.
 ENCRYPTED_FIELDS: tuple[tuple[Table, str, str], ...] = (

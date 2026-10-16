@@ -1,0 +1,51 @@
+# Property schema for `text` questions (planning/builder-design.md §1).
+type: text
+entity: question
+family: text
+label: { en: "Text" }
+icon: text-cursor-input
+properties:
+  label:
+    kind: richtext
+    label: { en: "Question text" }
+    translatable: true
+    required: true
+    default: "Untitled question"
+    group: Basics
+    help: { en: "What participants see. Use ${id} to pipe in an earlier answer." }
+  help:
+    kind: richtext
+    label: { en: "Help text" }
+    translatable: true
+    group: Basics
+    help: { en: "Shown under the question text." }
+  showIf:
+    kind: condition
+    label: { en: "Show if" }
+    group: Logic
+    help: { en: "Show the question only when this condition is true. Always shown when empty." }
+  required:
+    kind: bool
+    label: { en: "Required" }
+    default: false
+    group: Validation
+    help: { en: "Participants must answer before continuing. Only enforced while the question is shown." }
+  constraint:
+    kind: expression
+    label: { en: "Constraint" }
+    group: Validation
+    help: { en: "An expression an answer must satisfy. Checked only on answered values." }
+  constraintMessage:
+    kind: text
+    label: { en: "Constraint message" }
+    translatable: true
+    group: Validation
+    help: { en: "Shown when the constraint fails." }
+  name:
+    kind: text
+    label: { en: "Variable name" }
+    group: Advanced
+    help: { en: "The column name in data exports and codebooks. Defaults to the id." }
+hidden:
+  id: "Stable identity used by every reference; assigned when the question is added, never edited in the panel."
+  type: "The discriminator; changing type is its own op, not a property edit."

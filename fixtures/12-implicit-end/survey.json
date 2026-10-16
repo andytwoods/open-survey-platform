@@ -1,62 +1,94 @@
 {
-  "format": "osp-fixture-survey/0",
-  "description": "§6: reaching the end of the flow without an end node counts as end: complete.",
+  "specVersion": "osp-survey/0.1",
   "id": "f12_implicit_end",
   "version": 1,
-  "title": "Implicit end",
-  "languages": [
-    "en"
-  ],
+  "metadata": {
+    "title": "Implicit end",
+    "description": "§6: reaching the end of the flow without an end node counts as end: complete.",
+    "languages": [
+      "en"
+    ]
+  },
   "settings": {
     "backNavigation": true
   },
-  "choiceLists": {
-    "onetwo": [
-      {
-        "value": "one",
-        "label": "One"
-      },
-      {
-        "value": "two",
-        "label": "Two"
-      }
-    ]
-  },
-  "blocks": {
-    "p1": {
-      "items": [
+  "choiceLists": [
+    {
+      "id": "onetwo",
+      "choices": [
         {
-          "id": "x",
-          "type": "single",
-          "label": "Pick one or two.",
-          "choices": "onetwo",
-          "required": true
-        }
-      ]
-    },
-    "p2": {
-      "items": [
+          "value": "one",
+          "label": "One"
+        },
         {
-          "id": "y",
-          "type": "text",
-          "label": "You picked one. Why?"
+          "value": "two",
+          "label": "Two"
         }
       ]
     }
-  },
+  ],
+  "blocks": [
+    {
+      "id": "p1",
+      "pages": [
+        {
+          "id": "p1_page",
+          "items": [
+            {
+              "type": "single",
+              "id": "x",
+              "label": "Pick one or two.",
+              "choiceList": "onetwo",
+              "required": true
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "id": "p2",
+      "pages": [
+        {
+          "id": "p2_page",
+          "items": [
+            {
+              "type": "text",
+              "id": "y",
+              "label": "You picked one. Why?"
+            }
+          ]
+        }
+      ]
+    }
+  ],
   "flow": [
     {
+      "type": "block",
+      "id": "n_p1",
       "block": "p1"
     },
     {
-      "branch": {
-        "if": "x == \"one\"",
-        "then": [
-          {
-            "block": "p2"
-          }
-        ]
-      }
+      "type": "branch",
+      "id": "branch_1",
+      "if": {
+        "kind": "compare",
+        "op": "==",
+        "left": {
+          "kind": "ref",
+          "id": "x"
+        },
+        "right": {
+          "kind": "text",
+          "value": "one"
+        }
+      },
+      "then": [
+        {
+          "type": "block",
+          "id": "n_p2",
+          "block": "p2"
+        }
+      ]
     }
   ]
 }

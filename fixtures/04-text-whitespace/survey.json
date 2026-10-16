@@ -1,58 +1,82 @@
 {
-  "format": "osp-fixture-survey/0",
-  "description": "§2 text: trim, whitespace-only = unanswered, internal whitespace kept.",
+  "specVersion": "osp-survey/0.1",
   "id": "f04_text_whitespace",
   "version": 1,
-  "title": "Text trimming and whitespace",
-  "languages": [
-    "en"
-  ],
+  "metadata": {
+    "title": "Text trimming and whitespace",
+    "description": "§2 text: trim, whitespace-only = unanswered, internal whitespace kept.",
+    "languages": [
+      "en"
+    ]
+  },
   "settings": {
     "backNavigation": true
   },
-  "choiceLists": {},
-  "blocks": {
-    "p1": {
-      "items": [
+  "choiceLists": [],
+  "blocks": [
+    {
+      "id": "p1",
+      "pages": [
         {
-          "id": "t_req",
-          "type": "text",
-          "label": "Describe your ideal weekend.",
-          "required": true
-        },
-        {
-          "id": "t_opt",
-          "type": "text",
-          "label": "Anything else? (optional)"
-        },
-        {
-          "id": "t_lines",
-          "type": "text",
-          "label": "Write two short lines about the sea (optional)."
+          "id": "p1_page",
+          "items": [
+            {
+              "type": "text",
+              "id": "t_req",
+              "label": "Describe your ideal weekend.",
+              "required": true
+            },
+            {
+              "type": "text",
+              "id": "t_opt",
+              "label": "Anything else? (optional)"
+            },
+            {
+              "type": "text",
+              "id": "t_lines",
+              "label": "Write two short lines about the sea (optional)."
+            }
+          ]
         }
       ]
     },
-    "p2": {
-      "items": [
+    {
+      "id": "p2",
+      "pages": [
         {
-          "id": "t_follow",
-          "type": "text",
-          "label": "You added a comment. Can you say more?",
-          "showIf": "answered(t_opt)"
-        },
-        {
-          "id": "p2_rating",
-          "type": "integer",
-          "label": "Rate this survey from 1 to 5 (optional)."
+          "id": "p2_page",
+          "items": [
+            {
+              "type": "text",
+              "id": "t_follow",
+              "label": "You added a comment. Can you say more?",
+              "showIf": {
+                "kind": "answered",
+                "ref": {
+                  "kind": "ref",
+                  "id": "t_opt"
+                }
+              }
+            },
+            {
+              "type": "integer",
+              "id": "p2_rating",
+              "label": "Rate this survey from 1 to 5 (optional)."
+            }
+          ]
         }
       ]
     }
-  },
+  ],
   "flow": [
     {
+      "type": "block",
+      "id": "n_p1",
       "block": "p1"
     },
     {
+      "type": "block",
+      "id": "n_p2",
       "block": "p2"
     }
   ]

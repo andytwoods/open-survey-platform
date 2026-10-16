@@ -1,71 +1,111 @@
 {
-  "format": "osp-fixture-survey/0",
-  "description": "§5: back keeps values; relevance of later pages is re-evaluated.",
+  "specVersion": "osp-survey/0.1",
   "id": "f07_back_navigation",
   "version": 1,
-  "title": "Back navigation",
-  "languages": [
-    "en"
-  ],
+  "metadata": {
+    "title": "Back navigation",
+    "description": "§5: back keeps values; relevance of later pages is re-evaluated.",
+    "languages": [
+      "en"
+    ]
+  },
   "settings": {
     "backNavigation": true
   },
-  "choiceLists": {
-    "yesno": [
-      {
-        "value": "yes",
-        "label": "Yes"
-      },
-      {
-        "value": "no",
-        "label": "No"
-      }
-    ]
-  },
-  "blocks": {
-    "p1": {
-      "items": [
+  "choiceLists": [
+    {
+      "id": "yesno",
+      "choices": [
         {
-          "id": "q1",
-          "type": "integer",
-          "label": "How many windows does your room have?"
-        }
-      ]
-    },
-    "p2": {
-      "items": [
-        {
-          "id": "q2",
-          "type": "text",
-          "label": "Name a river."
-        }
-      ]
-    },
-    "p3": {
-      "items": [
-        {
-          "id": "q3",
-          "type": "single",
-          "label": "Do you like rain?",
-          "choices": "yesno"
+          "value": "yes",
+          "label": "Yes"
         },
         {
-          "id": "q3b",
-          "type": "text",
-          "label": "That is a lot of windows. Which way do they face?",
-          "showIf": "q1 > 4"
+          "value": "no",
+          "label": "No"
         }
       ]
     }
-  },
+  ],
+  "blocks": [
+    {
+      "id": "p1",
+      "pages": [
+        {
+          "id": "p1_page",
+          "items": [
+            {
+              "type": "integer",
+              "id": "q1",
+              "label": "How many windows does your room have?"
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "id": "p2",
+      "pages": [
+        {
+          "id": "p2_page",
+          "items": [
+            {
+              "type": "text",
+              "id": "q2",
+              "label": "Name a river."
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "id": "p3",
+      "pages": [
+        {
+          "id": "p3_page",
+          "items": [
+            {
+              "type": "single",
+              "id": "q3",
+              "label": "Do you like rain?",
+              "choiceList": "yesno"
+            },
+            {
+              "type": "text",
+              "id": "q3b",
+              "label": "That is a lot of windows. Which way do they face?",
+              "showIf": {
+                "kind": "compare",
+                "op": ">",
+                "left": {
+                  "kind": "ref",
+                  "id": "q1"
+                },
+                "right": {
+                  "kind": "int",
+                  "value": 4
+                }
+              }
+            }
+          ]
+        }
+      ]
+    }
+  ],
   "flow": [
     {
+      "type": "block",
+      "id": "n_p1",
       "block": "p1"
     },
     {
+      "type": "block",
+      "id": "n_p2",
       "block": "p2"
     },
     {
+      "type": "block",
+      "id": "n_p3",
       "block": "p3"
     }
   ]

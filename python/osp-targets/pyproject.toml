@@ -5,7 +5,25 @@ description = "Open Survey Platform: osp-targets (layer L3)"
 readme = "README.md"
 license = "MIT"
 requires-python = ">=3.14"
-dependencies = []
+dependencies = [
+    "osp-expr",
+    "osp-spec",
+    "openpyxl>=3.1.5,<4",
+    "pydantic>=2.12,<3",
+]
+
+[dependency-groups]
+# Test-only: pyxform (BSD-2-Clause) converts our XLSForm output to XForm XML;
+# osp-engine checks the seeded lowerings against our own PRNG.
+dev = [
+    "osp-engine",
+    "pyxform>=4.5,<5",
+]
+
+[tool.uv.sources]
+osp-expr = { workspace = true }
+osp-spec = { workspace = true }
+osp-engine = { workspace = true }
 
 [build-system]
 requires = ["uv_build>=0.11,<0.12"]

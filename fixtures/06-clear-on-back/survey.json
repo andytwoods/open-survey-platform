@@ -1,101 +1,150 @@
 {
-  "format": "osp-fixture-survey/0",
-  "description": "§3: a previously answered question that becomes irrelevant is cleared on page submit.",
+  "specVersion": "osp-survey/0.1",
   "id": "f06_clear_on_back",
   "version": 1,
-  "title": "Value cleared when it becomes irrelevant",
-  "languages": [
-    "en"
-  ],
+  "metadata": {
+    "title": "Value cleared when it becomes irrelevant",
+    "description": "§3: a previously answered question that becomes irrelevant is cleared on page submit.",
+    "languages": [
+      "en"
+    ]
+  },
   "settings": {
     "backNavigation": true
   },
-  "choiceLists": {
-    "pets": [
-      {
-        "value": "cat",
-        "label": "Cat"
-      },
-      {
-        "value": "dog",
-        "label": "Dog"
-      },
-      {
-        "value": "none",
-        "label": "No pet"
-      }
-    ],
-    "seasons": [
-      {
-        "value": "spring",
-        "label": "Spring"
-      },
-      {
-        "value": "summer",
-        "label": "Summer"
-      },
-      {
-        "value": "autumn",
-        "label": "Autumn"
-      },
-      {
-        "value": "winter",
-        "label": "Winter"
-      }
-    ]
-  },
-  "blocks": {
-    "p1": {
-      "items": [
+  "choiceLists": [
+    {
+      "id": "pets",
+      "choices": [
         {
-          "id": "pet",
-          "type": "single",
-          "label": "Which pet would you most like to have?",
-          "choices": "pets",
-          "required": true
+          "value": "cat",
+          "label": "Cat"
+        },
+        {
+          "value": "dog",
+          "label": "Dog"
+        },
+        {
+          "value": "none",
+          "label": "No pet"
         }
       ]
     },
-    "p2": {
-      "items": [
+    {
+      "id": "seasons",
+      "choices": [
         {
-          "id": "pet_name",
-          "type": "text",
-          "label": "What would you name it?",
-          "showIf": "pet != \"none\""
+          "value": "spring",
+          "label": "Spring"
         },
         {
-          "id": "season",
-          "type": "single",
-          "label": "Which season do you prefer?",
-          "choices": "seasons"
-        }
-      ]
-    },
-    "p3": {
-      "items": [
-        {
-          "id": "final",
-          "type": "text",
-          "label": "Why that name?",
-          "showIf": "answered(pet_name)"
+          "value": "summer",
+          "label": "Summer"
         },
         {
-          "id": "comment",
-          "type": "text",
-          "label": "Any other comment?"
+          "value": "autumn",
+          "label": "Autumn"
+        },
+        {
+          "value": "winter",
+          "label": "Winter"
         }
       ]
     }
-  },
+  ],
+  "blocks": [
+    {
+      "id": "p1",
+      "pages": [
+        {
+          "id": "p1_page",
+          "items": [
+            {
+              "type": "single",
+              "id": "pet",
+              "label": "Which pet would you most like to have?",
+              "choiceList": "pets",
+              "required": true
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "id": "p2",
+      "pages": [
+        {
+          "id": "p2_page",
+          "items": [
+            {
+              "type": "text",
+              "id": "pet_name",
+              "label": "What would you name it?",
+              "showIf": {
+                "kind": "compare",
+                "op": "!=",
+                "left": {
+                  "kind": "ref",
+                  "id": "pet"
+                },
+                "right": {
+                  "kind": "text",
+                  "value": "none"
+                }
+              }
+            },
+            {
+              "type": "single",
+              "id": "season",
+              "label": "Which season do you prefer?",
+              "choiceList": "seasons"
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "id": "p3",
+      "pages": [
+        {
+          "id": "p3_page",
+          "items": [
+            {
+              "type": "text",
+              "id": "final",
+              "label": "Why that name?",
+              "showIf": {
+                "kind": "answered",
+                "ref": {
+                  "kind": "ref",
+                  "id": "pet_name"
+                }
+              }
+            },
+            {
+              "type": "text",
+              "id": "comment",
+              "label": "Any other comment?"
+            }
+          ]
+        }
+      ]
+    }
+  ],
   "flow": [
     {
+      "type": "block",
+      "id": "n_p1",
       "block": "p1"
     },
     {
+      "type": "block",
+      "id": "n_p2",
       "block": "p2"
     },
     {
+      "type": "block",
+      "id": "n_p3",
       "block": "p3"
     }
   ]

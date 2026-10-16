@@ -1,109 +1,215 @@
 {
-  "format": "osp-fixture-survey/0",
-  "description": "§3 null semantics in showIf: comparisons, not, arithmetic, answered(), contains().",
+  "specVersion": "osp-survey/0.1",
   "id": "f05_showif_null",
   "version": 1,
-  "title": "showIf with null values",
-  "languages": [
-    "en"
-  ],
+  "metadata": {
+    "title": "showIf with null values",
+    "description": "§3 null semantics in showIf: comparisons, not, arithmetic, answered(), contains().",
+    "languages": [
+      "en"
+    ]
+  },
   "settings": {
     "backNavigation": true
   },
-  "choiceLists": {
-    "colour": [
-      {
-        "value": "red",
-        "label": "Red"
-      },
-      {
-        "value": "green",
-        "label": "Green"
-      },
-      {
-        "value": "blue",
-        "label": "Blue"
-      }
-    ]
-  },
-  "blocks": {
-    "p1": {
-      "items": [
+  "choiceLists": [
+    {
+      "id": "colour",
+      "choices": [
         {
-          "id": "a",
-          "type": "integer",
-          "label": "Pick any whole number (optional)."
+          "value": "red",
+          "label": "Red"
         },
         {
-          "id": "b",
-          "type": "integer",
-          "label": "Pick another whole number (optional)."
+          "value": "green",
+          "label": "Green"
         },
         {
-          "id": "c",
-          "type": "multi",
-          "label": "Pick some colours (optional).",
-          "choices": "colour"
-        }
-      ]
-    },
-    "p2": {
-      "items": [
-        {
-          "id": "p2_anchor",
-          "type": "text",
-          "label": "This question is always shown."
-        },
-        {
-          "id": "s_gt",
-          "type": "text",
-          "label": "Shown when: a > 5",
-          "showIf": "a > 5"
-        },
-        {
-          "id": "s_not_gt",
-          "type": "text",
-          "label": "Shown when: not (a > 5)",
-          "showIf": "not (a > 5)"
-        },
-        {
-          "id": "s_eq",
-          "type": "text",
-          "label": "Shown when: a == b",
-          "showIf": "a == b"
-        },
-        {
-          "id": "s_neq",
-          "type": "text",
-          "label": "Shown when: a != 3",
-          "showIf": "a != 3"
-        },
-        {
-          "id": "s_arith",
-          "type": "text",
-          "label": "Shown when: a + b > 3",
-          "showIf": "a + b > 3"
-        },
-        {
-          "id": "s_unanswered",
-          "type": "text",
-          "label": "Shown when: not answered(a)",
-          "showIf": "not answered(a)"
-        },
-        {
-          "id": "s_contains",
-          "type": "text",
-          "label": "Shown when: contains(c, \"red\")",
-          "showIf": "contains(c, \"red\")"
+          "value": "blue",
+          "label": "Blue"
         }
       ]
     }
-  },
+  ],
+  "blocks": [
+    {
+      "id": "p1",
+      "pages": [
+        {
+          "id": "p1_page",
+          "items": [
+            {
+              "type": "integer",
+              "id": "a",
+              "label": "Pick any whole number (optional)."
+            },
+            {
+              "type": "integer",
+              "id": "b",
+              "label": "Pick another whole number (optional)."
+            },
+            {
+              "type": "multi",
+              "id": "c",
+              "label": "Pick some colours (optional).",
+              "choiceList": "colour"
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "id": "p2",
+      "pages": [
+        {
+          "id": "p2_page",
+          "items": [
+            {
+              "type": "text",
+              "id": "p2_anchor",
+              "label": "This question is always shown."
+            },
+            {
+              "type": "text",
+              "id": "s_gt",
+              "label": "Shown when: a > 5",
+              "showIf": {
+                "kind": "compare",
+                "op": ">",
+                "left": {
+                  "kind": "ref",
+                  "id": "a"
+                },
+                "right": {
+                  "kind": "int",
+                  "value": 5
+                }
+              }
+            },
+            {
+              "type": "text",
+              "id": "s_not_gt",
+              "label": "Shown when: not (a > 5)",
+              "showIf": {
+                "kind": "not",
+                "arg": {
+                  "kind": "compare",
+                  "op": ">",
+                  "left": {
+                    "kind": "ref",
+                    "id": "a"
+                  },
+                  "right": {
+                    "kind": "int",
+                    "value": 5
+                  }
+                }
+              }
+            },
+            {
+              "type": "text",
+              "id": "s_eq",
+              "label": "Shown when: a == b",
+              "showIf": {
+                "kind": "compare",
+                "op": "==",
+                "left": {
+                  "kind": "ref",
+                  "id": "a"
+                },
+                "right": {
+                  "kind": "ref",
+                  "id": "b"
+                }
+              }
+            },
+            {
+              "type": "text",
+              "id": "s_neq",
+              "label": "Shown when: a != 3",
+              "showIf": {
+                "kind": "compare",
+                "op": "!=",
+                "left": {
+                  "kind": "ref",
+                  "id": "a"
+                },
+                "right": {
+                  "kind": "int",
+                  "value": 3
+                }
+              }
+            },
+            {
+              "type": "text",
+              "id": "s_arith",
+              "label": "Shown when: a + b > 3",
+              "showIf": {
+                "kind": "compare",
+                "op": ">",
+                "left": {
+                  "kind": "arith",
+                  "op": "+",
+                  "left": {
+                    "kind": "ref",
+                    "id": "a"
+                  },
+                  "right": {
+                    "kind": "ref",
+                    "id": "b"
+                  }
+                },
+                "right": {
+                  "kind": "int",
+                  "value": 3
+                }
+              }
+            },
+            {
+              "type": "text",
+              "id": "s_unanswered",
+              "label": "Shown when: not answered(a)",
+              "showIf": {
+                "kind": "not",
+                "arg": {
+                  "kind": "answered",
+                  "ref": {
+                    "kind": "ref",
+                    "id": "a"
+                  }
+                }
+              }
+            },
+            {
+              "type": "text",
+              "id": "s_contains",
+              "label": "Shown when: contains(c, \"red\")",
+              "showIf": {
+                "kind": "contains",
+                "ref": {
+                  "kind": "ref",
+                  "id": "c"
+                },
+                "value": {
+                  "kind": "text",
+                  "value": "red"
+                }
+              }
+            }
+          ]
+        }
+      ]
+    }
+  ],
   "flow": [
     {
+      "type": "block",
+      "id": "n_p1",
       "block": "p1"
     },
     {
+      "type": "block",
+      "id": "n_p2",
       "block": "p2"
     }
   ]

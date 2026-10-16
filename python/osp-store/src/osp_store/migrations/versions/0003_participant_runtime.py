@@ -2,8 +2,8 @@
 
 Additive only (task R2): new tables, no change to the 0001 tables.
 
-Revision ID: 0002
-Revises: 0001
+Revision ID: 0003
+Revises: 0002_themes
 Create Date: 2026-10-16
 """
 
@@ -18,8 +18,8 @@ JSON_T = sa.JSON().with_variant(postgresql.JSONB(), "postgresql")
 TS = sa.DateTime(timezone=True)
 ID = sa.String(length=36)
 
-revision = "0002"
-down_revision = "0001"
+revision = "0003"
+down_revision = "0002_themes"
 branch_labels = None
 depends_on = None
 

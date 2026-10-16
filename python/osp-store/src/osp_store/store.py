@@ -51,6 +51,7 @@ from .retention import (
     SurveyFacts,
     plan_retention,
 )
+from .themes import ThemeLibrary
 
 Clock = Callable[[], datetime]
 ALLOCATION_MODES = frozenset({"server", "limesurvey-native"})
@@ -126,7 +127,7 @@ def _answers(value: object) -> dict[str, dict[str, Any]]:
     return out
 
 
-class Store:
+class Store(ThemeLibrary):  # theme-library methods: themes.py
     def __init__(self, engine: Engine, keyring: Keyring, clock: Clock = _utcnow) -> None:
         self._engine = engine
         self._keys = keyring

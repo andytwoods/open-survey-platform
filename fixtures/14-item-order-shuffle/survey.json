@@ -1,107 +1,139 @@
 {
-  "format": "osp-fixture-survey/0",
-  "description": "§7 itemOrder shuffle within a block; recorded and stable across back.",
+  "specVersion": "osp-survey/0.1",
   "id": "f14_item_order_shuffle",
   "version": 1,
-  "title": "Shuffled question order in a block",
-  "languages": [
-    "en"
-  ],
+  "metadata": {
+    "title": "Shuffled question order in a block",
+    "description": "§7 itemOrder shuffle within a block; recorded and stable across back.",
+    "languages": [
+      "en"
+    ]
+  },
   "settings": {
     "backNavigation": true
   },
-  "choiceLists": {
-    "yesno": [
-      {
-        "value": "yes",
-        "label": "Yes"
-      },
-      {
-        "value": "no",
-        "label": "No"
-      }
-    ],
-    "agree5": [
-      {
-        "value": 1,
-        "label": "Strongly disagree"
-      },
-      {
-        "value": 2,
-        "label": "Disagree"
-      },
-      {
-        "value": 3,
-        "label": "Neutral"
-      },
-      {
-        "value": 4,
-        "label": "Agree"
-      },
-      {
-        "value": 5,
-        "label": "Strongly agree"
-      }
-    ]
-  },
-  "blocks": {
-    "p_pre": {
-      "items": [
+  "choiceLists": [
+    {
+      "id": "yesno",
+      "choices": [
         {
-          "id": "pre_q",
-          "type": "single",
-          "label": "Have you visited a library this year?",
-          "choices": "yesno"
+          "value": "yes",
+          "label": "Yes"
+        },
+        {
+          "value": "no",
+          "label": "No"
         }
       ]
     },
-    "p_att": {
-      "items": [
+    {
+      "id": "agree5",
+      "choices": [
         {
-          "id": "att1",
-          "type": "single",
-          "label": "Libraries are quiet.",
-          "choices": "agree5"
+          "value": 1,
+          "label": "Strongly disagree"
         },
         {
-          "id": "att2",
-          "type": "single",
-          "label": "Libraries are useful.",
-          "choices": "agree5"
+          "value": 2,
+          "label": "Disagree"
         },
         {
-          "id": "att3",
-          "type": "single",
-          "label": "Libraries are old-fashioned.",
-          "choices": "agree5"
+          "value": 3,
+          "label": "Neutral"
         },
         {
-          "id": "att4",
-          "type": "single",
-          "label": "Libraries are welcoming.",
-          "choices": "agree5"
-        }
-      ],
-      "itemOrder": "shuffle"
-    },
-    "p_post": {
-      "items": [
+          "value": 4,
+          "label": "Agree"
+        },
         {
-          "id": "post_q",
-          "type": "text",
-          "label": "Anything to add?"
+          "value": 5,
+          "label": "Strongly agree"
         }
       ]
     }
-  },
+  ],
+  "blocks": [
+    {
+      "id": "p_pre",
+      "pages": [
+        {
+          "id": "p_pre_page",
+          "items": [
+            {
+              "type": "single",
+              "id": "pre_q",
+              "label": "Have you visited a library this year?",
+              "choiceList": "yesno"
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "id": "p_att",
+      "pages": [
+        {
+          "id": "p_att_page",
+          "items": [
+            {
+              "type": "single",
+              "id": "att1",
+              "label": "Libraries are quiet.",
+              "choiceList": "agree5"
+            },
+            {
+              "type": "single",
+              "id": "att2",
+              "label": "Libraries are useful.",
+              "choiceList": "agree5"
+            },
+            {
+              "type": "single",
+              "id": "att3",
+              "label": "Libraries are old-fashioned.",
+              "choiceList": "agree5"
+            },
+            {
+              "type": "single",
+              "id": "att4",
+              "label": "Libraries are welcoming.",
+              "choiceList": "agree5"
+            }
+          ],
+          "itemOrder": "shuffle"
+        }
+      ]
+    },
+    {
+      "id": "p_post",
+      "pages": [
+        {
+          "id": "p_post_page",
+          "items": [
+            {
+              "type": "text",
+              "id": "post_q",
+              "label": "Anything to add?"
+            }
+          ]
+        }
+      ]
+    }
+  ],
   "flow": [
     {
+      "type": "block",
+      "id": "n_p_pre",
       "block": "p_pre"
     },
     {
+      "type": "block",
+      "id": "n_p_att",
       "block": "p_att"
     },
     {
+      "type": "block",
+      "id": "n_p_post",
       "block": "p_post"
     }
   ]

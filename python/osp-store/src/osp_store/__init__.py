@@ -41,6 +41,7 @@ from .records import (
 )
 from .retention import RetentionPlan, RetentionPolicy, plan_retention
 from .store import Store, checksum
+from .themes import StoredTheme
 
 __all__ = [
     "AccessDenied",
@@ -69,6 +70,7 @@ __all__ = [
     "Store",
     "SubmitResult",
     "StoreError",
+    "StoredTheme",
     "Survey",
     "SystemContext",
     "Tenant",

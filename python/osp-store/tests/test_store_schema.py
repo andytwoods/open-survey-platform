@@ -20,7 +20,9 @@ EXPECTED_TABLES = {
     "sessions",
     "responses",
     "audit_log",
-    # participant runtime (R2, migration 0002)
+    "themes",  # 0002_themes
+    "lab_theme_defaults",
+    # participant runtime (R2, migration 0003)
     "publications",
     "participant_sessions",
     "quota_counters",

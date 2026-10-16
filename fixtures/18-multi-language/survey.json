@@ -1,108 +1,143 @@
 {
-  "format": "osp-fixture-survey/0",
-  "description": "Two languages: labels, choice labels, constraint messages and piping per session.",
+  "specVersion": "osp-survey/0.1",
   "id": "f18_multi_language",
   "version": 1,
-  "title": {
-    "en": "Drinks",
-    "de": "Getränke"
+  "metadata": {
+    "title": {
+      "en": "Drinks",
+      "de": "Getränke"
+    },
+    "description": "Two languages: labels, choice labels, constraint messages and piping per session.",
+    "languages": [
+      "en",
+      "de"
+    ]
   },
-  "languages": [
-    "en",
-    "de"
-  ],
   "settings": {
     "backNavigation": true
   },
-  "choiceLists": {
-    "drinks": [
-      {
-        "value": "coffee",
-        "label": {
-          "en": "Coffee",
-          "de": "Kaffee"
-        }
-      },
-      {
-        "value": "tea",
-        "label": {
-          "en": "Tea",
-          "de": "Tee"
-        }
-      }
-    ],
-    "yesno": [
-      {
-        "value": "yes",
-        "label": {
-          "en": "Yes",
-          "de": "Ja"
-        }
-      },
-      {
-        "value": "no",
-        "label": {
-          "en": "No",
-          "de": "Nein"
-        }
-      }
-    ]
-  },
-  "blocks": {
-    "p1": {
-      "items": [
+  "choiceLists": [
+    {
+      "id": "drinks",
+      "choices": [
         {
-          "id": "drink",
-          "type": "single",
+          "value": "coffee",
           "label": {
-            "en": "Which drink do you prefer?",
-            "de": "Welches Getränk bevorzugen Sie?"
-          },
-          "choices": "drinks",
-          "required": true
+            "en": "Coffee",
+            "de": "Kaffee"
+          }
         },
         {
-          "id": "cups",
-          "type": "integer",
+          "value": "tea",
           "label": {
-            "en": "How many cups per day?",
-            "de": "Wie viele Tassen pro Tag?"
-          },
-          "constraint": "cups <= 20",
-          "constraintMessage": {
-            "en": "Please enter 20 or fewer.",
-            "de": "Bitte geben Sie höchstens 20 ein."
+            "en": "Tea",
+            "de": "Tee"
           }
         }
       ]
     },
-    "p2": {
-      "items": [
+    {
+      "id": "yesno",
+      "choices": [
         {
-          "id": "why",
-          "type": "text",
+          "value": "yes",
           "label": {
-            "en": "You chose ${drink}. Why?",
-            "de": "Sie haben ${drink} gewählt. Warum?"
+            "en": "Yes",
+            "de": "Ja"
           }
         },
         {
-          "id": "again",
-          "type": "single",
+          "value": "no",
           "label": {
-            "en": "Would you choose it again?",
-            "de": "Würden Sie es wieder wählen?"
-          },
-          "choices": "yesno"
+            "en": "No",
+            "de": "Nein"
+          }
         }
       ]
     }
-  },
+  ],
+  "blocks": [
+    {
+      "id": "p1",
+      "pages": [
+        {
+          "id": "p1_page",
+          "items": [
+            {
+              "type": "single",
+              "id": "drink",
+              "label": {
+                "en": "Which drink do you prefer?",
+                "de": "Welches Getränk bevorzugen Sie?"
+              },
+              "choiceList": "drinks",
+              "required": true
+            },
+            {
+              "type": "integer",
+              "id": "cups",
+              "label": {
+                "en": "How many cups per day?",
+                "de": "Wie viele Tassen pro Tag?"
+              },
+              "constraint": {
+                "kind": "compare",
+                "op": "<=",
+                "left": {
+                  "kind": "ref",
+                  "id": "cups"
+                },
+                "right": {
+                  "kind": "int",
+                  "value": 20
+                }
+              },
+              "constraintMessage": {
+                "en": "Please enter 20 or fewer.",
+                "de": "Bitte geben Sie höchstens 20 ein."
+              }
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "id": "p2",
+      "pages": [
+        {
+          "id": "p2_page",
+          "items": [
+            {
+              "type": "text",
+              "id": "why",
+              "label": {
+                "en": "You chose ${drink}. Why?",
+                "de": "Sie haben ${drink} gewählt. Warum?"
+              }
+            },
+            {
+              "type": "single",
+              "id": "again",
+              "label": {
+                "en": "Would you choose it again?",
+                "de": "Würden Sie es wieder wählen?"
+              },
+              "choiceList": "yesno"
+            }
+          ]
+        }
+      ]
+    }
+  ],
   "flow": [
     {
+      "type": "block",
+      "id": "n_p1",
       "block": "p1"
     },
     {
+      "type": "block",
+      "id": "n_p2",
       "block": "p2"
     }
   ]
