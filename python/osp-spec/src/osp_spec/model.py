@@ -9,6 +9,9 @@ Conventions:
 - Collections are lists of objects carrying their own `id` (not maps keyed by id), so the
   validator can report a duplicate id instead of JSON silently dropping it.
 - Translatable strings (`Text`) are a plain string or a `{language: string}` map.
+- Fields that must be true/false (`showIf`, `constraint`, branch `if`, quota `when`) are
+  typed `Condition`; value expressions (computed `expr`) are `Expression`. Both are the
+  same `osp-expr` AST in JSON; the validator type-checks a `Condition` as boolean.
 """
 
 from __future__ import annotations
@@ -25,7 +28,7 @@ from pydantic import (
     StringConstraints,
 )
 
-from .expr import Expression
+from .expr import Condition, Expression
 
 SPEC_VERSION = "osp-survey/0.1"
 
@@ -89,13 +92,13 @@ class _QuestionBase(Model):
     id: Identifier
     label: Text
     help: Text | None = None
-    showIf: Expression | None = None
+    showIf: Condition | None = None
 
 
 class _AnswerableBase(_QuestionBase):
     name: Identifier | None = None
     required: bool = False  # only while relevant (semantics.md §4)
-    constraint: Expression | None = None  # checked only on answered values
+    constraint: Condition | None = None  # checked only on answered values
     constraintMessage: Text | None = None
 
 
@@ -160,6 +163,7 @@ class Page(Model):
     """One screen. Validation runs on page submit (semantics.md §4)."""
 
     id: Identifier
+    title: Text | None = None  # optional heading shown above the page's items
     items: list[Question] = Field(min_length=1)
     itemOrder: Order = "fixed"  # realised order fixed at first reach (semantics.md §7)
 
@@ -222,7 +226,7 @@ class QuotaFull(Model):
 
 class Quota(Model):
     id: Identifier
-    when: Expression
+    when: Condition
     limit: StrictInt = Field(ge=0)
     countOn: Literal["complete"] = "complete"
     onFull: QuotaFull
@@ -240,7 +244,7 @@ class BlockNode(Model):
 class BranchNode(Model):
     type: Literal["branch"]
     id: Identifier
-    if_: Expression = Field(alias="if")
+    if_: Condition = Field(alias="if")
     then: list[FlowNode]
     else_: list[FlowNode] = Field(default_factory=list, alias="else")
 

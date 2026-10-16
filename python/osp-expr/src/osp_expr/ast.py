@@ -13,6 +13,8 @@ JSON shape, e.g. ``q3 > 5 and contains(q7, "b")``::
         {"kind": "contains", "ref": {"kind": "ref", "id": "q7"},
          "value": {"kind": "text", "value": "b"}}]}
 
+``true``/``false`` are ``BoolLit`` (``{"kind": "bool", "value": true}``).
+
 Numbers are never binary floats (§2): ``IntLit`` holds an ``int``, ``DecLit`` a finite
 ``Decimal`` (serialised to JSON as a string, e.g. ``"1.50"``).
 """
@@ -25,7 +27,7 @@ from typing import Annotated, Literal
 from pydantic import AfterValidator, BaseModel, ConfigDict, Field, TypeAdapter
 
 # Words that cannot be question ids, because the text syntax uses them.
-# ``true``/``false`` are reserved for a possible boolean literal later.
+# ``true``/``false`` are the boolean literals (``BoolLit``).
 KEYWORDS: frozenset[str] = frozenset({"and", "or", "not", "null", "true", "false"})
 
 IDENT_PATTERN = r"^[A-Za-z_][A-Za-z0-9_]*$"
@@ -69,6 +71,14 @@ class TextLit(_Node):
 
     kind: Literal["text"] = "text"
     value: str
+
+
+class BoolLit(_Node):
+    """Boolean literal ``true`` or ``false``. Its static type is boolean, so it is a
+    condition on its own; as a condition only ``true`` is true (§3)."""
+
+    kind: Literal["bool"] = "bool"
+    value: Annotated[bool, Field(strict=True)]
 
 
 class NullLit(_Node):
@@ -152,6 +162,7 @@ Expr = Annotated[
     IntLit
     | DecLit
     | TextLit
+    | BoolLit
     | NullLit
     | Ref
     | Compare
@@ -189,6 +200,7 @@ __all__ = [
     "IntLit",
     "DecLit",
     "TextLit",
+    "BoolLit",
     "NullLit",
     "Ref",
     "Compare",

@@ -4,6 +4,12 @@ entity: page
 label: { en: "Page" }
 icon: file
 properties:
+  title:
+    kind: text
+    label: { en: "Title" }
+    translatable: true
+    group: Basics
+    help: { en: "An optional heading shown above the page's questions." }
   itemOrder:
     kind: enum
     label: { en: "Question order" }

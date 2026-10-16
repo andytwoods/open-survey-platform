@@ -1,0 +1,191 @@
+{
+  "description": "A condition compares a single/multi question or an assigned variable with a code that is not in its choices (levels): always false, so a warning. 1 and \"1\" are the same code (C2-8); ordering tests are not checked.",
+  "expect": [
+    {
+      "code": "ref.unknown_choice_code",
+      "pointer": "/blocks/0/pages/0/items/2/showIf/args/0/right"
+    },
+    {
+      "code": "ref.unknown_choice_code",
+      "pointer": "/blocks/0/pages/0/items/2/showIf/args/3/value"
+    },
+    {
+      "code": "ref.unknown_choice_code",
+      "pointer": "/blocks/0/pages/0/items/2/showIf/args/5/right"
+    }
+  ],
+  "survey": {
+    "specVersion": "osp-survey/0.1",
+    "id": "srv_case",
+    "metadata": {
+      "title": "Case",
+      "languages": [
+        "en"
+      ]
+    },
+    "choiceLists": [
+      {
+        "id": "colours",
+        "choices": [
+          {
+            "value": "red",
+            "label": "Red"
+          },
+          {
+            "value": "blue",
+            "label": "Blue"
+          }
+        ]
+      }
+    ],
+    "variables": [
+      {
+        "id": "framing",
+        "kind": "assigned",
+        "levels": [
+          "gain",
+          "loss"
+        ]
+      }
+    ],
+    "blocks": [
+      {
+        "id": "b1",
+        "pages": [
+          {
+            "id": "p1",
+            "items": [
+              {
+                "id": "q1",
+                "type": "single",
+                "label": "Q1",
+                "choices": [
+                  {
+                    "value": 1,
+                    "label": "One"
+                  },
+                  {
+                    "value": 2,
+                    "label": "Two"
+                  }
+                ]
+              },
+              {
+                "id": "q2",
+                "type": "multi",
+                "label": "Q2",
+                "choiceList": "colours"
+              },
+              {
+                "id": "q3",
+                "type": "integer",
+                "label": "Q3",
+                "showIf": {
+                  "kind": "or",
+                  "args": [
+                    {
+                      "kind": "compare",
+                      "op": "==",
+                      "left": {
+                        "kind": "ref",
+                        "id": "q1"
+                      },
+                      "right": {
+                        "kind": "int",
+                        "value": 3
+                      }
+                    },
+                    {
+                      "kind": "compare",
+                      "op": "!=",
+                      "left": {
+                        "kind": "text",
+                        "value": "2"
+                      },
+                      "right": {
+                        "kind": "ref",
+                        "id": "q1"
+                      }
+                    },
+                    {
+                      "kind": "compare",
+                      "op": ">",
+                      "left": {
+                        "kind": "ref",
+                        "id": "q1"
+                      },
+                      "right": {
+                        "kind": "int",
+                        "value": 7
+                      }
+                    },
+                    {
+                      "kind": "contains",
+                      "ref": {
+                        "kind": "ref",
+                        "id": "q2"
+                      },
+                      "value": {
+                        "kind": "text",
+                        "value": "green"
+                      }
+                    },
+                    {
+                      "kind": "contains",
+                      "ref": {
+                        "kind": "ref",
+                        "id": "q2"
+                      },
+                      "value": {
+                        "kind": "text",
+                        "value": "red"
+                      }
+                    },
+                    {
+                      "kind": "compare",
+                      "op": "==",
+                      "left": {
+                        "kind": "ref",
+                        "id": "framing"
+                      },
+                      "right": {
+                        "kind": "text",
+                        "value": "neutral"
+                      }
+                    },
+                    {
+                      "kind": "compare",
+                      "op": "==",
+                      "left": {
+                        "kind": "ref",
+                        "id": "framing"
+                      },
+                      "right": {
+                        "kind": "text",
+                        "value": "gain"
+                      }
+                    }
+                  ]
+                }
+              }
+            ]
+          }
+        ]
+      }
+    ],
+    "flow": [
+      {
+        "type": "assign",
+        "id": "f_assign",
+        "variables": [
+          "framing"
+        ]
+      },
+      {
+        "type": "block",
+        "id": "f_b1",
+        "block": "b1"
+      }
+    ]
+  }
+}

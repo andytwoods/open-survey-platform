@@ -14,6 +14,7 @@ from .ast import (
     And,
     Answered,
     Arith,
+    BoolLit,
     Compare,
     Contains,
     DecLit,
@@ -111,6 +112,8 @@ class _Checker:
                 return "number"
             case TextLit():
                 return "text"
+            case BoolLit():
+                return "boolean"
             case NullLit():
                 return "null"
             case Ref():

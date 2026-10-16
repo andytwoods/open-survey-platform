@@ -191,6 +191,7 @@ class _Checker:
     used_lists: set[str] = field(default_factory=set)
     used_quotas: set[str] = field(default_factory=set)
     sites: list[_Site] = field(default_factory=list)
+    code_sites: list[tuple[ex.Expression, str]] = field(default_factory=list)
     counter: int = 0
     _cpos: dict[str, int | None] = field(default_factory=dict)
     _env: dict[str, str] | None = None
@@ -209,6 +210,7 @@ class _Checker:
         self._unplaced()
         self._computed_cycles()
         self._references()
+        self._choice_codes()
         unique: dict[tuple[str, str, str], Diagnostic] = {}
         for d in self.out:
             unique.setdefault((d.code, d.pointer, d.message), d)
@@ -534,7 +536,12 @@ class _Checker:
             )
             return
         self.placed_blocks.add(bid)
-        for page in self.s.blocks[self.blocks[bid]].pages:
+        bp = pointer("blocks", self.blocks[bid])
+        for j, page in enumerate(self.s.blocks[self.blocks[bid]].pages):
+            if page.title is not None:
+                # A page title sits before the page's first item: it may pipe earlier pages.
+                pp = bp + pointer("pages", j)
+                self._text(page.title, pp + "/title", _Site(pp, [], self.counter, path))
             for q in page.items:
                 info = self.questions.get(q.id)
                 if info is None or info.q is not q:
@@ -544,6 +551,12 @@ class _Checker:
                 self._question_sites(info)
 
     def _unplaced(self) -> None:
+        for bid, i in self.blocks.items():
+            if bid in self.placed_blocks:
+                continue
+            for j, page in enumerate(self.s.blocks[i].pages):
+                if page.title is not None:
+                    self._text(page.title, pointer("blocks", i, "pages", j, "title"), None)
         for info in self.questions.values():
             if info.pos is None:
                 self._question_sites(info)
@@ -577,6 +590,7 @@ class _Checker:
     ) -> None:
         self.sites.append(_Site(ptr, ex.references(e), pos, path, self_id, allow_self))
         self._typecheck(e, ptr, boolean)
+        self.code_sites.append((e, ptr))
 
     def _typecheck(self, e: ex.Expression, ptr: str, boolean: bool) -> None:
         for suffix, message in ex.typecheck(e, self._type_env(), boolean=boolean):
@@ -600,6 +614,38 @@ class _Checker:
         return self._env
 
     # -- computed variables and references ------------------------------------------
+
+    def _choice_codes(self) -> None:
+        """`ref.unknown_choice_code`: a condition compares a single/multi question (or an
+        `assigned` variable) with a literal code that is not one of its choices (levels).
+        Such a test is always false. Codes match as text (semantics.md C2-8: 1 == "1")."""
+        for e, ptr in self.code_sites:
+            for suffix, ref, code in ex.code_tests(e):
+                codes = self._codes_of(ref)
+                if codes is not None and str(code) not in codes:
+                    self.emit(
+                        "ref.unknown_choice_code",
+                        ptr + suffix,
+                        f"{code!r} is not a choice code of '{ref}' "
+                        f"(codes: {', '.join(sorted(codes))}); the test is always false",
+                    )
+
+    def _codes_of(self, ref: str) -> set[str] | None:
+        """The codes `ref` can take as text, or None if it is not a choice-like id."""
+        info = self.questions.get(ref)
+        if info is not None:
+            q = info.q
+            if not isinstance(q, (SingleQuestion, MultiQuestion)):
+                return None
+            choices = q.choices
+            if choices is None and q.choiceList is not None:
+                i = self.choice_lists.get(q.choiceList)
+                choices = self.s.choiceLists[i].choices if i is not None else None
+            return None if choices is None else {str(c.value) for c in choices}
+        vi = self.variables.get(ref)
+        if vi is not None and isinstance(vi.v, AssignedVariable):
+            return {str(level) for level in vi.v.levels}
+        return None
 
     def _computed_cycles(self) -> None:
         state: dict[str, int] = {}  # 1 visiting, 2 done
@@ -629,6 +675,7 @@ class _Checker:
             if isinstance(vi.v, ComputedVariable):
                 self.sites.append(_Site(vi.ptr + "/expr", ex.references(vi.v.expr), None))
                 self._typecheck(vi.v.expr, vi.ptr + "/expr", boolean=False)
+                self.code_sites.append((vi.v.expr, vi.ptr + "/expr"))
 
     def _computed_pos(self, vid: str, stack: frozenset[str] = frozenset()) -> int | None:
         """How late a computed variable is available: its latest input (-1: from start)."""

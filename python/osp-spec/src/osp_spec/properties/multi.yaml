@@ -49,10 +49,10 @@ properties:
     group: Validation
     help: { en: "Participants must answer before continuing. Only enforced while the question is shown." }
   constraint:
-    kind: expression
+    kind: condition
     label: { en: "Constraint" }
     group: Validation
-    help: { en: "An expression an answer must satisfy. Checked only on answered values." }
+    help: { en: "A condition an answer must satisfy. Checked only on answered values." }
   constraintMessage:
     kind: text
     label: { en: "Constraint message" }
