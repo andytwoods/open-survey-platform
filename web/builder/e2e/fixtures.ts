@@ -1,11 +1,11 @@
 import AxeBuilder from '@axe-core/playwright';
 import { test as base, expect, type Page } from '@playwright/test';
 
-/** Every test starts on the shell with a stubbed health endpoint (no backend needed). */
+/** Every test starts on the mock shell (`/?mock`) with a stubbed health endpoint (no backend needed). */
 export const test = base.extend<{ shell: Page }>({
 	shell: async ({ page }, use) => {
 		await page.route('**/api/health', (route) => route.fulfill({ json: { status: 'ok' } }));
-		await page.goto('/');
+		await page.goto('/?mock');
 		await expect(page.getByRole('tree', { name: 'Survey outline' })).toBeVisible();
 		await expect(page.getByText('API connected')).toBeVisible();
 		await use(page);
