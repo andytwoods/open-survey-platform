@@ -32,7 +32,10 @@ def create_app(
     sessions: SessionService | None = None, builder: AppServices | None = None
 ) -> FastAPI:
     """``sessions`` backs the participant endpoints and ``builder`` the builder ones
-    (auth, surveys, ops, meta); without them they answer 503."""
+    (auth, surveys, ops, meta); without them they answer 503. Given only ``builder``,
+    the participant endpoints use its ``sessions``, so a publish is servable at once."""
+    if sessions is None and builder is not None:
+        sessions = builder.sessions
     pkg_version = version("osp-api")
     app = FastAPI(
         title=API_TITLE,

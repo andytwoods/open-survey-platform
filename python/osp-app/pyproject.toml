@@ -8,6 +8,7 @@ requires-python = ">=3.14"
 dependencies = [
     "argon2-cffi>=25.1,<26",
     "osp-ops",
+    "osp-runtime",
     "osp-spec",
     "osp-store",
     "osp-targets",
@@ -15,6 +16,7 @@ dependencies = [
 
 [tool.uv.sources]
 osp-ops = { workspace = true }
+osp-runtime = { workspace = true }
 osp-spec = { workspace = true }
 osp-store = { workspace = true }
 osp-targets = { workspace = true }

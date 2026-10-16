@@ -31,7 +31,7 @@ from sqlalchemy import Connection, insert, select, update
 from . import schema as t
 from .context import SystemContext, TenantContext, require_ctx, require_system
 from .crypto import canonical_json
-from .errors import InvalidInput, NotFound
+from .errors import Conflict, InvalidInput, NotFound
 from .store import Store, _answers, _id, _json, _seed
 
 SaveMode = Literal["every-page", "end-only"]
@@ -188,7 +188,17 @@ class ParticipantStore:
         config = _json(config, "config")
         pid, now = str(uuid.uuid4()), self._s._now()
         with self._s._tx() as conn:
-            self._s._one(conn, select(t.versions.c.id).where(self._s._version_where(ctx, vid)))
+            survey_id = self._s._one(
+                conn, select(t.versions.c.survey_id).where(self._s._version_where(ctx, vid))
+            )["survey_id"]
+            # A slug belongs to one survey: a republish reuses it, another survey can't.
+            owners = conn.execute(
+                select(t.versions.c.survey_id)
+                .join(t.publications, t.publications.c.version_id == t.versions.c.id)
+                .where(t.publications.c.slug == slug)
+            ).scalars()
+            if any(owner != survey_id for owner in owners):
+                raise Conflict("that slug is in use by another survey")
             conn.execute(
                 insert(t.publications).values(
                     id=pid,
@@ -242,14 +252,30 @@ class ParticipantStore:
                 self._s._one(conn, select(t.publications).where(t.publications.c.id == pid))
             )
 
-    def find_publication(self, sys: SystemContext, slug: str) -> Publication | None:
-        """Resolve a public slug (cross-tenant: the slug is what a participant has)."""
+    def find_publication(
+        self, sys: SystemContext, slug: str, plan_checksum: str | None = None
+    ) -> Publication | None:
+        """Resolve a public slug (cross-tenant: the slug is what a participant has).
+
+        Without ``plan_checksum``: the publication of the newest version under ``slug``
+        (the one new sessions start on). With it: the publication under ``slug`` with
+        that plan, so a session started on an older version can still fetch its plan.
+        """
         require_system(sys)
         if not isinstance(slug, str) or not slug or len(slug) > 80:
             return None
+        q = (
+            select(t.publications)
+            .join(t.versions, t.versions.c.id == t.publications.c.version_id)
+            .where(t.publications.c.slug == slug)
+            .order_by(t.versions.c.number.desc(), t.publications.c.created_at.desc())
+        )
+        if plan_checksum is not None:
+            if not isinstance(plan_checksum, str) or len(plan_checksum) > 128:
+                return None
+            q = q.where(t.publications.c.plan_checksum == plan_checksum)
         with self._s._engine.connect() as conn:
-            r = conn.execute(select(t.publications).where(t.publications.c.slug == slug))
-            row = r.mappings().first()
+            row = conn.execute(q).mappings().first()
             return None if row is None else self._publication(row)
 
     def get_publication(self, ctx: TenantContext, publication_id: str) -> Publication:
