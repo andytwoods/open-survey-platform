@@ -2,3 +2,4 @@ packages:
   - builder
   - api-client
   - ui-components
+  - engine
