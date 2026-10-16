@@ -20,6 +20,7 @@ def test_create_list_get(benv):
     assert [x["id"] for x in listed] == [s["id"]]
     got = c.get(f"/api/surveys/{s['id']}").json()
     assert got["survey"] == s["survey"] and got["revision"] == 0
+    assert got["diagnostics"] == [] and s["diagnostics"] == []
 
 
 def test_create_rejects_invalid_survey(benv):
@@ -146,6 +147,8 @@ def test_publish_refuses_a_survey_with_errors(benv):
     r = c.post(f"/api/surveys/{s['id']}/ops", json={"ops": [op], "baseRevision": 0})
     assert r.status_code == 200, r.text
     assert [d["code"] for d in r.json()["diagnostics"]] == ["ref.unknown"]
+    got = c.get(f"/api/surveys/{s['id']}").json()  # a reload sees the same diagnostics
+    assert [d["code"] for d in got["diagnostics"]] == ["ref.unknown"]
     pub = c.post(f"/api/surveys/{s['id']}/publish")
     assert pub.status_code == 422
     assert pub.json()["diagnostics"][0]["code"] == "ref.unknown"

@@ -1,0 +1,946 @@
+{
+  "kinds": [
+    "text",
+    "richtext",
+    "number",
+    "bool",
+    "enum",
+    "choicelist",
+    "condition",
+    "expression"
+  ],
+  "families": [
+    "choice",
+    "text",
+    "number",
+    "matrix",
+    "scale",
+    "note"
+  ],
+  "groups": [
+    "Basics",
+    "Choices",
+    "Logic",
+    "Validation",
+    "Advanced"
+  ],
+  "schemas": [
+    {
+      "type": "block",
+      "entity": "block",
+      "label": {
+        "en": "Block"
+      },
+      "icon": "layers",
+      "properties": {
+        "title": {
+          "kind": "text",
+          "label": {
+            "en": "Title"
+          },
+          "required": false,
+          "default": "Untitled block",
+          "translatable": false,
+          "group": "Basics",
+          "help": {
+            "en": "A builder-only label. Never shown to participants."
+          }
+        }
+      },
+      "hidden": {
+        "id": "Stable identity used by flow nodes; assigned when the block is added.",
+        "pages": "Pages are edited in the outline tree, not in the property panel."
+      }
+    },
+    {
+      "type": "date",
+      "entity": "question",
+      "family": "text",
+      "label": {
+        "en": "Date"
+      },
+      "icon": "calendar",
+      "properties": {
+        "label": {
+          "kind": "richtext",
+          "label": {
+            "en": "Question text"
+          },
+          "required": true,
+          "default": "Untitled question",
+          "translatable": true,
+          "group": "Basics",
+          "help": {
+            "en": "What participants see. Use ${id} to pipe in an earlier answer."
+          }
+        },
+        "help": {
+          "kind": "richtext",
+          "label": {
+            "en": "Help text"
+          },
+          "required": false,
+          "translatable": true,
+          "group": "Basics",
+          "help": {
+            "en": "Shown under the question text."
+          }
+        },
+        "showIf": {
+          "kind": "condition",
+          "label": {
+            "en": "Show if"
+          },
+          "required": false,
+          "translatable": false,
+          "group": "Logic",
+          "help": {
+            "en": "Show the question only when this condition is true. Always shown when empty."
+          }
+        },
+        "required": {
+          "kind": "bool",
+          "label": {
+            "en": "Required"
+          },
+          "required": false,
+          "default": false,
+          "translatable": false,
+          "group": "Validation",
+          "help": {
+            "en": "Participants must answer before continuing. Only enforced while the question is shown."
+          }
+        },
+        "constraint": {
+          "kind": "condition",
+          "label": {
+            "en": "Constraint"
+          },
+          "required": false,
+          "translatable": false,
+          "group": "Validation",
+          "help": {
+            "en": "A condition an answer must satisfy. Checked only on answered values."
+          }
+        },
+        "constraintMessage": {
+          "kind": "text",
+          "label": {
+            "en": "Constraint message"
+          },
+          "required": false,
+          "translatable": true,
+          "group": "Validation",
+          "help": {
+            "en": "Shown when the constraint fails."
+          }
+        },
+        "name": {
+          "kind": "text",
+          "label": {
+            "en": "Variable name"
+          },
+          "required": false,
+          "translatable": false,
+          "group": "Advanced",
+          "help": {
+            "en": "The column name in data exports and codebooks. Defaults to the id."
+          }
+        }
+      },
+      "hidden": {
+        "id": "Stable identity used by every reference; assigned when the question is added, never edited in the panel.",
+        "type": "The discriminator; changing type is its own op, not a property edit."
+      }
+    },
+    {
+      "type": "decimal",
+      "entity": "question",
+      "family": "number",
+      "label": {
+        "en": "Decimal number"
+      },
+      "icon": "calculator",
+      "properties": {
+        "label": {
+          "kind": "richtext",
+          "label": {
+            "en": "Question text"
+          },
+          "required": true,
+          "default": "Untitled question",
+          "translatable": true,
+          "group": "Basics",
+          "help": {
+            "en": "What participants see. Use ${id} to pipe in an earlier answer."
+          }
+        },
+        "help": {
+          "kind": "richtext",
+          "label": {
+            "en": "Help text"
+          },
+          "required": false,
+          "translatable": true,
+          "group": "Basics",
+          "help": {
+            "en": "Shown under the question text."
+          }
+        },
+        "showIf": {
+          "kind": "condition",
+          "label": {
+            "en": "Show if"
+          },
+          "required": false,
+          "translatable": false,
+          "group": "Logic",
+          "help": {
+            "en": "Show the question only when this condition is true. Always shown when empty."
+          }
+        },
+        "required": {
+          "kind": "bool",
+          "label": {
+            "en": "Required"
+          },
+          "required": false,
+          "default": false,
+          "translatable": false,
+          "group": "Validation",
+          "help": {
+            "en": "Participants must answer before continuing. Only enforced while the question is shown."
+          }
+        },
+        "constraint": {
+          "kind": "condition",
+          "label": {
+            "en": "Constraint"
+          },
+          "required": false,
+          "translatable": false,
+          "group": "Validation",
+          "help": {
+            "en": "A condition an answer must satisfy. Checked only on answered values."
+          }
+        },
+        "constraintMessage": {
+          "kind": "text",
+          "label": {
+            "en": "Constraint message"
+          },
+          "required": false,
+          "translatable": true,
+          "group": "Validation",
+          "help": {
+            "en": "Shown when the constraint fails."
+          }
+        },
+        "name": {
+          "kind": "text",
+          "label": {
+            "en": "Variable name"
+          },
+          "required": false,
+          "translatable": false,
+          "group": "Advanced",
+          "help": {
+            "en": "The column name in data exports and codebooks. Defaults to the id."
+          }
+        }
+      },
+      "hidden": {
+        "id": "Stable identity used by every reference; assigned when the question is added, never edited in the panel.",
+        "type": "The discriminator; changing type is its own op, not a property edit."
+      }
+    },
+    {
+      "type": "integer",
+      "entity": "question",
+      "family": "number",
+      "label": {
+        "en": "Whole number"
+      },
+      "icon": "hash",
+      "properties": {
+        "label": {
+          "kind": "richtext",
+          "label": {
+            "en": "Question text"
+          },
+          "required": true,
+          "default": "Untitled question",
+          "translatable": true,
+          "group": "Basics",
+          "help": {
+            "en": "What participants see. Use ${id} to pipe in an earlier answer."
+          }
+        },
+        "help": {
+          "kind": "richtext",
+          "label": {
+            "en": "Help text"
+          },
+          "required": false,
+          "translatable": true,
+          "group": "Basics",
+          "help": {
+            "en": "Shown under the question text."
+          }
+        },
+        "showIf": {
+          "kind": "condition",
+          "label": {
+            "en": "Show if"
+          },
+          "required": false,
+          "translatable": false,
+          "group": "Logic",
+          "help": {
+            "en": "Show the question only when this condition is true. Always shown when empty."
+          }
+        },
+        "required": {
+          "kind": "bool",
+          "label": {
+            "en": "Required"
+          },
+          "required": false,
+          "default": false,
+          "translatable": false,
+          "group": "Validation",
+          "help": {
+            "en": "Participants must answer before continuing. Only enforced while the question is shown."
+          }
+        },
+        "constraint": {
+          "kind": "condition",
+          "label": {
+            "en": "Constraint"
+          },
+          "required": false,
+          "translatable": false,
+          "group": "Validation",
+          "help": {
+            "en": "A condition an answer must satisfy. Checked only on answered values."
+          }
+        },
+        "constraintMessage": {
+          "kind": "text",
+          "label": {
+            "en": "Constraint message"
+          },
+          "required": false,
+          "translatable": true,
+          "group": "Validation",
+          "help": {
+            "en": "Shown when the constraint fails."
+          }
+        },
+        "name": {
+          "kind": "text",
+          "label": {
+            "en": "Variable name"
+          },
+          "required": false,
+          "translatable": false,
+          "group": "Advanced",
+          "help": {
+            "en": "The column name in data exports and codebooks. Defaults to the id."
+          }
+        }
+      },
+      "hidden": {
+        "id": "Stable identity used by every reference; assigned when the question is added, never edited in the panel.",
+        "type": "The discriminator; changing type is its own op, not a property edit."
+      }
+    },
+    {
+      "type": "multi",
+      "entity": "question",
+      "family": "choice",
+      "label": {
+        "en": "Multiple choice"
+      },
+      "icon": "square-check",
+      "properties": {
+        "label": {
+          "kind": "richtext",
+          "label": {
+            "en": "Question text"
+          },
+          "required": true,
+          "default": "Untitled question",
+          "translatable": true,
+          "group": "Basics",
+          "help": {
+            "en": "What participants see. Use ${id} to pipe in an earlier answer."
+          }
+        },
+        "help": {
+          "kind": "richtext",
+          "label": {
+            "en": "Help text"
+          },
+          "required": false,
+          "translatable": true,
+          "group": "Basics",
+          "help": {
+            "en": "Shown under the question text."
+          }
+        },
+        "choices": {
+          "kind": "choicelist",
+          "label": {
+            "en": "Choices"
+          },
+          "required": false,
+          "default": [
+            {
+              "value": 1,
+              "label": "Option 1"
+            },
+            {
+              "value": 2,
+              "label": "Option 2"
+            }
+          ],
+          "translatable": true,
+          "group": "Choices",
+          "help": {
+            "en": "Codes and labels. The code is what is stored in the data."
+          }
+        },
+        "choiceOrder": {
+          "kind": "enum",
+          "label": {
+            "en": "Choice order"
+          },
+          "required": false,
+          "default": "fixed",
+          "translatable": false,
+          "group": "Choices",
+          "help": {
+            "en": "Shuffled orders are seeded, so each participant keeps theirs."
+          },
+          "options": [
+            {
+              "value": "fixed",
+              "label": {
+                "en": "As listed"
+              }
+            },
+            {
+              "value": "shuffle",
+              "label": {
+                "en": "Shuffle per participant"
+              }
+            }
+          ]
+        },
+        "showIf": {
+          "kind": "condition",
+          "label": {
+            "en": "Show if"
+          },
+          "required": false,
+          "translatable": false,
+          "group": "Logic",
+          "help": {
+            "en": "Show the question only when this condition is true. Always shown when empty."
+          }
+        },
+        "required": {
+          "kind": "bool",
+          "label": {
+            "en": "Required"
+          },
+          "required": false,
+          "default": false,
+          "translatable": false,
+          "group": "Validation",
+          "help": {
+            "en": "Participants must answer before continuing. Only enforced while the question is shown."
+          }
+        },
+        "constraint": {
+          "kind": "condition",
+          "label": {
+            "en": "Constraint"
+          },
+          "required": false,
+          "translatable": false,
+          "group": "Validation",
+          "help": {
+            "en": "A condition an answer must satisfy. Checked only on answered values."
+          }
+        },
+        "constraintMessage": {
+          "kind": "text",
+          "label": {
+            "en": "Constraint message"
+          },
+          "required": false,
+          "translatable": true,
+          "group": "Validation",
+          "help": {
+            "en": "Shown when the constraint fails."
+          }
+        },
+        "name": {
+          "kind": "text",
+          "label": {
+            "en": "Variable name"
+          },
+          "required": false,
+          "translatable": false,
+          "group": "Advanced",
+          "help": {
+            "en": "The column name in data exports and codebooks. Defaults to the id."
+          }
+        }
+      },
+      "hidden": {
+        "id": "Stable identity used by every reference; assigned when the question is added, never edited in the panel.",
+        "type": "The discriminator; changing type is its own op, not a property edit.",
+        "choiceList": "Edited through the choices editor, which switches between inline choices and a shared list (exactly one is set)."
+      }
+    },
+    {
+      "type": "note",
+      "entity": "question",
+      "family": "note",
+      "label": {
+        "en": "Note"
+      },
+      "icon": "sticky-note",
+      "properties": {
+        "label": {
+          "kind": "richtext",
+          "label": {
+            "en": "Text"
+          },
+          "required": true,
+          "default": "Untitled note",
+          "translatable": true,
+          "group": "Basics",
+          "help": {
+            "en": "What participants see. Use ${id} to pipe in an earlier answer."
+          }
+        },
+        "help": {
+          "kind": "richtext",
+          "label": {
+            "en": "Help text"
+          },
+          "required": false,
+          "translatable": true,
+          "group": "Basics",
+          "help": {
+            "en": "Shown under the question text."
+          }
+        },
+        "showIf": {
+          "kind": "condition",
+          "label": {
+            "en": "Show if"
+          },
+          "required": false,
+          "translatable": false,
+          "group": "Logic",
+          "help": {
+            "en": "Show the question only when this condition is true. Always shown when empty."
+          }
+        }
+      },
+      "hidden": {
+        "id": "Stable identity used by every reference; assigned when the question is added, never edited in the panel.",
+        "type": "The discriminator; changing type is its own op, not a property edit."
+      }
+    },
+    {
+      "type": "page",
+      "entity": "page",
+      "label": {
+        "en": "Page"
+      },
+      "icon": "file",
+      "properties": {
+        "title": {
+          "kind": "text",
+          "label": {
+            "en": "Title"
+          },
+          "required": false,
+          "translatable": true,
+          "group": "Basics",
+          "help": {
+            "en": "An optional heading shown above the page's questions."
+          }
+        },
+        "itemOrder": {
+          "kind": "enum",
+          "label": {
+            "en": "Question order"
+          },
+          "required": false,
+          "default": "fixed",
+          "translatable": false,
+          "group": "Basics",
+          "help": {
+            "en": "The realised order is fixed the first time a participant reaches the page."
+          },
+          "options": [
+            {
+              "value": "fixed",
+              "label": {
+                "en": "As listed"
+              }
+            },
+            {
+              "value": "shuffle",
+              "label": {
+                "en": "Shuffle per participant"
+              }
+            }
+          ]
+        }
+      },
+      "hidden": {
+        "id": "Stable identity; assigned when the page is added, never edited in the panel.",
+        "items": "Questions are edited on the canvas and in the outline tree, not in the property panel."
+      }
+    },
+    {
+      "type": "single",
+      "entity": "question",
+      "family": "choice",
+      "label": {
+        "en": "Single choice"
+      },
+      "icon": "circle-dot",
+      "properties": {
+        "label": {
+          "kind": "richtext",
+          "label": {
+            "en": "Question text"
+          },
+          "required": true,
+          "default": "Untitled question",
+          "translatable": true,
+          "group": "Basics",
+          "help": {
+            "en": "What participants see. Use ${id} to pipe in an earlier answer."
+          }
+        },
+        "help": {
+          "kind": "richtext",
+          "label": {
+            "en": "Help text"
+          },
+          "required": false,
+          "translatable": true,
+          "group": "Basics",
+          "help": {
+            "en": "Shown under the question text."
+          }
+        },
+        "choices": {
+          "kind": "choicelist",
+          "label": {
+            "en": "Choices"
+          },
+          "required": false,
+          "default": [
+            {
+              "value": 1,
+              "label": "Option 1"
+            },
+            {
+              "value": 2,
+              "label": "Option 2"
+            }
+          ],
+          "translatable": true,
+          "group": "Choices",
+          "help": {
+            "en": "Codes and labels. The code is what is stored in the data."
+          }
+        },
+        "choiceOrder": {
+          "kind": "enum",
+          "label": {
+            "en": "Choice order"
+          },
+          "required": false,
+          "default": "fixed",
+          "translatable": false,
+          "group": "Choices",
+          "help": {
+            "en": "Shuffled orders are seeded, so each participant keeps theirs."
+          },
+          "options": [
+            {
+              "value": "fixed",
+              "label": {
+                "en": "As listed"
+              }
+            },
+            {
+              "value": "shuffle",
+              "label": {
+                "en": "Shuffle per participant"
+              }
+            }
+          ]
+        },
+        "showIf": {
+          "kind": "condition",
+          "label": {
+            "en": "Show if"
+          },
+          "required": false,
+          "translatable": false,
+          "group": "Logic",
+          "help": {
+            "en": "Show the question only when this condition is true. Always shown when empty."
+          }
+        },
+        "required": {
+          "kind": "bool",
+          "label": {
+            "en": "Required"
+          },
+          "required": false,
+          "default": false,
+          "translatable": false,
+          "group": "Validation",
+          "help": {
+            "en": "Participants must answer before continuing. Only enforced while the question is shown."
+          }
+        },
+        "constraint": {
+          "kind": "condition",
+          "label": {
+            "en": "Constraint"
+          },
+          "required": false,
+          "translatable": false,
+          "group": "Validation",
+          "help": {
+            "en": "A condition an answer must satisfy. Checked only on answered values."
+          }
+        },
+        "constraintMessage": {
+          "kind": "text",
+          "label": {
+            "en": "Constraint message"
+          },
+          "required": false,
+          "translatable": true,
+          "group": "Validation",
+          "help": {
+            "en": "Shown when the constraint fails."
+          }
+        },
+        "name": {
+          "kind": "text",
+          "label": {
+            "en": "Variable name"
+          },
+          "required": false,
+          "translatable": false,
+          "group": "Advanced",
+          "help": {
+            "en": "The column name in data exports and codebooks. Defaults to the id."
+          }
+        }
+      },
+      "hidden": {
+        "id": "Stable identity used by every reference; assigned when the question is added, never edited in the panel.",
+        "type": "The discriminator; changing type is its own op, not a property edit.",
+        "choiceList": "Edited through the choices editor, which switches between inline choices and a shared list (exactly one is set)."
+      }
+    },
+    {
+      "type": "survey",
+      "entity": "survey",
+      "label": {
+        "en": "Survey settings"
+      },
+      "icon": "settings",
+      "properties": {
+        "metadata.title": {
+          "kind": "text",
+          "label": {
+            "en": "Title"
+          },
+          "required": true,
+          "default": "Untitled survey",
+          "translatable": true,
+          "group": "Basics"
+        },
+        "metadata.description": {
+          "kind": "richtext",
+          "label": {
+            "en": "Description"
+          },
+          "required": false,
+          "translatable": true,
+          "group": "Basics"
+        },
+        "metadata.defaultLanguage": {
+          "kind": "enum",
+          "label": {
+            "en": "Default language"
+          },
+          "required": false,
+          "translatable": false,
+          "group": "Basics",
+          "help": {
+            "en": "The language participants see first. The first survey language when empty."
+          },
+          "optionsFrom": "metadata.languages"
+        },
+        "settings.backNavigation": {
+          "kind": "bool",
+          "label": {
+            "en": "Allow going back"
+          },
+          "required": false,
+          "default": true,
+          "translatable": false,
+          "group": "Basics",
+          "help": {
+            "en": "Participants can return to earlier pages and change answers."
+          }
+        },
+        "metadata.license": {
+          "kind": "text",
+          "label": {
+            "en": "Licence"
+          },
+          "required": false,
+          "translatable": false,
+          "group": "Advanced",
+          "help": {
+            "en": "Licence of the questionnaire itself, e.g. CC-BY-4.0."
+          }
+        }
+      },
+      "hidden": {
+        "specVersion": "Format version, written by the platform.",
+        "id": "Stable survey identity, assigned at creation.",
+        "version": "Published version number, set by publishing.",
+        "metadata.languages": "Edited in the translation grid, which adds and removes language columns.",
+        "metadata.ddi": "Free-form DDI study metadata; edited in the JSON view.",
+        "choiceLists": "Shared lists are edited in the choice list editor.",
+        "variables": "Edited in the flow editor and variables view.",
+        "blocks": "Edited in the outline tree.",
+        "quotas": "Edited in the flow editor.",
+        "flow": "Edited in the flow editor."
+      }
+    },
+    {
+      "type": "text",
+      "entity": "question",
+      "family": "text",
+      "label": {
+        "en": "Text"
+      },
+      "icon": "text-cursor-input",
+      "properties": {
+        "label": {
+          "kind": "richtext",
+          "label": {
+            "en": "Question text"
+          },
+          "required": true,
+          "default": "Untitled question",
+          "translatable": true,
+          "group": "Basics",
+          "help": {
+            "en": "What participants see. Use ${id} to pipe in an earlier answer."
+          }
+        },
+        "help": {
+          "kind": "richtext",
+          "label": {
+            "en": "Help text"
+          },
+          "required": false,
+          "translatable": true,
+          "group": "Basics",
+          "help": {
+            "en": "Shown under the question text."
+          }
+        },
+        "showIf": {
+          "kind": "condition",
+          "label": {
+            "en": "Show if"
+          },
+          "required": false,
+          "translatable": false,
+          "group": "Logic",
+          "help": {
+            "en": "Show the question only when this condition is true. Always shown when empty."
+          }
+        },
+        "required": {
+          "kind": "bool",
+          "label": {
+            "en": "Required"
+          },
+          "required": false,
+          "default": false,
+          "translatable": false,
+          "group": "Validation",
+          "help": {
+            "en": "Participants must answer before continuing. Only enforced while the question is shown."
+          }
+        },
+        "constraint": {
+          "kind": "condition",
+          "label": {
+            "en": "Constraint"
+          },
+          "required": false,
+          "translatable": false,
+          "group": "Validation",
+          "help": {
+            "en": "A condition an answer must satisfy. Checked only on answered values."
+          }
+        },
+        "constraintMessage": {
+          "kind": "text",
+          "label": {
+            "en": "Constraint message"
+          },
+          "required": false,
+          "translatable": true,
+          "group": "Validation",
+          "help": {
+            "en": "Shown when the constraint fails."
+          }
+        },
+        "name": {
+          "kind": "text",
+          "label": {
+            "en": "Variable name"
+          },
+          "required": false,
+          "translatable": false,
+          "group": "Advanced",
+          "help": {
+            "en": "The column name in data exports and codebooks. Defaults to the id."
+          }
+        }
+      },
+      "hidden": {
+        "id": "Stable identity used by every reference; assigned when the question is added, never edited in the panel.",
+        "type": "The discriminator; changing type is its own op, not a property edit."
+      }
+    }
+  ]
+}

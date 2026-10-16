@@ -15,6 +15,7 @@ from typing import Any
 from .base import LEVELS, Capability, Level
 from .xlsform import XLSFORM
 
+# Other targets register themselves in osp_targets/__init__.py (avoids import cycles).
 TABLES: dict[str, dict[str, Capability]] = {"xlsform": XLSFORM}
 
 

@@ -1,0 +1,30 @@
+{
+	"name": "@osp/hooks-sandbox",
+	"private": true,
+	"version": "0.1.0",
+	"license": "MIT",
+	"description": "Researcher hooks (runtime-design.md §7a): sandboxed iframe + worker host, action validation, engine integration.",
+	"type": "module",
+	"types": "./src/index.ts",
+	"exports": {
+		".": {
+			"types": "./src/index.ts",
+			"default": "./src/index.ts"
+		}
+	},
+	"sideEffects": false,
+	"scripts": {
+		"check": "tsc -p tsconfig.json",
+		"e2e": "playwright test"
+	},
+	"dependencies": {
+		"@osp/engine": "workspace:*"
+	},
+	"devDependencies": {
+		"@playwright/test": "^1.64.1",
+		"@types/node": "^24.19.2",
+		"typescript": "~6.0.3",
+		"vite": "^8.3.4",
+		"vitest": "^4.1.12"
+	}
+}
