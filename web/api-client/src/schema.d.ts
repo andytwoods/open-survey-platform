@@ -1231,10 +1231,10 @@ export interface components {
             replay: boolean;
             /**
              * Result
-             * @description The engine's words: `open` (a place is held) or `full`.
+             * @description The engine's words: `open` (a place is held) or `full`. `admitted` is a deprecated alias of `open` from the first contract; this server never sends it.
              * @enum {string}
              */
-            result: "open" | "full";
+            result: "open" | "full" | "admitted";
         };
         /** RejectedBody */
         RejectedBody: {
@@ -1306,9 +1306,10 @@ export interface components {
             };
             /**
              * Localcopy
+             * @description Plan settings.localCopy. Always sent by this server; absent means `browser`.
              * @enum {string}
              */
-            localCopy: "browser" | "memory";
+            localCopy?: "browser" | "memory";
             /** Planchecksum */
             planChecksum: string;
             /** Planurl */
@@ -1464,9 +1465,8 @@ export interface components {
             /**
              * Superseded
              * @description True when this was a late save of an older state the server already holds (its event log is a prefix of the server copy's). Nothing was written; `revision` is the server's current revision.
-             * @default false
              */
-            superseded: boolean;
+            superseded?: boolean;
         };
         /** StaleBody */
         StaleBody: {
@@ -1497,10 +1497,10 @@ export interface components {
             };
             /**
              * Localcopy
-             * @description Where an end-only session keeps its copy (plan settings.localCopy).
+             * @description Where an end-only session keeps its copy (plan settings.localCopy). Always sent by this server; absent means `browser`.
              * @enum {string}
              */
-            localCopy: "browser" | "memory";
+            localCopy?: "browser" | "memory";
             /** Planchecksum */
             planChecksum: string;
             /** Planurl */

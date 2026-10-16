@@ -48,6 +48,12 @@ STATUS: dict[type[SessionError], int] = {
 # -- models ----------------------------------------------------------------------------
 
 
+def _optional(schema: dict[str, Any]) -> None:
+    """Drop ``default`` from a field's JSON Schema, so the generated TS type marks it
+    optional (``field?:``): a client written against an older server still type-checks."""
+    schema.pop("default", None)
+
+
 class ErrorBody(BaseModel):
     code: str
     message: str
@@ -77,7 +83,10 @@ class StartResponse(BaseModel):
         description="From the plan's settings. `end-only`: send no snapshots before submit."
     )
     localCopy: Literal["browser", "memory"] = Field(
-        description="Where an end-only session keeps its copy (plan settings.localCopy)."
+        default="browser",
+        description="Where an end-only session keeps its copy (plan settings.localCopy). "
+        "Always sent by this server; absent means `browser`.",
+        json_schema_extra=_optional,
     )
     revision: int
 
@@ -93,6 +102,7 @@ class SnapshotResponse(BaseModel):
     replay: bool = Field(description="True when this was a retry of the last accepted write.")
     superseded: bool = Field(
         default=False,
+        json_schema_extra=_optional,
         description=(
             "True when this was a late save of an older state the server already holds "
             "(its event log is a prefix of the server copy's). Nothing was written; "
@@ -103,8 +113,9 @@ class SnapshotResponse(BaseModel):
 
 class QuotaResponse(BaseModel):
     nodeId: str
-    result: Literal["open", "full"] = Field(
-        description="The engine's words: `open` (a place is held) or `full`."
+    result: Literal["open", "full", "admitted"] = Field(
+        description="The engine's words: `open` (a place is held) or `full`. `admitted` is "
+        "a deprecated alias of `open` from the first contract; this server never sends it."
     )
     replay: bool
 
@@ -150,7 +161,11 @@ class ResumeResponse(BaseModel):
     planUrl: str
     planChecksum: str
     saveMode: Literal["every-page", "end-only"]
-    localCopy: Literal["browser", "memory"]
+    localCopy: Literal["browser", "memory"] = Field(
+        default="browser",
+        description="Plan settings.localCopy. Always sent by this server; absent means `browser`.",
+        json_schema_extra=_optional,
+    )
     submitted: bool
 
 
