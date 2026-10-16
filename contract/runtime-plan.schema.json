@@ -1,0 +1,417 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://opensurvey.invalid/contract/runtime-plan.schema.json",
+  "title": "osp runtime plan (osp-runtime-plan/1)",
+  "description": "What web/engine executes. Compiled from a validated osp-survey by python/osp-runtime/src/osp_runtime/plan.py; TS types in web/engine/src/plan.ts. planning/runtime-design.md §3.",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "planVersion",
+    "engineVersion",
+    "checksum",
+    "survey",
+    "languages",
+    "defaultLanguage",
+    "title",
+    "settings",
+    "items",
+    "questions",
+    "pages",
+    "blocks",
+    "variables",
+    "quotas",
+    "flow"
+  ],
+  "properties": {
+    "planVersion": { "const": "osp-runtime-plan/1" },
+    "engineVersion": {
+      "description": "Major version of the engine API the plan targets.",
+      "type": "string",
+      "pattern": "^[0-9]+$"
+    },
+    "checksum": {
+      "description": "sha256:<hex> of the canonical JSON (sorted keys, no whitespace, UTF-8) of the plan without this field.",
+      "type": "string",
+      "pattern": "^sha256:[0-9a-f]{64}$"
+    },
+    "survey": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["id", "version", "specVersion", "seedVersion"],
+      "properties": {
+        "id": { "$ref": "#/$defs/id" },
+        "version": { "type": ["integer", "null"], "minimum": 1 },
+        "specVersion": { "type": "string" },
+        "seedVersion": {
+          "description": "The surveyVersion string fed to node_seed (semantics.md §7, R1-1).",
+          "type": "string"
+        }
+      }
+    },
+    "languages": {
+      "type": "array",
+      "minItems": 1,
+      "items": { "$ref": "#/$defs/language" }
+    },
+    "defaultLanguage": { "$ref": "#/$defs/language" },
+    "title": { "$ref": "#/$defs/text" },
+    "settings": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["backNavigation"],
+      "properties": { "backNavigation": { "type": "boolean" } }
+    },
+    "items": {
+      "description": "Every item (questions and notes) by id.",
+      "type": "object",
+      "additionalProperties": { "$ref": "#/$defs/item" }
+    },
+    "questions": {
+      "description": "Answerable question ids in flow order (export column order).",
+      "type": "array",
+      "items": { "$ref": "#/$defs/id" }
+    },
+    "pages": {
+      "type": "object",
+      "additionalProperties": { "$ref": "#/$defs/page" }
+    },
+    "blocks": {
+      "type": "object",
+      "additionalProperties": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": ["id", "pages"],
+        "properties": {
+          "id": { "$ref": "#/$defs/id" },
+          "pages": { "type": "array", "items": { "$ref": "#/$defs/id" } }
+        }
+      }
+    },
+    "variables": {
+      "type": "object",
+      "additionalProperties": { "$ref": "#/$defs/variable" }
+    },
+    "quotas": {
+      "type": "object",
+      "additionalProperties": { "$ref": "#/$defs/quota" }
+    },
+    "flow": { "$ref": "#/$defs/nodes" }
+  },
+  "$defs": {
+    "id": { "type": "string", "pattern": "^[A-Za-z_][A-Za-z0-9_]*$" },
+    "language": { "type": "string", "pattern": "^[A-Za-z]{2,3}(-[A-Za-z0-9]{1,8})*$" },
+    "segment": {
+      "description": "Researcher text (sanitised HTML), or a pipe the engine fills with an escaped participant value.",
+      "oneOf": [
+        { "type": "string" },
+        {
+          "type": "object",
+          "additionalProperties": false,
+          "required": ["pipe"],
+          "properties": {
+            "pipe": {
+              "type": "string",
+              "pattern": "^([A-Za-z_][A-Za-z0-9_]*|\\$(trial|position\\.index|position\\.of|pagesDone|language|device))$"
+            }
+          }
+        }
+      ]
+    },
+    "text": {
+      "description": "Segments per language; every survey language is present.",
+      "type": "object",
+      "additionalProperties": { "type": "array", "items": { "$ref": "#/$defs/segment" } }
+    },
+    "choiceValue": { "type": ["integer", "string"] },
+    "order": { "enum": ["fixed", "shuffle"] },
+    "expr": {
+      "description": "osp-expr AST JSON (python/osp-expr/src/osp_expr/ast.py).",
+      "oneOf": [
+        { "$ref": "#/$defs/exprInt" },
+        { "$ref": "#/$defs/exprDecimal" },
+        { "$ref": "#/$defs/exprText" },
+        { "$ref": "#/$defs/exprNull" },
+        { "$ref": "#/$defs/exprRef" },
+        { "$ref": "#/$defs/exprCompare" },
+        { "$ref": "#/$defs/exprArith" },
+        { "$ref": "#/$defs/exprAndOr" },
+        { "$ref": "#/$defs/exprNot" },
+        { "$ref": "#/$defs/exprAnswered" },
+        { "$ref": "#/$defs/exprContains" }
+      ]
+    },
+    "exprInt": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["kind", "value"],
+      "properties": { "kind": { "const": "int" }, "value": { "type": "integer" } }
+    },
+    "exprDecimal": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["kind", "value"],
+      "properties": {
+        "kind": { "const": "decimal" },
+        "value": { "type": "string", "pattern": "^-?[0-9]+(\\.[0-9]+)?([eE][-+]?[0-9]+)?$" }
+      }
+    },
+    "exprText": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["kind", "value"],
+      "properties": { "kind": { "const": "text" }, "value": { "type": "string" } }
+    },
+    "exprNull": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["kind"],
+      "properties": { "kind": { "const": "null" } }
+    },
+    "exprRef": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["kind", "id"],
+      "properties": { "kind": { "const": "ref" }, "id": { "type": "string" } }
+    },
+    "exprCompare": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["kind", "op", "left", "right"],
+      "properties": {
+        "kind": { "const": "compare" },
+        "op": { "enum": ["==", "!=", "<", "<=", ">", ">="] },
+        "left": { "$ref": "#/$defs/expr" },
+        "right": { "$ref": "#/$defs/expr" }
+      }
+    },
+    "exprArith": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["kind", "op", "left", "right"],
+      "properties": {
+        "kind": { "const": "arith" },
+        "op": { "enum": ["+", "-", "*", "/"] },
+        "left": { "$ref": "#/$defs/expr" },
+        "right": { "$ref": "#/$defs/expr" }
+      }
+    },
+    "exprAndOr": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["kind", "args"],
+      "properties": {
+        "kind": { "enum": ["and", "or"] },
+        "args": { "type": "array", "minItems": 2, "items": { "$ref": "#/$defs/expr" } }
+      }
+    },
+    "exprNot": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["kind", "arg"],
+      "properties": { "kind": { "const": "not" }, "arg": { "$ref": "#/$defs/expr" } }
+    },
+    "exprAnswered": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["kind", "ref"],
+      "properties": { "kind": { "const": "answered" }, "ref": { "$ref": "#/$defs/exprRef" } }
+    },
+    "exprContains": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["kind", "ref", "value"],
+      "properties": {
+        "kind": { "const": "contains" },
+        "ref": { "$ref": "#/$defs/exprRef" },
+        "value": { "$ref": "#/$defs/expr" }
+      }
+    },
+    "choice": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["value", "label"],
+      "properties": {
+        "value": { "$ref": "#/$defs/choiceValue" },
+        "label": { "$ref": "#/$defs/text" }
+      }
+    },
+    "item": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["id", "type", "page", "label"],
+      "properties": {
+        "id": { "$ref": "#/$defs/id" },
+        "type": { "enum": ["integer", "decimal", "text", "single", "multi", "date", "note"] },
+        "page": { "$ref": "#/$defs/id" },
+        "label": { "$ref": "#/$defs/text" },
+        "help": { "$ref": "#/$defs/text" },
+        "showIf": { "$ref": "#/$defs/expr" },
+        "name": { "$ref": "#/$defs/id" },
+        "required": { "type": "boolean" },
+        "constraint": { "$ref": "#/$defs/expr" },
+        "constraintMessage": { "$ref": "#/$defs/text" },
+        "choices": { "type": "array", "items": { "$ref": "#/$defs/choice" } },
+        "choiceOrder": { "$ref": "#/$defs/order" }
+      },
+      "if": { "properties": { "type": { "const": "note" } } },
+      "then": {
+        "not": {
+          "anyOf": [
+            { "required": ["name"] },
+            { "required": ["required"] },
+            { "required": ["constraint"] },
+            { "required": ["choices"] }
+          ]
+        }
+      },
+      "else": {
+        "required": ["name", "required"],
+        "if": { "properties": { "type": { "enum": ["single", "multi"] } } },
+        "then": { "required": ["choices", "choiceOrder"] },
+        "else": { "not": { "anyOf": [{ "required": ["choices"] }, { "required": ["choiceOrder"] }] } }
+      }
+    },
+    "page": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["id", "block", "items", "itemOrder"],
+      "properties": {
+        "id": { "$ref": "#/$defs/id" },
+        "block": { "$ref": "#/$defs/id" },
+        "items": { "type": "array", "minItems": 1, "items": { "$ref": "#/$defs/id" } },
+        "itemOrder": { "$ref": "#/$defs/order" }
+      }
+    },
+    "variable": {
+      "oneOf": [
+        {
+          "type": "object",
+          "additionalProperties": false,
+          "required": ["id", "kind", "name", "valueType", "source", "param", "default"],
+          "properties": {
+            "id": { "$ref": "#/$defs/id" },
+            "kind": { "const": "embedded" },
+            "name": { "$ref": "#/$defs/id" },
+            "valueType": { "enum": ["text", "integer", "decimal"] },
+            "source": { "const": "url" },
+            "param": { "type": "string" },
+            "default": { "type": ["string", "integer", "null"] }
+          }
+        },
+        {
+          "type": "object",
+          "additionalProperties": false,
+          "required": ["id", "kind", "name", "levels"],
+          "properties": {
+            "id": { "$ref": "#/$defs/id" },
+            "kind": { "const": "assigned" },
+            "name": { "$ref": "#/$defs/id" },
+            "levels": { "type": "array", "minItems": 1, "items": { "$ref": "#/$defs/choiceValue" } }
+          }
+        },
+        {
+          "type": "object",
+          "additionalProperties": false,
+          "required": ["id", "kind", "name", "expr"],
+          "properties": {
+            "id": { "$ref": "#/$defs/id" },
+            "kind": { "const": "computed" },
+            "name": { "$ref": "#/$defs/id" },
+            "expr": { "$ref": "#/$defs/expr" }
+          }
+        }
+      ]
+    },
+    "quota": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["id", "when", "limit", "countOn", "onFull"],
+      "properties": {
+        "id": { "$ref": "#/$defs/id" },
+        "when": { "$ref": "#/$defs/expr" },
+        "limit": { "type": "integer", "minimum": 0 },
+        "countOn": { "const": "complete" },
+        "onFull": {
+          "type": "object",
+          "additionalProperties": false,
+          "required": ["block", "pages", "outcome"],
+          "properties": {
+            "block": { "oneOf": [{ "$ref": "#/$defs/id" }, { "type": "null" }] },
+            "pages": { "type": "array", "items": { "$ref": "#/$defs/id" } },
+            "outcome": { "$ref": "#/$defs/id" }
+          }
+        }
+      }
+    },
+    "nodes": { "type": "array", "items": { "$ref": "#/$defs/node" } },
+    "node": {
+      "oneOf": [
+        {
+          "type": "object",
+          "additionalProperties": false,
+          "required": ["type", "id", "block", "pages"],
+          "properties": {
+            "type": { "const": "block" },
+            "id": { "$ref": "#/$defs/id" },
+            "block": { "$ref": "#/$defs/id" },
+            "pages": { "type": "array", "items": { "$ref": "#/$defs/id" } }
+          }
+        },
+        {
+          "type": "object",
+          "additionalProperties": false,
+          "required": ["type", "id", "if", "then", "else"],
+          "properties": {
+            "type": { "const": "branch" },
+            "id": { "$ref": "#/$defs/id" },
+            "if": { "$ref": "#/$defs/expr" },
+            "then": { "$ref": "#/$defs/nodes" },
+            "else": { "$ref": "#/$defs/nodes" }
+          }
+        },
+        {
+          "type": "object",
+          "additionalProperties": false,
+          "required": ["type", "id", "children", "pick"],
+          "properties": {
+            "type": { "const": "randomiser" },
+            "id": { "$ref": "#/$defs/id" },
+            "children": { "type": "array", "minItems": 1, "items": { "$ref": "#/$defs/node" } },
+            "pick": { "type": ["integer", "null"], "minimum": 1 }
+          }
+        },
+        {
+          "type": "object",
+          "additionalProperties": false,
+          "required": ["type", "id", "variables"],
+          "properties": {
+            "type": { "const": "assign" },
+            "id": { "$ref": "#/$defs/id" },
+            "variables": { "type": "array", "minItems": 1, "items": { "$ref": "#/$defs/id" } }
+          }
+        },
+        {
+          "type": "object",
+          "additionalProperties": false,
+          "required": ["type", "id", "quota"],
+          "properties": {
+            "type": { "const": "quotaCheck" },
+            "id": { "$ref": "#/$defs/id" },
+            "quota": { "$ref": "#/$defs/id" }
+          }
+        },
+        {
+          "type": "object",
+          "additionalProperties": false,
+          "required": ["type", "id", "outcome"],
+          "properties": {
+            "type": { "const": "end" },
+            "id": { "$ref": "#/$defs/id" },
+            "outcome": { "$ref": "#/$defs/id" },
+            "message": { "$ref": "#/$defs/text" }
+          }
+        }
+      ]
+    }
+  }
+}
