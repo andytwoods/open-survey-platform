@@ -1,11 +1,22 @@
-# Semantics decisions, batch 1 (proposed 16 Oct 2026)
+# Semantics decisions, batch 1 (approved 16 Oct 2026)
 
 These are the open questions from `semantics.md` plus the server questions S-1 to S-4. Each recommendation comes from a cross-LLM review (GPT, Gemini, Qwen) and the lead.
 
 - **Agree** = how many of the 3 reviewers backed this answer.
 - **Lead** = an R1 question the reviewers didn't see; the lead decided it.
 
-Once the user approves, these become the rules in `semantics.md`, and agents update the code and fixtures to match.
+**Approved 16 Oct 2026:** the user delegated the choice to the lead, and every recommendation below was adopted as written. Task SEM1 folds them into `semantics.md` and updates the code and fixtures.
+
+## Also decided by the lead (backend defaults, delegated by the user)
+
+| Item | Decision |
+|---|---|
+| Retention | A retention policy is **required before publishing** (there's no silent default) |
+| Deleting surveys | Published surveys can't be deleted; owners only; viewers can't export responses |
+| Passwords | Minimum 15 characters while two-factor login is optional |
+| Signup | No self-signup in the MVP; adding it later requires email verification |
+| Cookies and CSRF | Kept as built by C10 |
+| Engine-computed orders | The lead checks the 385 realised `<engine>` values (permutation, stability, parity) and writes them into `expected/` after SEM1 |
 
 ## Contested (a decision changes behaviour)
 
