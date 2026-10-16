@@ -1,6 +1,6 @@
 # Participant runtime design
 
-**Status:** v2, 16 Oct 2026. Revised after cross-LLM review (GPT, Gemini, Qwen: all three APPROVE WITH CHANGES; see §10). Pending user approval. **Supersedes** `review.md` §2.6 (Enketo runtime) once approved.
+**Status:** v2, 16 Oct 2026. Revised after cross-LLM review (GPT, Gemini, Qwen: all three APPROVE WITH CHANGES; see §10). **Approved by the user 16 Oct 2026**, with R-1 to R-8 as proposed. **Supersedes** `review.md` §2.6 (Enketo runtime).
 **Decision (user, 16 Oct 2026):** we build our own participant runtime. The survey runs **entirely in the browser, except saving data** (and counts across participants). It must work well on every screen size. Enketo/XLSForm becomes an export target only.
 
 ## 1. Goals and non-goals
@@ -293,7 +293,7 @@ Adopted:
 
 GPT suggested shipping hooks after the pilot; the design now gates them (R-6).
 
-## 11. Open questions (need a human decision)
+## 11. Decisions (approved 16 Oct 2026, as proposed)
 
 - **R-1** In `every-page` mode, when IndexedDB is blocked (private mode), save to the server on every answer. Proposed: yes. (`end-only` never does this; it falls back to memory.)
 - **R-2** Two-device conflict: proposed rule is "server copy wins, the other is kept in the audit log". OK?

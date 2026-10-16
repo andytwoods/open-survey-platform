@@ -42,7 +42,7 @@ Scaffold decisions (16 Oct 2026): stay on SvelteKit 3; `certifi` allowed at runt
 | id | title | layer | depends on | acceptance criteria | status | owner | needs human |
 |---|---|---|---|---|---|---|---|
 | C3b | Fixtures validate against `osp-spec`; fix drift | fixtures | C2, C3a | Every fixture validates | doing | agent:C3b | |
-| C4 | `osp-engine`: flow state machine + trace; seeded PRNG; ODK `randomize` reimplementation | L2 | C2, C3b | All fixtures produce expected traces; 1,000-seed `randomize` parity with spike evidence | todo | | |
+| C4 | `osp-engine`: flow state machine + trace; seeded PRNG; ODK `randomize` reimplementation | L2 | C2, C3b | All fixtures produce expected traces; 1,000-seed `randomize` parity with spike evidence | replaced | | by R1/R3/R4 (own runtime) |
 | C5 | `osp-ops`: registry, `(survey, args) → (survey', inverse)`, transactions, fuzz harness | L2 | C2 | Every op has inverse test + hostile-input fuzz test | doing | agent:C5 | |
 | C6 | `osp-targets/xlsform` + capability table | L3 | C2 | Fixtures export; `pyxform` validates all; diagnostics for unsupported features | doing | agent:C6 | |
 | C9 | `osp-store`: Postgres + SQLite; drafts, versions, responses; encryption at rest; retention job | L4 | C2 | Tenant isolation tests; retention deletes and is tested | done | | |
@@ -54,12 +54,25 @@ Scaffold decisions (16 Oct 2026): stay on SvelteKit 3; `certifi` allowed at runt
 | B1 | Property schema format + 7 MVP types (`builder-design.md` §1) in `osp-spec`, exported via OpenAPI | L1 | C2 | Schema validates; every model field of every type has a property entry; completeness test | doing | agent:B1 | |
 | W1b | Fix flaky `toBeFocused` e2e test in builder shell | web | W1 | `make web-e2e` green 10 runs in a row | doing | agent:W1b | |
 
-### Wave C (runtime tasks R1–R8 replace C4/C7/C8 once `runtime-design.md` is approved)
+### Runtime (approved 16 Oct 2026, `runtime-design.md` §9; replaces C4, C7, C8)
 
 | id | title | layer | depends on | acceptance criteria | status | owner | needs human |
 |---|---|---|---|---|---|---|---|
-| C7 | `osp-runtime`: publish → XForm → Enketo page; session start injects `cond` + `seed`; submission endpoint | L4 | C6, E1 | Participant completes a fixture survey in Playwright; submission stored and linked to version | todo | | |
-| C8 | Harness: Playwright plays fixture scripts through Enketo pages; compares with engine traces | qa | C4, C7 | `make harness-quick` green on all fixtures in under 5 min | todo | | |
+| R1 | TS engine `web/engine`: plan types (first commit), state machine, effects, event log, exact decimals, randomize/node_seed port, fixture runner | web L2 | C3b | All non-pending fixtures pass; 10k-seed + hash-vector parity with Python | doing | agent:R1 | |
+| R2 | `osp-runtime`: plan compiler (after R1 plan types) + session API: start, revisioned snapshot save (409), idempotent quota + submit, save modes, resume tokens | L4 | C9, R1 types | API tests: stale write 409, idempotent retries, end-only stores no answers before submit | doing | agent:R2 | |
+| R3 | Participant app `web/runtime`: local-first save, lifecycle flush, resume reconciliation, focus/nav rules | web | R1 | Playwright: refresh at every step, tab kill, offline → online, zero lost answers | todo | | |
+| R4 | Harness: fixture scripts through `web/runtime` on device profiles + interruption tests | qa | R3 | `make harness-quick` < 5 min | todo | | |
+| R5 | Pilot widgets × responsive/a11y rules (§6) | web | R1 | axe + snapshots per widget × width; keyboard tests | todo | | |
+| R6 | Adversarial fixtures (§4) | fixtures | C3b | ≥ 15 new fixtures; listed in `fixtures/README.md` | todo | | |
+| R7 | Researcher hooks: sandbox, events, actions, effects, adversarial gate (§7a) | web | R1, R3 | Adversarial test suite green | todo | | |
+| R8 | Themes: theme model + tokens, contrast guard, runtime application, theme library storage (§6a); editor UI later | L1 + web | — | Contrast guard tests; all presets AA; tokens applied in runtime | doing | agent:R8 | |
+
+### Wave C (remaining)
+
+| id | title | layer | depends on | acceptance criteria | status | owner | needs human |
+|---|---|---|---|---|---|---|---|
+| C7 | `osp-runtime`: publish → XForm → Enketo page; session start injects `cond` + `seed`; submission endpoint | L4 | C6, E1 | Participant completes a fixture survey in Playwright; submission stored and linked to version | replaced | | by R1/R3/R4 (own runtime) |
+| C8 | Harness: Playwright plays fixture scripts through Enketo pages; compares with engine traces | qa | C4, C7 | `make harness-quick` green on all fixtures in under 5 min | replaced | | by R1/R3/R4 (own runtime) |
 | C10 | `osp-app` + API: auth (password + TOTP), roles, draft CRUD via ops, publish, export | L5–L6 | C5, C9 | Other-user access tests fail closed; OpenAPI regenerated | todo | | |
 
 ## Phase 3: builder (see `builder-design.md` §9; 3–5 agents)

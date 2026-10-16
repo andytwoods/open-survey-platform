@@ -1,6 +1,6 @@
 # AGENTS.md: guide for AI agents and contributors
 
-Open Survey Platform: an MIT-licensed, GUI-first survey builder for academic research. Surveys are authored in our own JSON model (`osp-survey`), run in **Enketo** (Apache-2.0, ODK XForms) served by our own backend, and can be exported to other platforms. We do **not** write a renderer: Enketo is it. Structure modelled on PhotoCraft's `AGENTS.md` (`planning/review.md` §3.3).
+Open Survey Platform: an MIT-licensed, GUI-first survey builder for academic research. Surveys are authored in our own JSON model (`osp-survey`), run in **our own browser runtime** (`web/runtime` + the TypeScript engine `web/engine`; design in `planning/runtime-design.md`), and can be exported to other platforms (XLSForm/Enketo, LimeSurvey, SurveyJS, QSF). The server only saves data and counts across participants. Structure modelled on PhotoCraft's `AGENTS.md` (`planning/review.md` §3.3).
 
 ## 1. Read first
 

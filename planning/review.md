@@ -240,6 +240,9 @@ We don't build a participant renderer. Surveys are deployed to **LimeSurvey** (t
 
 ### 2.6 Runtime: Enketo (decided 16 Oct 2026, supersedes §2.5)
 
+> **Superseded 16 Oct 2026** by `planning/runtime-design.md`: we build our own browser runtime. Enketo/XLSForm is an export target only. Kept for the spike lessons.
+
+
 **Why:** Enketo is an Apache-2.0 browser form engine built on the open ODK XForms standard. It replaces both our own renderer and LimeSurvey as the runtime, so there's **one backend (ours)**. LimeSurvey stays an export target, and §2.5 is kept for reference.
 
 **Pipeline:** `osp-survey` → XLSForm (our exporter) → `pyxform` (BSD-2) → XForm XML → `enketo-transformer` → HTML + model → `enketo-core` in the participant's browser → submission XML → our server → stored response.

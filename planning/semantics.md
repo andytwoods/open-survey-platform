@@ -1,7 +1,7 @@
 # Survey logic semantics, v0 draft
 
 **Status:** draft for review · **Purpose:** the single definition of how a survey behaves. The engine, simulator, debugger, transpilers and the LimeSurvey harness are all tested against this. Agents implement from it and must not guess beyond it.
-Items marked **[verify: …]** are our intended behaviour, aligned with the ODK XForms spec (our runtime is Enketo). The Enketo spike confirms or changes them.
+Items marked **[verify: …]** are our intended behaviour, originally aligned with ODK XForms during the Enketo spike. Our own runtime (`runtime-design.md`) now implements this document directly, and the fixtures are the test.
 
 ## 1. Question states
 
