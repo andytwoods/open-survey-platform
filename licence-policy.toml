@@ -46,3 +46,9 @@ reason = "MPL-2.0 CA bundle used unmodified; file-level copyleft only (decided 1
 # name = "some-package"
 # licence = "MIT"             # SPDX expression we verified by hand
 # reason = "metadata has the full licence text; LICENSE file in sdist is MIT"
+
+[[override]]
+ecosystem = "python"
+name = "pyxform"
+licence = "BSD-2-Clause"
+reason = "4.5.0 metadata has no License field; dist-info/licenses/LICENSE is the verbatim 2-clause BSD text (test-only dependency of osp-targets, task C6)"

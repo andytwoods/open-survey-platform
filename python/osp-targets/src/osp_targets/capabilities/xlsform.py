@@ -1,0 +1,282 @@
+"""XLSForm (ODK / Enketo / KoboToolbox) capability table.
+
+One row per ``osp-survey`` schema field (``"<SchemaDef>.<field>"``), plus value refinements
+(``"<SchemaDef>.<field>=<value>"``) and target-specific behaviours that are not a single
+field (``"$<name>"``). ``tests/test_capabilities.py`` fails when a schema field has no row
+or a row names a field that no longer exists. The exporter looks levels up here, so every
+diagnostic it emits carries the level written in this table.
+
+Sources: ODK XForms and XLSForm documentation, and the Enketo spike
+(``spikes/spike-enketo/FINDINGS.md``, E4-E9).
+"""
+
+from __future__ import annotations
+
+from .base import Capability, Level
+
+_ROWS: list[tuple[str, Level, str]] = []
+
+
+def _row(key: str, level: Level, note: str) -> None:
+    _ROWS.append((key, level, note))
+
+
+def _rows(defs: tuple[str, ...], field: str, level: Level, note: str) -> None:
+    for d in defs:
+        _row(f"{d}.{field}", level, note)
+
+
+ANSWERABLE = (
+    "IntegerQuestion",
+    "DecimalQuestion",
+    "TextQuestion",
+    "SingleQuestion",
+    "MultiQuestion",
+    "DateQuestion",
+)
+QUESTIONS = (*ANSWERABLE, "NoteQuestion")
+CHOICE_QUESTIONS = ("SingleQuestion", "MultiQuestion")
+VARIABLES = ("EmbeddedVariable", "AssignedVariable", "ComputedVariable")
+
+# --- Survey root -------------------------------------------------------------------------
+_row("Survey.specVersion", "native", "Not written: the workbook format carries its own version.")
+_row("Survey.id", "native", "settings `form_id`.")
+_row("Survey.version", "native", "settings `version` (as text).")
+_row("Survey.metadata", "native", "Container; see Metadata.*.")
+_row("Survey.settings", "native", "Container; see Settings.*.")
+_row("Survey.choiceLists", "native", "choices sheet, one `list_name` per list.")
+_row("Survey.variables", "native", "Container; see the variable kinds.")
+_row("Survey.blocks", "lowered", "Each block in the flow becomes a `begin group`.")
+_row("Survey.quotas", "unsupported", "XLSForm has no quotas (review.md §2.4).")
+_row("Survey.flow", "lowered", "The flow tree becomes `relevant` expressions on block groups.")
+
+# --- Metadata and settings ---------------------------------------------------------------
+_row("Metadata.title", "native", "settings `form_title`.")
+_row(
+    "Metadata.title=translated",
+    "approximated",
+    "`form_title` is not translatable: the default-language title is used.",
+)
+_row("Metadata.description", "unsupported", "XLSForm has no survey description; dropped.")
+_row("Metadata.languages", "native", "One `label::<language>` column per language.")
+_row("Metadata.defaultLanguage", "native", "settings `default_language`.")
+_row("Metadata.license", "unsupported", "No licence field in XLSForm; dropped.")
+_row("Metadata.ddi", "unsupported", "No study-metadata block in XLSForm; dropped.")
+_row("Settings.backNavigation", "native", "Back navigation is allowed by default in ODK/Enketo.")
+_row(
+    "Settings.backNavigation=false",
+    "unsupported",
+    "XLSForm cannot disable Back (Enketo has no option; Collect only via device settings).",
+)
+
+# --- Choices -----------------------------------------------------------------------------
+_row("ChoiceList.id", "native", "choices `list_name`.")
+_row("ChoiceList.choices", "native", "One choices row each.")
+_row("Choice.value", "native", "choices `name`. XForms stores codes as text (C2-8).")
+_row("Choice.label", "native", "choices `label::<language>`.")
+
+# --- Questions ---------------------------------------------------------------------------
+_rows(QUESTIONS, "id", "native", "Used as `name` when `name` is unset; references use names.")
+_rows(QUESTIONS, "label", "native", "`label::<language>`. Piping: see $pipe.*.")
+_rows(QUESTIONS, "help", "native", "`hint::<language>`.")
+_rows(
+    QUESTIONS,
+    "showIf",
+    "approximated",
+    "`relevant`. ODK/Enketo keep a value that becomes non-relevant until final submit, "
+    "not until page submit (§3, Enketo E8), so logic and piping can still see it.",
+)
+_rows(ANSWERABLE, "name", "native", "`name`.")
+_rows(ANSWERABLE, "required", "native", "`required`; XForms applies it only while relevant (§4).")
+_rows(ANSWERABLE, "constraint", "native", "`constraint`; checked only on non-empty values (§4).")
+_rows(ANSWERABLE, "constraintMessage", "native", "`constraint_message::<language>`.")
+_row("IntegerQuestion.type", "native", "`integer`.")
+_row("DecimalQuestion.type", "native", "`decimal`.")
+_row("TextQuestion.type", "native", "`text`; trimming follows Enketo (§2).")
+_row("SingleQuestion.type", "native", "`select_one <list>`.")
+_row("MultiQuestion.type", "native", "`select_multiple <list>`.")
+_row("DateQuestion.type", "native", "`date`.")
+_row("NoteQuestion.type", "native", "`note`.")
+_rows(CHOICE_QUESTIONS, "choiceList", "native", "`select_one <list>` / `select_multiple <list>`.")
+_rows(CHOICE_QUESTIONS, "choices", "lowered", "Inline choices become a generated choices list.")
+_rows(CHOICE_QUESTIONS, "choiceOrder", "native", "`fixed`: choices sheet order.")
+for _d in CHOICE_QUESTIONS:
+    _row(
+        f"{_d}.choiceOrder=shuffle",
+        "lowered",
+        "`parameters: randomize=true seed=${osp_seed_<q>}`: XForms randomize(), which "
+        "osp_engine.random.randomize reproduces exactly (E5). The seed is drawn in the form "
+        "(`once(random())`) rather than derived with node_seed() from a server sessionSeed; "
+        "it is recorded in the data, so the order replays from it.",
+    )
+
+# --- Pages and blocks --------------------------------------------------------------------
+_row("Page.id", "native", "`begin group` name with `appearance: field-list` (one screen).")
+_row("Page.items", "native", "Questions inside the field-list group.")
+_row("Page.itemOrder", "native", "`fixed`: sheet order.")
+_row(
+    "Page.itemOrder=shuffle",
+    "approximated",
+    "XForms cannot reorder questions; they are shown in document order.",
+)
+_row("Block.id", "native", "`begin group` name (no label, no appearance).")
+_row("Block.title", "native", "Builder-only label; not exported, as in our runtime.")
+_row("Block.pages", "lowered", "Field-list groups inside the block group; settings `style: pages`.")
+
+# --- Variables ---------------------------------------------------------------------------
+_rows(VARIABLES, "id", "native", "Used as `name` when `name` is unset.")
+_rows(VARIABLES, "name", "native", "`name`.")
+_row("EmbeddedVariable.kind", "lowered", "A `hidden` field.")
+_row(
+    "EmbeddedVariable.valueType",
+    "lowered",
+    "`hidden` stores text; XPath converts it to a number where an expression needs one.",
+)
+_row(
+    "EmbeddedVariable.source",
+    "approximated",
+    "URL prefill depends on the host (Enketo: `?d[/data/<name>]=value`; Collect: none).",
+)
+_row(
+    "EmbeddedVariable.param",
+    "approximated",
+    "The URL parameter name is not kept; hosts address the field by its path.",
+)
+_row("EmbeddedVariable.default", "native", "`default`.")
+_row(
+    "AssignedVariable.kind",
+    "lowered",
+    "Two calculates: `osp_seed_<var>` (seed drawn once in the form) and the level, picked "
+    "with the same Park-Miller draw as osp_engine.random.assign (uniform weights).",
+)
+_row("AssignedVariable.levels", "lowered", "Nested `if()` over the levels in the level calculate.")
+_row("ComputedVariable.kind", "native", "`calculate`.")
+_row(
+    "ComputedVariable.expr",
+    "lowered",
+    "`calculation` wrapped in `if(<inputs answered>, expr, '')` so null in gives null out (§3).",
+)
+
+# --- Quotas ------------------------------------------------------------------------------
+for _f in ("id", "when", "limit", "countOn", "onFull"):
+    _row(f"Quota.{_f}", "unsupported", "XLSForm has no quotas; dropped.")
+for _f in ("block", "outcome"):
+    _row(f"QuotaFull.{_f}", "unsupported", "XLSForm has no quotas; the screen-out is dropped.")
+
+# --- Flow --------------------------------------------------------------------------------
+for _d in ("BlockNode", "BranchNode", "RandomiserNode", "AssignNode", "QuotaCheckNode", "EndNode"):
+    _row(f"{_d}.id", "native", "Only used to name generated fields.")
+_row("BlockNode.type", "lowered", "The block group's `relevant` is the flow path to the node.")
+_row("BlockNode.block", "native", "The referenced block is emitted at this point of the flow.")
+_row("BranchNode.type", "lowered", "Branch arms become relevance conditions.")
+_row("BranchNode.if", "lowered", "ANDed into `then` relevance; its negation into `else`.")
+_row("BranchNode.then", "lowered", "Emitted in place with the branch condition.")
+_row("BranchNode.else", "lowered", "Emitted in place with the negated condition.")
+_row("RandomiserNode.type", "approximated", "See RandomiserNode.children.")
+_row(
+    "RandomiserNode.children",
+    "approximated",
+    "XForms cannot reorder groups: children run in document order, not a random order.",
+)
+_row(
+    "RandomiserNode.pick",
+    "lowered",
+    "Subset chosen in the form: `osp_order_<node>` = randomize() over a generated list of "
+    "the children with a seed drawn once; the first `pick` are relevant.",
+)
+_row("AssignNode.type", "lowered", "See AssignedVariable.kind.")
+_row("AssignNode.variables", "lowered", "Each listed variable gets its seed and level calculates.")
+_row("QuotaCheckNode.type", "unsupported", "XLSForm has no quotas; the check is dropped.")
+_row("QuotaCheckNode.quota", "unsupported", "XLSForm has no quotas; the check is dropped.")
+_row(
+    "EndNode.type",
+    "approximated",
+    "No early termination in XForms: everything after the end is made non-relevant, and "
+    "the participant still submits the form.",
+)
+_row("EndNode.outcome", "lowered", "Recorded in the `osp_outcome` calculate.")
+_row("EndNode.message", "lowered", "A note in its own field-list group, relevant at that end.")
+
+# --- Expressions (osp-expr AST) ----------------------------------------------------------
+_row("IntLit.kind", "native", "XPath number.")
+_row("IntLit.value", "native", "Written as digits.")
+_row("DecLit.kind", "native", "XPath number.")
+_row("DecLit.value", "native", "Written in plain notation (no exponent).")
+_row("TextLit.kind", "native", "XPath string literal.")
+_row("TextLit.value", "native", "Quoted; `concat()` when it holds both quote kinds.")
+_row("NullLit.kind", "lowered", "`''` as a value; any comparison with it is `false()`.")
+_row("Ref.kind", "native", "`${name}`.")
+_row("Ref.id", "native", "Rewritten to the target's variable name.")
+_row(
+    "Compare.kind",
+    "lowered",
+    "Guarded with `string-length(${x}) > 0` for each operand reference so a comparison with "
+    "a missing value is false, even null == null (§3). Date ordering uses decimal-date-time().",
+)
+_row("Compare.op", "native", "`= != < <= > >=`.")
+_row("Compare.left", "native", "Operand.")
+_row("Compare.right", "native", "Operand.")
+_row(
+    "Arith.kind",
+    "approximated",
+    "XPath numbers are IEEE doubles, not decimals (§2), so results can differ in the last "
+    "digits. Division by zero is guarded to give null (open question 1).",
+)
+_row("Arith.op", "native", "`+ - *`, and `/` as `div`.")
+_row("Arith.left", "native", "Operand.")
+_row("Arith.right", "native", "Operand.")
+_row("And.kind", "native", "`and`.")
+_row("And.args", "native", "Operands.")
+_row("Or.kind", "native", "`or`.")
+_row("Or.args", "native", "Operands.")
+_row("Not.kind", "native", "`not()`.")
+_row("Not.arg", "native", "Operand.")
+_row("Answered.kind", "lowered", "`string-length(${q}) > 0`.")
+_row("Answered.ref", "native", "`${q}`.")
+_row("Contains.kind", "lowered", "`selected(${q}, value)`.")
+_row("Contains.ref", "native", "`${q}`.")
+_row("Contains.value", "native", "The code, as an XPath string.")
+
+# --- Behaviours that are not a single field ----------------------------------------------
+_row("$pipe.value", "native", "`${q}` in a label inserts the raw value (§8).")
+_row(
+    "$pipe.choiceLabel",
+    "lowered",
+    "Piping a single-choice question: `osp_label_<q>` = jr:choice-name(${q}, '${q}') (§8, E9).",
+)
+_row(
+    "$pipe.multi",
+    "approximated",
+    "Piping a multi-choice question inserts its space-separated codes, not labels (C3a-9).",
+)
+_row(
+    "$pipe.escaping",
+    "approximated",
+    "HTML escaping of piped text (§8) is not verified in ODK/Enketo.",
+)
+_row(
+    "$text.markup",
+    "approximated",
+    "XLSForm labels are Markdown with some HTML: `*`, `_`, `#`, `<` may render as formatting.",
+)
+_row(
+    "$text.controlCharacters",
+    "approximated",
+    "Control characters cannot be stored in .xlsx; they are dropped.",
+)
+_row(
+    "$missingStates",
+    "approximated",
+    "XForms data has one empty value for not-reached, irrelevant and unanswered (§1). "
+    "Enketo's pruned output drops non-relevant nodes, so `irrelevant`/`not-reached` show as "
+    "absent and `unanswered` as empty; telling not-reached from irrelevant needs the survey "
+    "logic replayed (osp-engine) over the submission.",
+)
+
+XLSFORM: dict[str, Capability] = {}
+for _key, _level, _note in _ROWS:
+    if _key in XLSFORM:  # pragma: no cover - caught by the tests
+        raise ValueError(f"duplicate capability row {_key}")
+    XLSFORM[_key] = Capability(_level, _note)
+
+__all__ = ["XLSFORM"]
