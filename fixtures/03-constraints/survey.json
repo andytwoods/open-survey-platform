@@ -1,50 +1,128 @@
 {
-  "format": "osp-fixture-survey/0",
-  "description": "Integer, decimal and text constraints with messages; unanswered values skip checks.",
+  "specVersion": "osp-survey/0.1",
   "id": "f03_constraints",
   "version": 1,
-  "title": "Constraints",
-  "languages": [
-    "en"
-  ],
+  "metadata": {
+    "title": "Constraints",
+    "description": "Integer, decimal and text constraints with messages; unanswered values skip checks.",
+    "languages": [
+      "en"
+    ]
+  },
   "settings": {
     "backNavigation": true
   },
-  "choiceLists": {},
-  "blocks": {
-    "p1": {
-      "items": [
+  "choiceLists": [],
+  "blocks": [
+    {
+      "id": "p1",
+      "pages": [
         {
-          "id": "age",
-          "type": "integer",
-          "label": "How old are you?",
-          "required": true,
-          "constraint": "age >= 18 and age <= 120",
-          "constraintMessage": "Please enter an age between 18 and 120."
-        },
-        {
-          "id": "score",
-          "type": "decimal",
-          "label": "Give this survey a score from 0 to 10 (optional).",
-          "constraint": "score >= 0 and score <= 10",
-          "constraintMessage": "Please enter a score from 0 to 10."
-        },
-        {
-          "id": "nick",
-          "type": "text",
-          "label": "Choose a nickname (optional).",
-          "constraint": "nick != \"admin\"",
-          "constraintMessage": "That nickname is reserved."
+          "id": "p1_page",
+          "items": [
+            {
+              "type": "integer",
+              "id": "age",
+              "label": "How old are you?",
+              "required": true,
+              "constraint": {
+                "kind": "and",
+                "args": [
+                  {
+                    "kind": "compare",
+                    "op": ">=",
+                    "left": {
+                      "kind": "ref",
+                      "id": "age"
+                    },
+                    "right": {
+                      "kind": "int",
+                      "value": 18
+                    }
+                  },
+                  {
+                    "kind": "compare",
+                    "op": "<=",
+                    "left": {
+                      "kind": "ref",
+                      "id": "age"
+                    },
+                    "right": {
+                      "kind": "int",
+                      "value": 120
+                    }
+                  }
+                ]
+              },
+              "constraintMessage": "Please enter an age between 18 and 120."
+            },
+            {
+              "type": "decimal",
+              "id": "score",
+              "label": "Give this survey a score from 0 to 10 (optional).",
+              "constraint": {
+                "kind": "and",
+                "args": [
+                  {
+                    "kind": "compare",
+                    "op": ">=",
+                    "left": {
+                      "kind": "ref",
+                      "id": "score"
+                    },
+                    "right": {
+                      "kind": "int",
+                      "value": 0
+                    }
+                  },
+                  {
+                    "kind": "compare",
+                    "op": "<=",
+                    "left": {
+                      "kind": "ref",
+                      "id": "score"
+                    },
+                    "right": {
+                      "kind": "int",
+                      "value": 10
+                    }
+                  }
+                ]
+              },
+              "constraintMessage": "Please enter a score from 0 to 10."
+            },
+            {
+              "type": "text",
+              "id": "nick",
+              "label": "Choose a nickname (optional).",
+              "constraint": {
+                "kind": "compare",
+                "op": "!=",
+                "left": {
+                  "kind": "ref",
+                  "id": "nick"
+                },
+                "right": {
+                  "kind": "text",
+                  "value": "admin"
+                }
+              },
+              "constraintMessage": "That nickname is reserved."
+            }
+          ]
         }
       ]
     }
-  },
+  ],
   "flow": [
     {
+      "type": "block",
+      "id": "n_p1",
       "block": "p1"
     },
     {
-      "end": "complete"
+      "type": "end",
+      "id": "end_complete"
     }
   ]
 }

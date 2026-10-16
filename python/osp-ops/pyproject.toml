@@ -5,7 +5,19 @@ description = "Open Survey Platform: osp-ops (layer L2)"
 readme = "README.md"
 license = "MIT"
 requires-python = ">=3.14"
-dependencies = []
+dependencies = [
+    "osp-expr",
+    "osp-spec",
+    "pydantic>=2.12,<3",
+]
+
+[dependency-groups]
+# Test-only (MPL-2.0 is allowed for dev/test dependencies, licence-policy.toml).
+dev = ["hypothesis>=6.140,<7"]
+
+[tool.uv.sources]
+osp-expr = { workspace = true }
+osp-spec = { workspace = true }
 
 [build-system]
 requires = ["uv_build>=0.11,<0.12"]

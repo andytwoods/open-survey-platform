@@ -51,6 +51,7 @@ from .retention import (
     SurveyFacts,
     plan_retention,
 )
+from .themes import ThemeLibrary
 
 Clock = Callable[[], datetime]
 ALLOCATION_MODES = frozenset({"server", "limesurvey-native"})
@@ -126,7 +127,7 @@ def _answers(value: object) -> dict[str, dict[str, Any]]:
     return out
 
 
-class Store:
+class Store(ThemeLibrary):  # theme-library methods: themes.py
     def __init__(self, engine: Engine, keyring: Keyring, clock: Clock = _utcnow) -> None:
         self._engine = engine
         self._keys = keyring
@@ -1067,7 +1068,6 @@ class Store:
         Retire an old key only after this returns 0 for it (``count_by_key``).
         """
         sys = require_system(sys)
-        names = {"users": "totp_secret", "sessions": "instance", "responses": "answers"}
         total = 0
         for table, ct_col, kid_col in t.ENCRYPTED_FIELDS:
             ct, kid = table.c[ct_col], table.c[kid_col]
@@ -1076,7 +1076,7 @@ class Store:
                     select(table.c.id, ct, kid).where(ct.is_not(None) & (kid != self._keys.active))
                 ).all()
                 for row_id, blob, old in rows:
-                    aad = aad_for(table.name, names[table.name], row_id)
+                    aad = aad_for(table.name, ct_col.removesuffix("_ct"), row_id)
                     new = self._keys.encrypt(self._keys.decrypt(old, blob, aad), aad)
                     res = conn.execute(
                         update(table)

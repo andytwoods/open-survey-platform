@@ -1,94 +1,111 @@
 {
-  "format": "osp-fixture-survey/0",
-  "description": "One page with integer, decimal, text, single, multi, date and a note.",
+  "specVersion": "osp-survey/0.1",
   "id": "f01_all_types",
   "version": 1,
-  "title": "All question types",
-  "languages": [
-    "en"
-  ],
+  "metadata": {
+    "title": "All question types",
+    "description": "One page with integer, decimal, text, single, multi, date and a note.",
+    "languages": [
+      "en"
+    ]
+  },
   "settings": {
     "backNavigation": true
   },
-  "choiceLists": {
-    "fruit": [
-      {
-        "value": "apple",
-        "label": "Apple"
-      },
-      {
-        "value": "banana",
-        "label": "Banana"
-      },
-      {
-        "value": "cherry",
-        "label": "Cherry"
-      }
-    ],
-    "colour": [
-      {
-        "value": "red",
-        "label": "Red"
-      },
-      {
-        "value": "green",
-        "label": "Green"
-      },
-      {
-        "value": "blue",
-        "label": "Blue"
-      }
-    ]
-  },
-  "blocks": {
-    "p1": {
-      "items": [
+  "choiceLists": [
+    {
+      "id": "fruit",
+      "choices": [
         {
-          "id": "note_intro",
-          "type": "note",
-          "label": "Please answer a few questions about everyday things."
+          "value": "apple",
+          "label": "Apple"
         },
         {
-          "id": "n_int",
-          "type": "integer",
-          "label": "How many cups of tea did you drink yesterday?"
+          "value": "banana",
+          "label": "Banana"
         },
         {
-          "id": "n_dec",
-          "type": "decimal",
-          "label": "What did your last coffee cost, in pounds?"
+          "value": "cherry",
+          "label": "Cherry"
+        }
+      ]
+    },
+    {
+      "id": "colour",
+      "choices": [
+        {
+          "value": "red",
+          "label": "Red"
         },
         {
-          "id": "t_text",
-          "type": "text",
-          "label": "Describe the weather today."
+          "value": "green",
+          "label": "Green"
         },
         {
-          "id": "s_single",
-          "type": "single",
-          "label": "Which fruit do you prefer?",
-          "choices": "fruit"
-        },
-        {
-          "id": "m_multi",
-          "type": "multi",
-          "label": "Which colours do you like?",
-          "choices": "colour"
-        },
-        {
-          "id": "d_date",
-          "type": "date",
-          "label": "Pick any date in 2026."
+          "value": "blue",
+          "label": "Blue"
         }
       ]
     }
-  },
+  ],
+  "blocks": [
+    {
+      "id": "p1",
+      "pages": [
+        {
+          "id": "p1_page",
+          "items": [
+            {
+              "type": "note",
+              "id": "note_intro",
+              "label": "Please answer a few questions about everyday things."
+            },
+            {
+              "type": "integer",
+              "id": "n_int",
+              "label": "How many cups of tea did you drink yesterday?"
+            },
+            {
+              "type": "decimal",
+              "id": "n_dec",
+              "label": "What did your last coffee cost, in pounds?"
+            },
+            {
+              "type": "text",
+              "id": "t_text",
+              "label": "Describe the weather today."
+            },
+            {
+              "type": "single",
+              "id": "s_single",
+              "label": "Which fruit do you prefer?",
+              "choiceList": "fruit"
+            },
+            {
+              "type": "multi",
+              "id": "m_multi",
+              "label": "Which colours do you like?",
+              "choiceList": "colour"
+            },
+            {
+              "type": "date",
+              "id": "d_date",
+              "label": "Pick any date in 2026."
+            }
+          ]
+        }
+      ]
+    }
+  ],
   "flow": [
     {
+      "type": "block",
+      "id": "n_p1",
       "block": "p1"
     },
     {
-      "end": "complete"
+      "type": "end",
+      "id": "end_complete"
     }
   ]
 }

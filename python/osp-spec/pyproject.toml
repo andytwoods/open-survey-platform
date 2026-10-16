@@ -8,6 +8,7 @@ requires-python = ">=3.14"
 dependencies = [
     "osp-expr",
     "pydantic>=2.12,<3",
+    "pyyaml>=6.0.3,<7",
 ]
 
 [dependency-groups]
