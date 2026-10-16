@@ -22,3 +22,16 @@ Auth core, no HTTP. Built against repository Protocols (`UserRepo`, `MembershipR
 - `permissions.can(actor, action, resource)`: fail-closed policy; `requires(action)`
   decorator for app commands.
 - `testing`: fake clock, deterministic randomness, cheap hasher (tests only).
+
+## Builder services (task C10)
+
+- `store_repos`: `StoreUserRepo`, `StoreSessionRepo`, `StoreMembershipRepo` (osp-store backed;
+  one tenant per user, role from `users.role`, unknown roles fail closed).
+- `commands`: the app-command registry (`COMMANDS`, `dispatch`); refuses non-actors first.
+- `builder.Builder`: `survey.create/list/get/delete`, `survey.apply_ops` (load draft ->
+  `osp_ops.apply_transaction` -> `save_draft` + op_log with per-op inverses), `survey.undo` /
+  `survey.redo` (by transaction id; undo ids `u:…`, redo ids `r:…`), `survey.history`,
+  `survey.publish` (validate -> freeze version + checksum; runtime plan compile is a TODO hook,
+  `compile_runtime_plan`, until R1 lands), `survey.export_xlsform` (osp-targets).
+  Surveys in tenants the actor can't read are `NotFoundError`; missing permission is `Forbidden`.
+- `services.build_services(store, ...)` wires `AuthService` + `Builder`.

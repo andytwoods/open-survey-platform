@@ -30,6 +30,9 @@ EXPECTED_TABLES = {
     "assignment_counters",
     "session_conflicts",
     "response_records",
+    # builder accounts (C10, migration 0004_accounts)
+    "user_mfa",
+    "auth_sessions",
 }
 
 # Anything that would let us store where a participant connected from or with what.

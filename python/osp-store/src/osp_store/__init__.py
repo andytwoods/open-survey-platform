@@ -4,6 +4,7 @@ Survey JSON is opaque here: osp-spec validates it, the store keeps it, identifie
 by survey id + draft revision, or version id + checksum.
 """
 
+from .accounts import AccountStore, AccountUser, AuthSessionRow
 from .context import SystemContext, TenantContext
 from .crypto import Keyring, canonical_json, generate_key
 from .db import create_engine, downgrade, migrate
@@ -44,6 +45,9 @@ from .store import Store, checksum
 from .themes import StoredTheme
 
 __all__ = [
+    "AccountStore",
+    "AccountUser",
+    "AuthSessionRow",
     "AccessDenied",
     "AuditEntry",
     "Conflict",
