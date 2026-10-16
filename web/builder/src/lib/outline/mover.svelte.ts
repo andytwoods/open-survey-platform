@@ -44,7 +44,7 @@ export class OutlineMover {
 		if (out.status === 'applied') announce(message);
 		else if (out.status === 'rejected') {
 			const why = out.diagnostics[0]?.message ?? out.message;
-			announce(`Move not applied: ${why}`, 'assertive');
+			announce(`Move not applied: ${why}`);
 		}
 		return out;
 	}

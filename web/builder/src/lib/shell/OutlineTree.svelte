@@ -191,7 +191,7 @@
 		if (!onMove || e.button !== 0 || e.shiftKey || e.ctrlKey || e.metaKey) return;
 		const target = e.target as Element | null;
 		const el = target?.closest<HTMLElement>('[role="treeitem"]');
-		if (!el || target?.closest('.chevron')) return;
+		if (!el || target?.closest('.chevron:not(.spacer)')) return;
 		const id = el.dataset.id;
 		if (!id || !isMovable(typeOf(id))) return;
 		drag = { id, ids: [], pointerId: e.pointerId, startX: e.clientX, startY: e.clientY, active: false, boxes: [], hit: null };
