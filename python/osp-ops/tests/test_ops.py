@@ -186,9 +186,15 @@ def test_move_within_list_is_one_patch_move() -> None:
 
 def test_set_property_is_validated_against_the_model() -> None:
     assert run("set_property", base(), {"target": "age", "property": "required", "value": True}).ok
-    for prop in ("id", "type", "items", "choices", "nonsense"):
+    for prop in ("id", "type", "items", "nonsense"):
         res = run("set_property", base(), {"target": "age", "property": prop, "value": 1})
         assert codes(res)[0] == "op.not_allowed", prop
+    # A field of another question type: integers have no `choices`, notes no `constraint`.
+    res = run("set_property", base(), {"target": "age", "property": "choices", "value": 1})
+    assert codes(res)[0] == "op.not_applicable"
+    for params in ({"value": None}, {"unset": True}):
+        res = run("set_property", base(), {"target": "info", "property": "constraint", **params})
+        assert codes(res)[0] == "op.not_applicable", params
     res = run("set_property", base(), {"target": "age", "property": "required", "value": "yes"})
     assert codes(res)[0] == "op.invalid_result"
     res = run("set_property", base(), {"target": "age", "property": "label", "unset": True})
@@ -209,7 +215,23 @@ def test_set_condition_parses_text() -> None:
     req = run("set_condition", base(), {"target": "n_branch", "condition": ""})
     assert codes(req)[0] == "op.not_allowed"
     note = run("set_condition", base(), {"target": "info", "field": "constraint", "condition": "1"})
-    assert codes(note)[0] == "op.invalid_result"  # notes have no constraint
+    assert codes(note)[0] == "op.not_applicable"  # notes have no constraint
+
+
+@pytest.mark.parametrize("condition", [None, "", "age > 3"])
+def test_set_condition_on_a_field_the_type_lacks_is_rejected(condition: object) -> None:
+    """Regression (found by Hypothesis in test_guard): clearing a note's `constraint` was a
+    no-op whose inverse, `set_property(unset)`, set_property then rejected, so undo failed.
+    Setting and clearing now both reject up front: the model has no such field."""
+    params = {"target": "info", "field": "constraint", "condition": condition}
+    res = run("set_condition", base(), params)
+    assert not res.ok and codes(res) == ["op.not_applicable"]
+    assert "showIf" in res.diagnostics[0].message  # says what the note does have
+    # The field a note does have still round-trips, set and cleared.
+    shown = run("set_condition", base(), {"target": "info", "condition": "age > 3"})
+    assert shown.ok and shown.inverse is not None
+    undo = run(shown.inverse.op, shown.survey, shown.inverse.params)
+    assert undo.ok and undo.survey == base()
 
 
 def test_bulk_paste_codes() -> None:

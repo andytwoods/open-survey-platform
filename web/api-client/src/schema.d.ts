@@ -1004,7 +1004,7 @@ export interface components {
             };
         };
         /** @enum {string} */
-        OpErrorCode: "op.cascade_blocked" | "op.conflict" | "op.dangling_ref" | "op.duplicate_id" | "op.expr_syntax" | "op.internal" | "op.invalid_result" | "op.invalid_survey" | "op.not_allowed" | "op.not_found" | "op.params" | "op.patch" | "op.unknown";
+        OpErrorCode: "op.cascade_blocked" | "op.conflict" | "op.dangling_ref" | "op.duplicate_id" | "op.expr_syntax" | "op.internal" | "op.invalid_result" | "op.invalid_survey" | "op.not_allowed" | "op.not_applicable" | "op.not_found" | "op.params" | "op.patch" | "op.unknown";
         /** @enum {string} */
         OpId: "add_block" | "add_choice" | "add_page" | "add_question" | "add_variable" | "apply_patch" | "bulk_paste_choices" | "create_choice_list" | "delete_block" | "delete_choice" | "delete_choice_list" | "delete_flow_node" | "delete_page" | "delete_question" | "delete_variable" | "duplicate_question" | "insert_flow_node" | "move_block" | "move_choice" | "move_flow_node" | "move_page" | "move_question" | "rename_block" | "rename_page" | "replace_survey" | "set_choice" | "set_condition" | "set_languages" | "set_property" | "set_title";
         /** OpsRequest */
