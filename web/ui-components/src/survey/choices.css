@@ -1,0 +1,133 @@
+/*
+ * Choice rows shared by SingleChoice, MultiChoice and Matrix (cards layout). The whole row
+ * is the control (a Bits UI radio/checkbox button), so the hit area is the full row and is
+ * never smaller than --survey-target-size. Logical properties only (RTL).
+ */
+.osp-choices {
+	display: flex;
+	flex-direction: column;
+	gap: var(--space-2);
+	min-inline-size: 0;
+	margin: 0;
+	padding: 0;
+}
+.osp-choices[data-style='cards'] {
+	display: grid;
+	grid-template-columns: repeat(auto-fill, minmax(min(100%, 14rem), 1fr));
+}
+.osp-choices[data-style='buttons'] {
+	flex-direction: row;
+	flex-wrap: wrap;
+}
+
+.osp-choice {
+	appearance: none;
+	display: flex;
+	align-items: flex-start;
+	gap: var(--space-3);
+	box-sizing: border-box;
+	inline-size: 100%;
+	min-inline-size: var(--survey-target-size);
+	min-block-size: var(--survey-target-size);
+	margin: 0;
+	padding-block: var(--space-2);
+	padding-inline: var(--space-3);
+	border: 1px solid var(--color-border);
+	border-radius: var(--radius-md);
+	background: var(--color-surface-raised);
+	color: var(--color-text);
+	font: inherit;
+	font-size: var(--text-md);
+	line-height: var(--leading-normal);
+	text-align: start;
+	cursor: pointer;
+	transition:
+		background-color var(--duration-fast),
+		border-color var(--duration-fast);
+}
+.osp-choice:hover:not(:disabled) {
+	border-color: var(--color-border-strong);
+	background: var(--color-surface);
+}
+.osp-choice[data-state='checked'] {
+	border-color: var(--color-accent);
+	background: var(--color-accent-subtle);
+	box-shadow: inset 0 0 0 1px var(--color-accent);
+}
+.osp-choice:disabled {
+	cursor: not-allowed;
+	color: var(--color-text-muted);
+	background: var(--color-surface-sunken);
+}
+.osp-choice:focus-visible {
+	outline: var(--focus-ring-width) solid var(--color-focus);
+	outline-offset: 2px;
+}
+
+.osp-choices[data-style='cards'] .osp-choice {
+	padding: var(--space-4);
+	border-radius: var(--radius-lg);
+	block-size: 100%;
+}
+.osp-choices[data-style='buttons'] .osp-choice {
+	inline-size: auto;
+	max-inline-size: 100%;
+	align-items: center;
+	border-radius: var(--radius-full);
+	padding-inline: var(--space-4);
+}
+
+.osp-choice-text {
+	display: flex;
+	flex-direction: column;
+	min-inline-size: 0;
+	/* Line the first line of text up with the indicator. */
+	padding-block-start: calc((var(--survey-indicator-size) - 1lh) / 2);
+}
+.osp-choice-help {
+	color: var(--color-text-muted);
+	font-size: var(--text-sm);
+}
+
+/* Radio / checkbox indicator: decorative; state comes from the button's role + aria-checked. */
+.osp-choice-ind {
+	flex: none;
+	display: inline-grid;
+	place-items: center;
+	inline-size: var(--survey-indicator-size);
+	block-size: var(--survey-indicator-size);
+	margin-block: calc((1lh - var(--survey-indicator-size)) / 2);
+	border: 2px solid var(--color-border-strong);
+	border-radius: var(--radius-full);
+	background: var(--color-surface-raised);
+	color: var(--color-on-accent);
+}
+.osp-choice-ind[data-kind='checkbox'] {
+	border-radius: var(--radius-sm);
+}
+.osp-choice[data-state='checked'] .osp-choice-ind {
+	border-color: var(--color-accent);
+}
+.osp-choice[data-state='checked'] .osp-choice-ind[data-kind='radio']::after {
+	content: '';
+	inline-size: 50%;
+	block-size: 50%;
+	border-radius: var(--radius-full);
+	background: var(--color-accent);
+}
+.osp-choice[data-state='checked'] .osp-choice-ind[data-kind='checkbox'] {
+	background: var(--color-accent);
+}
+.osp-choice-ind svg {
+	inline-size: 100%;
+	block-size: 100%;
+}
+.osp-choice:disabled .osp-choice-ind {
+	border-color: var(--color-border);
+}
+
+@media (prefers-reduced-motion: reduce) {
+	.osp-choice {
+		transition: none;
+	}
+}
