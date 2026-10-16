@@ -1,0 +1,152 @@
+{
+ "format": "osp-response/1",
+ "surveyId": "f18_multi_language",
+ "surveyVersion": 1,
+ "planVersion": "osp-runtime-plan/1",
+ "planChecksum": "sha256:6a8c6dbb6dd8daa90ad64e20064d9a0c80cb56941a64c0865ffe419193208fb4",
+ "engineVersion": "1",
+ "sessionSeed": 1802,
+ "sessionId": null,
+ "language": "de",
+ "device": null,
+ "end": "complete",
+ "endNode": null,
+ "allocation": "server",
+ "assigned": {},
+ "conditions": {},
+ "conditionSources": {},
+ "orders": {
+  "blocks": {},
+  "items": {},
+  "choices": {}
+ },
+ "answers": {
+  "drink": {
+   "state": "answered",
+   "value": "coffee"
+  },
+  "cups": {
+   "state": "answered",
+   "value": 4
+  },
+  "why": {
+   "state": "answered",
+   "value": "Lecker"
+  },
+  "again": {
+   "state": "answered",
+   "value": "no"
+  }
+ },
+ "csvState": {
+  "drink__state": "answered",
+  "cups__state": "answered",
+  "why__state": "answered",
+  "again__state": "answered"
+ },
+ "embedded": {},
+ "computed": {},
+ "quotas": {},
+ "effects": [],
+ "urlParams": {},
+ "startedAt": 2000,
+ "endedAt": 10000,
+ "revision": 9,
+ "events": [
+  {
+   "type": "start",
+   "seq": 1,
+   "rev": 1,
+   "t": 2000,
+   "sessionSeed": 1802,
+   "assigned": {},
+   "language": "de",
+   "device": null,
+   "urlParams": {},
+   "sessionId": null
+  },
+  {
+   "type": "answer",
+   "t": 3000,
+   "item": "drink",
+   "value": "coffee",
+   "seq": 2,
+   "rev": 2
+  },
+  {
+   "type": "answer",
+   "t": 4000,
+   "item": "cups",
+   "value": 25,
+   "seq": 3,
+   "rev": 3
+  },
+  {
+   "type": "next",
+   "t": 5000,
+   "from": "p1_page",
+   "seq": 4,
+   "rev": 4,
+   "result": {
+    "outcome": "invalid",
+    "to": "p1_page",
+    "errors": {
+     "cups": {
+      "kind": "constraint"
+     }
+    }
+   }
+  },
+  {
+   "type": "answer",
+   "t": 6000,
+   "item": "cups",
+   "value": 4,
+   "seq": 5,
+   "rev": 5
+  },
+  {
+   "type": "next",
+   "t": 7000,
+   "from": "p1_page",
+   "seq": 6,
+   "rev": 6,
+   "result": {
+    "outcome": "advanced",
+    "to": "p2_page"
+   }
+  },
+  {
+   "type": "answer",
+   "t": 8000,
+   "item": "why",
+   "value": "Lecker",
+   "seq": 7,
+   "rev": 7
+  },
+  {
+   "type": "answer",
+   "t": 9000,
+   "item": "again",
+   "value": "no",
+   "seq": 8,
+   "rev": 8
+  },
+  {
+   "type": "next",
+   "t": 10000,
+   "from": "p2_page",
+   "seq": 9,
+   "rev": 9,
+   "result": {
+    "outcome": "ended",
+    "to": null,
+    "effect": {
+     "kind": "end",
+     "outcome": "complete",
+     "nodeId": null
+    }
+   }
+  }
+ ]
+}

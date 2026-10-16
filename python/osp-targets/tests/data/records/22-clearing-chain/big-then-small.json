@@ -1,0 +1,216 @@
+{
+ "format": "osp-response/1",
+ "surveyId": "f22_clearing_chain",
+ "surveyVersion": 1,
+ "planVersion": "osp-runtime-plan/1",
+ "planChecksum": "sha256:ca682fcc14551a7d72f7742811d4702b5ec888a2878f3f7681787e3f10330adf",
+ "engineVersion": "1",
+ "sessionSeed": 2201,
+ "sessionId": null,
+ "language": "en",
+ "device": null,
+ "end": "complete",
+ "endNode": null,
+ "allocation": "server",
+ "assigned": {},
+ "conditions": {},
+ "conditionSources": {},
+ "orders": {
+  "blocks": {},
+  "items": {},
+  "choices": {}
+ },
+ "answers": {
+  "x": {
+   "state": "answered",
+   "value": 5
+  },
+  "y": {
+   "state": "irrelevant",
+   "value": null
+  },
+  "z": {
+   "state": "irrelevant",
+   "value": null
+  },
+  "w": {
+   "state": "answered",
+   "value": "I like small numbers"
+  },
+  "v": {
+   "state": "irrelevant",
+   "value": null
+  },
+  "u": {
+   "state": "answered",
+   "value": "really"
+  },
+  "p3_anchor": {
+   "state": "unanswered",
+   "value": null
+  }
+ },
+ "csvState": {
+  "x__state": "answered",
+  "y__state": "irrelevant",
+  "z__state": "irrelevant",
+  "w__state": "answered",
+  "v__state": "irrelevant",
+  "u__state": "answered",
+  "p3_anchor__state": "unanswered"
+ },
+ "embedded": {},
+ "computed": {},
+ "quotas": {},
+ "effects": [],
+ "urlParams": {},
+ "startedAt": 2000,
+ "endedAt": 16000,
+ "revision": 15,
+ "events": [
+  {
+   "type": "start",
+   "seq": 1,
+   "rev": 1,
+   "t": 2000,
+   "sessionSeed": 2201,
+   "assigned": {},
+   "language": "en",
+   "device": null,
+   "urlParams": {},
+   "sessionId": null
+  },
+  {
+   "type": "answer",
+   "t": 3000,
+   "item": "x",
+   "value": 20,
+   "seq": 2,
+   "rev": 2
+  },
+  {
+   "type": "next",
+   "t": 4000,
+   "from": "p1_page",
+   "seq": 3,
+   "rev": 3,
+   "result": {
+    "outcome": "advanced",
+    "to": "p2_page"
+   }
+  },
+  {
+   "type": "answer",
+   "t": 5000,
+   "item": "y",
+   "value": "it felt right",
+   "seq": 4,
+   "rev": 4
+  },
+  {
+   "type": "answer",
+   "t": 6000,
+   "item": "z",
+   "value": "lucky number",
+   "seq": 5,
+   "rev": 5
+  },
+  {
+   "type": "next",
+   "t": 7000,
+   "from": "p2_page",
+   "seq": 6,
+   "rev": 6,
+   "result": {
+    "outcome": "advanced",
+    "to": "p3_page"
+   }
+  },
+  {
+   "type": "answer",
+   "t": 8000,
+   "item": "v",
+   "value": "more text",
+   "seq": 7,
+   "rev": 7
+  },
+  {
+   "type": "back",
+   "t": 9000,
+   "from": "p3_page",
+   "seq": 8,
+   "rev": 8,
+   "to": "p2_page"
+  },
+  {
+   "type": "back",
+   "t": 10000,
+   "from": "p2_page",
+   "seq": 9,
+   "rev": 9,
+   "to": "p1_page"
+  },
+  {
+   "type": "answer",
+   "t": 11000,
+   "item": "x",
+   "value": 5,
+   "seq": 10,
+   "rev": 10
+  },
+  {
+   "type": "next",
+   "t": 12000,
+   "from": "p1_page",
+   "seq": 11,
+   "rev": 11,
+   "result": {
+    "outcome": "advanced",
+    "to": "p2_page"
+   }
+  },
+  {
+   "type": "answer",
+   "t": 13000,
+   "item": "w",
+   "value": "I like small numbers",
+   "seq": 12,
+   "rev": 12
+  },
+  {
+   "type": "next",
+   "t": 14000,
+   "from": "p2_page",
+   "seq": 13,
+   "rev": 13,
+   "result": {
+    "outcome": "advanced",
+    "to": "p3_page"
+   }
+  },
+  {
+   "type": "answer",
+   "t": 15000,
+   "item": "u",
+   "value": "really",
+   "seq": 14,
+   "rev": 14
+  },
+  {
+   "type": "next",
+   "t": 16000,
+   "from": "p3_page",
+   "seq": 15,
+   "rev": 15,
+   "result": {
+    "outcome": "ended",
+    "to": null,
+    "effect": {
+     "kind": "end",
+     "outcome": "complete",
+     "nodeId": null
+    }
+   }
+  }
+ ]
+}

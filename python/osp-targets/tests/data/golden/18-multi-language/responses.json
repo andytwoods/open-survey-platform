@@ -1,0 +1,271 @@
+{
+  "format": "osp-response-export/1",
+  "survey": {
+    "id": "f18_multi_language",
+    "title": "Drinks",
+    "version": 1,
+    "checksum": "sha256:test-18-multi-language"
+  },
+  "missingValues": "Every answer is {state, value}. state is answered, unanswered (shown, left empty), irrelevant (page reached, hidden by its show-if) or not-reached (the flow never got to its page); value is null unless state is answered. state is null only if the stored record has no entry for the question.",
+  "options": {
+    "events": true
+  },
+  "responses": [
+    {
+      "responseId": "resp-de",
+      "sessionId": "sess-de",
+      "version": 1,
+      "versionChecksum": "sha256:test-18-multi-language",
+      "planChecksum": "sha256:6a8c6dbb6dd8daa90ad64e20064d9a0c80cb56941a64c0865ffe419193208fb4",
+      "engineVersion": "1",
+      "allocationMode": "server",
+      "saveMode": "every-page",
+      "seed": 1802,
+      "startedAt": "2026-10-16T09:30:00.000Z",
+      "submittedAt": "2026-10-16T09:30:30.250Z",
+      "late": false,
+      "end": "complete",
+      "language": "de",
+      "conditions": {},
+      "answers": {
+        "drink": {
+          "state": "answered",
+          "value": "coffee"
+        },
+        "cups": {
+          "state": "answered",
+          "value": 4
+        },
+        "why": {
+          "state": "answered",
+          "value": "Lecker"
+        },
+        "again": {
+          "state": "answered",
+          "value": "no"
+        }
+      },
+      "variables": {},
+      "orders": {
+        "blocks": {},
+        "items": {},
+        "choices": {}
+      },
+      "quotas": {},
+      "urlParams": {},
+      "events": [
+        {
+          "type": "start",
+          "seq": 1,
+          "rev": 1,
+          "t": 2000,
+          "sessionSeed": 1802,
+          "assigned": {},
+          "language": "de",
+          "device": null,
+          "urlParams": {},
+          "sessionId": null
+        },
+        {
+          "type": "answer",
+          "t": 3000,
+          "item": "drink",
+          "value": "coffee",
+          "seq": 2,
+          "rev": 2
+        },
+        {
+          "type": "answer",
+          "t": 4000,
+          "item": "cups",
+          "value": 25,
+          "seq": 3,
+          "rev": 3
+        },
+        {
+          "type": "next",
+          "t": 5000,
+          "from": "p1_page",
+          "seq": 4,
+          "rev": 4,
+          "result": {
+            "outcome": "invalid",
+            "to": "p1_page",
+            "errors": {
+              "cups": {
+                "kind": "constraint"
+              }
+            }
+          }
+        },
+        {
+          "type": "answer",
+          "t": 6000,
+          "item": "cups",
+          "value": 4,
+          "seq": 5,
+          "rev": 5
+        },
+        {
+          "type": "next",
+          "t": 7000,
+          "from": "p1_page",
+          "seq": 6,
+          "rev": 6,
+          "result": {
+            "outcome": "advanced",
+            "to": "p2_page"
+          }
+        },
+        {
+          "type": "answer",
+          "t": 8000,
+          "item": "why",
+          "value": "Lecker",
+          "seq": 7,
+          "rev": 7
+        },
+        {
+          "type": "answer",
+          "t": 9000,
+          "item": "again",
+          "value": "no",
+          "seq": 8,
+          "rev": 8
+        },
+        {
+          "type": "next",
+          "t": 10000,
+          "from": "p2_page",
+          "seq": 9,
+          "rev": 9,
+          "result": {
+            "outcome": "ended",
+            "to": null,
+            "effect": {
+              "kind": "end",
+              "outcome": "complete",
+              "nodeId": null
+            }
+          }
+        }
+      ]
+    },
+    {
+      "responseId": "resp-en",
+      "sessionId": "sess-en",
+      "version": 1,
+      "versionChecksum": "sha256:test-18-multi-language",
+      "planChecksum": "sha256:6a8c6dbb6dd8daa90ad64e20064d9a0c80cb56941a64c0865ffe419193208fb4",
+      "engineVersion": "1",
+      "allocationMode": "server",
+      "saveMode": "every-page",
+      "seed": 1801,
+      "startedAt": "2026-10-16T09:31:00.000Z",
+      "submittedAt": "2026-10-16T09:31:30.250Z",
+      "late": false,
+      "end": "complete",
+      "language": "en",
+      "conditions": {},
+      "answers": {
+        "drink": {
+          "state": "answered",
+          "value": "tea"
+        },
+        "cups": {
+          "state": "answered",
+          "value": 3
+        },
+        "why": {
+          "state": "answered",
+          "value": "Warm"
+        },
+        "again": {
+          "state": "answered",
+          "value": "yes"
+        }
+      },
+      "variables": {},
+      "orders": {
+        "blocks": {},
+        "items": {},
+        "choices": {}
+      },
+      "quotas": {},
+      "urlParams": {},
+      "events": [
+        {
+          "type": "start",
+          "seq": 1,
+          "rev": 1,
+          "t": 2000,
+          "sessionSeed": 1801,
+          "assigned": {},
+          "language": "en",
+          "device": null,
+          "urlParams": {},
+          "sessionId": null
+        },
+        {
+          "type": "answer",
+          "t": 3000,
+          "item": "drink",
+          "value": "tea",
+          "seq": 2,
+          "rev": 2
+        },
+        {
+          "type": "answer",
+          "t": 4000,
+          "item": "cups",
+          "value": 3,
+          "seq": 3,
+          "rev": 3
+        },
+        {
+          "type": "next",
+          "t": 5000,
+          "from": "p1_page",
+          "seq": 4,
+          "rev": 4,
+          "result": {
+            "outcome": "advanced",
+            "to": "p2_page"
+          }
+        },
+        {
+          "type": "answer",
+          "t": 6000,
+          "item": "why",
+          "value": "Warm",
+          "seq": 5,
+          "rev": 5
+        },
+        {
+          "type": "answer",
+          "t": 7000,
+          "item": "again",
+          "value": "yes",
+          "seq": 6,
+          "rev": 6
+        },
+        {
+          "type": "next",
+          "t": 8000,
+          "from": "p2_page",
+          "seq": 7,
+          "rev": 7,
+          "result": {
+            "outcome": "ended",
+            "to": null,
+            "effect": {
+              "kind": "end",
+              "outcome": "complete",
+              "nodeId": null
+            }
+          }
+        }
+      ]
+    }
+  ]
+}

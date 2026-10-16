@@ -1,0 +1,303 @@
+{
+  "format": "osp-response-export/1",
+  "survey": {
+    "id": "f11_end_nodes",
+    "title": "End nodes",
+    "version": 1,
+    "checksum": "sha256:test-11-end-nodes"
+  },
+  "missingValues": "Every answer is {state, value}. state is answered, unanswered (shown, left empty), irrelevant (page reached, hidden by its show-if) or not-reached (the flow never got to its page); value is null unless state is answered. state is null only if the stored record has no entry for the question.",
+  "options": {
+    "events": true
+  },
+  "responses": [
+    {
+      "responseId": "resp-complete",
+      "sessionId": "sess-complete",
+      "version": 1,
+      "versionChecksum": "sha256:test-11-end-nodes",
+      "planChecksum": "sha256:8e0edf3d6657dcb4852f31ded011882f632ea1a92f0dfa3482e23aad8742d123",
+      "engineVersion": "1",
+      "allocationMode": "server",
+      "saveMode": "every-page",
+      "seed": 1103,
+      "startedAt": "2026-10-16T09:30:00.000Z",
+      "submittedAt": "2026-10-16T09:30:30.250Z",
+      "late": false,
+      "end": "complete",
+      "language": "en",
+      "conditions": {},
+      "answers": {
+        "eligible": {
+          "state": "answered",
+          "value": "yes"
+        },
+        "rating": {
+          "state": "answered",
+          "value": 8
+        },
+        "extra": {
+          "state": "answered",
+          "value": "Toast"
+        }
+      },
+      "variables": {},
+      "orders": {
+        "blocks": {},
+        "items": {},
+        "choices": {}
+      },
+      "quotas": {},
+      "urlParams": {},
+      "events": [
+        {
+          "type": "start",
+          "seq": 1,
+          "rev": 1,
+          "t": 2000,
+          "sessionSeed": 1103,
+          "assigned": {},
+          "language": "en",
+          "device": null,
+          "urlParams": {},
+          "sessionId": null
+        },
+        {
+          "type": "answer",
+          "t": 3000,
+          "item": "eligible",
+          "value": "yes",
+          "seq": 2,
+          "rev": 2
+        },
+        {
+          "type": "next",
+          "t": 4000,
+          "from": "p1_page",
+          "seq": 3,
+          "rev": 3,
+          "result": {
+            "outcome": "advanced",
+            "to": "p2_page"
+          }
+        },
+        {
+          "type": "answer",
+          "t": 5000,
+          "item": "rating",
+          "value": 8,
+          "seq": 4,
+          "rev": 4
+        },
+        {
+          "type": "next",
+          "t": 6000,
+          "from": "p2_page",
+          "seq": 5,
+          "rev": 5,
+          "result": {
+            "outcome": "advanced",
+            "to": "p3_page"
+          }
+        },
+        {
+          "type": "answer",
+          "t": 7000,
+          "item": "extra",
+          "value": "Toast",
+          "seq": 6,
+          "rev": 6
+        },
+        {
+          "type": "next",
+          "t": 8000,
+          "from": "p3_page",
+          "seq": 7,
+          "rev": 7,
+          "result": {
+            "outcome": "ended",
+            "to": null,
+            "effect": {
+              "kind": "end",
+              "outcome": "complete",
+              "nodeId": "end_complete"
+            }
+          }
+        }
+      ]
+    },
+    {
+      "responseId": "resp-early-exit",
+      "sessionId": "sess-early-exit",
+      "version": 1,
+      "versionChecksum": "sha256:test-11-end-nodes",
+      "planChecksum": "sha256:8e0edf3d6657dcb4852f31ded011882f632ea1a92f0dfa3482e23aad8742d123",
+      "engineVersion": "1",
+      "allocationMode": "server",
+      "saveMode": "every-page",
+      "seed": 1102,
+      "startedAt": "2026-10-16T09:31:00.000Z",
+      "submittedAt": "2026-10-16T09:31:30.250Z",
+      "late": false,
+      "end": "early_exit",
+      "language": "en",
+      "conditions": {},
+      "answers": {
+        "eligible": {
+          "state": "answered",
+          "value": "yes"
+        },
+        "rating": {
+          "state": "answered",
+          "value": 2
+        },
+        "extra": {
+          "state": "not-reached",
+          "value": null
+        }
+      },
+      "variables": {},
+      "orders": {
+        "blocks": {},
+        "items": {},
+        "choices": {}
+      },
+      "quotas": {},
+      "urlParams": {},
+      "events": [
+        {
+          "type": "start",
+          "seq": 1,
+          "rev": 1,
+          "t": 2000,
+          "sessionSeed": 1102,
+          "assigned": {},
+          "language": "en",
+          "device": null,
+          "urlParams": {},
+          "sessionId": null
+        },
+        {
+          "type": "answer",
+          "t": 3000,
+          "item": "eligible",
+          "value": "yes",
+          "seq": 2,
+          "rev": 2
+        },
+        {
+          "type": "next",
+          "t": 4000,
+          "from": "p1_page",
+          "seq": 3,
+          "rev": 3,
+          "result": {
+            "outcome": "advanced",
+            "to": "p2_page"
+          }
+        },
+        {
+          "type": "answer",
+          "t": 5000,
+          "item": "rating",
+          "value": 2,
+          "seq": 4,
+          "rev": 4
+        },
+        {
+          "type": "next",
+          "t": 6000,
+          "from": "p2_page",
+          "seq": 5,
+          "rev": 5,
+          "result": {
+            "outcome": "ended",
+            "to": null,
+            "effect": {
+              "kind": "end",
+              "outcome": "early_exit",
+              "nodeId": "end_early_exit"
+            }
+          }
+        }
+      ]
+    },
+    {
+      "responseId": "resp-ineligible",
+      "sessionId": "sess-ineligible",
+      "version": 1,
+      "versionChecksum": "sha256:test-11-end-nodes",
+      "planChecksum": "sha256:8e0edf3d6657dcb4852f31ded011882f632ea1a92f0dfa3482e23aad8742d123",
+      "engineVersion": "1",
+      "allocationMode": "server",
+      "saveMode": "every-page",
+      "seed": 1101,
+      "startedAt": "2026-10-16T09:32:00.000Z",
+      "submittedAt": "2026-10-16T09:32:30.250Z",
+      "late": false,
+      "end": "ineligible",
+      "language": "en",
+      "conditions": {},
+      "answers": {
+        "eligible": {
+          "state": "answered",
+          "value": "no"
+        },
+        "rating": {
+          "state": "not-reached",
+          "value": null
+        },
+        "extra": {
+          "state": "not-reached",
+          "value": null
+        }
+      },
+      "variables": {},
+      "orders": {
+        "blocks": {},
+        "items": {},
+        "choices": {}
+      },
+      "quotas": {},
+      "urlParams": {},
+      "events": [
+        {
+          "type": "start",
+          "seq": 1,
+          "rev": 1,
+          "t": 2000,
+          "sessionSeed": 1101,
+          "assigned": {},
+          "language": "en",
+          "device": null,
+          "urlParams": {},
+          "sessionId": null
+        },
+        {
+          "type": "answer",
+          "t": 3000,
+          "item": "eligible",
+          "value": "no",
+          "seq": 2,
+          "rev": 2
+        },
+        {
+          "type": "next",
+          "t": 4000,
+          "from": "p1_page",
+          "seq": 3,
+          "rev": 3,
+          "result": {
+            "outcome": "ended",
+            "to": null,
+            "effect": {
+              "kind": "end",
+              "outcome": "ineligible",
+              "nodeId": "end_ineligible"
+            }
+          }
+        }
+      ]
+    }
+  ]
+}

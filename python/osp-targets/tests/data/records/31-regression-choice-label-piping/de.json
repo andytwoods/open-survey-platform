@@ -1,0 +1,150 @@
+{
+ "format": "osp-response/1",
+ "surveyId": "f31_choice_label_piping",
+ "surveyVersion": 1,
+ "planVersion": "osp-runtime-plan/1",
+ "planChecksum": "sha256:f5ce31dd7435ca5c6358ba992079fc2f8935d83d85bcdfb72e0700992fc9cc5f",
+ "engineVersion": "1",
+ "sessionSeed": 3102,
+ "sessionId": null,
+ "language": "de",
+ "device": null,
+ "end": "complete",
+ "endNode": null,
+ "allocation": "server",
+ "assigned": {},
+ "conditions": {},
+ "conditionSources": {},
+ "orders": {
+  "blocks": {},
+  "items": {},
+  "choices": {
+   "pet": [
+    "c2",
+    "c1",
+    "c3"
+   ]
+  }
+ },
+ "answers": {
+  "fav": {
+   "state": "answered",
+   "value": 2
+  },
+  "pet": {
+   "state": "answered",
+   "value": "c2"
+  },
+  "pipe_fav": {
+   "state": "unanswered",
+   "value": null
+  },
+  "pipe_pet": {
+   "state": "unanswered",
+   "value": null
+  },
+  "s_banana": {
+   "state": "unanswered",
+   "value": null
+  }
+ },
+ "csvState": {
+  "fav__state": "answered",
+  "pet__state": "answered",
+  "pipe_fav__state": "unanswered",
+  "pipe_pet__state": "unanswered",
+  "s_banana__state": "unanswered"
+ },
+ "embedded": {},
+ "computed": {},
+ "quotas": {},
+ "effects": [],
+ "urlParams": {},
+ "startedAt": 2000,
+ "endedAt": 9000,
+ "revision": 8,
+ "events": [
+  {
+   "type": "start",
+   "seq": 1,
+   "rev": 1,
+   "t": 2000,
+   "sessionSeed": 3102,
+   "assigned": {},
+   "language": "de",
+   "device": null,
+   "urlParams": {},
+   "sessionId": null
+  },
+  {
+   "type": "answer",
+   "t": 3000,
+   "item": "fav",
+   "value": 1,
+   "seq": 2,
+   "rev": 2
+  },
+  {
+   "type": "answer",
+   "t": 4000,
+   "item": "pet",
+   "value": "c2",
+   "seq": 3,
+   "rev": 3
+  },
+  {
+   "type": "next",
+   "t": 5000,
+   "from": "p1_page",
+   "seq": 4,
+   "rev": 4,
+   "result": {
+    "outcome": "advanced",
+    "to": "p2_page"
+   }
+  },
+  {
+   "type": "back",
+   "t": 6000,
+   "from": "p2_page",
+   "seq": 5,
+   "rev": 5,
+   "to": "p1_page"
+  },
+  {
+   "type": "answer",
+   "t": 7000,
+   "item": "fav",
+   "value": 2,
+   "seq": 6,
+   "rev": 6
+  },
+  {
+   "type": "next",
+   "t": 8000,
+   "from": "p1_page",
+   "seq": 7,
+   "rev": 7,
+   "result": {
+    "outcome": "advanced",
+    "to": "p2_page"
+   }
+  },
+  {
+   "type": "next",
+   "t": 9000,
+   "from": "p2_page",
+   "seq": 8,
+   "rev": 8,
+   "result": {
+    "outcome": "ended",
+    "to": null,
+    "effect": {
+     "kind": "end",
+     "outcome": "complete",
+     "nodeId": null
+    }
+   }
+  }
+ ]
+}

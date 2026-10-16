@@ -1,0 +1,190 @@
+{
+ "format": "osp-response/1",
+ "surveyId": "f34_branch_change",
+ "surveyVersion": 1,
+ "planVersion": "osp-runtime-plan/1",
+ "planChecksum": "sha256:e45c9cb03ca470929aad9e747a1fef61e4f14672e8d292b4ae20b6fb4bcc08b8",
+ "engineVersion": "1",
+ "sessionSeed": 3401,
+ "sessionId": null,
+ "language": "en",
+ "device": null,
+ "end": "complete",
+ "endNode": null,
+ "allocation": "server",
+ "assigned": {},
+ "conditions": {},
+ "conditionSources": {},
+ "orders": {
+  "blocks": {},
+  "items": {},
+  "choices": {}
+ },
+ "answers": {
+  "route": {
+   "state": "answered",
+   "value": "bus"
+  },
+  "car_make": {
+   "state": "answered",
+   "value": "Volvo"
+  },
+  "car_age": {
+   "state": "answered",
+   "value": 4
+  },
+  "bus_line": {
+   "state": "answered",
+   "value": "42"
+  },
+  "comment": {
+   "state": "unanswered",
+   "value": null
+  }
+ },
+ "csvState": {
+  "route__state": "answered",
+  "car_make__state": "answered",
+  "car_age__state": "answered",
+  "bus_line__state": "answered",
+  "comment__state": "unanswered"
+ },
+ "embedded": {},
+ "computed": {},
+ "quotas": {},
+ "effects": [],
+ "urlParams": {},
+ "startedAt": 2000,
+ "endedAt": 14000,
+ "revision": 13,
+ "events": [
+  {
+   "type": "start",
+   "seq": 1,
+   "rev": 1,
+   "t": 2000,
+   "sessionSeed": 3401,
+   "assigned": {},
+   "language": "en",
+   "device": null,
+   "urlParams": {},
+   "sessionId": null
+  },
+  {
+   "type": "answer",
+   "t": 3000,
+   "item": "route",
+   "value": "car",
+   "seq": 2,
+   "rev": 2
+  },
+  {
+   "type": "next",
+   "t": 4000,
+   "from": "p1_page",
+   "seq": 3,
+   "rev": 3,
+   "result": {
+    "outcome": "advanced",
+    "to": "p_car_page"
+   }
+  },
+  {
+   "type": "answer",
+   "t": 5000,
+   "item": "car_make",
+   "value": "Volvo",
+   "seq": 4,
+   "rev": 4
+  },
+  {
+   "type": "answer",
+   "t": 6000,
+   "item": "car_age",
+   "value": 4,
+   "seq": 5,
+   "rev": 5
+  },
+  {
+   "type": "next",
+   "t": 7000,
+   "from": "p_car_page",
+   "seq": 6,
+   "rev": 6,
+   "result": {
+    "outcome": "advanced",
+    "to": "p_end_page"
+   }
+  },
+  {
+   "type": "back",
+   "t": 8000,
+   "from": "p_end_page",
+   "seq": 7,
+   "rev": 7,
+   "to": "p_car_page"
+  },
+  {
+   "type": "back",
+   "t": 9000,
+   "from": "p_car_page",
+   "seq": 8,
+   "rev": 8,
+   "to": "p1_page"
+  },
+  {
+   "type": "answer",
+   "t": 10000,
+   "item": "route",
+   "value": "bus",
+   "seq": 9,
+   "rev": 9
+  },
+  {
+   "type": "next",
+   "t": 11000,
+   "from": "p1_page",
+   "seq": 10,
+   "rev": 10,
+   "result": {
+    "outcome": "advanced",
+    "to": "p_bus_page"
+   }
+  },
+  {
+   "type": "answer",
+   "t": 12000,
+   "item": "bus_line",
+   "value": "42",
+   "seq": 11,
+   "rev": 11
+  },
+  {
+   "type": "next",
+   "t": 13000,
+   "from": "p_bus_page",
+   "seq": 12,
+   "rev": 12,
+   "result": {
+    "outcome": "advanced",
+    "to": "p_end_page"
+   }
+  },
+  {
+   "type": "next",
+   "t": 14000,
+   "from": "p_end_page",
+   "seq": 13,
+   "rev": 13,
+   "result": {
+    "outcome": "ended",
+    "to": null,
+    "effect": {
+     "kind": "end",
+     "outcome": "complete",
+     "nodeId": null
+    }
+   }
+  }
+ ]
+}

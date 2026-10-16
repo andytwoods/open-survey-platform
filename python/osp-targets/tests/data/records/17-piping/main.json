@@ -1,0 +1,197 @@
+{
+ "format": "osp-response/1",
+ "surveyId": "f17_piping",
+ "surveyVersion": 1,
+ "planVersion": "osp-runtime-plan/1",
+ "planChecksum": "sha256:5a56ff43e3051e18df76c41e937953f7c2261c2688cc45b82861470a08b1e52e",
+ "engineVersion": "1",
+ "sessionSeed": 1701,
+ "sessionId": null,
+ "language": "en",
+ "device": null,
+ "end": "complete",
+ "endNode": "end_complete",
+ "allocation": "server",
+ "assigned": {},
+ "conditions": {},
+ "conditionSources": {},
+ "orders": {
+  "blocks": {},
+  "items": {},
+  "choices": {}
+ },
+ "answers": {
+  "fav_fruit": {
+   "state": "answered",
+   "value": "banana"
+  },
+  "n_pets": {
+   "state": "answered",
+   "value": 3
+  },
+  "nickname": {
+   "state": "answered",
+   "value": "Sam & <Co>"
+  },
+  "empty_q": {
+   "state": "unanswered",
+   "value": null
+  },
+  "skip_opt": {
+   "state": "answered",
+   "value": "yes"
+  },
+  "pet_names": {
+   "state": "irrelevant",
+   "value": null
+  },
+  "plants": {
+   "state": "answered",
+   "value": 2
+  },
+  "opt_q": {
+   "state": "not-reached",
+   "value": null
+  },
+  "pipe_choice": {
+   "state": "unanswered",
+   "value": null
+  },
+  "pipe_int": {
+   "state": "unanswered",
+   "value": null
+  },
+  "pipe_text": {
+   "state": "unanswered",
+   "value": null
+  },
+  "pipe_empty": {
+   "state": "unanswered",
+   "value": null
+  },
+  "pipe_irr": {
+   "state": "unanswered",
+   "value": null
+  },
+  "pipe_nr": {
+   "state": "unanswered",
+   "value": null
+  }
+ },
+ "csvState": {
+  "fav_fruit__state": "answered",
+  "n_pets__state": "answered",
+  "nickname__state": "answered",
+  "empty_q__state": "unanswered",
+  "skip_opt__state": "answered",
+  "pet_names__state": "irrelevant",
+  "plants__state": "answered",
+  "opt_q__state": "not-reached",
+  "pipe_choice__state": "unanswered",
+  "pipe_int__state": "unanswered",
+  "pipe_text__state": "unanswered",
+  "pipe_empty__state": "unanswered",
+  "pipe_irr__state": "unanswered",
+  "pipe_nr__state": "unanswered"
+ },
+ "embedded": {},
+ "computed": {},
+ "quotas": {},
+ "effects": [],
+ "urlParams": {},
+ "startedAt": 2000,
+ "endedAt": 10000,
+ "revision": 9,
+ "events": [
+  {
+   "type": "start",
+   "seq": 1,
+   "rev": 1,
+   "t": 2000,
+   "sessionSeed": 1701,
+   "assigned": {},
+   "language": "en",
+   "device": null,
+   "urlParams": {},
+   "sessionId": null
+  },
+  {
+   "type": "answer",
+   "t": 3000,
+   "item": "fav_fruit",
+   "value": "banana",
+   "seq": 2,
+   "rev": 2
+  },
+  {
+   "type": "answer",
+   "t": 4000,
+   "item": "n_pets",
+   "value": 3,
+   "seq": 3,
+   "rev": 3
+  },
+  {
+   "type": "answer",
+   "t": 5000,
+   "item": "nickname",
+   "value": "Sam & <Co>",
+   "seq": 4,
+   "rev": 4
+  },
+  {
+   "type": "answer",
+   "t": 6000,
+   "item": "skip_opt",
+   "value": "yes",
+   "seq": 5,
+   "rev": 5
+  },
+  {
+   "type": "next",
+   "t": 7000,
+   "from": "p1_page",
+   "seq": 6,
+   "rev": 6,
+   "result": {
+    "outcome": "advanced",
+    "to": "p1b_page"
+   }
+  },
+  {
+   "type": "answer",
+   "t": 8000,
+   "item": "plants",
+   "value": 2,
+   "seq": 7,
+   "rev": 7
+  },
+  {
+   "type": "next",
+   "t": 9000,
+   "from": "p1b_page",
+   "seq": 8,
+   "rev": 8,
+   "result": {
+    "outcome": "advanced",
+    "to": "p2_page"
+   }
+  },
+  {
+   "type": "next",
+   "t": 10000,
+   "from": "p2_page",
+   "seq": 9,
+   "rev": 9,
+   "result": {
+    "outcome": "ended",
+    "to": null,
+    "effect": {
+     "kind": "end",
+     "outcome": "complete",
+     "nodeId": "end_complete"
+    }
+   }
+  }
+ ]
+}

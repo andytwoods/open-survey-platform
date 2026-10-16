@@ -1,0 +1,254 @@
+{
+ "format": "osp-response/1",
+ "surveyId": "f35_back_empty_block",
+ "surveyVersion": 1,
+ "planVersion": "osp-runtime-plan/1",
+ "planChecksum": "sha256:86b61282a709b1b55015f79fb3089bdda6217ded81364468b6943ea340306177",
+ "engineVersion": "1",
+ "sessionSeed": 3501,
+ "sessionId": null,
+ "language": "en",
+ "device": null,
+ "end": "complete",
+ "endNode": null,
+ "allocation": "server",
+ "assigned": {},
+ "conditions": {},
+ "conditionSources": {},
+ "orders": {
+  "blocks": {},
+  "items": {},
+  "choices": {}
+ },
+ "answers": {
+  "has_kids": {
+   "state": "answered",
+   "value": "yes"
+  },
+  "n_kids": {
+   "state": "answered",
+   "value": 1
+  },
+  "kid_age": {
+   "state": "unanswered",
+   "value": null
+  },
+  "school": {
+   "state": "unanswered",
+   "value": null
+  },
+  "hours": {
+   "state": "answered",
+   "value": 8
+  },
+  "why_none": {
+   "state": "irrelevant",
+   "value": null
+  }
+ },
+ "csvState": {
+  "has_kids__state": "answered",
+  "n_kids__state": "answered",
+  "kid_age__state": "unanswered",
+  "school__state": "unanswered",
+  "hours__state": "answered",
+  "why_none__state": "irrelevant"
+ },
+ "embedded": {},
+ "computed": {},
+ "quotas": {},
+ "effects": [],
+ "urlParams": {},
+ "startedAt": 2000,
+ "endedAt": 20000,
+ "revision": 19,
+ "events": [
+  {
+   "type": "start",
+   "seq": 1,
+   "rev": 1,
+   "t": 2000,
+   "sessionSeed": 3501,
+   "assigned": {},
+   "language": "en",
+   "device": null,
+   "urlParams": {},
+   "sessionId": null
+  },
+  {
+   "type": "answer",
+   "t": 3000,
+   "item": "has_kids",
+   "value": "yes",
+   "seq": 2,
+   "rev": 2
+  },
+  {
+   "type": "answer",
+   "t": 4000,
+   "item": "n_kids",
+   "value": 2,
+   "seq": 3,
+   "rev": 3
+  },
+  {
+   "type": "next",
+   "t": 5000,
+   "from": "p1_page",
+   "seq": 4,
+   "rev": 4,
+   "result": {
+    "outcome": "advanced",
+    "to": "p2_page"
+   }
+  },
+  {
+   "type": "answer",
+   "t": 6000,
+   "item": "kid_age",
+   "value": 7,
+   "seq": 5,
+   "rev": 5
+  },
+  {
+   "type": "answer",
+   "t": 7000,
+   "item": "school",
+   "value": "yes",
+   "seq": 6,
+   "rev": 6
+  },
+  {
+   "type": "next",
+   "t": 8000,
+   "from": "p2_page",
+   "seq": 7,
+   "rev": 7,
+   "result": {
+    "outcome": "advanced",
+    "to": "p3_page"
+   }
+  },
+  {
+   "type": "answer",
+   "t": 9000,
+   "item": "hours",
+   "value": 8,
+   "seq": 8,
+   "rev": 8
+  },
+  {
+   "type": "back",
+   "t": 10000,
+   "from": "p3_page",
+   "seq": 9,
+   "rev": 9,
+   "to": "p2_page"
+  },
+  {
+   "type": "back",
+   "t": 11000,
+   "from": "p2_page",
+   "seq": 10,
+   "rev": 10,
+   "to": "p1_page"
+  },
+  {
+   "type": "answer",
+   "t": 12000,
+   "item": "has_kids",
+   "value": "no",
+   "seq": 11,
+   "rev": 11
+  },
+  {
+   "type": "next",
+   "t": 13000,
+   "from": "p1_page",
+   "seq": 12,
+   "rev": 12,
+   "result": {
+    "outcome": "advanced",
+    "to": "p3_page"
+   }
+  },
+  {
+   "type": "next",
+   "t": 14000,
+   "from": "p3_page",
+   "seq": 13,
+   "rev": 13,
+   "result": {
+    "outcome": "invalid",
+    "to": "p3_page",
+    "errors": {
+     "why_none": {
+      "kind": "required"
+     }
+    }
+   }
+  },
+  {
+   "type": "back",
+   "t": 15000,
+   "from": "p3_page",
+   "seq": 14,
+   "rev": 14,
+   "to": "p1_page"
+  },
+  {
+   "type": "answer",
+   "t": 16000,
+   "item": "has_kids",
+   "value": "yes",
+   "seq": 15,
+   "rev": 15
+  },
+  {
+   "type": "answer",
+   "t": 17000,
+   "item": "n_kids",
+   "value": 1,
+   "seq": 16,
+   "rev": 16
+  },
+  {
+   "type": "next",
+   "t": 18000,
+   "from": "p1_page",
+   "seq": 17,
+   "rev": 17,
+   "result": {
+    "outcome": "advanced",
+    "to": "p2_page"
+   }
+  },
+  {
+   "type": "next",
+   "t": 19000,
+   "from": "p2_page",
+   "seq": 18,
+   "rev": 18,
+   "result": {
+    "outcome": "advanced",
+    "to": "p3_page"
+   }
+  },
+  {
+   "type": "next",
+   "t": 20000,
+   "from": "p3_page",
+   "seq": 19,
+   "rev": 19,
+   "result": {
+    "outcome": "ended",
+    "to": null,
+    "effect": {
+     "kind": "end",
+     "outcome": "complete",
+     "nodeId": null
+    }
+   }
+  }
+ ]
+}

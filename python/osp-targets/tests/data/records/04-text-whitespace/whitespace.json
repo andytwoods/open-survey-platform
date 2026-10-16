@@ -1,0 +1,149 @@
+{
+ "format": "osp-response/1",
+ "surveyId": "f04_text_whitespace",
+ "surveyVersion": 1,
+ "planVersion": "osp-runtime-plan/1",
+ "planChecksum": "sha256:976e1b5199b1eea82f199f65988bb9a4fee9b16369c8fba0303799bf94abe8a3",
+ "engineVersion": "1",
+ "sessionSeed": 401,
+ "sessionId": null,
+ "language": "en",
+ "device": null,
+ "end": "complete",
+ "endNode": null,
+ "allocation": "server",
+ "assigned": {},
+ "conditions": {},
+ "conditionSources": {},
+ "orders": {
+  "blocks": {},
+  "items": {},
+  "choices": {}
+ },
+ "answers": {
+  "t_req": {
+   "state": "answered",
+   "value": "a quiet walk"
+  },
+  "t_opt": {
+   "state": "unanswered",
+   "value": null
+  },
+  "t_lines": {
+   "state": "answered",
+   "value": "waves on the shore\n\n  gulls  overhead"
+  },
+  "t_follow": {
+   "state": "irrelevant",
+   "value": null
+  },
+  "p2_rating": {
+   "state": "unanswered",
+   "value": null
+  }
+ },
+ "csvState": {
+  "t_req__state": "answered",
+  "t_opt__state": "unanswered",
+  "t_lines__state": "answered",
+  "t_follow__state": "irrelevant",
+  "p2_rating__state": "unanswered"
+ },
+ "embedded": {},
+ "computed": {},
+ "quotas": {},
+ "effects": [],
+ "urlParams": {},
+ "startedAt": 2000,
+ "endedAt": 9000,
+ "revision": 8,
+ "events": [
+  {
+   "type": "start",
+   "seq": 1,
+   "rev": 1,
+   "t": 2000,
+   "sessionSeed": 401,
+   "assigned": {},
+   "language": "en",
+   "device": null,
+   "urlParams": {},
+   "sessionId": null
+  },
+  {
+   "type": "answer",
+   "t": 3000,
+   "item": "t_req",
+   "value": null,
+   "seq": 2,
+   "rev": 2
+  },
+  {
+   "type": "next",
+   "t": 4000,
+   "from": "p1_page",
+   "seq": 3,
+   "rev": 3,
+   "result": {
+    "outcome": "invalid",
+    "to": "p1_page",
+    "errors": {
+     "t_req": {
+      "kind": "required"
+     }
+    }
+   }
+  },
+  {
+   "type": "answer",
+   "t": 5000,
+   "item": "t_req",
+   "value": "a quiet walk",
+   "seq": 4,
+   "rev": 4
+  },
+  {
+   "type": "answer",
+   "t": 6000,
+   "item": "t_opt",
+   "value": null,
+   "seq": 5,
+   "rev": 5
+  },
+  {
+   "type": "answer",
+   "t": 7000,
+   "item": "t_lines",
+   "value": "waves on the shore\n\n  gulls  overhead",
+   "seq": 6,
+   "rev": 6
+  },
+  {
+   "type": "next",
+   "t": 8000,
+   "from": "p1_page",
+   "seq": 7,
+   "rev": 7,
+   "result": {
+    "outcome": "advanced",
+    "to": "p2_page"
+   }
+  },
+  {
+   "type": "next",
+   "t": 9000,
+   "from": "p2_page",
+   "seq": 8,
+   "rev": 8,
+   "result": {
+    "outcome": "ended",
+    "to": null,
+    "effect": {
+     "kind": "end",
+     "outcome": "complete",
+     "nodeId": null
+    }
+   }
+  }
+ ]
+}

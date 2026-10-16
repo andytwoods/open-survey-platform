@@ -1,0 +1,135 @@
+{
+ "format": "osp-response/1",
+ "surveyId": "f25_second_device",
+ "surveyVersion": 1,
+ "planVersion": "osp-runtime-plan/1",
+ "planChecksum": "sha256:b9ee4d93ff41678a7175ce980501e739ee9f24dd360d282f22262115adcbd6c1",
+ "engineVersion": "1",
+ "sessionSeed": 2502,
+ "sessionId": null,
+ "language": "en",
+ "device": null,
+ "end": null,
+ "endNode": null,
+ "allocation": "server",
+ "assigned": {
+  "framing": "loss"
+ },
+ "conditions": {
+  "framing": "loss"
+ },
+ "conditionSources": {
+  "framing": "server"
+ },
+ "orders": {
+  "blocks": {},
+  "items": {},
+  "choices": {
+   "colour": [
+    "blue",
+    "green",
+    "red",
+    "grey"
+   ]
+  }
+ },
+ "answers": {
+  "colour": {
+   "state": "answered",
+   "value": "green"
+  },
+  "n1": {
+   "state": "answered",
+   "value": 5
+  },
+  "t1": {
+   "state": "answered",
+   "value": "the bedroom"
+  },
+  "t2": {
+   "state": "unanswered",
+   "value": null
+  },
+  "t3": {
+   "state": "not-reached",
+   "value": null
+  }
+ },
+ "csvState": {
+  "colour__state": "answered",
+  "n1__state": "answered",
+  "t1__state": "answered",
+  "t2__state": "unanswered",
+  "t3__state": "not-reached"
+ },
+ "embedded": {},
+ "computed": {},
+ "quotas": {},
+ "effects": [],
+ "urlParams": {},
+ "startedAt": 2000,
+ "endedAt": null,
+ "revision": 6,
+ "events": [
+  {
+   "type": "start",
+   "seq": 1,
+   "rev": 1,
+   "t": 2000,
+   "sessionSeed": 2502,
+   "assigned": {
+    "framing": "loss"
+   },
+   "language": "en",
+   "device": null,
+   "urlParams": {},
+   "sessionId": null
+  },
+  {
+   "type": "answer",
+   "t": 3000,
+   "item": "colour",
+   "value": "green",
+   "seq": 2,
+   "rev": 2
+  },
+  {
+   "type": "next",
+   "t": 4000,
+   "from": "p1_page",
+   "seq": 3,
+   "rev": 3,
+   "result": {
+    "outcome": "advanced",
+    "to": "p2_page"
+   }
+  },
+  {
+   "type": "answer",
+   "t": 5000,
+   "item": "n1",
+   "value": 5,
+   "seq": 4,
+   "rev": 4
+  },
+  {
+   "type": "answer",
+   "t": 8000,
+   "item": "t1",
+   "value": "the bedroom",
+   "seq": 5,
+   "rev": 5
+  },
+  {
+   "type": "next",
+   "t": 9000,
+   "from": "p2_page",
+   "seq": 6,
+   "rev": 6,
+   "result": {
+    "outcome": "advanced",
+    "to": "p3_page"
+   }
+  }
+ ]
+}

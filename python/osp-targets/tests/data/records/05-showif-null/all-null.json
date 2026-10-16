@@ -1,0 +1,131 @@
+{
+ "format": "osp-response/1",
+ "surveyId": "f05_showif_null",
+ "surveyVersion": 1,
+ "planVersion": "osp-runtime-plan/1",
+ "planChecksum": "sha256:d29eef77dfd7b48e98e657cd3ccf34c6270fe086a61916c7b1b092c8cf05e705",
+ "engineVersion": "1",
+ "sessionSeed": 501,
+ "sessionId": null,
+ "language": "en",
+ "device": null,
+ "end": "complete",
+ "endNode": null,
+ "allocation": "server",
+ "assigned": {},
+ "conditions": {},
+ "conditionSources": {},
+ "orders": {
+  "blocks": {},
+  "items": {},
+  "choices": {}
+ },
+ "answers": {
+  "a": {
+   "state": "unanswered",
+   "value": null
+  },
+  "b": {
+   "state": "unanswered",
+   "value": null
+  },
+  "c": {
+   "state": "unanswered",
+   "value": null
+  },
+  "p2_anchor": {
+   "state": "unanswered",
+   "value": null
+  },
+  "s_gt": {
+   "state": "irrelevant",
+   "value": null
+  },
+  "s_not_gt": {
+   "state": "unanswered",
+   "value": null
+  },
+  "s_eq": {
+   "state": "irrelevant",
+   "value": null
+  },
+  "s_neq": {
+   "state": "irrelevant",
+   "value": null
+  },
+  "s_arith": {
+   "state": "irrelevant",
+   "value": null
+  },
+  "s_unanswered": {
+   "state": "unanswered",
+   "value": null
+  },
+  "s_contains": {
+   "state": "irrelevant",
+   "value": null
+  }
+ },
+ "csvState": {
+  "a__state": "unanswered",
+  "b__state": "unanswered",
+  "c__state": "unanswered",
+  "p2_anchor__state": "unanswered",
+  "s_gt__state": "irrelevant",
+  "s_not_gt__state": "unanswered",
+  "s_eq__state": "irrelevant",
+  "s_neq__state": "irrelevant",
+  "s_arith__state": "irrelevant",
+  "s_unanswered__state": "unanswered",
+  "s_contains__state": "irrelevant"
+ },
+ "embedded": {},
+ "computed": {},
+ "quotas": {},
+ "effects": [],
+ "urlParams": {},
+ "startedAt": 2000,
+ "endedAt": 4000,
+ "revision": 3,
+ "events": [
+  {
+   "type": "start",
+   "seq": 1,
+   "rev": 1,
+   "t": 2000,
+   "sessionSeed": 501,
+   "assigned": {},
+   "language": "en",
+   "device": null,
+   "urlParams": {},
+   "sessionId": null
+  },
+  {
+   "type": "next",
+   "t": 3000,
+   "from": "p1_page",
+   "seq": 2,
+   "rev": 2,
+   "result": {
+    "outcome": "advanced",
+    "to": "p2_page"
+   }
+  },
+  {
+   "type": "next",
+   "t": 4000,
+   "from": "p2_page",
+   "seq": 3,
+   "rev": 3,
+   "result": {
+    "outcome": "ended",
+    "to": null,
+    "effect": {
+     "kind": "end",
+     "outcome": "complete",
+     "nodeId": null
+    }
+   }
+  }
+ ]
+}

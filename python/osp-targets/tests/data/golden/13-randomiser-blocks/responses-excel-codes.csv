@@ -1,0 +1,2 @@
+﻿_response_id,_session_id,_version,_version_checksum,_plan_checksum,_engine_version,_allocation_mode,_save_mode,_seed,_started_at,_submitted_at,_late,_end,_language,intro_q,intro_q__state,q_x,q_x__state,q_y,q_y__state,q_z,q_z__state,outro_q,outro_q__state,_order.blocks.r_blocks
+resp-main,sess-main,1,sha256:test-13-randomiser-blocks,sha256:9539996a4a0726ca8060e3fbd7ad93f82f62ff1da7ccce4549eda6e56eedded8,1,server,every-page,777,2026-10-16T09:30:00.000Z,2026-10-16T09:30:30.250Z,false,complete,en,yes,answered,1,answered,2,answered,3,answered,done,answered,n_blk_y n_blk_x n_blk_z

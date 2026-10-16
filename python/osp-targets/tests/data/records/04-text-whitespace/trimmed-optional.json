@@ -1,0 +1,117 @@
+{
+ "format": "osp-response/1",
+ "surveyId": "f04_text_whitespace",
+ "surveyVersion": 1,
+ "planVersion": "osp-runtime-plan/1",
+ "planChecksum": "sha256:976e1b5199b1eea82f199f65988bb9a4fee9b16369c8fba0303799bf94abe8a3",
+ "engineVersion": "1",
+ "sessionSeed": 402,
+ "sessionId": null,
+ "language": "en",
+ "device": null,
+ "end": "complete",
+ "endNode": null,
+ "allocation": "server",
+ "assigned": {},
+ "conditions": {},
+ "conditionSources": {},
+ "orders": {
+  "blocks": {},
+  "items": {},
+  "choices": {}
+ },
+ "answers": {
+  "t_req": {
+   "state": "answered",
+   "value": "x"
+  },
+  "t_opt": {
+   "state": "answered",
+   "value": "ok"
+  },
+  "t_lines": {
+   "state": "unanswered",
+   "value": null
+  },
+  "t_follow": {
+   "state": "unanswered",
+   "value": null
+  },
+  "p2_rating": {
+   "state": "unanswered",
+   "value": null
+  }
+ },
+ "csvState": {
+  "t_req__state": "answered",
+  "t_opt__state": "answered",
+  "t_lines__state": "unanswered",
+  "t_follow__state": "unanswered",
+  "p2_rating__state": "unanswered"
+ },
+ "embedded": {},
+ "computed": {},
+ "quotas": {},
+ "effects": [],
+ "urlParams": {},
+ "startedAt": 2000,
+ "endedAt": 6000,
+ "revision": 5,
+ "events": [
+  {
+   "type": "start",
+   "seq": 1,
+   "rev": 1,
+   "t": 2000,
+   "sessionSeed": 402,
+   "assigned": {},
+   "language": "en",
+   "device": null,
+   "urlParams": {},
+   "sessionId": null
+  },
+  {
+   "type": "answer",
+   "t": 3000,
+   "item": "t_req",
+   "value": "x",
+   "seq": 2,
+   "rev": 2
+  },
+  {
+   "type": "answer",
+   "t": 4000,
+   "item": "t_opt",
+   "value": "ok",
+   "seq": 3,
+   "rev": 3
+  },
+  {
+   "type": "next",
+   "t": 5000,
+   "from": "p1_page",
+   "seq": 4,
+   "rev": 4,
+   "result": {
+    "outcome": "advanced",
+    "to": "p2_page"
+   }
+  },
+  {
+   "type": "next",
+   "t": 6000,
+   "from": "p2_page",
+   "seq": 5,
+   "rev": 5,
+   "result": {
+    "outcome": "ended",
+    "to": null,
+    "effect": {
+     "kind": "end",
+     "outcome": "complete",
+     "nodeId": null
+    }
+   }
+  }
+ ]
+}

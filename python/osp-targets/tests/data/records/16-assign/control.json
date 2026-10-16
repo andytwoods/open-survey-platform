@@ -1,0 +1,139 @@
+{
+ "format": "osp-response/1",
+ "surveyId": "f16_assign",
+ "surveyVersion": 1,
+ "planVersion": "osp-runtime-plan/1",
+ "planChecksum": "sha256:8c419ca10db234b5b35ed5fb29131811984bae140bf6223052d324f1ff2691f1",
+ "engineVersion": "1",
+ "sessionSeed": 1601,
+ "sessionId": null,
+ "language": "en",
+ "device": null,
+ "end": "complete",
+ "endNode": "end_complete",
+ "allocation": "server",
+ "assigned": {
+  "cond": "control"
+ },
+ "conditions": {
+  "cond": "control"
+ },
+ "conditionSources": {
+  "cond": "server"
+ },
+ "orders": {
+  "blocks": {},
+  "items": {},
+  "choices": {}
+ },
+ "answers": {
+  "intro_q": {
+   "state": "answered",
+   "value": "yes"
+  },
+  "treat_q": {
+   "state": "not-reached",
+   "value": null
+  },
+  "ctrl_q": {
+   "state": "answered",
+   "value": "Four legs and a back"
+  },
+  "out_q": {
+   "state": "answered",
+   "value": "no"
+  }
+ },
+ "csvState": {
+  "intro_q__state": "answered",
+  "treat_q__state": "not-reached",
+  "ctrl_q__state": "answered",
+  "out_q__state": "answered"
+ },
+ "embedded": {},
+ "computed": {},
+ "quotas": {},
+ "effects": [],
+ "urlParams": {},
+ "startedAt": 2000,
+ "endedAt": 8000,
+ "revision": 7,
+ "events": [
+  {
+   "type": "start",
+   "seq": 1,
+   "rev": 1,
+   "t": 2000,
+   "sessionSeed": 1601,
+   "assigned": {
+    "cond": "control"
+   },
+   "language": "en",
+   "device": null,
+   "urlParams": {},
+   "sessionId": null
+  },
+  {
+   "type": "answer",
+   "t": 3000,
+   "item": "intro_q",
+   "value": "yes",
+   "seq": 2,
+   "rev": 2
+  },
+  {
+   "type": "next",
+   "t": 4000,
+   "from": "p_intro_page",
+   "seq": 3,
+   "rev": 3,
+   "result": {
+    "outcome": "advanced",
+    "to": "blk_ctrl_page"
+   }
+  },
+  {
+   "type": "answer",
+   "t": 5000,
+   "item": "ctrl_q",
+   "value": "Four legs and a back",
+   "seq": 4,
+   "rev": 4
+  },
+  {
+   "type": "next",
+   "t": 6000,
+   "from": "blk_ctrl_page",
+   "seq": 5,
+   "rev": 5,
+   "result": {
+    "outcome": "advanced",
+    "to": "p_out_page"
+   }
+  },
+  {
+   "type": "answer",
+   "t": 7000,
+   "item": "out_q",
+   "value": "no",
+   "seq": 6,
+   "rev": 6
+  },
+  {
+   "type": "next",
+   "t": 8000,
+   "from": "p_out_page",
+   "seq": 7,
+   "rev": 7,
+   "result": {
+    "outcome": "ended",
+    "to": null,
+    "effect": {
+     "kind": "end",
+     "outcome": "complete",
+     "nodeId": "end_complete"
+    }
+   }
+  }
+ ]
+}

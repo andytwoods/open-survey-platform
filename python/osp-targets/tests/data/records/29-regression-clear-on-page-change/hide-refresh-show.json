@@ -1,0 +1,201 @@
+{
+ "format": "osp-response/1",
+ "surveyId": "f29_clear_on_page_change",
+ "surveyVersion": 1,
+ "planVersion": "osp-runtime-plan/1",
+ "planChecksum": "sha256:b8ebf2aa3e9129af3e6963fd0833aa7f282ac8d4b4a0868781a4aee8e6109a37",
+ "engineVersion": "1",
+ "sessionSeed": 2901,
+ "sessionId": null,
+ "language": "en",
+ "device": null,
+ "end": "complete",
+ "endNode": null,
+ "allocation": "server",
+ "assigned": {},
+ "conditions": {},
+ "conditionSources": {},
+ "orders": {
+  "blocks": {},
+  "items": {},
+  "choices": {}
+ },
+ "answers": {
+  "smoker": {
+   "state": "answered",
+   "value": "yes"
+  },
+  "per_day": {
+   "state": "answered",
+   "value": 15
+  },
+  "quit": {
+   "state": "unanswered",
+   "value": null
+  },
+  "other": {
+   "state": "unanswered",
+   "value": null
+  }
+ },
+ "csvState": {
+  "smoker__state": "answered",
+  "per_day__state": "answered",
+  "quit__state": "unanswered",
+  "other__state": "unanswered"
+ },
+ "embedded": {},
+ "computed": {},
+ "quotas": {},
+ "effects": [],
+ "urlParams": {},
+ "startedAt": 2000,
+ "endedAt": 16000,
+ "revision": 15,
+ "events": [
+  {
+   "type": "start",
+   "seq": 1,
+   "rev": 1,
+   "t": 2000,
+   "sessionSeed": 2901,
+   "assigned": {},
+   "language": "en",
+   "device": null,
+   "urlParams": {},
+   "sessionId": null
+  },
+  {
+   "type": "answer",
+   "t": 3000,
+   "item": "smoker",
+   "value": "yes",
+   "seq": 2,
+   "rev": 2
+  },
+  {
+   "type": "answer",
+   "t": 4000,
+   "item": "per_day",
+   "value": 20,
+   "seq": 3,
+   "rev": 3
+  },
+  {
+   "type": "next",
+   "t": 5000,
+   "from": "p1_page",
+   "seq": 4,
+   "rev": 4,
+   "result": {
+    "outcome": "advanced",
+    "to": "p2_page"
+   }
+  },
+  {
+   "type": "answer",
+   "t": 6000,
+   "item": "quit",
+   "value": "maybe",
+   "seq": 5,
+   "rev": 5
+  },
+  {
+   "type": "back",
+   "t": 7000,
+   "from": "p2_page",
+   "seq": 6,
+   "rev": 6,
+   "to": "p1_page"
+  },
+  {
+   "type": "answer",
+   "t": 8000,
+   "item": "smoker",
+   "value": "no",
+   "seq": 7,
+   "rev": 7
+  },
+  {
+   "type": "next",
+   "t": 9000,
+   "from": "p1_page",
+   "seq": 8,
+   "rev": 8,
+   "result": {
+    "outcome": "advanced",
+    "to": "p2_page"
+   }
+  },
+  {
+   "type": "back",
+   "t": 10000,
+   "from": "p2_page",
+   "seq": 9,
+   "rev": 9,
+   "to": "p1_page"
+  },
+  {
+   "type": "answer",
+   "t": 11000,
+   "item": "smoker",
+   "value": "yes",
+   "seq": 10,
+   "rev": 10
+  },
+  {
+   "type": "next",
+   "t": 12000,
+   "from": "p1_page",
+   "seq": 11,
+   "rev": 11,
+   "result": {
+    "outcome": "advanced",
+    "to": "p2_page"
+   }
+  },
+  {
+   "type": "back",
+   "t": 13000,
+   "from": "p2_page",
+   "seq": 12,
+   "rev": 12,
+   "to": "p1_page"
+  },
+  {
+   "type": "answer",
+   "t": 14000,
+   "item": "per_day",
+   "value": 15,
+   "seq": 13,
+   "rev": 13
+  },
+  {
+   "type": "next",
+   "t": 15000,
+   "from": "p1_page",
+   "seq": 14,
+   "rev": 14,
+   "result": {
+    "outcome": "advanced",
+    "to": "p2_page"
+   }
+  },
+  {
+   "type": "next",
+   "t": 16000,
+   "from": "p2_page",
+   "seq": 15,
+   "rev": 15,
+   "result": {
+    "outcome": "ended",
+    "to": null,
+    "effect": {
+     "kind": "end",
+     "outcome": "complete",
+     "nodeId": null
+    }
+   }
+  }
+ ]
+}

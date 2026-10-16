@@ -1,0 +1,166 @@
+{
+ "format": "osp-response/1",
+ "surveyId": "f02_required",
+ "surveyVersion": 1,
+ "planVersion": "osp-runtime-plan/1",
+ "planChecksum": "sha256:64e153382715133c0f9347642dd9b372f5c92b094c6c1b7d2631b64a43442af6",
+ "engineVersion": "1",
+ "sessionSeed": 202,
+ "sessionId": null,
+ "language": "en",
+ "device": null,
+ "end": "complete",
+ "endNode": null,
+ "allocation": "server",
+ "assigned": {},
+ "conditions": {},
+ "conditionSources": {},
+ "orders": {
+  "blocks": {},
+  "items": {},
+  "choices": {}
+ },
+ "answers": {
+  "r_int": {
+   "state": "answered",
+   "value": 12
+  },
+  "r_single": {
+   "state": "answered",
+   "value": "no"
+  },
+  "opt_text": {
+   "state": "unanswered",
+   "value": null
+  },
+  "r_multi": {
+   "state": "answered",
+   "value": [
+    "red"
+   ]
+  },
+  "r_follow": {
+   "state": "answered",
+   "value": 5
+  },
+  "r_date": {
+   "state": "answered",
+   "value": "2026-08-02"
+  }
+ },
+ "csvState": {
+  "r_int__state": "answered",
+  "r_single__state": "answered",
+  "opt_text__state": "unanswered",
+  "r_multi__state": "answered",
+  "r_follow__state": "answered",
+  "r_date__state": "answered"
+ },
+ "embedded": {},
+ "computed": {},
+ "quotas": {},
+ "effects": [],
+ "urlParams": {},
+ "startedAt": 2000,
+ "endedAt": 10000,
+ "revision": 9,
+ "events": [
+  {
+   "type": "start",
+   "seq": 1,
+   "rev": 1,
+   "t": 2000,
+   "sessionSeed": 202,
+   "assigned": {},
+   "language": "en",
+   "device": null,
+   "urlParams": {},
+   "sessionId": null
+  },
+  {
+   "type": "answer",
+   "t": 3000,
+   "item": "r_int",
+   "value": 12,
+   "seq": 2,
+   "rev": 2
+  },
+  {
+   "type": "answer",
+   "t": 4000,
+   "item": "r_single",
+   "value": "no",
+   "seq": 3,
+   "rev": 3
+  },
+  {
+   "type": "next",
+   "t": 5000,
+   "from": "p1_page",
+   "seq": 4,
+   "rev": 4,
+   "result": {
+    "outcome": "advanced",
+    "to": "p2_page"
+   }
+  },
+  {
+   "type": "answer",
+   "t": 6000,
+   "item": "r_multi",
+   "value": [
+    "red"
+   ],
+   "seq": 5,
+   "rev": 5
+  },
+  {
+   "type": "answer",
+   "t": 7000,
+   "item": "r_date",
+   "value": "2026-08-02",
+   "seq": 6,
+   "rev": 6
+  },
+  {
+   "type": "next",
+   "t": 8000,
+   "from": "p2_page",
+   "seq": 7,
+   "rev": 7,
+   "result": {
+    "outcome": "invalid",
+    "to": "p2_page",
+    "errors": {
+     "r_follow": {
+      "kind": "required"
+     }
+    }
+   }
+  },
+  {
+   "type": "answer",
+   "t": 9000,
+   "item": "r_follow",
+   "value": 5,
+   "seq": 8,
+   "rev": 8
+  },
+  {
+   "type": "next",
+   "t": 10000,
+   "from": "p2_page",
+   "seq": 9,
+   "rev": 9,
+   "result": {
+    "outcome": "ended",
+    "to": null,
+    "effect": {
+     "kind": "end",
+     "outcome": "complete",
+     "nodeId": null
+    }
+   }
+  }
+ ]
+}

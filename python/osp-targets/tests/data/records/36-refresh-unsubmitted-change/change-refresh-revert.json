@@ -1,0 +1,188 @@
+{
+ "format": "osp-response/1",
+ "surveyId": "f36_refresh_unsubmitted",
+ "surveyVersion": 1,
+ "planVersion": "osp-runtime-plan/1",
+ "planChecksum": "sha256:7c31524f14b67727022bb6e2a7fd983e1bf9d287fcb946b8e565025d69598b7c",
+ "engineVersion": "1",
+ "sessionSeed": 3601,
+ "sessionId": null,
+ "language": "en",
+ "device": null,
+ "end": "complete",
+ "endNode": null,
+ "allocation": "server",
+ "assigned": {},
+ "conditions": {},
+ "conditionSources": {},
+ "orders": {
+  "blocks": {},
+  "items": {},
+  "choices": {}
+ },
+ "answers": {
+  "drinks": {
+   "state": "answered",
+   "value": "no"
+  },
+  "drink_kind": {
+   "state": "irrelevant",
+   "value": null
+  },
+  "comment": {
+   "state": "unanswered",
+   "value": null
+  }
+ },
+ "csvState": {
+  "drinks__state": "answered",
+  "drink_kind__state": "irrelevant",
+  "comment__state": "unanswered"
+ },
+ "embedded": {},
+ "computed": {},
+ "quotas": {},
+ "effects": [],
+ "urlParams": {},
+ "startedAt": 2000,
+ "endedAt": 15000,
+ "revision": 14,
+ "events": [
+  {
+   "type": "start",
+   "seq": 1,
+   "rev": 1,
+   "t": 2000,
+   "sessionSeed": 3601,
+   "assigned": {},
+   "language": "en",
+   "device": null,
+   "urlParams": {},
+   "sessionId": null
+  },
+  {
+   "type": "answer",
+   "t": 3000,
+   "item": "drinks",
+   "value": "yes",
+   "seq": 2,
+   "rev": 2
+  },
+  {
+   "type": "next",
+   "t": 4000,
+   "from": "p1_page",
+   "seq": 3,
+   "rev": 3,
+   "result": {
+    "outcome": "advanced",
+    "to": "p2_page"
+   }
+  },
+  {
+   "type": "answer",
+   "t": 5000,
+   "item": "drink_kind",
+   "value": "tea",
+   "seq": 4,
+   "rev": 4
+  },
+  {
+   "type": "next",
+   "t": 6000,
+   "from": "p2_page",
+   "seq": 5,
+   "rev": 5,
+   "result": {
+    "outcome": "advanced",
+    "to": "p3_page"
+   }
+  },
+  {
+   "type": "back",
+   "t": 7000,
+   "from": "p3_page",
+   "seq": 6,
+   "rev": 6,
+   "to": "p2_page"
+  },
+  {
+   "type": "back",
+   "t": 8000,
+   "from": "p2_page",
+   "seq": 7,
+   "rev": 7,
+   "to": "p1_page"
+  },
+  {
+   "type": "answer",
+   "t": 9000,
+   "item": "drinks",
+   "value": "no",
+   "seq": 8,
+   "rev": 8
+  },
+  {
+   "type": "answer",
+   "t": 10000,
+   "item": "drinks",
+   "value": "yes",
+   "seq": 9,
+   "rev": 9
+  },
+  {
+   "type": "next",
+   "t": 11000,
+   "from": "p1_page",
+   "seq": 10,
+   "rev": 10,
+   "result": {
+    "outcome": "advanced",
+    "to": "p2_page"
+   }
+  },
+  {
+   "type": "back",
+   "t": 12000,
+   "from": "p2_page",
+   "seq": 11,
+   "rev": 11,
+   "to": "p1_page"
+  },
+  {
+   "type": "answer",
+   "t": 13000,
+   "item": "drinks",
+   "value": "no",
+   "seq": 12,
+   "rev": 12
+  },
+  {
+   "type": "next",
+   "t": 14000,
+   "from": "p1_page",
+   "seq": 13,
+   "rev": 13,
+   "result": {
+    "outcome": "advanced",
+    "to": "p3_page"
+   }
+  },
+  {
+   "type": "next",
+   "t": 15000,
+   "from": "p3_page",
+   "seq": 14,
+   "rev": 14,
+   "result": {
+    "outcome": "ended",
+    "to": null,
+    "effect": {
+     "kind": "end",
+     "outcome": "complete",
+     "nodeId": null
+    }
+   }
+  }
+ ]
+}

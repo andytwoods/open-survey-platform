@@ -1,0 +1,312 @@
+{
+  "format": "osp-codebook/1",
+  "survey": {
+    "id": "f15_choice_order_shuffle",
+    "title": {
+      "en": "Shuffled choice order"
+    },
+    "version": 1,
+    "checksum": "sha256:test-15-choice-order-shuffle",
+    "languages": [
+      "en"
+    ],
+    "defaultLanguage": "en"
+  },
+  "csv": {
+    "stateColumns": true,
+    "multi": "columns",
+    "bom": false,
+    "escapeFormulas": true,
+    "columns": [
+      "_response_id",
+      "_session_id",
+      "_version",
+      "_version_checksum",
+      "_plan_checksum",
+      "_engine_version",
+      "_allocation_mode",
+      "_save_mode",
+      "_seed",
+      "_started_at",
+      "_submitted_at",
+      "_late",
+      "_end",
+      "_language",
+      "fav_colour",
+      "fav_colour__state",
+      "fruits_apple",
+      "fruits_kiwi",
+      "fruits_mango",
+      "fruits_pear",
+      "fruits_plum",
+      "fruits__state",
+      "plain",
+      "plain__state",
+      "_order.choices.fav_colour",
+      "_order.choices.fruits"
+    ]
+  },
+  "missingValues": {
+    "states": [
+      {
+        "state": "answered",
+        "meaning": "Shown and answered.",
+        "csv": "the value",
+        "json": "the value"
+      },
+      {
+        "state": "unanswered",
+        "meaning": "Shown, left empty (only possible when not required).",
+        "csv": "empty",
+        "json": "null"
+      },
+      {
+        "state": "irrelevant",
+        "meaning": "Its page was reached, but its show-if hid it.",
+        "csv": "empty",
+        "json": "null"
+      },
+      {
+        "state": "not-reached",
+        "meaning": "The flow never got to its page.",
+        "csv": "empty",
+        "json": "null"
+      }
+    ],
+    "csv": "Empty value cell plus the <var>__state column. No numeric missing codes (such as -99) are ever written.",
+    "json": "value null plus state per answer."
+  },
+  "saveMode": {
+    "mode": "every-page",
+    "implications": "Answers were saved to the server on every page change. Partial sessions exist on the server, so drop-outs are visible to the researcher, but this export holds only submitted responses."
+  },
+  "metaColumns": [
+    {
+      "column": "_response_id",
+      "meaning": "Response id (server)."
+    },
+    {
+      "column": "_session_id",
+      "meaning": "Participant session id (pseudonymous)."
+    },
+    {
+      "column": "_version",
+      "meaning": "Published survey version the response belongs to (semantics §9)."
+    },
+    {
+      "column": "_version_checksum",
+      "meaning": "Checksum of that version's survey document."
+    },
+    {
+      "column": "_plan_checksum",
+      "meaning": "Checksum of the runtime plan the participant's browser ran."
+    },
+    {
+      "column": "_engine_version",
+      "meaning": "Version of the participant engine (web/engine)."
+    },
+    {
+      "column": "_allocation_mode",
+      "meaning": "How conditions were assigned: server (our server, at session start), seeded (the engine drew at least one condition from the session seed), or limesurvey-native."
+    },
+    {
+      "column": "_save_mode",
+      "meaning": "every-page or end-only (runtime-design §5.0)."
+    },
+    {
+      "column": "_seed",
+      "meaning": "Session seed (positive integer, semantics §7); reproduces every order."
+    },
+    {
+      "column": "_started_at",
+      "meaning": "Session start, UTC, ISO 8601."
+    },
+    {
+      "column": "_submitted_at",
+      "meaning": "Submission accepted by the server, UTC, ISO 8601."
+    },
+    {
+      "column": "_late",
+      "meaning": "true if the response was submitted after the survey was closed (provisional, semantics open question M2-1)."
+    },
+    {
+      "column": "_end",
+      "meaning": "End outcome reached (e.g. complete); empty if none was recorded."
+    },
+    {
+      "column": "_language",
+      "meaning": "Language the participant used."
+    }
+  ],
+  "conditions": [],
+  "randomisers": [],
+  "orders": [
+    {
+      "column": "_order.choices.fav_colour",
+      "kind": "choices",
+      "node": "fav_colour",
+      "of": [
+        "red",
+        "green",
+        "blue",
+        "yellow",
+        "purple"
+      ]
+    },
+    {
+      "column": "_order.choices.fruits",
+      "kind": "choices",
+      "node": "fruits",
+      "of": [
+        "apple",
+        "kiwi",
+        "mango",
+        "pear",
+        "plum"
+      ]
+    }
+  ],
+  "variables": [
+    {
+      "name": "fav_colour",
+      "id": "fav_colour",
+      "type": "single",
+      "label": {
+        "en": "Pick a colour."
+      },
+      "block": "p1",
+      "page": "p1_page",
+      "required": false,
+      "choices": [
+        {
+          "code": "red",
+          "label": {
+            "en": "Red"
+          }
+        },
+        {
+          "code": "green",
+          "label": {
+            "en": "Green"
+          }
+        },
+        {
+          "code": "blue",
+          "label": {
+            "en": "Blue"
+          }
+        },
+        {
+          "code": "yellow",
+          "label": {
+            "en": "Yellow"
+          }
+        },
+        {
+          "code": "purple",
+          "label": {
+            "en": "Purple"
+          }
+        }
+      ],
+      "choiceOrder": "shuffle",
+      "csvColumns": [
+        "fav_colour",
+        "fav_colour__state"
+      ],
+      "missing": "Answered: the value. Unanswered, irrelevant, not-reached: empty; fav_colour__state says which state applies."
+    },
+    {
+      "name": "fruits",
+      "id": "fruits",
+      "type": "multi",
+      "label": {
+        "en": "Which fruits do you eat?"
+      },
+      "block": "p1",
+      "page": "p1_page",
+      "required": false,
+      "choices": [
+        {
+          "code": "apple",
+          "label": {
+            "en": "Apple"
+          },
+          "column": "fruits_apple"
+        },
+        {
+          "code": "kiwi",
+          "label": {
+            "en": "Kiwi"
+          },
+          "column": "fruits_kiwi"
+        },
+        {
+          "code": "mango",
+          "label": {
+            "en": "Mango"
+          },
+          "column": "fruits_mango"
+        },
+        {
+          "code": "pear",
+          "label": {
+            "en": "Pear"
+          },
+          "column": "fruits_pear"
+        },
+        {
+          "code": "plum",
+          "label": {
+            "en": "Plum"
+          },
+          "column": "fruits_plum"
+        }
+      ],
+      "choiceOrder": "shuffle",
+      "csvColumns": [
+        "fruits_apple",
+        "fruits_kiwi",
+        "fruits_mango",
+        "fruits_pear",
+        "fruits_plum",
+        "fruits__state"
+      ],
+      "missing": "Answered: 1 in each chosen choice's column, 0 in the others. Unanswered, irrelevant, not-reached: every choice column empty; fruits__state says which state applies."
+    },
+    {
+      "name": "plain",
+      "id": "plain",
+      "type": "single",
+      "label": {
+        "en": "Is the sky blue today?"
+      },
+      "block": "p1",
+      "page": "p1_page",
+      "required": false,
+      "choices": [
+        {
+          "code": "yes",
+          "label": {
+            "en": "Yes"
+          }
+        },
+        {
+          "code": "no",
+          "label": {
+            "en": "No"
+          }
+        }
+      ],
+      "choiceOrder": "fixed",
+      "csvColumns": [
+        "plain",
+        "plain__state"
+      ],
+      "missing": "Answered: the value. Unanswered, irrelevant, not-reached: empty; plain__state says which state applies."
+    }
+  ],
+  "otherVariables": [],
+  "quotas": [],
+  "hooks": []
+}

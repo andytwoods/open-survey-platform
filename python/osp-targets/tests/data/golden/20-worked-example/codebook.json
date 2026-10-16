@@ -1,0 +1,411 @@
+{
+  "format": "osp-codebook/1",
+  "survey": {
+    "id": "srv_7f3c",
+    "title": {
+      "en": "Framing and incentive study",
+      "de": "Framing and incentive study"
+    },
+    "version": 3,
+    "checksum": "sha256:test-20-worked-example",
+    "languages": [
+      "en",
+      "de"
+    ],
+    "defaultLanguage": "en"
+  },
+  "csv": {
+    "stateColumns": true,
+    "multi": "columns",
+    "bom": false,
+    "escapeFormulas": true,
+    "columns": [
+      "_response_id",
+      "_session_id",
+      "_version",
+      "_version_checksum",
+      "_plan_checksum",
+      "_engine_version",
+      "_allocation_mode",
+      "_save_mode",
+      "_seed",
+      "_started_at",
+      "_submitted_at",
+      "_late",
+      "_end",
+      "_language",
+      "framing",
+      "incentive",
+      "consent",
+      "consent__state",
+      "age",
+      "age__state",
+      "att1",
+      "att1__state",
+      "att2",
+      "att2__state",
+      "att3",
+      "att3__state",
+      "source",
+      "_order.items.attitudes_page"
+    ]
+  },
+  "missingValues": {
+    "states": [
+      {
+        "state": "answered",
+        "meaning": "Shown and answered.",
+        "csv": "the value",
+        "json": "the value"
+      },
+      {
+        "state": "unanswered",
+        "meaning": "Shown, left empty (only possible when not required).",
+        "csv": "empty",
+        "json": "null"
+      },
+      {
+        "state": "irrelevant",
+        "meaning": "Its page was reached, but its show-if hid it.",
+        "csv": "empty",
+        "json": "null"
+      },
+      {
+        "state": "not-reached",
+        "meaning": "The flow never got to its page.",
+        "csv": "empty",
+        "json": "null"
+      }
+    ],
+    "csv": "Empty value cell plus the <var>__state column. No numeric missing codes (such as -99) are ever written.",
+    "json": "value null plus state per answer."
+  },
+  "saveMode": {
+    "mode": "every-page",
+    "implications": "Answers were saved to the server on every page change. Partial sessions exist on the server, so drop-outs are visible to the researcher, but this export holds only submitted responses."
+  },
+  "metaColumns": [
+    {
+      "column": "_response_id",
+      "meaning": "Response id (server)."
+    },
+    {
+      "column": "_session_id",
+      "meaning": "Participant session id (pseudonymous)."
+    },
+    {
+      "column": "_version",
+      "meaning": "Published survey version the response belongs to (semantics §9)."
+    },
+    {
+      "column": "_version_checksum",
+      "meaning": "Checksum of that version's survey document."
+    },
+    {
+      "column": "_plan_checksum",
+      "meaning": "Checksum of the runtime plan the participant's browser ran."
+    },
+    {
+      "column": "_engine_version",
+      "meaning": "Version of the participant engine (web/engine)."
+    },
+    {
+      "column": "_allocation_mode",
+      "meaning": "How conditions were assigned: server (our server, at session start), seeded (the engine drew at least one condition from the session seed), or limesurvey-native."
+    },
+    {
+      "column": "_save_mode",
+      "meaning": "every-page or end-only (runtime-design §5.0)."
+    },
+    {
+      "column": "_seed",
+      "meaning": "Session seed (positive integer, semantics §7); reproduces every order."
+    },
+    {
+      "column": "_started_at",
+      "meaning": "Session start, UTC, ISO 8601."
+    },
+    {
+      "column": "_submitted_at",
+      "meaning": "Submission accepted by the server, UTC, ISO 8601."
+    },
+    {
+      "column": "_late",
+      "meaning": "true if the response was submitted after the survey was closed (provisional, semantics open question M2-1)."
+    },
+    {
+      "column": "_end",
+      "meaning": "End outcome reached (e.g. complete); empty if none was recorded."
+    },
+    {
+      "column": "_language",
+      "meaning": "Language the participant used."
+    }
+  ],
+  "conditions": [
+    {
+      "name": "framing",
+      "id": "framing",
+      "levels": [
+        "gain",
+        "loss"
+      ]
+    },
+    {
+      "name": "incentive",
+      "id": "incentive",
+      "levels": [
+        "£5 voucher",
+        "charity donation"
+      ]
+    }
+  ],
+  "randomisers": [],
+  "orders": [
+    {
+      "column": "_order.items.attitudes_page",
+      "kind": "items",
+      "node": "attitudes_page",
+      "of": [
+        "att1",
+        "att2",
+        "att3"
+      ]
+    }
+  ],
+  "variables": [
+    {
+      "name": "consent",
+      "id": "consent",
+      "type": "single",
+      "label": {
+        "en": "Do you consent to take part?",
+        "de": "Do you consent to take part?"
+      },
+      "block": "consent_blk",
+      "page": "consent_blk_page",
+      "required": true,
+      "choices": [
+        {
+          "code": 1,
+          "label": {
+            "en": "Yes",
+            "de": "Ja"
+          }
+        },
+        {
+          "code": 0,
+          "label": {
+            "en": "No",
+            "de": "Nein"
+          }
+        }
+      ],
+      "choiceOrder": "fixed",
+      "csvColumns": [
+        "consent",
+        "consent__state"
+      ],
+      "missing": "Answered: the value. Unanswered, irrelevant, not-reached: empty; consent__state says which state applies."
+    },
+    {
+      "name": "age",
+      "id": "age",
+      "type": "integer",
+      "label": {
+        "en": "How old are you?",
+        "de": "How old are you?"
+      },
+      "block": "demo",
+      "page": "demo_page",
+      "required": true,
+      "constraint": "age >= 18 and age <= 120",
+      "constraintMessage": {
+        "en": "Please enter an age between 18 and 120.",
+        "de": "Please enter an age between 18 and 120."
+      },
+      "csvColumns": [
+        "age",
+        "age__state"
+      ],
+      "missing": "Answered: the value. Unanswered, irrelevant, not-reached: empty; age__state says which state applies."
+    },
+    {
+      "name": "att1",
+      "id": "att1",
+      "type": "single",
+      "label": {
+        "en": "With the ${incentive} you were offered, the programme seems fair.",
+        "de": "With the ${incentive} you were offered, the programme seems fair."
+      },
+      "block": "attitudes",
+      "page": "attitudes_page",
+      "required": false,
+      "choices": [
+        {
+          "code": 1,
+          "label": {
+            "en": "Strongly disagree",
+            "de": "Strongly disagree"
+          }
+        },
+        {
+          "code": 2,
+          "label": {
+            "en": "Disagree",
+            "de": "Disagree"
+          }
+        },
+        {
+          "code": 3,
+          "label": {
+            "en": "Neutral",
+            "de": "Neutral"
+          }
+        },
+        {
+          "code": 4,
+          "label": {
+            "en": "Agree",
+            "de": "Agree"
+          }
+        },
+        {
+          "code": 5,
+          "label": {
+            "en": "Strongly agree",
+            "de": "Strongly agree"
+          }
+        }
+      ],
+      "choiceOrder": "fixed",
+      "csvColumns": [
+        "att1",
+        "att1__state"
+      ],
+      "missing": "Answered: the value. Unanswered, irrelevant, not-reached: empty; att1__state says which state applies."
+    },
+    {
+      "name": "att2",
+      "id": "att2",
+      "type": "single",
+      "label": {
+        "en": "I would support Programme A.",
+        "de": "I would support Programme A."
+      },
+      "block": "attitudes",
+      "page": "attitudes_page",
+      "required": false,
+      "choices": [
+        {
+          "code": 1,
+          "label": {
+            "en": "Strongly disagree",
+            "de": "Strongly disagree"
+          }
+        },
+        {
+          "code": 2,
+          "label": {
+            "en": "Disagree",
+            "de": "Disagree"
+          }
+        },
+        {
+          "code": 3,
+          "label": {
+            "en": "Neutral",
+            "de": "Neutral"
+          }
+        },
+        {
+          "code": 4,
+          "label": {
+            "en": "Agree",
+            "de": "Agree"
+          }
+        },
+        {
+          "code": 5,
+          "label": {
+            "en": "Strongly agree",
+            "de": "Strongly agree"
+          }
+        }
+      ],
+      "choiceOrder": "fixed",
+      "csvColumns": [
+        "att2",
+        "att2__state"
+      ],
+      "missing": "Answered: the value. Unanswered, irrelevant, not-reached: empty; att2__state says which state applies."
+    },
+    {
+      "name": "att3",
+      "id": "att3",
+      "type": "single",
+      "label": {
+        "en": "Programme A is too risky.",
+        "de": "Programme A is too risky."
+      },
+      "block": "attitudes",
+      "page": "attitudes_page",
+      "required": false,
+      "choices": [
+        {
+          "code": 1,
+          "label": {
+            "en": "Strongly disagree",
+            "de": "Strongly disagree"
+          }
+        },
+        {
+          "code": 2,
+          "label": {
+            "en": "Disagree",
+            "de": "Disagree"
+          }
+        },
+        {
+          "code": 3,
+          "label": {
+            "en": "Neutral",
+            "de": "Neutral"
+          }
+        },
+        {
+          "code": 4,
+          "label": {
+            "en": "Agree",
+            "de": "Agree"
+          }
+        },
+        {
+          "code": 5,
+          "label": {
+            "en": "Strongly agree",
+            "de": "Strongly agree"
+          }
+        }
+      ],
+      "choiceOrder": "fixed",
+      "csvColumns": [
+        "att3",
+        "att3__state"
+      ],
+      "missing": "Answered: the value. Unanswered, irrelevant, not-reached: empty; att3__state says which state applies."
+    }
+  ],
+  "otherVariables": [
+    {
+      "name": "source",
+      "id": "source",
+      "kind": "embedded",
+      "valueType": "text",
+      "urlParam": "src",
+      "default": "direct"
+    }
+  ],
+  "quotas": [],
+  "hooks": []
+}

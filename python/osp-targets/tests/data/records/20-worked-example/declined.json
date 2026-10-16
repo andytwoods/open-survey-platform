@@ -1,0 +1,112 @@
+{
+ "format": "osp-response/1",
+ "surveyId": "srv_7f3c",
+ "surveyVersion": 3,
+ "planVersion": "osp-runtime-plan/1",
+ "planChecksum": "sha256:340014c7861d7df4c2920c876d9465181fdb23507d8b6d85222f367aa720c1fe",
+ "engineVersion": "1",
+ "sessionSeed": 101,
+ "sessionId": null,
+ "language": "en",
+ "device": null,
+ "end": "declined",
+ "endNode": "end_declined",
+ "allocation": "server",
+ "assigned": {
+  "framing": "gain",
+  "incentive": "£5 voucher"
+ },
+ "conditions": {
+  "framing": "gain",
+  "incentive": "£5 voucher"
+ },
+ "conditionSources": {
+  "framing": "server",
+  "incentive": "server"
+ },
+ "orders": {
+  "blocks": {},
+  "items": {},
+  "choices": {}
+ },
+ "answers": {
+  "consent": {
+   "state": "answered",
+   "value": 0
+  },
+  "age": {
+   "state": "not-reached",
+   "value": null
+  },
+  "att1": {
+   "state": "not-reached",
+   "value": null
+  },
+  "att2": {
+   "state": "not-reached",
+   "value": null
+  },
+  "att3": {
+   "state": "not-reached",
+   "value": null
+  }
+ },
+ "csvState": {
+  "consent__state": "answered",
+  "age__state": "not-reached",
+  "att1__state": "not-reached",
+  "att2__state": "not-reached",
+  "att3__state": "not-reached"
+ },
+ "embedded": {
+  "source": "direct"
+ },
+ "computed": {},
+ "quotas": {},
+ "effects": [],
+ "urlParams": {},
+ "startedAt": 2000,
+ "endedAt": 4000,
+ "revision": 3,
+ "events": [
+  {
+   "type": "start",
+   "seq": 1,
+   "rev": 1,
+   "t": 2000,
+   "sessionSeed": 101,
+   "assigned": {
+    "framing": "gain",
+    "incentive": "£5 voucher"
+   },
+   "language": "en",
+   "device": null,
+   "urlParams": {},
+   "sessionId": null
+  },
+  {
+   "type": "answer",
+   "t": 3000,
+   "item": "consent",
+   "value": 0,
+   "seq": 2,
+   "rev": 2
+  },
+  {
+   "type": "next",
+   "t": 4000,
+   "from": "consent_blk_page",
+   "seq": 3,
+   "rev": 3,
+   "result": {
+    "outcome": "ended",
+    "to": null,
+    "effect": {
+     "kind": "end",
+     "outcome": "declined",
+     "nodeId": "end_declined"
+    }
+   }
+  }
+ ]
+}

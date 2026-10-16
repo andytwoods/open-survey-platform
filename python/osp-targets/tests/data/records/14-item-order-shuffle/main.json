@@ -1,0 +1,191 @@
+{
+ "format": "osp-response/1",
+ "surveyId": "f14_item_order_shuffle",
+ "surveyVersion": 1,
+ "planVersion": "osp-runtime-plan/1",
+ "planChecksum": "sha256:c3f14db90d8338ea267804afdfc1d5d0c3d75e2bf8b8f53a3000598f54fd92d1",
+ "engineVersion": "1",
+ "sessionSeed": 31,
+ "sessionId": null,
+ "language": "en",
+ "device": null,
+ "end": "complete",
+ "endNode": null,
+ "allocation": "server",
+ "assigned": {},
+ "conditions": {},
+ "conditionSources": {},
+ "orders": {
+  "blocks": {},
+  "items": {
+   "p_att_page": [
+    "att2",
+    "att3",
+    "att1",
+    "att4"
+   ]
+  },
+  "choices": {}
+ },
+ "answers": {
+  "pre_q": {
+   "state": "answered",
+   "value": "yes"
+  },
+  "att1": {
+   "state": "answered",
+   "value": 4
+  },
+  "att2": {
+   "state": "answered",
+   "value": 5
+  },
+  "att3": {
+   "state": "answered",
+   "value": 2
+  },
+  "att4": {
+   "state": "answered",
+   "value": 3
+  },
+  "post_q": {
+   "state": "answered",
+   "value": "ok"
+  }
+ },
+ "csvState": {
+  "pre_q__state": "answered",
+  "att1__state": "answered",
+  "att2__state": "answered",
+  "att3__state": "answered",
+  "att4__state": "answered",
+  "post_q__state": "answered"
+ },
+ "embedded": {},
+ "computed": {},
+ "quotas": {},
+ "effects": [],
+ "urlParams": {},
+ "startedAt": 2000,
+ "endedAt": 13000,
+ "revision": 12,
+ "events": [
+  {
+   "type": "start",
+   "seq": 1,
+   "rev": 1,
+   "t": 2000,
+   "sessionSeed": 31,
+   "assigned": {},
+   "language": "en",
+   "device": null,
+   "urlParams": {},
+   "sessionId": null
+  },
+  {
+   "type": "answer",
+   "t": 3000,
+   "item": "pre_q",
+   "value": "yes",
+   "seq": 2,
+   "rev": 2
+  },
+  {
+   "type": "next",
+   "t": 4000,
+   "from": "p_pre_page",
+   "seq": 3,
+   "rev": 3,
+   "result": {
+    "outcome": "advanced",
+    "to": "p_att_page"
+   }
+  },
+  {
+   "type": "answer",
+   "t": 5000,
+   "item": "att1",
+   "value": 4,
+   "seq": 4,
+   "rev": 4
+  },
+  {
+   "type": "answer",
+   "t": 6000,
+   "item": "att2",
+   "value": 5,
+   "seq": 5,
+   "rev": 5
+  },
+  {
+   "type": "answer",
+   "t": 7000,
+   "item": "att3",
+   "value": 2,
+   "seq": 6,
+   "rev": 6
+  },
+  {
+   "type": "answer",
+   "t": 8000,
+   "item": "att4",
+   "value": 3,
+   "seq": 7,
+   "rev": 7
+  },
+  {
+   "type": "next",
+   "t": 9000,
+   "from": "p_att_page",
+   "seq": 8,
+   "rev": 8,
+   "result": {
+    "outcome": "advanced",
+    "to": "p_post_page"
+   }
+  },
+  {
+   "type": "back",
+   "t": 10000,
+   "from": "p_post_page",
+   "seq": 9,
+   "rev": 9,
+   "to": "p_att_page"
+  },
+  {
+   "type": "next",
+   "t": 11000,
+   "from": "p_att_page",
+   "seq": 10,
+   "rev": 10,
+   "result": {
+    "outcome": "advanced",
+    "to": "p_post_page"
+   }
+  },
+  {
+   "type": "answer",
+   "t": 12000,
+   "item": "post_q",
+   "value": "ok",
+   "seq": 11,
+   "rev": 11
+  },
+  {
+   "type": "next",
+   "t": 13000,
+   "from": "p_post_page",
+   "seq": 12,
+   "rev": 12,
+   "result": {
+    "outcome": "ended",
+    "to": null,
+    "effect": {
+     "kind": "end",
+     "outcome": "complete",
+     "nodeId": null
+    }
+   }
+  }
+ ]
+}
