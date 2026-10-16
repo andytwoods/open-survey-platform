@@ -3,7 +3,7 @@
  "surveyId": "f24_quota_retry",
  "surveyVersion": 1,
  "planVersion": "osp-runtime-plan/1",
- "planChecksum": "sha256:693ac15713009ea6c4869f63e0e554351c7e22d33a80002cc6ed539bf79e17d1",
+ "planChecksum": "sha256:1d4daee1febb34db583286061684e69e72991c812248293c2ee6eb282e18ff94",
  "engineVersion": "1",
  "sessionSeed": 2402,
  "sessionId": null,
@@ -41,9 +41,11 @@
  },
  "embedded": {},
  "computed": {},
+ "variableStates": {},
  "quotas": {
   "qc_north": "full"
  },
+ "diagnostics": [],
  "effects": [
   {
    "kind": "quota",

@@ -3,7 +3,7 @@
  "surveyId": "srv_7f3c",
  "surveyVersion": 3,
  "planVersion": "osp-runtime-plan/1",
- "planChecksum": "sha256:340014c7861d7df4c2920c876d9465181fdb23507d8b6d85222f367aa720c1fe",
+ "planChecksum": "sha256:394de5b57ae3a26652a8730279e6b1bdcca83ac4c7edf81c86a2734a361e83a3",
  "engineVersion": "1",
  "sessionSeed": 303,
  "sessionId": null,
@@ -62,18 +62,39 @@
   "age__state": "answered",
   "att1__state": "answered",
   "att2__state": "answered",
-  "att3__state": "answered"
+  "att3__state": "answered",
+  "source__state": "answered",
+  "age_band__state": "answered",
+  "att_score__state": "answered"
  },
  "embedded": {
   "source": "direct"
  },
- "computed": {},
- "quotas": {},
- "effects": [],
+ "computed": {
+  "age_band": "40+",
+  "att_score": "2"
+ },
+ "variableStates": {
+  "source": "answered",
+  "age_band": "answered",
+  "att_score": "answered"
+ },
+ "quotas": {
+  "qc_old": "open"
+ },
+ "diagnostics": [],
+ "effects": [
+  {
+   "kind": "quota",
+   "nodeId": "qc_old",
+   "quota": "q_old",
+   "result": "open"
+  }
+ ],
  "urlParams": {},
  "startedAt": 2000,
- "endedAt": 13000,
- "revision": 12,
+ "endedAt": 14000,
+ "revision": 13,
  "events": [
   {
    "type": "start",
@@ -124,16 +145,35 @@
    "seq": 5,
    "rev": 5,
    "result": {
+    "outcome": "effect",
+    "effect": {
+     "kind": "quota",
+     "nodeId": "qc_old",
+     "quota": "q_old"
+    }
+   }
+  },
+  {
+   "type": "resolve",
+   "t": 7000,
+   "effect": {
+    "kind": "quota",
+    "nodeId": "qc_old"
+   },
+   "value": "open",
+   "seq": 6,
+   "rev": 6,
+   "result": {
     "outcome": "advanced",
     "to": "stim_loss_page"
    }
   },
   {
    "type": "next",
-   "t": 7000,
+   "t": 8000,
    "from": "stim_loss_page",
-   "seq": 6,
-   "rev": 6,
+   "seq": 7,
+   "rev": 7,
    "result": {
     "outcome": "advanced",
     "to": "attitudes_page"
@@ -141,26 +181,26 @@
   },
   {
    "type": "answer",
-   "t": 8000,
+   "t": 9000,
    "item": "att2",
    "value": 3,
-   "seq": 7,
-   "rev": 7
+   "seq": 8,
+   "rev": 8
   },
   {
    "type": "back",
-   "t": 9000,
+   "t": 10000,
    "from": "attitudes_page",
-   "seq": 8,
-   "rev": 8,
+   "seq": 9,
+   "rev": 9,
    "to": "stim_loss_page"
   },
   {
    "type": "next",
-   "t": 10000,
+   "t": 11000,
    "from": "stim_loss_page",
-   "seq": 9,
-   "rev": 9,
+   "seq": 10,
+   "rev": 10,
    "result": {
     "outcome": "advanced",
     "to": "attitudes_page"
@@ -168,26 +208,26 @@
   },
   {
    "type": "answer",
-   "t": 11000,
+   "t": 12000,
    "item": "att1",
    "value": 2,
-   "seq": 10,
-   "rev": 10
-  },
-  {
-   "type": "answer",
-   "t": 12000,
-   "item": "att3",
-   "value": 5,
    "seq": 11,
    "rev": 11
   },
   {
-   "type": "next",
+   "type": "answer",
    "t": 13000,
-   "from": "attitudes_page",
+   "item": "att3",
+   "value": 5,
    "seq": 12,
-   "rev": 12,
+   "rev": 12
+  },
+  {
+   "type": "next",
+   "t": 14000,
+   "from": "attitudes_page",
+   "seq": 13,
+   "rev": 13,
    "result": {
     "outcome": "ended",
     "to": null,

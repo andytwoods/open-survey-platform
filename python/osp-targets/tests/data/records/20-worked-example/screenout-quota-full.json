@@ -1,0 +1,182 @@
+{
+ "format": "osp-response/1",
+ "surveyId": "srv_7f3c",
+ "surveyVersion": 3,
+ "planVersion": "osp-runtime-plan/1",
+ "planChecksum": "sha256:394de5b57ae3a26652a8730279e6b1bdcca83ac4c7edf81c86a2734a361e83a3",
+ "engineVersion": "1",
+ "sessionSeed": 404,
+ "sessionId": null,
+ "language": "en",
+ "device": null,
+ "end": "quota_full",
+ "endNode": "qc_old",
+ "allocation": "server",
+ "assigned": {
+  "framing": "gain",
+  "incentive": "£5 voucher"
+ },
+ "conditions": {
+  "framing": "gain",
+  "incentive": "£5 voucher"
+ },
+ "conditionSources": {
+  "framing": "server",
+  "incentive": "server"
+ },
+ "orders": {
+  "blocks": {},
+  "items": {},
+  "choices": {}
+ },
+ "answers": {
+  "consent": {
+   "state": "answered",
+   "value": 1
+  },
+  "age": {
+   "state": "answered",
+   "value": 60
+  },
+  "att1": {
+   "state": "not-reached",
+   "value": null
+  },
+  "att2": {
+   "state": "not-reached",
+   "value": null
+  },
+  "att3": {
+   "state": "not-reached",
+   "value": null
+  }
+ },
+ "csvState": {
+  "consent__state": "answered",
+  "age__state": "answered",
+  "att1__state": "not-reached",
+  "att2__state": "not-reached",
+  "att3__state": "not-reached",
+  "source__state": "answered",
+  "age_band__state": "answered",
+  "att_score__state": "not-reached"
+ },
+ "embedded": {
+  "source": "direct"
+ },
+ "computed": {
+  "age_band": "40+",
+  "att_score": null
+ },
+ "variableStates": {
+  "source": "answered",
+  "age_band": "answered",
+  "att_score": "not-reached"
+ },
+ "quotas": {
+  "qc_old": "full"
+ },
+ "diagnostics": [],
+ "effects": [
+  {
+   "kind": "quota",
+   "nodeId": "qc_old",
+   "quota": "q_old",
+   "result": "full"
+  }
+ ],
+ "urlParams": {},
+ "startedAt": 2000,
+ "endedAt": 8000,
+ "revision": 7,
+ "events": [
+  {
+   "type": "start",
+   "seq": 1,
+   "rev": 1,
+   "t": 2000,
+   "sessionSeed": 404,
+   "assigned": {
+    "framing": "gain",
+    "incentive": "£5 voucher"
+   },
+   "language": "en",
+   "device": null,
+   "urlParams": {},
+   "sessionId": null
+  },
+  {
+   "type": "answer",
+   "t": 3000,
+   "item": "consent",
+   "value": 1,
+   "seq": 2,
+   "rev": 2
+  },
+  {
+   "type": "next",
+   "t": 4000,
+   "from": "consent_blk_page",
+   "seq": 3,
+   "rev": 3,
+   "result": {
+    "outcome": "advanced",
+    "to": "demo_page"
+   }
+  },
+  {
+   "type": "answer",
+   "t": 5000,
+   "item": "age",
+   "value": 60,
+   "seq": 4,
+   "rev": 4
+  },
+  {
+   "type": "next",
+   "t": 6000,
+   "from": "demo_page",
+   "seq": 5,
+   "rev": 5,
+   "result": {
+    "outcome": "effect",
+    "effect": {
+     "kind": "quota",
+     "nodeId": "qc_old",
+     "quota": "q_old"
+    }
+   }
+  },
+  {
+   "type": "resolve",
+   "t": 7000,
+   "effect": {
+    "kind": "quota",
+    "nodeId": "qc_old"
+   },
+   "value": "full",
+   "seq": 6,
+   "rev": 6,
+   "result": {
+    "outcome": "advanced",
+    "to": "screenout_page"
+   }
+  },
+  {
+   "type": "next",
+   "t": 8000,
+   "from": "screenout_page",
+   "seq": 7,
+   "rev": 7,
+   "result": {
+    "outcome": "ended",
+    "to": null,
+    "effect": {
+     "kind": "end",
+     "outcome": "quota_full",
+     "nodeId": "qc_old"
+    }
+   }
+  }
+ ]
+}

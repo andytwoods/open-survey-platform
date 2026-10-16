@@ -1,7 +1,7 @@
 {
   "format": "osp-fixture-script/0",
   "id": "car-then-bus",
-  "description": "route = car, answer p_car, reach p_end; back twice, route = bus. p_car is no longer on the path: are car_make and car_age not-reached or irrelevant, and are they cleared? (C3a-6)",
+  "description": "route = car, answer p_car, reach p_end; back twice, route = bus. p_car drops off the path, so on that submit car_make and car_age become irrelevant and are cleared (semantics §3, C3a-6).",
   "sessionSeed": 3401,
   "language": "en",
   "actions": [

@@ -1,7 +1,7 @@
 {
   "format": "osp-fixture-script/0",
   "id": "full",
-  "description": "The first call returns 'full': onFull shows full_blk once, then the session ends with outcome quota_full (C2-7 proposal).",
+  "description": "The first call returns 'full': onFull shows full_blk once, then the session ends with outcome quota_full (semantics §6, no goto). Replay with the quota now open reuses the recorded result.",
   "sessionSeed": 2402,
   "language": "en",
   "replay": {

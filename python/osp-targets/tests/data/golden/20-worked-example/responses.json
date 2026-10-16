@@ -16,7 +16,7 @@
       "sessionId": "sess-complete-gain",
       "version": 3,
       "versionChecksum": "sha256:test-20-worked-example",
-      "planChecksum": "sha256:340014c7861d7df4c2920c876d9465181fdb23507d8b6d85222f367aa720c1fe",
+      "planChecksum": "sha256:394de5b57ae3a26652a8730279e6b1bdcca83ac4c7edf81c86a2734a361e83a3",
       "engineVersion": "1",
       "allocationMode": "server",
       "saveMode": "every-page",
@@ -57,6 +57,14 @@
         "source": {
           "state": "answered",
           "value": "direct"
+        },
+        "age_band": {
+          "state": "answered",
+          "value": "18-39"
+        },
+        "att_score": {
+          "state": "answered",
+          "value": "4.333333333333333333333333333"
         }
       },
       "orders": {
@@ -208,7 +216,7 @@
       "sessionId": "sess-declined",
       "version": 3,
       "versionChecksum": "sha256:test-20-worked-example",
-      "planChecksum": "sha256:340014c7861d7df4c2920c876d9465181fdb23507d8b6d85222f367aa720c1fe",
+      "planChecksum": "sha256:394de5b57ae3a26652a8730279e6b1bdcca83ac4c7edf81c86a2734a361e83a3",
       "engineVersion": "1",
       "allocationMode": "server",
       "saveMode": "every-page",
@@ -249,6 +257,14 @@
         "source": {
           "state": "answered",
           "value": "direct"
+        },
+        "age_band": {
+          "state": "answered",
+          "value": "40+"
+        },
+        "att_score": {
+          "state": "not-reached",
+          "value": null
         }
       },
       "orders": {
@@ -307,7 +323,7 @@
       "sessionId": "sess-loss-charity-back-refresh",
       "version": 3,
       "versionChecksum": "sha256:test-20-worked-example",
-      "planChecksum": "sha256:340014c7861d7df4c2920c876d9465181fdb23507d8b6d85222f367aa720c1fe",
+      "planChecksum": "sha256:394de5b57ae3a26652a8730279e6b1bdcca83ac4c7edf81c86a2734a361e83a3",
       "engineVersion": "1",
       "allocationMode": "server",
       "saveMode": "every-page",
@@ -348,6 +364,14 @@
         "source": {
           "state": "answered",
           "value": "direct"
+        },
+        "age_band": {
+          "state": "answered",
+          "value": "40+"
+        },
+        "att_score": {
+          "state": "answered",
+          "value": "2"
         }
       },
       "orders": {
@@ -361,7 +385,9 @@
         },
         "choices": {}
       },
-      "quotas": {},
+      "quotas": {
+        "qc_old": "open"
+      },
       "urlParams": {},
       "events": [
         {
@@ -413,16 +439,35 @@
           "seq": 5,
           "rev": 5,
           "result": {
+            "outcome": "effect",
+            "effect": {
+              "kind": "quota",
+              "nodeId": "qc_old",
+              "quota": "q_old"
+            }
+          }
+        },
+        {
+          "type": "resolve",
+          "t": 7000,
+          "effect": {
+            "kind": "quota",
+            "nodeId": "qc_old"
+          },
+          "value": "open",
+          "seq": 6,
+          "rev": 6,
+          "result": {
             "outcome": "advanced",
             "to": "stim_loss_page"
           }
         },
         {
           "type": "next",
-          "t": 7000,
+          "t": 8000,
           "from": "stim_loss_page",
-          "seq": 6,
-          "rev": 6,
+          "seq": 7,
+          "rev": 7,
           "result": {
             "outcome": "advanced",
             "to": "attitudes_page"
@@ -430,26 +475,26 @@
         },
         {
           "type": "answer",
-          "t": 8000,
+          "t": 9000,
           "item": "att2",
           "value": 3,
-          "seq": 7,
-          "rev": 7
+          "seq": 8,
+          "rev": 8
         },
         {
           "type": "back",
-          "t": 9000,
+          "t": 10000,
           "from": "attitudes_page",
-          "seq": 8,
-          "rev": 8,
+          "seq": 9,
+          "rev": 9,
           "to": "stim_loss_page"
         },
         {
           "type": "next",
-          "t": 10000,
+          "t": 11000,
           "from": "stim_loss_page",
-          "seq": 9,
-          "rev": 9,
+          "seq": 10,
+          "rev": 10,
           "result": {
             "outcome": "advanced",
             "to": "attitudes_page"
@@ -457,26 +502,26 @@
         },
         {
           "type": "answer",
-          "t": 11000,
+          "t": 12000,
           "item": "att1",
           "value": 2,
-          "seq": 10,
-          "rev": 10
-        },
-        {
-          "type": "answer",
-          "t": 12000,
-          "item": "att3",
-          "value": 5,
           "seq": 11,
           "rev": 11
         },
         {
-          "type": "next",
+          "type": "answer",
           "t": 13000,
-          "from": "attitudes_page",
+          "item": "att3",
+          "value": 5,
           "seq": 12,
-          "rev": 12,
+          "rev": 12
+        },
+        {
+          "type": "next",
+          "t": 14000,
+          "from": "attitudes_page",
+          "seq": 13,
+          "rev": 13,
           "result": {
             "outcome": "ended",
             "to": null,
@@ -484,6 +529,164 @@
               "kind": "end",
               "outcome": "complete",
               "nodeId": "end_complete"
+            }
+          }
+        }
+      ]
+    },
+    {
+      "responseId": "resp-screenout-quota-full",
+      "sessionId": "sess-screenout-quota-full",
+      "version": 3,
+      "versionChecksum": "sha256:test-20-worked-example",
+      "planChecksum": "sha256:394de5b57ae3a26652a8730279e6b1bdcca83ac4c7edf81c86a2734a361e83a3",
+      "engineVersion": "1",
+      "allocationMode": "server",
+      "saveMode": "every-page",
+      "seed": 404,
+      "startedAt": "2026-10-16T09:33:00.000Z",
+      "submittedAt": "2026-10-16T09:33:30.250Z",
+      "late": false,
+      "afterClose": null,
+      "end": "quota_full",
+      "language": "en",
+      "conditions": {
+        "framing": "gain",
+        "incentive": "£5 voucher"
+      },
+      "answers": {
+        "consent": {
+          "state": "answered",
+          "value": 1
+        },
+        "age": {
+          "state": "answered",
+          "value": 60
+        },
+        "att1": {
+          "state": "not-reached",
+          "value": null
+        },
+        "att2": {
+          "state": "not-reached",
+          "value": null
+        },
+        "att3": {
+          "state": "not-reached",
+          "value": null
+        }
+      },
+      "variables": {
+        "source": {
+          "state": "answered",
+          "value": "direct"
+        },
+        "age_band": {
+          "state": "answered",
+          "value": "40+"
+        },
+        "att_score": {
+          "state": "not-reached",
+          "value": null
+        }
+      },
+      "orders": {
+        "blocks": {},
+        "items": {
+          "attitudes_page": null
+        },
+        "choices": {}
+      },
+      "quotas": {
+        "qc_old": "full"
+      },
+      "urlParams": {},
+      "events": [
+        {
+          "type": "start",
+          "seq": 1,
+          "rev": 1,
+          "t": 2000,
+          "sessionSeed": 404,
+          "assigned": {
+            "framing": "gain",
+            "incentive": "£5 voucher"
+          },
+          "language": "en",
+          "device": null,
+          "urlParams": {},
+          "sessionId": null
+        },
+        {
+          "type": "answer",
+          "t": 3000,
+          "item": "consent",
+          "value": 1,
+          "seq": 2,
+          "rev": 2
+        },
+        {
+          "type": "next",
+          "t": 4000,
+          "from": "consent_blk_page",
+          "seq": 3,
+          "rev": 3,
+          "result": {
+            "outcome": "advanced",
+            "to": "demo_page"
+          }
+        },
+        {
+          "type": "answer",
+          "t": 5000,
+          "item": "age",
+          "value": 60,
+          "seq": 4,
+          "rev": 4
+        },
+        {
+          "type": "next",
+          "t": 6000,
+          "from": "demo_page",
+          "seq": 5,
+          "rev": 5,
+          "result": {
+            "outcome": "effect",
+            "effect": {
+              "kind": "quota",
+              "nodeId": "qc_old",
+              "quota": "q_old"
+            }
+          }
+        },
+        {
+          "type": "resolve",
+          "t": 7000,
+          "effect": {
+            "kind": "quota",
+            "nodeId": "qc_old"
+          },
+          "value": "full",
+          "seq": 6,
+          "rev": 6,
+          "result": {
+            "outcome": "advanced",
+            "to": "screenout_page"
+          }
+        },
+        {
+          "type": "next",
+          "t": 8000,
+          "from": "screenout_page",
+          "seq": 7,
+          "rev": 7,
+          "result": {
+            "outcome": "ended",
+            "to": null,
+            "effect": {
+              "kind": "end",
+              "outcome": "quota_full",
+              "nodeId": "qc_old"
             }
           }
         }

@@ -375,6 +375,10 @@ class _Exporter:
 
         def repl(m: re.Match[str]) -> str:
             qid = m.group(1).strip()
+            if qid.startswith("$"):
+                # Built-ins ($trial, $position.*; semantics §8) are our runtime's.
+                self.note("$pipe.builtin", ptr, f"${{{qid}}}")
+                return ""
             if qid not in self.names:
                 return m.group(0)
             self.note("$pipe.escaping", ptr)

@@ -155,8 +155,16 @@ In survey (flow) order. Conditions refer to other variables by export name.
 | Column | Kind | Details |
 |---|---|---|
 | `source` | embedded | URL parameter `src`, text, default `direct` |
+| `age_band` | computed | computed as `if(age < 40, "18-39", "40+")` |
+| `att_score` | computed | computed as `(att1 + att2 + (6 - att3)) / 3` |
 
 Each has a `<var>__state` column like a question: `answered` when it has a value; an embedded variable without a value (no parameter and no default, or a malformed one) is `unanswered`; a computed one whose input was null is `not-reached` if every question it reads was not reached, `irrelevant` if each was not reached or hidden, otherwise `unanswered`.
+
+## Quotas
+
+| Quota | Counts when | Limit | When full |
+|---|---|---|---|
+| `q_old` | `age_band == "40+"` | 150 | show `screenout`, then outcome `quota_full` |
 
 ## Custom code (hooks) and data exports
 

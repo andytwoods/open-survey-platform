@@ -1,17 +1,17 @@
 {
   "format": "osp-fixture-script/0",
   "id": "unicode-edges",
-  "description": "Characters at the ends that are not ASCII whitespace: NBSP, zero-width space, an ideographic space on its own, a BOM, and a decomposed e + U+0301. Whether they are trimmed, whether an ideographic-space-only answer is unanswered, and whether text is NFC-normalised before comparing are R6-1.",
+  "description": "Characters at the ends that are not ASCII whitespace: NBSP, zero-width space, an ideographic space on its own, a BOM, and a decomposed e + U+0301. Trimming removes Unicode White_Space plus U+FEFF, so NBSP, U+3000 and the BOM go (an ideographic-space-only answer is unanswered) but U+200B stays; text is not NFC-normalised (semantics §2).",
   "sessionSeed": 2702,
   "language": "en",
   "actions": [
     {
       "expectPage": "p1",
       "set": {
-        "t_emoji": "\u00a0👍🏽 great\u00a0",
-        "t_rtl": "\u200bשלום עולם\u200b",
-        "t_mixed": "\u3000",
-        "t_name": "\ufeffcafe\u0301"
+        "t_emoji": " 👍🏽 great ",
+        "t_rtl": "​שלום עולם​",
+        "t_mixed": "　",
+        "t_name": "﻿café"
       },
       "do": "next"
     },

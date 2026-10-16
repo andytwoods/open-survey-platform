@@ -16,7 +16,7 @@
       "sessionId": "sess-kept-as-typed",
       "version": 1,
       "versionChecksum": "sha256:test-27-unicode-text",
-      "planChecksum": "sha256:49cdfd00ab1153a8689021c3574a8ec2355b9bd13dcb5c4e4c655be8e587f355",
+      "planChecksum": "sha256:62b22afe80c3afbd8df166bde5ee38336065bb578305e369b473d7444bdbb213",
       "engineVersion": "1",
       "allocationMode": "server",
       "saveMode": "every-page",
@@ -161,7 +161,7 @@
       "sessionId": "sess-unicode-edges",
       "version": 1,
       "versionChecksum": "sha256:test-27-unicode-text",
-      "planChecksum": "sha256:49cdfd00ab1153a8689021c3574a8ec2355b9bd13dcb5c4e4c655be8e587f355",
+      "planChecksum": "sha256:62b22afe80c3afbd8df166bde5ee38336065bb578305e369b473d7444bdbb213",
       "engineVersion": "1",
       "allocationMode": "server",
       "saveMode": "every-page",
@@ -188,7 +188,7 @@
         },
         "t_name": {
           "state": "answered",
-          "value": "﻿café"
+          "value": "café"
         },
         "pipe_emoji": {
           "state": "unanswered",
@@ -268,7 +268,7 @@
           "type": "answer",
           "t": 6000,
           "item": "t_name",
-          "value": "﻿café",
+          "value": "café",
           "seq": 5,
           "rev": 5
         },

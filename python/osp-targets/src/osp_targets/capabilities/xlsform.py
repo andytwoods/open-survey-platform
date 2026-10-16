@@ -275,6 +275,11 @@ _row("Contains.value", "native", "The code, as an XPath string.")
 # --- Behaviours that are not a single field ----------------------------------------------
 _row("$pipe.value", "native", "`${q}` in a label inserts the raw value (§8).")
 _row(
+    "$pipe.builtin",
+    "unsupported",
+    "`${$trial}`, `${$position.index}` … are our runtime's built-ins; dropped from the label.",
+)
+_row(
     "$pipe.choiceLabel",
     "lowered",
     "Piping a single-choice question: `osp_label_<q>` = jr:choice-name(${q}, '${q}') (§8, E9).",
