@@ -48,6 +48,10 @@ import {
 	type Data,
 	type Effect,
 	type EngineEvent,
+	type HookAction,
+	type HookData,
+	type HookEffect,
+	type HookResolution,
 	type Frame,
 	type PageError,
 	type PageView,
@@ -220,6 +224,8 @@ class Env {
 				this.comp.set(id, r);
 				return r;
 			}
+			case 'hook':
+				return hookValue(v.valueType, this.data.hooks?.vars[id] ?? null);
 		}
 		return null;
 	};
@@ -245,6 +251,15 @@ class Env {
 		}
 		return null;
 	}
+}
+
+/** A hook variable's stored value as an expression value (null when unset or mistyped). */
+function hookValue(type: 'text' | 'integer' | 'decimal' | 'boolean', v: string | number | boolean | null): Value {
+	if (v === null) return null;
+	if (type === 'boolean') return typeof v === 'boolean' ? { k: 'bool', v } : null;
+	if (type === 'integer') return typeof v === 'number' && Number.isSafeInteger(v) ? toValue('integer', v) : null;
+	if (type === 'decimal') return typeof v === 'string' ? toValue('decimal', v) : null;
+	return typeof v === 'string' ? toValue('text', v) : null;
 }
 
 function currentCursor(d: Data): Frame[] {
@@ -562,6 +577,7 @@ function apply(plan: Plan, d: Data, ev: EngineEvent): StepResult | undefined {
 			pageChanged(plan, d, undefined);
 			return undefined;
 		case 'resolve': {
+			if (ev.effect.kind === 'hook') return applyHook(plan, d, ev.effect.event ?? '', ev.value as HookResolution, ev.t);
 			const p = d.pending;
 			if (!p || ev.effect.kind !== 'quota') return undefined;
 			d.quotas[p.effect.nodeId] = ev.value as QuotaResult;
@@ -572,6 +588,133 @@ function apply(plan: Plan, d: Data, ev: EngineEvent): StepResult | undefined {
 			d.language = ev.language;
 			return undefined;
 	}
+}
+
+// --- Researcher hooks (R7, runtime-design.md §7a) ---------------------------------------
+
+/** Outcome of a flow-critical hook that failed after its retry. */
+export const HOOK_FAILED_OUTCOME = 'hook-failed';
+const HOOK_AFTER_END = new Set(['onBeforeSubmit', 'onSubmitted']);
+const PARADATA_KEY = /^[A-Za-z][A-Za-z0-9_.-]{0,63}$/;
+const MAX_HOOK_TEXT = 2000;
+
+function hookData(d: Data): HookData {
+	if (!d.hooks) d.hooks = { vars: {}, paradata: [], redirect: null, parentMessages: 0 };
+	return d.hooks;
+}
+
+/** Apply a recorded (already checked) hook resolution. Replay uses this; it runs no code. */
+function applyHook(plan: Plan, d: Data, event: string, r: HookResolution, t: number): StepResult | undefined {
+	const h = hookData(d);
+	for (const a of r.actions) {
+		switch (a.kind) {
+			case 'setVariable':
+				h.vars[a.id] = a.value;
+				break;
+			case 'addParadata':
+				h.paradata.push({ key: a.key, value: a.value, event });
+				break;
+			case 'rejectPage': {
+				const page = currentPage(d);
+				if (page !== null) d.errors[a.itemId ?? page] = { kind: 'hook', text: a.message };
+				break;
+			}
+			case 'setEndRedirect':
+				h.redirect = { templateId: a.templateId, params: { ...a.params } };
+				break;
+			case 'postToParent':
+				h.parentMessages += 1;
+				break;
+		}
+	}
+	if (r.status === 'fatal' && !d.ended) {
+		d.pending = null;
+		d.ended = { outcome: HOOK_FAILED_OUTCOME, nodeId: null, at: t };
+		return pageChanged(plan, d, { outcome: 'ended', to: null, effect: endEffect(d)! });
+	}
+	return undefined;
+}
+
+const isPrimitive = (v: unknown): v is string | number | boolean | null =>
+	v === null ||
+	typeof v === 'boolean' ||
+	(typeof v === 'number' && Number.isFinite(v)) ||
+	(typeof v === 'string' && v.length <= MAX_HOOK_TEXT);
+
+function checkHookAction(plan: Plan, d: Data, event: string, a: unknown): HookAction | null {
+	if (!a || typeof a !== 'object') return null;
+	const x = a as Record<string, unknown>;
+	const str = (v: unknown, max: number) => typeof v === 'string' && v.length > 0 && v.length <= max;
+	const afterSubmit = event === 'onSubmitted';
+	switch (x.kind) {
+		case 'setVariable': {
+			const v = typeof x.id === 'string' ? plan.variables[x.id] : undefined;
+			if (afterSubmit || !v || v.kind !== 'hook' || !isPrimitive(x.value)) return null;
+			const val = x.value;
+			const ok =
+				val === null ||
+				(v.valueType === 'boolean' && typeof val === 'boolean') ||
+				(v.valueType === 'integer' && typeof val === 'number' && Number.isSafeInteger(val)) ||
+				(v.valueType === 'decimal' && typeof val === 'string' && dec.parseDecimal(val) !== null) ||
+				(v.valueType === 'text' && typeof val === 'string');
+			return ok ? { kind: 'setVariable', id: v.id, value: val } : null;
+		}
+		case 'addParadata':
+			if (afterSubmit || typeof x.key !== 'string' || !PARADATA_KEY.test(x.key) || !isPrimitive(x.value)) return null;
+			return { kind: 'addParadata', key: x.key, value: x.value };
+		case 'rejectPage': {
+			const page = currentPage(d);
+			const itemId = x.itemId === undefined ? null : x.itemId;
+			if (event !== 'onPageNext' || page === null || !str(x.message, 500)) return null;
+			if (itemId !== null && (typeof itemId !== 'string' || plan.items[itemId]?.page !== page)) return null;
+			return { kind: 'rejectPage', itemId, message: x.message as string };
+		}
+		case 'setEndRedirect': {
+			if (!str(x.templateId, 64) || !x.params || typeof x.params !== 'object' || Array.isArray(x.params)) return null;
+			const entries = Object.entries(x.params as Record<string, unknown>);
+			if (entries.length > 16 || entries.some(([k, v]) => !str(k, 64) || typeof v !== 'string' || v.length > 256)) return null;
+			return { kind: 'setEndRedirect', templateId: x.templateId as string, params: Object.fromEntries(entries) as Record<string, string> };
+		}
+		case 'postToParent': {
+			if (!str(x.type, 64)) return null;
+			let size: number;
+			try {
+				size = canonicalJson(x.payload ?? null).length;
+			} catch {
+				return null;
+			}
+			return size <= 8192 ? { kind: 'postToParent', type: x.type as string, payload: clone(x.payload ?? null) } : null;
+		}
+	}
+	return null;
+}
+
+/** The engine's own check of a hook result (the host validates first; this guards the log). */
+function checkHookResolution(plan: Plan, d: Data, event: string, value: unknown): HookResolution | null {
+	if (!value || typeof value !== 'object') return null;
+	const r = value as Record<string, unknown>;
+	if (r.status !== 'ok' && r.status !== 'failed' && r.status !== 'fatal') return null;
+	if (!Array.isArray(r.actions) || r.actions.length > 64) return null;
+	if (r.status !== 'ok' && r.actions.length) return null;
+	if (typeof r.seed !== 'number' || !Number.isSafeInteger(r.seed)) return null;
+	if (typeof r.now !== 'number' || !Number.isFinite(r.now)) return null;
+	const actions: HookAction[] = [];
+	for (const a of r.actions) {
+		const ok = checkHookAction(plan, d, event, a);
+		if (!ok) return null;
+		actions.push(ok);
+	}
+	const out: HookResolution = { status: r.status, actions, seed: r.seed, now: r.now };
+	if (r.error !== undefined) {
+		if (typeof r.error !== 'string' || r.error.length > 200) return null;
+		out.error = r.error;
+	}
+	if (r.diagnostics !== undefined) {
+		const ds = r.diagnostics;
+		if (!Array.isArray(ds) || ds.length > 64 || ds.some((x) => typeof x !== 'string' || x.length > 200)) return null;
+		out.diagnostics = [...(ds as string[])];
+	}
+	return out;
 }
 
 type NewEvent = EngineEvent extends infer E ? (E extends EngineEvent ? Omit<E, 'seq' | 'rev'> : never) : never;
@@ -748,13 +891,36 @@ export function tryResolve(state: State, effect: Effect, value: unknown): { stat
 			: effect?.kind === 'hook'
 				? { kind: 'hook', invocationId: effect.invocationId }
 				: { kind: String(effect?.kind) };
+	if (effect?.kind === 'hook') return tryResolveHook(state, effect, value, t);
 	let rejected: Rejection | undefined;
-	if (effect?.kind === 'hook') rejected = 'unsupported'; // R7 seam: no hook actions yet
-	else if (effect?.kind !== 'quota') rejected = 'unsupported';
+	if (effect?.kind !== 'quota') rejected = 'unsupported';
 	else if (!d.pending || d.pending.effect.nodeId !== effect.nodeId) rejected = 'stale';
 	else if (value !== 'open' && value !== 'full') rejected = 'bad-result';
 	const safeValue = typeof value === 'string' ? value.slice(0, 64) : null;
 	const out = commit(state, { type: 'resolve', t, effect: desc, value: safeValue, ...(rejected ? { rejected } : {}) });
+	return { state: out.state, rejected };
+}
+
+/**
+ * Record a hook outcome (R7). Refused, and logged, when the state has moved on since the
+ * hook was invoked (`stale`), when the invocation was already recorded, after the end
+ * (except `onBeforeSubmit`/`onSubmitted`), or when the result is malformed.
+ */
+function tryResolveHook(state: State, effect: HookEffect, value: unknown, t: number): { state: State; rejected?: Rejection } {
+	const d = state.data;
+	const event = typeof effect.event === 'string' ? effect.event.slice(0, 64) : '';
+	const invocationId = typeof effect.invocationId === 'string' ? effect.invocationId.slice(0, 128) : '';
+	const desc = { kind: 'hook', invocationId, event, revision: Number(effect.revision) };
+	const seen = d.events.some(
+		(e) => e.type === 'resolve' && e.rejected === undefined && e.effect.kind === 'hook' && e.effect.invocationId === invocationId
+	);
+	let rejected: Rejection | undefined;
+	let checked: HookResolution | null = null;
+	if (!invocationId || !event) rejected = 'bad-result';
+	else if (effect.revision !== d.revision || seen) rejected = 'stale';
+	else if (d.ended && !HOOK_AFTER_END.has(event)) rejected = 'ended';
+	else if (!(checked = checkHookResolution(state.plan, d, event, value))) rejected = 'bad-result';
+	const out = commit(state, { type: 'resolve', t, effect: desc, value: rejected ? null : checked, ...(rejected ? { rejected } : {}) });
 	return { state: out.state, rejected };
 }
 
@@ -840,6 +1006,7 @@ export function toPlain(text: RenderedText | null): string {
 
 function errorView(plan: Plan, d: Data, env: Env, id: Id, e: PageError) {
 	const item = plan.items[id];
+	if (e.kind === 'hook') return { ...e, message: [{ kind: 'value' as const, text: e.text }] }; // untrusted: escaped
 	const msg =
 		e.kind === 'constraint' && item && isQuestion(item) && item.constraintMessage
 			? render(plan, d, env, item.constraintMessage)
@@ -992,7 +1159,8 @@ export function result(state: State): ResponseRecord {
 		startedAt: d.startedAt,
 		endedAt: d.ended?.at ?? null,
 		revision: d.revision,
-		events: clone(d.events)
+		events: clone(d.events),
+		...(d.hooks ? { hooks: { vars: { ...d.hooks.vars }, paradata: clone(d.hooks.paradata), redirect: clone(d.hooks.redirect) } } : {})
 	};
 }
 
