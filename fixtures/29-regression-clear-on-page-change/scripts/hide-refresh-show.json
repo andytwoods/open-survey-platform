@@ -1,0 +1,69 @@
+{
+  "format": "osp-fixture-script/0",
+  "id": "hide-refresh-show",
+  "description": "per_day = 20 and quit are answered. Back on p1, smoker = no hides per_day on the same page; the submit clears per_day and quit. Refresh, back, smoker = yes: per_day shows empty (not 20); quit stays hidden until per_day > 10 again, and is then empty (not the old text).",
+  "sessionSeed": 2901,
+  "language": "en",
+  "actions": [
+    {
+      "expectPage": "p1",
+      "set": {
+        "smoker": "yes",
+        "per_day": 20
+      },
+      "do": "next"
+    },
+    {
+      "expectPage": "p2",
+      "set": {
+        "quit": "maybe"
+      },
+      "do": "back"
+    },
+    {
+      "expectPage": "p1",
+      "set": {
+        "smoker": "no"
+      },
+      "do": "next"
+    },
+    {
+      "expectPage": "p2",
+      "do": "refresh"
+    },
+    {
+      "expectPage": "p2",
+      "do": "back"
+    },
+    {
+      "expectPage": "p1",
+      "set": {
+        "smoker": "yes"
+      },
+      "do": "refresh"
+    },
+    {
+      "expectPage": "p1",
+      "do": "next"
+    },
+    {
+      "expectPage": "p2",
+      "do": "back"
+    },
+    {
+      "expectPage": "p1",
+      "set": {
+        "per_day": 15
+      },
+      "do": "next"
+    },
+    {
+      "expectPage": "p2",
+      "do": "resume"
+    },
+    {
+      "expectPage": "p2",
+      "do": "next"
+    }
+  ]
+}

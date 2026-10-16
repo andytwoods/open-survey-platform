@@ -1,0 +1,546 @@
+{
+  "format": "osp-fixture-expected/0",
+  "fixture": "35-back-change-empty-block",
+  "script": "kids-none-kids",
+  "pending": [],
+  "steps": [
+    {
+      "index": 0,
+      "page": "p1",
+      "visible": [
+        "has_kids"
+      ],
+      "errors": {},
+      "nav": {
+        "back": false
+      },
+      "questions": {
+        "has_kids": {
+          "state": "unanswered",
+          "value": null
+        },
+        "n_kids": {
+          "state": "irrelevant",
+          "value": null
+        },
+        "kid_age": {
+          "state": "not-reached",
+          "value": null
+        },
+        "school": {
+          "state": "not-reached",
+          "value": null
+        },
+        "hours": {
+          "state": "not-reached",
+          "value": null
+        },
+        "why_none": {
+          "state": "not-reached",
+          "value": null
+        }
+      },
+      "orders": {
+        "blocks": {},
+        "items": {},
+        "choices": {}
+      },
+      "conditions": {},
+      "end": null
+    },
+    {
+      "index": 1,
+      "page": "p2",
+      "visible": [
+        "kid_age",
+        "school"
+      ],
+      "errors": {},
+      "nav": {
+        "back": true
+      },
+      "questions": {
+        "has_kids": {
+          "state": "answered",
+          "value": "yes"
+        },
+        "n_kids": {
+          "state": "answered",
+          "value": 2
+        },
+        "kid_age": {
+          "state": "unanswered",
+          "value": null
+        },
+        "school": {
+          "state": "unanswered",
+          "value": null
+        },
+        "hours": {
+          "state": "not-reached",
+          "value": null
+        },
+        "why_none": {
+          "state": "not-reached",
+          "value": null
+        }
+      },
+      "orders": {
+        "blocks": {},
+        "items": {},
+        "choices": {}
+      },
+      "conditions": {},
+      "end": null
+    },
+    {
+      "index": 2,
+      "page": "p3",
+      "visible": [
+        "hours"
+      ],
+      "errors": {},
+      "nav": {
+        "back": true
+      },
+      "questions": {
+        "has_kids": {
+          "state": "answered",
+          "value": "yes"
+        },
+        "n_kids": {
+          "state": "answered",
+          "value": 2
+        },
+        "kid_age": {
+          "state": "answered",
+          "value": 7
+        },
+        "school": {
+          "state": "answered",
+          "value": "yes"
+        },
+        "hours": {
+          "state": "unanswered",
+          "value": null
+        },
+        "why_none": {
+          "state": "irrelevant",
+          "value": null
+        }
+      },
+      "orders": {
+        "blocks": {},
+        "items": {},
+        "choices": {}
+      },
+      "conditions": {},
+      "end": null
+    },
+    {
+      "index": 3,
+      "page": "p2",
+      "visible": [
+        "kid_age",
+        "school"
+      ],
+      "errors": {},
+      "nav": {
+        "back": true
+      },
+      "questions": {
+        "has_kids": {
+          "state": "answered",
+          "value": "yes"
+        },
+        "n_kids": {
+          "state": "answered",
+          "value": 2
+        },
+        "kid_age": {
+          "state": "answered",
+          "value": 7
+        },
+        "school": {
+          "state": "answered",
+          "value": "yes"
+        },
+        "hours": {
+          "state": "answered",
+          "value": 8
+        },
+        "why_none": {
+          "state": "irrelevant",
+          "value": null
+        }
+      },
+      "orders": {
+        "blocks": {},
+        "items": {},
+        "choices": {}
+      },
+      "conditions": {},
+      "end": null
+    },
+    {
+      "index": 4,
+      "page": "p1",
+      "visible": [
+        "has_kids",
+        "n_kids"
+      ],
+      "errors": {},
+      "nav": {
+        "back": false
+      },
+      "questions": {
+        "has_kids": {
+          "state": "answered",
+          "value": "yes"
+        },
+        "n_kids": {
+          "state": "answered",
+          "value": 2
+        },
+        "kid_age": {
+          "state": "answered",
+          "value": 7
+        },
+        "school": {
+          "state": "answered",
+          "value": "yes"
+        },
+        "hours": {
+          "state": "answered",
+          "value": 8
+        },
+        "why_none": {
+          "state": "irrelevant",
+          "value": null
+        }
+      },
+      "orders": {
+        "blocks": {},
+        "items": {},
+        "choices": {}
+      },
+      "conditions": {},
+      "end": null
+    },
+    {
+      "index": 5,
+      "page": "p3",
+      "visible": [
+        "hours",
+        "why_none"
+      ],
+      "errors": {},
+      "nav": {
+        "back": true
+      },
+      "questions": {
+        "has_kids": {
+          "state": "answered",
+          "value": "no"
+        },
+        "n_kids": {
+          "state": "irrelevant",
+          "value": null
+        },
+        "kid_age": {
+          "state": "irrelevant",
+          "value": null
+        },
+        "school": {
+          "state": "irrelevant",
+          "value": null
+        },
+        "hours": {
+          "state": "answered",
+          "value": 8
+        },
+        "why_none": {
+          "state": "unanswered",
+          "value": null
+        }
+      },
+      "orders": {
+        "blocks": {},
+        "items": {},
+        "choices": {}
+      },
+      "conditions": {},
+      "end": null
+    },
+    {
+      "index": 6,
+      "page": "p3",
+      "visible": [
+        "hours",
+        "why_none"
+      ],
+      "errors": {
+        "why_none": {
+          "kind": "required"
+        }
+      },
+      "nav": {
+        "back": true
+      },
+      "questions": {
+        "has_kids": {
+          "state": "answered",
+          "value": "no"
+        },
+        "n_kids": {
+          "state": "irrelevant",
+          "value": null
+        },
+        "kid_age": {
+          "state": "irrelevant",
+          "value": null
+        },
+        "school": {
+          "state": "irrelevant",
+          "value": null
+        },
+        "hours": {
+          "state": "answered",
+          "value": 8
+        },
+        "why_none": {
+          "state": "unanswered",
+          "value": null
+        }
+      },
+      "orders": {
+        "blocks": {},
+        "items": {},
+        "choices": {}
+      },
+      "conditions": {},
+      "end": null
+    },
+    {
+      "index": 7,
+      "page": "p1",
+      "visible": [
+        "has_kids"
+      ],
+      "errors": {},
+      "nav": {
+        "back": false
+      },
+      "questions": {
+        "has_kids": {
+          "state": "answered",
+          "value": "no"
+        },
+        "n_kids": {
+          "state": "irrelevant",
+          "value": null
+        },
+        "kid_age": {
+          "state": "irrelevant",
+          "value": null
+        },
+        "school": {
+          "state": "irrelevant",
+          "value": null
+        },
+        "hours": {
+          "state": "answered",
+          "value": 8
+        },
+        "why_none": {
+          "state": "unanswered",
+          "value": null
+        }
+      },
+      "orders": {
+        "blocks": {},
+        "items": {},
+        "choices": {}
+      },
+      "conditions": {},
+      "end": null
+    },
+    {
+      "index": 8,
+      "page": "p2",
+      "visible": [
+        "kid_age",
+        "school"
+      ],
+      "errors": {},
+      "nav": {
+        "back": true
+      },
+      "questions": {
+        "has_kids": {
+          "state": "answered",
+          "value": "yes"
+        },
+        "n_kids": {
+          "state": "answered",
+          "value": 1
+        },
+        "kid_age": {
+          "state": "unanswered",
+          "value": null
+        },
+        "school": {
+          "state": "unanswered",
+          "value": null
+        },
+        "hours": {
+          "state": "answered",
+          "value": 8
+        },
+        "why_none": {
+          "state": "irrelevant",
+          "value": null
+        }
+      },
+      "orders": {
+        "blocks": {},
+        "items": {},
+        "choices": {}
+      },
+      "conditions": {},
+      "end": null
+    },
+    {
+      "index": 9,
+      "page": "p3",
+      "visible": [
+        "hours"
+      ],
+      "errors": {},
+      "nav": {
+        "back": true
+      },
+      "questions": {
+        "has_kids": {
+          "state": "answered",
+          "value": "yes"
+        },
+        "n_kids": {
+          "state": "answered",
+          "value": 1
+        },
+        "kid_age": {
+          "state": "unanswered",
+          "value": null
+        },
+        "school": {
+          "state": "unanswered",
+          "value": null
+        },
+        "hours": {
+          "state": "answered",
+          "value": 8
+        },
+        "why_none": {
+          "state": "irrelevant",
+          "value": null
+        }
+      },
+      "orders": {
+        "blocks": {},
+        "items": {},
+        "choices": {}
+      },
+      "conditions": {},
+      "end": null
+    },
+    {
+      "index": 10,
+      "page": null,
+      "visible": [],
+      "errors": {},
+      "nav": null,
+      "questions": {
+        "has_kids": {
+          "state": "answered",
+          "value": "yes"
+        },
+        "n_kids": {
+          "state": "answered",
+          "value": 1
+        },
+        "kid_age": {
+          "state": "unanswered",
+          "value": null
+        },
+        "school": {
+          "state": "unanswered",
+          "value": null
+        },
+        "hours": {
+          "state": "answered",
+          "value": 8
+        },
+        "why_none": {
+          "state": "irrelevant",
+          "value": null
+        }
+      },
+      "orders": {
+        "blocks": {},
+        "items": {},
+        "choices": {}
+      },
+      "conditions": {},
+      "end": "complete"
+    }
+  ],
+  "invariants": [],
+  "response": {
+    "surveyId": "f35_back_empty_block",
+    "surveyVersion": 1,
+    "end": "complete",
+    "allocation": "server",
+    "sessionSeed": 3501,
+    "conditions": {},
+    "orders": {
+      "blocks": {},
+      "items": {},
+      "choices": {}
+    },
+    "answers": {
+      "has_kids": {
+        "state": "answered",
+        "value": "yes"
+      },
+      "n_kids": {
+        "state": "answered",
+        "value": 1
+      },
+      "kid_age": {
+        "state": "unanswered",
+        "value": null
+      },
+      "school": {
+        "state": "unanswered",
+        "value": null
+      },
+      "hours": {
+        "state": "answered",
+        "value": 8
+      },
+      "why_none": {
+        "state": "irrelevant",
+        "value": null
+      }
+    },
+    "csvState": {
+      "has_kids__state": "answered",
+      "n_kids__state": "answered",
+      "kid_age__state": "unanswered",
+      "school__state": "unanswered",
+      "hours__state": "answered",
+      "why_none__state": "irrelevant"
+    }
+  }
+}

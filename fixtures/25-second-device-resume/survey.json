@@ -1,0 +1,159 @@
+{
+  "specVersion": "osp-survey/0.1",
+  "id": "f25_second_device",
+  "version": 1,
+  "metadata": {
+    "title": "Resume on a second device",
+    "description": "§5/§7, runtime-design §5.4: the server snapshot moves the session to device B mid-page with values, choice order and condition; B can go back into pages answered on A.",
+    "languages": [
+      "en"
+    ]
+  },
+  "settings": {
+    "backNavigation": true
+  },
+  "choiceLists": [
+    {
+      "id": "colour4",
+      "choices": [
+        {
+          "value": "red",
+          "label": "Red"
+        },
+        {
+          "value": "green",
+          "label": "Green"
+        },
+        {
+          "value": "blue",
+          "label": "Blue"
+        },
+        {
+          "value": "grey",
+          "label": "Grey"
+        }
+      ]
+    }
+  ],
+  "variables": [
+    {
+      "kind": "assigned",
+      "id": "framing",
+      "levels": [
+        "gain",
+        "loss"
+      ]
+    }
+  ],
+  "blocks": [
+    {
+      "id": "p1",
+      "pages": [
+        {
+          "id": "p1_page",
+          "items": [
+            {
+              "type": "single",
+              "id": "colour",
+              "label": "Pick a colour.",
+              "choiceList": "colour4",
+              "choiceOrder": "shuffle",
+              "required": true
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "id": "p2",
+      "pages": [
+        {
+          "id": "p2_page",
+          "items": [
+            {
+              "type": "integer",
+              "id": "n1",
+              "label": "How many rooms are in your home?"
+            },
+            {
+              "type": "text",
+              "id": "t1",
+              "label": "Describe your favourite room. (optional)"
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "id": "p3",
+      "pages": [
+        {
+          "id": "p3_page",
+          "items": [
+            {
+              "type": "text",
+              "id": "t2",
+              "label": "Shown when n1 > 3: which room is the biggest?",
+              "showIf": {
+                "kind": "compare",
+                "op": ">",
+                "left": {
+                  "kind": "ref",
+                  "id": "n1"
+                },
+                "right": {
+                  "kind": "int",
+                  "value": 3
+                }
+              }
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "id": "p4",
+      "pages": [
+        {
+          "id": "p4_page",
+          "items": [
+            {
+              "type": "text",
+              "id": "t3",
+              "label": "Last question (optional)."
+            }
+          ]
+        }
+      ]
+    }
+  ],
+  "flow": [
+    {
+      "type": "block",
+      "id": "n_p1",
+      "block": "p1"
+    },
+    {
+      "type": "assign",
+      "id": "assign_design",
+      "variables": [
+        "framing"
+      ]
+    },
+    {
+      "type": "block",
+      "id": "n_p2",
+      "block": "p2"
+    },
+    {
+      "type": "block",
+      "id": "n_p3",
+      "block": "p3"
+    },
+    {
+      "type": "block",
+      "id": "n_p4",
+      "block": "p4"
+    }
+  ]
+}

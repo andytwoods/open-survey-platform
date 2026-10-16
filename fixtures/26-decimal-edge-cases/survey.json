@@ -1,0 +1,254 @@
+{
+  "specVersion": "osp-survey/0.1",
+  "id": "f26_decimal_edges",
+  "version": 1,
+  "metadata": {
+    "title": "Decimal edge cases",
+    "description": "§2: decimal, not binary float. 0.1 + 0.2 == 0.3, 0.1 * 0.2 == 0.02, a value above 2^53, and trailing zeros.",
+    "languages": [
+      "en"
+    ]
+  },
+  "settings": {
+    "backNavigation": true
+  },
+  "blocks": [
+    {
+      "id": "p1",
+      "pages": [
+        {
+          "id": "p1_page",
+          "items": [
+            {
+              "type": "decimal",
+              "id": "a",
+              "label": "First decimal."
+            },
+            {
+              "type": "decimal",
+              "id": "b",
+              "label": "Second decimal."
+            },
+            {
+              "type": "decimal",
+              "id": "big",
+              "label": "A very large number."
+            },
+            {
+              "type": "decimal",
+              "id": "z",
+              "label": "At least a + b.",
+              "constraint": {
+                "kind": "compare",
+                "op": ">=",
+                "left": {
+                  "kind": "ref",
+                  "id": "z"
+                },
+                "right": {
+                  "kind": "arith",
+                  "op": "+",
+                  "left": {
+                    "kind": "ref",
+                    "id": "a"
+                  },
+                  "right": {
+                    "kind": "ref",
+                    "id": "b"
+                  }
+                }
+              },
+              "constraintMessage": "Must be at least a + b."
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "id": "p2",
+      "pages": [
+        {
+          "id": "p2_page",
+          "items": [
+            {
+              "type": "text",
+              "id": "p2_anchor",
+              "label": "Always shown (optional)."
+            },
+            {
+              "type": "text",
+              "id": "s_sum_eq",
+              "label": "Shown when: a + b == 0.3",
+              "showIf": {
+                "kind": "compare",
+                "op": "==",
+                "left": {
+                  "kind": "arith",
+                  "op": "+",
+                  "left": {
+                    "kind": "ref",
+                    "id": "a"
+                  },
+                  "right": {
+                    "kind": "ref",
+                    "id": "b"
+                  }
+                },
+                "right": {
+                  "kind": "decimal",
+                  "value": "0.3"
+                }
+              }
+            },
+            {
+              "type": "text",
+              "id": "s_sum_gt",
+              "label": "Shown when: a + b > 0.3 (a binary float says yes)",
+              "showIf": {
+                "kind": "compare",
+                "op": ">",
+                "left": {
+                  "kind": "arith",
+                  "op": "+",
+                  "left": {
+                    "kind": "ref",
+                    "id": "a"
+                  },
+                  "right": {
+                    "kind": "ref",
+                    "id": "b"
+                  }
+                },
+                "right": {
+                  "kind": "decimal",
+                  "value": "0.3"
+                }
+              }
+            },
+            {
+              "type": "text",
+              "id": "s_mul",
+              "label": "Shown when: a * b == 0.02",
+              "showIf": {
+                "kind": "compare",
+                "op": "==",
+                "left": {
+                  "kind": "arith",
+                  "op": "*",
+                  "left": {
+                    "kind": "ref",
+                    "id": "a"
+                  },
+                  "right": {
+                    "kind": "ref",
+                    "id": "b"
+                  }
+                },
+                "right": {
+                  "kind": "decimal",
+                  "value": "0.02"
+                }
+              }
+            },
+            {
+              "type": "text",
+              "id": "s_sub",
+              "label": "Shown when: b - a == a",
+              "showIf": {
+                "kind": "compare",
+                "op": "==",
+                "left": {
+                  "kind": "arith",
+                  "op": "-",
+                  "left": {
+                    "kind": "ref",
+                    "id": "b"
+                  },
+                  "right": {
+                    "kind": "ref",
+                    "id": "a"
+                  }
+                },
+                "right": {
+                  "kind": "ref",
+                  "id": "a"
+                }
+              }
+            },
+            {
+              "type": "text",
+              "id": "s_big_gt",
+              "label": "Shown when: big > 9007199254740992",
+              "showIf": {
+                "kind": "compare",
+                "op": ">",
+                "left": {
+                  "kind": "ref",
+                  "id": "big"
+                },
+                "right": {
+                  "kind": "int",
+                  "value": 9007199254740992
+                }
+              }
+            },
+            {
+              "type": "text",
+              "id": "s_big_eq",
+              "label": "Shown when: big == 9007199254740992 (a binary float says yes)",
+              "showIf": {
+                "kind": "compare",
+                "op": "==",
+                "left": {
+                  "kind": "ref",
+                  "id": "big"
+                },
+                "right": {
+                  "kind": "int",
+                  "value": 9007199254740992
+                }
+              }
+            },
+            {
+              "type": "text",
+              "id": "s_big_plus",
+              "label": "Shown when: big + 1 == 9007199254740994",
+              "showIf": {
+                "kind": "compare",
+                "op": "==",
+                "left": {
+                  "kind": "arith",
+                  "op": "+",
+                  "left": {
+                    "kind": "ref",
+                    "id": "big"
+                  },
+                  "right": {
+                    "kind": "int",
+                    "value": 1
+                  }
+                },
+                "right": {
+                  "kind": "decimal",
+                  "value": "9007199254740994"
+                }
+              }
+            }
+          ]
+        }
+      ]
+    }
+  ],
+  "flow": [
+    {
+      "type": "block",
+      "id": "n_p1",
+      "block": "p1"
+    },
+    {
+      "type": "block",
+      "id": "n_p2",
+      "block": "p2"
+    }
+  ]
+}

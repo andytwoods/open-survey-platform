@@ -1,0 +1,143 @@
+{
+  "specVersion": "osp-survey/0.1",
+  "id": "f22_clearing_chain",
+  "version": 1,
+  "metadata": {
+    "title": "Irrelevant-value clearing chain",
+    "description": "§3: clearing one value can hide some questions and reveal others (not answered(...)); the chain runs to the end in one submit, on and across pages.",
+    "languages": [
+      "en"
+    ]
+  },
+  "settings": {
+    "backNavigation": true
+  },
+  "blocks": [
+    {
+      "id": "p1",
+      "pages": [
+        {
+          "id": "p1_page",
+          "items": [
+            {
+              "type": "integer",
+              "id": "x",
+              "label": "Pick a whole number.",
+              "required": true
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "id": "p2",
+      "pages": [
+        {
+          "id": "p2_page",
+          "items": [
+            {
+              "type": "text",
+              "id": "y",
+              "label": "Shown when x > 10: why so big?",
+              "showIf": {
+                "kind": "compare",
+                "op": ">",
+                "left": {
+                  "kind": "ref",
+                  "id": "x"
+                },
+                "right": {
+                  "kind": "int",
+                  "value": 10
+                }
+              }
+            },
+            {
+              "type": "text",
+              "id": "z",
+              "label": "Shown when y is answered: tell us more.",
+              "showIf": {
+                "kind": "answered",
+                "ref": {
+                  "kind": "ref",
+                  "id": "y"
+                }
+              }
+            },
+            {
+              "type": "text",
+              "id": "w",
+              "label": "Shown when y is empty: why so small?",
+              "showIf": {
+                "kind": "not",
+                "arg": {
+                  "kind": "answered",
+                  "ref": {
+                    "kind": "ref",
+                    "id": "y"
+                  }
+                }
+              }
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "id": "p3",
+      "pages": [
+        {
+          "id": "p3_page",
+          "items": [
+            {
+              "type": "text",
+              "id": "v",
+              "label": "Shown when z is answered.",
+              "showIf": {
+                "kind": "answered",
+                "ref": {
+                  "kind": "ref",
+                  "id": "z"
+                }
+              }
+            },
+            {
+              "type": "text",
+              "id": "u",
+              "label": "Shown when w is answered.",
+              "showIf": {
+                "kind": "answered",
+                "ref": {
+                  "kind": "ref",
+                  "id": "w"
+                }
+              }
+            },
+            {
+              "type": "text",
+              "id": "p3_anchor",
+              "label": "Always shown (optional)."
+            }
+          ]
+        }
+      ]
+    }
+  ],
+  "flow": [
+    {
+      "type": "block",
+      "id": "n_p1",
+      "block": "p1"
+    },
+    {
+      "type": "block",
+      "id": "n_p2",
+      "block": "p2"
+    },
+    {
+      "type": "block",
+      "id": "n_p3",
+      "block": "p3"
+    }
+  ]
+}

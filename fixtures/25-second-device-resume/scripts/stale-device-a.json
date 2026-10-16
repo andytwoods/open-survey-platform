@@ -1,0 +1,49 @@
+{
+  "format": "osp-fixture-script/0",
+  "id": "stale-device-a",
+  "description": "After B has submitted p2, the old tab on device A (still showing p2, never reloaded) submits p2 with a different t1. Its save is stale (409). R-2 says the server copy wins and A's copy goes to the audit log; what A then shows is R6-6.",
+  "sessionSeed": 2502,
+  "language": "en",
+  "server": {
+    "conditions": {
+      "framing": "loss"
+    }
+  },
+  "actions": [
+    {
+      "expectPage": "p1",
+      "set": {
+        "colour": "green"
+      },
+      "do": "next"
+    },
+    {
+      "expectPage": "p2",
+      "set": {
+        "n1": 5
+      },
+      "do": "switchDevice",
+      "device": "B"
+    },
+    {
+      "expectPage": "p2",
+      "set": {
+        "t1": "the kitchen"
+      },
+      "do": "next"
+    },
+    {
+      "expectPage": "p3",
+      "do": "switchDevice",
+      "device": "A",
+      "restoreFrom": "local"
+    },
+    {
+      "expectPage": "p2",
+      "set": {
+        "t1": "the bedroom"
+      },
+      "do": "next"
+    }
+  ]
+}

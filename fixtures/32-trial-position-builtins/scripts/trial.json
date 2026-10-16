@@ -1,0 +1,66 @@
+{
+  "format": "osp-fixture-script/0",
+  "id": "trial",
+  "description": "Intro is trial 1; p_skip is empty and skipped (not counted); the three stimuli are trials 2-4 and the outro is 5. A failed submit (required), a refresh, and back then next never add to $trial: after back it is the number of the page now shown.",
+  "sessionSeed": 3201,
+  "language": "en",
+  "actions": [
+    {
+      "expectPage": "p_intro",
+      "set": {
+        "ready": "yes"
+      },
+      "do": "next"
+    },
+    {
+      "do": "next"
+    },
+    {
+      "setIfShown": {
+        "r1": 1,
+        "r2": 2,
+        "r3": 3
+      },
+      "do": "next"
+    },
+    {
+      "do": "back"
+    },
+    {
+      "do": "refresh"
+    },
+    {
+      "do": "next"
+    },
+    {
+      "setIfShown": {
+        "r1": 1,
+        "r2": 2,
+        "r3": 3
+      },
+      "do": "next"
+    },
+    {
+      "setIfShown": {
+        "r1": 1,
+        "r2": 2,
+        "r3": 3
+      },
+      "do": "next"
+    },
+    {
+      "expectPage": "p_outro",
+      "do": "back"
+    },
+    {
+      "do": "next"
+    },
+    {
+      "expectPage": "p_outro",
+      "set": {
+        "outro": "done"
+      },
+      "do": "next"
+    }
+  ]
+}

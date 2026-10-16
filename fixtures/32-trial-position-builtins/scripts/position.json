@@ -1,0 +1,66 @@
+{
+  "format": "osp-fixture-script/0",
+  "id": "position",
+  "description": "Same walk, also recording $position: index 1-3 of 3 within r_stim on the stimulus pages. Its value outside a randomiser, and whether the index is 1-based, are R6-3.",
+  "sessionSeed": 3201,
+  "language": "en",
+  "actions": [
+    {
+      "expectPage": "p_intro",
+      "set": {
+        "ready": "yes"
+      },
+      "do": "next"
+    },
+    {
+      "do": "next"
+    },
+    {
+      "setIfShown": {
+        "r1": 1,
+        "r2": 2,
+        "r3": 3
+      },
+      "do": "next"
+    },
+    {
+      "do": "back"
+    },
+    {
+      "do": "refresh"
+    },
+    {
+      "do": "next"
+    },
+    {
+      "setIfShown": {
+        "r1": 1,
+        "r2": 2,
+        "r3": 3
+      },
+      "do": "next"
+    },
+    {
+      "setIfShown": {
+        "r1": 1,
+        "r2": 2,
+        "r3": 3
+      },
+      "do": "next"
+    },
+    {
+      "expectPage": "p_outro",
+      "do": "back"
+    },
+    {
+      "do": "next"
+    },
+    {
+      "expectPage": "p_outro",
+      "set": {
+        "outro": "done"
+      },
+      "do": "next"
+    }
+  ]
+}

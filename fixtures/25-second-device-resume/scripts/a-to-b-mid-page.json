@@ -1,0 +1,63 @@
+{
+  "format": "osp-fixture-script/0",
+  "id": "a-to-b-mid-page",
+  "description": "Device A answers p1 and types n1 = 5 on p2 (autosaved, not submitted), then the participant opens the resume link on device B (no local copy there). B shows p2 with n1 = 5 and the same choice order and condition, goes back to p1 (answered on A) and finishes.",
+  "sessionSeed": 2501,
+  "language": "en",
+  "server": {
+    "conditions": {
+      "framing": "loss"
+    }
+  },
+  "actions": [
+    {
+      "expectPage": "p1",
+      "set": {
+        "colour": "green"
+      },
+      "do": "next"
+    },
+    {
+      "expectPage": "p2",
+      "set": {
+        "n1": 5
+      },
+      "do": "switchDevice",
+      "device": "B"
+    },
+    {
+      "expectPage": "p2",
+      "set": {
+        "t1": "the kitchen"
+      },
+      "do": "next"
+    },
+    {
+      "expectPage": "p3",
+      "do": "back"
+    },
+    {
+      "expectPage": "p2",
+      "do": "back"
+    },
+    {
+      "expectPage": "p1",
+      "do": "next"
+    },
+    {
+      "expectPage": "p2",
+      "do": "next"
+    },
+    {
+      "expectPage": "p3",
+      "set": {
+        "t2": "the hall"
+      },
+      "do": "next"
+    },
+    {
+      "expectPage": "p4",
+      "do": "next"
+    }
+  ]
+}

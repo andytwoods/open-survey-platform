@@ -1,0 +1,163 @@
+{
+  "specVersion": "osp-survey/0.1",
+  "id": "f21_back_cascade",
+  "version": 1,
+  "metadata": {
+    "title": "Back-and-change cascade, three levels",
+    "description": "§3: a controls b, b controls c, c controls d (one page each). Changing a after back clears b, c and d on that submit.",
+    "languages": [
+      "en"
+    ]
+  },
+  "settings": {
+    "backNavigation": true
+  },
+  "choiceLists": [
+    {
+      "id": "yesno",
+      "choices": [
+        {
+          "value": "yes",
+          "label": "Yes"
+        },
+        {
+          "value": "no",
+          "label": "No"
+        }
+      ]
+    }
+  ],
+  "blocks": [
+    {
+      "id": "p1",
+      "pages": [
+        {
+          "id": "p1_page",
+          "items": [
+            {
+              "type": "single",
+              "id": "a",
+              "label": "Do you own a bicycle?",
+              "choiceList": "yesno",
+              "required": true
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "id": "p2",
+      "pages": [
+        {
+          "id": "p2_page",
+          "items": [
+            {
+              "type": "integer",
+              "id": "b",
+              "label": "How many bicycles do you own?",
+              "required": true,
+              "showIf": {
+                "kind": "compare",
+                "op": "==",
+                "left": {
+                  "kind": "ref",
+                  "id": "a"
+                },
+                "right": {
+                  "kind": "text",
+                  "value": "yes"
+                }
+              }
+            },
+            {
+              "type": "text",
+              "id": "weather",
+              "label": "What is the weather like today? (optional)"
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "id": "p3",
+      "pages": [
+        {
+          "id": "p3_page",
+          "items": [
+            {
+              "type": "text",
+              "id": "c",
+              "label": "Which bicycle is your favourite?",
+              "showIf": {
+                "kind": "compare",
+                "op": ">=",
+                "left": {
+                  "kind": "ref",
+                  "id": "b"
+                },
+                "right": {
+                  "kind": "int",
+                  "value": 2
+                }
+              }
+            },
+            {
+              "type": "text",
+              "id": "colour",
+              "label": "Your favourite colour? (optional)"
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "id": "p4",
+      "pages": [
+        {
+          "id": "p4_page",
+          "items": [
+            {
+              "type": "text",
+              "id": "d",
+              "label": "Why that one?",
+              "showIf": {
+                "kind": "answered",
+                "ref": {
+                  "kind": "ref",
+                  "id": "c"
+                }
+              }
+            },
+            {
+              "type": "text",
+              "id": "final",
+              "label": "Anything else? (optional)"
+            }
+          ]
+        }
+      ]
+    }
+  ],
+  "flow": [
+    {
+      "type": "block",
+      "id": "n_p1",
+      "block": "p1"
+    },
+    {
+      "type": "block",
+      "id": "n_p2",
+      "block": "p2"
+    },
+    {
+      "type": "block",
+      "id": "n_p3",
+      "block": "p3"
+    },
+    {
+      "type": "block",
+      "id": "n_p4",
+      "block": "p4"
+    }
+  ]
+}

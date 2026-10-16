@@ -1,0 +1,56 @@
+{
+  "format": "osp-fixture-script/0",
+  "id": "big-then-small",
+  "description": "x = 20 shows y; y, z and v are answered. Back to p1, x = 5: y is cleared, so z (answered(y)) and v (answered(z)) are cleared too, and w (not answered(y)) appears, unanswered; u stays hidden until w is answered.",
+  "sessionSeed": 2201,
+  "language": "en",
+  "actions": [
+    {
+      "expectPage": "p1",
+      "set": {
+        "x": 20
+      },
+      "do": "next"
+    },
+    {
+      "expectPage": "p2",
+      "set": {
+        "y": "it felt right",
+        "z": "lucky number"
+      },
+      "do": "next"
+    },
+    {
+      "expectPage": "p3",
+      "set": {
+        "v": "more text"
+      },
+      "do": "back"
+    },
+    {
+      "expectPage": "p2",
+      "do": "back"
+    },
+    {
+      "expectPage": "p1",
+      "set": {
+        "x": 5
+      },
+      "do": "next"
+    },
+    {
+      "expectPage": "p2",
+      "set": {
+        "w": "I like small numbers"
+      },
+      "do": "next"
+    },
+    {
+      "expectPage": "p3",
+      "set": {
+        "u": "really"
+      },
+      "do": "next"
+    }
+  ]
+}

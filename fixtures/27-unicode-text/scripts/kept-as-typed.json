@@ -1,0 +1,23 @@
+{
+  "format": "osp-fixture-script/0",
+  "id": "kept-as-typed",
+  "description": "ASCII spaces, tabs and newlines at the ends are trimmed; everything inside is kept: an emoji with a skin-tone modifier, Hebrew (RTL) text, an internal NBSP and zero-width space, and Arabic text with markup-like characters that are escaped when piped.",
+  "sessionSeed": 2701,
+  "language": "en",
+  "actions": [
+    {
+      "expectPage": "p1",
+      "set": {
+        "t_emoji": "  👍🏽 great \n",
+        "t_rtl": "\tשלום עולם\n",
+        "t_mixed": " AB\u00a012\u200bX ",
+        "t_name": " <b>دانة</b> & co "
+      },
+      "do": "next"
+    },
+    {
+      "expectPage": "p2",
+      "do": "next"
+    }
+  ]
+}

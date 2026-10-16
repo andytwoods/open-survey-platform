@@ -1,0 +1,838 @@
+{
+  "format": "osp-fixture-expected/0",
+  "fixture": "21-back-cascade-three-levels",
+  "script": "change-root-then-restore",
+  "pending": [],
+  "steps": [
+    {
+      "index": 0,
+      "page": "p1",
+      "visible": [
+        "a"
+      ],
+      "errors": {},
+      "nav": {
+        "back": false
+      },
+      "questions": {
+        "a": {
+          "state": "unanswered",
+          "value": null
+        },
+        "b": {
+          "state": "not-reached",
+          "value": null
+        },
+        "weather": {
+          "state": "not-reached",
+          "value": null
+        },
+        "c": {
+          "state": "not-reached",
+          "value": null
+        },
+        "colour": {
+          "state": "not-reached",
+          "value": null
+        },
+        "d": {
+          "state": "not-reached",
+          "value": null
+        },
+        "final": {
+          "state": "not-reached",
+          "value": null
+        }
+      },
+      "orders": {
+        "blocks": {},
+        "items": {},
+        "choices": {}
+      },
+      "conditions": {},
+      "end": null
+    },
+    {
+      "index": 1,
+      "page": "p2",
+      "visible": [
+        "b",
+        "weather"
+      ],
+      "errors": {},
+      "nav": {
+        "back": true
+      },
+      "questions": {
+        "a": {
+          "state": "answered",
+          "value": "yes"
+        },
+        "b": {
+          "state": "unanswered",
+          "value": null
+        },
+        "weather": {
+          "state": "unanswered",
+          "value": null
+        },
+        "c": {
+          "state": "not-reached",
+          "value": null
+        },
+        "colour": {
+          "state": "not-reached",
+          "value": null
+        },
+        "d": {
+          "state": "not-reached",
+          "value": null
+        },
+        "final": {
+          "state": "not-reached",
+          "value": null
+        }
+      },
+      "orders": {
+        "blocks": {},
+        "items": {},
+        "choices": {}
+      },
+      "conditions": {},
+      "end": null
+    },
+    {
+      "index": 2,
+      "page": "p3",
+      "visible": [
+        "c",
+        "colour"
+      ],
+      "errors": {},
+      "nav": {
+        "back": true
+      },
+      "questions": {
+        "a": {
+          "state": "answered",
+          "value": "yes"
+        },
+        "b": {
+          "state": "answered",
+          "value": 3
+        },
+        "weather": {
+          "state": "unanswered",
+          "value": null
+        },
+        "c": {
+          "state": "unanswered",
+          "value": null
+        },
+        "colour": {
+          "state": "unanswered",
+          "value": null
+        },
+        "d": {
+          "state": "not-reached",
+          "value": null
+        },
+        "final": {
+          "state": "not-reached",
+          "value": null
+        }
+      },
+      "orders": {
+        "blocks": {},
+        "items": {},
+        "choices": {}
+      },
+      "conditions": {},
+      "end": null
+    },
+    {
+      "index": 3,
+      "page": "p4",
+      "visible": [
+        "d",
+        "final"
+      ],
+      "errors": {},
+      "nav": {
+        "back": true
+      },
+      "questions": {
+        "a": {
+          "state": "answered",
+          "value": "yes"
+        },
+        "b": {
+          "state": "answered",
+          "value": 3
+        },
+        "weather": {
+          "state": "unanswered",
+          "value": null
+        },
+        "c": {
+          "state": "answered",
+          "value": "the red one"
+        },
+        "colour": {
+          "state": "unanswered",
+          "value": null
+        },
+        "d": {
+          "state": "unanswered",
+          "value": null
+        },
+        "final": {
+          "state": "unanswered",
+          "value": null
+        }
+      },
+      "orders": {
+        "blocks": {},
+        "items": {},
+        "choices": {}
+      },
+      "conditions": {},
+      "end": null
+    },
+    {
+      "index": 4,
+      "page": "p3",
+      "visible": [
+        "c",
+        "colour"
+      ],
+      "errors": {},
+      "nav": {
+        "back": true
+      },
+      "questions": {
+        "a": {
+          "state": "answered",
+          "value": "yes"
+        },
+        "b": {
+          "state": "answered",
+          "value": 3
+        },
+        "weather": {
+          "state": "unanswered",
+          "value": null
+        },
+        "c": {
+          "state": "answered",
+          "value": "the red one"
+        },
+        "colour": {
+          "state": "unanswered",
+          "value": null
+        },
+        "d": {
+          "state": "unanswered",
+          "value": null
+        },
+        "final": {
+          "state": "unanswered",
+          "value": null
+        }
+      },
+      "orders": {
+        "blocks": {},
+        "items": {},
+        "choices": {}
+      },
+      "conditions": {},
+      "end": null
+    },
+    {
+      "index": 5,
+      "page": "p2",
+      "visible": [
+        "b",
+        "weather"
+      ],
+      "errors": {},
+      "nav": {
+        "back": true
+      },
+      "questions": {
+        "a": {
+          "state": "answered",
+          "value": "yes"
+        },
+        "b": {
+          "state": "answered",
+          "value": 3
+        },
+        "weather": {
+          "state": "unanswered",
+          "value": null
+        },
+        "c": {
+          "state": "answered",
+          "value": "the red one"
+        },
+        "colour": {
+          "state": "unanswered",
+          "value": null
+        },
+        "d": {
+          "state": "unanswered",
+          "value": null
+        },
+        "final": {
+          "state": "unanswered",
+          "value": null
+        }
+      },
+      "orders": {
+        "blocks": {},
+        "items": {},
+        "choices": {}
+      },
+      "conditions": {},
+      "end": null
+    },
+    {
+      "index": 6,
+      "page": "p1",
+      "visible": [
+        "a"
+      ],
+      "errors": {},
+      "nav": {
+        "back": false
+      },
+      "questions": {
+        "a": {
+          "state": "answered",
+          "value": "yes"
+        },
+        "b": {
+          "state": "answered",
+          "value": 3
+        },
+        "weather": {
+          "state": "unanswered",
+          "value": null
+        },
+        "c": {
+          "state": "answered",
+          "value": "the red one"
+        },
+        "colour": {
+          "state": "unanswered",
+          "value": null
+        },
+        "d": {
+          "state": "unanswered",
+          "value": null
+        },
+        "final": {
+          "state": "unanswered",
+          "value": null
+        }
+      },
+      "orders": {
+        "blocks": {},
+        "items": {},
+        "choices": {}
+      },
+      "conditions": {},
+      "end": null
+    },
+    {
+      "index": 7,
+      "page": "p2",
+      "visible": [
+        "weather"
+      ],
+      "errors": {},
+      "nav": {
+        "back": true
+      },
+      "questions": {
+        "a": {
+          "state": "answered",
+          "value": "no"
+        },
+        "b": {
+          "state": "irrelevant",
+          "value": null
+        },
+        "weather": {
+          "state": "unanswered",
+          "value": null
+        },
+        "c": {
+          "state": "irrelevant",
+          "value": null
+        },
+        "colour": {
+          "state": "unanswered",
+          "value": null
+        },
+        "d": {
+          "state": "irrelevant",
+          "value": null
+        },
+        "final": {
+          "state": "unanswered",
+          "value": null
+        }
+      },
+      "orders": {
+        "blocks": {},
+        "items": {},
+        "choices": {}
+      },
+      "conditions": {},
+      "end": null
+    },
+    {
+      "index": 8,
+      "page": "p1",
+      "visible": [
+        "a"
+      ],
+      "errors": {},
+      "nav": {
+        "back": false
+      },
+      "questions": {
+        "a": {
+          "state": "answered",
+          "value": "no"
+        },
+        "b": {
+          "state": "irrelevant",
+          "value": null
+        },
+        "weather": {
+          "state": "unanswered",
+          "value": null
+        },
+        "c": {
+          "state": "irrelevant",
+          "value": null
+        },
+        "colour": {
+          "state": "unanswered",
+          "value": null
+        },
+        "d": {
+          "state": "irrelevant",
+          "value": null
+        },
+        "final": {
+          "state": "unanswered",
+          "value": null
+        }
+      },
+      "orders": {
+        "blocks": {},
+        "items": {},
+        "choices": {}
+      },
+      "conditions": {},
+      "end": null
+    },
+    {
+      "index": 9,
+      "page": "p2",
+      "visible": [
+        "b",
+        "weather"
+      ],
+      "errors": {},
+      "nav": {
+        "back": true
+      },
+      "questions": {
+        "a": {
+          "state": "answered",
+          "value": "yes"
+        },
+        "b": {
+          "state": "unanswered",
+          "value": null
+        },
+        "weather": {
+          "state": "unanswered",
+          "value": null
+        },
+        "c": {
+          "state": "irrelevant",
+          "value": null
+        },
+        "colour": {
+          "state": "unanswered",
+          "value": null
+        },
+        "d": {
+          "state": "irrelevant",
+          "value": null
+        },
+        "final": {
+          "state": "unanswered",
+          "value": null
+        }
+      },
+      "orders": {
+        "blocks": {},
+        "items": {},
+        "choices": {}
+      },
+      "conditions": {},
+      "end": null
+    },
+    {
+      "index": 10,
+      "page": "p2",
+      "visible": [
+        "b",
+        "weather"
+      ],
+      "errors": {
+        "b": {
+          "kind": "required"
+        }
+      },
+      "nav": {
+        "back": true
+      },
+      "questions": {
+        "a": {
+          "state": "answered",
+          "value": "yes"
+        },
+        "b": {
+          "state": "unanswered",
+          "value": null
+        },
+        "weather": {
+          "state": "unanswered",
+          "value": null
+        },
+        "c": {
+          "state": "irrelevant",
+          "value": null
+        },
+        "colour": {
+          "state": "unanswered",
+          "value": null
+        },
+        "d": {
+          "state": "irrelevant",
+          "value": null
+        },
+        "final": {
+          "state": "unanswered",
+          "value": null
+        }
+      },
+      "orders": {
+        "blocks": {},
+        "items": {},
+        "choices": {}
+      },
+      "conditions": {},
+      "end": null
+    },
+    {
+      "index": 11,
+      "page": "p3",
+      "visible": [
+        "colour"
+      ],
+      "errors": {},
+      "nav": {
+        "back": true
+      },
+      "questions": {
+        "a": {
+          "state": "answered",
+          "value": "yes"
+        },
+        "b": {
+          "state": "answered",
+          "value": 1
+        },
+        "weather": {
+          "state": "unanswered",
+          "value": null
+        },
+        "c": {
+          "state": "irrelevant",
+          "value": null
+        },
+        "colour": {
+          "state": "unanswered",
+          "value": null
+        },
+        "d": {
+          "state": "irrelevant",
+          "value": null
+        },
+        "final": {
+          "state": "unanswered",
+          "value": null
+        }
+      },
+      "orders": {
+        "blocks": {},
+        "items": {},
+        "choices": {}
+      },
+      "conditions": {},
+      "end": null
+    },
+    {
+      "index": 12,
+      "page": "p2",
+      "visible": [
+        "b",
+        "weather"
+      ],
+      "errors": {},
+      "nav": {
+        "back": true
+      },
+      "questions": {
+        "a": {
+          "state": "answered",
+          "value": "yes"
+        },
+        "b": {
+          "state": "answered",
+          "value": 1
+        },
+        "weather": {
+          "state": "unanswered",
+          "value": null
+        },
+        "c": {
+          "state": "irrelevant",
+          "value": null
+        },
+        "colour": {
+          "state": "unanswered",
+          "value": null
+        },
+        "d": {
+          "state": "irrelevant",
+          "value": null
+        },
+        "final": {
+          "state": "unanswered",
+          "value": null
+        }
+      },
+      "orders": {
+        "blocks": {},
+        "items": {},
+        "choices": {}
+      },
+      "conditions": {},
+      "end": null
+    },
+    {
+      "index": 13,
+      "page": "p3",
+      "visible": [
+        "c",
+        "colour"
+      ],
+      "errors": {},
+      "nav": {
+        "back": true
+      },
+      "questions": {
+        "a": {
+          "state": "answered",
+          "value": "yes"
+        },
+        "b": {
+          "state": "answered",
+          "value": 2
+        },
+        "weather": {
+          "state": "unanswered",
+          "value": null
+        },
+        "c": {
+          "state": "unanswered",
+          "value": null
+        },
+        "colour": {
+          "state": "unanswered",
+          "value": null
+        },
+        "d": {
+          "state": "irrelevant",
+          "value": null
+        },
+        "final": {
+          "state": "unanswered",
+          "value": null
+        }
+      },
+      "orders": {
+        "blocks": {},
+        "items": {},
+        "choices": {}
+      },
+      "conditions": {},
+      "end": null
+    },
+    {
+      "index": 14,
+      "page": "p4",
+      "visible": [
+        "final"
+      ],
+      "errors": {},
+      "nav": {
+        "back": true
+      },
+      "questions": {
+        "a": {
+          "state": "answered",
+          "value": "yes"
+        },
+        "b": {
+          "state": "answered",
+          "value": 2
+        },
+        "weather": {
+          "state": "unanswered",
+          "value": null
+        },
+        "c": {
+          "state": "unanswered",
+          "value": null
+        },
+        "colour": {
+          "state": "unanswered",
+          "value": null
+        },
+        "d": {
+          "state": "irrelevant",
+          "value": null
+        },
+        "final": {
+          "state": "unanswered",
+          "value": null
+        }
+      },
+      "orders": {
+        "blocks": {},
+        "items": {},
+        "choices": {}
+      },
+      "conditions": {},
+      "end": null
+    },
+    {
+      "index": 15,
+      "page": null,
+      "visible": [],
+      "errors": {},
+      "nav": null,
+      "questions": {
+        "a": {
+          "state": "answered",
+          "value": "yes"
+        },
+        "b": {
+          "state": "answered",
+          "value": 2
+        },
+        "weather": {
+          "state": "unanswered",
+          "value": null
+        },
+        "c": {
+          "state": "unanswered",
+          "value": null
+        },
+        "colour": {
+          "state": "unanswered",
+          "value": null
+        },
+        "d": {
+          "state": "irrelevant",
+          "value": null
+        },
+        "final": {
+          "state": "unanswered",
+          "value": null
+        }
+      },
+      "orders": {
+        "blocks": {},
+        "items": {},
+        "choices": {}
+      },
+      "conditions": {},
+      "end": "complete"
+    }
+  ],
+  "invariants": [],
+  "response": {
+    "surveyId": "f21_back_cascade",
+    "surveyVersion": 1,
+    "end": "complete",
+    "allocation": "server",
+    "sessionSeed": 2102,
+    "conditions": {},
+    "orders": {
+      "blocks": {},
+      "items": {},
+      "choices": {}
+    },
+    "answers": {
+      "a": {
+        "state": "answered",
+        "value": "yes"
+      },
+      "b": {
+        "state": "answered",
+        "value": 2
+      },
+      "weather": {
+        "state": "unanswered",
+        "value": null
+      },
+      "c": {
+        "state": "unanswered",
+        "value": null
+      },
+      "colour": {
+        "state": "unanswered",
+        "value": null
+      },
+      "d": {
+        "state": "irrelevant",
+        "value": null
+      },
+      "final": {
+        "state": "unanswered",
+        "value": null
+      }
+    },
+    "csvState": {
+      "a__state": "answered",
+      "b__state": "answered",
+      "weather__state": "unanswered",
+      "c__state": "unanswered",
+      "colour__state": "unanswered",
+      "d__state": "irrelevant",
+      "final__state": "unanswered"
+    }
+  }
+}

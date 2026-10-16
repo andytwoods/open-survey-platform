@@ -1,0 +1,480 @@
+{
+  "format": "osp-fixture-expected/0",
+  "fixture": "29-regression-clear-on-page-change",
+  "script": "hide-refresh-show",
+  "pending": [],
+  "steps": [
+    {
+      "index": 0,
+      "page": "p1",
+      "visible": [
+        "smoker"
+      ],
+      "errors": {},
+      "nav": {
+        "back": false
+      },
+      "questions": {
+        "smoker": {
+          "state": "unanswered",
+          "value": null
+        },
+        "per_day": {
+          "state": "irrelevant",
+          "value": null
+        },
+        "quit": {
+          "state": "not-reached",
+          "value": null
+        },
+        "other": {
+          "state": "not-reached",
+          "value": null
+        }
+      },
+      "orders": {
+        "blocks": {},
+        "items": {},
+        "choices": {}
+      },
+      "conditions": {},
+      "end": null
+    },
+    {
+      "index": 1,
+      "page": "p2",
+      "visible": [
+        "quit",
+        "other"
+      ],
+      "errors": {},
+      "nav": {
+        "back": true
+      },
+      "questions": {
+        "smoker": {
+          "state": "answered",
+          "value": "yes"
+        },
+        "per_day": {
+          "state": "answered",
+          "value": 20
+        },
+        "quit": {
+          "state": "unanswered",
+          "value": null
+        },
+        "other": {
+          "state": "unanswered",
+          "value": null
+        }
+      },
+      "orders": {
+        "blocks": {},
+        "items": {},
+        "choices": {}
+      },
+      "conditions": {},
+      "end": null
+    },
+    {
+      "index": 2,
+      "page": "p1",
+      "visible": [
+        "smoker",
+        "per_day"
+      ],
+      "errors": {},
+      "nav": {
+        "back": false
+      },
+      "questions": {
+        "smoker": {
+          "state": "answered",
+          "value": "yes"
+        },
+        "per_day": {
+          "state": "answered",
+          "value": 20
+        },
+        "quit": {
+          "state": "answered",
+          "value": "maybe"
+        },
+        "other": {
+          "state": "unanswered",
+          "value": null
+        }
+      },
+      "orders": {
+        "blocks": {},
+        "items": {},
+        "choices": {}
+      },
+      "conditions": {},
+      "end": null
+    },
+    {
+      "index": 3,
+      "page": "p2",
+      "visible": [
+        "other"
+      ],
+      "errors": {},
+      "nav": {
+        "back": true
+      },
+      "questions": {
+        "smoker": {
+          "state": "answered",
+          "value": "no"
+        },
+        "per_day": {
+          "state": "irrelevant",
+          "value": null
+        },
+        "quit": {
+          "state": "irrelevant",
+          "value": null
+        },
+        "other": {
+          "state": "unanswered",
+          "value": null
+        }
+      },
+      "orders": {
+        "blocks": {},
+        "items": {},
+        "choices": {}
+      },
+      "conditions": {},
+      "end": null
+    },
+    {
+      "index": 4,
+      "page": "p2",
+      "visible": [
+        "other"
+      ],
+      "errors": {},
+      "nav": {
+        "back": true
+      },
+      "questions": {
+        "smoker": {
+          "state": "answered",
+          "value": "no"
+        },
+        "per_day": {
+          "state": "irrelevant",
+          "value": null
+        },
+        "quit": {
+          "state": "irrelevant",
+          "value": null
+        },
+        "other": {
+          "state": "unanswered",
+          "value": null
+        }
+      },
+      "orders": {
+        "blocks": {},
+        "items": {},
+        "choices": {}
+      },
+      "conditions": {},
+      "end": null
+    },
+    {
+      "index": 5,
+      "page": "p1",
+      "visible": [
+        "smoker"
+      ],
+      "errors": {},
+      "nav": {
+        "back": false
+      },
+      "questions": {
+        "smoker": {
+          "state": "answered",
+          "value": "no"
+        },
+        "per_day": {
+          "state": "irrelevant",
+          "value": null
+        },
+        "quit": {
+          "state": "irrelevant",
+          "value": null
+        },
+        "other": {
+          "state": "unanswered",
+          "value": null
+        }
+      },
+      "orders": {
+        "blocks": {},
+        "items": {},
+        "choices": {}
+      },
+      "conditions": {},
+      "end": null
+    },
+    {
+      "index": 6,
+      "page": "p1",
+      "visible": [
+        "smoker",
+        "per_day"
+      ],
+      "errors": {},
+      "nav": {
+        "back": false
+      },
+      "questions": {
+        "smoker": {
+          "state": "answered",
+          "value": "yes"
+        },
+        "per_day": {
+          "state": "unanswered",
+          "value": null
+        },
+        "quit": {
+          "state": "irrelevant",
+          "value": null
+        },
+        "other": {
+          "state": "unanswered",
+          "value": null
+        }
+      },
+      "orders": {
+        "blocks": {},
+        "items": {},
+        "choices": {}
+      },
+      "conditions": {},
+      "end": null
+    },
+    {
+      "index": 7,
+      "page": "p2",
+      "visible": [
+        "other"
+      ],
+      "errors": {},
+      "nav": {
+        "back": true
+      },
+      "questions": {
+        "smoker": {
+          "state": "answered",
+          "value": "yes"
+        },
+        "per_day": {
+          "state": "unanswered",
+          "value": null
+        },
+        "quit": {
+          "state": "irrelevant",
+          "value": null
+        },
+        "other": {
+          "state": "unanswered",
+          "value": null
+        }
+      },
+      "orders": {
+        "blocks": {},
+        "items": {},
+        "choices": {}
+      },
+      "conditions": {},
+      "end": null
+    },
+    {
+      "index": 8,
+      "page": "p1",
+      "visible": [
+        "smoker",
+        "per_day"
+      ],
+      "errors": {},
+      "nav": {
+        "back": false
+      },
+      "questions": {
+        "smoker": {
+          "state": "answered",
+          "value": "yes"
+        },
+        "per_day": {
+          "state": "unanswered",
+          "value": null
+        },
+        "quit": {
+          "state": "irrelevant",
+          "value": null
+        },
+        "other": {
+          "state": "unanswered",
+          "value": null
+        }
+      },
+      "orders": {
+        "blocks": {},
+        "items": {},
+        "choices": {}
+      },
+      "conditions": {},
+      "end": null
+    },
+    {
+      "index": 9,
+      "page": "p2",
+      "visible": [
+        "quit",
+        "other"
+      ],
+      "errors": {},
+      "nav": {
+        "back": true
+      },
+      "questions": {
+        "smoker": {
+          "state": "answered",
+          "value": "yes"
+        },
+        "per_day": {
+          "state": "answered",
+          "value": 15
+        },
+        "quit": {
+          "state": "unanswered",
+          "value": null
+        },
+        "other": {
+          "state": "unanswered",
+          "value": null
+        }
+      },
+      "orders": {
+        "blocks": {},
+        "items": {},
+        "choices": {}
+      },
+      "conditions": {},
+      "end": null
+    },
+    {
+      "index": 10,
+      "page": "p2",
+      "visible": [
+        "quit",
+        "other"
+      ],
+      "errors": {},
+      "nav": {
+        "back": true
+      },
+      "questions": {
+        "smoker": {
+          "state": "answered",
+          "value": "yes"
+        },
+        "per_day": {
+          "state": "answered",
+          "value": 15
+        },
+        "quit": {
+          "state": "unanswered",
+          "value": null
+        },
+        "other": {
+          "state": "unanswered",
+          "value": null
+        }
+      },
+      "orders": {
+        "blocks": {},
+        "items": {},
+        "choices": {}
+      },
+      "conditions": {},
+      "end": null
+    },
+    {
+      "index": 11,
+      "page": null,
+      "visible": [],
+      "errors": {},
+      "nav": null,
+      "questions": {
+        "smoker": {
+          "state": "answered",
+          "value": "yes"
+        },
+        "per_day": {
+          "state": "answered",
+          "value": 15
+        },
+        "quit": {
+          "state": "unanswered",
+          "value": null
+        },
+        "other": {
+          "state": "unanswered",
+          "value": null
+        }
+      },
+      "orders": {
+        "blocks": {},
+        "items": {},
+        "choices": {}
+      },
+      "conditions": {},
+      "end": "complete"
+    }
+  ],
+  "invariants": [],
+  "response": {
+    "surveyId": "f29_clear_on_page_change",
+    "surveyVersion": 1,
+    "end": "complete",
+    "allocation": "server",
+    "sessionSeed": 2901,
+    "conditions": {},
+    "orders": {
+      "blocks": {},
+      "items": {},
+      "choices": {}
+    },
+    "answers": {
+      "smoker": {
+        "state": "answered",
+        "value": "yes"
+      },
+      "per_day": {
+        "state": "answered",
+        "value": 15
+      },
+      "quit": {
+        "state": "unanswered",
+        "value": null
+      },
+      "other": {
+        "state": "unanswered",
+        "value": null
+      }
+    },
+    "csvState": {
+      "smoker__state": "answered",
+      "per_day__state": "answered",
+      "quit__state": "unanswered",
+      "other__state": "unanswered"
+    }
+  }
+}

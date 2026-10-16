@@ -1,0 +1,59 @@
+{
+  "format": "osp-fixture-script/0",
+  "id": "storage-blocked",
+  "description": "Private mode: IndexedDB is blocked, so there is no local copy. Unsubmitted answers (nick, n_books, best) survive refresh and resume because the server saved them on every answer; back after a refresh still works.",
+  "sessionSeed": 3001,
+  "language": "en",
+  "storage": "blocked",
+  "actions": [
+    {
+      "expectPage": "p1",
+      "set": {
+        "nick": "  Robin  "
+      },
+      "do": "refresh"
+    },
+    {
+      "expectPage": "p1",
+      "do": "next"
+    },
+    {
+      "expectPage": "p2",
+      "set": {
+        "n_books": 3
+      },
+      "do": "resume"
+    },
+    {
+      "expectPage": "p2",
+      "set": {
+        "best": "a long novel"
+      },
+      "do": "refresh"
+    },
+    {
+      "expectPage": "p2",
+      "do": "next"
+    },
+    {
+      "expectPage": "p3",
+      "do": "refresh"
+    },
+    {
+      "expectPage": "p3",
+      "do": "back"
+    },
+    {
+      "expectPage": "p2",
+      "do": "resume"
+    },
+    {
+      "expectPage": "p2",
+      "do": "next"
+    },
+    {
+      "expectPage": "p3",
+      "do": "next"
+    }
+  ]
+}

@@ -1,0 +1,235 @@
+{
+  "format": "osp-fixture-expected/0",
+  "fixture": "33-end-only-save",
+  "script": "browser-copy",
+  "pending": [
+    "R6-5"
+  ],
+  "steps": [
+    {
+      "index": 0,
+      "page": "p1",
+      "visible": [
+        "consent"
+      ],
+      "errors": {},
+      "nav": {
+        "back": false
+      },
+      "questions": {
+        "consent": {
+          "state": "unanswered",
+          "value": null
+        },
+        "q_a": {
+          "state": "not-reached",
+          "value": null
+        },
+        "q_b": {
+          "state": "not-reached",
+          "value": null
+        }
+      },
+      "orders": {
+        "blocks": {},
+        "items": {},
+        "choices": {}
+      },
+      "conditions": {},
+      "end": null
+    },
+    {
+      "index": 1,
+      "page": "p2",
+      "visible": [
+        "q_a"
+      ],
+      "errors": {},
+      "nav": {
+        "back": true
+      },
+      "questions": {
+        "consent": {
+          "state": "answered",
+          "value": "yes"
+        },
+        "q_a": {
+          "state": "unanswered",
+          "value": null
+        },
+        "q_b": {
+          "state": "not-reached",
+          "value": null
+        }
+      },
+      "orders": {
+        "blocks": {},
+        "items": {},
+        "choices": {}
+      },
+      "conditions": {},
+      "end": null
+    },
+    {
+      "index": 2,
+      "page": "p2",
+      "visible": [
+        "q_a"
+      ],
+      "errors": {},
+      "nav": {
+        "back": true
+      },
+      "questions": {
+        "consent": {
+          "state": "answered",
+          "value": "yes"
+        },
+        "q_a": {
+          "state": "answered",
+          "value": 7
+        },
+        "q_b": {
+          "state": "not-reached",
+          "value": null
+        }
+      },
+      "orders": {
+        "blocks": {},
+        "items": {},
+        "choices": {}
+      },
+      "conditions": {},
+      "end": null
+    },
+    {
+      "index": 3,
+      "page": "p3",
+      "visible": [
+        "q_b"
+      ],
+      "errors": {},
+      "nav": {
+        "back": true
+      },
+      "questions": {
+        "consent": {
+          "state": "answered",
+          "value": "yes"
+        },
+        "q_a": {
+          "state": "answered",
+          "value": 7
+        },
+        "q_b": {
+          "state": "unanswered",
+          "value": null
+        }
+      },
+      "orders": {
+        "blocks": {},
+        "items": {},
+        "choices": {}
+      },
+      "conditions": {},
+      "end": null
+    },
+    {
+      "index": 4,
+      "page": "p3",
+      "visible": [
+        "q_b"
+      ],
+      "errors": {},
+      "nav": {
+        "back": true
+      },
+      "questions": {
+        "consent": {
+          "state": "answered",
+          "value": "yes"
+        },
+        "q_a": {
+          "state": "answered",
+          "value": 7
+        },
+        "q_b": {
+          "state": "answered",
+          "value": "fine"
+        }
+      },
+      "orders": {
+        "blocks": {},
+        "items": {},
+        "choices": {}
+      },
+      "conditions": {},
+      "end": null
+    },
+    {
+      "index": 5,
+      "page": null,
+      "visible": [],
+      "errors": {},
+      "nav": null,
+      "questions": {
+        "consent": {
+          "state": "answered",
+          "value": "yes"
+        },
+        "q_a": {
+          "state": "answered",
+          "value": 7
+        },
+        "q_b": {
+          "state": "answered",
+          "value": "fine"
+        }
+      },
+      "orders": {
+        "blocks": {},
+        "items": {},
+        "choices": {}
+      },
+      "conditions": {},
+      "end": "complete"
+    }
+  ],
+  "invariants": [],
+  "response": {
+    "surveyId": "f33_end_only",
+    "surveyVersion": 1,
+    "end": "complete",
+    "allocation": "server",
+    "sessionSeed": 3301,
+    "conditions": {},
+    "orders": {
+      "blocks": {},
+      "items": {},
+      "choices": {}
+    },
+    "answers": {
+      "consent": {
+        "state": "answered",
+        "value": "yes"
+      },
+      "q_a": {
+        "state": "answered",
+        "value": 7
+      },
+      "q_b": {
+        "state": "answered",
+        "value": "fine"
+      }
+    },
+    "csvState": {
+      "consent__state": "answered",
+      "q_a__state": "answered",
+      "q_b__state": "answered"
+    }
+  },
+  "network": {
+    "snapshotWrites": 0,
+    "submits": 1
+  }
+}

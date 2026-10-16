@@ -1,0 +1,142 @@
+{
+  "specVersion": "osp-survey/0.1",
+  "id": "f28_order_refresh",
+  "version": 1,
+  "metadata": {
+    "title": "Regression: question order fixed across refresh",
+    "description": "Enketo spike workaround 1 (E4/E5; runtime-design §3): item and choice orders are realised at first reach and stored before the page renders, so a refresh before any answer, a resume, and a back then refresh never re-roll them.",
+    "languages": [
+      "en"
+    ]
+  },
+  "settings": {
+    "backNavigation": true
+  },
+  "choiceLists": [
+    {
+      "id": "yesno",
+      "choices": [
+        {
+          "value": "yes",
+          "label": "Yes"
+        },
+        {
+          "value": "no",
+          "label": "No"
+        }
+      ]
+    },
+    {
+      "id": "agree5",
+      "choices": [
+        {
+          "value": 1,
+          "label": "Strongly disagree"
+        },
+        {
+          "value": 2,
+          "label": "Disagree"
+        },
+        {
+          "value": 3,
+          "label": "Neutral"
+        },
+        {
+          "value": 4,
+          "label": "Agree"
+        },
+        {
+          "value": 5,
+          "label": "Strongly agree"
+        }
+      ]
+    }
+  ],
+  "blocks": [
+    {
+      "id": "p_intro",
+      "pages": [
+        {
+          "id": "p_intro_page",
+          "items": [
+            {
+              "type": "single",
+              "id": "ready",
+              "label": "Ready?",
+              "choiceList": "yesno",
+              "required": true
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "id": "p_att",
+      "pages": [
+        {
+          "id": "p_att_page",
+          "items": [
+            {
+              "type": "single",
+              "id": "att1",
+              "label": "Statement one.",
+              "choiceList": "agree5"
+            },
+            {
+              "type": "single",
+              "id": "att2",
+              "label": "Statement two.",
+              "choiceList": "agree5"
+            },
+            {
+              "type": "single",
+              "id": "att3",
+              "label": "Statement three.",
+              "choiceList": "agree5",
+              "choiceOrder": "shuffle"
+            },
+            {
+              "type": "single",
+              "id": "att4",
+              "label": "Statement four.",
+              "choiceList": "agree5"
+            }
+          ],
+          "itemOrder": "shuffle"
+        }
+      ]
+    },
+    {
+      "id": "p_end",
+      "pages": [
+        {
+          "id": "p_end_page",
+          "items": [
+            {
+              "type": "text",
+              "id": "outro",
+              "label": "Any comment? (optional)"
+            }
+          ]
+        }
+      ]
+    }
+  ],
+  "flow": [
+    {
+      "type": "block",
+      "id": "n_p_intro",
+      "block": "p_intro"
+    },
+    {
+      "type": "block",
+      "id": "n_p_att",
+      "block": "p_att"
+    },
+    {
+      "type": "block",
+      "id": "n_p_end",
+      "block": "p_end"
+    }
+  ]
+}

@@ -1,0 +1,357 @@
+{
+  "format": "osp-fixture-expected/0",
+  "fixture": "36-refresh-unsubmitted-change",
+  "script": "change-refresh-revert",
+  "pending": [],
+  "steps": [
+    {
+      "index": 0,
+      "page": "p1",
+      "visible": [
+        "drinks"
+      ],
+      "errors": {},
+      "nav": {
+        "back": false
+      },
+      "questions": {
+        "drinks": {
+          "state": "unanswered",
+          "value": null
+        },
+        "drink_kind": {
+          "state": "not-reached",
+          "value": null
+        },
+        "comment": {
+          "state": "not-reached",
+          "value": null
+        }
+      },
+      "orders": {
+        "blocks": {},
+        "items": {},
+        "choices": {}
+      },
+      "conditions": {},
+      "end": null
+    },
+    {
+      "index": 1,
+      "page": "p2",
+      "visible": [
+        "drink_kind"
+      ],
+      "errors": {},
+      "nav": {
+        "back": true
+      },
+      "questions": {
+        "drinks": {
+          "state": "answered",
+          "value": "yes"
+        },
+        "drink_kind": {
+          "state": "unanswered",
+          "value": null
+        },
+        "comment": {
+          "state": "not-reached",
+          "value": null
+        }
+      },
+      "orders": {
+        "blocks": {},
+        "items": {},
+        "choices": {}
+      },
+      "conditions": {},
+      "end": null
+    },
+    {
+      "index": 2,
+      "page": "p3",
+      "visible": [
+        "comment"
+      ],
+      "errors": {},
+      "nav": {
+        "back": true
+      },
+      "questions": {
+        "drinks": {
+          "state": "answered",
+          "value": "yes"
+        },
+        "drink_kind": {
+          "state": "answered",
+          "value": "tea"
+        },
+        "comment": {
+          "state": "unanswered",
+          "value": null
+        }
+      },
+      "orders": {
+        "blocks": {},
+        "items": {},
+        "choices": {}
+      },
+      "conditions": {},
+      "end": null
+    },
+    {
+      "index": 3,
+      "page": "p2",
+      "visible": [
+        "drink_kind"
+      ],
+      "errors": {},
+      "nav": {
+        "back": true
+      },
+      "questions": {
+        "drinks": {
+          "state": "answered",
+          "value": "yes"
+        },
+        "drink_kind": {
+          "state": "answered",
+          "value": "tea"
+        },
+        "comment": {
+          "state": "unanswered",
+          "value": null
+        }
+      },
+      "orders": {
+        "blocks": {},
+        "items": {},
+        "choices": {}
+      },
+      "conditions": {},
+      "end": null
+    },
+    {
+      "index": 4,
+      "page": "p1",
+      "visible": [
+        "drinks"
+      ],
+      "errors": {},
+      "nav": {
+        "back": false
+      },
+      "questions": {
+        "drinks": {
+          "state": "answered",
+          "value": "yes"
+        },
+        "drink_kind": {
+          "state": "answered",
+          "value": "tea"
+        },
+        "comment": {
+          "state": "unanswered",
+          "value": null
+        }
+      },
+      "orders": {
+        "blocks": {},
+        "items": {},
+        "choices": {}
+      },
+      "conditions": {},
+      "end": null
+    },
+    {
+      "index": 5,
+      "page": "p1",
+      "visible": [
+        "drinks"
+      ],
+      "errors": {},
+      "nav": {
+        "back": false
+      },
+      "questions": {
+        "drinks": {
+          "state": "answered",
+          "value": "no"
+        },
+        "drink_kind": {
+          "state": "answered",
+          "value": "tea"
+        },
+        "comment": {
+          "state": "unanswered",
+          "value": null
+        }
+      },
+      "orders": {
+        "blocks": {},
+        "items": {},
+        "choices": {}
+      },
+      "conditions": {},
+      "end": null
+    },
+    {
+      "index": 6,
+      "page": "p2",
+      "visible": [
+        "drink_kind"
+      ],
+      "errors": {},
+      "nav": {
+        "back": true
+      },
+      "questions": {
+        "drinks": {
+          "state": "answered",
+          "value": "yes"
+        },
+        "drink_kind": {
+          "state": "answered",
+          "value": "tea"
+        },
+        "comment": {
+          "state": "unanswered",
+          "value": null
+        }
+      },
+      "orders": {
+        "blocks": {},
+        "items": {},
+        "choices": {}
+      },
+      "conditions": {},
+      "end": null
+    },
+    {
+      "index": 7,
+      "page": "p1",
+      "visible": [
+        "drinks"
+      ],
+      "errors": {},
+      "nav": {
+        "back": false
+      },
+      "questions": {
+        "drinks": {
+          "state": "answered",
+          "value": "yes"
+        },
+        "drink_kind": {
+          "state": "answered",
+          "value": "tea"
+        },
+        "comment": {
+          "state": "unanswered",
+          "value": null
+        }
+      },
+      "orders": {
+        "blocks": {},
+        "items": {},
+        "choices": {}
+      },
+      "conditions": {},
+      "end": null
+    },
+    {
+      "index": 8,
+      "page": "p3",
+      "visible": [
+        "comment"
+      ],
+      "errors": {},
+      "nav": {
+        "back": true
+      },
+      "questions": {
+        "drinks": {
+          "state": "answered",
+          "value": "no"
+        },
+        "drink_kind": {
+          "state": "irrelevant",
+          "value": null
+        },
+        "comment": {
+          "state": "unanswered",
+          "value": null
+        }
+      },
+      "orders": {
+        "blocks": {},
+        "items": {},
+        "choices": {}
+      },
+      "conditions": {},
+      "end": null
+    },
+    {
+      "index": 9,
+      "page": null,
+      "visible": [],
+      "errors": {},
+      "nav": null,
+      "questions": {
+        "drinks": {
+          "state": "answered",
+          "value": "no"
+        },
+        "drink_kind": {
+          "state": "irrelevant",
+          "value": null
+        },
+        "comment": {
+          "state": "unanswered",
+          "value": null
+        }
+      },
+      "orders": {
+        "blocks": {},
+        "items": {},
+        "choices": {}
+      },
+      "conditions": {},
+      "end": "complete"
+    }
+  ],
+  "invariants": [],
+  "response": {
+    "surveyId": "f36_refresh_unsubmitted",
+    "surveyVersion": 1,
+    "end": "complete",
+    "allocation": "server",
+    "sessionSeed": 3601,
+    "conditions": {},
+    "orders": {
+      "blocks": {},
+      "items": {},
+      "choices": {}
+    },
+    "answers": {
+      "drinks": {
+        "state": "answered",
+        "value": "no"
+      },
+      "drink_kind": {
+        "state": "irrelevant",
+        "value": null
+      },
+      "comment": {
+        "state": "unanswered",
+        "value": null
+      }
+    },
+    "csvState": {
+      "drinks__state": "answered",
+      "drink_kind__state": "irrelevant",
+      "comment__state": "unanswered"
+    }
+  }
+}

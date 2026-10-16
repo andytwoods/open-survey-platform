@@ -1,0 +1,36 @@
+{
+  "format": "osp-fixture-script/0",
+  "id": "en",
+  "description": "Session language en. fav = 1 pipes the label of code 1, never '1'; pet (shuffled list) pipes the label of the chosen code c2, not of whatever sits at that display position. Back, fav = 2: the pipes follow and s_banana (fav == 2, compared by code) appears. A refresh keeps the labels.",
+  "sessionSeed": 3101,
+  "language": "en",
+  "actions": [
+    {
+      "expectPage": "p1",
+      "set": {
+        "fav": 1,
+        "pet": "c2"
+      },
+      "do": "next"
+    },
+    {
+      "expectPage": "p2",
+      "do": "back"
+    },
+    {
+      "expectPage": "p1",
+      "set": {
+        "fav": 2
+      },
+      "do": "next"
+    },
+    {
+      "expectPage": "p2",
+      "do": "refresh"
+    },
+    {
+      "expectPage": "p2",
+      "do": "next"
+    }
+  ]
+}

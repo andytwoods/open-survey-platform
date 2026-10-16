@@ -1,0 +1,401 @@
+{
+  "format": "osp-fixture-expected/0",
+  "fixture": "34-branch-change-after-back",
+  "script": "car-bus-car",
+  "pending": [
+    "C3a-6"
+  ],
+  "steps": [
+    {
+      "index": 0,
+      "page": "p1",
+      "visible": [
+        "route"
+      ],
+      "errors": {},
+      "nav": {
+        "back": false
+      },
+      "questions": {
+        "route": {
+          "state": "unanswered",
+          "value": null
+        },
+        "car_make": {
+          "state": "not-reached",
+          "value": null
+        },
+        "car_age": {
+          "state": "not-reached",
+          "value": null
+        },
+        "bus_line": {
+          "state": "not-reached",
+          "value": null
+        },
+        "comment": {
+          "state": "not-reached",
+          "value": null
+        }
+      },
+      "orders": {
+        "blocks": {},
+        "items": {},
+        "choices": {}
+      },
+      "conditions": {},
+      "end": null
+    },
+    {
+      "index": 1,
+      "page": "p_car",
+      "visible": [
+        "car_make",
+        "car_age"
+      ],
+      "errors": {},
+      "nav": {
+        "back": true
+      },
+      "questions": {
+        "route": {
+          "state": "answered",
+          "value": "car"
+        },
+        "car_make": {
+          "state": "unanswered",
+          "value": null
+        },
+        "car_age": {
+          "state": "unanswered",
+          "value": null
+        },
+        "bus_line": {
+          "state": "not-reached",
+          "value": null
+        },
+        "comment": {
+          "state": "not-reached",
+          "value": null
+        }
+      },
+      "orders": {
+        "blocks": {},
+        "items": {},
+        "choices": {}
+      },
+      "conditions": {},
+      "end": null
+    },
+    {
+      "index": 2,
+      "page": "p_end",
+      "visible": [
+        "comment"
+      ],
+      "errors": {},
+      "nav": {
+        "back": true
+      },
+      "questions": {
+        "route": {
+          "state": "answered",
+          "value": "car"
+        },
+        "car_make": {
+          "state": "answered",
+          "value": "Volvo"
+        },
+        "car_age": {
+          "state": "answered",
+          "value": 4
+        },
+        "bus_line": {
+          "state": "not-reached",
+          "value": null
+        },
+        "comment": {
+          "state": "unanswered",
+          "value": null
+        }
+      },
+      "orders": {
+        "blocks": {},
+        "items": {},
+        "choices": {}
+      },
+      "conditions": {},
+      "end": null
+    },
+    {
+      "index": 3,
+      "page": "p_car",
+      "visible": [
+        "car_make",
+        "car_age"
+      ],
+      "errors": {},
+      "nav": {
+        "back": true
+      },
+      "questions": {
+        "route": {
+          "state": "answered",
+          "value": "car"
+        },
+        "car_make": {
+          "state": "answered",
+          "value": "Volvo"
+        },
+        "car_age": {
+          "state": "answered",
+          "value": 4
+        },
+        "bus_line": {
+          "state": "not-reached",
+          "value": null
+        },
+        "comment": {
+          "state": "unanswered",
+          "value": null
+        }
+      },
+      "orders": {
+        "blocks": {},
+        "items": {},
+        "choices": {}
+      },
+      "conditions": {},
+      "end": null
+    },
+    {
+      "index": 4,
+      "page": "p1",
+      "visible": [
+        "route"
+      ],
+      "errors": {},
+      "nav": {
+        "back": false
+      },
+      "questions": {
+        "route": {
+          "state": "answered",
+          "value": "car"
+        },
+        "car_make": {
+          "state": "answered",
+          "value": "Volvo"
+        },
+        "car_age": {
+          "state": "answered",
+          "value": 4
+        },
+        "bus_line": {
+          "state": "not-reached",
+          "value": null
+        },
+        "comment": {
+          "state": "unanswered",
+          "value": null
+        }
+      },
+      "orders": {
+        "blocks": {},
+        "items": {},
+        "choices": {}
+      },
+      "conditions": {},
+      "end": null
+    },
+    {
+      "index": 5,
+      "page": "p_bus",
+      "visible": [
+        "bus_line"
+      ],
+      "errors": {},
+      "nav": {
+        "back": true
+      },
+      "questions": {
+        "route": {
+          "state": "answered",
+          "value": "bus"
+        },
+        "car_make": "<pending:C3a-6>",
+        "car_age": "<pending:C3a-6>",
+        "bus_line": {
+          "state": "unanswered",
+          "value": null
+        },
+        "comment": {
+          "state": "unanswered",
+          "value": null
+        }
+      },
+      "orders": {
+        "blocks": {},
+        "items": {},
+        "choices": {}
+      },
+      "conditions": {},
+      "end": null
+    },
+    {
+      "index": 6,
+      "page": "p1",
+      "visible": [
+        "route"
+      ],
+      "errors": {},
+      "nav": {
+        "back": false
+      },
+      "questions": {
+        "route": {
+          "state": "answered",
+          "value": "bus"
+        },
+        "car_make": "<pending:C3a-6>",
+        "car_age": "<pending:C3a-6>",
+        "bus_line": {
+          "state": "answered",
+          "value": "42"
+        },
+        "comment": {
+          "state": "unanswered",
+          "value": null
+        }
+      },
+      "orders": {
+        "blocks": {},
+        "items": {},
+        "choices": {}
+      },
+      "conditions": {},
+      "end": null
+    },
+    {
+      "index": 7,
+      "page": "p_car",
+      "visible": "<pending:C3a-6>",
+      "errors": {},
+      "nav": {
+        "back": true
+      },
+      "questions": {
+        "route": {
+          "state": "answered",
+          "value": "car"
+        },
+        "car_make": "<pending:C3a-6>",
+        "car_age": "<pending:C3a-6>",
+        "bus_line": "<pending:C3a-6>",
+        "comment": {
+          "state": "unanswered",
+          "value": null
+        }
+      },
+      "orders": {
+        "blocks": {},
+        "items": {},
+        "choices": {}
+      },
+      "conditions": {},
+      "end": null
+    },
+    {
+      "index": 8,
+      "page": "p_end",
+      "visible": [
+        "comment"
+      ],
+      "errors": {},
+      "nav": {
+        "back": true
+      },
+      "questions": {
+        "route": {
+          "state": "answered",
+          "value": "car"
+        },
+        "car_make": "<pending:C3a-6>",
+        "car_age": "<pending:C3a-6>",
+        "bus_line": "<pending:C3a-6>",
+        "comment": {
+          "state": "unanswered",
+          "value": null
+        }
+      },
+      "orders": {
+        "blocks": {},
+        "items": {},
+        "choices": {}
+      },
+      "conditions": {},
+      "end": null
+    },
+    {
+      "index": 9,
+      "page": null,
+      "visible": [],
+      "errors": {},
+      "nav": null,
+      "questions": {
+        "route": {
+          "state": "answered",
+          "value": "car"
+        },
+        "car_make": "<pending:C3a-6>",
+        "car_age": "<pending:C3a-6>",
+        "bus_line": "<pending:C3a-6>",
+        "comment": {
+          "state": "unanswered",
+          "value": null
+        }
+      },
+      "orders": {
+        "blocks": {},
+        "items": {},
+        "choices": {}
+      },
+      "conditions": {},
+      "end": "complete"
+    }
+  ],
+  "invariants": [],
+  "response": {
+    "surveyId": "f34_branch_change",
+    "surveyVersion": 1,
+    "end": "complete",
+    "allocation": "server",
+    "sessionSeed": 3402,
+    "conditions": {},
+    "orders": {
+      "blocks": {},
+      "items": {},
+      "choices": {}
+    },
+    "answers": {
+      "route": {
+        "state": "answered",
+        "value": "car"
+      },
+      "car_make": "<pending:C3a-6>",
+      "car_age": "<pending:C3a-6>",
+      "bus_line": "<pending:C3a-6>",
+      "comment": {
+        "state": "unanswered",
+        "value": null
+      }
+    },
+    "csvState": {
+      "route__state": "answered",
+      "car_make__state": "<pending:C3a-6>",
+      "car_age__state": "<pending:C3a-6>",
+      "bus_line__state": "<pending:C3a-6>",
+      "comment__state": "unanswered"
+    }
+  }
+}
