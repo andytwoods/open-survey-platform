@@ -1,0 +1,291 @@
+{
+  "format": "osp-fixture-expected/0",
+  "fixture": "27-unicode-text",
+  "script": "kept-as-typed",
+  "pending": [],
+  "steps": [
+    {
+      "index": 0,
+      "page": "p1",
+      "visible": [
+        "t_emoji",
+        "t_rtl",
+        "t_mixed",
+        "t_name"
+      ],
+      "errors": {},
+      "nav": {
+        "back": false
+      },
+      "questions": {
+        "t_emoji": {
+          "state": "unanswered",
+          "value": null
+        },
+        "t_rtl": {
+          "state": "unanswered",
+          "value": null
+        },
+        "t_mixed": {
+          "state": "unanswered",
+          "value": null
+        },
+        "t_name": {
+          "state": "unanswered",
+          "value": null
+        },
+        "pipe_emoji": {
+          "state": "not-reached",
+          "value": null
+        },
+        "pipe_rtl": {
+          "state": "not-reached",
+          "value": null
+        },
+        "pipe_mixed": {
+          "state": "not-reached",
+          "value": null
+        },
+        "pipe_name": {
+          "state": "not-reached",
+          "value": null
+        },
+        "s_emoji": {
+          "state": "not-reached",
+          "value": null
+        },
+        "s_rtl": {
+          "state": "not-reached",
+          "value": null
+        },
+        "s_mixed_plain": {
+          "state": "not-reached",
+          "value": null
+        }
+      },
+      "orders": {
+        "blocks": {},
+        "items": {},
+        "choices": {}
+      },
+      "conditions": {},
+      "end": null,
+      "labels": {
+        "t_emoji": "Describe your day with an emoji.",
+        "t_rtl": "Write a greeting in Hebrew.",
+        "t_mixed": "Write a product code.",
+        "t_name": "Choose a display name."
+      }
+    },
+    {
+      "index": 1,
+      "page": "p2",
+      "visible": [
+        "pipe_emoji",
+        "pipe_rtl",
+        "pipe_mixed",
+        "pipe_name",
+        "s_emoji",
+        "s_rtl"
+      ],
+      "errors": {},
+      "nav": {
+        "back": true
+      },
+      "questions": {
+        "t_emoji": {
+          "state": "answered",
+          "value": "👍🏽 great"
+        },
+        "t_rtl": {
+          "state": "answered",
+          "value": "שלום עולם"
+        },
+        "t_mixed": {
+          "state": "answered",
+          "value": "AB\u00a012\u200bX"
+        },
+        "t_name": {
+          "state": "answered",
+          "value": "<b>دانة</b> & co"
+        },
+        "pipe_emoji": {
+          "state": "unanswered",
+          "value": null
+        },
+        "pipe_rtl": {
+          "state": "unanswered",
+          "value": null
+        },
+        "pipe_mixed": {
+          "state": "unanswered",
+          "value": null
+        },
+        "pipe_name": {
+          "state": "unanswered",
+          "value": null
+        },
+        "s_emoji": {
+          "state": "unanswered",
+          "value": null
+        },
+        "s_rtl": {
+          "state": "unanswered",
+          "value": null
+        },
+        "s_mixed_plain": {
+          "state": "irrelevant",
+          "value": null
+        }
+      },
+      "orders": {
+        "blocks": {},
+        "items": {},
+        "choices": {}
+      },
+      "conditions": {},
+      "end": null,
+      "labels": {
+        "pipe_emoji": "Your day: 👍🏽 great",
+        "pipe_rtl": "Your greeting: שלום עולם",
+        "pipe_mixed": "Code: [AB\u00a012\u200bX]",
+        "pipe_name": "Hello &lt;b&gt;دانة&lt;/b&gt; &amp; co!",
+        "s_emoji": "Shown when t_emoji == \"👍🏽 great\"",
+        "s_rtl": "Shown when t_rtl == \"שלום עולם\""
+      }
+    },
+    {
+      "index": 2,
+      "page": null,
+      "visible": [],
+      "errors": {},
+      "nav": null,
+      "questions": {
+        "t_emoji": {
+          "state": "answered",
+          "value": "👍🏽 great"
+        },
+        "t_rtl": {
+          "state": "answered",
+          "value": "שלום עולם"
+        },
+        "t_mixed": {
+          "state": "answered",
+          "value": "AB\u00a012\u200bX"
+        },
+        "t_name": {
+          "state": "answered",
+          "value": "<b>دانة</b> & co"
+        },
+        "pipe_emoji": {
+          "state": "unanswered",
+          "value": null
+        },
+        "pipe_rtl": {
+          "state": "unanswered",
+          "value": null
+        },
+        "pipe_mixed": {
+          "state": "unanswered",
+          "value": null
+        },
+        "pipe_name": {
+          "state": "unanswered",
+          "value": null
+        },
+        "s_emoji": {
+          "state": "unanswered",
+          "value": null
+        },
+        "s_rtl": {
+          "state": "unanswered",
+          "value": null
+        },
+        "s_mixed_plain": {
+          "state": "irrelevant",
+          "value": null
+        }
+      },
+      "orders": {
+        "blocks": {},
+        "items": {},
+        "choices": {}
+      },
+      "conditions": {},
+      "end": "complete"
+    }
+  ],
+  "invariants": [],
+  "response": {
+    "surveyId": "f27_unicode_text",
+    "surveyVersion": 1,
+    "end": "complete",
+    "allocation": "server",
+    "sessionSeed": 2701,
+    "conditions": {},
+    "orders": {
+      "blocks": {},
+      "items": {},
+      "choices": {}
+    },
+    "answers": {
+      "t_emoji": {
+        "state": "answered",
+        "value": "👍🏽 great"
+      },
+      "t_rtl": {
+        "state": "answered",
+        "value": "שלום עולם"
+      },
+      "t_mixed": {
+        "state": "answered",
+        "value": "AB\u00a012\u200bX"
+      },
+      "t_name": {
+        "state": "answered",
+        "value": "<b>دانة</b> & co"
+      },
+      "pipe_emoji": {
+        "state": "unanswered",
+        "value": null
+      },
+      "pipe_rtl": {
+        "state": "unanswered",
+        "value": null
+      },
+      "pipe_mixed": {
+        "state": "unanswered",
+        "value": null
+      },
+      "pipe_name": {
+        "state": "unanswered",
+        "value": null
+      },
+      "s_emoji": {
+        "state": "unanswered",
+        "value": null
+      },
+      "s_rtl": {
+        "state": "unanswered",
+        "value": null
+      },
+      "s_mixed_plain": {
+        "state": "irrelevant",
+        "value": null
+      }
+    },
+    "csvState": {
+      "t_emoji__state": "answered",
+      "t_rtl__state": "answered",
+      "t_mixed__state": "answered",
+      "t_name__state": "answered",
+      "pipe_emoji__state": "unanswered",
+      "pipe_rtl__state": "unanswered",
+      "pipe_mixed__state": "unanswered",
+      "pipe_name__state": "unanswered",
+      "s_emoji__state": "unanswered",
+      "s_rtl__state": "unanswered",
+      "s_mixed_plain__state": "irrelevant"
+    }
+  }
+}

@@ -1,0 +1,97 @@
+{
+  "specVersion": "osp-survey/0.1",
+  "id": "f30_server_resume",
+  "version": 1,
+  "metadata": {
+    "title": "Regression: server-side resume",
+    "description": "Enketo spike workaround 3 (E7, P6): with no local copy (storage blocked, R-1) every answer is saved to the server, and refresh and resume restore page and values from the server alone.",
+    "languages": [
+      "en"
+    ]
+  },
+  "settings": {
+    "backNavigation": true
+  },
+  "blocks": [
+    {
+      "id": "p1",
+      "pages": [
+        {
+          "id": "p1_page",
+          "items": [
+            {
+              "type": "text",
+              "id": "nick",
+              "label": "Choose a nickname.",
+              "required": true
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "id": "p2",
+      "pages": [
+        {
+          "id": "p2_page",
+          "items": [
+            {
+              "type": "integer",
+              "id": "n_books",
+              "label": "How many books did you read this year?"
+            },
+            {
+              "type": "text",
+              "id": "best",
+              "label": "Shown when n_books > 0: the best one?",
+              "showIf": {
+                "kind": "compare",
+                "op": ">",
+                "left": {
+                  "kind": "ref",
+                  "id": "n_books"
+                },
+                "right": {
+                  "kind": "int",
+                  "value": 0
+                }
+              }
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "id": "p3",
+      "pages": [
+        {
+          "id": "p3_page",
+          "items": [
+            {
+              "type": "text",
+              "id": "outro",
+              "label": "Any comment? (optional)"
+            }
+          ]
+        }
+      ]
+    }
+  ],
+  "flow": [
+    {
+      "type": "block",
+      "id": "n_p1",
+      "block": "p1"
+    },
+    {
+      "type": "block",
+      "id": "n_p2",
+      "block": "p2"
+    },
+    {
+      "type": "block",
+      "id": "n_p3",
+      "block": "p3"
+    }
+  ]
+}

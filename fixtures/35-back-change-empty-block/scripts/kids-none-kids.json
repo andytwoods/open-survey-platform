@@ -1,0 +1,67 @@
+{
+  "format": "osp-fixture-script/0",
+  "id": "kids-none-kids",
+  "description": "has_kids = yes, n_kids = 2, p2 answered, hours = 8 typed on p3. Back to p1, has_kids = no: n_kids, kid_age and school are cleared, p2 is skipped, why_none is now required (hours is kept). Back skips p2. has_kids = yes, n_kids = 1: p2 comes back empty, why_none goes away.",
+  "sessionSeed": 3501,
+  "language": "en",
+  "actions": [
+    {
+      "expectPage": "p1",
+      "set": {
+        "has_kids": "yes",
+        "n_kids": 2
+      },
+      "do": "next"
+    },
+    {
+      "expectPage": "p2",
+      "set": {
+        "kid_age": 7,
+        "school": "yes"
+      },
+      "do": "next"
+    },
+    {
+      "expectPage": "p3",
+      "set": {
+        "hours": 8
+      },
+      "do": "back"
+    },
+    {
+      "expectPage": "p2",
+      "do": "back"
+    },
+    {
+      "expectPage": "p1",
+      "set": {
+        "has_kids": "no"
+      },
+      "do": "next"
+    },
+    {
+      "expectPage": "p3",
+      "do": "next"
+    },
+    {
+      "expectPage": "p3",
+      "do": "back"
+    },
+    {
+      "expectPage": "p1",
+      "set": {
+        "has_kids": "yes",
+        "n_kids": 1
+      },
+      "do": "next"
+    },
+    {
+      "expectPage": "p2",
+      "do": "next"
+    },
+    {
+      "expectPage": "p3",
+      "do": "next"
+    }
+  ]
+}

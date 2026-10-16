@@ -1,0 +1,819 @@
+{
+  "format": "osp-fixture-expected/0",
+  "fixture": "23-refresh-every-step",
+  "script": "arm-a",
+  "pending": [],
+  "steps": [
+    {
+      "index": 0,
+      "page": "p_start",
+      "visible": [
+        "consent"
+      ],
+      "errors": {},
+      "nav": {
+        "back": false
+      },
+      "questions": {
+        "consent": {
+          "state": "unanswered",
+          "value": null
+        },
+        "age": {
+          "state": "not-reached",
+          "value": null
+        },
+        "fruit": {
+          "state": "not-reached",
+          "value": null
+        },
+        "arm_b_q": {
+          "state": "not-reached",
+          "value": null
+        },
+        "comment": {
+          "state": "not-reached",
+          "value": null
+        }
+      },
+      "orders": {
+        "blocks": {},
+        "items": {},
+        "choices": {}
+      },
+      "conditions": {
+        "arm": "A"
+      },
+      "end": null
+    },
+    {
+      "index": 1,
+      "page": "p_start",
+      "visible": [
+        "consent"
+      ],
+      "errors": {},
+      "nav": {
+        "back": false
+      },
+      "questions": {
+        "consent": {
+          "state": "unanswered",
+          "value": null
+        },
+        "age": {
+          "state": "not-reached",
+          "value": null
+        },
+        "fruit": {
+          "state": "not-reached",
+          "value": null
+        },
+        "arm_b_q": {
+          "state": "not-reached",
+          "value": null
+        },
+        "comment": {
+          "state": "not-reached",
+          "value": null
+        }
+      },
+      "orders": {
+        "blocks": {},
+        "items": {},
+        "choices": {}
+      },
+      "conditions": {
+        "arm": "A"
+      },
+      "end": null
+    },
+    {
+      "index": 2,
+      "page": "p_start",
+      "visible": [
+        "consent"
+      ],
+      "errors": {},
+      "nav": {
+        "back": false
+      },
+      "questions": {
+        "consent": {
+          "state": "answered",
+          "value": "yes"
+        },
+        "age": {
+          "state": "not-reached",
+          "value": null
+        },
+        "fruit": {
+          "state": "not-reached",
+          "value": null
+        },
+        "arm_b_q": {
+          "state": "not-reached",
+          "value": null
+        },
+        "comment": {
+          "state": "not-reached",
+          "value": null
+        }
+      },
+      "orders": {
+        "blocks": {},
+        "items": {},
+        "choices": {}
+      },
+      "conditions": {
+        "arm": "A"
+      },
+      "end": null
+    },
+    {
+      "index": 3,
+      "page": "p_info",
+      "visible": [
+        "age"
+      ],
+      "errors": {},
+      "nav": {
+        "back": true
+      },
+      "questions": {
+        "consent": {
+          "state": "answered",
+          "value": "yes"
+        },
+        "age": {
+          "state": "unanswered",
+          "value": null
+        },
+        "fruit": {
+          "state": "not-reached",
+          "value": null
+        },
+        "arm_b_q": {
+          "state": "not-reached",
+          "value": null
+        },
+        "comment": {
+          "state": "not-reached",
+          "value": null
+        }
+      },
+      "orders": {
+        "blocks": {},
+        "items": {},
+        "choices": {}
+      },
+      "conditions": {
+        "arm": "A"
+      },
+      "end": null
+    },
+    {
+      "index": 4,
+      "page": "p_info",
+      "visible": [
+        "age"
+      ],
+      "errors": {},
+      "nav": {
+        "back": true
+      },
+      "questions": {
+        "consent": {
+          "state": "answered",
+          "value": "yes"
+        },
+        "age": {
+          "state": "unanswered",
+          "value": null
+        },
+        "fruit": {
+          "state": "not-reached",
+          "value": null
+        },
+        "arm_b_q": {
+          "state": "not-reached",
+          "value": null
+        },
+        "comment": {
+          "state": "not-reached",
+          "value": null
+        }
+      },
+      "orders": {
+        "blocks": {},
+        "items": {},
+        "choices": {}
+      },
+      "conditions": {
+        "arm": "A"
+      },
+      "end": null
+    },
+    {
+      "index": 5,
+      "page": "p_info",
+      "visible": [
+        "age"
+      ],
+      "errors": {
+        "age": {
+          "kind": "constraint",
+          "message": "You must be 18 or over."
+        }
+      },
+      "nav": {
+        "back": true
+      },
+      "questions": {
+        "consent": {
+          "state": "answered",
+          "value": "yes"
+        },
+        "age": {
+          "state": "answered",
+          "value": 12
+        },
+        "fruit": {
+          "state": "not-reached",
+          "value": null
+        },
+        "arm_b_q": {
+          "state": "not-reached",
+          "value": null
+        },
+        "comment": {
+          "state": "not-reached",
+          "value": null
+        }
+      },
+      "orders": {
+        "blocks": {},
+        "items": {},
+        "choices": {}
+      },
+      "conditions": {
+        "arm": "A"
+      },
+      "end": null
+    },
+    {
+      "index": 6,
+      "page": "p_info",
+      "visible": [
+        "age"
+      ],
+      "errors": {},
+      "nav": {
+        "back": true
+      },
+      "questions": {
+        "consent": {
+          "state": "answered",
+          "value": "yes"
+        },
+        "age": {
+          "state": "answered",
+          "value": 12
+        },
+        "fruit": {
+          "state": "not-reached",
+          "value": null
+        },
+        "arm_b_q": {
+          "state": "not-reached",
+          "value": null
+        },
+        "comment": {
+          "state": "not-reached",
+          "value": null
+        }
+      },
+      "orders": {
+        "blocks": {},
+        "items": {},
+        "choices": {}
+      },
+      "conditions": {
+        "arm": "A"
+      },
+      "end": null
+    },
+    {
+      "index": 7,
+      "page": "p_a",
+      "visible": [
+        "fruit"
+      ],
+      "errors": {},
+      "nav": {
+        "back": true
+      },
+      "questions": {
+        "consent": {
+          "state": "answered",
+          "value": "yes"
+        },
+        "age": {
+          "state": "answered",
+          "value": 30
+        },
+        "fruit": {
+          "state": "unanswered",
+          "value": null
+        },
+        "arm_b_q": {
+          "state": "not-reached",
+          "value": null
+        },
+        "comment": {
+          "state": "not-reached",
+          "value": null
+        }
+      },
+      "orders": {
+        "blocks": {},
+        "items": {},
+        "choices": {
+          "fruit": "<engine>"
+        }
+      },
+      "conditions": {
+        "arm": "A"
+      },
+      "end": null
+    },
+    {
+      "index": 8,
+      "page": "p_a",
+      "visible": [
+        "fruit"
+      ],
+      "errors": {},
+      "nav": {
+        "back": true
+      },
+      "questions": {
+        "consent": {
+          "state": "answered",
+          "value": "yes"
+        },
+        "age": {
+          "state": "answered",
+          "value": 30
+        },
+        "fruit": {
+          "state": "unanswered",
+          "value": null
+        },
+        "arm_b_q": {
+          "state": "not-reached",
+          "value": null
+        },
+        "comment": {
+          "state": "not-reached",
+          "value": null
+        }
+      },
+      "orders": {
+        "blocks": {},
+        "items": {},
+        "choices": {
+          "fruit": "<engine>"
+        }
+      },
+      "conditions": {
+        "arm": "A"
+      },
+      "end": null
+    },
+    {
+      "index": 9,
+      "page": "p_a",
+      "visible": [
+        "fruit"
+      ],
+      "errors": {},
+      "nav": {
+        "back": true
+      },
+      "questions": {
+        "consent": {
+          "state": "answered",
+          "value": "yes"
+        },
+        "age": {
+          "state": "answered",
+          "value": 30
+        },
+        "fruit": {
+          "state": "answered",
+          "value": "plum"
+        },
+        "arm_b_q": {
+          "state": "not-reached",
+          "value": null
+        },
+        "comment": {
+          "state": "not-reached",
+          "value": null
+        }
+      },
+      "orders": {
+        "blocks": {},
+        "items": {},
+        "choices": {
+          "fruit": "<engine>"
+        }
+      },
+      "conditions": {
+        "arm": "A"
+      },
+      "end": null
+    },
+    {
+      "index": 10,
+      "page": "p_end",
+      "visible": [
+        "comment"
+      ],
+      "errors": {},
+      "nav": {
+        "back": true
+      },
+      "questions": {
+        "consent": {
+          "state": "answered",
+          "value": "yes"
+        },
+        "age": {
+          "state": "answered",
+          "value": 30
+        },
+        "fruit": {
+          "state": "answered",
+          "value": "plum"
+        },
+        "arm_b_q": {
+          "state": "not-reached",
+          "value": null
+        },
+        "comment": {
+          "state": "unanswered",
+          "value": null
+        }
+      },
+      "orders": {
+        "blocks": {},
+        "items": {},
+        "choices": {
+          "fruit": "<engine>"
+        }
+      },
+      "conditions": {
+        "arm": "A"
+      },
+      "end": null
+    },
+    {
+      "index": 11,
+      "page": "p_end",
+      "visible": [
+        "comment"
+      ],
+      "errors": {},
+      "nav": {
+        "back": true
+      },
+      "questions": {
+        "consent": {
+          "state": "answered",
+          "value": "yes"
+        },
+        "age": {
+          "state": "answered",
+          "value": 30
+        },
+        "fruit": {
+          "state": "answered",
+          "value": "plum"
+        },
+        "arm_b_q": {
+          "state": "not-reached",
+          "value": null
+        },
+        "comment": {
+          "state": "unanswered",
+          "value": null
+        }
+      },
+      "orders": {
+        "blocks": {},
+        "items": {},
+        "choices": {
+          "fruit": "<engine>"
+        }
+      },
+      "conditions": {
+        "arm": "A"
+      },
+      "end": null
+    },
+    {
+      "index": 12,
+      "page": "p_a",
+      "visible": [
+        "fruit"
+      ],
+      "errors": {},
+      "nav": {
+        "back": true
+      },
+      "questions": {
+        "consent": {
+          "state": "answered",
+          "value": "yes"
+        },
+        "age": {
+          "state": "answered",
+          "value": 30
+        },
+        "fruit": {
+          "state": "answered",
+          "value": "plum"
+        },
+        "arm_b_q": {
+          "state": "not-reached",
+          "value": null
+        },
+        "comment": {
+          "state": "unanswered",
+          "value": null
+        }
+      },
+      "orders": {
+        "blocks": {},
+        "items": {},
+        "choices": {
+          "fruit": "<engine>"
+        }
+      },
+      "conditions": {
+        "arm": "A"
+      },
+      "end": null
+    },
+    {
+      "index": 13,
+      "page": "p_a",
+      "visible": [
+        "fruit"
+      ],
+      "errors": {},
+      "nav": {
+        "back": true
+      },
+      "questions": {
+        "consent": {
+          "state": "answered",
+          "value": "yes"
+        },
+        "age": {
+          "state": "answered",
+          "value": 30
+        },
+        "fruit": {
+          "state": "answered",
+          "value": "plum"
+        },
+        "arm_b_q": {
+          "state": "not-reached",
+          "value": null
+        },
+        "comment": {
+          "state": "unanswered",
+          "value": null
+        }
+      },
+      "orders": {
+        "blocks": {},
+        "items": {},
+        "choices": {
+          "fruit": "<engine>"
+        }
+      },
+      "conditions": {
+        "arm": "A"
+      },
+      "end": null
+    },
+    {
+      "index": 14,
+      "page": "p_end",
+      "visible": [
+        "comment"
+      ],
+      "errors": {},
+      "nav": {
+        "back": true
+      },
+      "questions": {
+        "consent": {
+          "state": "answered",
+          "value": "yes"
+        },
+        "age": {
+          "state": "answered",
+          "value": 30
+        },
+        "fruit": {
+          "state": "answered",
+          "value": "plum"
+        },
+        "arm_b_q": {
+          "state": "not-reached",
+          "value": null
+        },
+        "comment": {
+          "state": "unanswered",
+          "value": null
+        }
+      },
+      "orders": {
+        "blocks": {},
+        "items": {},
+        "choices": {
+          "fruit": "<engine>"
+        }
+      },
+      "conditions": {
+        "arm": "A"
+      },
+      "end": null
+    },
+    {
+      "index": 15,
+      "page": "p_end",
+      "visible": [
+        "comment"
+      ],
+      "errors": {},
+      "nav": {
+        "back": true
+      },
+      "questions": {
+        "consent": {
+          "state": "answered",
+          "value": "yes"
+        },
+        "age": {
+          "state": "answered",
+          "value": 30
+        },
+        "fruit": {
+          "state": "answered",
+          "value": "plum"
+        },
+        "arm_b_q": {
+          "state": "not-reached",
+          "value": null
+        },
+        "comment": {
+          "state": "answered",
+          "value": "fine"
+        }
+      },
+      "orders": {
+        "blocks": {},
+        "items": {},
+        "choices": {
+          "fruit": "<engine>"
+        }
+      },
+      "conditions": {
+        "arm": "A"
+      },
+      "end": null
+    },
+    {
+      "index": 16,
+      "page": null,
+      "visible": [],
+      "errors": {},
+      "nav": null,
+      "questions": {
+        "consent": {
+          "state": "answered",
+          "value": "yes"
+        },
+        "age": {
+          "state": "answered",
+          "value": 30
+        },
+        "fruit": {
+          "state": "answered",
+          "value": "plum"
+        },
+        "arm_b_q": {
+          "state": "not-reached",
+          "value": null
+        },
+        "comment": {
+          "state": "answered",
+          "value": "fine"
+        }
+      },
+      "orders": {
+        "blocks": {},
+        "items": {},
+        "choices": {
+          "fruit": "<engine>"
+        }
+      },
+      "conditions": {
+        "arm": "A"
+      },
+      "end": "complete"
+    }
+  ],
+  "invariants": [
+    {
+      "kind": "permutation",
+      "of": [
+        "apple",
+        "pear",
+        "plum",
+        "fig"
+      ],
+      "paths": [
+        "response.orders.choices.fruit"
+      ]
+    },
+    {
+      "kind": "equal",
+      "paths": [
+        "steps[7].orders.choices.fruit",
+        "steps[8].orders.choices.fruit",
+        "steps[9].orders.choices.fruit",
+        "steps[10].orders.choices.fruit",
+        "steps[11].orders.choices.fruit",
+        "steps[12].orders.choices.fruit",
+        "steps[13].orders.choices.fruit",
+        "steps[14].orders.choices.fruit",
+        "steps[15].orders.choices.fruit",
+        "steps[16].orders.choices.fruit",
+        "response.orders.choices.fruit"
+      ]
+    }
+  ],
+  "response": {
+    "surveyId": "f23_refresh_every_step",
+    "surveyVersion": 1,
+    "end": "complete",
+    "allocation": "server",
+    "sessionSeed": 2301,
+    "conditions": {
+      "arm": "A"
+    },
+    "orders": {
+      "blocks": {},
+      "items": {},
+      "choices": {
+        "fruit": "<engine>"
+      }
+    },
+    "answers": {
+      "consent": {
+        "state": "answered",
+        "value": "yes"
+      },
+      "age": {
+        "state": "answered",
+        "value": 30
+      },
+      "fruit": {
+        "state": "answered",
+        "value": "plum"
+      },
+      "arm_b_q": {
+        "state": "not-reached",
+        "value": null
+      },
+      "comment": {
+        "state": "answered",
+        "value": "fine"
+      }
+    },
+    "csvState": {
+      "consent__state": "answered",
+      "age__state": "answered",
+      "fruit__state": "answered",
+      "arm_b_q__state": "not-reached",
+      "comment__state": "answered"
+    }
+  }
+}

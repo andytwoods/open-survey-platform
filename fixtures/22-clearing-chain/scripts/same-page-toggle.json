@@ -1,0 +1,50 @@
+{
+  "format": "osp-fixture-script/0",
+  "id": "same-page-toggle",
+  "description": "On p2, y and z are answered; then y is set to whitespace (unanswered, §2): z hides live and is cleared on submit, w appears. Back on p2, answering y again shows z empty: its old value does not come back.",
+  "sessionSeed": 2202,
+  "language": "en",
+  "actions": [
+    {
+      "expectPage": "p1",
+      "set": {
+        "x": 20
+      },
+      "do": "next"
+    },
+    {
+      "expectPage": "p2",
+      "set": {
+        "y": "it felt right",
+        "z": "lucky number"
+      },
+      "do": "refresh"
+    },
+    {
+      "expectPage": "p2",
+      "set": {
+        "y": "   "
+      },
+      "do": "next"
+    },
+    {
+      "expectPage": "p3",
+      "do": "back"
+    },
+    {
+      "expectPage": "p2",
+      "set": {
+        "y": "again"
+      },
+      "do": "refresh"
+    },
+    {
+      "expectPage": "p2",
+      "do": "next"
+    },
+    {
+      "expectPage": "p3",
+      "do": "next"
+    }
+  ]
+}

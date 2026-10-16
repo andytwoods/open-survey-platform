@@ -1,0 +1,781 @@
+{
+  "format": "osp-fixture-expected/0",
+  "fixture": "28-regression-order-refresh",
+  "script": "refresh-before-answer",
+  "pending": [],
+  "steps": [
+    {
+      "index": 0,
+      "page": "p_intro",
+      "visible": [
+        "ready"
+      ],
+      "errors": {},
+      "nav": {
+        "back": false
+      },
+      "questions": {
+        "ready": {
+          "state": "unanswered",
+          "value": null
+        },
+        "att1": {
+          "state": "not-reached",
+          "value": null
+        },
+        "att2": {
+          "state": "not-reached",
+          "value": null
+        },
+        "att3": {
+          "state": "not-reached",
+          "value": null
+        },
+        "att4": {
+          "state": "not-reached",
+          "value": null
+        },
+        "outro": {
+          "state": "not-reached",
+          "value": null
+        }
+      },
+      "orders": {
+        "blocks": {},
+        "items": {},
+        "choices": {}
+      },
+      "conditions": {},
+      "end": null
+    },
+    {
+      "index": 1,
+      "page": "p_att",
+      "visible": "<engine>",
+      "errors": {},
+      "nav": {
+        "back": true
+      },
+      "questions": {
+        "ready": {
+          "state": "answered",
+          "value": "yes"
+        },
+        "att1": {
+          "state": "unanswered",
+          "value": null
+        },
+        "att2": {
+          "state": "unanswered",
+          "value": null
+        },
+        "att3": {
+          "state": "unanswered",
+          "value": null
+        },
+        "att4": {
+          "state": "unanswered",
+          "value": null
+        },
+        "outro": {
+          "state": "not-reached",
+          "value": null
+        }
+      },
+      "orders": {
+        "blocks": {},
+        "items": {
+          "p_att": "<engine>"
+        },
+        "choices": {
+          "att3": "<engine>"
+        }
+      },
+      "conditions": {},
+      "end": null
+    },
+    {
+      "index": 2,
+      "page": "p_att",
+      "visible": "<engine>",
+      "errors": {},
+      "nav": {
+        "back": true
+      },
+      "questions": {
+        "ready": {
+          "state": "answered",
+          "value": "yes"
+        },
+        "att1": {
+          "state": "unanswered",
+          "value": null
+        },
+        "att2": {
+          "state": "unanswered",
+          "value": null
+        },
+        "att3": {
+          "state": "unanswered",
+          "value": null
+        },
+        "att4": {
+          "state": "unanswered",
+          "value": null
+        },
+        "outro": {
+          "state": "not-reached",
+          "value": null
+        }
+      },
+      "orders": {
+        "blocks": {},
+        "items": {
+          "p_att": "<engine>"
+        },
+        "choices": {
+          "att3": "<engine>"
+        }
+      },
+      "conditions": {},
+      "end": null
+    },
+    {
+      "index": 3,
+      "page": "p_att",
+      "visible": "<engine>",
+      "errors": {},
+      "nav": {
+        "back": true
+      },
+      "questions": {
+        "ready": {
+          "state": "answered",
+          "value": "yes"
+        },
+        "att1": {
+          "state": "unanswered",
+          "value": null
+        },
+        "att2": {
+          "state": "unanswered",
+          "value": null
+        },
+        "att3": {
+          "state": "unanswered",
+          "value": null
+        },
+        "att4": {
+          "state": "unanswered",
+          "value": null
+        },
+        "outro": {
+          "state": "not-reached",
+          "value": null
+        }
+      },
+      "orders": {
+        "blocks": {},
+        "items": {
+          "p_att": "<engine>"
+        },
+        "choices": {
+          "att3": "<engine>"
+        }
+      },
+      "conditions": {},
+      "end": null
+    },
+    {
+      "index": 4,
+      "page": "p_att",
+      "visible": "<engine>",
+      "errors": {},
+      "nav": {
+        "back": true
+      },
+      "questions": {
+        "ready": {
+          "state": "answered",
+          "value": "yes"
+        },
+        "att1": {
+          "state": "unanswered",
+          "value": null
+        },
+        "att2": {
+          "state": "answered",
+          "value": 4
+        },
+        "att3": {
+          "state": "unanswered",
+          "value": null
+        },
+        "att4": {
+          "state": "unanswered",
+          "value": null
+        },
+        "outro": {
+          "state": "not-reached",
+          "value": null
+        }
+      },
+      "orders": {
+        "blocks": {},
+        "items": {
+          "p_att": "<engine>"
+        },
+        "choices": {
+          "att3": "<engine>"
+        }
+      },
+      "conditions": {},
+      "end": null
+    },
+    {
+      "index": 5,
+      "page": "p_intro",
+      "visible": [
+        "ready"
+      ],
+      "errors": {},
+      "nav": {
+        "back": false
+      },
+      "questions": {
+        "ready": {
+          "state": "answered",
+          "value": "yes"
+        },
+        "att1": {
+          "state": "unanswered",
+          "value": null
+        },
+        "att2": {
+          "state": "answered",
+          "value": 4
+        },
+        "att3": {
+          "state": "unanswered",
+          "value": null
+        },
+        "att4": {
+          "state": "unanswered",
+          "value": null
+        },
+        "outro": {
+          "state": "not-reached",
+          "value": null
+        }
+      },
+      "orders": {
+        "blocks": {},
+        "items": {
+          "p_att": "<engine>"
+        },
+        "choices": {
+          "att3": "<engine>"
+        }
+      },
+      "conditions": {},
+      "end": null
+    },
+    {
+      "index": 6,
+      "page": "p_intro",
+      "visible": [
+        "ready"
+      ],
+      "errors": {},
+      "nav": {
+        "back": false
+      },
+      "questions": {
+        "ready": {
+          "state": "answered",
+          "value": "yes"
+        },
+        "att1": {
+          "state": "unanswered",
+          "value": null
+        },
+        "att2": {
+          "state": "answered",
+          "value": 4
+        },
+        "att3": {
+          "state": "unanswered",
+          "value": null
+        },
+        "att4": {
+          "state": "unanswered",
+          "value": null
+        },
+        "outro": {
+          "state": "not-reached",
+          "value": null
+        }
+      },
+      "orders": {
+        "blocks": {},
+        "items": {
+          "p_att": "<engine>"
+        },
+        "choices": {
+          "att3": "<engine>"
+        }
+      },
+      "conditions": {},
+      "end": null
+    },
+    {
+      "index": 7,
+      "page": "p_att",
+      "visible": "<engine>",
+      "errors": {},
+      "nav": {
+        "back": true
+      },
+      "questions": {
+        "ready": {
+          "state": "answered",
+          "value": "yes"
+        },
+        "att1": {
+          "state": "unanswered",
+          "value": null
+        },
+        "att2": {
+          "state": "answered",
+          "value": 4
+        },
+        "att3": {
+          "state": "unanswered",
+          "value": null
+        },
+        "att4": {
+          "state": "unanswered",
+          "value": null
+        },
+        "outro": {
+          "state": "not-reached",
+          "value": null
+        }
+      },
+      "orders": {
+        "blocks": {},
+        "items": {
+          "p_att": "<engine>"
+        },
+        "choices": {
+          "att3": "<engine>"
+        }
+      },
+      "conditions": {},
+      "end": null
+    },
+    {
+      "index": 8,
+      "page": "p_att",
+      "visible": "<engine>",
+      "errors": {},
+      "nav": {
+        "back": true
+      },
+      "questions": {
+        "ready": {
+          "state": "answered",
+          "value": "yes"
+        },
+        "att1": {
+          "state": "answered",
+          "value": 2
+        },
+        "att2": {
+          "state": "answered",
+          "value": 4
+        },
+        "att3": {
+          "state": "answered",
+          "value": 5
+        },
+        "att4": {
+          "state": "answered",
+          "value": 1
+        },
+        "outro": {
+          "state": "not-reached",
+          "value": null
+        }
+      },
+      "orders": {
+        "blocks": {},
+        "items": {
+          "p_att": "<engine>"
+        },
+        "choices": {
+          "att3": "<engine>"
+        }
+      },
+      "conditions": {},
+      "end": null
+    },
+    {
+      "index": 9,
+      "page": "p_end",
+      "visible": [
+        "outro"
+      ],
+      "errors": {},
+      "nav": {
+        "back": true
+      },
+      "questions": {
+        "ready": {
+          "state": "answered",
+          "value": "yes"
+        },
+        "att1": {
+          "state": "answered",
+          "value": 2
+        },
+        "att2": {
+          "state": "answered",
+          "value": 4
+        },
+        "att3": {
+          "state": "answered",
+          "value": 5
+        },
+        "att4": {
+          "state": "answered",
+          "value": 1
+        },
+        "outro": {
+          "state": "unanswered",
+          "value": null
+        }
+      },
+      "orders": {
+        "blocks": {},
+        "items": {
+          "p_att": "<engine>"
+        },
+        "choices": {
+          "att3": "<engine>"
+        }
+      },
+      "conditions": {},
+      "end": null
+    },
+    {
+      "index": 10,
+      "page": "p_att",
+      "visible": "<engine>",
+      "errors": {},
+      "nav": {
+        "back": true
+      },
+      "questions": {
+        "ready": {
+          "state": "answered",
+          "value": "yes"
+        },
+        "att1": {
+          "state": "answered",
+          "value": 2
+        },
+        "att2": {
+          "state": "answered",
+          "value": 4
+        },
+        "att3": {
+          "state": "answered",
+          "value": 5
+        },
+        "att4": {
+          "state": "answered",
+          "value": 1
+        },
+        "outro": {
+          "state": "unanswered",
+          "value": null
+        }
+      },
+      "orders": {
+        "blocks": {},
+        "items": {
+          "p_att": "<engine>"
+        },
+        "choices": {
+          "att3": "<engine>"
+        }
+      },
+      "conditions": {},
+      "end": null
+    },
+    {
+      "index": 11,
+      "page": "p_att",
+      "visible": "<engine>",
+      "errors": {},
+      "nav": {
+        "back": true
+      },
+      "questions": {
+        "ready": {
+          "state": "answered",
+          "value": "yes"
+        },
+        "att1": {
+          "state": "answered",
+          "value": 2
+        },
+        "att2": {
+          "state": "answered",
+          "value": 4
+        },
+        "att3": {
+          "state": "answered",
+          "value": 5
+        },
+        "att4": {
+          "state": "answered",
+          "value": 1
+        },
+        "outro": {
+          "state": "unanswered",
+          "value": null
+        }
+      },
+      "orders": {
+        "blocks": {},
+        "items": {
+          "p_att": "<engine>"
+        },
+        "choices": {
+          "att3": "<engine>"
+        }
+      },
+      "conditions": {},
+      "end": null
+    },
+    {
+      "index": 12,
+      "page": "p_end",
+      "visible": [
+        "outro"
+      ],
+      "errors": {},
+      "nav": {
+        "back": true
+      },
+      "questions": {
+        "ready": {
+          "state": "answered",
+          "value": "yes"
+        },
+        "att1": {
+          "state": "answered",
+          "value": 2
+        },
+        "att2": {
+          "state": "answered",
+          "value": 4
+        },
+        "att3": {
+          "state": "answered",
+          "value": 5
+        },
+        "att4": {
+          "state": "answered",
+          "value": 1
+        },
+        "outro": {
+          "state": "unanswered",
+          "value": null
+        }
+      },
+      "orders": {
+        "blocks": {},
+        "items": {
+          "p_att": "<engine>"
+        },
+        "choices": {
+          "att3": "<engine>"
+        }
+      },
+      "conditions": {},
+      "end": null
+    },
+    {
+      "index": 13,
+      "page": null,
+      "visible": [],
+      "errors": {},
+      "nav": null,
+      "questions": {
+        "ready": {
+          "state": "answered",
+          "value": "yes"
+        },
+        "att1": {
+          "state": "answered",
+          "value": 2
+        },
+        "att2": {
+          "state": "answered",
+          "value": 4
+        },
+        "att3": {
+          "state": "answered",
+          "value": 5
+        },
+        "att4": {
+          "state": "answered",
+          "value": 1
+        },
+        "outro": {
+          "state": "unanswered",
+          "value": null
+        }
+      },
+      "orders": {
+        "blocks": {},
+        "items": {
+          "p_att": "<engine>"
+        },
+        "choices": {
+          "att3": "<engine>"
+        }
+      },
+      "conditions": {},
+      "end": "complete"
+    }
+  ],
+  "invariants": [
+    {
+      "kind": "permutation",
+      "of": [
+        "att1",
+        "att2",
+        "att3",
+        "att4"
+      ],
+      "paths": [
+        "response.orders.items.p_att"
+      ]
+    },
+    {
+      "kind": "equal",
+      "paths": [
+        "steps[1].orders.items.p_att",
+        "steps[2].orders.items.p_att",
+        "steps[3].orders.items.p_att",
+        "steps[4].orders.items.p_att",
+        "steps[5].orders.items.p_att",
+        "steps[6].orders.items.p_att",
+        "steps[7].orders.items.p_att",
+        "steps[8].orders.items.p_att",
+        "steps[9].orders.items.p_att",
+        "steps[10].orders.items.p_att",
+        "steps[11].orders.items.p_att",
+        "steps[12].orders.items.p_att",
+        "steps[13].orders.items.p_att",
+        "response.orders.items.p_att",
+        "steps[1].visible",
+        "steps[2].visible",
+        "steps[3].visible",
+        "steps[4].visible",
+        "steps[7].visible",
+        "steps[8].visible",
+        "steps[10].visible",
+        "steps[11].visible",
+        "steps[12].visible"
+      ]
+    },
+    {
+      "kind": "permutation",
+      "of": [
+        1,
+        2,
+        3,
+        4,
+        5
+      ],
+      "paths": [
+        "response.orders.choices.att3"
+      ]
+    },
+    {
+      "kind": "equal",
+      "paths": [
+        "steps[1].orders.choices.att3",
+        "steps[2].orders.choices.att3",
+        "steps[3].orders.choices.att3",
+        "steps[4].orders.choices.att3",
+        "steps[5].orders.choices.att3",
+        "steps[6].orders.choices.att3",
+        "steps[7].orders.choices.att3",
+        "steps[8].orders.choices.att3",
+        "steps[9].orders.choices.att3",
+        "steps[10].orders.choices.att3",
+        "steps[11].orders.choices.att3",
+        "steps[12].orders.choices.att3",
+        "steps[13].orders.choices.att3",
+        "response.orders.choices.att3"
+      ]
+    }
+  ],
+  "response": {
+    "surveyId": "f28_order_refresh",
+    "surveyVersion": 1,
+    "end": "complete",
+    "allocation": "server",
+    "sessionSeed": 2801,
+    "conditions": {},
+    "orders": {
+      "blocks": {},
+      "items": {
+        "p_att": "<engine>"
+      },
+      "choices": {
+        "att3": "<engine>"
+      }
+    },
+    "answers": {
+      "ready": {
+        "state": "answered",
+        "value": "yes"
+      },
+      "att1": {
+        "state": "answered",
+        "value": 2
+      },
+      "att2": {
+        "state": "answered",
+        "value": 4
+      },
+      "att3": {
+        "state": "answered",
+        "value": 5
+      },
+      "att4": {
+        "state": "answered",
+        "value": 1
+      },
+      "outro": {
+        "state": "unanswered",
+        "value": null
+      }
+    },
+    "csvState": {
+      "ready__state": "answered",
+      "att1__state": "answered",
+      "att2__state": "answered",
+      "att3__state": "answered",
+      "att4__state": "answered",
+      "outro__state": "unanswered"
+    }
+  }
+}

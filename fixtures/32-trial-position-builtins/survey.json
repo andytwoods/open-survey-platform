@@ -1,0 +1,177 @@
+{
+  "specVersion": "osp-survey/0.1",
+  "id": "f32_trial_position",
+  "version": 1,
+  "metadata": {
+    "title": "$trial and $position",
+    "description": "runtime-design §7a, R-7: $trial counts pages actually shown on the participant's path (a skipped empty block, a failed submit, a refresh and back-then-next do not add to it); $position is the place within the enclosing randomiser.",
+    "languages": [
+      "en"
+    ]
+  },
+  "settings": {
+    "backNavigation": true
+  },
+  "choiceLists": [
+    {
+      "id": "yesno",
+      "choices": [
+        {
+          "value": "yes",
+          "label": "Yes"
+        },
+        {
+          "value": "no",
+          "label": "No"
+        }
+      ]
+    }
+  ],
+  "blocks": [
+    {
+      "id": "p_intro",
+      "pages": [
+        {
+          "id": "p_intro_page",
+          "items": [
+            {
+              "type": "single",
+              "id": "ready",
+              "label": "Ready to start?",
+              "choiceList": "yesno",
+              "required": true
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "id": "p_skip",
+      "pages": [
+        {
+          "id": "p_skip_page",
+          "items": [
+            {
+              "type": "text",
+              "id": "why_not",
+              "label": "Why not?",
+              "showIf": {
+                "kind": "compare",
+                "op": "==",
+                "left": {
+                  "kind": "ref",
+                  "id": "ready"
+                },
+                "right": {
+                  "kind": "text",
+                  "value": "no"
+                }
+              }
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "id": "s1",
+      "pages": [
+        {
+          "id": "s1_page",
+          "items": [
+            {
+              "type": "integer",
+              "id": "r1",
+              "label": "Stimulus 1: rate it from 1 to 9.",
+              "required": true
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "id": "s2",
+      "pages": [
+        {
+          "id": "s2_page",
+          "items": [
+            {
+              "type": "integer",
+              "id": "r2",
+              "label": "Stimulus 2: rate it from 1 to 9.",
+              "required": true
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "id": "s3",
+      "pages": [
+        {
+          "id": "s3_page",
+          "items": [
+            {
+              "type": "integer",
+              "id": "r3",
+              "label": "Stimulus 3: rate it from 1 to 9.",
+              "required": true
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "id": "p_outro",
+      "pages": [
+        {
+          "id": "p_outro_page",
+          "items": [
+            {
+              "type": "text",
+              "id": "outro",
+              "label": "Any comment? (optional)"
+            }
+          ]
+        }
+      ]
+    }
+  ],
+  "flow": [
+    {
+      "type": "block",
+      "id": "n_p_intro",
+      "block": "p_intro"
+    },
+    {
+      "type": "block",
+      "id": "n_p_skip",
+      "block": "p_skip"
+    },
+    {
+      "type": "randomiser",
+      "id": "r_stim",
+      "children": [
+        {
+          "type": "block",
+          "id": "n_s1",
+          "block": "s1"
+        },
+        {
+          "type": "block",
+          "id": "n_s2",
+          "block": "s2"
+        },
+        {
+          "type": "block",
+          "id": "n_s3",
+          "block": "s3"
+        }
+      ]
+    },
+    {
+      "type": "block",
+      "id": "n_p_outro",
+      "block": "p_outro"
+    }
+  ]
+}

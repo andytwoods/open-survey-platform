@@ -1,0 +1,37 @@
+{
+  "format": "osp-fixture-script/0",
+  "id": "full",
+  "description": "The first call returns 'full': onFull shows full_blk once, then the session ends with outcome quota_full (C2-7 proposal).",
+  "sessionSeed": 2402,
+  "language": "en",
+  "replay": {
+    "server": {
+      "quotas": {
+        "q_north": "open"
+      }
+    }
+  },
+  "server": {
+    "quotas": {
+      "q_north": "full"
+    },
+    "quotaCalls": {
+      "qc_north": [
+        "ok"
+      ]
+    }
+  },
+  "actions": [
+    {
+      "expectPage": "p1",
+      "set": {
+        "region": "north"
+      },
+      "do": "next"
+    },
+    {
+      "expectPage": "full_blk",
+      "do": "next"
+    }
+  ]
+}

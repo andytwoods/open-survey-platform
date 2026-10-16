@@ -1,0 +1,110 @@
+{
+  "specVersion": "osp-survey/0.1",
+  "id": "f29_clear_on_page_change",
+  "version": 1,
+  "metadata": {
+    "title": "Regression: irrelevant values cleared on page change",
+    "description": "Enketo spike workaround 2 (E8, P5c): a value hidden on its own page is cleared on that page's submit, stays cleared across refresh and resume, and does not come back when it is shown again.",
+    "languages": [
+      "en"
+    ]
+  },
+  "settings": {
+    "backNavigation": true
+  },
+  "choiceLists": [
+    {
+      "id": "yesno",
+      "choices": [
+        {
+          "value": "yes",
+          "label": "Yes"
+        },
+        {
+          "value": "no",
+          "label": "No"
+        }
+      ]
+    }
+  ],
+  "blocks": [
+    {
+      "id": "p1",
+      "pages": [
+        {
+          "id": "p1_page",
+          "items": [
+            {
+              "type": "single",
+              "id": "smoker",
+              "label": "Do you smoke?",
+              "choiceList": "yesno",
+              "required": true
+            },
+            {
+              "type": "integer",
+              "id": "per_day",
+              "label": "How many a day?",
+              "showIf": {
+                "kind": "compare",
+                "op": "==",
+                "left": {
+                  "kind": "ref",
+                  "id": "smoker"
+                },
+                "right": {
+                  "kind": "text",
+                  "value": "yes"
+                }
+              }
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "id": "p2",
+      "pages": [
+        {
+          "id": "p2_page",
+          "items": [
+            {
+              "type": "text",
+              "id": "quit",
+              "label": "Shown when per_day > 10: have you thought about quitting?",
+              "showIf": {
+                "kind": "compare",
+                "op": ">",
+                "left": {
+                  "kind": "ref",
+                  "id": "per_day"
+                },
+                "right": {
+                  "kind": "int",
+                  "value": 10
+                }
+              }
+            },
+            {
+              "type": "text",
+              "id": "other",
+              "label": "Anything else? (optional)"
+            }
+          ]
+        }
+      ]
+    }
+  ],
+  "flow": [
+    {
+      "type": "block",
+      "id": "n_p1",
+      "block": "p1"
+    },
+    {
+      "type": "block",
+      "id": "n_p2",
+      "block": "p2"
+    }
+  ]
+}

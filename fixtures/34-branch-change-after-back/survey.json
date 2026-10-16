@@ -1,0 +1,141 @@
+{
+  "specVersion": "osp-survey/0.1",
+  "id": "f34_branch_change",
+  "version": 1,
+  "metadata": {
+    "title": "Branch path changes after back",
+    "description": "C3a-6 (open): going back and changing an answer so that a branch no longer leads to a block that was already answered. Draft traces; the abandoned block's states and values are pending.",
+    "languages": [
+      "en"
+    ]
+  },
+  "settings": {
+    "backNavigation": true
+  },
+  "choiceLists": [
+    {
+      "id": "modes",
+      "choices": [
+        {
+          "value": "car",
+          "label": "Car"
+        },
+        {
+          "value": "bus",
+          "label": "Bus"
+        }
+      ]
+    }
+  ],
+  "blocks": [
+    {
+      "id": "p1",
+      "pages": [
+        {
+          "id": "p1_page",
+          "items": [
+            {
+              "type": "single",
+              "id": "route",
+              "label": "How do you usually travel?",
+              "choiceList": "modes",
+              "required": true
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "id": "p_car",
+      "pages": [
+        {
+          "id": "p_car_page",
+          "items": [
+            {
+              "type": "text",
+              "id": "car_make",
+              "label": "Which make of car?"
+            },
+            {
+              "type": "integer",
+              "id": "car_age",
+              "label": "How old is it (years)?"
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "id": "p_bus",
+      "pages": [
+        {
+          "id": "p_bus_page",
+          "items": [
+            {
+              "type": "text",
+              "id": "bus_line",
+              "label": "Which bus line?"
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "id": "p_end",
+      "pages": [
+        {
+          "id": "p_end_page",
+          "items": [
+            {
+              "type": "text",
+              "id": "comment",
+              "label": "Any comment? (optional)"
+            }
+          ]
+        }
+      ]
+    }
+  ],
+  "flow": [
+    {
+      "type": "block",
+      "id": "n_p1",
+      "block": "p1"
+    },
+    {
+      "type": "branch",
+      "id": "branch_1",
+      "if": {
+        "kind": "compare",
+        "op": "==",
+        "left": {
+          "kind": "ref",
+          "id": "route"
+        },
+        "right": {
+          "kind": "text",
+          "value": "car"
+        }
+      },
+      "then": [
+        {
+          "type": "block",
+          "id": "n_p_car",
+          "block": "p_car"
+        }
+      ],
+      "else": [
+        {
+          "type": "block",
+          "id": "n_p_bus",
+          "block": "p_bus"
+        }
+      ]
+    },
+    {
+      "type": "block",
+      "id": "n_p_end",
+      "block": "p_end"
+    }
+  ]
+}

@@ -1,0 +1,140 @@
+{
+  "specVersion": "osp-survey/0.1",
+  "id": "f27_unicode_text",
+  "version": 1,
+  "metadata": {
+    "title": "Whitespace and Unicode text",
+    "description": "§2/§8: emoji, RTL, an internal NBSP and an internal zero-width space are kept as typed; ASCII whitespace at the ends is trimmed; piped text is HTML-escaped.",
+    "languages": [
+      "en"
+    ]
+  },
+  "settings": {
+    "backNavigation": true
+  },
+  "blocks": [
+    {
+      "id": "p1",
+      "pages": [
+        {
+          "id": "p1_page",
+          "items": [
+            {
+              "type": "text",
+              "id": "t_emoji",
+              "label": "Describe your day with an emoji."
+            },
+            {
+              "type": "text",
+              "id": "t_rtl",
+              "label": "Write a greeting in Hebrew."
+            },
+            {
+              "type": "text",
+              "id": "t_mixed",
+              "label": "Write a product code."
+            },
+            {
+              "type": "text",
+              "id": "t_name",
+              "label": "Choose a display name."
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "id": "p2",
+      "pages": [
+        {
+          "id": "p2_page",
+          "items": [
+            {
+              "type": "text",
+              "id": "pipe_emoji",
+              "label": "Your day: ${t_emoji}"
+            },
+            {
+              "type": "text",
+              "id": "pipe_rtl",
+              "label": "Your greeting: ${t_rtl}"
+            },
+            {
+              "type": "text",
+              "id": "pipe_mixed",
+              "label": "Code: [${t_mixed}]"
+            },
+            {
+              "type": "text",
+              "id": "pipe_name",
+              "label": "Hello ${t_name}!"
+            },
+            {
+              "type": "text",
+              "id": "s_emoji",
+              "label": "Shown when t_emoji == \"👍🏽 great\"",
+              "showIf": {
+                "kind": "compare",
+                "op": "==",
+                "left": {
+                  "kind": "ref",
+                  "id": "t_emoji"
+                },
+                "right": {
+                  "kind": "text",
+                  "value": "👍🏽 great"
+                }
+              }
+            },
+            {
+              "type": "text",
+              "id": "s_rtl",
+              "label": "Shown when t_rtl == \"שלום עולם\"",
+              "showIf": {
+                "kind": "compare",
+                "op": "==",
+                "left": {
+                  "kind": "ref",
+                  "id": "t_rtl"
+                },
+                "right": {
+                  "kind": "text",
+                  "value": "שלום עולם"
+                }
+              }
+            },
+            {
+              "type": "text",
+              "id": "s_mixed_plain",
+              "label": "Shown when t_mixed == \"AB 12X\" with plain characters (it must not be: the typed code has an NBSP and a zero-width space)",
+              "showIf": {
+                "kind": "compare",
+                "op": "==",
+                "left": {
+                  "kind": "ref",
+                  "id": "t_mixed"
+                },
+                "right": {
+                  "kind": "text",
+                  "value": "AB 12X"
+                }
+              }
+            }
+          ]
+        }
+      ]
+    }
+  ],
+  "flow": [
+    {
+      "type": "block",
+      "id": "n_p1",
+      "block": "p1"
+    },
+    {
+      "type": "block",
+      "id": "n_p2",
+      "block": "p2"
+    }
+  ]
+}

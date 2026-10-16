@@ -1,0 +1,442 @@
+{
+  "format": "osp-fixture-expected/0",
+  "fixture": "30-regression-server-resume",
+  "script": "storage-blocked",
+  "pending": [],
+  "steps": [
+    {
+      "index": 0,
+      "page": "p1",
+      "visible": [
+        "nick"
+      ],
+      "errors": {},
+      "nav": {
+        "back": false
+      },
+      "questions": {
+        "nick": {
+          "state": "unanswered",
+          "value": null
+        },
+        "n_books": {
+          "state": "not-reached",
+          "value": null
+        },
+        "best": {
+          "state": "not-reached",
+          "value": null
+        },
+        "outro": {
+          "state": "not-reached",
+          "value": null
+        }
+      },
+      "orders": {
+        "blocks": {},
+        "items": {},
+        "choices": {}
+      },
+      "conditions": {},
+      "end": null
+    },
+    {
+      "index": 1,
+      "page": "p1",
+      "visible": [
+        "nick"
+      ],
+      "errors": {},
+      "nav": {
+        "back": false
+      },
+      "questions": {
+        "nick": {
+          "state": "answered",
+          "value": "Robin"
+        },
+        "n_books": {
+          "state": "not-reached",
+          "value": null
+        },
+        "best": {
+          "state": "not-reached",
+          "value": null
+        },
+        "outro": {
+          "state": "not-reached",
+          "value": null
+        }
+      },
+      "orders": {
+        "blocks": {},
+        "items": {},
+        "choices": {}
+      },
+      "conditions": {},
+      "end": null
+    },
+    {
+      "index": 2,
+      "page": "p2",
+      "visible": [
+        "n_books"
+      ],
+      "errors": {},
+      "nav": {
+        "back": true
+      },
+      "questions": {
+        "nick": {
+          "state": "answered",
+          "value": "Robin"
+        },
+        "n_books": {
+          "state": "unanswered",
+          "value": null
+        },
+        "best": {
+          "state": "irrelevant",
+          "value": null
+        },
+        "outro": {
+          "state": "not-reached",
+          "value": null
+        }
+      },
+      "orders": {
+        "blocks": {},
+        "items": {},
+        "choices": {}
+      },
+      "conditions": {},
+      "end": null
+    },
+    {
+      "index": 3,
+      "page": "p2",
+      "visible": [
+        "n_books",
+        "best"
+      ],
+      "errors": {},
+      "nav": {
+        "back": true
+      },
+      "questions": {
+        "nick": {
+          "state": "answered",
+          "value": "Robin"
+        },
+        "n_books": {
+          "state": "answered",
+          "value": 3
+        },
+        "best": {
+          "state": "unanswered",
+          "value": null
+        },
+        "outro": {
+          "state": "not-reached",
+          "value": null
+        }
+      },
+      "orders": {
+        "blocks": {},
+        "items": {},
+        "choices": {}
+      },
+      "conditions": {},
+      "end": null
+    },
+    {
+      "index": 4,
+      "page": "p2",
+      "visible": [
+        "n_books",
+        "best"
+      ],
+      "errors": {},
+      "nav": {
+        "back": true
+      },
+      "questions": {
+        "nick": {
+          "state": "answered",
+          "value": "Robin"
+        },
+        "n_books": {
+          "state": "answered",
+          "value": 3
+        },
+        "best": {
+          "state": "answered",
+          "value": "a long novel"
+        },
+        "outro": {
+          "state": "not-reached",
+          "value": null
+        }
+      },
+      "orders": {
+        "blocks": {},
+        "items": {},
+        "choices": {}
+      },
+      "conditions": {},
+      "end": null
+    },
+    {
+      "index": 5,
+      "page": "p3",
+      "visible": [
+        "outro"
+      ],
+      "errors": {},
+      "nav": {
+        "back": true
+      },
+      "questions": {
+        "nick": {
+          "state": "answered",
+          "value": "Robin"
+        },
+        "n_books": {
+          "state": "answered",
+          "value": 3
+        },
+        "best": {
+          "state": "answered",
+          "value": "a long novel"
+        },
+        "outro": {
+          "state": "unanswered",
+          "value": null
+        }
+      },
+      "orders": {
+        "blocks": {},
+        "items": {},
+        "choices": {}
+      },
+      "conditions": {},
+      "end": null
+    },
+    {
+      "index": 6,
+      "page": "p3",
+      "visible": [
+        "outro"
+      ],
+      "errors": {},
+      "nav": {
+        "back": true
+      },
+      "questions": {
+        "nick": {
+          "state": "answered",
+          "value": "Robin"
+        },
+        "n_books": {
+          "state": "answered",
+          "value": 3
+        },
+        "best": {
+          "state": "answered",
+          "value": "a long novel"
+        },
+        "outro": {
+          "state": "unanswered",
+          "value": null
+        }
+      },
+      "orders": {
+        "blocks": {},
+        "items": {},
+        "choices": {}
+      },
+      "conditions": {},
+      "end": null
+    },
+    {
+      "index": 7,
+      "page": "p2",
+      "visible": [
+        "n_books",
+        "best"
+      ],
+      "errors": {},
+      "nav": {
+        "back": true
+      },
+      "questions": {
+        "nick": {
+          "state": "answered",
+          "value": "Robin"
+        },
+        "n_books": {
+          "state": "answered",
+          "value": 3
+        },
+        "best": {
+          "state": "answered",
+          "value": "a long novel"
+        },
+        "outro": {
+          "state": "unanswered",
+          "value": null
+        }
+      },
+      "orders": {
+        "blocks": {},
+        "items": {},
+        "choices": {}
+      },
+      "conditions": {},
+      "end": null
+    },
+    {
+      "index": 8,
+      "page": "p2",
+      "visible": [
+        "n_books",
+        "best"
+      ],
+      "errors": {},
+      "nav": {
+        "back": true
+      },
+      "questions": {
+        "nick": {
+          "state": "answered",
+          "value": "Robin"
+        },
+        "n_books": {
+          "state": "answered",
+          "value": 3
+        },
+        "best": {
+          "state": "answered",
+          "value": "a long novel"
+        },
+        "outro": {
+          "state": "unanswered",
+          "value": null
+        }
+      },
+      "orders": {
+        "blocks": {},
+        "items": {},
+        "choices": {}
+      },
+      "conditions": {},
+      "end": null
+    },
+    {
+      "index": 9,
+      "page": "p3",
+      "visible": [
+        "outro"
+      ],
+      "errors": {},
+      "nav": {
+        "back": true
+      },
+      "questions": {
+        "nick": {
+          "state": "answered",
+          "value": "Robin"
+        },
+        "n_books": {
+          "state": "answered",
+          "value": 3
+        },
+        "best": {
+          "state": "answered",
+          "value": "a long novel"
+        },
+        "outro": {
+          "state": "unanswered",
+          "value": null
+        }
+      },
+      "orders": {
+        "blocks": {},
+        "items": {},
+        "choices": {}
+      },
+      "conditions": {},
+      "end": null
+    },
+    {
+      "index": 10,
+      "page": null,
+      "visible": [],
+      "errors": {},
+      "nav": null,
+      "questions": {
+        "nick": {
+          "state": "answered",
+          "value": "Robin"
+        },
+        "n_books": {
+          "state": "answered",
+          "value": 3
+        },
+        "best": {
+          "state": "answered",
+          "value": "a long novel"
+        },
+        "outro": {
+          "state": "unanswered",
+          "value": null
+        }
+      },
+      "orders": {
+        "blocks": {},
+        "items": {},
+        "choices": {}
+      },
+      "conditions": {},
+      "end": "complete"
+    }
+  ],
+  "invariants": [],
+  "response": {
+    "surveyId": "f30_server_resume",
+    "surveyVersion": 1,
+    "end": "complete",
+    "allocation": "server",
+    "sessionSeed": 3001,
+    "conditions": {},
+    "orders": {
+      "blocks": {},
+      "items": {},
+      "choices": {}
+    },
+    "answers": {
+      "nick": {
+        "state": "answered",
+        "value": "Robin"
+      },
+      "n_books": {
+        "state": "answered",
+        "value": 3
+      },
+      "best": {
+        "state": "answered",
+        "value": "a long novel"
+      },
+      "outro": {
+        "state": "unanswered",
+        "value": null
+      }
+    },
+    "csvState": {
+      "nick__state": "answered",
+      "n_books__state": "answered",
+      "best__state": "answered",
+      "outro__state": "unanswered"
+    }
+  }
+}

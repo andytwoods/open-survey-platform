@@ -1,0 +1,124 @@
+{
+  "specVersion": "osp-survey/0.1",
+  "id": "f24_quota_retry",
+  "version": 1,
+  "metadata": {
+    "title": "Quota effect: pending, retried, resolved, replayed",
+    "description": "runtime-design §3/§5: the quotaCheck effect survives a timeout, a refresh and a lost reply; the recorded result is reused on back and on replay.",
+    "languages": [
+      "en"
+    ]
+  },
+  "settings": {
+    "backNavigation": true
+  },
+  "choiceLists": [
+    {
+      "id": "regions",
+      "choices": [
+        {
+          "value": "north",
+          "label": "North"
+        },
+        {
+          "value": "south",
+          "label": "South"
+        }
+      ]
+    }
+  ],
+  "blocks": [
+    {
+      "id": "p1",
+      "pages": [
+        {
+          "id": "p1_page",
+          "items": [
+            {
+              "type": "single",
+              "id": "region",
+              "label": "Where do you live?",
+              "choiceList": "regions",
+              "required": true
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "id": "p2",
+      "pages": [
+        {
+          "id": "p2_page",
+          "items": [
+            {
+              "type": "text",
+              "id": "p2_q",
+              "label": "Tell us about your area. (optional)"
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "id": "full_blk",
+      "pages": [
+        {
+          "id": "full_blk_page",
+          "items": [
+            {
+              "type": "text",
+              "id": "full_q",
+              "label": "This study is full. Any comment? (optional)"
+            }
+          ]
+        }
+      ]
+    }
+  ],
+  "quotas": [
+    {
+      "id": "q_north",
+      "when": {
+        "kind": "compare",
+        "op": "==",
+        "left": {
+          "kind": "ref",
+          "id": "region"
+        },
+        "right": {
+          "kind": "text",
+          "value": "north"
+        }
+      },
+      "limit": 100,
+      "countOn": "complete",
+      "onFull": {
+        "block": "full_blk",
+        "outcome": "quota_full"
+      }
+    }
+  ],
+  "flow": [
+    {
+      "type": "block",
+      "id": "n_p1",
+      "block": "p1"
+    },
+    {
+      "type": "quotaCheck",
+      "id": "qc_north",
+      "quota": "q_north"
+    },
+    {
+      "type": "block",
+      "id": "n_p2",
+      "block": "p2"
+    },
+    {
+      "type": "end",
+      "id": "end_complete",
+      "outcome": "complete"
+    }
+  ]
+}

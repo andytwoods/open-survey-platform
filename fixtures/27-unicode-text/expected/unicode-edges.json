@@ -1,0 +1,216 @@
+{
+  "format": "osp-fixture-expected/0",
+  "fixture": "27-unicode-text",
+  "script": "unicode-edges",
+  "pending": [
+    "R6-1"
+  ],
+  "steps": [
+    {
+      "index": 0,
+      "page": "p1",
+      "visible": [
+        "t_emoji",
+        "t_rtl",
+        "t_mixed",
+        "t_name"
+      ],
+      "errors": {},
+      "nav": {
+        "back": false
+      },
+      "questions": {
+        "t_emoji": {
+          "state": "unanswered",
+          "value": null
+        },
+        "t_rtl": {
+          "state": "unanswered",
+          "value": null
+        },
+        "t_mixed": {
+          "state": "unanswered",
+          "value": null
+        },
+        "t_name": {
+          "state": "unanswered",
+          "value": null
+        },
+        "pipe_emoji": {
+          "state": "not-reached",
+          "value": null
+        },
+        "pipe_rtl": {
+          "state": "not-reached",
+          "value": null
+        },
+        "pipe_mixed": {
+          "state": "not-reached",
+          "value": null
+        },
+        "pipe_name": {
+          "state": "not-reached",
+          "value": null
+        },
+        "s_emoji": {
+          "state": "not-reached",
+          "value": null
+        },
+        "s_rtl": {
+          "state": "not-reached",
+          "value": null
+        },
+        "s_mixed_plain": {
+          "state": "not-reached",
+          "value": null
+        }
+      },
+      "orders": {
+        "blocks": {},
+        "items": {},
+        "choices": {}
+      },
+      "conditions": {},
+      "end": null,
+      "labels": {
+        "t_emoji": "Describe your day with an emoji.",
+        "t_rtl": "Write a greeting in Hebrew.",
+        "t_mixed": "Write a product code.",
+        "t_name": "Choose a display name."
+      }
+    },
+    {
+      "index": 1,
+      "page": "p2",
+      "visible": "<pending:R6-1>",
+      "errors": {},
+      "nav": {
+        "back": true
+      },
+      "questions": {
+        "t_emoji": "<pending:R6-1>",
+        "t_rtl": "<pending:R6-1>",
+        "t_mixed": "<pending:R6-1>",
+        "t_name": "<pending:R6-1>",
+        "pipe_emoji": {
+          "state": "unanswered",
+          "value": null
+        },
+        "pipe_rtl": {
+          "state": "unanswered",
+          "value": null
+        },
+        "pipe_mixed": {
+          "state": "unanswered",
+          "value": null
+        },
+        "pipe_name": {
+          "state": "unanswered",
+          "value": null
+        },
+        "s_emoji": "<pending:R6-1>",
+        "s_rtl": "<pending:R6-1>",
+        "s_mixed_plain": "<pending:R6-1>"
+      },
+      "orders": {
+        "blocks": {},
+        "items": {},
+        "choices": {}
+      },
+      "conditions": {},
+      "end": null,
+      "labels": "<pending:R6-1>"
+    },
+    {
+      "index": 2,
+      "page": null,
+      "visible": [],
+      "errors": {},
+      "nav": null,
+      "questions": {
+        "t_emoji": "<pending:R6-1>",
+        "t_rtl": "<pending:R6-1>",
+        "t_mixed": "<pending:R6-1>",
+        "t_name": "<pending:R6-1>",
+        "pipe_emoji": {
+          "state": "unanswered",
+          "value": null
+        },
+        "pipe_rtl": {
+          "state": "unanswered",
+          "value": null
+        },
+        "pipe_mixed": {
+          "state": "unanswered",
+          "value": null
+        },
+        "pipe_name": {
+          "state": "unanswered",
+          "value": null
+        },
+        "s_emoji": "<pending:R6-1>",
+        "s_rtl": "<pending:R6-1>",
+        "s_mixed_plain": "<pending:R6-1>"
+      },
+      "orders": {
+        "blocks": {},
+        "items": {},
+        "choices": {}
+      },
+      "conditions": {},
+      "end": "complete"
+    }
+  ],
+  "invariants": [],
+  "response": {
+    "surveyId": "f27_unicode_text",
+    "surveyVersion": 1,
+    "end": "complete",
+    "allocation": "server",
+    "sessionSeed": 2702,
+    "conditions": {},
+    "orders": {
+      "blocks": {},
+      "items": {},
+      "choices": {}
+    },
+    "answers": {
+      "t_emoji": "<pending:R6-1>",
+      "t_rtl": "<pending:R6-1>",
+      "t_mixed": "<pending:R6-1>",
+      "t_name": "<pending:R6-1>",
+      "pipe_emoji": {
+        "state": "unanswered",
+        "value": null
+      },
+      "pipe_rtl": {
+        "state": "unanswered",
+        "value": null
+      },
+      "pipe_mixed": {
+        "state": "unanswered",
+        "value": null
+      },
+      "pipe_name": {
+        "state": "unanswered",
+        "value": null
+      },
+      "s_emoji": "<pending:R6-1>",
+      "s_rtl": "<pending:R6-1>",
+      "s_mixed_plain": "<pending:R6-1>"
+    },
+    "csvState": {
+      "t_emoji__state": "<pending:R6-1>",
+      "t_rtl__state": "<pending:R6-1>",
+      "t_mixed__state": "<pending:R6-1>",
+      "t_name__state": "<pending:R6-1>",
+      "pipe_emoji__state": "unanswered",
+      "pipe_rtl__state": "unanswered",
+      "pipe_mixed__state": "unanswered",
+      "pipe_name__state": "unanswered",
+      "s_emoji__state": "<pending:R6-1>",
+      "s_rtl__state": "<pending:R6-1>",
+      "s_mixed_plain__state": "<pending:R6-1>"
+    }
+  }
+}

@@ -1,0 +1,96 @@
+{
+  "specVersion": "osp-survey/0.1",
+  "id": "f33_end_only",
+  "version": 1,
+  "metadata": {
+    "title": "End-only save mode",
+    "description": "runtime-design §5.0: in end-only mode no response data is uploaded before submit; a browser copy lets a refresh resume, a blocked store falls back to memory. The mode itself is not in osp-survey/0.1 (pending.json).",
+    "languages": [
+      "en"
+    ]
+  },
+  "settings": {
+    "backNavigation": true
+  },
+  "choiceLists": [
+    {
+      "id": "yesno",
+      "choices": [
+        {
+          "value": "yes",
+          "label": "Yes"
+        },
+        {
+          "value": "no",
+          "label": "No"
+        }
+      ]
+    }
+  ],
+  "blocks": [
+    {
+      "id": "p1",
+      "pages": [
+        {
+          "id": "p1_page",
+          "items": [
+            {
+              "type": "single",
+              "id": "consent",
+              "label": "Do you agree to take part?",
+              "choiceList": "yesno",
+              "required": true
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "id": "p2",
+      "pages": [
+        {
+          "id": "p2_page",
+          "items": [
+            {
+              "type": "integer",
+              "id": "q_a",
+              "label": "How many hours did you sleep last night?"
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "id": "p3",
+      "pages": [
+        {
+          "id": "p3_page",
+          "items": [
+            {
+              "type": "text",
+              "id": "q_b",
+              "label": "Any comment? (optional)"
+            }
+          ]
+        }
+      ]
+    }
+  ],
+  "flow": [
+    {
+      "type": "block",
+      "id": "n_p1",
+      "block": "p1"
+    },
+    {
+      "type": "block",
+      "id": "n_p2",
+      "block": "p2"
+    },
+    {
+      "type": "block",
+      "id": "n_p3",
+      "block": "p3"
+    }
+  ]
+}

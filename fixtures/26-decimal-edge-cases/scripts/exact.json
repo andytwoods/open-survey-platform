@@ -1,0 +1,30 @@
+{
+  "format": "osp-fixture-script/0",
+  "id": "exact",
+  "description": "a = 0.1, b = 0.2, big = 9007199254740993 (2^53 + 1). z = 0.29 fails z >= a + b; z = 0.3 passes (a binary float would reject it: 0.1 + 0.2 = 0.30000000000000004). On p2: a + b == 0.3, not a + b > 0.3, a * b == 0.02, b - a == a, big > 2^53, big != 2^53, big + 1 == 2^53 + 2.",
+  "sessionSeed": 2601,
+  "language": "en",
+  "actions": [
+    {
+      "expectPage": "p1",
+      "set": {
+        "a": "0.1",
+        "b": "0.2",
+        "big": "9007199254740993",
+        "z": "0.29"
+      },
+      "do": "next"
+    },
+    {
+      "expectPage": "p1",
+      "set": {
+        "z": "0.3"
+      },
+      "do": "next"
+    },
+    {
+      "expectPage": "p2",
+      "do": "next"
+    }
+  ]
+}

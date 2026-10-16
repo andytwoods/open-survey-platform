@@ -1,0 +1,150 @@
+{
+  "format": "osp-fixture-expected/0",
+  "fixture": "24-quota-pending-retry",
+  "script": "full",
+  "pending": [
+    "C3a-3",
+    "R6-4"
+  ],
+  "steps": [
+    {
+      "index": 0,
+      "page": "p1",
+      "visible": [
+        "region"
+      ],
+      "errors": {},
+      "nav": {
+        "back": false
+      },
+      "questions": {
+        "region": {
+          "state": "unanswered",
+          "value": null
+        },
+        "p2_q": {
+          "state": "not-reached",
+          "value": null
+        },
+        "full_q": {
+          "state": "not-reached",
+          "value": null
+        }
+      },
+      "orders": {
+        "blocks": {},
+        "items": {},
+        "choices": {}
+      },
+      "conditions": {},
+      "end": null,
+      "effect": null
+    },
+    {
+      "index": 1,
+      "page": "full_blk",
+      "visible": [
+        "full_q"
+      ],
+      "errors": {},
+      "nav": "<pending:C3a-3>",
+      "questions": {
+        "region": {
+          "state": "answered",
+          "value": "north"
+        },
+        "p2_q": {
+          "state": "not-reached",
+          "value": null
+        },
+        "full_q": {
+          "state": "unanswered",
+          "value": null
+        }
+      },
+      "orders": {
+        "blocks": {},
+        "items": {},
+        "choices": {}
+      },
+      "conditions": {},
+      "end": null,
+      "effect": null
+    },
+    {
+      "index": 2,
+      "page": null,
+      "visible": [],
+      "errors": {},
+      "nav": null,
+      "questions": {
+        "region": {
+          "state": "answered",
+          "value": "north"
+        },
+        "p2_q": {
+          "state": "not-reached",
+          "value": null
+        },
+        "full_q": {
+          "state": "unanswered",
+          "value": null
+        }
+      },
+      "orders": {
+        "blocks": {},
+        "items": {},
+        "choices": {}
+      },
+      "conditions": {},
+      "end": "quota_full",
+      "effect": null
+    }
+  ],
+  "invariants": [],
+  "response": {
+    "surveyId": "f24_quota_retry",
+    "surveyVersion": 1,
+    "end": "quota_full",
+    "allocation": "server",
+    "sessionSeed": 2402,
+    "conditions": {},
+    "orders": {
+      "blocks": {},
+      "items": {},
+      "choices": {}
+    },
+    "answers": {
+      "region": {
+        "state": "answered",
+        "value": "north"
+      },
+      "p2_q": {
+        "state": "not-reached",
+        "value": null
+      },
+      "full_q": {
+        "state": "unanswered",
+        "value": null
+      }
+    },
+    "csvState": {
+      "region__state": "answered",
+      "p2_q__state": "not-reached",
+      "full_q__state": "unanswered"
+    },
+    "effects": [
+      {
+        "kind": "quota",
+        "nodeId": "qc_north",
+        "quota": "q_north",
+        "result": "full"
+      }
+    ]
+  },
+  "network": {
+    "quotaCalls": {
+      "qc_north": 1
+    }
+  }
+}

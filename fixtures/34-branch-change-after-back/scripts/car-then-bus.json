@@ -1,0 +1,50 @@
+{
+  "format": "osp-fixture-script/0",
+  "id": "car-then-bus",
+  "description": "route = car, answer p_car, reach p_end; back twice, route = bus. p_car is no longer on the path: are car_make and car_age not-reached or irrelevant, and are they cleared? (C3a-6)",
+  "sessionSeed": 3401,
+  "language": "en",
+  "actions": [
+    {
+      "expectPage": "p1",
+      "set": {
+        "route": "car"
+      },
+      "do": "next"
+    },
+    {
+      "expectPage": "p_car",
+      "set": {
+        "car_make": "Volvo",
+        "car_age": 4
+      },
+      "do": "next"
+    },
+    {
+      "expectPage": "p_end",
+      "do": "back"
+    },
+    {
+      "expectPage": "p_car",
+      "do": "back"
+    },
+    {
+      "expectPage": "p1",
+      "set": {
+        "route": "bus"
+      },
+      "do": "next"
+    },
+    {
+      "expectPage": "p_bus",
+      "set": {
+        "bus_line": "42"
+      },
+      "do": "next"
+    },
+    {
+      "expectPage": "p_end",
+      "do": "next"
+    }
+  ]
+}

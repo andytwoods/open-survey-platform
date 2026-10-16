@@ -1,0 +1,39 @@
+{
+  "format": "osp-fixture-script/0",
+  "id": "storage-blocked",
+  "description": "end-only with storage blocked: it falls back to memory (never to network saving). What the refresh then shows (a fresh start with the same seed and assignment, or an end) is R6-5.",
+  "sessionSeed": 3302,
+  "language": "en",
+  "storage": "blocked",
+  "actions": [
+    {
+      "expectPage": "p1",
+      "set": {
+        "consent": "yes"
+      },
+      "do": "next"
+    },
+    {
+      "expectPage": "p2",
+      "set": {
+        "q_a": 7
+      },
+      "do": "refresh"
+    },
+    {
+      "expectPage": "p2",
+      "do": "next"
+    },
+    {
+      "expectPage": "p3",
+      "set": {
+        "q_b": "fine"
+      },
+      "do": "resume"
+    },
+    {
+      "expectPage": "p3",
+      "do": "next"
+    }
+  ]
+}

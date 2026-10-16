@@ -1,0 +1,93 @@
+{
+  "format": "osp-fixture-script/0",
+  "id": "arm-a",
+  "description": "Condition arm = A. A refresh before every next and after every set, after a failed submit (age 12 is kept but not accepted) and after a back. Nothing is re-rolled or lost.",
+  "sessionSeed": 2301,
+  "language": "en",
+  "server": {
+    "conditions": {
+      "arm": "A"
+    }
+  },
+  "actions": [
+    {
+      "expectPage": "p_start",
+      "do": "refresh"
+    },
+    {
+      "expectPage": "p_start",
+      "set": {
+        "consent": "yes"
+      },
+      "do": "refresh"
+    },
+    {
+      "expectPage": "p_start",
+      "do": "next"
+    },
+    {
+      "expectPage": "p_info",
+      "do": "refresh"
+    },
+    {
+      "expectPage": "p_info",
+      "set": {
+        "age": 12
+      },
+      "do": "next"
+    },
+    {
+      "expectPage": "p_info",
+      "do": "refresh"
+    },
+    {
+      "expectPage": "p_info",
+      "set": {
+        "age": 30
+      },
+      "do": "next"
+    },
+    {
+      "expectPage": "p_a",
+      "do": "refresh"
+    },
+    {
+      "expectPage": "p_a",
+      "set": {
+        "fruit": "plum"
+      },
+      "do": "refresh"
+    },
+    {
+      "expectPage": "p_a",
+      "do": "next"
+    },
+    {
+      "expectPage": "p_end",
+      "do": "refresh"
+    },
+    {
+      "expectPage": "p_end",
+      "do": "back"
+    },
+    {
+      "expectPage": "p_a",
+      "do": "refresh"
+    },
+    {
+      "expectPage": "p_a",
+      "do": "next"
+    },
+    {
+      "expectPage": "p_end",
+      "set": {
+        "comment": "fine"
+      },
+      "do": "refresh"
+    },
+    {
+      "expectPage": "p_end",
+      "do": "next"
+    }
+  ]
+}

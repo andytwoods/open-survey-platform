@@ -1,0 +1,210 @@
+{
+  "specVersion": "osp-survey/0.1",
+  "id": "f23_refresh_every_step",
+  "version": 1,
+  "metadata": {
+    "title": "Refresh at every step",
+    "description": "§5/§7: a refresh before and after every action (incl. a failed submit and a back) restores page, values, choice order and condition.",
+    "languages": [
+      "en"
+    ]
+  },
+  "settings": {
+    "backNavigation": true
+  },
+  "choiceLists": [
+    {
+      "id": "yesno",
+      "choices": [
+        {
+          "value": "yes",
+          "label": "Yes"
+        },
+        {
+          "value": "no",
+          "label": "No"
+        }
+      ]
+    },
+    {
+      "id": "fruit4",
+      "choices": [
+        {
+          "value": "apple",
+          "label": "Apple"
+        },
+        {
+          "value": "pear",
+          "label": "Pear"
+        },
+        {
+          "value": "plum",
+          "label": "Plum"
+        },
+        {
+          "value": "fig",
+          "label": "Fig"
+        }
+      ]
+    }
+  ],
+  "variables": [
+    {
+      "kind": "assigned",
+      "id": "arm",
+      "levels": [
+        "A",
+        "B"
+      ]
+    }
+  ],
+  "blocks": [
+    {
+      "id": "p_start",
+      "pages": [
+        {
+          "id": "p_start_page",
+          "items": [
+            {
+              "type": "single",
+              "id": "consent",
+              "label": "Do you agree to take part?",
+              "choiceList": "yesno",
+              "required": true
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "id": "p_info",
+      "pages": [
+        {
+          "id": "p_info_page",
+          "items": [
+            {
+              "type": "integer",
+              "id": "age",
+              "label": "How old are you?",
+              "required": true,
+              "constraint": {
+                "kind": "compare",
+                "op": ">=",
+                "left": {
+                  "kind": "ref",
+                  "id": "age"
+                },
+                "right": {
+                  "kind": "int",
+                  "value": 18
+                }
+              },
+              "constraintMessage": "You must be 18 or over."
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "id": "p_a",
+      "pages": [
+        {
+          "id": "p_a_page",
+          "items": [
+            {
+              "type": "single",
+              "id": "fruit",
+              "label": "Arm A: pick a fruit.",
+              "choiceList": "fruit4",
+              "choiceOrder": "shuffle"
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "id": "p_b",
+      "pages": [
+        {
+          "id": "p_b_page",
+          "items": [
+            {
+              "type": "text",
+              "id": "arm_b_q",
+              "label": "Arm B: describe a fruit."
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "id": "p_end",
+      "pages": [
+        {
+          "id": "p_end_page",
+          "items": [
+            {
+              "type": "text",
+              "id": "comment",
+              "label": "Any comment? (optional)"
+            }
+          ]
+        }
+      ]
+    }
+  ],
+  "flow": [
+    {
+      "type": "block",
+      "id": "n_p_start",
+      "block": "p_start"
+    },
+    {
+      "type": "assign",
+      "id": "assign_design",
+      "variables": [
+        "arm"
+      ]
+    },
+    {
+      "type": "block",
+      "id": "n_p_info",
+      "block": "p_info"
+    },
+    {
+      "type": "branch",
+      "id": "branch_1",
+      "if": {
+        "kind": "compare",
+        "op": "==",
+        "left": {
+          "kind": "ref",
+          "id": "arm"
+        },
+        "right": {
+          "kind": "text",
+          "value": "A"
+        }
+      },
+      "then": [
+        {
+          "type": "block",
+          "id": "n_p_a",
+          "block": "p_a"
+        }
+      ],
+      "else": [
+        {
+          "type": "block",
+          "id": "n_p_b",
+          "block": "p_b"
+        }
+      ]
+    },
+    {
+      "type": "block",
+      "id": "n_p_end",
+      "block": "p_end"
+    }
+  ]
+}

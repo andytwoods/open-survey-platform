@@ -1,0 +1,260 @@
+{
+  "format": "osp-fixture-expected/0",
+  "fixture": "25-second-device-resume",
+  "script": "stale-device-a",
+  "pending": [
+    "R6-6"
+  ],
+  "steps": [
+    {
+      "index": 0,
+      "page": "p1",
+      "visible": [
+        "colour"
+      ],
+      "errors": {},
+      "nav": {
+        "back": false
+      },
+      "questions": {
+        "colour": {
+          "state": "unanswered",
+          "value": null
+        },
+        "n1": {
+          "state": "not-reached",
+          "value": null
+        },
+        "t1": {
+          "state": "not-reached",
+          "value": null
+        },
+        "t2": {
+          "state": "not-reached",
+          "value": null
+        },
+        "t3": {
+          "state": "not-reached",
+          "value": null
+        }
+      },
+      "orders": {
+        "blocks": {},
+        "items": {},
+        "choices": {
+          "colour": "<engine>"
+        }
+      },
+      "conditions": {
+        "framing": "loss"
+      },
+      "end": null,
+      "device": "A"
+    },
+    {
+      "index": 1,
+      "page": "p2",
+      "visible": [
+        "n1",
+        "t1"
+      ],
+      "errors": {},
+      "nav": {
+        "back": true
+      },
+      "questions": {
+        "colour": {
+          "state": "answered",
+          "value": "green"
+        },
+        "n1": {
+          "state": "unanswered",
+          "value": null
+        },
+        "t1": {
+          "state": "unanswered",
+          "value": null
+        },
+        "t2": {
+          "state": "not-reached",
+          "value": null
+        },
+        "t3": {
+          "state": "not-reached",
+          "value": null
+        }
+      },
+      "orders": {
+        "blocks": {},
+        "items": {},
+        "choices": {
+          "colour": "<engine>"
+        }
+      },
+      "conditions": {
+        "framing": "loss"
+      },
+      "end": null,
+      "device": "A"
+    },
+    {
+      "index": 2,
+      "page": "p2",
+      "visible": [
+        "n1",
+        "t1"
+      ],
+      "errors": {},
+      "nav": {
+        "back": true
+      },
+      "questions": {
+        "colour": {
+          "state": "answered",
+          "value": "green"
+        },
+        "n1": {
+          "state": "answered",
+          "value": 5
+        },
+        "t1": {
+          "state": "unanswered",
+          "value": null
+        },
+        "t2": {
+          "state": "not-reached",
+          "value": null
+        },
+        "t3": {
+          "state": "not-reached",
+          "value": null
+        }
+      },
+      "orders": {
+        "blocks": {},
+        "items": {},
+        "choices": {
+          "colour": "<engine>"
+        }
+      },
+      "conditions": {
+        "framing": "loss"
+      },
+      "end": null,
+      "device": "B"
+    },
+    {
+      "index": 3,
+      "page": "p3",
+      "visible": [
+        "t2"
+      ],
+      "errors": {},
+      "nav": {
+        "back": true
+      },
+      "questions": {
+        "colour": {
+          "state": "answered",
+          "value": "green"
+        },
+        "n1": {
+          "state": "answered",
+          "value": 5
+        },
+        "t1": {
+          "state": "answered",
+          "value": "the kitchen"
+        },
+        "t2": {
+          "state": "unanswered",
+          "value": null
+        },
+        "t3": {
+          "state": "not-reached",
+          "value": null
+        }
+      },
+      "orders": {
+        "blocks": {},
+        "items": {},
+        "choices": {
+          "colour": "<engine>"
+        }
+      },
+      "conditions": {
+        "framing": "loss"
+      },
+      "end": null,
+      "device": "B"
+    },
+    {
+      "index": 4,
+      "page": "p2",
+      "visible": [
+        "n1",
+        "t1"
+      ],
+      "errors": {},
+      "nav": {
+        "back": true
+      },
+      "questions": {
+        "colour": {
+          "state": "answered",
+          "value": "green"
+        },
+        "n1": {
+          "state": "answered",
+          "value": 5
+        },
+        "t1": {
+          "state": "unanswered",
+          "value": null
+        },
+        "t2": {
+          "state": "not-reached",
+          "value": null
+        },
+        "t3": {
+          "state": "not-reached",
+          "value": null
+        }
+      },
+      "orders": {
+        "blocks": {},
+        "items": {},
+        "choices": {
+          "colour": "<engine>"
+        }
+      },
+      "conditions": {
+        "framing": "loss"
+      },
+      "end": null,
+      "device": "A"
+    },
+    {
+      "index": 5,
+      "page": "<pending:R6-6>",
+      "visible": "<pending:R6-6>",
+      "errors": "<pending:R6-6>",
+      "nav": "<pending:R6-6>",
+      "questions": "<pending:R6-6>",
+      "orders": {
+        "blocks": {},
+        "items": {},
+        "choices": {
+          "colour": "<engine>"
+        }
+      },
+      "conditions": {
+        "framing": "loss"
+      },
+      "end": "<pending:R6-6>",
+      "device": "A"
+    }
+  ],
+  "invariants": [],
+  "response": "<pending:R6-6>"
+}

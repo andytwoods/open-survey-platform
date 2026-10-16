@@ -1,0 +1,38 @@
+{
+  "format": "osp-fixture-script/0",
+  "id": "browser-copy",
+  "description": "end-only with localCopy = browser: the refresh and the resume restore from IndexedDB; nothing but session start and the final submit reaches the server (network: zero snapshot writes, one submit).",
+  "sessionSeed": 3301,
+  "language": "en",
+  "actions": [
+    {
+      "expectPage": "p1",
+      "set": {
+        "consent": "yes"
+      },
+      "do": "next"
+    },
+    {
+      "expectPage": "p2",
+      "set": {
+        "q_a": 7
+      },
+      "do": "refresh"
+    },
+    {
+      "expectPage": "p2",
+      "do": "next"
+    },
+    {
+      "expectPage": "p3",
+      "set": {
+        "q_b": "fine"
+      },
+      "do": "resume"
+    },
+    {
+      "expectPage": "p3",
+      "do": "next"
+    }
+  ]
+}
