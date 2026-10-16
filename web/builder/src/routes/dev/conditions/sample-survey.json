@@ -1,0 +1,53 @@
+{
+  "specVersion": "osp-survey/0.1",
+  "id": "dev_conditions",
+  "version": 1,
+  "metadata": { "title": "Condition builder sample", "languages": ["en"] },
+  "choiceLists": [
+    {
+      "id": "colour",
+      "choices": [
+        { "value": "red", "label": "Red" },
+        { "value": "green", "label": "Green" },
+        { "value": "blue", "label": "Blue" }
+      ]
+    }
+  ],
+  "blocks": [
+    {
+      "id": "b_main",
+      "pages": [
+        {
+          "id": "p_about",
+          "items": [
+            { "type": "integer", "id": "age", "label": "How old are you?", "required": true },
+            { "type": "multi", "id": "colours", "label": "Which colours do you like?", "choiceList": "colour" },
+            { "type": "text", "id": "q3", "label": "Anything else about colours?" },
+            {
+              "type": "single",
+              "id": "pet",
+              "label": "Do you have a pet?",
+              "choices": [
+                { "value": 1, "label": "Yes" },
+                { "value": 2, "label": "No" }
+              ]
+            },
+            { "type": "date", "id": "start", "label": "When did you start?" },
+            { "type": "date", "id": "stop", "label": "When did you stop?" }
+          ]
+        },
+        {
+          "id": "p_more",
+          "items": [
+            { "type": "text", "id": "q_target", "label": "Tell us more" },
+            { "type": "integer", "id": "later", "label": "How many hours a week?" }
+          ]
+        }
+      ]
+    }
+  ],
+  "flow": [
+    { "type": "block", "id": "n_main", "block": "b_main" },
+    { "type": "end", "id": "end_complete" }
+  ]
+}

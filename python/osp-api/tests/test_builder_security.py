@@ -31,6 +31,8 @@ ROUTES: list[tuple[str, str, dict | None]] = [
     ("GET", "/api/meta/property-schemas", None),
     ("GET", "/api/meta/survey-schema", None),
     ("GET", "/api/meta/theme-schema", None),
+    ("POST", "/api/meta/expressions/parse", {"text": "a > 1"}),
+    ("POST", "/api/meta/expressions/print", {"ast": {"kind": "null"}}),
 ]
 SURVEY_ROUTES = [r for r in ROUTES if SID in r[1]]
 WRITE_SURVEY_ROUTES = [r for r in SURVEY_ROUTES if r[0] != "GET"]
