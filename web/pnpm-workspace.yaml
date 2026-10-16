@@ -5,3 +5,4 @@ packages:
   - engine
   - runtime
   - hooks-sandbox
+  - harness
