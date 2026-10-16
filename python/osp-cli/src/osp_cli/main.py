@@ -178,7 +178,7 @@ def dev_banner(
     *,
     builder_url: str,
     api_url: str,
-    participant_url: str | None,
+    participant_link: str | None,
 ) -> str:
     first = " (first run: dev login and surveys created)" if created else ""
     lines = [
@@ -198,11 +198,12 @@ def dev_banner(
     for s in state.get("surveys", []):
         lines.append(f"    {s['title']}  ({s['fixture']})")
         lines.append(f"      builder      {builder_url}/surveys/{s['surveyId']}")
-        if participant_url:
-            lines.append(f"      participant  {participant_url}/s/{s['slug']}")
+        if participant_link:
+            link = participant_link.replace("{slug}", s["slug"])
+            lines.append(f"      participant  {link}")
         else:
             lines.append(f"      plan (API)   {api_url}{s['planUrl']}")
-    if not participant_url:
+    if not participant_link:
         lines.append("    participant app not built yet")
     lines += ["", "  Ctrl+C stops everything. `make dev-reset` wipes .data/.", ""]
     return "\n".join(lines)
@@ -225,7 +226,11 @@ def _parser() -> argparse.ArgumentParser:
     d.add_argument("--data-dir", type=Path, default=Path(os.environ.get("OSP_DATA_DIR") or ".data"))
     d.add_argument("--builder-url", default="http://localhost:5173")
     d.add_argument("--api-url", default="http://localhost:8000")
-    d.add_argument("--participant-url", default="", help="participant app; empty: not built")
+    d.add_argument(
+        "--participant-link",
+        default="",
+        help="participant link template with {slug}; empty: the app is not built",
+    )
     return p
 
 
@@ -247,7 +252,7 @@ def main(argv: Sequence[str] | None = None) -> int:
                     created,
                     builder_url=args.builder_url.rstrip("/"),
                     api_url=args.api_url.rstrip("/"),
-                    participant_url=args.participant_url.rstrip("/") or None,
+                    participant_link=args.participant_link or None,
                 )
             )
             return 0

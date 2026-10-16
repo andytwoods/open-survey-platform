@@ -83,10 +83,10 @@ def test_dev_seed_creates_once_then_reprints(tmp_path, keys, capsys, monkeypatch
     # The login works (no second factor), and a second run reuses everything.
     services = open_services(db)
     assert isinstance(services.auth.login(state["email"], state["password"]), LoginOk)
-    assert main([*argv, "--participant-url", "http://localhost:5174"]) == 0
+    assert main([*argv, "--participant-link", "http://localhost:5174/r/?s={slug}"]) == 0
     again = capsys.readouterr().out
     assert "first run" not in again
-    assert f"localhost:5174/s/{state['surveys'][0]['slug']}" in again
+    assert f"localhost:5174/r/?s={state['surveys'][0]['slug']}" in again
     actor = researcher(services, state["email"], state["password"], state["lab"])
     assert len(services.builder.run("survey.list", actor)) == 3
 
