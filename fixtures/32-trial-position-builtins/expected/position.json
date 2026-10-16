@@ -54,8 +54,10 @@
     },
     {
       "index": 1,
-      "page": "<engine>",
-      "visible": "<engine>",
+      "page": "s3",
+      "visible": [
+        "r3"
+      ],
       "errors": {},
       "nav": {
         "back": true
@@ -69,9 +71,18 @@
           "state": "irrelevant",
           "value": null
         },
-        "r1": "<engine>",
-        "r2": "<engine>",
-        "r3": "<engine>",
+        "r1": {
+          "state": "not-reached",
+          "value": null
+        },
+        "r2": {
+          "state": "not-reached",
+          "value": null
+        },
+        "r3": {
+          "state": "unanswered",
+          "value": null
+        },
         "outro": {
           "state": "not-reached",
           "value": null
@@ -79,7 +90,11 @@
       },
       "orders": {
         "blocks": {
-          "r_stim": "<engine>"
+          "r_stim": [
+            "s3",
+            "s1",
+            "s2"
+          ]
         },
         "items": {},
         "choices": {}
@@ -97,9 +112,15 @@
     },
     {
       "index": 2,
-      "page": "<engine>",
-      "visible": "<engine>",
-      "errors": "<engine>",
+      "page": "s3",
+      "visible": [
+        "r3"
+      ],
+      "errors": {
+        "r3": {
+          "kind": "required"
+        }
+      },
       "nav": {
         "back": true
       },
@@ -112,9 +133,18 @@
           "state": "irrelevant",
           "value": null
         },
-        "r1": "<engine>",
-        "r2": "<engine>",
-        "r3": "<engine>",
+        "r1": {
+          "state": "not-reached",
+          "value": null
+        },
+        "r2": {
+          "state": "not-reached",
+          "value": null
+        },
+        "r3": {
+          "state": "unanswered",
+          "value": null
+        },
         "outro": {
           "state": "not-reached",
           "value": null
@@ -122,7 +152,11 @@
       },
       "orders": {
         "blocks": {
-          "r_stim": "<engine>"
+          "r_stim": [
+            "s3",
+            "s1",
+            "s2"
+          ]
         },
         "items": {},
         "choices": {}
@@ -140,8 +174,10 @@
     },
     {
       "index": 3,
-      "page": "<engine>",
-      "visible": "<engine>",
+      "page": "s1",
+      "visible": [
+        "r1"
+      ],
       "errors": {},
       "nav": {
         "back": true
@@ -155,9 +191,18 @@
           "state": "irrelevant",
           "value": null
         },
-        "r1": "<engine>",
-        "r2": "<engine>",
-        "r3": "<engine>",
+        "r1": {
+          "state": "unanswered",
+          "value": null
+        },
+        "r2": {
+          "state": "not-reached",
+          "value": null
+        },
+        "r3": {
+          "state": "answered",
+          "value": 3
+        },
         "outro": {
           "state": "not-reached",
           "value": null
@@ -165,7 +210,11 @@
       },
       "orders": {
         "blocks": {
-          "r_stim": "<engine>"
+          "r_stim": [
+            "s3",
+            "s1",
+            "s2"
+          ]
         },
         "items": {},
         "choices": {}
@@ -183,8 +232,10 @@
     },
     {
       "index": 4,
-      "page": "<engine>",
-      "visible": "<engine>",
+      "page": "s3",
+      "visible": [
+        "r3"
+      ],
       "errors": {},
       "nav": {
         "back": true
@@ -198,9 +249,18 @@
           "state": "irrelevant",
           "value": null
         },
-        "r1": "<engine>",
-        "r2": "<engine>",
-        "r3": "<engine>",
+        "r1": {
+          "state": "unanswered",
+          "value": null
+        },
+        "r2": {
+          "state": "not-reached",
+          "value": null
+        },
+        "r3": {
+          "state": "answered",
+          "value": 3
+        },
         "outro": {
           "state": "not-reached",
           "value": null
@@ -208,7 +268,11 @@
       },
       "orders": {
         "blocks": {
-          "r_stim": "<engine>"
+          "r_stim": [
+            "s3",
+            "s1",
+            "s2"
+          ]
         },
         "items": {},
         "choices": {}
@@ -226,8 +290,10 @@
     },
     {
       "index": 5,
-      "page": "<engine>",
-      "visible": "<engine>",
+      "page": "s3",
+      "visible": [
+        "r3"
+      ],
       "errors": {},
       "nav": {
         "back": true
@@ -241,9 +307,18 @@
           "state": "irrelevant",
           "value": null
         },
-        "r1": "<engine>",
-        "r2": "<engine>",
-        "r3": "<engine>",
+        "r1": {
+          "state": "unanswered",
+          "value": null
+        },
+        "r2": {
+          "state": "not-reached",
+          "value": null
+        },
+        "r3": {
+          "state": "answered",
+          "value": 3
+        },
         "outro": {
           "state": "not-reached",
           "value": null
@@ -251,7 +326,11 @@
       },
       "orders": {
         "blocks": {
-          "r_stim": "<engine>"
+          "r_stim": [
+            "s3",
+            "s1",
+            "s2"
+          ]
         },
         "items": {},
         "choices": {}
@@ -269,8 +348,10 @@
     },
     {
       "index": 6,
-      "page": "<engine>",
-      "visible": "<engine>",
+      "page": "s1",
+      "visible": [
+        "r1"
+      ],
       "errors": {},
       "nav": {
         "back": true
@@ -284,9 +365,18 @@
           "state": "irrelevant",
           "value": null
         },
-        "r1": "<engine>",
-        "r2": "<engine>",
-        "r3": "<engine>",
+        "r1": {
+          "state": "unanswered",
+          "value": null
+        },
+        "r2": {
+          "state": "not-reached",
+          "value": null
+        },
+        "r3": {
+          "state": "answered",
+          "value": 3
+        },
         "outro": {
           "state": "not-reached",
           "value": null
@@ -294,7 +384,11 @@
       },
       "orders": {
         "blocks": {
-          "r_stim": "<engine>"
+          "r_stim": [
+            "s3",
+            "s1",
+            "s2"
+          ]
         },
         "items": {},
         "choices": {}
@@ -312,8 +406,10 @@
     },
     {
       "index": 7,
-      "page": "<engine>",
-      "visible": "<engine>",
+      "page": "s2",
+      "visible": [
+        "r2"
+      ],
       "errors": {},
       "nav": {
         "back": true
@@ -327,9 +423,18 @@
           "state": "irrelevant",
           "value": null
         },
-        "r1": "<engine>",
-        "r2": "<engine>",
-        "r3": "<engine>",
+        "r1": {
+          "state": "answered",
+          "value": 1
+        },
+        "r2": {
+          "state": "unanswered",
+          "value": null
+        },
+        "r3": {
+          "state": "answered",
+          "value": 3
+        },
         "outro": {
           "state": "not-reached",
           "value": null
@@ -337,7 +442,11 @@
       },
       "orders": {
         "blocks": {
-          "r_stim": "<engine>"
+          "r_stim": [
+            "s3",
+            "s1",
+            "s2"
+          ]
         },
         "items": {},
         "choices": {}
@@ -391,7 +500,11 @@
       },
       "orders": {
         "blocks": {
-          "r_stim": "<engine>"
+          "r_stim": [
+            "s3",
+            "s1",
+            "s2"
+          ]
         },
         "items": {},
         "choices": {}
@@ -405,8 +518,10 @@
     },
     {
       "index": 9,
-      "page": "<engine>",
-      "visible": "<engine>",
+      "page": "s2",
+      "visible": [
+        "r2"
+      ],
       "errors": {},
       "nav": {
         "back": true
@@ -439,7 +554,11 @@
       },
       "orders": {
         "blocks": {
-          "r_stim": "<engine>"
+          "r_stim": [
+            "s3",
+            "s1",
+            "s2"
+          ]
         },
         "items": {},
         "choices": {}
@@ -493,7 +612,11 @@
       },
       "orders": {
         "blocks": {
-          "r_stim": "<engine>"
+          "r_stim": [
+            "s3",
+            "s1",
+            "s2"
+          ]
         },
         "items": {},
         "choices": {}
@@ -539,7 +662,11 @@
       },
       "orders": {
         "blocks": {
-          "r_stim": "<engine>"
+          "r_stim": [
+            "s3",
+            "s1",
+            "s2"
+          ]
         },
         "items": {},
         "choices": {}
@@ -614,7 +741,11 @@
     "conditions": {},
     "orders": {
       "blocks": {
-        "r_stim": "<engine>"
+        "r_stim": [
+          "s3",
+          "s1",
+          "s2"
+        ]
       },
       "items": {},
       "choices": {}

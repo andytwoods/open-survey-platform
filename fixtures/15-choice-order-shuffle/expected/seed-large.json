@@ -34,8 +34,20 @@
         "blocks": {},
         "items": {},
         "choices": {
-          "fav_colour": "<engine>",
-          "fruits": "<engine>"
+          "fav_colour": [
+            "yellow",
+            "blue",
+            "red",
+            "purple",
+            "green"
+          ],
+          "fruits": [
+            "apple",
+            "mango",
+            "kiwi",
+            "plum",
+            "pear"
+          ]
         }
       },
       "conditions": {},
@@ -68,8 +80,20 @@
         "blocks": {},
         "items": {},
         "choices": {
-          "fav_colour": "<engine>",
-          "fruits": "<engine>"
+          "fav_colour": [
+            "yellow",
+            "blue",
+            "red",
+            "purple",
+            "green"
+          ],
+          "fruits": [
+            "apple",
+            "mango",
+            "kiwi",
+            "plum",
+            "pear"
+          ]
         }
       },
       "conditions": {},
@@ -129,8 +153,20 @@
       "blocks": {},
       "items": {},
       "choices": {
-        "fav_colour": "<engine>",
-        "fruits": "<engine>"
+        "fav_colour": [
+          "yellow",
+          "blue",
+          "red",
+          "purple",
+          "green"
+        ],
+        "fruits": [
+          "apple",
+          "mango",
+          "kiwi",
+          "plum",
+          "pear"
+        ]
       }
     },
     "answers": {

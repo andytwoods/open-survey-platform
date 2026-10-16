@@ -41,7 +41,11 @@
         "blocks": {},
         "items": {},
         "choices": {
-          "pet": "<engine>"
+          "pet": [
+            "c2",
+            "c1",
+            "c3"
+          ]
         }
       },
       "conditions": {},
@@ -65,7 +69,20 @@
             "Kirschen"
           ]
         ],
-        "pet": "<engine>"
+        "pet": [
+          [
+            "c2",
+            "Hund"
+          ],
+          [
+            "c1",
+            "Katze"
+          ],
+          [
+            "c3",
+            "Fisch"
+          ]
+        ]
       }
     },
     {
@@ -105,7 +122,11 @@
         "blocks": {},
         "items": {},
         "choices": {
-          "pet": "<engine>"
+          "pet": [
+            "c2",
+            "c1",
+            "c3"
+          ]
         }
       },
       "conditions": {},
@@ -152,7 +173,11 @@
         "blocks": {},
         "items": {},
         "choices": {
-          "pet": "<engine>"
+          "pet": [
+            "c2",
+            "c1",
+            "c3"
+          ]
         }
       },
       "conditions": {},
@@ -176,7 +201,20 @@
             "Kirschen"
           ]
         ],
-        "pet": "<engine>"
+        "pet": [
+          [
+            "c2",
+            "Hund"
+          ],
+          [
+            "c1",
+            "Katze"
+          ],
+          [
+            "c3",
+            "Fisch"
+          ]
+        ]
       }
     },
     {
@@ -217,7 +255,11 @@
         "blocks": {},
         "items": {},
         "choices": {
-          "pet": "<engine>"
+          "pet": [
+            "c2",
+            "c1",
+            "c3"
+          ]
         }
       },
       "conditions": {},
@@ -266,7 +308,11 @@
         "blocks": {},
         "items": {},
         "choices": {
-          "pet": "<engine>"
+          "pet": [
+            "c2",
+            "c1",
+            "c3"
+          ]
         }
       },
       "conditions": {},
@@ -309,7 +355,11 @@
         "blocks": {},
         "items": {},
         "choices": {
-          "pet": "<engine>"
+          "pet": [
+            "c2",
+            "c1",
+            "c3"
+          ]
         }
       },
       "conditions": {},
@@ -352,7 +402,11 @@
       "blocks": {},
       "items": {},
       "choices": {
-        "pet": "<engine>"
+        "pet": [
+          "c2",
+          "c1",
+          "c3"
+        ]
       }
     },
     "answers": {

@@ -51,7 +51,12 @@
     {
       "index": 1,
       "page": "p_att",
-      "visible": "<engine>",
+      "visible": [
+        "att2",
+        "att3",
+        "att1",
+        "att4"
+      ],
       "errors": {},
       "nav": {
         "back": true
@@ -85,7 +90,12 @@
       "orders": {
         "blocks": {},
         "items": {
-          "p_att": "<engine>"
+          "p_att": [
+            "att2",
+            "att3",
+            "att1",
+            "att4"
+          ]
         },
         "choices": {}
       },
@@ -131,7 +141,12 @@
       "orders": {
         "blocks": {},
         "items": {
-          "p_att": "<engine>"
+          "p_att": [
+            "att2",
+            "att3",
+            "att1",
+            "att4"
+          ]
         },
         "choices": {}
       },
@@ -141,7 +156,12 @@
     {
       "index": 3,
       "page": "p_att",
-      "visible": "<engine>",
+      "visible": [
+        "att2",
+        "att3",
+        "att1",
+        "att4"
+      ],
       "errors": {},
       "nav": {
         "back": true
@@ -175,7 +195,12 @@
       "orders": {
         "blocks": {},
         "items": {
-          "p_att": "<engine>"
+          "p_att": [
+            "att2",
+            "att3",
+            "att1",
+            "att4"
+          ]
         },
         "choices": {}
       },
@@ -221,7 +246,12 @@
       "orders": {
         "blocks": {},
         "items": {
-          "p_att": "<engine>"
+          "p_att": [
+            "att2",
+            "att3",
+            "att1",
+            "att4"
+          ]
         },
         "choices": {}
       },
@@ -263,7 +293,12 @@
       "orders": {
         "blocks": {},
         "items": {
-          "p_att": "<engine>"
+          "p_att": [
+            "att2",
+            "att3",
+            "att1",
+            "att4"
+          ]
         },
         "choices": {}
       },
@@ -308,7 +343,12 @@
     "orders": {
       "blocks": {},
       "items": {
-        "p_att": "<engine>"
+        "p_att": [
+          "att2",
+          "att3",
+          "att1",
+          "att4"
+        ]
       },
       "choices": {}
     },

@@ -40,7 +40,12 @@
         "blocks": {},
         "items": {},
         "choices": {
-          "colour": "<engine>"
+          "colour": [
+            "blue",
+            "green",
+            "red",
+            "grey"
+          ]
         }
       },
       "conditions": {
@@ -86,7 +91,12 @@
         "blocks": {},
         "items": {},
         "choices": {
-          "colour": "<engine>"
+          "colour": [
+            "blue",
+            "green",
+            "red",
+            "grey"
+          ]
         }
       },
       "conditions": {
@@ -132,7 +142,12 @@
         "blocks": {},
         "items": {},
         "choices": {
-          "colour": "<engine>"
+          "colour": [
+            "blue",
+            "green",
+            "red",
+            "grey"
+          ]
         }
       },
       "conditions": {
@@ -177,7 +192,12 @@
         "blocks": {},
         "items": {},
         "choices": {
-          "colour": "<engine>"
+          "colour": [
+            "blue",
+            "green",
+            "red",
+            "grey"
+          ]
         }
       },
       "conditions": {
@@ -223,7 +243,12 @@
         "blocks": {},
         "items": {},
         "choices": {
-          "colour": "<engine>"
+          "colour": [
+            "blue",
+            "green",
+            "red",
+            "grey"
+          ]
         }
       },
       "conditions": {
@@ -323,7 +348,12 @@
       "blocks": {},
       "items": {},
       "choices": {
-        "colour": "<engine>"
+        "colour": [
+          "blue",
+          "green",
+          "red",
+          "grey"
+        ]
       }
     },
     "answers": {

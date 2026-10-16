@@ -339,7 +339,12 @@
         "blocks": {},
         "items": {},
         "choices": {
-          "fruit": "<engine>"
+          "fruit": [
+            "fig",
+            "plum",
+            "apple",
+            "pear"
+          ]
         }
       },
       "conditions": {
@@ -383,7 +388,12 @@
         "blocks": {},
         "items": {},
         "choices": {
-          "fruit": "<engine>"
+          "fruit": [
+            "fig",
+            "plum",
+            "apple",
+            "pear"
+          ]
         }
       },
       "conditions": {
@@ -427,7 +437,12 @@
         "blocks": {},
         "items": {},
         "choices": {
-          "fruit": "<engine>"
+          "fruit": [
+            "fig",
+            "plum",
+            "apple",
+            "pear"
+          ]
         }
       },
       "conditions": {
@@ -471,7 +486,12 @@
         "blocks": {},
         "items": {},
         "choices": {
-          "fruit": "<engine>"
+          "fruit": [
+            "fig",
+            "plum",
+            "apple",
+            "pear"
+          ]
         }
       },
       "conditions": {
@@ -515,7 +535,12 @@
         "blocks": {},
         "items": {},
         "choices": {
-          "fruit": "<engine>"
+          "fruit": [
+            "fig",
+            "plum",
+            "apple",
+            "pear"
+          ]
         }
       },
       "conditions": {
@@ -559,7 +584,12 @@
         "blocks": {},
         "items": {},
         "choices": {
-          "fruit": "<engine>"
+          "fruit": [
+            "fig",
+            "plum",
+            "apple",
+            "pear"
+          ]
         }
       },
       "conditions": {
@@ -603,7 +633,12 @@
         "blocks": {},
         "items": {},
         "choices": {
-          "fruit": "<engine>"
+          "fruit": [
+            "fig",
+            "plum",
+            "apple",
+            "pear"
+          ]
         }
       },
       "conditions": {
@@ -647,7 +682,12 @@
         "blocks": {},
         "items": {},
         "choices": {
-          "fruit": "<engine>"
+          "fruit": [
+            "fig",
+            "plum",
+            "apple",
+            "pear"
+          ]
         }
       },
       "conditions": {
@@ -691,7 +731,12 @@
         "blocks": {},
         "items": {},
         "choices": {
-          "fruit": "<engine>"
+          "fruit": [
+            "fig",
+            "plum",
+            "apple",
+            "pear"
+          ]
         }
       },
       "conditions": {
@@ -731,7 +776,12 @@
         "blocks": {},
         "items": {},
         "choices": {
-          "fruit": "<engine>"
+          "fruit": [
+            "fig",
+            "plum",
+            "apple",
+            "pear"
+          ]
         }
       },
       "conditions": {
@@ -783,7 +833,12 @@
       "blocks": {},
       "items": {},
       "choices": {
-        "fruit": "<engine>"
+        "fruit": [
+          "fig",
+          "plum",
+          "apple",
+          "pear"
+        ]
       }
     },
     "answers": {

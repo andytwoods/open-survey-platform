@@ -184,7 +184,11 @@
     {
       "index": 4,
       "page": "attitudes",
-      "visible": "<engine>",
+      "visible": [
+        "att1",
+        "att3",
+        "att2"
+      ],
       "errors": {},
       "nav": {
         "back": true
@@ -214,7 +218,11 @@
       "orders": {
         "blocks": {},
         "items": {
-          "attitudes": "<engine>"
+          "attitudes": [
+            "att1",
+            "att3",
+            "att2"
+          ]
         },
         "choices": {}
       },
@@ -260,7 +268,11 @@
       "orders": {
         "blocks": {},
         "items": {
-          "attitudes": "<engine>"
+          "attitudes": [
+            "att1",
+            "att3",
+            "att2"
+          ]
         },
         "choices": {}
       },
@@ -306,7 +318,11 @@
     "orders": {
       "blocks": {},
       "items": {
-        "attitudes": "<engine>"
+        "attitudes": [
+          "att1",
+          "att3",
+          "att2"
+        ]
       },
       "choices": {}
     },

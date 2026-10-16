@@ -136,7 +136,11 @@
     {
       "index": 3,
       "page": "attitudes",
-      "visible": "<engine>",
+      "visible": [
+        "att2",
+        "att1",
+        "att3"
+      ],
       "errors": {},
       "nav": {
         "back": true
@@ -166,7 +170,11 @@
       "orders": {
         "blocks": {},
         "items": {
-          "attitudes": "<engine>"
+          "attitudes": [
+            "att2",
+            "att1",
+            "att3"
+          ]
         },
         "choices": {}
       },
@@ -184,7 +192,11 @@
     {
       "index": 4,
       "page": "attitudes",
-      "visible": "<engine>",
+      "visible": [
+        "att2",
+        "att1",
+        "att3"
+      ],
       "errors": {},
       "nav": {
         "back": true
@@ -214,7 +226,11 @@
       "orders": {
         "blocks": {},
         "items": {
-          "attitudes": "<engine>"
+          "attitudes": [
+            "att2",
+            "att1",
+            "att3"
+          ]
         },
         "choices": {}
       },
@@ -264,7 +280,11 @@
       "orders": {
         "blocks": {},
         "items": {
-          "attitudes": "<engine>"
+          "attitudes": [
+            "att2",
+            "att1",
+            "att3"
+          ]
         },
         "choices": {}
       },
@@ -277,7 +297,11 @@
     {
       "index": 6,
       "page": "attitudes",
-      "visible": "<engine>",
+      "visible": [
+        "att2",
+        "att1",
+        "att3"
+      ],
       "errors": {},
       "nav": {
         "back": true
@@ -307,7 +331,11 @@
       "orders": {
         "blocks": {},
         "items": {
-          "attitudes": "<engine>"
+          "attitudes": [
+            "att2",
+            "att1",
+            "att3"
+          ]
         },
         "choices": {}
       },
@@ -353,7 +381,11 @@
       "orders": {
         "blocks": {},
         "items": {
-          "attitudes": "<engine>"
+          "attitudes": [
+            "att2",
+            "att1",
+            "att3"
+          ]
         },
         "choices": {}
       },
@@ -404,7 +436,11 @@
     "orders": {
       "blocks": {},
       "items": {
-        "attitudes": "<engine>"
+        "attitudes": [
+          "att2",
+          "att1",
+          "att3"
+        ]
       },
       "choices": {}
     },
