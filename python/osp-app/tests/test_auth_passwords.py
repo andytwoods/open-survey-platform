@@ -13,7 +13,7 @@ def test_good_passphrase_accepted():
     assert policy.problems(GOOD_PASSWORD, email="ada@example.org") == []
 
 
-@pytest.mark.parametrize("pw", ["", "a", "x" * (DEFAULT_MIN_LENGTH - 1), "short pass"])
+@pytest.mark.parametrize("pw", ["", "a", "x" * (DEFAULT_MIN_LENGTH - 1), "short"])
 def test_too_short(pw):
     assert policy.problems(pw)
 
@@ -82,3 +82,12 @@ def test_needs_rehash_when_params_change():
     stronger = PasswordHasher(time_cost=2, memory_cost=16, parallelism=1)
     assert stronger.needs_rehash(old)
     assert not cheap_hasher().needs_rehash(old)
+
+
+def test_deployment_sets_min_length_from_env():
+    assert PasswordPolicy.from_env({"OSP_PASSWORD_MIN_LENGTH": "12"}).min_length == 12
+    assert PasswordPolicy.from_env({}).min_length == DEFAULT_MIN_LENGTH
+    assert (
+        PasswordPolicy.from_env({"OSP_PASSWORD_MIN_LENGTH": "nonsense"}).min_length
+        == DEFAULT_MIN_LENGTH
+    )

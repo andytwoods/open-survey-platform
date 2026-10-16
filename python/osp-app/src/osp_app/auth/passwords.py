@@ -9,6 +9,7 @@ Unicode is NFKC-normalised before checking and hashing; spaces are allowed.
 
 from __future__ import annotations
 
+import os
 import unicodedata
 from dataclasses import dataclass, field
 from functools import cache
@@ -18,9 +19,11 @@ from argon2 import PasswordHasher as _Argon2
 from argon2 import Type
 from argon2.exceptions import InvalidHashError, VerificationError
 
-# NIST SP 800-63B rev 4: 15 minimum when the password may be the only factor.
-# TOTP is optional per user, so the single-factor minimum is the safe default.
-DEFAULT_MIN_LENGTH = 15
+# The deployment decides the password rule (user decision, 16 Oct 2026): set
+# OSP_PASSWORD_MIN_LENGTH, or use institutional SSO. The default is the NIST
+# SP 800-63B baseline of 8, alongside the breached/common-password blocklist.
+DEFAULT_MIN_LENGTH = 8
+MIN_LENGTH_ENV = "OSP_PASSWORD_MIN_LENGTH"
 DEFAULT_MAX_LENGTH = 256
 SERVICE_WORDS = ("opensurvey", "open survey", "osp")
 
@@ -56,6 +59,14 @@ class PasswordPolicy:
     min_length: int = DEFAULT_MIN_LENGTH
     max_length: int = DEFAULT_MAX_LENGTH
     context_words: tuple[str, ...] = field(default=SERVICE_WORDS)
+
+    @classmethod
+    def from_env(cls, environ: dict[str, str] | None = None) -> PasswordPolicy:
+        """The deployment policy: OSP_PASSWORD_MIN_LENGTH if valid, else the default."""
+        raw = (os.environ if environ is None else environ).get(MIN_LENGTH_ENV, "").strip()
+        if raw.isdigit() and 1 <= int(raw) <= DEFAULT_MAX_LENGTH:
+            return cls(min_length=int(raw))
+        return cls()
 
     def problems(self, password: object, *, email: str | None = None) -> list[str]:
         """Human-readable reasons the password is rejected; empty means OK."""

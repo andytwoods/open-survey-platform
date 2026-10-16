@@ -8,6 +8,7 @@ from osp_store import AccountStore, Conflict, Store, SystemContext
 
 from .auth import AuthService, PasswordHasher, Role
 from .auth.model import normalise_email
+from .auth.passwords import PasswordPolicy
 from .auth.ports import Clock, RandomSource, SystemClock, SystemRandom
 from .auth.service import EmailTaken, PasswordRejected
 from .auth.sessions import SessionConfig
@@ -55,6 +56,7 @@ def build_services(
     rng: RandomSource | None = None,
     hasher: PasswordHasher | None = None,
     session_config: SessionConfig | None = None,
+    password_policy: PasswordPolicy | None = None,
 ) -> AppServices:
     auth = AuthService(
         users=StoreUserRepo(store),
@@ -64,5 +66,6 @@ def build_services(
         rng=rng or SystemRandom(),
         hasher=hasher,
         session_config=session_config,
+        policy=password_policy or PasswordPolicy.from_env(),
     )
     return AppServices(store=store, auth=auth, builder=Builder(store))
