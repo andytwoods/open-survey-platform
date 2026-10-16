@@ -23,31 +23,38 @@ Scaffold decisions (16 Oct 2026): stay on SvelteKit 3; `certifi` allowed at runt
 
 | id | title | layer | depends on | acceptance criteria | status | owner | needs human |
 |---|---|---|---|---|---|---|---|
-| C1 | `osp-expr`: condition AST, parser/printer for text syntax, evaluator per `semantics.md` §3. **First commit publishes `osp_expr/ast.py`** (the AST types) so C2 can build on it | L0 | S6 | Property tests: print∘parse = id; null semantics fixtures pass | doing | agent:C1 | |
-| C2 | `osp-spec`: survey model (pydantic), JSON Schema export, semantic validator, `specVersion`. Condition fields typed against C1's AST; use an opaque stand-in until `ast.py` lands | L1 | S6 (C1 `ast.py`) | 30 fixture surveys pass/fail as expected with JSON-pointer diagnostics | doing | agent:C2 | |
-| E1 | Enketo bundle: build enketo-core + transformer from a pinned enketo/enketo commit into `web/enketo-runtime`; headless-WebKit transform script; patch a11y bugs (`role="page"`, `tabindex` > 0) | L4 web | S6 | Build is reproducible from the pinned commit; transforms the spike XForm; axe reports no role/tabindex violations; licence gate green | doing | agent:E1 | |
-| C3a | Fixtures v0: 20 surveys + answer scripts + expected traces, drafted from `review.md` §2.3 and the spike surveys | fixtures | S6 | 20 fixtures; features covered listed in `fixtures/README.md`; schema validation deferred to C3b | doing | agent:C3a | |
+| C1 | `osp-expr`: condition AST, parser/printer for text syntax, evaluator per `semantics.md` §3. **First commit publishes `osp_expr/ast.py`** (the AST types) so C2 can build on it | L0 | S6 | Property tests: print∘parse = id; null semantics fixtures pass | done | agent:C1 | |
+| C2 | `osp-spec`: survey model (pydantic), JSON Schema export, semantic validator, `specVersion`. Condition fields typed against C1's AST; use an opaque stand-in until `ast.py` lands | L1 | S6 (C1 `ast.py`) | 30 fixture surveys pass/fail as expected with JSON-pointer diagnostics | done | agent:C2 | |
+| E1 | Enketo bundle: build enketo-core + transformer from a pinned enketo/enketo commit into `web/enketo-runtime`; headless-WebKit transform script; patch a11y bugs (`role="page"`, `tabindex` > 0) | L4 web | S6 | Build is reproducible from the pinned commit; transforms the spike XForm; axe reports no role/tabindex violations; licence gate green | dropped | agent:E1 | own runtime chosen 16 Oct 2026 (`runtime-design.md`); branch `agent/E1` kept |
+| C3a | Fixtures v0: 20 surveys + answer scripts + expected traces, drafted from `review.md` §2.3 and the spike surveys | fixtures | S6 | 20 fixtures; features covered listed in `fixtures/README.md`; schema validation deferred to C3b | done | agent:C3a | |
 
 ### Wave A2 (parallel, added 16 Oct 2026 when the user doubled agents to 8)
 
 | id | title | layer | depends on | acceptance criteria | status | owner | needs human |
 |---|---|---|---|---|---|---|---|
-| C4a | `osp-engine` randomness: ODK `randomize` port (inside-out Fisher–Yates + Park–Miller), per-node stream derivation `hash(surveyVersion, sessionSeed, nodeId)`, integer-seed rules (semantics §7) | L2 | S6 | 1,000-seed parity with `spikes/spike-enketo/evidence/e5_randomize_all.json`; stream independence property tests | doing | agent:C4a | |
-| C9 | `osp-store`: model-agnostic (survey JSON stored opaque); tenants, users, drafts, immutable versions + checksum, responses; Postgres + SQLite; encryption at rest; retention job | L4 | S6 | Same tests on SQLite and Postgres; tenant isolation tests; retention deletes and is tested | doing | agent:C9 | |
-| C10a | `osp-app` auth: password hashing, TOTP, sessions, roles/permissions policy, against a repository Protocol with an in-memory implementation (wired to C9 later) | L5 | S6 | Fail-closed permission matrix tests; TOTP and lockout tests | doing | agent:C10a | |
-| W1 | Builder shell + `ui-components`: design tokens (light/dark), three-pane layout (outline / canvas / properties), command palette + shortcut infra, mock data only, no survey logic | L6 web | S3 | Playwright: layout + keyboard navigation; axe clean; visual snapshot | doing | agent:W1 | |
+| C4a | `osp-engine` randomness: ODK `randomize` port (inside-out Fisher–Yates + Park–Miller), per-node stream derivation `hash(surveyVersion, sessionSeed, nodeId)`, integer-seed rules (semantics §7) | L2 | S6 | 1,000-seed parity with `spikes/spike-enketo/evidence/e5_randomize_all.json`; stream independence property tests | done | agent:C4a | |
+| C9 | `osp-store`: model-agnostic (survey JSON stored opaque); tenants, users, drafts, immutable versions + checksum, responses; Postgres + SQLite; encryption at rest; retention job | L4 | S6 | Same tests on SQLite and Postgres; tenant isolation tests; retention deletes and is tested | done | agent:C9 | |
+| C10a | `osp-app` auth: password hashing, TOTP, sessions, roles/permissions policy, against a repository Protocol with an in-memory implementation (wired to C9 later) | L5 | S6 | Fail-closed permission matrix tests; TOTP and lockout tests | done | agent:C10a | |
+| W1 | Builder shell + `ui-components`: design tokens (light/dark), three-pane layout (outline / canvas / properties), command palette + shortcut infra, mock data only, no survey logic | L6 web | S3 | Playwright: layout + keyboard navigation; axe clean; visual snapshot | done | agent:W1 | |
 
 ### Wave B (as Wave A lands)
 
 | id | title | layer | depends on | acceptance criteria | status | owner | needs human |
 |---|---|---|---|---|---|---|---|
-| C3b | Fixtures validate against `osp-spec`; fix drift | fixtures | C2, C3a | Every fixture validates | todo | | |
+| C3b | Fixtures validate against `osp-spec`; fix drift | fixtures | C2, C3a | Every fixture validates | doing | agent:C3b | |
 | C4 | `osp-engine`: flow state machine + trace; seeded PRNG; ODK `randomize` reimplementation | L2 | C2, C3b | All fixtures produce expected traces; 1,000-seed `randomize` parity with spike evidence | todo | | |
-| C5 | `osp-ops`: registry, `(survey, args) → (survey', inverse)`, transactions, fuzz harness | L2 | C2 | Every op has inverse test + hostile-input fuzz test | todo | | |
-| C6 | `osp-targets/xlsform` + capability table | L3 | C2 | Fixtures export; `pyxform` validates all; diagnostics for unsupported features | todo | | |
-| C9 | `osp-store`: Postgres + SQLite; drafts, versions, responses; encryption at rest; retention job | L4 | C2 | Tenant isolation tests; retention deletes and is tested | todo | | |
+| C5 | `osp-ops`: registry, `(survey, args) → (survey', inverse)`, transactions, fuzz harness | L2 | C2 | Every op has inverse test + hostile-input fuzz test | doing | agent:C5 | |
+| C6 | `osp-targets/xlsform` + capability table | L3 | C2 | Fixtures export; `pyxform` validates all; diagnostics for unsupported features | doing | agent:C6 | |
+| C9 | `osp-store`: Postgres + SQLite; drafts, versions, responses; encryption at rest; retention job | L4 | C2 | Tenant isolation tests; retention deletes and is tested | done | | |
 
-### Wave C
+### Wave B2 (started 16 Oct 2026; independent of the runtime decision)
+
+| id | title | layer | depends on | acceptance criteria | status | owner | needs human |
+|---|---|---|---|---|---|---|---|
+| B1 | Property schema format + 7 MVP types (`builder-design.md` §1) in `osp-spec`, exported via OpenAPI | L1 | C2 | Schema validates; every model field of every type has a property entry; completeness test | doing | agent:B1 | |
+| W1b | Fix flaky `toBeFocused` e2e test in builder shell | web | W1 | `make web-e2e` green 10 runs in a row | doing | agent:W1b | |
+
+### Wave C (runtime tasks R1–R8 replace C4/C7/C8 once `runtime-design.md` is approved)
 
 | id | title | layer | depends on | acceptance criteria | status | owner | needs human |
 |---|---|---|---|---|---|---|---|
