@@ -1968,7 +1968,14 @@
       },
       "SubmitResponse": {
         "properties": {
+          "late": {
+            "default": false,
+            "description": "Submitted after the session's quota holds were released or its resume link expired. Accepted, flagged, and not counted toward quotas.",
+            "title": "Late",
+            "type": "boolean"
+          },
           "replay": {
+            "description": "True for a retry with identical data: the original success.",
             "title": "Replay",
             "type": "boolean"
           },

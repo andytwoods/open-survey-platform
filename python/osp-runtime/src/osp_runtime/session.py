@@ -10,12 +10,20 @@ import each other).
   assignment under the store's counter lock. Seed and assignment are stored
   before the reply. URL parameters are stored (encrypted) only in ``every-page``.
 - **Resume token**: 256 random bits; only its SHA-256 is stored. It authenticates
-  every session call and stops working after ``idle_timeout`` without activity.
+  every session call and stops working after ``resume_expiry`` without activity
+  (default 30 days; per survey ``RuntimeConfig.resumeExpiryDays``; decision S-1).
 - **Snapshot**: conditional on ``baseRevision``; stale → :class:`StaleRevision` with
   the server copy (the server copy wins; the loser is kept, R-2).
-- **Quota**: idempotent per (session, node); a slot is consumed when admitted and
-  released by :meth:`SessionService.release_inactive` after 24 h idle (R-3).
+- **Quota**: idempotent per (session, node); a place is held when admitted, used up on
+  completion, and released by :meth:`SessionService.release_inactive` after
+  ``release_after`` (24 h) idle (R-3, C3a-3). This is a separate timer from the token:
+  a session whose holds were released can still resume, and then takes its places
+  again if they are free (the store does this atomically).
 - **Submit**: idempotent on the session; validates shape, plan checksum, assignment.
+  Accepted even after the token's expiry or after the holds were released: such a
+  submit is flagged ``late`` (``SubmitAck.late`` and ``server.late`` in the stored
+  record) and is not counted toward quotas (decision S-2). A retry with identical data
+  returns the original success; different data is :class:`SubmitMismatch` (S-4).
 """
 
 from __future__ import annotations
@@ -70,7 +78,8 @@ class CredentialRow(Protocol):
     tenant_id: str
     last_active_at: datetime
     submitted_at: datetime | None
-    expired_at: datetime | None
+    expired_at: datetime | None  # holds released (not the token's expiry)
+    publication_id: str
 
 
 class SessionRow(Protocol):
@@ -130,6 +139,7 @@ class ParticipantRepo(Protocol):
         record_checksum: str,
         realised_orders: object,
         engine_version: str | None,
+        late: bool = False,
     ) -> Any: ...
     def release_inactive(self, cutoff: datetime) -> Any: ...
 
@@ -167,6 +177,7 @@ class SubmitAck:
     response_id: str
     submitted_at: datetime
     replay: bool
+    late: bool = False
 
 
 @dataclass(frozen=True, slots=True)
@@ -184,7 +195,7 @@ class Resumed:
 
 @dataclass(frozen=True)
 class SessionPolicy:
-    idle_timeout: timedelta = timedelta(hours=24)  # token stops working (§7)
+    resume_expiry: timedelta = timedelta(days=30)  # token stops working (S-1)
     release_after: timedelta = timedelta(hours=24)  # quota / balanced slots back (R-3)
     max_snapshot_bytes: int = 2_000_000
     max_record_bytes: int = 5_000_000
@@ -341,16 +352,24 @@ class SessionService:
 
     # -- authentication --------------------------------------------------------------
 
-    def _auth(self, token: object, session_id: str | None = None) -> CredentialRow:
+    def _token_expired(self, cred: CredentialRow) -> bool:
+        """The resume token has been idle for its survey's resume expiry (S-1)."""
+        expiry = self.policy.resume_expiry
+        pub = self._repo.get_publication(cred.tenant_id, cred.publication_id)
+        days = RuntimeConfig.from_json(pub.config).resume_expiry_days
+        if days is not None:
+            expiry = timedelta(days=days)
+        return self._clock() - cred.last_active_at >= expiry
+
+    def _auth(
+        self, token: object, session_id: str | None = None, *, allow_expired: bool = False
+    ) -> CredentialRow:
         if not isinstance(token, str) or not token or len(token) > 256:
             raise InvalidToken("a resume token is required")
         cred = self._repo.credential_by_token(hash_token(token))
         if cred is None or (session_id is not None and cred.session_id != session_id):
             raise InvalidToken("invalid resume token")
-        if cred.submitted_at is None and (
-            cred.expired_at is not None
-            or self._clock() - cred.last_active_at >= self.policy.idle_timeout
-        ):
+        if not allow_expired and cred.submitted_at is None and self._token_expired(cred):
             raise SessionExpired("this session expired after inactivity")
         return cred
 
@@ -401,7 +420,11 @@ class SessionService:
     # -- submit ----------------------------------------------------------------------
 
     def submit(self, session_id: str, token: object, record: object) -> SubmitAck:
-        cred = self._auth(token, session_id)
+        # Late submits are accepted (decision S-2): rejecting them lost data.
+        cred = self._auth(token, session_id, allow_expired=True)
+        late = cred.submitted_at is None and (
+            cred.expired_at is not None or self._token_expired(cred)
+        )
         text = _size(record, self.policy.max_record_bytes, "record")
         sess = self._repo.get(cred.tenant_id, session_id)
         pub = self._repo.get_publication(cred.tenant_id, sess.publication_id)
@@ -414,6 +437,7 @@ class SessionService:
                 "sessionSeed": sess.session_seed,
                 "assigned": sess.assigned,
                 "planChecksum": pub.plan_checksum,
+                "late": late,  # the store sets the final value
             },
         }
         r = self._repo.submit(
@@ -424,10 +448,11 @@ class SessionService:
             hashlib.sha256(text.encode("utf-8")).hexdigest(),
             orders,
             engine_version,
+            late=late,
         )
         match r.status:
             case "ok" | "replay":
-                return SubmitAck(r.response_id, r.submitted_at, r.status == "replay")
+                return SubmitAck(r.response_id, r.submitted_at, r.status == "replay", bool(r.late))
             case "mismatch":
                 raise SubmitMismatch("this session was already submitted with different data")
             case _:
@@ -458,8 +483,9 @@ class SessionService:
     # -- release job (decision R-3) --------------------------------------------------
 
     def release_inactive(self) -> Any:
-        """Run periodically: expire sessions idle for ``release_after`` and release their
-        quota slots and balanced-assignment counts."""
+        """Run periodically: release the quota places and balanced-assignment counts of
+        sessions idle for ``release_after``. Their resume tokens keep working until
+        ``resume_expiry``; resuming takes the places again if they are free."""
         return self._repo.release_inactive(self._clock() - self.policy.release_after)
 
 
