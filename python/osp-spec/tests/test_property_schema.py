@@ -33,7 +33,7 @@ from osp_spec.property_schema import (
 
 # planning/builder-design.md §2: the field editors the builder has.
 DESIGN_KINDS = {
-    "text", "richtext", "number", "bool", "enum", "choicelist", "condition", "expression",
+    "text", "richtext", "number", "bool", "enum", "choicelist", "rows", "condition", "expression",
 }  # fmt: skip
 
 

@@ -38,7 +38,7 @@ Each export target's capability table (`osp-targets`) says, per property, whethe
 | **Outline tree** | Pages → blocks → questions. Reorder by drag *and* keyboard; multi-select | Emits `move_*` ops |
 | **Question card** | Canvas preview, one per **family**: `choice`, `text`, `number`, `matrix`, `scale`, `note` | Read-only preview; click selects |
 | **Property panel** | Renders a schema into a form: loops over `properties`, picks a field editor by `kind` | No per-type code |
-| **Field editors** by `kind` | `text`, `richtext`, `number`, `bool`, `enum`, `choicelist`, `condition`, `expression` | Each emits `set_property` |
+| **Field editors** by `kind` | `text`, `richtext`, `number`, `bool`, `enum`, `choicelist`, `rows` (matrix rows, C2c), `condition`, `expression` | Each emits `set_property` |
 | **Diagnostics strip** | Validation errors + export warnings, each linked to its property | Click focuses the field |
 | **Shell** | Selection, undo/redo, command palette, shortcuts, save/sync state, conflict banner | Owns the op client |
 

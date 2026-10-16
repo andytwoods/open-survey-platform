@@ -230,16 +230,41 @@ export interface ViewChoice {
 	label: RenderedText;
 }
 
+/** One matrix row as shown (semantics.md §2, C2c-1): its own question, value and state. */
+export interface ViewRow {
+	id: Id;
+	label: RenderedText;
+	required: boolean;
+	state: QuestionState;
+	value: Stored;
+	error: (PageError & { message: RenderedText | null }) | null;
+}
+
 export interface ViewItem {
 	id: Id;
 	type: string;
 	label: RenderedText;
 	help: RenderedText | null;
+	/** A matrix: true when any row is required. */
 	required: boolean;
+	/** A matrix: null (each row has its own state). */
 	state: QuestionState | null;
 	value: Stored;
+	/** A matrix: the first row error, in row order (every row error is in `errors`). */
 	error: (PageError & { message: RenderedText | null }) | null;
+	/** A matrix: its columns. */
 	choices: ViewChoice[] | null;
+	/** Present for a matrix: its rows in display order. */
+	rows?: ViewRow[];
+	/** Present for a slider: the track (runtime-design.md §6; starts unanswered). */
+	slider?: {
+		min: number | string;
+		max: number | string;
+		step: number | string;
+		valueType: 'integer' | 'decimal';
+		minLabel: RenderedText | null;
+		maxLabel: RenderedText | null;
+	};
 }
 
 export interface Position {

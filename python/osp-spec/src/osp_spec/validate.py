@@ -19,6 +19,10 @@ question on the **same page** (either direction):
   everything earlier in the walk;
 - an `assigned` variable is numbered at its `assign` node, an `embedded` one is available
   from the start, and a `computed` one counts as late as its latest input.
+Matrix rows (semantics.md §2, C2c-1) are variables of their own: row `r` of matrix `m` is
+indexed as a single-choice question with id `m_r` (`row_of` maps it back), placed at the
+matrix's position and page. The matrix id itself has no value.
+
 Earlier-but-not-guaranteed targets (another child of the same randomiser, the other arm of
 a branch) are warnings: the reference is legal but often `null` (semantics.md §3).
 """
@@ -49,14 +53,19 @@ from .model import (
     EndNode,
     FlowNode,
     IntegerQuestion,
+    MatrixQuestion,
     MultiQuestion,
     NoteQuestion,
     Question,
     QuotaCheckNode,
     RandomiserNode,
     SingleQuestion,
+    SliderQuestion,
     Survey,
     Text,
+    matrix_row_id,
+    matrix_row_name,
+    matrix_row_required,
 )
 from .reserved import reserved_reason
 
@@ -209,6 +218,7 @@ class _Checker:
     used_lists: set[str] = field(default_factory=set)
     used_quotas: set[str] = field(default_factory=set)
     sites: list[_Site] = field(default_factory=list)
+    row_of: dict[str, str] = field(default_factory=dict)  # row variable id -> matrix id
     code_sites: list[tuple[ex.Expression, str]] = field(default_factory=list)
     counter: int = 0
     _cpos: dict[str, int | None] = field(default_factory=dict)
@@ -268,6 +278,8 @@ class _Checker:
                     qp = pp + pointer("items", k)
                     if claim(q.id, qp):
                         self.questions[q.id] = _QInfo(q, qp, page.id)
+                        if isinstance(q, MatrixQuestion):
+                            self._matrix_rows(q, qp, page.id, claim)
         for i, v in enumerate(self.s.variables):
             vp = pointer("variables", i)
             if claim(v.id, vp):
@@ -288,10 +300,49 @@ class _Checker:
 
         nodes(self.s.flow, "/flow")
 
+    def _matrix_rows(self, m: MatrixQuestion, ptr: str, page: str, claim: Any) -> None:
+        """Index each row as its own single-choice variable `<matrix id>_<row id>` (C2c-1)."""
+        local: set[str] = set()
+        for k, row in enumerate(m.rows):
+            rp = ptr + pointer("rows", k)
+            if row.id in local:
+                self.emit("matrix.duplicate_row", rp + "/id", f"row id '{row.id}' is repeated")
+                continue
+            local.add(row.id)
+            rid = matrix_row_id(m.id, row.id)
+            if len(rid) > 64 or len(matrix_row_name(m, row.id)) > 64:
+                self.emit(
+                    "matrix.row_id",
+                    rp + "/id",
+                    f"the row variable '{rid[:70]}' is longer than 64 characters",
+                )
+                continue
+            if not claim(rid, rp):
+                continue
+            synthetic = SingleQuestion.model_construct(
+                id=rid,
+                type="single",
+                label=row.label,
+                help=None,
+                showIf=None,
+                name=matrix_row_name(m, row.id),
+                required=matrix_row_required(m, row),
+                constraint=None,
+                constraintMessage=None,
+                choiceList=m.choiceList,
+                choices=m.choices,
+                choiceOrder="fixed",
+            )
+            self.questions[rid] = _QInfo(synthetic, rp, page)
+            self.row_of[rid] = m.id
+
     def _names(self) -> None:
         named: list[tuple[str, str]] = []  # (name, pointer to name or id)
-        for info in self.questions.values():
-            if not isinstance(info.q, NoteQuestion):
+        for qid, info in self.questions.items():
+            if qid in self.row_of:
+                # A row's name derives from the matrix name (or id) and the row id.
+                named.append((info.q.name or qid, info.ptr + "/id"))
+            elif not isinstance(info.q, NoteQuestion | MatrixQuestion):
                 explicit = info.q.name is not None
                 named.append(
                     (info.q.name or info.q.id, info.ptr + ("/name" if explicit else "/id"))
@@ -375,9 +426,9 @@ class _Checker:
     def _choices(self) -> None:
         for i, cl in enumerate(self.s.choiceLists):
             self._choice_items(cl.choices, pointer("choiceLists", i, "choices"), None)
-        for info in self.questions.values():
+        for qid, info in self.questions.items():
             q = info.q
-            if not isinstance(q, (SingleQuestion, MultiQuestion)):
+            if qid in self.row_of or not isinstance(q, (SingleQuestion, MultiQuestion, MatrixQuestion)):
                 continue
             if (q.choiceList is None) == (q.choices is None):
                 self.emit(
@@ -574,6 +625,9 @@ class _Checker:
                 info.pos, info.path = self.counter, path
                 self.counter += 1
                 self._question_sites(info)
+                if isinstance(q, MatrixQuestion):
+                    for rid in self._rows_of(q.id):
+                        self.questions[rid].pos, self.questions[rid].path = info.pos, path
 
     def _unplaced(self) -> None:
         for bid, i in self.blocks.items():
@@ -585,9 +639,12 @@ class _Checker:
                 if page.showIf is not None:
                     pp = pointer("blocks", i, "pages", j, "showIf")
                     self._expr_site(page.showIf, pp, None, (), boolean=True)
-        for info in self.questions.values():
-            if info.pos is None:
+        for qid, info in self.questions.items():
+            if info.pos is None and qid not in self.row_of:
                 self._question_sites(info)
+
+    def _rows_of(self, matrix_id: str) -> list[str]:
+        return [rid for rid, mid in self.row_of.items() if mid == matrix_id]
 
     def _question_sites(self, info: _QInfo) -> None:
         q = info.q
@@ -596,7 +653,7 @@ class _Checker:
             self._expr_site(
                 q.showIf, info.ptr + "/showIf", info.pos, info.path, True, q.id, page=info.page
             )
-        if not isinstance(q, NoteQuestion) and q.constraint is not None:
+        if not isinstance(q, NoteQuestion | MatrixQuestion) and q.constraint is not None:
             self._expr_site(
                 q.constraint,
                 info.ptr + "/constraint",
@@ -609,10 +666,21 @@ class _Checker:
             )
         if isinstance(q, (IntegerQuestion, DecimalQuestion)):
             self._bounds(q, info.ptr)
+        if isinstance(q, SliderQuestion):
+            self._slider(q, info.ptr)
+            for key in ("minLabel", "maxLabel"):
+                text = getattr(q, key)
+                if text is not None:
+                    self._text(text, info.ptr + "/" + key, site)
+        if isinstance(q, MatrixQuestion):
+            for k, row in enumerate(q.rows):
+                self._text(row.label, info.ptr + pointer("rows", k, "label"), site)
+            if q.choices is not None:
+                self._choice_items(q.choices, info.ptr + "/choices", site)
         self._text(q.label, info.ptr + "/label", site)
         if q.help is not None:
             self._text(q.help, info.ptr + "/help", site)
-        if not isinstance(q, NoteQuestion) and q.constraintMessage is not None:
+        if not isinstance(q, NoteQuestion | MatrixQuestion) and q.constraintMessage is not None:
             self._text(q.constraintMessage, info.ptr + "/constraintMessage", site)
         if isinstance(q, (SingleQuestion, MultiQuestion)) and q.choices is not None:
             self._choice_items(q.choices, info.ptr + "/choices", site)
@@ -641,9 +709,9 @@ class _Checker:
         are left out, so the type checker treats them as unknown."""
         if self._env is None:
             env = {
-                qid: i.q.type
+                qid: i.q.valueType if isinstance(i.q, SliderQuestion) else i.q.type
                 for qid, i in self.questions.items()
-                if not isinstance(i.q, NoteQuestion)
+                if not isinstance(i.q, NoteQuestion | MatrixQuestion)
             }
             for vid, vi in self.variables.items():
                 if isinstance(vi.v, EmbeddedVariable):
@@ -757,6 +825,14 @@ class _Checker:
             info = self.questions[ref]
             if isinstance(info.q, NoteQuestion):
                 self.emit("ref.no_value", site.ptr, f"'{ref}' is a note and has no value")
+                return
+            if isinstance(info.q, MatrixQuestion):
+                rows = ", ".join(self._rows_of(ref)[:3])
+                self.emit(
+                    "ref.no_value",
+                    site.ptr,
+                    f"'{ref}' is a matrix and has no value of its own; refer to a row ({rows})",
+                )
                 return
             if info.pos is None:
                 self.emit(
@@ -892,6 +968,37 @@ def _bounds(self: _Checker, q: IntegerQuestion | DecimalQuestion, ptr: str) -> N
         self.emit("question.bounds", ptr + "/min", "min is greater than max")
 
 
+def _slider(self: _Checker, q: SliderQuestion, ptr: str) -> None:
+    """A slider's track (semantics.md §2, C2c-3): readable numbers, min < max, step > 0,
+    whole numbers for an integer slider, and `max` reachable from `min` in whole steps."""
+    values: dict[str, Decimal] = {}
+    for key in ("min", "max", "step"):
+        raw = getattr(q, key)
+        text = _canonical_decimal(raw) if _canonical_decimal else str(raw)
+        if text is None:
+            self.emit("question.slider", f"{ptr}/{key}", f"{key} {raw!r} is not a usable number")
+            continue
+        value = Decimal(text)
+        if q.valueType == "integer" and value != value.to_integral_value():
+            self.emit(
+                "question.slider", f"{ptr}/{key}", f"{key} must be a whole number on an integer slider"
+            )
+            continue
+        values[key] = value
+    if "step" in values and values["step"] <= 0:
+        self.emit("question.slider", ptr + "/step", "step must be greater than 0")
+        return
+    if "min" in values and "max" in values:
+        if values["min"] >= values["max"]:
+            self.emit("question.slider", ptr + "/min", "min must be less than max")
+        elif "step" in values and (values["max"] - values["min"]) % values["step"] != 0:
+            self.emit(
+                "question.slider",
+                ptr + "/step",
+                "max is not min plus a whole number of steps, so the right end cannot be picked",
+            )
+
+
 def _settings(self: _Checker) -> None:
     r = self.s.settings.retention
     if r is None:
@@ -913,6 +1020,7 @@ def _settings(self: _Checker) -> None:
 _Checker._same_page_only = _same_page_only  # type: ignore[attr-defined]
 _Checker._same_page_cycles = _same_page_cycles  # type: ignore[attr-defined]
 _Checker._bounds = _bounds  # type: ignore[attr-defined]
+_Checker._slider = _slider  # type: ignore[attr-defined]
 _Checker._settings = _settings  # type: ignore[attr-defined]
 
 

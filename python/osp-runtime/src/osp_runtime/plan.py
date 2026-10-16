@@ -7,6 +7,12 @@ The plan (`contract/runtime-plan.schema.json`, TS types in `web/engine/src/plan.
   (inline or from its `choiceList`), a quota check carries its quota id (quotas are a map);
 - flattens: `items`, `pages`, `blocks`, `variables` and `quotas` are maps keyed by id, and
   `questions` lists every answerable question id in flow order (the export column order);
+- splits a `matrix` into its rows (semantics.md §2, C2c-1): the matrix item (on the page)
+  lists its row ids in `rows`; each row is its own `single` item `<matrix id>_<row id>`
+  with `matrix` pointing back, the matrix's columns as `choices`, and its own `required`.
+  Rows (not the matrix) are in `questions`. A row has no `showIf`: it is relevant exactly
+  when its matrix is;
+- a `slider` item carries `valueType`, `min`, `max`, `step` and its end labels;
 - embeds expressions as `osp-expr` AST JSON (the browser never parses text syntax);
 - splits every translatable text into segments per language: a plain string, or
   `{"pipe": id}` for `${id}` (semantics.md §8). The engine fills pipes; the renderer
@@ -36,11 +42,16 @@ from osp_spec.model import (
     EmbeddedVariable,
     EndNode,
     FlowNode,
+    MatrixQuestion,
     MultiQuestion,
     NoteQuestion,
     QuotaCheckNode,
     RandomiserNode,
     SingleQuestion,
+    SliderQuestion,
+    matrix_row_id,
+    matrix_row_name,
+    matrix_row_required,
 )
 
 __all__ = [
@@ -244,10 +255,21 @@ class _Compiler:
             return out
         out["name"] = q.name or q.id
         out["required"] = q.required
+        if isinstance(q, MatrixQuestion):
+            out["rows"] = [matrix_row_id(q.id, r.id) for r in q.rows]
+            out["choices"] = self.choices(self.columns(q))
+            return out
         if q.constraint is not None:
             out["constraint"] = self.expr(q.constraint)
         if q.constraintMessage is not None:
             out["constraintMessage"] = self.text(q.constraintMessage)
+        if isinstance(q, SliderQuestion):
+            out["valueType"] = q.valueType
+            out["step"] = q.step
+            for key in ("minLabel", "maxLabel"):
+                text = getattr(q, key)
+                if text is not None:
+                    out[key] = self.text(text)
         for key in ("min", "max"):
             bound = getattr(q, key, None)
             if bound is not None:
@@ -257,6 +279,28 @@ class _Compiler:
             out["choices"] = self.choices(source or [])
             out["choiceOrder"] = q.choiceOrder
         return out
+
+    def columns(self, q: MatrixQuestion) -> list[Choice]:
+        source = q.choices if q.choices is not None else self.lists.get(q.choiceList or "")
+        return source or []
+
+    def rows(self, q: MatrixQuestion, page_id: str) -> list[Json]:
+        """One `single` item per matrix row (C2c-1)."""
+        choices = self.choices(self.columns(q))
+        return [
+            {
+                "id": matrix_row_id(q.id, r.id),
+                "type": "single",
+                "page": page_id,
+                "label": self.text(r.label),
+                "name": matrix_row_name(q, r.id),
+                "required": matrix_row_required(q, r),
+                "choices": choices,
+                "choiceOrder": "fixed",
+                "matrix": q.id,
+            }
+            for r in q.rows
+        ]
 
     def block(self, block_id: str) -> list[str]:
         """Page ids of a block, compiling the block on first use."""
@@ -269,7 +313,11 @@ class _Compiler:
                 page_ids.append(page.id)
                 for q in page.items:
                     self.items[q.id] = self.item(q, page.id)
-                    if not isinstance(q, NoteQuestion):
+                    if isinstance(q, MatrixQuestion):
+                        for row in self.rows(q, page.id):
+                            self.items[row["id"]] = row
+                            self.questions.append(row["id"])
+                    elif not isinstance(q, NoteQuestion):
                         self.questions.append(q.id)
                 self.pages[page.id] = {
                     "id": page.id,
