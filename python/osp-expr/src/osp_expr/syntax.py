@@ -13,6 +13,7 @@ Grammar (lowest precedence first)::
     primary  := NUMBER | STRING | "null" | "true" | "false" | IDENT
               | "answered" "(" IDENT ")"
               | "contains" "(" IDENT "," expr ")"
+              | "if" "(" expr "," expr "," expr ")"   lazy; a null condition picks the 3rd
               | "(" expr ")"
 
     NUMBER   := digits ("." digits)?            "." makes it a decimal
@@ -43,6 +44,7 @@ from .ast import (
     Contains,
     DecLit,
     Expr,
+    If,
     IntLit,
     Not,
     NullLit,
@@ -58,7 +60,7 @@ MAX_DEPTH = 64
 MAX_INT_DIGITS = 1000
 """Longest integer literal accepted (Python refuses to convert very long digit strings)."""
 
-FUNCTIONS = ("answered", "contains")
+FUNCTIONS = ("answered", "contains", "if")
 
 
 class ParseResult(BaseModel):
@@ -388,6 +390,8 @@ class _Parser:
                 *_span(name),
             )
         self.advance()  # "("
+        if name.text == "if":
+            return self.if_call(name)
         ref = self.ref_arg(name.text)
         if name.text == "answered":
             self.expect_op(")", "to close answered(")
@@ -399,6 +403,19 @@ class _Parser:
         self.nesting -= 1
         self.expect_op(")", "to close contains(")
         return Contains(ref=ref, value=value), self.check_depth(d + 1, name.start)
+
+    def if_call(self, name: _Tok) -> tuple[Expr, int]:
+        self.nesting += 1
+        self.check_depth(self.nesting, name.start)
+        args: list[tuple[Expr, int]] = []
+        for k, sep in enumerate((",", ",", ")")):
+            args.append(self.or_())
+            what = "to close if(" if sep == ")" else f"after argument {k + 1} of if("
+            self.expect_op(sep, what)
+        self.nesting -= 1
+        (c, cd), (t, td), (e, ed) = args
+        node = If(cond=c, then=t, else_=e)
+        return node, self.check_depth(1 + max(cd, td, ed), name.start)
 
     def ref_arg(self, fn: str) -> Ref:
         tok = self.peek()
@@ -518,6 +535,8 @@ def _print(node: Expr, min_prec: int) -> str:
             text = f"answered({r.id})"
         case Contains(ref=r, value=v):
             text = f"contains({r.id}, {_print(v, _P_OR)})"
+        case If(cond=c, then=t, else_=e):
+            text = f"if({_print(c, _P_OR)}, {_print(t, _P_OR)}, {_print(e, _P_OR)})"
         case Or(args=args):
             text = " or ".join(_print(a, _P_AND) for a in args)
         case And(args=args):

@@ -2,8 +2,8 @@
 
 Each row: (semantics section, expression text, environment, expected value,
 expected condition result). Absent ids are not-reached; ``None`` is irrelevant or
-unanswered (§1). Rows marked "OQ" follow a provisional rule from semantics.md
-"Open questions".
+unanswered (§1). Rows marked "D1" follow decisions batch 1
+(planning/decisions-semantics-1.md: C1-1, C1-2, C1-3, C2-8), now folded into §2-§3.
 """
 
 import datetime as dt
@@ -90,7 +90,10 @@ ROWS = [
     ("§2", "ws", None, False),
     # §2 choice values are codes
     ("§2", "s_code == 1", True, True),
-    ("§2", 's_code == "1"', False, False),
+    ("D1", 's_code == "1"', True, True),  # C2-8: codes compare as text
+    ("D1", 'contains(mi, "2")', True, True),
+    ("D1", 's_code == 1.0', True, True),  # numbers compare numerically
+    ("D1", 'd2 == "2.5"', None, False),  # a decimal is never a code: mismatch
     # §2 dates compare as dates
     ("§2", "day == day", True, True),
     ("§2", "day < day", False, False),
@@ -98,19 +101,29 @@ ROWS = [
     ("§3", 'n5 > 1 and t == "abc"', True, True),
     ("§3", "n5 > 1 and nr > 1", False, False),
     ("§3", "nr > 1 or n5 > 1", True, True),
-    # OQ: division by zero gives null (provisional)
-    ("OQ", "n5 / 0", None, False),
-    ("OQ", "n5 / zero", None, False),
-    ("OQ", "(n5 / 0) == (n5 / 0)", False, False),
-    # OQ: ill-typed operands (provisional)
-    ("OQ", "t == 5", False, False),
-    ("OQ", "t != 5", False, False),
-    ("OQ", 't < "b"', False, False),
-    ("OQ", "t + 1", None, False),
-    ("OQ", "contains(t, 1)", False, False),
-    ("OQ", "n5 and n5 > 1", False, False),
-    ("OQ", "not n5", True, True),
-    ("OQ", "not nr", True, True),
+    # D1 (C1-1): division by zero gives null (plus a diagnostic)
+    ("D1", "n5 / 0", None, False),
+    ("D1", "n5 / zero", None, False),
+    ("D1", "(n5 / 0) == (n5 / 0)", False, False),
+    # D1 (C1-2): type mismatches give null (plus a diagnostic); two-valued logic
+    ("D1", "t == 5", False, False),  # an integer and a text compare as text (C2-8)
+    ("D1", "t != 5", True, True),
+    ("D1", 't < "b"', None, False),
+    ("D1", "t + 1", None, False),
+    ("D1", "contains(t, 1)", None, False),
+    ("D1", "n5 and n5 > 1", False, False),
+    ("D1", "not n5", True, True),
+    ("D1", "not nr", True, True),
+    ("D1", "not (t < \"b\")", True, True),
+    ("D1", 'not contains(nr, "a")', True, True),  # did not pick: true when unanswered
+    # D1 (C1-3): if(cond, a, b), lazy; a null condition picks b
+    ("D1", 'if(n5 > 1, "big", "small")', "big", False),
+    ("D1", 'if(n5 > 9, "big", "small")', "small", False),
+    ("D1", 'if(nr > 1, "big", "small")', "small", False),
+    ("D1", "if(answered(nr), nr, 0)", 0, False),
+    ("D1", "if(n5 > 1, n5 + 1, n5 / 0)", 6, False),
+    ("D1", "if(true, null, 1)", None, False),
+    ("D1", "if(n5 > 1, true, false)", True, True),
 ]
 
 

@@ -46,7 +46,13 @@ QuestionId = Annotated[str, Field(pattern=IDENT_PATTERN), AfterValidator(_not_ke
 
 
 class _Node(BaseModel):
-    model_config = ConfigDict(frozen=True, extra="forbid")
+    model_config = ConfigDict(
+        frozen=True,
+        extra="forbid",
+        validate_by_name=True,
+        validate_by_alias=True,
+        serialize_by_alias=True,
+    )
 
 
 # --- Literals ---------------------------------------------------------------------
@@ -158,6 +164,20 @@ class Contains(_Node):
     value: Expr
 
 
+class If(_Node):
+    """``if(cond, a, b)``: ``a`` when ``cond`` is true, else ``b`` (semantics.md §3).
+
+    Lazy: only the chosen branch is evaluated. A null (or non-boolean) condition picks
+    ``b``, like any condition that is not true. JSON: ``{"kind": "if", "cond": …,
+    "then": …, "else": …}``.
+    """
+
+    kind: Literal["if"] = "if"
+    cond: Expr
+    then: Expr
+    else_: Expr = Field(alias="else")
+
+
 Expr = Annotated[
     IntLit
     | DecLit
@@ -171,11 +191,12 @@ Expr = Annotated[
     | Or
     | Not
     | Answered
-    | Contains,
+    | Contains
+    | If,
     Field(discriminator="kind"),
 ]
 
-for _model in (Compare, Arith, And, Or, Not, Contains):
+for _model in (Compare, Arith, And, Or, Not, Contains, If):
     _model.model_rebuild()
 
 EXPR_ADAPTER: TypeAdapter[Expr] = TypeAdapter(Expr)
@@ -210,6 +231,7 @@ __all__ = [
     "Not",
     "Answered",
     "Contains",
+    "If",
     "Expr",
     "EXPR_ADAPTER",
     "expr_to_json",

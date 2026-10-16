@@ -2,7 +2,7 @@
  * Answer values: checking participant input, the stored (JSON) form, and the evaluator form.
  *
  * Stored forms (also the export / fixture form, fixtures/FORMAT.md §3):
- *   integer  JSON integer (safe range)        decimal  decimal text as typed, e.g. "2.50"
+ *   integer  JSON integer (safe range)        decimal  canonical decimal text, e.g. "2.5"
  *   text     trimmed text                     single   the choice's code
  *   multi    codes in choice-list order       date     "YYYY-MM-DD"
  * `null` means no answer. Semantics §2: text is trimmed and whitespace-only text is no
@@ -16,17 +16,55 @@ import type { ChoiceValue, QuestionItem } from './plan.ts';
 export type Stored = null | number | string | Code[];
 
 /**
- * Python's `str.strip()` whitespace (str.isspace), so trimming matches the reference
- * evaluator: JS `trim()` differs (it strips U+FEFF; it keeps U+001C–U+001F and U+0085).
- * Semantics.md Open questions R1-7 (and R6-1).
+ * Trimming (semantics.md §2): the Unicode White_Space characters plus U+FEFF, and nothing
+ * else (not U+200B; not U+001C-U+001F, which Python's `str.strip()` and JS `trim()` treat
+ * differently). The same list as `osp_expr.values.TRIM_CODE_POINTS`; both are checked
+ * against `contract/vectors/trim.json`. Text is never Unicode-normalised.
  */
-const PY_WS =
-	'\\t\\n\\v\\f\\r\\u001c-\\u001f \\u0085\\u00a0\\u1680\\u2000-\\u200a\\u2028\\u2029\\u202f\\u205f\\u3000';
-const LEADING = new RegExp(`^[${PY_WS}]+`);
-const TRAILING = new RegExp(`[${PY_WS}]+$`);
+export const TRIM_CODE_POINTS: readonly number[] = [
+	0x0009, 0x000a, 0x000b, 0x000c, 0x000d, 0x0020, 0x0085, 0x00a0, 0x1680, 0x2000, 0x2001, 0x2002,
+	0x2003, 0x2004, 0x2005, 0x2006, 0x2007, 0x2008, 0x2009, 0x200a, 0x2028, 0x2029, 0x202f, 0x205f,
+	0x3000, 0xfeff
+];
+const TRIM_SET = new Set(TRIM_CODE_POINTS);
 
-export function pyStrip(s: string): string {
-	return s.replace(LEADING, '').replace(TRAILING, '');
+/** Remove `TRIM_CODE_POINTS` from both ends of `s` (all are BMP, so code units suffice). */
+export function trimAnswer(s: string): string {
+	let a = 0;
+	let b = s.length;
+	while (a < b && TRIM_SET.has(s.charCodeAt(a))) a++;
+	while (b > a && TRIM_SET.has(s.charCodeAt(b - 1))) b--;
+	return s.slice(a, b);
+}
+
+/** \deprecated Use `trimAnswer` (the trim set is no longer Python's `str.strip()`). */
+export const pyStrip = trimAnswer;
+
+/** Most significant digits a decimal answer may have (osp_expr.values.DECIMAL_DIGITS). */
+export const DECIMAL_DIGITS = 28;
+
+const DECIMAL_INPUT = /^[+-]?(\d+(\.\d*)?|\.\d+)$/;
+
+/**
+ * Canonical decimal text (semantics.md §2): no exponent, no `+`, no superfluous leading
+ * zeros, no trailing zeros after the point, `0` for any zero. Null if `text` (trimmed) is
+ * not `[+-]digits[.digits]` or has more than 28 significant digits. Mirrors
+ * `osp_expr.values.canonical_decimal`; both are checked against `contract/vectors/decimal.json`.
+ */
+export function canonicalDecimal(text: string): string | null {
+	const t = trimAnswer(text);
+	if (!DECIMAL_INPUT.test(t)) return null;
+	const negative = t.startsWith('-');
+	const body = t.replace(/^[+-]/, '');
+	const dot = body.indexOf('.');
+	let int = dot < 0 ? body : body.slice(0, dot);
+	let frac = dot < 0 ? '' : body.slice(dot + 1);
+	int = int.replace(/^0+/, '');
+	frac = frac.replace(/0+$/, '');
+	if (int === '' && frac === '') return '0';
+	const significant = (int + frac).replace(/^0+/, '').replace(/0+$/, '');
+	if (significant.length > DECIMAL_DIGITS) return null;
+	return (negative ? '-' : '') + (int === '' ? '0' : int) + (frac === '' ? '' : '.' + frac);
 }
 
 export type Checked = { ok: true; value: Stored } | { ok: false; code: string };
@@ -36,13 +74,13 @@ const DEC_TEXT = /^[+-]?(\d+(\.\d*)?|\.\d+)$/;
 const DATE_TEXT = /^(\d{4})-(\d{2})-(\d{2})$/;
 
 function isEmpty(raw: unknown): boolean {
-	return raw === null || raw === undefined || (typeof raw === 'string' && pyStrip(raw) === '');
+	return raw === null || raw === undefined || (typeof raw === 'string' && trimAnswer(raw) === '');
 }
 
 /** Find a choice by code. Semantics C2-8 (proposed): `1` and `"1"` are the same code. */
 export function matchChoice(item: QuestionItem, raw: unknown): ChoiceValue | undefined {
 	if (typeof raw !== 'number' && typeof raw !== 'string') return undefined;
-	const key = typeof raw === 'string' ? pyStrip(raw) : String(raw);
+	const key = typeof raw === 'string' ? trimAnswer(raw) : String(raw);
 	return (item.choices ?? []).find((c) => String(c.value) === key)?.value;
 }
 
@@ -70,7 +108,7 @@ export function checkAnswer(item: QuestionItem, raw: unknown): Checked {
 						: { ok: false, code: 'value.not_integer' };
 				}
 				if (typeof raw !== 'string') return { ok: false, code: 'value.not_integer' };
-				const t = pyStrip(raw);
+				const t = trimAnswer(raw);
 				if (!INT_TEXT.test(t)) return { ok: false, code: 'value.not_integer' };
 				const n = Number(t);
 				return Number.isSafeInteger(n)
@@ -83,20 +121,22 @@ export function checkAnswer(item: QuestionItem, raw: unknown): Checked {
 					if (!Number.isFinite(raw)) return { ok: false, code: 'value.not_decimal' };
 					t = dec.toPlain(dec.fromInteger(0).plus(raw));
 				} else if (typeof raw === 'string') {
-					t = pyStrip(raw);
+					t = trimAnswer(raw);
 				} else return { ok: false, code: 'value.not_decimal' };
 				if (!DEC_TEXT.test(t)) return { ok: false, code: 'value.not_decimal' };
-				if (t.startsWith('+')) t = t.slice(1);
-				return { ok: true, value: t };
+				// Stored and exported in canonical form (semantics.md §2): "2.50" -> "2.5";
+				// more than 28 significant figures cannot be read exactly, so it is refused.
+				const c = canonicalDecimal(t);
+				return c === null ? { ok: false, code: 'value.too_long' } : { ok: true, value: c };
 			}
 			case 'text': {
 				if (typeof raw !== 'string') return { ok: false, code: 'value.not_text' };
-				const t = pyStrip(raw);
+				const t = trimAnswer(raw);
 				return { ok: true, value: t === '' ? null : t };
 			}
 			case 'date': {
 				if (typeof raw !== 'string') return { ok: false, code: 'value.not_date' };
-				const t = pyStrip(raw);
+				const t = trimAnswer(raw);
 				return validDate(t) ? { ok: true, value: t } : { ok: false, code: 'value.not_date' };
 			}
 			case 'single': {
@@ -149,7 +189,7 @@ export function codeValue(code: unknown): Value {
 		return Number.isInteger(code) ? { k: 'num', v: dec.fromInteger(code), int: true } : null;
 	}
 	if (typeof code === 'string') {
-		const t = pyStrip(code);
+		const t = trimAnswer(code);
 		return t === '' ? null : { k: 'text', v: t };
 	}
 	return null;
