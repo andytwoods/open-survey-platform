@@ -40,6 +40,7 @@ export interface Validated {
 }
 
 /** Bidirectional overrides/isolates and C0/C1 controls (tabs and newlines aside). */
+// eslint-disable-next-line no-control-regex -- matching control characters is the point
 const UNSAFE_TEXT = /[\u0000-\u0008\u000b\u000c\u000e-\u001f\u007f-\u009f‎‏‪-‮⁦-⁩]/u;
 const PARADATA_KEY = /^[A-Za-z][A-Za-z0-9_.-]{0,63}$/;
 const DECIMAL = /^-?\d{1,30}(\.\d{1,30})?$/;
