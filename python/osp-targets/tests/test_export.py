@@ -1,10 +1,8 @@
 """XLSForm export: every survey converts with pyxform, and every non-native feature used
 is reported with a JSON pointer that resolves in the survey document.
 
-Surveys: the 10 valid cases in python/osp-spec/tests/cases/valid, plus every fixture in
-/fixtures whose survey loads through osp_spec. The fixtures are still in the provisional
-`osp-fixture-survey/0` format until C3b converts them; until then they are skipped (and
-`test_fixture_status` records how many), and pick themselves up once they load.
+Surveys: every fixture in /fixtures (osp-survey/0.1 since C3b) plus the 10 valid cases in
+python/osp-spec/tests/cases/valid.
 """
 
 from __future__ import annotations
@@ -62,19 +60,14 @@ def test_there_are_surveys() -> None:
     assert len(CASES) >= 10
 
 
-def test_fixture_status() -> None:
-    """Records which fixtures load. Fails once all fixtures load, as a reminder to make
-    the skip in test_export_converts a hard failure."""
-    loading = [p.parent.name for p in FIXTURES if _loads(_fixture_survey(p))]
-    if len(loading) == len(FIXTURES):
-        pytest.fail("all fixtures load through osp_spec: remove the skip below")
-    print(f"{len(loading)}/{len(FIXTURES)} fixtures load through osp_spec")
+def test_every_fixture_loads() -> None:
+    assert len(FIXTURES) >= 20
+    bad = [p.parent.name for p in FIXTURES if not _loads(_fixture_survey(p))]
+    assert bad == []
 
 
 @pytest.mark.parametrize(("label", "data"), SURVEYS, ids=[s[0] for s in SURVEYS])
 def test_export_converts(label: str, data: Any) -> None:
-    if label.startswith("fixture/") and not _loads(data):
-        pytest.skip("fixture not yet in osp-survey/0.1 format (C3b)")
     xlsx, diags = export_xlsform(data)
     assert not [d for d in diags if d.severity == "error"], diags
     xform = _xform(xlsx)
