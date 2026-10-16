@@ -42,6 +42,7 @@ CODES: dict[str, Severity] = {
     "ref.unknown_quota": "error",
     "ref.unknown_variable": "error",
     "ref.no_value": "error",
+    "ref.unknown_choice_code": "warning",
     "ref.self": "error",
     "ref.forward": "error",
     "ref.not_in_flow": "warning",

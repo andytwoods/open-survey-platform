@@ -11,6 +11,7 @@
                 "and": "#/$defs/And",
                 "answered": "#/$defs/Answered",
                 "arith": "#/$defs/Arith",
+                "bool": "#/$defs/BoolLit",
                 "compare": "#/$defs/Compare",
                 "contains": "#/$defs/Contains",
                 "decimal": "#/$defs/DecLit",
@@ -32,6 +33,9 @@
               },
               {
                 "$ref": "#/$defs/TextLit"
+              },
+              {
+                "$ref": "#/$defs/BoolLit"
               },
               {
                 "$ref": "#/$defs/NullLit"
@@ -115,6 +119,7 @@
               "and": "#/$defs/And",
               "answered": "#/$defs/Answered",
               "arith": "#/$defs/Arith",
+              "bool": "#/$defs/BoolLit",
               "compare": "#/$defs/Compare",
               "contains": "#/$defs/Contains",
               "decimal": "#/$defs/DecLit",
@@ -136,6 +141,9 @@
             },
             {
               "$ref": "#/$defs/TextLit"
+            },
+            {
+              "$ref": "#/$defs/BoolLit"
             },
             {
               "$ref": "#/$defs/NullLit"
@@ -183,6 +191,7 @@
               "and": "#/$defs/And",
               "answered": "#/$defs/Answered",
               "arith": "#/$defs/Arith",
+              "bool": "#/$defs/BoolLit",
               "compare": "#/$defs/Compare",
               "contains": "#/$defs/Contains",
               "decimal": "#/$defs/DecLit",
@@ -204,6 +213,9 @@
             },
             {
               "$ref": "#/$defs/TextLit"
+            },
+            {
+              "$ref": "#/$defs/BoolLit"
             },
             {
               "$ref": "#/$defs/NullLit"
@@ -371,6 +383,27 @@
       "title": "BlockNode",
       "type": "object"
     },
+    "BoolLit": {
+      "additionalProperties": false,
+      "description": "Boolean literal ``true`` or ``false``. Its static type is boolean, so it is a\ncondition on its own; as a condition only ``true`` is true (§3).",
+      "properties": {
+        "kind": {
+          "const": "bool",
+          "default": "bool",
+          "title": "Kind",
+          "type": "string"
+        },
+        "value": {
+          "title": "Value",
+          "type": "boolean"
+        }
+      },
+      "required": [
+        "value"
+      ],
+      "title": "BoolLit",
+      "type": "object"
+    },
     "BranchNode": {
       "additionalProperties": false,
       "properties": {
@@ -385,7 +418,7 @@
           "$ref": "#/$defs/Identifier"
         },
         "if": {
-          "$ref": "#/$defs/Expression"
+          "$ref": "#/$defs/Condition"
         },
         "then": {
           "items": {
@@ -476,6 +509,7 @@
               "and": "#/$defs/And",
               "answered": "#/$defs/Answered",
               "arith": "#/$defs/Arith",
+              "bool": "#/$defs/BoolLit",
               "compare": "#/$defs/Compare",
               "contains": "#/$defs/Contains",
               "decimal": "#/$defs/DecLit",
@@ -497,6 +531,9 @@
             },
             {
               "$ref": "#/$defs/TextLit"
+            },
+            {
+              "$ref": "#/$defs/BoolLit"
             },
             {
               "$ref": "#/$defs/NullLit"
@@ -546,6 +583,7 @@
               "and": "#/$defs/And",
               "answered": "#/$defs/Answered",
               "arith": "#/$defs/Arith",
+              "bool": "#/$defs/BoolLit",
               "compare": "#/$defs/Compare",
               "contains": "#/$defs/Contains",
               "decimal": "#/$defs/DecLit",
@@ -567,6 +605,9 @@
             },
             {
               "$ref": "#/$defs/TextLit"
+            },
+            {
+              "$ref": "#/$defs/BoolLit"
             },
             {
               "$ref": "#/$defs/NullLit"
@@ -642,6 +683,67 @@
       "title": "ComputedVariable",
       "type": "object"
     },
+    "Condition": {
+      "discriminator": {
+        "mapping": {
+          "and": "#/$defs/And",
+          "answered": "#/$defs/Answered",
+          "arith": "#/$defs/Arith",
+          "bool": "#/$defs/BoolLit",
+          "compare": "#/$defs/Compare",
+          "contains": "#/$defs/Contains",
+          "decimal": "#/$defs/DecLit",
+          "int": "#/$defs/IntLit",
+          "not": "#/$defs/Not",
+          "null": "#/$defs/NullLit",
+          "or": "#/$defs/Or",
+          "ref": "#/$defs/Ref",
+          "text": "#/$defs/TextLit"
+        },
+        "propertyName": "kind"
+      },
+      "oneOf": [
+        {
+          "$ref": "#/$defs/IntLit"
+        },
+        {
+          "$ref": "#/$defs/DecLit"
+        },
+        {
+          "$ref": "#/$defs/TextLit"
+        },
+        {
+          "$ref": "#/$defs/BoolLit"
+        },
+        {
+          "$ref": "#/$defs/NullLit"
+        },
+        {
+          "$ref": "#/$defs/Ref"
+        },
+        {
+          "$ref": "#/$defs/Compare"
+        },
+        {
+          "$ref": "#/$defs/Arith"
+        },
+        {
+          "$ref": "#/$defs/And"
+        },
+        {
+          "$ref": "#/$defs/Or"
+        },
+        {
+          "$ref": "#/$defs/Not"
+        },
+        {
+          "$ref": "#/$defs/Answered"
+        },
+        {
+          "$ref": "#/$defs/Contains"
+        }
+      ]
+    },
     "Contains": {
       "additionalProperties": false,
       "description": "``contains(q, value)``: true iff multi-choice ``q`` includes ``value`` (§3).",
@@ -661,6 +763,7 @@
               "and": "#/$defs/And",
               "answered": "#/$defs/Answered",
               "arith": "#/$defs/Arith",
+              "bool": "#/$defs/BoolLit",
               "compare": "#/$defs/Compare",
               "contains": "#/$defs/Contains",
               "decimal": "#/$defs/DecLit",
@@ -682,6 +785,9 @@
             },
             {
               "$ref": "#/$defs/TextLit"
+            },
+            {
+              "$ref": "#/$defs/BoolLit"
             },
             {
               "$ref": "#/$defs/NullLit"
@@ -727,7 +833,7 @@
         "constraint": {
           "anyOf": [
             {
-              "$ref": "#/$defs/Expression"
+              "$ref": "#/$defs/Condition"
             },
             {
               "type": "null"
@@ -782,7 +888,7 @@
         "showIf": {
           "anyOf": [
             {
-              "$ref": "#/$defs/Expression"
+              "$ref": "#/$defs/Condition"
             },
             {
               "type": "null"
@@ -838,7 +944,7 @@
         "constraint": {
           "anyOf": [
             {
-              "$ref": "#/$defs/Expression"
+              "$ref": "#/$defs/Condition"
             },
             {
               "type": "null"
@@ -893,7 +999,7 @@
         "showIf": {
           "anyOf": [
             {
-              "$ref": "#/$defs/Expression"
+              "$ref": "#/$defs/Condition"
             },
             {
               "type": "null"
@@ -1022,6 +1128,7 @@
           "and": "#/$defs/And",
           "answered": "#/$defs/Answered",
           "arith": "#/$defs/Arith",
+          "bool": "#/$defs/BoolLit",
           "compare": "#/$defs/Compare",
           "contains": "#/$defs/Contains",
           "decimal": "#/$defs/DecLit",
@@ -1043,6 +1150,9 @@
         },
         {
           "$ref": "#/$defs/TextLit"
+        },
+        {
+          "$ref": "#/$defs/BoolLit"
         },
         {
           "$ref": "#/$defs/NullLit"
@@ -1139,7 +1249,7 @@
         "constraint": {
           "anyOf": [
             {
-              "$ref": "#/$defs/Expression"
+              "$ref": "#/$defs/Condition"
             },
             {
               "type": "null"
@@ -1194,7 +1304,7 @@
         "showIf": {
           "anyOf": [
             {
-              "$ref": "#/$defs/Expression"
+              "$ref": "#/$defs/Condition"
             },
             {
               "type": "null"
@@ -1329,7 +1439,7 @@
         "constraint": {
           "anyOf": [
             {
-              "$ref": "#/$defs/Expression"
+              "$ref": "#/$defs/Condition"
             },
             {
               "type": "null"
@@ -1384,7 +1494,7 @@
         "showIf": {
           "anyOf": [
             {
-              "$ref": "#/$defs/Expression"
+              "$ref": "#/$defs/Condition"
             },
             {
               "type": "null"
@@ -1416,6 +1526,7 @@
               "and": "#/$defs/And",
               "answered": "#/$defs/Answered",
               "arith": "#/$defs/Arith",
+              "bool": "#/$defs/BoolLit",
               "compare": "#/$defs/Compare",
               "contains": "#/$defs/Contains",
               "decimal": "#/$defs/DecLit",
@@ -1437,6 +1548,9 @@
             },
             {
               "$ref": "#/$defs/TextLit"
+            },
+            {
+              "$ref": "#/$defs/BoolLit"
             },
             {
               "$ref": "#/$defs/NullLit"
@@ -1505,7 +1619,7 @@
         "showIf": {
           "anyOf": [
             {
-              "$ref": "#/$defs/Expression"
+              "$ref": "#/$defs/Condition"
             },
             {
               "type": "null"
@@ -1552,6 +1666,7 @@
                 "and": "#/$defs/And",
                 "answered": "#/$defs/Answered",
                 "arith": "#/$defs/Arith",
+                "bool": "#/$defs/BoolLit",
                 "compare": "#/$defs/Compare",
                 "contains": "#/$defs/Contains",
                 "decimal": "#/$defs/DecLit",
@@ -1573,6 +1688,9 @@
               },
               {
                 "$ref": "#/$defs/TextLit"
+              },
+              {
+                "$ref": "#/$defs/BoolLit"
               },
               {
                 "$ref": "#/$defs/NullLit"
@@ -1645,6 +1763,17 @@
           "minItems": 1,
           "title": "Items",
           "type": "array"
+        },
+        "title": {
+          "anyOf": [
+            {
+              "$ref": "#/$defs/Text"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null
         }
       },
       "required": [
@@ -1712,7 +1841,7 @@
           "$ref": "#/$defs/QuotaFull"
         },
         "when": {
-          "$ref": "#/$defs/Expression"
+          "$ref": "#/$defs/Condition"
         }
       },
       "required": [
@@ -1885,7 +2014,7 @@
         "constraint": {
           "anyOf": [
             {
-              "$ref": "#/$defs/Expression"
+              "$ref": "#/$defs/Condition"
             },
             {
               "type": "null"
@@ -1940,7 +2069,7 @@
         "showIf": {
           "anyOf": [
             {
-              "$ref": "#/$defs/Expression"
+              "$ref": "#/$defs/Condition"
             },
             {
               "type": "null"
@@ -2005,7 +2134,7 @@
         "constraint": {
           "anyOf": [
             {
-              "$ref": "#/$defs/Expression"
+              "$ref": "#/$defs/Condition"
             },
             {
               "type": "null"
@@ -2060,7 +2189,7 @@
         "showIf": {
           "anyOf": [
             {
-              "$ref": "#/$defs/Expression"
+              "$ref": "#/$defs/Condition"
             },
             {
               "type": "null"
