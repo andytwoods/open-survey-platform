@@ -101,6 +101,8 @@ These four areas were expressly removed from the roadmap:
 3. **Enterprise dashboards and analytics.**
 4. **AI-powered analysis and enterprise integrations.**
 
+A per-question results page with exportable figures for the researcher's own survey is in scope (decided 17 Oct 2026, `results-viewer.md`); item 3 means cross-survey BI dashboards.
+
 Do not quietly reintroduce these as dependencies or milestones. Basic researcher login, response collection, and simple operational views are not equivalent to participant panels or enterprise analytics.
 
 ## 6. Interoperability and survey specification

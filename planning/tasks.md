@@ -136,3 +136,17 @@ branch `agent/<id>` to GitHub (`origin`) with `make check` exit code and test co
 | B18 | Canvas cards show validator error/warning counts | B14 | Cards receive diagnostics per question; counts and click-to-property; e2e | todo |
 | R10 | Researcher hooks run in the builder Preview | R7 | Preview frame runs hooks in the same sandbox as the participant app; hook errors visible in the debugger; CSP for preview documented; e2e | todo |
 
+## Wave F (17 Oct 2026): results viewer with exportable charts
+
+Plan V: `planning/results-viewer.md` (decisions V-D1–V-D10). V1 publishes the contract first.
+
+| id | title | depends on | acceptance criteria | status |
+|---|---|---|---|---|
+| V1 | Results aggregation API | — | First commit: request/response schema in `contract/openapi.json` (`make contract`). `osp-app` results module implementing every V-D5 rule; `POST /api/surveys/{id}/results/query`, paginated text endpoint; survey.export only; audit `results.read`; in-memory cache invalidated by new responses; tests with hand-computed expectations for each question type, multi-choice denominators, response states, versions (incl. not-in-version), splits, filters, matrix rows, languages; cross-tenant 403/404; benchmark 10 k responses < 2 s and 100 k < 15 s recorded in devlog | todo |
+| V2 | Results page (builder page entry `results`) | V1 contract | New page in the Vite multi-page build + manifest + dev host URL `/surveys/{id}/results` + link from the top bar; filter bar, split, denominator toggle, card per question with state counts, statistics and Table view, chart menu per type (wired to V3 component; placeholder until V3 lands); lazy-loaded; 320 px, keyboard, axe light/dark; vitest + e2e against the real API in `make web-e2e` | todo |
+| V3 | Charts (Vega-Lite) | V1 contract | `vega`/`vega-lite`/`vega-embed` pass `make licence-check`; one Svelte chart component; spec builders for every chart in the plan's menu table, incl. diverging Likert and split variants; app theme from tokens (light/dark) and export theme (Okabe-Ito, white); SVG renderer with titles/ARIA; unit tests on specs; visual snapshots | todo |
+| V4 | Figure export | V3 | Per card: SVG, PNG (85/180 mm/custom, 150/300/600 DPI, real pixels + DPI metadata), aggregate CSV, Vega-Lite spec + manifest; page ZIP; editable auto captions (V-D8); "hide counts below k" option with warning; final-size preview; audit `results.export`; e2e downloads checked (dimensions, files in ZIP, caption text) | todo |
+| V5 | Saved results layouts | V1, V2 | Migration 0009 (SQLite + Postgres); CRUD API (owner/editor, lab-shared); default layout; page loads/saves layouts; tests incl. tenant isolation | todo |
+| V6 | PDF figure + PDF/HTML report (phase 2) | V4 | Permissive libraries only; fonts/clipping checked; report from one frozen query | todo |
+| V7 | Combine compatible versions, numeric split bins, text word frequency (phase 2) | V1–V3 | Per V-D5; word frequency with stop words and PII redaction | todo |
+
