@@ -195,9 +195,68 @@ def test_late_save_of_an_older_prefix_is_a_no_op_not_a_conflict(env):
     diverged = put(1, snap(2, "start", "other"))
     assert diverged.status_code == 409 and diverged.json()["revision"] == 3
     assert env.count(t.session_conflicts) == 1
-    # So is a stale save that carries more than the server has.
-    longer = put(2, snap(4, "start", "answer", "next", "answer"))
+    # A stale save that diverged *and* is longer is a conflict too.
+    longer = put(2, snap(4, "start", "other", "next", "answer"))
     assert longer.status_code == 409 and env.count(t.session_conflicts) == 2
+
+
+def saver(env, st):
+    """``put(base, snapshot)`` for one session."""
+    url = f"/api/sessions/{st['sessionId']}/snapshot"
+    return lambda base, s: env.client.put(
+        url, json={"baseRevision": base, "snapshot": s}, headers=auth(st)
+    )
+
+
+@pytest.mark.parametrize("order", ["wire-first", "newest-first"])
+@pytest.mark.parametrize("edit", [False, True])
+def test_fast_forward_is_written_whatever_its_base(env, order, edit):
+    """R9-1: a refresh straight after typing, IndexedDB blocked. The dead page's last save
+    (A, base 1) is still on the wire when pagehide chains the newest copy (B, base 2). In
+    either arrival order the server ends with B and no conflict row. An edit is an appended
+    answer event like any keystroke, so B extends A either way."""
+    a = snap(2, "start", "answer:Rob")
+    b = snap(3, "start", "answer:Rob", "answer:Bob" if edit else "answer:Robin")
+    st = env.start()
+    put = saver(env, st)
+    assert put(0, snap(1, "start")).json()["revision"] == 1
+    sends = [(1, a), (2, b)] if order == "wire-first" else [(2, b), (1, a)]
+    acks = [put(base, s) for base, s in sends]
+    assert [r.status_code for r in acks] == [200, 200]
+    if order == "newest-first":
+        # B fast-forwards from revision 1; A then arrives as an older prefix.
+        assert acks[0].json() == {"revision": 2, "replay": False, "superseded": False}
+        assert acks[1].json() == {"revision": 2, "replay": False, "superseded": True}
+    else:
+        assert [r.json()["revision"] for r in acks] == [2, 3]
+    res = env.client.get("/api/sessions/resume", headers=auth(st)).json()
+    assert res["snapshot"] == b
+    assert env.count(t.session_conflicts) == 0
+
+
+def test_fast_forward_far_behind_overwrites_nothing(env):
+    st = env.start()
+    put = saver(env, st)
+    put(0, snap(1, "start"))
+    put(1, snap(2, "start", "answer"))
+    # Base 0 at revision 2: fine, because it holds everything the server has.
+    longer = snap(3, "start", "answer", "answer")
+    assert put(0, longer).json() == {"revision": 3, "replay": False, "superseded": False}
+    assert env.count(t.session_conflicts) == 0
+
+
+def test_two_device_divergence_is_still_a_conflict(env):
+    """R9-1 does not weaken R6-6: device B moved on, device A's stale copy diverges (its
+    own answer after the shared prefix). The server copy wins and A's is kept."""
+    st = env.start()
+    put = saver(env, st)
+    put(0, snap(1, "start"))
+    put(1, snap(2, "start", "answer-a"))
+    assert put(2, snap(3, "start", "answer-a", "answer-b")).status_code == 200  # device B
+    stale_a = put(2, snap(4, "start", "answer-a", "answer-a2", "next"))  # device A
+    assert stale_a.status_code == 409
+    assert stale_a.json()["snapshot"] == snap(3, "start", "answer-a", "answer-b")
+    assert env.count(t.session_conflicts) == 1
 
 
 def test_start_and_resume_report_save_mode_and_local_copy(tmp_path):
@@ -449,3 +508,40 @@ def test_session_start_is_rate_limited(tmp_path):
 def test_endpoints_answer_503_without_a_service():
     client = TestClient(create_app())
     assert client.post("/api/s/demo/sessions").status_code == 503
+
+
+def test_keepalive_pair_racing_in_server_threads_never_loses_or_conflicts(env):
+    """R9-1 as fixture 30 saw it: the two saves are handled on concurrent server threads,
+    so even when sent in order the newer one can reach the store first. Run the pair
+    together many times; the newest copy always ends up stored, never as a conflict."""
+    import threading
+
+    st = env.start()
+    sid, token = st["sessionId"], st["resumeToken"]
+    log = ["start"]
+    env.service.save_snapshot(sid, token, 0, snap(1, *log))
+    rev = 1
+    for i in range(40):
+        a = snap(len(log) + 1, *log, f"answer:{i}")
+        log += [f"answer:{i}", f"answer:{i}!"]
+        b = snap(len(log), *log)
+        go = threading.Barrier(2)
+        errors: list[BaseException] = []
+
+        def send(base, s, go=go, errors=errors):
+            go.wait()
+            try:
+                env.service.save_snapshot(sid, token, base, s)
+            except BaseException as e:  # noqa: BLE001 - reported below
+                errors.append(e)
+
+        threads = [threading.Thread(target=send, args=x) for x in ((rev, a), (rev + 1, b))]
+        for th in threads:
+            th.start()
+        for th in threads:
+            th.join()
+        assert errors == []
+        row = env.repo.get(env.tenants[0].tenant_id, sid)  # resume is rate limited
+        assert row.snapshot == b, i
+        rev = row.revision
+    assert env.count(t.session_conflicts) == 0

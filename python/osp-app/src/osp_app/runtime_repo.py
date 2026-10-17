@@ -8,7 +8,7 @@ verified credential.
 
 from __future__ import annotations
 
-from collections.abc import Mapping
+from collections.abc import Callable, Mapping
 from datetime import datetime
 from typing import Any
 
@@ -89,10 +89,15 @@ class StoreParticipantRepo:
         return self.ps.touch(_participant(tenant_id, session_id), session_id)
 
     def write_snapshot(
-        self, tenant_id: str, session_id: str, base_revision: int, snapshot: object
+        self,
+        tenant_id: str,
+        session_id: str,
+        base_revision: int,
+        snapshot: object,
+        judge: Callable[[object, int], str | None] | None = None,
     ) -> Any:
         return self.ps.write_snapshot(
-            _participant(tenant_id, session_id), session_id, base_revision, snapshot
+            _participant(tenant_id, session_id), session_id, base_revision, snapshot, judge
         )
 
     def claim_quota(self, tenant_id: str, session_id: str, node_id: str, quota_id: str) -> Any:

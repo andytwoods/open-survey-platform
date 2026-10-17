@@ -88,6 +88,33 @@ def test_conditional_snapshot_write_and_conflict_kept(ps, pub, tenants, store):
     assert audit and "other device" not in str(audit[0].detail)  # no participant data
 
 
+def test_stale_write_judged_inside_the_transaction(ps, pub, tenants):
+    """R9-1: the caller's judge settles a stale write against the copy held right then."""
+    a, _ = tenants
+    s = start(ps, a, pub)
+    ps.write_snapshot(a, s.id, 0, {"v": 1})
+    seen = []
+
+    def judge(verdict):
+        def j(server, revision):
+            seen.append((server, revision))
+            return verdict
+
+        return j
+
+    ff = ps.write_snapshot(a, s.id, 5, {"v": 2}, judge("fast-forward"))  # base ahead
+    assert (ff.status, ff.revision) == ("ok", 2) and seen == [({"v": 1}, 1)]
+    assert ps.get(a, s.id).snapshot == {"v": 2}
+    old = ps.write_snapshot(a, s.id, 0, {"v": 1}, judge("superseded"))
+    assert (old.status, old.revision) == ("superseded", 2)
+    no = ps.write_snapshot(a, s.id, 0, {"v": "other"}, judge(None))
+    assert no.status == "stale" and len(ps.list_conflicts(a, s.id)) == 1
+    assert ps.get(a, s.id).snapshot == {"v": 2}
+    # A current base never asks the judge.
+    seen.clear()
+    assert ps.write_snapshot(a, s.id, 2, {"v": 3}, judge(None)).status == "ok" and not seen
+
+
 def test_quota_is_idempotent_per_session_and_node(ps, pub, tenants):
     a, _ = tenants
     s = start(ps, a, pub)

@@ -15,7 +15,11 @@ import each other).
 - **Snapshot**: conditional on ``baseRevision``; stale → :class:`StaleRevision` with
   the server copy (the server copy wins; the loser is kept, R-2). A late save whose
   event log is a prefix of the server copy's (a dead page catching up) is not a
-  conflict: it is acknowledged as ``superseded`` and nothing is written.
+  conflict: it is acknowledged as ``superseded`` and nothing is written. A save whose
+  event log strictly extends the server copy's (a *fast-forward*) is written whatever its
+  base: it holds everything the server has and more, so nothing is overwritten. This is
+  what keeps a refresh straight after typing from losing answers when the dead page's two
+  keepalive saves arrive out of order (decision R9-1, semantics.md §5).
 - **Quota**: idempotent per (session, node); the result uses the engine's words,
   ``open`` or ``full``. A place is held when open, used up on
   completion, and released by :meth:`SessionService.release_inactive` after
@@ -40,7 +44,7 @@ from __future__ import annotations
 import base64
 import hashlib
 import json
-from collections.abc import Mapping
+from collections.abc import Callable, Mapping
 from dataclasses import dataclass
 from datetime import datetime, timedelta
 from typing import Any, Literal, Protocol
@@ -150,7 +154,12 @@ class ParticipantRepo(Protocol):
     def get(self, tenant_id: str, session_id: str) -> SessionRow: ...
     def touch(self, tenant_id: str, session_id: str) -> bool: ...
     def write_snapshot(
-        self, tenant_id: str, session_id: str, base_revision: int, snapshot: object
+        self,
+        tenant_id: str,
+        session_id: str,
+        base_revision: int,
+        snapshot: object,
+        judge: Callable[[object, int], str | None] | None = None,
     ) -> Any: ...
     def claim_quota(self, tenant_id: str, session_id: str, node_id: str, quota_id: str) -> Any: ...
     def submit(
@@ -280,6 +289,26 @@ def is_older_prefix(snapshot: object, server: object) -> bool:
         return False
     try:
         return canonical_json(mine) == canonical_json(theirs[: len(mine)])
+    except TypeError, ValueError, RecursionError:
+        return False
+
+
+def is_fast_forward(snapshot: object, server: object) -> bool:
+    """True when ``snapshot`` strictly extends ``server``: the server copy's event log is a
+    proper prefix of its log (compared as canonical JSON) and its engine revision is newer.
+    Writing it loses nothing the server holds. Copies that diverged (neither log a prefix
+    of the other, e.g. two devices) are never a fast-forward. No server copy yet counts as
+    an empty log."""
+    mine = _events(snapshot)
+    theirs: list[Any] | None = [] if server is None else _events(server)
+    if mine is None or theirs is None or len(mine) <= len(theirs):
+        return False
+    rev = snapshot.get("revision") if isinstance(snapshot, Mapping) else None
+    server_rev = server.get("revision") if isinstance(server, Mapping) else None
+    if isinstance(rev, int) and isinstance(server_rev, int) and rev <= server_rev:
+        return False
+    try:
+        return canonical_json(mine[: len(theirs)]) == canonical_json(theirs)
     except TypeError, ValueError, RecursionError:
         return False
 
@@ -512,20 +541,26 @@ class SessionService:
         if base_revision < 0:
             raise InvalidPayload("baseRevision must be >= 0")
         _size(snapshot, self.policy.max_snapshot_bytes, "snapshot")
-        # A late save from a dead page that the server copy already contains: a no-op,
-        # not a conflict. Revisions only grow, so it can't become current meanwhile.
-        cur = self._repo.get(cred.tenant_id, session_id)
-        if (
-            cur.submitted_at is None
-            and cur.save_mode == "every-page"
-            and base_revision < cur.revision
-            and is_older_prefix(snapshot, cur.snapshot)
-        ):
-            return SnapshotAck(cur.revision, superseded=True)
-        w = self._repo.write_snapshot(cred.tenant_id, session_id, base_revision, snapshot)
+        base = base_revision
+
+        def judge(server: object, server_revision: int) -> str | None:
+            """The base is not current: is this save still safe to take? Asked by the
+            store inside its transaction, against the copy it holds right then."""
+            # A late save from a dead page that the server copy already contains: a no-op,
+            # not a conflict.
+            if base < server_revision and is_older_prefix(snapshot, server):
+                return "superseded"
+            # A fast-forward (R9-1): it extends the server copy, so nothing is overwritten.
+            if is_fast_forward(snapshot, server):
+                return "fast-forward"
+            return None
+
+        w = self._repo.write_snapshot(cred.tenant_id, session_id, base_revision, snapshot, judge)
         match w.status:
             case "ok" | "replay":
                 return SnapshotAck(w.revision, w.status == "replay")
+            case "superseded":
+                return SnapshotAck(w.revision, superseded=True)
             case "stale":
                 raise StaleRevision(w.revision, w.snapshot)
             case "submitted":

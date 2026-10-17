@@ -246,6 +246,25 @@ def test_is_older_prefix(mine, server, older):
     assert is_older_prefix(mine, server) is older
 
 
+@pytest.mark.parametrize(
+    ("mine", "server", "ff"),
+    [
+        (_snap(4, "a", "b", "c", "d"), _snap(3, "a", "b", "c"), True),  # extends
+        (_snap(1, "a"), None, True),  # nothing on the server yet
+        (_snap(3, "a", "b", "c"), _snap(3, "a", "b", "c"), False),  # identical
+        (_snap(1, "a"), _snap(3, "a", "b", "c"), False),  # older
+        (_snap(4, "a", "x", "c", "d"), _snap(3, "a", "b", "c"), False),  # diverged, longer
+        (_snap(2, "a", "b", "c", "d"), _snap(3, "a", "b", "c"), False),  # older engine rev
+        ({"p": 1}, _snap(3, "a"), False),  # not an engine snapshot
+        (_snap(2, "a", "b"), {"p": 1}, False),  # server copy has no log
+    ],
+)
+def test_is_fast_forward(mine, server, ff):
+    from osp_runtime.session import is_fast_forward
+
+    assert is_fast_forward(mine, server) is ff
+
+
 def test_local_copy_comes_from_plan_settings():
     from osp_runtime.session import local_copy
 

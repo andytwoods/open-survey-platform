@@ -12,6 +12,8 @@
  *    save is resent *unchanged* until it is acknowledged (the server answers an identical
  *    retry with `replay`), so a lost reply never looks like a conflict. Retries back off
  *    exponentially with jitter. With storage blocked it saves on every answer (R-1).
+ *    The server also takes a save whose event log extends its copy whatever the base (a
+ *    fast-forward, R9-1), so keepalive saves from a dying page may land in any order.
  * 4. Resume and 409: the server copy and the local copy are compared by event log. If one
  *    log is a prefix of the other, the longer one is newer and nothing is lost. Otherwise it
  *    is a true conflict: the server copy wins, the page shows it with a notice (R6-6), and
@@ -25,7 +27,10 @@
  * 8. No durable local copy (IndexedDB blocked, or `localCopy: memory`): the session id and
  *    resume token are kept in the tab (`SessionPointer`), so a refresh resumes the server's
  *    copy (every-page, R4-3) or restarts the same session with the same seed and conditions
- *    and says so (end-only, R6-5).
+ *    and says so (end-only, R6-5). As an every-page page is hidden with a save still
+ *    unacknowledged, the pointer also holds that snapshot's engine revision (a number, no
+ *    answers); the reloaded page's resume can overtake the dead page's keepalive save, so
+ *    it asks again for up to ~3 s until the server has caught up (R9-1).
  * 9. Consent (semantics.md §11, M5): while the consent page is shown nothing is saved to
  *    the server in either mode; agree/decline/withdraw are at the end of this class.
  */
@@ -186,6 +191,10 @@ export class Session {
 	private writes: Promise<void> = Promise.resolve();
 	private writeQueued = false;
 	private sending = false;
+	/** The engine revision `flushKeepalive` last chained behind the wire save (R9-1). */
+	private chained = -1;
+	/** The session pointer promises a reload a save still on its way (R9-1). */
+	private pendingNoted = false;
 	private gone = false;
 	private closed = false;
 	private effectRunning = false;
@@ -422,35 +431,51 @@ export class Session {
 		this.hooks?.unloading();
 	}
 
-	/** The page is being hidden or unloaded: last-chance save with `keepalive`. */
+	/**
+	 * The page is being hidden or unloaded: last-chance save with `keepalive`. Browsers fire
+	 * both `visibilitychange` and `pagehide` on a refresh, so this runs twice; it sends each
+	 * body at most once per call and chains the newest copy at most once per revision.
+	 */
 	flushKeepalive() {
 		if (this.saveMode !== 'every-page' || this.closed || !this.reconciled) return;
 		if (E.awaitingConsent(this.state)) return; // §11: nothing before agreement
 		const snap = this.rec.snapshot;
 		if (!snap) return;
-		if (!this.rec.inflight && snap.revision === this.rec.syncedEngineRev) return;
-		// A save is on the wire (sent with keepalive): a duplicate would only arrive late as a
-		// stale write and clutter the server's conflict log. But if the page has moved on
-		// since (a refresh right after typing), chain the newest copy on the revision that
-		// save will create, so the last keystrokes are not lost (R4-3, storage blocked).
-		if (this.sending) {
-			const wire = this.rec.inflight;
-			if (wire && wire.snapshot.revision !== snap.revision && isPrefix(wire.snapshot, snap)) {
-				this.env.api
-					.save(this.rec.sessionId, this.rec.resumeToken, wire.base + 1, snap, { keepalive: true })
-					.catch(() => undefined);
+		const dirty = this.dirty();
+		// No durable copy: tell the reloaded page which revision is still on its way (R9-1).
+		remember(this.env, this.rec, this.state, dirty ? snap.revision : undefined);
+		this.pendingNoted = dirty;
+		if (!dirty) return;
+		// The body on the wire: the pump's (sent with keepalive, so an unload does not cancel
+		// it, and a duplicate would only arrive late), or, when nothing is being sent right
+		// now, the pending one, sent here. If it lands, the next normal save of it is a replay.
+		if (!this.sending) {
+			if (!this.rec.inflight) {
+				this.rec.inflight = { base: this.rec.serverRevision, snapshot: snap };
+				void this.persist();
 			}
-			return;
+			const body = this.rec.inflight;
+			this.env.api
+				.save(this.rec.sessionId, this.rec.resumeToken, body.base, body.snapshot, { keepalive: true })
+				.catch(() => undefined);
 		}
-		if (!this.rec.inflight) {
-			this.rec.inflight = { base: this.rec.serverRevision, snapshot: snap };
-			void this.persist();
+		// The page has moved on since that body was taken (a refresh straight after typing, or
+		// an edit): also send the newest copy, on the revision that body will create, so the
+		// last keystrokes are not lost (R4-3, storage blocked). The two can reach the server
+		// in either order, and a server runs requests concurrently, so even two sent in order
+		// can reach its store the other way round. If the newest comes first its base is ahead
+		// of the server, which takes it as a fast-forward because its log extends the server
+		// copy; the older one then arrives as `superseded` (R9-1). An edit is an appended
+		// event too, so it extends the wire copy like any other keystroke. A copy that does
+		// not extend it (replaced meanwhile) is sent all the same: the server keeps the copy
+		// its rules say and logs a true conflict, never loses one silently.
+		const wire = this.rec.inflight;
+		if (wire && wire.snapshot.revision !== snap.revision && this.chained !== snap.revision) {
+			this.chained = snap.revision;
+			this.env.api
+				.save(this.rec.sessionId, this.rec.resumeToken, wire.base + 1, snap, { keepalive: true })
+				.catch(() => undefined);
 		}
-		const body = this.rec.inflight;
-		// Fire and forget. If it lands, the next normal save of the same body is a replay.
-		this.env.api
-			.save(this.rec.sessionId, this.rec.resumeToken, body.base, body.snapshot, { keepalive: true })
-			.catch(() => undefined);
 	}
 
 	/** Connectivity came back, or the page became visible again: retry now. */
@@ -585,6 +610,7 @@ export class Session {
 						this.rec.syncedEngineRev = body.snapshot.revision;
 						this.rec.inflight = null;
 						this.attempt = 0;
+						this.chained = -1;
 						await this.persist();
 					} catch (e) {
 						if (!(await this.saveFailed(e, body))) return;
@@ -592,6 +618,12 @@ export class Session {
 				}
 			} while (this.again && !this.closed);
 			if (!this.closed) this.setNet('saved');
+			if (this.pendingNoted && !this.closed && !this.dirty()) {
+				// The page was hidden and came back, and the server has it all: a later reload
+				// need not wait for anything (R9-1).
+				this.pendingNoted = false;
+				remember(this.env, this.rec, this.state);
+			}
 		} finally {
 			this.pumping = false;
 		}
@@ -1010,8 +1042,11 @@ async function storeFor(env: Env, plan: Plan, rec: LocalRecord): Promise<Env> {
 	return { ...env, store: new MemoryStore() };
 }
 
-/** No durable copy: remember where the session is, so a refresh can find it (R4-3). */
-function remember(env: Env, rec: LocalRecord, state: State) {
+/**
+ * No durable copy: remember where the session is, so a refresh can find it (R4-3). With
+ * `pending`, also the engine revision a hidden page's keepalive save is carrying (R9-1).
+ */
+function remember(env: Env, rec: LocalRecord, state: State, pending?: number) {
 	if (env.store.kind !== 'memory') return;
 	const pointer = rec.saveMode === 'every-page' ? (env.devicePointer ?? env.pointer) : env.pointer;
 	if (!pointer) return;
@@ -1019,8 +1054,31 @@ function remember(env: Env, rec: LocalRecord, state: State) {
 	pointer.set(rec.slug, {
 		sessionId: rec.sessionId,
 		resumeToken: rec.resumeToken,
-		...(rec.saveMode === 'end-only' && first?.type === 'start' ? { start: first } : {})
+		...(rec.saveMode === 'end-only' && first?.type === 'start' ? { start: first } : {}),
+		...(rec.saveMode === 'every-page' && pending !== undefined ? { pending } : {})
 	});
+}
+
+/** How long a reloaded page waits for its dead predecessor's last save (R9-1), in ms. */
+const CATCH_UP_DELAYS = [50, 100, 200, 400, 800, 1600];
+
+/**
+ * R9-1: the page before this refresh sent its newest snapshot (engine revision `pending`)
+ * with `keepalive` as it unloaded; this page's resume can reach the server first and get
+ * the copy before it. Ask again, briefly, until the server has caught up. It never waits
+ * for longer than ~3 s: a save that never lands (offline, refused) leaves the server copy.
+ */
+async function catchUp(env: Env, token: string, r: ResumeResponse, pending: number): Promise<ResumeResponse> {
+	for (const ms of CATCH_UP_DELAYS) {
+		if (r.submitted || (asSnapshot(r.snapshot)?.revision ?? -1) >= pending) return r;
+		await new Promise((done) => env.setTimer(() => done(undefined), ms));
+		try {
+			r = await env.api.resume(token);
+		} catch {
+			return r; // the copy we have; the session reconciles on its next save
+		}
+	}
+	return r;
 }
 
 /**
@@ -1038,12 +1096,14 @@ export async function boot(env: Env, o: BootOptions): Promise<Session> {
 
 	// No local copy, no link: this tab may still know its session (memory-only, R4-3/R6-5).
 	let pointerStart: unknown;
+	let pending: number | undefined;
 	let fromPointer = false;
 	if (!rec && !o.resumeToken && (env.pointer || env.devicePointer)) {
 		const p = env.pointer?.get(o.slug) ?? env.devicePointer?.get(o.slug) ?? null;
 		if (p) {
 			o = { ...o, resumeToken: p.resumeToken };
 			pointerStart = p.start;
+			if (typeof p.pending === 'number') pending = p.pending;
 			fromPointer = true;
 		}
 	}
@@ -1060,6 +1120,7 @@ export async function boot(env: Env, o: BootOptions): Promise<Session> {
 			}
 			throw bootError(e);
 		}
+		if (pending !== undefined && r.saveMode === 'every-page') r = await catchUp(env, o.resumeToken, r, pending);
 		rec = newRecord(o.slug, { ...r, resumeToken: o.resumeToken }, env.now());
 		await env.store.put(rec);
 		const plan = await loadPlan(env, r.planUrl, r.planChecksum, null).catch((e) => Promise.reject(bootError(e)));

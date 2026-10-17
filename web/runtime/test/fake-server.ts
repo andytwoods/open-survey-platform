@@ -1,7 +1,9 @@
 /**
  * An in-memory stand-in for the participant API with the same rules as osp-runtime +
- * osp-store: conditional snapshot writes (identical retry = replay, other stale write =
- * 409 + conflict row), idempotent quota and submit. Can drop requests or replies.
+ * osp-store: conditional snapshot writes (identical retry = replay, a late older prefix =
+ * superseded, a save that extends the server copy = fast-forward whatever its base (R9-1),
+ * other stale write = 409 + conflict row), idempotent quota and submit. Can drop requests
+ * or replies, or hold saves to deliver them in a chosen order.
  */
 import { canonicalJson, type Plan, type ResponseRecord, type Snapshot } from '@osp/engine';
 import { HttpError, NetworkError, type Api } from '../src/lib/api';
@@ -28,6 +30,9 @@ export class FakeServer {
 	/** Per call name: the next N such requests are applied but their replies are lost. */
 	dropOn: Record<string, number> = {};
 	quotaResult: 'open' | 'full' = 'open';
+	/** Saves wait here (in arrival order at the network) until released, in any order. */
+	holdSaves = false;
+	held: Array<() => void> = [];
 	private n = 0;
 
 	constructor(
@@ -39,6 +44,7 @@ export class FakeServer {
 	private async io<T>(name: string, fn: () => T): Promise<T> {
 		this.calls.push(name);
 		await Promise.resolve();
+		if (name === 'save' && this.holdSaves) await new Promise<void>((go) => this.held.push(go));
 		if (this.offline) throw new NetworkError('offline');
 		const out = fn();
 		if (this.dropReplies > 0 || (this.dropOn[name] ?? 0) > 0) {
@@ -106,14 +112,23 @@ export class FakeServer {
 				if (s.submitted) throw new HttpError(409, 'session.submitted', {});
 				if (this.saveMode !== 'every-page') throw new HttpError(403, 'save_mode.end_only', {});
 				const body = JSON.parse(canonicalJson(snapshot)) as Snapshot;
-				if (base === s.revision) {
+				const write = () => {
 					s.revision++;
 					s.snapshot = body;
 					return { revision: s.revision, replay: false };
-				}
+				};
+				if (base === s.revision) return write();
 				if (base === s.revision - 1 && canonicalJson(body) === canonicalJson(s.snapshot)) {
 					return { revision: s.revision, replay: true };
 				}
+				// The store's judge (osp-runtime save_snapshot), in the same order.
+				const log = (x: Snapshot | null) => x?.data?.events ?? [];
+				const prefix = (a: Snapshot | null, b: Snapshot | null) =>
+					canonicalJson(log(a)) === canonicalJson(log(b).slice(0, log(a).length));
+				if (base < s.revision && log(body).length <= log(s.snapshot).length && prefix(body, s.snapshot)) {
+					return { revision: s.revision, replay: false, superseded: true };
+				}
+				if (log(body).length > log(s.snapshot).length && prefix(s.snapshot, body)) return write(); // fast-forward
 				this.conflicts.push({ session: s.id, base, snapshot: body });
 				throw new HttpError(409, 'snapshot.stale', { revision: s.revision, snapshot: s.snapshot });
 			}),
