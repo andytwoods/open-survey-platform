@@ -153,6 +153,10 @@ def test_every_command_fails_closed_for_non_members(env, command_id, who):
         "survey.results_layout_update": {"survey_id": sid, "layout_id": "l", "name": "x"},
         "survey.results_layout_delete": {"survey_id": sid, "layout_id": "l"},
         "survey.results_layout_set_default": {"survey_id": sid, "layout_id": None},
+        "profile.get": {"tenant_id": "lab-a"},
+        "profile.set": {"profile": {}, "tenant_id": "lab-a"},
+        "profile.clear": {"tenant_id": "lab-a"},
+        "profile.schemas": {"tenant_id": "lab-a"},
     }.get(command_id, {"survey_id": sid})
     if who is None or isinstance(who, str):
         with pytest.raises(Unauthenticated):
