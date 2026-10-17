@@ -422,6 +422,40 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
+    "/api/surveys/import": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /** Import Survey */
+        post: operations["importSurvey"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/surveys/import/preview": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /** Preview Import */
+        post: operations["previewSurveyImport"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
     "/api/surveys/{survey_id}": {
         parameters: {
             query?: never;
@@ -1308,6 +1342,34 @@ export interface components {
              */
             index: number | null;
         };
+        /** CreateFromImportRequest */
+        CreateFromImportRequest: {
+            /**
+             * Content
+             * @description The file's text (.qsf and SurveyJS are JSON, .lss is XML; UTF-8)
+             */
+            content: string;
+            /**
+             * Filename
+             * @description Used to guess the format
+             */
+            filename: string;
+            /**
+             * Format
+             * @description Override the format guessed from the content and file name
+             */
+            format?: ("qsf" | "lss" | "surveyjs") | null;
+            /**
+             * Tenantid
+             * @description Needed only if you belong to several labs
+             */
+            tenantId?: string | null;
+            /**
+             * Title
+             * @description Replaces the imported title
+             */
+            title?: string | null;
+        };
         /** CreateResultsLayoutRequest */
         CreateResultsLayoutRequest: {
             /**
@@ -1742,6 +1804,118 @@ export interface components {
             memberships: components["schemas"]["LabMembership"][];
             /** Userid */
             userId: string;
+        };
+        /** ImportDiagnosticOut */
+        ImportDiagnosticOut: {
+            /** Code */
+            code: string;
+            /** Feature */
+            feature: string;
+            /**
+             * Format
+             * @enum {string}
+             */
+            format: "qsf" | "lss" | "surveyjs";
+            /** Message */
+            message: string;
+            /**
+             * Pointer
+             * @description Where in the source file
+             */
+            pointer: string;
+            /**
+             * Severity
+             * @enum {string}
+             */
+            severity: "info" | "warning" | "loss" | "error";
+            /**
+             * Target
+             * @description Where in the imported survey, if anywhere
+             */
+            target?: string | null;
+        };
+        /** ImportPreviewResponse */
+        ImportPreviewResponse: {
+            /**
+             * Diagnostics
+             * @description What carried over with a note, what will behave differently, what was lost
+             */
+            diagnostics: components["schemas"]["ImportDiagnosticOut"][];
+            /**
+             * Format
+             * @enum {string}
+             */
+            format: "qsf" | "lss" | "surveyjs";
+            /**
+             * Ok
+             * @description False: nothing can be imported (see the error diagnostics)
+             */
+            ok: boolean;
+            summary: components["schemas"]["ImportSummaryOut"] | null;
+            /** Title */
+            title: string;
+            /**
+             * Validation
+             * @description The validator's diagnostics for the survey as it would be created
+             */
+            validation: components["schemas"]["Diagnostic"][];
+        };
+        /** ImportRequest */
+        ImportRequest: {
+            /**
+             * Content
+             * @description The file's text (.qsf and SurveyJS are JSON, .lss is XML; UTF-8)
+             */
+            content: string;
+            /**
+             * Filename
+             * @description Used to guess the format
+             */
+            filename: string;
+            /**
+             * Format
+             * @description Override the format guessed from the content and file name
+             */
+            format?: ("qsf" | "lss" | "surveyjs") | null;
+        };
+        /** ImportSummaryOut */
+        ImportSummaryOut: {
+            /** Blocks */
+            blocks: number;
+            /** Bytype */
+            byType: {
+                [key: string]: number;
+            };
+            /** Choicelists */
+            choiceLists: number;
+            /** Conditions */
+            conditions: number;
+            /** Flownodes */
+            flowNodes: number;
+            /** Infos */
+            infos: number;
+            /** Languages */
+            languages: string[];
+            /** Losses */
+            losses: number;
+            /** Pages */
+            pages: number;
+            /** Questions */
+            questions: number;
+            /** Quotas */
+            quotas: number;
+            /** Title */
+            title: string;
+            /** Variables */
+            variables: number;
+            /** Warnings */
+            warnings: number;
+        };
+        /** ImportSurveyResponse */
+        ImportSurveyResponse: {
+            /** @description The import report for this draft */
+            preview: components["schemas"]["ImportPreviewResponse"];
+            survey: components["schemas"]["SurveyDetail"];
         };
         /** InsertFlowNode */
         InsertFlowNodeParams: {
@@ -4725,6 +4899,108 @@ export interface operations {
                 };
                 content: {
                     "application/json": components["schemas"]["SurveyDetail"];
+                };
+            };
+            /** @description Unauthorized */
+            401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorBody"];
+                };
+            };
+            /** @description Forbidden */
+            403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorBody"];
+                };
+            };
+            /** @description Unprocessable Content */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["RejectedBody"];
+                };
+            };
+        };
+    };
+    importSurvey: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["CreateFromImportRequest"];
+            };
+        };
+        responses: {
+            /** @description Successful Response */
+            201: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ImportSurveyResponse"];
+                };
+            };
+            /** @description Unauthorized */
+            401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorBody"];
+                };
+            };
+            /** @description Forbidden */
+            403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorBody"];
+                };
+            };
+            /** @description Unprocessable Content */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["RejectedBody"];
+                };
+            };
+        };
+    };
+    previewSurveyImport: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["ImportRequest"];
+            };
+        };
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ImportPreviewResponse"];
                 };
             };
             /** @description Unauthorized */

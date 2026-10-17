@@ -137,6 +137,8 @@ def test_every_command_fails_closed_for_non_members(env, command_id, who):
     params = {
         "survey.create": {"title": "x"},
         "survey.list": {},
+        "survey.import_preview": {"filename": "x.json", "content": "{}"},
+        "survey.import": {"filename": "x.json", "content": "{}"},
         "survey.apply_ops": {"survey_id": sid, "ops": [], "base_revision": 0},
         "survey.undo": {"survey_id": sid, "transaction_id": "t", "base_revision": 0},
         "survey.redo": {"survey_id": sid, "transaction_id": "u:t", "base_revision": 0},

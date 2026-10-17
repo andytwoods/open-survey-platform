@@ -1094,6 +1094,73 @@
         "title": "CreateChoiceList",
         "type": "object"
       },
+      "CreateFromImportRequest": {
+        "additionalProperties": false,
+        "properties": {
+          "content": {
+            "description": "The file's text (.qsf and SurveyJS are JSON, .lss is XML; UTF-8)",
+            "maxLength": 20000000,
+            "title": "Content",
+            "type": "string"
+          },
+          "filename": {
+            "description": "Used to guess the format",
+            "maxLength": 255,
+            "minLength": 1,
+            "title": "Filename",
+            "type": "string"
+          },
+          "format": {
+            "anyOf": [
+              {
+                "enum": [
+                  "qsf",
+                  "lss",
+                  "surveyjs"
+                ],
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "description": "Override the format guessed from the content and file name",
+            "title": "Format"
+          },
+          "tenantId": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "description": "Needed only if you belong to several labs",
+            "title": "Tenantid"
+          },
+          "title": {
+            "anyOf": [
+              {
+                "maxLength": 500,
+                "minLength": 1,
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "description": "Replaces the imported title",
+            "title": "Title"
+          }
+        },
+        "required": [
+          "filename",
+          "content"
+        ],
+        "title": "CreateFromImportRequest",
+        "type": "object"
+      },
       "CreateResultsLayoutRequest": {
         "additionalProperties": false,
         "properties": {
@@ -2057,6 +2124,268 @@
           "memberships"
         ],
         "title": "Identity",
+        "type": "object"
+      },
+      "ImportDiagnosticOut": {
+        "properties": {
+          "code": {
+            "title": "Code",
+            "type": "string"
+          },
+          "feature": {
+            "title": "Feature",
+            "type": "string"
+          },
+          "format": {
+            "enum": [
+              "qsf",
+              "lss",
+              "surveyjs"
+            ],
+            "title": "Format",
+            "type": "string"
+          },
+          "message": {
+            "title": "Message",
+            "type": "string"
+          },
+          "pointer": {
+            "description": "Where in the source file",
+            "title": "Pointer",
+            "type": "string"
+          },
+          "severity": {
+            "enum": [
+              "info",
+              "warning",
+              "loss",
+              "error"
+            ],
+            "title": "Severity",
+            "type": "string"
+          },
+          "target": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "description": "Where in the imported survey, if anywhere",
+            "title": "Target"
+          }
+        },
+        "required": [
+          "format",
+          "severity",
+          "code",
+          "feature",
+          "pointer",
+          "message"
+        ],
+        "title": "ImportDiagnosticOut",
+        "type": "object"
+      },
+      "ImportPreviewResponse": {
+        "properties": {
+          "diagnostics": {
+            "description": "What carried over with a note, what will behave differently, what was lost",
+            "items": {
+              "$ref": "#/components/schemas/ImportDiagnosticOut"
+            },
+            "title": "Diagnostics",
+            "type": "array"
+          },
+          "format": {
+            "enum": [
+              "qsf",
+              "lss",
+              "surveyjs"
+            ],
+            "title": "Format",
+            "type": "string"
+          },
+          "ok": {
+            "description": "False: nothing can be imported (see the error diagnostics)",
+            "title": "Ok",
+            "type": "boolean"
+          },
+          "summary": {
+            "anyOf": [
+              {
+                "$ref": "#/components/schemas/ImportSummaryOut"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
+          "title": {
+            "title": "Title",
+            "type": "string"
+          },
+          "validation": {
+            "description": "The validator's diagnostics for the survey as it would be created",
+            "items": {
+              "$ref": "#/components/schemas/Diagnostic"
+            },
+            "title": "Validation",
+            "type": "array"
+          }
+        },
+        "required": [
+          "format",
+          "ok",
+          "title",
+          "summary",
+          "diagnostics",
+          "validation"
+        ],
+        "title": "ImportPreviewResponse",
+        "type": "object"
+      },
+      "ImportRequest": {
+        "additionalProperties": false,
+        "properties": {
+          "content": {
+            "description": "The file's text (.qsf and SurveyJS are JSON, .lss is XML; UTF-8)",
+            "maxLength": 20000000,
+            "title": "Content",
+            "type": "string"
+          },
+          "filename": {
+            "description": "Used to guess the format",
+            "maxLength": 255,
+            "minLength": 1,
+            "title": "Filename",
+            "type": "string"
+          },
+          "format": {
+            "anyOf": [
+              {
+                "enum": [
+                  "qsf",
+                  "lss",
+                  "surveyjs"
+                ],
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "description": "Override the format guessed from the content and file name",
+            "title": "Format"
+          }
+        },
+        "required": [
+          "filename",
+          "content"
+        ],
+        "title": "ImportRequest",
+        "type": "object"
+      },
+      "ImportSummaryOut": {
+        "properties": {
+          "blocks": {
+            "title": "Blocks",
+            "type": "integer"
+          },
+          "byType": {
+            "additionalProperties": {
+              "type": "integer"
+            },
+            "title": "Bytype",
+            "type": "object"
+          },
+          "choiceLists": {
+            "title": "Choicelists",
+            "type": "integer"
+          },
+          "conditions": {
+            "title": "Conditions",
+            "type": "integer"
+          },
+          "flowNodes": {
+            "title": "Flownodes",
+            "type": "integer"
+          },
+          "infos": {
+            "title": "Infos",
+            "type": "integer"
+          },
+          "languages": {
+            "items": {
+              "type": "string"
+            },
+            "title": "Languages",
+            "type": "array"
+          },
+          "losses": {
+            "title": "Losses",
+            "type": "integer"
+          },
+          "pages": {
+            "title": "Pages",
+            "type": "integer"
+          },
+          "questions": {
+            "title": "Questions",
+            "type": "integer"
+          },
+          "quotas": {
+            "title": "Quotas",
+            "type": "integer"
+          },
+          "title": {
+            "title": "Title",
+            "type": "string"
+          },
+          "variables": {
+            "title": "Variables",
+            "type": "integer"
+          },
+          "warnings": {
+            "title": "Warnings",
+            "type": "integer"
+          }
+        },
+        "required": [
+          "title",
+          "languages",
+          "blocks",
+          "pages",
+          "questions",
+          "byType",
+          "choiceLists",
+          "variables",
+          "quotas",
+          "flowNodes",
+          "conditions",
+          "losses",
+          "warnings",
+          "infos"
+        ],
+        "title": "ImportSummaryOut",
+        "type": "object"
+      },
+      "ImportSurveyResponse": {
+        "properties": {
+          "preview": {
+            "$ref": "#/components/schemas/ImportPreviewResponse",
+            "description": "The import report for this draft"
+          },
+          "survey": {
+            "$ref": "#/components/schemas/SurveyDetail"
+          }
+        },
+        "required": [
+          "survey",
+          "preview"
+        ],
+        "title": "ImportSurveyResponse",
         "type": "object"
       },
       "InsertFlowNodeParams": {
@@ -8035,6 +8364,128 @@
           }
         },
         "summary": "Create Survey",
+        "tags": [
+          "surveys"
+        ]
+      }
+    },
+    "/api/surveys/import": {
+      "post": {
+        "operationId": "importSurvey",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/CreateFromImportRequest"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "201": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ImportSurveyResponse"
+                }
+              }
+            },
+            "description": "Successful Response"
+          },
+          "401": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorBody"
+                }
+              }
+            },
+            "description": "Unauthorized"
+          },
+          "403": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorBody"
+                }
+              }
+            },
+            "description": "Forbidden"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/RejectedBody"
+                }
+              }
+            },
+            "description": "Unprocessable Content"
+          }
+        },
+        "summary": "Import Survey",
+        "tags": [
+          "surveys"
+        ]
+      }
+    },
+    "/api/surveys/import/preview": {
+      "post": {
+        "operationId": "previewSurveyImport",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/ImportRequest"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ImportPreviewResponse"
+                }
+              }
+            },
+            "description": "Successful Response"
+          },
+          "401": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorBody"
+                }
+              }
+            },
+            "description": "Unauthorized"
+          },
+          "403": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorBody"
+                }
+              }
+            },
+            "description": "Forbidden"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/RejectedBody"
+                }
+              }
+            },
+            "description": "Unprocessable Content"
+          }
+        },
+        "summary": "Preview Import",
         "tags": [
           "surveys"
         ]

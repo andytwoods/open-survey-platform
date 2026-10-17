@@ -1,0 +1,645 @@
+{
+  "diagnostics": [
+    {
+      "code": "lss.survey_setting",
+      "feature": "showprogress",
+      "format": "lss",
+      "message": "the progress bar is a theme matter here",
+      "pointer": "/surveys/showprogress",
+      "severity": "info",
+      "target": null
+    },
+    {
+      "code": "lss.survey_setting",
+      "feature": "anonymized",
+      "format": "lss",
+      "message": "responses here carry no identity unless a host adds one",
+      "pointer": "/surveys/anonymized",
+      "severity": "info",
+      "target": null
+    },
+    {
+      "code": "lss.welcome_text",
+      "feature": "welcome text",
+      "format": "lss",
+      "message": "the welcome text becomes a note on its own first page",
+      "pointer": "/surveys_languagesettings",
+      "severity": "info",
+      "target": null
+    },
+    {
+      "code": "lss.hidden_field",
+      "feature": "hidden",
+      "format": "lss",
+      "message": "hidden short free text 'source' becomes a URL-parameter variable",
+      "pointer": "/questions/1",
+      "severity": "info",
+      "target": null
+    },
+    {
+      "code": "lss.other_option",
+      "feature": "other=Y",
+      "format": "lss",
+      "message": "the 'Other' option of 'kinds' is not supported: add a text question",
+      "pointer": "/questions/4",
+      "severity": "loss",
+      "target": null
+    },
+    {
+      "code": "lss.attribute",
+      "feature": "max_answers",
+      "format": "lss",
+      "message": "limits on the number of selected answers are not supported (max_answers)",
+      "pointer": "/question_attributes/max_answers",
+      "severity": "loss",
+      "target": null
+    },
+    {
+      "code": "lss.attribute_ignored",
+      "feature": "display_columns",
+      "format": "lss",
+      "message": "question attribute 'display_columns' has no counterpart and is ignored",
+      "pointer": "/question_attributes/display_columns",
+      "severity": "info",
+      "target": null
+    },
+    {
+      "code": "lss.soft_mandatory",
+      "feature": "mandatory=S",
+      "format": "lss",
+      "message": "'notes' is soft-mandatory in LimeSurvey: optional here",
+      "pointer": "/questions/9",
+      "severity": "warning",
+      "target": null
+    },
+    {
+      "code": "lss.question_type",
+      "feature": "type=R",
+      "format": "lss",
+      "message": "ranking questions are not supported: 'rank' left out",
+      "pointer": "/questions/10",
+      "severity": "loss",
+      "target": null
+    },
+    {
+      "code": "lss.random_group",
+      "feature": "random_group",
+      "format": "lss",
+      "message": "only some questions of the group are shuffled in LimeSurvey: here the whole page is",
+      "pointer": "/groups/2",
+      "severity": "warning",
+      "target": null
+    },
+    {
+      "code": "lss.randomization_group",
+      "feature": "randomization_group",
+      "format": "lss",
+      "message": "groups in randomization group 'mood' are shuffled by a randomiser node (LimeSurvey's own order is not reproduced)",
+      "pointer": "/groups",
+      "severity": "warning",
+      "target": null
+    },
+    {
+      "code": "lss.quota",
+      "feature": "quota",
+      "format": "lss",
+      "message": "quota 'coffee drinkers' is checked after the page of its last question; LimeSurvey's message and URL are not imported",
+      "pointer": "/quota/1",
+      "severity": "warning",
+      "target": null
+    },
+    {
+      "code": "lss.html_stripped",
+      "feature": "html",
+      "format": "lss",
+      "message": "HTML formatting was removed from 7 text(s)",
+      "pointer": "",
+      "severity": "info",
+      "target": null
+    }
+  ],
+  "format": "lss",
+  "ok": true,
+  "summary": {
+    "blocks": 5,
+    "byType": {
+      "date": 1,
+      "integer": 1,
+      "matrix": 1,
+      "multi": 1,
+      "note": 3,
+      "single": 3,
+      "text": 2
+    },
+    "choiceLists": 0,
+    "conditions": 5,
+    "flowNodes": 8,
+    "infos": 6,
+    "languages": [
+      "en",
+      "de"
+    ],
+    "losses": 3,
+    "pages": 5,
+    "questions": 12,
+    "quotas": 1,
+    "title": "Coffee and sleep (invented sample)",
+    "variables": 2,
+    "warnings": 4
+  },
+  "survey": {
+    "blocks": [
+      {
+        "id": "welcome",
+        "pages": [
+          {
+            "id": "welcome_page",
+            "items": [
+              {
+                "id": "welcome_text",
+                "label": {
+                  "de": "Willkommen! Das dauert etwa zwei Minuten.",
+                  "en": "Welcome! This takes about two minutes."
+                },
+                "type": "note"
+              }
+            ]
+          }
+        ]
+      },
+      {
+        "id": "Habits",
+        "pages": [
+          {
+            "id": "Habits_page",
+            "items": [
+              {
+                "id": "Habits_desc",
+                "label": {
+                  "de": "Zu Ihren Kaffeegewohnheiten.",
+                  "en": "About your coffee habits."
+                },
+                "type": "note"
+              },
+              {
+                "choices": [
+                  {
+                    "label": "Yes",
+                    "value": "Y"
+                  },
+                  {
+                    "label": "No",
+                    "value": "N"
+                  }
+                ],
+                "help": {
+                  "de": "Jede Sorte zählt.",
+                  "en": "Any kind counts."
+                },
+                "id": "coffee",
+                "label": {
+                  "de": "Trinken Sie Kaffee?",
+                  "en": "Do you drink coffee?"
+                },
+                "required": true,
+                "type": "single"
+              },
+              {
+                "constraint": {
+                  "kind": "compare",
+                  "left": {
+                    "id": "cups",
+                    "kind": "ref"
+                  },
+                  "op": "!=",
+                  "right": {
+                    "kind": "int",
+                    "value": 13
+                  }
+                },
+                "constraintMessage": {
+                  "de": "Dreizehn Tassen? Sicher nicht.",
+                  "en": "Thirteen cups? Surely not."
+                },
+                "id": "cups",
+                "label": {
+                  "de": "Wie viele Tassen trinken Sie an einem typischen Tag?",
+                  "en": "How many cups do you drink on a typical day?"
+                },
+                "max": 30,
+                "min": 0,
+                "showIf": {
+                  "kind": "compare",
+                  "left": {
+                    "id": "coffee",
+                    "kind": "ref"
+                  },
+                  "op": "==",
+                  "right": {
+                    "kind": "text",
+                    "value": "Y"
+                  }
+                },
+                "type": "integer"
+              },
+              {
+                "choiceOrder": "shuffle",
+                "choices": [
+                  {
+                    "label": {
+                      "de": "Espresso",
+                      "en": "Espresso"
+                    },
+                    "value": "esp"
+                  },
+                  {
+                    "label": {
+                      "de": "Filterkaffee",
+                      "en": "Filter"
+                    },
+                    "value": "fil"
+                  },
+                  {
+                    "label": {
+                      "de": "Löslicher Kaffee",
+                      "en": "Instant"
+                    },
+                    "value": "ins"
+                  }
+                ],
+                "id": "kinds",
+                "label": {
+                  "de": "Welche Sorten trinken Sie? (${cups} Tassen)",
+                  "en": "Which kinds of coffee do you drink? (${cups} cups)"
+                },
+                "showIf": {
+                  "args": [
+                    {
+                      "kind": "answered",
+                      "ref": {
+                        "id": "cups",
+                        "kind": "ref"
+                      }
+                    },
+                    {
+                      "kind": "compare",
+                      "left": {
+                        "id": "cups",
+                        "kind": "ref"
+                      },
+                      "op": ">",
+                      "right": {
+                        "kind": "int",
+                        "value": 0
+                      }
+                    }
+                  ],
+                  "kind": "and"
+                },
+                "type": "multi"
+              },
+              {
+                "choices": [
+                  {
+                    "label": {
+                      "de": "Espresso",
+                      "en": "Espresso"
+                    },
+                    "value": "esp"
+                  },
+                  {
+                    "label": {
+                      "de": "Filterkaffee",
+                      "en": "Filter"
+                    },
+                    "value": "fil"
+                  }
+                ],
+                "id": "favourite",
+                "label": {
+                  "de": "Welche ist Ihre liebste?",
+                  "en": "Which is your favourite?"
+                },
+                "showIf": {
+                  "args": [
+                    {
+                      "kind": "contains",
+                      "ref": {
+                        "id": "kinds",
+                        "kind": "ref"
+                      },
+                      "value": {
+                        "kind": "text",
+                        "value": "esp"
+                      }
+                    },
+                    {
+                      "kind": "contains",
+                      "ref": {
+                        "id": "kinds",
+                        "kind": "ref"
+                      },
+                      "value": {
+                        "kind": "text",
+                        "value": "fil"
+                      }
+                    }
+                  ],
+                  "kind": "or"
+                },
+                "type": "single"
+              }
+            ],
+            "title": {
+              "de": "Gewohnheiten",
+              "en": "Habits"
+            }
+          }
+        ],
+        "title": "Habits"
+      },
+      {
+        "id": "Sleep",
+        "pages": [
+          {
+            "id": "Sleep_page",
+            "itemOrder": "shuffle",
+            "items": [
+              {
+                "id": "sleepintro",
+                "label": {
+                  "de": "Schlaf\n\nEin paar Fragen zur letzten Nacht.",
+                  "en": "Sleep\n\nA few questions about last night."
+                },
+                "type": "note"
+              },
+              {
+                "choices": [
+                  {
+                    "label": {
+                      "de": "Stimme nicht zu",
+                      "en": "Disagree"
+                    },
+                    "value": 1
+                  },
+                  {
+                    "label": {
+                      "de": "Neutral",
+                      "en": "Neutral"
+                    },
+                    "value": 2
+                  },
+                  {
+                    "label": {
+                      "de": "Stimme zu",
+                      "en": "Agree"
+                    },
+                    "value": 3
+                  }
+                ],
+                "id": "agree",
+                "label": {
+                  "de": "Wie sehr stimmen Sie zu?",
+                  "en": "How much do you agree with each statement?"
+                },
+                "required": true,
+                "rows": [
+                  {
+                    "id": "focus",
+                    "label": {
+                      "de": "Kaffee hilft mir, mich zu konzentrieren",
+                      "en": "Coffee helps me focus"
+                    }
+                  },
+                  {
+                    "id": "awake",
+                    "label": {
+                      "de": "Kaffee hält mich nachts wach",
+                      "en": "Coffee keeps me awake at night"
+                    }
+                  }
+                ],
+                "type": "matrix"
+              },
+              {
+                "id": "sleptwell",
+                "label": {
+                  "de": "Wann haben Sie zuletzt gut geschlafen?",
+                  "en": "What date did you last sleep well?"
+                },
+                "type": "date"
+              },
+              {
+                "id": "notes",
+                "label": {
+                  "de": "Sonst noch etwas zu Ihrem Schlaf?",
+                  "en": "Anything else about your sleep?"
+                },
+                "multiline": true,
+                "type": "text"
+              }
+            ],
+            "showIf": {
+              "kind": "compare",
+              "left": {
+                "id": "coffee",
+                "kind": "ref"
+              },
+              "op": "==",
+              "right": {
+                "kind": "text",
+                "value": "Y"
+              }
+            }
+          }
+        ],
+        "title": "Sleep"
+      },
+      {
+        "id": "Mood_A",
+        "pages": [
+          {
+            "id": "Mood_A_page",
+            "items": [
+              {
+                "id": "moodwords",
+                "label": {
+                  "de": "Beschreiben Sie Ihre Stimmung in wenigen Worten.",
+                  "en": "Describe your mood in a few words."
+                },
+                "multiline": true,
+                "type": "text"
+              }
+            ]
+          }
+        ],
+        "title": "Mood A"
+      },
+      {
+        "id": "Mood_B",
+        "pages": [
+          {
+            "id": "Mood_B_page",
+            "items": [
+              {
+                "choices": [
+                  {
+                    "label": "1",
+                    "value": 1
+                  },
+                  {
+                    "label": "2",
+                    "value": 2
+                  },
+                  {
+                    "label": "3",
+                    "value": 3
+                  },
+                  {
+                    "label": "4",
+                    "value": 4
+                  },
+                  {
+                    "label": "5",
+                    "value": 5
+                  }
+                ],
+                "id": "moodscore",
+                "label": {
+                  "de": "Wie bewerten Sie Ihre Stimmung?",
+                  "en": "How would you rate your mood?"
+                },
+                "type": "single"
+              }
+            ]
+          }
+        ],
+        "title": "Mood B"
+      }
+    ],
+    "choiceLists": [],
+    "flow": [
+      {
+        "block": "welcome",
+        "id": "n_welcome",
+        "type": "block"
+      },
+      {
+        "block": "Habits",
+        "id": "n_Habits",
+        "type": "block"
+      },
+      {
+        "id": "check_coffee_drinkers",
+        "quota": "coffee_drinkers",
+        "type": "quotaCheck"
+      },
+      {
+        "block": "Sleep",
+        "id": "n_Sleep",
+        "type": "block"
+      },
+      {
+        "children": [
+          {
+            "block": "Mood_A",
+            "id": "n_Mood_A",
+            "type": "block"
+          },
+          {
+            "block": "Mood_B",
+            "id": "n_Mood_B",
+            "type": "block"
+          }
+        ],
+        "id": "rand_mood",
+        "type": "randomiser"
+      },
+      {
+        "id": "end",
+        "message": {
+          "de": "Vielen Dank für Ihre Teilnahme.",
+          "en": "Thank you for taking part."
+        },
+        "type": "end"
+      }
+    ],
+    "id": "survey",
+    "metadata": {
+      "defaultLanguage": "en",
+      "description": {
+        "de": "Ein kurzer erfundener Fragebogen.",
+        "en": "A short invented questionnaire."
+      },
+      "languages": [
+        "en",
+        "de"
+      ],
+      "title": {
+        "de": "Kaffee und Schlaf (erfundenes Beispiel)",
+        "en": "Coffee and sleep (invented sample)"
+      }
+    },
+    "quotas": [
+      {
+        "id": "coffee_drinkers",
+        "limit": 200,
+        "onFull": {
+          "outcome": "quota_full"
+        },
+        "when": {
+          "kind": "compare",
+          "left": {
+            "id": "coffee",
+            "kind": "ref"
+          },
+          "op": "==",
+          "right": {
+            "kind": "text",
+            "value": "Y"
+          }
+        }
+      }
+    ],
+    "settings": {},
+    "specVersion": "osp-survey/0.1",
+    "variables": [
+      {
+        "default": "web",
+        "id": "source",
+        "kind": "embedded",
+        "param": "source"
+      },
+      {
+        "expr": {
+          "cond": {
+            "kind": "answered",
+            "ref": {
+              "id": "cups",
+              "kind": "ref"
+            }
+          },
+          "else": {
+            "kind": "null"
+          },
+          "kind": "if",
+          "then": {
+            "kind": "arith",
+            "left": {
+              "id": "cups",
+              "kind": "ref"
+            },
+            "op": "*",
+            "right": {
+              "kind": "int",
+              "value": 7
+            }
+          }
+        },
+        "id": "cupsweek",
+        "kind": "computed"
+      }
+    ]
+  },
+  "validation": []
+}

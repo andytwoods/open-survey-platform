@@ -1,0 +1,693 @@
+{
+  "diagnostics": [
+    {
+      "code": "surveyjs.survey_property",
+      "feature": "triggers",
+      "format": "surveyjs",
+      "message": "triggers (complete, skip, setvalue, copyvalue) are not imported",
+      "pointer": "/triggers",
+      "severity": "loss",
+      "target": null
+    },
+    {
+      "code": "surveyjs.question_property",
+      "feature": "showOtherItem",
+      "format": "surveyjs",
+      "message": "an 'Other' text box is not supported: add a text question",
+      "pointer": "/pages/0/elements/2/showOtherItem",
+      "severity": "loss",
+      "target": null
+    },
+    {
+      "code": "surveyjs.boolean",
+      "feature": "boolean",
+      "format": "surveyjs",
+      "message": "'decaf' becomes a single choice (true / false)",
+      "pointer": "/pages/0/elements/3",
+      "severity": "info",
+      "target": null
+    },
+    {
+      "code": "surveyjs.question_property",
+      "feature": "maxLength",
+      "format": "surveyjs",
+      "message": "text length limits are not supported",
+      "pointer": "/pages/1/elements/4/maxLength",
+      "severity": "loss",
+      "target": null
+    },
+    {
+      "code": "surveyjs.question_type",
+      "feature": "type=ranking",
+      "format": "surveyjs",
+      "message": "ranking questions are not supported: 'rank' left out",
+      "pointer": "/pages/1/elements/5",
+      "severity": "loss",
+      "target": null
+    },
+    {
+      "code": "surveyjs.panel",
+      "feature": "panel",
+      "format": "surveyjs",
+      "message": "panel flattened: its questions follow one another on the page",
+      "pointer": "/pages/2/elements/0",
+      "severity": "info",
+      "target": null
+    },
+    {
+      "code": "surveyjs.validator_text",
+      "feature": "validators.text",
+      "format": "surveyjs",
+      "message": "the standard range message is shown",
+      "pointer": "/pages/2/elements/0/elements/0/validators/0/text",
+      "severity": "info",
+      "target": null
+    },
+    {
+      "code": "surveyjs.expression",
+      "feature": "expression",
+      "format": "surveyjs",
+      "message": "'adult' becomes a computed variable (not shown)",
+      "pointer": "/pages/2/elements/1",
+      "severity": "info",
+      "target": null
+    },
+    {
+      "code": "surveyjs.html_stripped",
+      "feature": "html",
+      "format": "surveyjs",
+      "message": "HTML formatting was removed from 2 text(s)",
+      "pointer": "",
+      "severity": "info",
+      "target": null
+    }
+  ],
+  "format": "surveyjs",
+  "ok": true,
+  "summary": {
+    "blocks": 1,
+    "byType": {
+      "date": 1,
+      "decimal": 2,
+      "matrix": 1,
+      "multi": 1,
+      "note": 2,
+      "single": 4,
+      "text": 1
+    },
+    "choiceLists": 0,
+    "conditions": 5,
+    "flowNodes": 2,
+    "infos": 5,
+    "languages": [
+      "en",
+      "de"
+    ],
+    "losses": 4,
+    "pages": 3,
+    "questions": 12,
+    "quotas": 0,
+    "title": "Coffee and sleep (invented sample)",
+    "variables": 2,
+    "warnings": 0
+  },
+  "survey": {
+    "blocks": [
+      {
+        "id": "main",
+        "pages": [
+          {
+            "id": "habits",
+            "items": [
+              {
+                "choices": [
+                  {
+                    "label": {
+                      "de": "Ja",
+                      "en": "Yes"
+                    },
+                    "value": "yes"
+                  },
+                  {
+                    "label": {
+                      "de": "Nein",
+                      "en": "No"
+                    },
+                    "value": "no"
+                  }
+                ],
+                "id": "drinks_coffee",
+                "label": {
+                  "de": "Trinken Sie Kaffee?",
+                  "en": "Do you drink coffee?"
+                },
+                "required": true,
+                "type": "single"
+              },
+              {
+                "id": "cups",
+                "label": {
+                  "en": "How many cups do you drink on a typical day?"
+                },
+                "max": 30,
+                "min": 0,
+                "showIf": {
+                  "kind": "compare",
+                  "left": {
+                    "id": "drinks_coffee",
+                    "kind": "ref"
+                  },
+                  "op": "==",
+                  "right": {
+                    "kind": "text",
+                    "value": "yes"
+                  }
+                },
+                "type": "decimal"
+              },
+              {
+                "choiceOrder": "shuffle",
+                "choices": [
+                  {
+                    "label": {
+                      "en": "Espresso"
+                    },
+                    "value": "Espresso"
+                  },
+                  {
+                    "label": {
+                      "en": "Filter"
+                    },
+                    "value": "Filter"
+                  },
+                  {
+                    "label": {
+                      "en": "Instant"
+                    },
+                    "value": "Instant"
+                  }
+                ],
+                "id": "kinds",
+                "label": {
+                  "en": "Which kinds of coffee do you drink?"
+                },
+                "showIf": {
+                  "kind": "compare",
+                  "left": {
+                    "id": "drinks_coffee",
+                    "kind": "ref"
+                  },
+                  "op": "==",
+                  "right": {
+                    "kind": "text",
+                    "value": "yes"
+                  }
+                },
+                "type": "multi"
+              },
+              {
+                "choices": [
+                  {
+                    "label": {
+                      "en": "Yes"
+                    },
+                    "value": "true"
+                  },
+                  {
+                    "label": {
+                      "en": "No"
+                    },
+                    "value": "false"
+                  }
+                ],
+                "id": "decaf",
+                "label": {
+                  "en": "Do you ever choose decaf?"
+                },
+                "showIf": {
+                  "args": [
+                    {
+                      "kind": "contains",
+                      "ref": {
+                        "id": "kinds",
+                        "kind": "ref"
+                      },
+                      "value": {
+                        "kind": "text",
+                        "value": "Espresso"
+                      }
+                    },
+                    {
+                      "kind": "contains",
+                      "ref": {
+                        "id": "kinds",
+                        "kind": "ref"
+                      },
+                      "value": {
+                        "kind": "text",
+                        "value": "Filter"
+                      }
+                    }
+                  ],
+                  "kind": "or"
+                },
+                "type": "single"
+              }
+            ],
+            "title": {
+              "de": "Ihre Gewohnheiten",
+              "en": "Your habits"
+            }
+          },
+          {
+            "id": "sleep",
+            "itemOrder": "shuffle",
+            "items": [
+              {
+                "id": "sleep_intro",
+                "label": {
+                  "en": "A few questions about last night."
+                },
+                "type": "note"
+              },
+              {
+                "choices": [
+                  {
+                    "label": {
+                      "en": "1 (Very badly)"
+                    },
+                    "value": 1
+                  },
+                  {
+                    "label": "2",
+                    "value": 2
+                  },
+                  {
+                    "label": "3",
+                    "value": 3
+                  },
+                  {
+                    "label": "4",
+                    "value": 4
+                  },
+                  {
+                    "label": {
+                      "en": "5 (Very well)"
+                    },
+                    "value": 5
+                  }
+                ],
+                "id": "sleep_quality",
+                "label": {
+                  "en": "How well did you sleep last night?"
+                },
+                "type": "single"
+              },
+              {
+                "choices": [
+                  {
+                    "label": {
+                      "en": "Disagree"
+                    },
+                    "value": 1
+                  },
+                  {
+                    "label": {
+                      "en": "Neutral"
+                    },
+                    "value": 2
+                  },
+                  {
+                    "label": {
+                      "en": "Agree"
+                    },
+                    "value": 3
+                  }
+                ],
+                "id": "agree",
+                "label": {
+                  "en": "How much do you agree with each statement?"
+                },
+                "required": true,
+                "rows": [
+                  {
+                    "id": "focus",
+                    "label": {
+                      "en": "Coffee helps me focus"
+                    }
+                  },
+                  {
+                    "id": "awake",
+                    "label": {
+                      "en": "Coffee keeps me awake at night"
+                    }
+                  }
+                ],
+                "type": "matrix"
+              },
+              {
+                "id": "slept_well_on",
+                "label": {
+                  "en": "What date did you last sleep well?"
+                },
+                "type": "date"
+              },
+              {
+                "id": "notes",
+                "label": {
+                  "en": "Anything else about your sleep? You said you drink ${cups} cups."
+                },
+                "multiline": true,
+                "type": "text"
+              }
+            ],
+            "showIf": {
+              "kind": "answered",
+              "ref": {
+                "id": "drinks_coffee",
+                "kind": "ref"
+              }
+            },
+            "title": {
+              "en": "Sleep"
+            }
+          },
+          {
+            "id": "about",
+            "items": [
+              {
+                "id": "about_panel",
+                "label": {
+                  "en": "About you"
+                },
+                "type": "note"
+              },
+              {
+                "id": "age",
+                "label": {
+                  "en": "How old are you?"
+                },
+                "max": 120,
+                "min": 16,
+                "type": "decimal"
+              },
+              {
+                "choices": [
+                  {
+                    "label": {
+                      "en": "Morning"
+                    },
+                    "value": 1
+                  },
+                  {
+                    "label": {
+                      "en": "Evening"
+                    },
+                    "value": 2
+                  },
+                  {
+                    "label": {
+                      "en": "Neither"
+                    },
+                    "value": 3
+                  }
+                ],
+                "id": "chronotype",
+                "label": {
+                  "en": "Are you more of a morning or an evening person?"
+                },
+                "showIf": {
+                  "kind": "compare",
+                  "left": {
+                    "id": "age",
+                    "kind": "ref"
+                  },
+                  "op": ">=",
+                  "right": {
+                    "kind": "int",
+                    "value": 18
+                  }
+                },
+                "type": "single"
+              }
+            ]
+          }
+        ]
+      }
+    ],
+    "choiceLists": [],
+    "flow": [
+      {
+        "block": "main",
+        "id": "n_main",
+        "type": "block"
+      },
+      {
+        "id": "end",
+        "message": {
+          "en": "Thank you for taking part."
+        },
+        "type": "end"
+      }
+    ],
+    "id": "survey",
+    "metadata": {
+      "defaultLanguage": "en",
+      "description": {
+        "en": "A short invented questionnaire used to test the SurveyJS importer."
+      },
+      "languages": [
+        "en",
+        "de"
+      ],
+      "title": {
+        "de": "Kaffee und Schlaf (erfundenes Beispiel)",
+        "en": "Coffee and sleep (invented sample)"
+      }
+    },
+    "quotas": [],
+    "settings": {},
+    "specVersion": "osp-survey/0.1",
+    "variables": [
+      {
+        "expr": {
+          "cond": {
+            "kind": "compare",
+            "left": {
+              "id": "age",
+              "kind": "ref"
+            },
+            "op": ">=",
+            "right": {
+              "kind": "int",
+              "value": 18
+            }
+          },
+          "else": {
+            "kind": "int",
+            "value": 0
+          },
+          "kind": "if",
+          "then": {
+            "kind": "int",
+            "value": 1
+          }
+        },
+        "id": "adult",
+        "kind": "computed"
+      },
+      {
+        "expr": {
+          "kind": "arith",
+          "left": {
+            "id": "cups",
+            "kind": "ref"
+          },
+          "op": "*",
+          "right": {
+            "kind": "int",
+            "value": 7
+          }
+        },
+        "id": "cupsPerWeek",
+        "kind": "computed"
+      }
+    ]
+  },
+  "validation": [
+    {
+      "code": "text.missing_translation",
+      "message": "no text for: de",
+      "pointer": "/metadata/description",
+      "severity": "warning"
+    },
+    {
+      "code": "text.missing_translation",
+      "message": "no text for: de",
+      "pointer": "/blocks/0/pages/0/items/1/label",
+      "severity": "warning"
+    },
+    {
+      "code": "text.missing_translation",
+      "message": "no text for: de",
+      "pointer": "/blocks/0/pages/0/items/2/label",
+      "severity": "warning"
+    },
+    {
+      "code": "text.missing_translation",
+      "message": "no text for: de",
+      "pointer": "/blocks/0/pages/0/items/2/choices/0/label",
+      "severity": "warning"
+    },
+    {
+      "code": "text.missing_translation",
+      "message": "no text for: de",
+      "pointer": "/blocks/0/pages/0/items/2/choices/1/label",
+      "severity": "warning"
+    },
+    {
+      "code": "text.missing_translation",
+      "message": "no text for: de",
+      "pointer": "/blocks/0/pages/0/items/2/choices/2/label",
+      "severity": "warning"
+    },
+    {
+      "code": "text.missing_translation",
+      "message": "no text for: de",
+      "pointer": "/blocks/0/pages/0/items/3/label",
+      "severity": "warning"
+    },
+    {
+      "code": "text.missing_translation",
+      "message": "no text for: de",
+      "pointer": "/blocks/0/pages/0/items/3/choices/0/label",
+      "severity": "warning"
+    },
+    {
+      "code": "text.missing_translation",
+      "message": "no text for: de",
+      "pointer": "/blocks/0/pages/0/items/3/choices/1/label",
+      "severity": "warning"
+    },
+    {
+      "code": "text.missing_translation",
+      "message": "no text for: de",
+      "pointer": "/blocks/0/pages/1/title",
+      "severity": "warning"
+    },
+    {
+      "code": "text.missing_translation",
+      "message": "no text for: de",
+      "pointer": "/blocks/0/pages/1/items/0/label",
+      "severity": "warning"
+    },
+    {
+      "code": "text.missing_translation",
+      "message": "no text for: de",
+      "pointer": "/blocks/0/pages/1/items/1/label",
+      "severity": "warning"
+    },
+    {
+      "code": "text.missing_translation",
+      "message": "no text for: de",
+      "pointer": "/blocks/0/pages/1/items/1/choices/0/label",
+      "severity": "warning"
+    },
+    {
+      "code": "text.missing_translation",
+      "message": "no text for: de",
+      "pointer": "/blocks/0/pages/1/items/1/choices/4/label",
+      "severity": "warning"
+    },
+    {
+      "code": "text.missing_translation",
+      "message": "no text for: de",
+      "pointer": "/blocks/0/pages/1/items/2/rows/0/label",
+      "severity": "warning"
+    },
+    {
+      "code": "text.missing_translation",
+      "message": "no text for: de",
+      "pointer": "/blocks/0/pages/1/items/2/rows/1/label",
+      "severity": "warning"
+    },
+    {
+      "code": "text.missing_translation",
+      "message": "no text for: de",
+      "pointer": "/blocks/0/pages/1/items/2/choices/0/label",
+      "severity": "warning"
+    },
+    {
+      "code": "text.missing_translation",
+      "message": "no text for: de",
+      "pointer": "/blocks/0/pages/1/items/2/choices/1/label",
+      "severity": "warning"
+    },
+    {
+      "code": "text.missing_translation",
+      "message": "no text for: de",
+      "pointer": "/blocks/0/pages/1/items/2/choices/2/label",
+      "severity": "warning"
+    },
+    {
+      "code": "text.missing_translation",
+      "message": "no text for: de",
+      "pointer": "/blocks/0/pages/1/items/2/label",
+      "severity": "warning"
+    },
+    {
+      "code": "text.missing_translation",
+      "message": "no text for: de",
+      "pointer": "/blocks/0/pages/1/items/3/label",
+      "severity": "warning"
+    },
+    {
+      "code": "text.missing_translation",
+      "message": "no text for: de",
+      "pointer": "/blocks/0/pages/1/items/4/label",
+      "severity": "warning"
+    },
+    {
+      "code": "text.missing_translation",
+      "message": "no text for: de",
+      "pointer": "/blocks/0/pages/2/items/0/label",
+      "severity": "warning"
+    },
+    {
+      "code": "text.missing_translation",
+      "message": "no text for: de",
+      "pointer": "/blocks/0/pages/2/items/1/label",
+      "severity": "warning"
+    },
+    {
+      "code": "text.missing_translation",
+      "message": "no text for: de",
+      "pointer": "/blocks/0/pages/2/items/2/label",
+      "severity": "warning"
+    },
+    {
+      "code": "text.missing_translation",
+      "message": "no text for: de",
+      "pointer": "/blocks/0/pages/2/items/2/choices/0/label",
+      "severity": "warning"
+    },
+    {
+      "code": "text.missing_translation",
+      "message": "no text for: de",
+      "pointer": "/blocks/0/pages/2/items/2/choices/1/label",
+      "severity": "warning"
+    },
+    {
+      "code": "text.missing_translation",
+      "message": "no text for: de",
+      "pointer": "/blocks/0/pages/2/items/2/choices/2/label",
+      "severity": "warning"
+    },
+    {
+      "code": "text.missing_translation",
+      "message": "no text for: de",
+      "pointer": "/flow/1/message",
+      "severity": "warning"
+    }
+  ]
+}

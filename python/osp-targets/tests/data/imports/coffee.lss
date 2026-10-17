@@ -1,0 +1,338 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!-- Invented sample for the LimeSurvey importer tests: no real survey, no personal data. -->
+<document>
+ <LimeSurveyDocType>Survey</LimeSurveyDocType>
+ <DBVersion>651</DBVersion>
+ <languages>
+  <language>en</language>
+  <language>de</language>
+ </languages>
+ <groups>
+  <fields>
+   <fieldname>gid</fieldname>
+   <fieldname>sid</fieldname>
+   <fieldname>group_order</fieldname>
+   <fieldname>randomization_group</fieldname>
+   <fieldname>grelevance</fieldname>
+  </fields>
+  <rows>
+   <row>
+    <gid><![CDATA[1]]></gid>
+    <sid><![CDATA[123456]]></sid>
+    <group_order><![CDATA[0]]></group_order>
+    <randomization_group/>
+    <grelevance><![CDATA[1]]></grelevance>
+   </row>
+   <row>
+    <gid><![CDATA[2]]></gid>
+    <sid><![CDATA[123456]]></sid>
+    <group_order><![CDATA[1]]></group_order>
+    <randomization_group/>
+    <grelevance><![CDATA[coffee.NAOK == "Y"]]></grelevance>
+   </row>
+   <row>
+    <gid><![CDATA[3]]></gid>
+    <sid><![CDATA[123456]]></sid>
+    <group_order><![CDATA[2]]></group_order>
+    <randomization_group><![CDATA[mood]]></randomization_group>
+    <grelevance><![CDATA[1]]></grelevance>
+   </row>
+   <row>
+    <gid><![CDATA[4]]></gid>
+    <sid><![CDATA[123456]]></sid>
+    <group_order><![CDATA[3]]></group_order>
+    <randomization_group><![CDATA[mood]]></randomization_group>
+    <grelevance><![CDATA[1]]></grelevance>
+   </row>
+  </rows>
+ </groups>
+ <group_l10ns>
+  <fields>
+   <fieldname>id</fieldname>
+   <fieldname>gid</fieldname>
+   <fieldname>group_name</fieldname>
+   <fieldname>description</fieldname>
+   <fieldname>language</fieldname>
+  </fields>
+  <rows>
+   <row><id><![CDATA[1]]></id><gid><![CDATA[1]]></gid><group_name><![CDATA[Habits]]></group_name><description><![CDATA[<p>About your coffee habits.</p>]]></description><language><![CDATA[en]]></language></row>
+   <row><id><![CDATA[2]]></id><gid><![CDATA[1]]></gid><group_name><![CDATA[Gewohnheiten]]></group_name><description><![CDATA[<p>Zu Ihren Kaffeegewohnheiten.</p>]]></description><language><![CDATA[de]]></language></row>
+   <row><id><![CDATA[3]]></id><gid><![CDATA[2]]></gid><group_name><![CDATA[Sleep]]></group_name><description/><language><![CDATA[en]]></language></row>
+   <row><id><![CDATA[4]]></id><gid><![CDATA[2]]></gid><group_name><![CDATA[Schlaf]]></group_name><description/><language><![CDATA[de]]></language></row>
+   <row><id><![CDATA[5]]></id><gid><![CDATA[3]]></gid><group_name><![CDATA[Mood A]]></group_name><description/><language><![CDATA[en]]></language></row>
+   <row><id><![CDATA[6]]></id><gid><![CDATA[3]]></gid><group_name><![CDATA[Stimmung A]]></group_name><description/><language><![CDATA[de]]></language></row>
+   <row><id><![CDATA[7]]></id><gid><![CDATA[4]]></gid><group_name><![CDATA[Mood B]]></group_name><description/><language><![CDATA[en]]></language></row>
+   <row><id><![CDATA[8]]></id><gid><![CDATA[4]]></gid><group_name><![CDATA[Stimmung B]]></group_name><description/><language><![CDATA[de]]></language></row>
+  </rows>
+ </group_l10ns>
+ <questions>
+  <fields>
+   <fieldname>qid</fieldname>
+   <fieldname>parent_qid</fieldname>
+   <fieldname>sid</fieldname>
+   <fieldname>gid</fieldname>
+   <fieldname>type</fieldname>
+   <fieldname>title</fieldname>
+   <fieldname>preg</fieldname>
+   <fieldname>other</fieldname>
+   <fieldname>mandatory</fieldname>
+   <fieldname>encrypted</fieldname>
+   <fieldname>question_order</fieldname>
+   <fieldname>scale_id</fieldname>
+   <fieldname>same_default</fieldname>
+   <fieldname>relevance</fieldname>
+   <fieldname>question_theme_name</fieldname>
+   <fieldname>modulename</fieldname>
+   <fieldname>same_script</fieldname>
+  </fields>
+  <rows>
+   <row><qid><![CDATA[1]]></qid><parent_qid><![CDATA[0]]></parent_qid><sid><![CDATA[123456]]></sid><gid><![CDATA[1]]></gid><type><![CDATA[S]]></type><title><![CDATA[source]]></title><preg/><other><![CDATA[N]]></other><mandatory><![CDATA[N]]></mandatory><encrypted><![CDATA[N]]></encrypted><question_order><![CDATA[1]]></question_order><scale_id><![CDATA[0]]></scale_id><same_default><![CDATA[0]]></same_default><relevance><![CDATA[1]]></relevance><question_theme_name><![CDATA[shortfreetext]]></question_theme_name><modulename/><same_script><![CDATA[0]]></same_script></row>
+   <row><qid><![CDATA[2]]></qid><parent_qid><![CDATA[0]]></parent_qid><sid><![CDATA[123456]]></sid><gid><![CDATA[1]]></gid><type><![CDATA[Y]]></type><title><![CDATA[coffee]]></title><preg/><other><![CDATA[N]]></other><mandatory><![CDATA[Y]]></mandatory><encrypted><![CDATA[N]]></encrypted><question_order><![CDATA[2]]></question_order><scale_id><![CDATA[0]]></scale_id><same_default><![CDATA[0]]></same_default><relevance><![CDATA[1]]></relevance><question_theme_name><![CDATA[yesno]]></question_theme_name><modulename/><same_script><![CDATA[0]]></same_script></row>
+   <row><qid><![CDATA[3]]></qid><parent_qid><![CDATA[0]]></parent_qid><sid><![CDATA[123456]]></sid><gid><![CDATA[1]]></gid><type><![CDATA[N]]></type><title><![CDATA[cups]]></title><preg/><other><![CDATA[N]]></other><mandatory><![CDATA[N]]></mandatory><encrypted><![CDATA[N]]></encrypted><question_order><![CDATA[3]]></question_order><scale_id><![CDATA[0]]></scale_id><same_default><![CDATA[0]]></same_default><relevance><![CDATA[coffee.NAOK == "Y"]]></relevance><question_theme_name><![CDATA[numerical]]></question_theme_name><modulename/><same_script><![CDATA[0]]></same_script></row>
+   <row><qid><![CDATA[4]]></qid><parent_qid><![CDATA[0]]></parent_qid><sid><![CDATA[123456]]></sid><gid><![CDATA[1]]></gid><type><![CDATA[M]]></type><title><![CDATA[kinds]]></title><preg/><other><![CDATA[Y]]></other><mandatory><![CDATA[N]]></mandatory><encrypted><![CDATA[N]]></encrypted><question_order><![CDATA[4]]></question_order><scale_id><![CDATA[0]]></scale_id><same_default><![CDATA[0]]></same_default><relevance><![CDATA[!is_empty(cups.NAOK) and cups.NAOK > 0]]></relevance><question_theme_name><![CDATA[multiplechoice]]></question_theme_name><modulename/><same_script><![CDATA[0]]></same_script></row>
+   <row><qid><![CDATA[5]]></qid><parent_qid><![CDATA[0]]></parent_qid><sid><![CDATA[123456]]></sid><gid><![CDATA[1]]></gid><type><![CDATA[L]]></type><title><![CDATA[favourite]]></title><preg/><other><![CDATA[N]]></other><mandatory><![CDATA[N]]></mandatory><encrypted><![CDATA[N]]></encrypted><question_order><![CDATA[5]]></question_order><scale_id><![CDATA[0]]></scale_id><same_default><![CDATA[0]]></same_default><relevance><![CDATA[kinds_esp.NAOK == "Y" or kinds_fil.NAOK == "Y"]]></relevance><question_theme_name><![CDATA[listradio]]></question_theme_name><modulename/><same_script><![CDATA[0]]></same_script></row>
+   <row><qid><![CDATA[6]]></qid><parent_qid><![CDATA[0]]></parent_qid><sid><![CDATA[123456]]></sid><gid><![CDATA[2]]></gid><type><![CDATA[X]]></type><title><![CDATA[sleepintro]]></title><preg/><other><![CDATA[N]]></other><mandatory><![CDATA[N]]></mandatory><encrypted><![CDATA[N]]></encrypted><question_order><![CDATA[1]]></question_order><scale_id><![CDATA[0]]></scale_id><same_default><![CDATA[0]]></same_default><relevance><![CDATA[1]]></relevance><question_theme_name><![CDATA[boilerplate]]></question_theme_name><modulename/><same_script><![CDATA[0]]></same_script></row>
+   <row><qid><![CDATA[7]]></qid><parent_qid><![CDATA[0]]></parent_qid><sid><![CDATA[123456]]></sid><gid><![CDATA[2]]></gid><type><![CDATA[F]]></type><title><![CDATA[agree]]></title><preg/><other><![CDATA[N]]></other><mandatory><![CDATA[Y]]></mandatory><encrypted><![CDATA[N]]></encrypted><question_order><![CDATA[2]]></question_order><scale_id><![CDATA[0]]></scale_id><same_default><![CDATA[0]]></same_default><relevance><![CDATA[1]]></relevance><question_theme_name><![CDATA[arrays/array]]></question_theme_name><modulename/><same_script><![CDATA[0]]></same_script></row>
+   <row><qid><![CDATA[8]]></qid><parent_qid><![CDATA[0]]></parent_qid><sid><![CDATA[123456]]></sid><gid><![CDATA[2]]></gid><type><![CDATA[D]]></type><title><![CDATA[sleptwell]]></title><preg/><other><![CDATA[N]]></other><mandatory><![CDATA[N]]></mandatory><encrypted><![CDATA[N]]></encrypted><question_order><![CDATA[3]]></question_order><scale_id><![CDATA[0]]></scale_id><same_default><![CDATA[0]]></same_default><relevance><![CDATA[1]]></relevance><question_theme_name><![CDATA[date]]></question_theme_name><modulename/><same_script><![CDATA[0]]></same_script></row>
+   <row><qid><![CDATA[9]]></qid><parent_qid><![CDATA[0]]></parent_qid><sid><![CDATA[123456]]></sid><gid><![CDATA[2]]></gid><type><![CDATA[T]]></type><title><![CDATA[notes]]></title><preg/><other><![CDATA[N]]></other><mandatory><![CDATA[S]]></mandatory><encrypted><![CDATA[N]]></encrypted><question_order><![CDATA[4]]></question_order><scale_id><![CDATA[0]]></scale_id><same_default><![CDATA[0]]></same_default><relevance><![CDATA[1]]></relevance><question_theme_name><![CDATA[longfreetext]]></question_theme_name><modulename/><same_script><![CDATA[0]]></same_script></row>
+   <row><qid><![CDATA[10]]></qid><parent_qid><![CDATA[0]]></parent_qid><sid><![CDATA[123456]]></sid><gid><![CDATA[2]]></gid><type><![CDATA[R]]></type><title><![CDATA[rank]]></title><preg/><other><![CDATA[N]]></other><mandatory><![CDATA[N]]></mandatory><encrypted><![CDATA[N]]></encrypted><question_order><![CDATA[5]]></question_order><scale_id><![CDATA[0]]></scale_id><same_default><![CDATA[0]]></same_default><relevance><![CDATA[1]]></relevance><question_theme_name><![CDATA[ranking]]></question_theme_name><modulename/><same_script><![CDATA[0]]></same_script></row>
+   <row><qid><![CDATA[11]]></qid><parent_qid><![CDATA[0]]></parent_qid><sid><![CDATA[123456]]></sid><gid><![CDATA[2]]></gid><type><![CDATA[*]]></type><title><![CDATA[cupsweek]]></title><preg/><other><![CDATA[N]]></other><mandatory><![CDATA[N]]></mandatory><encrypted><![CDATA[N]]></encrypted><question_order><![CDATA[6]]></question_order><scale_id><![CDATA[0]]></scale_id><same_default><![CDATA[0]]></same_default><relevance><![CDATA[1]]></relevance><question_theme_name><![CDATA[equation]]></question_theme_name><modulename/><same_script><![CDATA[0]]></same_script></row>
+   <row><qid><![CDATA[12]]></qid><parent_qid><![CDATA[0]]></parent_qid><sid><![CDATA[123456]]></sid><gid><![CDATA[3]]></gid><type><![CDATA[T]]></type><title><![CDATA[moodwords]]></title><preg/><other><![CDATA[N]]></other><mandatory><![CDATA[N]]></mandatory><encrypted><![CDATA[N]]></encrypted><question_order><![CDATA[1]]></question_order><scale_id><![CDATA[0]]></scale_id><same_default><![CDATA[0]]></same_default><relevance><![CDATA[1]]></relevance><question_theme_name><![CDATA[longfreetext]]></question_theme_name><modulename/><same_script><![CDATA[0]]></same_script></row>
+   <row><qid><![CDATA[13]]></qid><parent_qid><![CDATA[0]]></parent_qid><sid><![CDATA[123456]]></sid><gid><![CDATA[4]]></gid><type><![CDATA[5]]></type><title><![CDATA[moodscore]]></title><preg/><other><![CDATA[N]]></other><mandatory><![CDATA[N]]></mandatory><encrypted><![CDATA[N]]></encrypted><question_order><![CDATA[1]]></question_order><scale_id><![CDATA[0]]></scale_id><same_default><![CDATA[0]]></same_default><relevance><![CDATA[1]]></relevance><question_theme_name><![CDATA[fivepointchoice]]></question_theme_name><modulename/><same_script><![CDATA[0]]></same_script></row>
+  </rows>
+ </questions>
+ <subquestions>
+  <fields>
+   <fieldname>qid</fieldname>
+   <fieldname>parent_qid</fieldname>
+   <fieldname>sid</fieldname>
+   <fieldname>gid</fieldname>
+   <fieldname>type</fieldname>
+   <fieldname>title</fieldname>
+   <fieldname>preg</fieldname>
+   <fieldname>other</fieldname>
+   <fieldname>mandatory</fieldname>
+   <fieldname>encrypted</fieldname>
+   <fieldname>question_order</fieldname>
+   <fieldname>scale_id</fieldname>
+   <fieldname>same_default</fieldname>
+   <fieldname>relevance</fieldname>
+   <fieldname>question_theme_name</fieldname>
+   <fieldname>modulename</fieldname>
+   <fieldname>same_script</fieldname>
+  </fields>
+  <rows>
+   <row><qid><![CDATA[101]]></qid><parent_qid><![CDATA[4]]></parent_qid><sid><![CDATA[123456]]></sid><gid><![CDATA[1]]></gid><type><![CDATA[T]]></type><title><![CDATA[esp]]></title><preg/><other><![CDATA[N]]></other><mandatory><![CDATA[N]]></mandatory><encrypted><![CDATA[N]]></encrypted><question_order><![CDATA[1]]></question_order><scale_id><![CDATA[0]]></scale_id><same_default><![CDATA[0]]></same_default><relevance><![CDATA[1]]></relevance><question_theme_name/><modulename/><same_script><![CDATA[0]]></same_script></row>
+   <row><qid><![CDATA[102]]></qid><parent_qid><![CDATA[4]]></parent_qid><sid><![CDATA[123456]]></sid><gid><![CDATA[1]]></gid><type><![CDATA[T]]></type><title><![CDATA[fil]]></title><preg/><other><![CDATA[N]]></other><mandatory><![CDATA[N]]></mandatory><encrypted><![CDATA[N]]></encrypted><question_order><![CDATA[2]]></question_order><scale_id><![CDATA[0]]></scale_id><same_default><![CDATA[0]]></same_default><relevance><![CDATA[1]]></relevance><question_theme_name/><modulename/><same_script><![CDATA[0]]></same_script></row>
+   <row><qid><![CDATA[103]]></qid><parent_qid><![CDATA[4]]></parent_qid><sid><![CDATA[123456]]></sid><gid><![CDATA[1]]></gid><type><![CDATA[T]]></type><title><![CDATA[ins]]></title><preg/><other><![CDATA[N]]></other><mandatory><![CDATA[N]]></mandatory><encrypted><![CDATA[N]]></encrypted><question_order><![CDATA[3]]></question_order><scale_id><![CDATA[0]]></scale_id><same_default><![CDATA[0]]></same_default><relevance><![CDATA[1]]></relevance><question_theme_name/><modulename/><same_script><![CDATA[0]]></same_script></row>
+   <row><qid><![CDATA[104]]></qid><parent_qid><![CDATA[7]]></parent_qid><sid><![CDATA[123456]]></sid><gid><![CDATA[2]]></gid><type><![CDATA[T]]></type><title><![CDATA[focus]]></title><preg/><other><![CDATA[N]]></other><mandatory><![CDATA[N]]></mandatory><encrypted><![CDATA[N]]></encrypted><question_order><![CDATA[1]]></question_order><scale_id><![CDATA[0]]></scale_id><same_default><![CDATA[0]]></same_default><relevance><![CDATA[1]]></relevance><question_theme_name/><modulename/><same_script><![CDATA[0]]></same_script></row>
+   <row><qid><![CDATA[105]]></qid><parent_qid><![CDATA[7]]></parent_qid><sid><![CDATA[123456]]></sid><gid><![CDATA[2]]></gid><type><![CDATA[T]]></type><title><![CDATA[awake]]></title><preg/><other><![CDATA[N]]></other><mandatory><![CDATA[N]]></mandatory><encrypted><![CDATA[N]]></encrypted><question_order><![CDATA[2]]></question_order><scale_id><![CDATA[0]]></scale_id><same_default><![CDATA[0]]></same_default><relevance><![CDATA[1]]></relevance><question_theme_name/><modulename/><same_script><![CDATA[0]]></same_script></row>
+   <row><qid><![CDATA[106]]></qid><parent_qid><![CDATA[10]]></parent_qid><sid><![CDATA[123456]]></sid><gid><![CDATA[2]]></gid><type><![CDATA[T]]></type><title><![CDATA[dark]]></title><preg/><other><![CDATA[N]]></other><mandatory><![CDATA[N]]></mandatory><encrypted><![CDATA[N]]></encrypted><question_order><![CDATA[1]]></question_order><scale_id><![CDATA[0]]></scale_id><same_default><![CDATA[0]]></same_default><relevance><![CDATA[1]]></relevance><question_theme_name/><modulename/><same_script><![CDATA[0]]></same_script></row>
+  </rows>
+ </subquestions>
+ <question_l10ns>
+  <fields>
+   <fieldname>id</fieldname>
+   <fieldname>qid</fieldname>
+   <fieldname>question</fieldname>
+   <fieldname>help</fieldname>
+   <fieldname>script</fieldname>
+   <fieldname>language</fieldname>
+  </fields>
+  <rows>
+   <row><id><![CDATA[1]]></id><qid><![CDATA[1]]></qid><question><![CDATA[source]]></question><help/><script/><language><![CDATA[en]]></language></row>
+   <row><id><![CDATA[2]]></id><qid><![CDATA[1]]></qid><question><![CDATA[source]]></question><help/><script/><language><![CDATA[de]]></language></row>
+   <row><id><![CDATA[3]]></id><qid><![CDATA[2]]></qid><question><![CDATA[<p>Do you <strong>drink</strong> coffee?</p>]]></question><help><![CDATA[Any kind counts.]]></help><script/><language><![CDATA[en]]></language></row>
+   <row><id><![CDATA[4]]></id><qid><![CDATA[2]]></qid><question><![CDATA[Trinken Sie Kaffee?]]></question><help><![CDATA[Jede Sorte zählt.]]></help><script/><language><![CDATA[de]]></language></row>
+   <row><id><![CDATA[5]]></id><qid><![CDATA[3]]></qid><question><![CDATA[How many cups do you drink on a typical day?]]></question><help/><script/><language><![CDATA[en]]></language></row>
+   <row><id><![CDATA[6]]></id><qid><![CDATA[3]]></qid><question><![CDATA[Wie viele Tassen trinken Sie an einem typischen Tag?]]></question><help/><script/><language><![CDATA[de]]></language></row>
+   <row><id><![CDATA[7]]></id><qid><![CDATA[4]]></qid><question><![CDATA[Which kinds of coffee do you drink? ({cups} cups)]]></question><help/><script/><language><![CDATA[en]]></language></row>
+   <row><id><![CDATA[8]]></id><qid><![CDATA[4]]></qid><question><![CDATA[Welche Sorten trinken Sie? ({cups.shown} Tassen)]]></question><help/><script/><language><![CDATA[de]]></language></row>
+   <row><id><![CDATA[9]]></id><qid><![CDATA[5]]></qid><question><![CDATA[Which is your favourite?]]></question><help/><script/><language><![CDATA[en]]></language></row>
+   <row><id><![CDATA[10]]></id><qid><![CDATA[5]]></qid><question><![CDATA[Welche ist Ihre liebste?]]></question><help/><script/><language><![CDATA[de]]></language></row>
+   <row><id><![CDATA[11]]></id><qid><![CDATA[6]]></qid><question><![CDATA[<h2>Sleep</h2><p>A few questions about last night.</p>]]></question><help/><script/><language><![CDATA[en]]></language></row>
+   <row><id><![CDATA[12]]></id><qid><![CDATA[6]]></qid><question><![CDATA[<h2>Schlaf</h2><p>Ein paar Fragen zur letzten Nacht.</p>]]></question><help/><script/><language><![CDATA[de]]></language></row>
+   <row><id><![CDATA[13]]></id><qid><![CDATA[7]]></qid><question><![CDATA[How much do you agree with each statement?]]></question><help/><script/><language><![CDATA[en]]></language></row>
+   <row><id><![CDATA[14]]></id><qid><![CDATA[7]]></qid><question><![CDATA[Wie sehr stimmen Sie zu?]]></question><help/><script/><language><![CDATA[de]]></language></row>
+   <row><id><![CDATA[15]]></id><qid><![CDATA[8]]></qid><question><![CDATA[What date did you last sleep well?]]></question><help/><script/><language><![CDATA[en]]></language></row>
+   <row><id><![CDATA[16]]></id><qid><![CDATA[8]]></qid><question><![CDATA[Wann haben Sie zuletzt gut geschlafen?]]></question><help/><script/><language><![CDATA[de]]></language></row>
+   <row><id><![CDATA[17]]></id><qid><![CDATA[9]]></qid><question><![CDATA[Anything else about your sleep?]]></question><help/><script/><language><![CDATA[en]]></language></row>
+   <row><id><![CDATA[18]]></id><qid><![CDATA[9]]></qid><question><![CDATA[Sonst noch etwas zu Ihrem Schlaf?]]></question><help/><script/><language><![CDATA[de]]></language></row>
+   <row><id><![CDATA[19]]></id><qid><![CDATA[10]]></qid><question><![CDATA[Rank these in order of importance.]]></question><help/><script/><language><![CDATA[en]]></language></row>
+   <row><id><![CDATA[20]]></id><qid><![CDATA[10]]></qid><question><![CDATA[Ordnen Sie nach Wichtigkeit.]]></question><help/><script/><language><![CDATA[de]]></language></row>
+   <row><id><![CDATA[21]]></id><qid><![CDATA[11]]></qid><question><![CDATA[{if(!is_empty(cups.NAOK), cups.NAOK * 7, "")}]]></question><help/><script/><language><![CDATA[en]]></language></row>
+   <row><id><![CDATA[22]]></id><qid><![CDATA[11]]></qid><question><![CDATA[{if(!is_empty(cups.NAOK), cups.NAOK * 7, "")}]]></question><help/><script/><language><![CDATA[de]]></language></row>
+   <row><id><![CDATA[23]]></id><qid><![CDATA[12]]></qid><question><![CDATA[Describe your mood in a few words.]]></question><help/><script/><language><![CDATA[en]]></language></row>
+   <row><id><![CDATA[24]]></id><qid><![CDATA[12]]></qid><question><![CDATA[Beschreiben Sie Ihre Stimmung in wenigen Worten.]]></question><help/><script/><language><![CDATA[de]]></language></row>
+   <row><id><![CDATA[25]]></id><qid><![CDATA[13]]></qid><question><![CDATA[How would you rate your mood?]]></question><help/><script/><language><![CDATA[en]]></language></row>
+   <row><id><![CDATA[26]]></id><qid><![CDATA[13]]></qid><question><![CDATA[Wie bewerten Sie Ihre Stimmung?]]></question><help/><script/><language><![CDATA[de]]></language></row>
+   <row><id><![CDATA[27]]></id><qid><![CDATA[101]]></qid><question><![CDATA[Espresso]]></question><help/><script/><language><![CDATA[en]]></language></row>
+   <row><id><![CDATA[28]]></id><qid><![CDATA[101]]></qid><question><![CDATA[Espresso]]></question><help/><script/><language><![CDATA[de]]></language></row>
+   <row><id><![CDATA[29]]></id><qid><![CDATA[102]]></qid><question><![CDATA[Filter]]></question><help/><script/><language><![CDATA[en]]></language></row>
+   <row><id><![CDATA[30]]></id><qid><![CDATA[102]]></qid><question><![CDATA[Filterkaffee]]></question><help/><script/><language><![CDATA[de]]></language></row>
+   <row><id><![CDATA[31]]></id><qid><![CDATA[103]]></qid><question><![CDATA[Instant]]></question><help/><script/><language><![CDATA[en]]></language></row>
+   <row><id><![CDATA[32]]></id><qid><![CDATA[103]]></qid><question><![CDATA[Löslicher Kaffee]]></question><help/><script/><language><![CDATA[de]]></language></row>
+   <row><id><![CDATA[33]]></id><qid><![CDATA[104]]></qid><question><![CDATA[Coffee helps me focus]]></question><help/><script/><language><![CDATA[en]]></language></row>
+   <row><id><![CDATA[34]]></id><qid><![CDATA[104]]></qid><question><![CDATA[Kaffee hilft mir, mich zu konzentrieren]]></question><help/><script/><language><![CDATA[de]]></language></row>
+   <row><id><![CDATA[35]]></id><qid><![CDATA[105]]></qid><question><![CDATA[Coffee keeps me awake at night]]></question><help/><script/><language><![CDATA[en]]></language></row>
+   <row><id><![CDATA[36]]></id><qid><![CDATA[105]]></qid><question><![CDATA[Kaffee hält mich nachts wach]]></question><help/><script/><language><![CDATA[de]]></language></row>
+   <row><id><![CDATA[37]]></id><qid><![CDATA[106]]></qid><question><![CDATA[Dark room]]></question><help/><script/><language><![CDATA[en]]></language></row>
+   <row><id><![CDATA[38]]></id><qid><![CDATA[106]]></qid><question><![CDATA[Dunkles Zimmer]]></question><help/><script/><language><![CDATA[de]]></language></row>
+  </rows>
+ </question_l10ns>
+ <question_attributes>
+  <fields>
+   <fieldname>qid</fieldname>
+   <fieldname>attribute</fieldname>
+   <fieldname>value</fieldname>
+   <fieldname>language</fieldname>
+  </fields>
+  <rows>
+   <row><qid><![CDATA[1]]></qid><attribute><![CDATA[hidden]]></attribute><value><![CDATA[1]]></value><language/></row>
+   <row><qid><![CDATA[3]]></qid><attribute><![CDATA[num_value_int_only]]></attribute><value><![CDATA[1]]></value><language/></row>
+   <row><qid><![CDATA[3]]></qid><attribute><![CDATA[min_num_value_n]]></attribute><value><![CDATA[0]]></value><language/></row>
+   <row><qid><![CDATA[3]]></qid><attribute><![CDATA[max_num_value_n]]></attribute><value><![CDATA[30]]></value><language/></row>
+   <row><qid><![CDATA[3]]></qid><attribute><![CDATA[em_validation_q]]></attribute><value><![CDATA[is_empty(cups.NAOK) or (cups.NAOK != 13)]]></value><language/></row>
+   <row><qid><![CDATA[3]]></qid><attribute><![CDATA[em_validation_q_tip]]></attribute><value><![CDATA[Thirteen cups? Surely not.]]></value><language><![CDATA[en]]></language></row>
+   <row><qid><![CDATA[3]]></qid><attribute><![CDATA[em_validation_q_tip]]></attribute><value><![CDATA[Dreizehn Tassen? Sicher nicht.]]></value><language><![CDATA[de]]></language></row>
+   <row><qid><![CDATA[4]]></qid><attribute><![CDATA[random_order]]></attribute><value><![CDATA[1]]></value><language/></row>
+   <row><qid><![CDATA[4]]></qid><attribute><![CDATA[max_answers]]></attribute><value><![CDATA[2]]></value><language/></row>
+   <row><qid><![CDATA[5]]></qid><attribute><![CDATA[display_columns]]></attribute><value><![CDATA[2]]></value><language/></row>
+   <row><qid><![CDATA[7]]></qid><attribute><![CDATA[random_group]]></attribute><value><![CDATA[sleepq]]></value><language/></row>
+   <row><qid><![CDATA[8]]></qid><attribute><![CDATA[random_group]]></attribute><value><![CDATA[sleepq]]></value><language/></row>
+   <row><qid><![CDATA[9]]></qid><attribute><![CDATA[random_group]]></attribute><value><![CDATA[sleepq]]></value><language/></row>
+   <row><qid><![CDATA[11]]></qid><attribute><![CDATA[hidden]]></attribute><value><![CDATA[1]]></value><language/></row>
+  </rows>
+ </question_attributes>
+ <answers>
+  <fields>
+   <fieldname>aid</fieldname>
+   <fieldname>qid</fieldname>
+   <fieldname>code</fieldname>
+   <fieldname>sortorder</fieldname>
+   <fieldname>assessment_value</fieldname>
+   <fieldname>scale_id</fieldname>
+  </fields>
+  <rows>
+   <row><aid><![CDATA[1]]></aid><qid><![CDATA[5]]></qid><code><![CDATA[esp]]></code><sortorder><![CDATA[0]]></sortorder><assessment_value><![CDATA[0]]></assessment_value><scale_id><![CDATA[0]]></scale_id></row>
+   <row><aid><![CDATA[2]]></aid><qid><![CDATA[5]]></qid><code><![CDATA[fil]]></code><sortorder><![CDATA[1]]></sortorder><assessment_value><![CDATA[0]]></assessment_value><scale_id><![CDATA[0]]></scale_id></row>
+   <row><aid><![CDATA[3]]></aid><qid><![CDATA[7]]></qid><code><![CDATA[1]]></code><sortorder><![CDATA[0]]></sortorder><assessment_value><![CDATA[0]]></assessment_value><scale_id><![CDATA[0]]></scale_id></row>
+   <row><aid><![CDATA[4]]></aid><qid><![CDATA[7]]></qid><code><![CDATA[2]]></code><sortorder><![CDATA[1]]></sortorder><assessment_value><![CDATA[0]]></assessment_value><scale_id><![CDATA[0]]></scale_id></row>
+   <row><aid><![CDATA[5]]></aid><qid><![CDATA[7]]></qid><code><![CDATA[3]]></code><sortorder><![CDATA[2]]></sortorder><assessment_value><![CDATA[0]]></assessment_value><scale_id><![CDATA[0]]></scale_id></row>
+  </rows>
+ </answers>
+ <answer_l10ns>
+  <fields>
+   <fieldname>id</fieldname>
+   <fieldname>aid</fieldname>
+   <fieldname>answer</fieldname>
+   <fieldname>language</fieldname>
+  </fields>
+  <rows>
+   <row><id><![CDATA[1]]></id><aid><![CDATA[1]]></aid><answer><![CDATA[Espresso]]></answer><language><![CDATA[en]]></language></row>
+   <row><id><![CDATA[2]]></id><aid><![CDATA[1]]></aid><answer><![CDATA[Espresso]]></answer><language><![CDATA[de]]></language></row>
+   <row><id><![CDATA[3]]></id><aid><![CDATA[2]]></aid><answer><![CDATA[Filter]]></answer><language><![CDATA[en]]></language></row>
+   <row><id><![CDATA[4]]></id><aid><![CDATA[2]]></aid><answer><![CDATA[Filterkaffee]]></answer><language><![CDATA[de]]></language></row>
+   <row><id><![CDATA[5]]></id><aid><![CDATA[3]]></aid><answer><![CDATA[Disagree]]></answer><language><![CDATA[en]]></language></row>
+   <row><id><![CDATA[6]]></id><aid><![CDATA[3]]></aid><answer><![CDATA[Stimme nicht zu]]></answer><language><![CDATA[de]]></language></row>
+   <row><id><![CDATA[7]]></id><aid><![CDATA[4]]></aid><answer><![CDATA[Neutral]]></answer><language><![CDATA[en]]></language></row>
+   <row><id><![CDATA[8]]></id><aid><![CDATA[4]]></aid><answer><![CDATA[Neutral]]></answer><language><![CDATA[de]]></language></row>
+   <row><id><![CDATA[9]]></id><aid><![CDATA[5]]></aid><answer><![CDATA[Agree]]></answer><language><![CDATA[en]]></language></row>
+   <row><id><![CDATA[10]]></id><aid><![CDATA[5]]></aid><answer><![CDATA[Stimme zu]]></answer><language><![CDATA[de]]></language></row>
+  </rows>
+ </answer_l10ns>
+ <defaultvalues>
+  <fields>
+   <fieldname>dvid</fieldname>
+   <fieldname>qid</fieldname>
+   <fieldname>scale_id</fieldname>
+   <fieldname>sqid</fieldname>
+   <fieldname>specialtype</fieldname>
+  </fields>
+  <rows>
+   <row><dvid><![CDATA[1]]></dvid><qid><![CDATA[1]]></qid><scale_id><![CDATA[0]]></scale_id><sqid><![CDATA[0]]></sqid><specialtype/></row>
+  </rows>
+ </defaultvalues>
+ <defaultvalue_l10ns>
+  <fields>
+   <fieldname>id</fieldname>
+   <fieldname>dvid</fieldname>
+   <fieldname>language</fieldname>
+   <fieldname>defaultvalue</fieldname>
+  </fields>
+  <rows>
+   <row><id><![CDATA[1]]></id><dvid><![CDATA[1]]></dvid><language><![CDATA[en]]></language><defaultvalue><![CDATA[web]]></defaultvalue></row>
+   <row><id><![CDATA[2]]></id><dvid><![CDATA[1]]></dvid><language><![CDATA[de]]></language><defaultvalue><![CDATA[web]]></defaultvalue></row>
+  </rows>
+ </defaultvalue_l10ns>
+ <quota>
+  <fields>
+   <fieldname>id</fieldname>
+   <fieldname>sid</fieldname>
+   <fieldname>name</fieldname>
+   <fieldname>qlimit</fieldname>
+   <fieldname>action</fieldname>
+   <fieldname>active</fieldname>
+   <fieldname>autoload_url</fieldname>
+  </fields>
+  <rows>
+   <row><id><![CDATA[1]]></id><sid><![CDATA[123456]]></sid><name><![CDATA[coffee drinkers]]></name><qlimit><![CDATA[200]]></qlimit><action><![CDATA[1]]></action><active><![CDATA[1]]></active><autoload_url><![CDATA[0]]></autoload_url></row>
+  </rows>
+ </quota>
+ <quota_members>
+  <fields>
+   <fieldname>id</fieldname>
+   <fieldname>sid</fieldname>
+   <fieldname>qid</fieldname>
+   <fieldname>quota_id</fieldname>
+   <fieldname>code</fieldname>
+  </fields>
+  <rows>
+   <row><id><![CDATA[1]]></id><sid><![CDATA[123456]]></sid><qid><![CDATA[2]]></qid><quota_id><![CDATA[1]]></quota_id><code><![CDATA[Y]]></code></row>
+  </rows>
+ </quota_members>
+ <quota_languagesettings>
+  <fields>
+   <fieldname>quotals_id</fieldname>
+   <fieldname>quotals_quota_id</fieldname>
+   <fieldname>quotals_language</fieldname>
+   <fieldname>quotals_name</fieldname>
+   <fieldname>quotals_message</fieldname>
+   <fieldname>quotals_url</fieldname>
+   <fieldname>quotals_urldescrip</fieldname>
+  </fields>
+  <rows>
+   <row><quotals_id><![CDATA[1]]></quotals_id><quotals_quota_id><![CDATA[1]]></quotals_quota_id><quotals_language><![CDATA[en]]></quotals_language><quotals_name><![CDATA[coffee drinkers]]></quotals_name><quotals_message><![CDATA[We have enough coffee drinkers, thank you.]]></quotals_message><quotals_url/><quotals_urldescrip/></row>
+  </rows>
+ </quota_languagesettings>
+ <surveys>
+  <fields>
+   <fieldname>sid</fieldname>
+   <fieldname>gsid</fieldname>
+   <fieldname>admin</fieldname>
+   <fieldname>anonymized</fieldname>
+   <fieldname>format</fieldname>
+   <fieldname>language</fieldname>
+   <fieldname>additional_languages</fieldname>
+   <fieldname>allowprev</fieldname>
+   <fieldname>showprogress</fieldname>
+  </fields>
+  <rows>
+   <row><sid><![CDATA[123456]]></sid><gsid><![CDATA[1]]></gsid><admin><![CDATA[Nobody]]></admin><anonymized><![CDATA[Y]]></anonymized><format><![CDATA[G]]></format><language><![CDATA[en]]></language><additional_languages><![CDATA[de]]></additional_languages><allowprev><![CDATA[Y]]></allowprev><showprogress><![CDATA[Y]]></showprogress></row>
+  </rows>
+ </surveys>
+ <surveys_languagesettings>
+  <fields>
+   <fieldname>surveyls_survey_id</fieldname>
+   <fieldname>surveyls_language</fieldname>
+   <fieldname>surveyls_title</fieldname>
+   <fieldname>surveyls_description</fieldname>
+   <fieldname>surveyls_welcometext</fieldname>
+   <fieldname>surveyls_endtext</fieldname>
+  </fields>
+  <rows>
+   <row><surveyls_survey_id><![CDATA[123456]]></surveyls_survey_id><surveyls_language><![CDATA[en]]></surveyls_language><surveyls_title><![CDATA[Coffee and sleep (invented sample)]]></surveyls_title><surveyls_description><![CDATA[A short invented questionnaire.]]></surveyls_description><surveyls_welcometext><![CDATA[<p>Welcome! This takes about two minutes.</p>]]></surveyls_welcometext><surveyls_endtext><![CDATA[Thank you for taking part.]]></surveyls_endtext></row>
+   <row><surveyls_survey_id><![CDATA[123456]]></surveyls_survey_id><surveyls_language><![CDATA[de]]></surveyls_language><surveyls_title><![CDATA[Kaffee und Schlaf (erfundenes Beispiel)]]></surveyls_title><surveyls_description><![CDATA[Ein kurzer erfundener Fragebogen.]]></surveyls_description><surveyls_welcometext><![CDATA[<p>Willkommen! Das dauert etwa zwei Minuten.</p>]]></surveyls_welcometext><surveyls_endtext><![CDATA[Vielen Dank für Ihre Teilnahme.]]></surveyls_endtext></row>
+  </rows>
+ </surveys_languagesettings>
+</document>

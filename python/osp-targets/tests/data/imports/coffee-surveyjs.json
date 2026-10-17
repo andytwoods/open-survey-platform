@@ -1,0 +1,149 @@
+{
+  "title": {"default": "Coffee and sleep (invented sample)", "de": "Kaffee und Schlaf (erfundenes Beispiel)"},
+  "description": "A short invented questionnaire used to test the SurveyJS importer.",
+  "locale": "en",
+  "showPrevButton": true,
+  "completedHtml": "<h3>Thank you for taking part.</h3>",
+  "calculatedValues": [
+    {"name": "cupsPerWeek", "expression": "{cups} * 7"}
+  ],
+  "triggers": [
+    {"type": "complete", "expression": "{drinks_coffee} = 'no' and {age} < 18"}
+  ],
+  "pages": [
+    {
+      "name": "habits",
+      "title": {"default": "Your habits", "de": "Ihre Gewohnheiten"},
+      "elements": [
+        {
+          "type": "radiogroup",
+          "name": "drinks_coffee",
+          "title": {"default": "Do you drink coffee?", "de": "Trinken Sie Kaffee?"},
+          "isRequired": true,
+          "choices": [
+            {"value": "yes", "text": {"default": "Yes", "de": "Ja"}},
+            {"value": "no", "text": {"default": "No", "de": "Nein"}}
+          ]
+        },
+        {
+          "type": "text",
+          "name": "cups",
+          "title": "How many cups do you drink on a typical day?",
+          "inputType": "number",
+          "min": 0,
+          "max": 30,
+          "visibleIf": "{drinks_coffee} = 'yes'",
+          "validators": [{"type": "numeric", "minValue": 0, "maxValue": 30}]
+        },
+        {
+          "type": "checkbox",
+          "name": "kinds",
+          "title": "Which kinds of coffee do you drink?",
+          "visibleIf": "{drinks_coffee} = 'yes'",
+          "choicesOrder": "random",
+          "showOtherItem": true,
+          "choices": ["Espresso", "Filter", "Instant"]
+        },
+        {
+          "type": "boolean",
+          "name": "decaf",
+          "title": "Do you ever choose decaf?",
+          "labelTrue": "Yes",
+          "labelFalse": "No",
+          "visibleIf": "{kinds} anyof ['Espresso', 'Filter']"
+        }
+      ]
+    },
+    {
+      "name": "sleep",
+      "title": "Sleep",
+      "visibleIf": "{drinks_coffee} notempty",
+      "questionsOrder": "random",
+      "elements": [
+        {
+          "type": "html",
+          "name": "sleep_intro",
+          "html": "<p>A few questions about <em>last night</em>.</p>"
+        },
+        {
+          "type": "rating",
+          "name": "sleep_quality",
+          "title": "How well did you sleep last night?",
+          "rateMin": 1,
+          "rateMax": 5,
+          "minRateDescription": "Very badly",
+          "maxRateDescription": "Very well"
+        },
+        {
+          "type": "matrix",
+          "name": "agree",
+          "title": "How much do you agree with each statement?",
+          "columns": [
+            {"value": 1, "text": "Disagree"},
+            {"value": 2, "text": "Neutral"},
+            {"value": 3, "text": "Agree"}
+          ],
+          "rows": [
+            {"value": "focus", "text": "Coffee helps me focus"},
+            {"value": "awake", "text": "Coffee keeps me awake at night"}
+          ],
+          "isAllRowRequired": true
+        },
+        {
+          "type": "text",
+          "name": "slept_well_on",
+          "title": "What date did you last sleep well?",
+          "inputType": "date"
+        },
+        {
+          "type": "comment",
+          "name": "notes",
+          "title": "Anything else about your sleep? You said you drink {cups} cups.",
+          "maxLength": 500
+        },
+        {
+          "type": "ranking",
+          "name": "rank",
+          "title": "Rank these in order of importance for good sleep.",
+          "choices": ["Dark room", "No screens", "No coffee"]
+        }
+      ]
+    },
+    {
+      "name": "about",
+      "elements": [
+        {
+          "type": "panel",
+          "name": "about_panel",
+          "title": "About you",
+          "elements": [
+            {
+              "type": "text",
+              "name": "age",
+              "title": "How old are you?",
+              "inputType": "number",
+              "validators": [{"type": "numeric", "minValue": 16, "maxValue": 120, "text": "Please enter an age between 16 and 120."}]
+            },
+            {
+              "type": "dropdown",
+              "name": "chronotype",
+              "title": "Are you more of a morning or an evening person?",
+              "choices": [
+                {"value": 1, "text": "Morning"},
+                {"value": 2, "text": "Evening"},
+                {"value": 3, "text": "Neither"}
+              ],
+              "visibleIf": "{age} >= 18"
+            }
+          ]
+        },
+        {
+          "type": "expression",
+          "name": "adult",
+          "title": "Adult",
+          "expression": "iif({age} >= 18, 1, 0)"
+        }
+      ]
+    }
+  ]
+}

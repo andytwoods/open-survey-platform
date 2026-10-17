@@ -1,6 +1,7 @@
 """osp-app (layer L5): permissions, host identity, builder services and app commands.
 See README.md."""
 
+from . import import_survey as import_survey  # registers survey.import / import_preview
 from . import results as results  # registers the results commands
 from . import results_export as results_export  # registers survey.results_export
 from . import results_layouts as results_layouts  # registers the saved-layout commands
