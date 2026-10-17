@@ -1,0 +1,61 @@
+# Property schema for `matrix` questions (planning/builder-design.md §1; semantics.md §2, C2c-1).
+type: matrix
+entity: question
+family: matrix
+label: { en: "Matrix" }
+icon: grid-3x3
+properties:
+  label:
+    kind: richtext
+    label: { en: "Question text" }
+    translatable: true
+    required: true
+    default: "Untitled question"
+    group: Basics
+    help: { en: "What participants see above the rows. Use ${id} to pipe in an earlier answer." }
+  help:
+    kind: richtext
+    label: { en: "Help text" }
+    translatable: true
+    group: Basics
+    help: { en: "Shown under the question text." }
+  rows:
+    kind: rows
+    label: { en: "Rows" }
+    translatable: true
+    required: true
+    default:
+      - { id: r1, label: "Row 1" }
+      - { id: r2, label: "Row 2" }
+    group: Choices
+    help: { en: "One single-choice sub-question each. Every row is its own variable, <matrix name>_<row id>, with its own state." }
+  choices:
+    kind: choicelist
+    label: { en: "Columns" }
+    translatable: true
+    default:
+      - { value: 1, label: "Disagree" }
+      - { value: 2, label: "Neutral" }
+      - { value: 3, label: "Agree" }
+    group: Choices
+    help: { en: "The scale shared by every row. The code is what is stored in the data." }
+  showIf:
+    kind: condition
+    label: { en: "Show if" }
+    group: Logic
+    help: { en: "Show the whole matrix only when this condition is true. Always shown when empty." }
+  required:
+    kind: bool
+    label: { en: "Every row required" }
+    default: false
+    group: Validation
+    help: { en: "Each row must be answered before continuing, unless the row says otherwise. Only enforced while the matrix is shown." }
+  name:
+    kind: text
+    label: { en: "Variable name prefix" }
+    group: Advanced
+    help: { en: "Row columns in data exports are named <prefix>_<row id>. Defaults to the id." }
+hidden:
+  id: "Stable identity used by every reference; assigned when the question is added, never edited in the panel."
+  type: "The discriminator; changing type is its own op, not a property edit."
+  choiceList: "Edited through the choices editor, which switches between inline choices and a shared list (exactly one is set)."

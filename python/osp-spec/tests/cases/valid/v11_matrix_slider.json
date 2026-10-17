@@ -1,0 +1,43 @@
+{
+  "description": "A matrix (rows are variables m_r with names <matrix name>_<row id>, C2c-1) and sliders (C2c-3); rows and sliders are referenced from conditions, piping and a computed variable.",
+  "expect": [],
+  "survey": {
+    "specVersion": "osp-survey/0.1",
+    "id": "s11",
+    "metadata": {"title": "Matrix and slider", "languages": ["en", "de"]},
+    "choiceLists": [
+      {"id": "agree", "choices": [
+        {"value": 1, "label": {"en": "Disagree", "de": "Nein"}},
+        {"value": 2, "label": {"en": "Agree", "de": "Ja"}}
+      ]}
+    ],
+    "variables": [
+      {"kind": "computed", "id": "both", "expr": {"kind": "and", "args": [
+        {"kind": "compare", "op": "==", "left": {"kind": "ref", "id": "grid_a"}, "right": {"kind": "int", "value": 2}},
+        {"kind": "compare", "op": ">", "left": {"kind": "ref", "id": "vas"}, "right": {"kind": "decimal", "value": "0.5"}}
+      ]}}
+    ],
+    "blocks": [
+      {"id": "b1", "pages": [
+        {"id": "p1", "items": [
+          {"id": "grid", "type": "matrix", "name": "att", "label": {"en": "Statements", "de": "Aussagen"},
+           "required": true, "choiceList": "agree",
+           "rows": [
+             {"id": "a", "label": {"en": "A", "de": "A"}},
+             {"id": "b", "label": {"en": "B", "de": "B"}, "required": false}
+           ]},
+          {"id": "vas", "type": "slider", "label": {"en": "How sure?", "de": "Wie sicher?"},
+           "valueType": "decimal", "min": "0", "max": "1", "step": "0.01",
+           "minLabel": {"en": "Not at all", "de": "Gar nicht"}, "maxLabel": {"en": "Fully", "de": "Ganz"},
+           "showIf": {"kind": "answered", "ref": {"kind": "ref", "id": "grid_a"}},
+           "constraint": {"kind": "compare", "op": "!=", "left": {"kind": "ref", "id": "vas"}, "right": {"kind": "decimal", "value": "0.5"}}}
+        ]},
+        {"id": "p2", "items": [
+          {"id": "n1", "type": "note", "label": {"en": "You said ${grid_a} at ${vas}.", "de": "Sie sagten ${grid_a} bei ${vas}."}},
+          {"id": "score", "type": "slider", "label": {"en": "Score", "de": "Punkte"}, "min": 1, "max": 7}
+        ]}
+      ]}
+    ],
+    "flow": [{"type": "block", "id": "f1", "block": "b1"}]
+  }
+}

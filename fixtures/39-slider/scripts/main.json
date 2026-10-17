@@ -1,0 +1,28 @@
+{
+  "format": "osp-fixture-script/0",
+  "id": "main",
+  "description": "Submit untouched sliders: the required one blocks (a slider has no default answer), the optional one stays unanswered. Set an integer and a decimal slider; both pipe and drive show-if. The optional slider on page 2 is left unanswered.",
+  "sessionSeed": 3901,
+  "language": "en",
+  "actions": [
+    {
+      "expectPage": "p1",
+      "do": "next"
+    },
+    {
+      "expectPage": "p1",
+      "set": {
+        "pain": 8,
+        "sleep": "7.5"
+      },
+      "do": "next"
+    },
+    {
+      "expectPage": "p2",
+      "set": {
+        "pain_why": "rest"
+      },
+      "do": "next"
+    }
+  ]
+}

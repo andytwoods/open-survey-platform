@@ -27,6 +27,7 @@ def _rows(defs: tuple[str, ...], field: str, level: Level, note: str) -> None:
 
 
 ANSWERABLE = (
+    "SliderQuestion",
     "IntegerQuestion",
     "DecimalQuestion",
     "TextQuestion",
@@ -35,6 +36,7 @@ ANSWERABLE = (
     "DateQuestion",
 )
 QUESTIONS = (*ANSWERABLE, "NoteQuestion")
+# ANSWERABLE rows cover SliderQuestion's shared fields; its own rows are below.
 CHOICE_QUESTIONS = ("SingleQuestion", "MultiQuestion")
 VARIABLES = ("EmbeddedVariable", "AssignedVariable", "ComputedVariable")
 
@@ -128,6 +130,56 @@ for _d in CHOICE_QUESTIONS:
         "(`once(random())`) rather than derived with node_seed() from a server sessionSeed; "
         "it is recorded in the data, so the order replays from it.",
     )
+
+# --- Matrix and slider (C2c; semantics.md §2) ---------------------------------------------
+_row("MatrixQuestion.id", "native", "Used as the group name when `name` is unset.")
+_row(
+    "MatrixQuestion.type",
+    "lowered",
+    "A `begin group` with `appearance: table-list`: a label-only header `select_one` "
+    "(`appearance: label`, an extra empty field `osp_<name>_header`), then one "
+    "`select_one <list>` per row (`appearance: list-nolabel`). Enketo shows table-list as a "
+    "grid at every width, not the stacked-rows layout of our runtime (runtime-design §6).",
+)
+_row(
+    "MatrixQuestion.label",
+    "native",
+    "`label::<language>` of the header row, above the column labels.",
+)
+_row("MatrixQuestion.help", "native", "`hint::<language>` of the header row.")
+_row(
+    "MatrixQuestion.showIf",
+    "approximated",
+    "`relevant` on the group; as for questions, Enketo keeps hidden values until submit (§3).",
+)
+_row("MatrixQuestion.name", "native", "Prefix of each row's `name`: `<name>_<row id>` (C2c-1).")
+_row("MatrixQuestion.required", "native", "`required` on each row that does not override it.")
+_row("MatrixQuestion.rows", "native", "One `select_one` field per row, in order.")
+_row("MatrixQuestion.choiceList", "native", "`select_one <list>` on every row.")
+_row("MatrixQuestion.choices", "lowered", "Inline columns become a generated choices list.")
+_row("MatrixRow.id", "native", "The row field's name is `<matrix name>_<row id>`.")
+_row("MatrixRow.label", "native", "The row field's `label::<language>`.")
+_row("MatrixRow.required", "native", "`required` on that row's field.")
+_row(
+    "SliderQuestion.type",
+    "native",
+    "`range` with `parameters: start end step`. Like ours it has no value until the "
+    "participant touches it (Enketo draws no thumb before then).",
+)
+_row(
+    "SliderQuestion.valueType",
+    "native",
+    "pyxform types `range` as int or decimal from its parameters.",
+)
+_row("SliderQuestion.min", "native", "`range` parameter `start`.")
+_row("SliderQuestion.max", "native", "`range` parameter `end`.")
+_row("SliderQuestion.step", "native", "`range` parameter `step`.")
+_row(
+    "SliderQuestion.minLabel",
+    "unsupported",
+    "`range` has no end labels in XLSForm; dropped (put them in the hint by hand).",
+)
+_row("SliderQuestion.maxLabel", "unsupported", "See SliderQuestion.minLabel.")
 
 # --- Pages and blocks --------------------------------------------------------------------
 _row("Page.id", "native", "`begin group` name with `appearance: field-list` (one screen).")

@@ -22,11 +22,16 @@ from osp_spec import (
     Diagnostic,
     EmbeddedVariable,
     FlowNode,
+    MatrixQuestion,
     MultiQuestion,
     NoteQuestion,
     RandomiserNode,
     SingleQuestion,
+    SliderQuestion,
     Survey,
+    matrix_row_id,
+    matrix_row_name,
+    matrix_row_required,
     parse,
 )
 
@@ -56,6 +61,12 @@ class QuestionInfo:
     choice_order: str | None
     page: str
     block: str
+    # A matrix row (semantics.md §2, C2c-1): the matrix's id and text; the row is a
+    # single-choice variable of its own, `<matrix name>_<row id>`.
+    matrix: str | None = None
+    matrix_label: dict[str, str] | None = None
+    # A slider (C2c-3): {"valueType", "min", "max", "step"}.
+    scale: dict[str, Any] | None = None
 
 
 @dataclass(frozen=True)
@@ -171,7 +182,10 @@ def build_layout(version: SurveyVersion, split: Collection[str] = ()) -> Layout:
     for b in s.blocks:
         for p in b.pages:
             for q in p.items:
-                if not isinstance(q, NoteQuestion):
+                if isinstance(q, MatrixQuestion):
+                    for row in q.rows:
+                        lay.names[matrix_row_id(q.id, row.id)] = matrix_row_name(q, row.id)
+                elif not isinstance(q, NoteQuestion):
                     lay.names[q.id] = q.name or q.id
     for v in s.variables:
         lay.names[v.id] = v.name or v.id
@@ -179,9 +193,9 @@ def build_layout(version: SurveyVersion, split: Collection[str] = ()) -> Layout:
         suffix = version_suffix(lay)
         for b in s.blocks:
             for p in b.pages:
-                for q in p.items:
-                    if q.id in lay.names and lay.names[q.id] in split:
-                        lay.names[q.id] += suffix
+                for qid in _variable_ids(p.items):
+                    if qid in lay.names and lay.names[qid] in split:
+                        lay.names[qid] += suffix
     seen_blocks: set[str] = set()
 
     def add_block(block_id: str) -> None:
@@ -198,6 +212,31 @@ def build_layout(version: SurveyVersion, split: Collection[str] = ()) -> Layout:
                 )
             for q in page.items:
                 if isinstance(q, NoteQuestion):
+                    continue
+                if isinstance(q, MatrixQuestion):
+                    source = q.choices if q.choices is not None else lists.get(q.choiceList or "")
+                    columns = [ChoiceInfo(c.value, lay.text(c.label)) for c in source or []]
+                    for row in q.rows:
+                        rid = matrix_row_id(q.id, row.id)
+                        lay.questions.append(
+                            QuestionInfo(
+                                id=rid,
+                                name=lay.names[rid],
+                                type="single",
+                                label=lay.text(row.label),
+                                help=lay.text(q.help) if q.help is not None else None,
+                                required=matrix_row_required(q, row),
+                                show_if=lay.expr_text(q.showIf),
+                                constraint=None,
+                                constraint_message=None,
+                                choices=columns,
+                                choice_order="fixed",
+                                page=page.id,
+                                block=block_id,
+                                matrix=q.id,
+                                matrix_label=lay.text(q.label),
+                            )
+                        )
                     continue
                 choices = None
                 order = None
@@ -234,6 +273,16 @@ def build_layout(version: SurveyVersion, split: Collection[str] = ()) -> Layout:
                         choice_order=order,
                         page=page.id,
                         block=block_id,
+                        scale=(
+                            {
+                                "valueType": q.valueType,
+                                "min": q.min,
+                                "max": q.max,
+                                "step": q.step,
+                            }
+                            if isinstance(q, SliderQuestion)
+                            else None
+                        ),
                     )
                 )
 
@@ -314,7 +363,7 @@ def build_layout(version: SurveyVersion, split: Collection[str] = ()) -> Layout:
 def _question_inputs(s: Survey, var_id: str) -> tuple[str, ...]:
     """Question ids a computed variable reads, following computed variables (cycles cut)."""
     exprs = {v.id: v.expr for v in s.variables if isinstance(v, ComputedVariable)}
-    questions = {q.id for b in s.blocks for p in b.pages for q in p.items}
+    questions = {qid for b in s.blocks for p in b.pages for qid in _variable_ids(p.items)}
     out: list[str] = []
     seen: set[str] = set()
     stack = [var_id]
@@ -331,13 +380,25 @@ def _question_inputs(s: Survey, var_id: str) -> tuple[str, ...]:
     return tuple(out)
 
 
+def _variable_ids(items: Sequence[Any]) -> list[str]:
+    """Ids of the variables a page's items hold: a matrix holds one per row (C2c-1)."""
+    out: list[str] = []
+    for q in items:
+        if isinstance(q, MatrixQuestion):
+            out += [matrix_row_id(q.id, row.id) for row in q.rows]
+        elif not isinstance(q, NoteQuestion):
+            out.append(q.id)
+    return out
+
+
 # -- pooling versions (semantics M2-3) ----------------------------------------------------
 
 
 def _definition(q: QuestionInfo) -> tuple[str, tuple[str, ...] | None]:
     """What makes a question's data comparable across versions: its type and choice codes."""
     codes = None if q.choices is None else tuple(sorted(str(c.code) for c in q.choices))
-    return (q.type, codes)
+    kind = f"slider:{q.scale['valueType']}" if q.scale else q.type
+    return (kind, codes)
 
 
 def split_names(layouts: Sequence[Layout]) -> set[str]:

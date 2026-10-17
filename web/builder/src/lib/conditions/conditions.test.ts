@@ -125,12 +125,46 @@ describe('AST ⇄ tree', () => {
 	});
 });
 
+describe('questionsFromSurvey: matrix rows', () => {
+	it('lists each row as a single question <matrix>_<row> with the matrix columns', () => {
+		const survey = {
+			choiceLists: [{ id: 'often', choices: [{ value: 'never', label: 'Never' }, { value: 'daily', label: 'Daily' }] }],
+			blocks: [
+				{
+					pages: [
+						{
+							items: [
+								{
+									id: 'taste',
+									type: 'matrix',
+									label: 'Rate',
+									required: true,
+									rows: [{ id: 'tea', label: 'Tea' }, { id: 'cocoa', label: 'Cocoa', required: false }, { label: 'no id' }],
+									choiceList: 'often'
+								},
+								{ id: 'pain', type: 'slider', label: 'Pain' }
+							]
+						}
+					]
+				}
+			]
+		};
+		const qs = questionsFromSurvey(survey);
+		expect(qs.map((q) => [q.id, q.type, q.label, q.required])).toEqual([
+			['taste_tea', 'single', 'Rate – Tea', true],
+			['taste_cocoa', 'single', 'Rate – Cocoa', false],
+			['pain', 'slider', 'Pain', false]
+		]);
+		expect(qs[0]!.choices.map((c) => c.value)).toEqual(['never', 'daily']);
+	});
+});
+
 describe('operators by question type', () => {
 	const ids = (type: string) => operatorsForType(type).map((o) => o.id);
 	const labels = (type: string) => operatorsForType(type).map((o) => o.label);
 
 	it('number: = ≠ < ≤ > ≥ and answered', () => {
-		for (const t of ['integer', 'decimal']) {
+		for (const t of ['integer', 'decimal', 'slider']) {
 			expect(ids(t)).toEqual(['eq', 'ne', 'lt', 'le', 'gt', 'ge', 'answered', 'not_answered']);
 			expect(labels(t).slice(0, 6).map((l) => l.slice(-2, -1))).toEqual(['=', '≠', '<', '≤', '>', '≥']);
 			expect(operatorsForType(t).filter((o) => o.value !== 'none').every((o) => o.value === 'number')).toBe(true);

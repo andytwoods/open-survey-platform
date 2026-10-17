@@ -1854,6 +1854,8 @@
           "single",
           "multi",
           "date",
+          "matrix",
+          "slider",
           "note"
         ],
         "type": "string"

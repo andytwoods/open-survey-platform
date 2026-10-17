@@ -11,7 +11,7 @@
 
 import * as dec from './decimal.ts';
 import type { Code, Value } from './expr.ts';
-import type { ChoiceValue, QuestionItem } from './plan.ts';
+import { valueTypeOf, type ChoiceValue, type QuestionItem } from './plan.ts';
 
 export type Stored = null | number | string | Code[];
 
@@ -96,11 +96,30 @@ export function validDate(text: string): boolean {
 	return d <= days;
 }
 
+/**
+ * A slider answer (semantics.md §2, C2c-3): read as its `valueType`, then it must lie on the
+ * track's step grid, `min + k·step` (else `value.off_step`). The range itself is the usual
+ * `range` check at submit (§4).
+ */
+function checkSlider(item: QuestionItem, raw: unknown): Checked {
+	const checked = checkAnswer({ ...item, type: valueTypeOf(item) }, raw);
+	if (!checked.ok || checked.value === null) return checked;
+	const bound = (b: number | string | undefined, d: number) =>
+		b === undefined ? dec.fromInteger(d) : typeof b === 'number' ? dec.fromInteger(b) : dec.parseDecimal(b);
+	const v = typeof checked.value === 'number' ? dec.fromInteger(checked.value) : dec.parseDecimal(String(checked.value));
+	const min = bound(item.min, 0);
+	const step = bound(item.step, 1);
+	if (v === null || min === null || step === null || step.lte(0)) return { ok: false, code: 'value.invalid' };
+	return v.minus(min).mod(step).eq(0) ? checked : { ok: false, code: 'value.off_step' };
+}
+
 /** Check participant input for `item` and return its stored form. Never throws. */
 export function checkAnswer(item: QuestionItem, raw: unknown): Checked {
 	try {
 		if (isEmpty(raw)) return { ok: true, value: null };
 		switch (item.type) {
+			case 'slider':
+				return checkSlider(item, raw);
 			case 'integer': {
 				if (typeof raw === 'number') {
 					return Number.isSafeInteger(raw)

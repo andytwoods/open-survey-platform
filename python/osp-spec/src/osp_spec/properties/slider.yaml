@@ -1,0 +1,90 @@
+# Property schema for `slider` questions (planning/builder-design.md §1; semantics.md §2, C2c-3).
+type: slider
+entity: question
+family: scale
+label: { en: "Slider" }
+icon: sliders-horizontal
+properties:
+  label:
+    kind: richtext
+    label: { en: "Question text" }
+    translatable: true
+    required: true
+    default: "Untitled question"
+    group: Basics
+    help: { en: "What participants see. Use ${id} to pipe in an earlier answer." }
+  help:
+    kind: richtext
+    label: { en: "Help text" }
+    translatable: true
+    group: Basics
+    help: { en: "Shown under the question text." }
+  min:
+    kind: number
+    label: { en: "Left end" }
+    default: 0
+    group: Basics
+    help: { en: "The value at the left end of the track (inclusive)." }
+  max:
+    kind: number
+    label: { en: "Right end" }
+    default: 100
+    group: Basics
+    help: { en: "The value at the right end of the track (inclusive)." }
+  step:
+    kind: number
+    label: { en: "Step" }
+    default: 1
+    group: Basics
+    help: { en: "Answers are the left end plus a whole number of steps." }
+  minLabel:
+    kind: text
+    label: { en: "Left label" }
+    translatable: true
+    group: Basics
+    help: { en: "Text under the left end, e.g. \"Not at all\"." }
+  maxLabel:
+    kind: text
+    label: { en: "Right label" }
+    translatable: true
+    group: Basics
+    help: { en: "Text under the right end, e.g. \"Extremely\"." }
+  valueType:
+    kind: enum
+    label: { en: "Values" }
+    options:
+      - { value: integer, label: { en: "Whole numbers" } }
+      - { value: decimal, label: { en: "Decimals" } }
+    default: integer
+    group: Advanced
+    help: { en: "Decimal sliders store exact decimals, as decimal questions do." }
+  showIf:
+    kind: condition
+    label: { en: "Show if" }
+    group: Logic
+    help: { en: "Show the question only when this condition is true. Always shown when empty." }
+  required:
+    kind: bool
+    label: { en: "Required" }
+    default: false
+    group: Validation
+    help: { en: "The slider starts unanswered; participants must set it before continuing. Only enforced while the question is shown." }
+  constraint:
+    kind: condition
+    label: { en: "Constraint" }
+    group: Validation
+    help: { en: "A condition an answer must satisfy. Checked only on answered values." }
+  constraintMessage:
+    kind: text
+    label: { en: "Constraint message" }
+    translatable: true
+    group: Validation
+    help: { en: "Shown when the constraint fails." }
+  name:
+    kind: text
+    label: { en: "Variable name" }
+    group: Advanced
+    help: { en: "The column name in data exports and codebooks. Defaults to the id." }
+hidden:
+  id: "Stable identity used by every reference; assigned when the question is added, never edited in the panel."
+  type: "The discriminator; changing type is its own op, not a property edit."

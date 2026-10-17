@@ -634,3 +634,46 @@ def test_invalid_survey_and_clash_are_export_errors() -> None:
     assert err.value.diagnostics[0].code == "export.column_clash"
     # the codes-in-one-cell option avoids it
     assert export_csv(SurveyVersion(s), [], CsvOptions(multi="codes"))
+
+
+# -- matrix and slider (C2c; semantics.md §2) --------------------------------------------------
+
+
+def test_matrix_rows_are_columns_and_slider_is_a_number() -> None:
+    """Each matrix row is its own column `<matrix name>_<row id>` with its own state."""
+    v = _version("38-matrix")
+    rec = {
+        "answers": {
+            "taste_tea": {"state": "answered", "value": 3},
+            "taste_coffee": {"state": "answered", "value": 1},
+            "taste_cocoa": {"state": "unanswered", "value": None},
+            "cups": {"state": "answered", "value": 2},
+            "when_morning": {"state": "irrelevant", "value": None},
+            "when_evening": {"state": "irrelevant", "value": None},
+        }
+    }
+    header = export_csv(v, []).decode("utf-8").split("\r\n")[0].split(",")
+    assert header[header.index("_language") + 1 :] == [
+        "drink_tea", "drink_tea__state", "drink_coffee", "drink_coffee__state",
+        "drink_cocoa", "drink_cocoa__state", "cups", "cups__state",
+        "when_morning", "when_morning__state", "when_evening", "when_evening__state",
+    ]  # fmt: skip
+    row = _rows(export_csv(v, [StoredResponse("r1", record=rec)]))[0]
+    assert (row["drink_tea"], row["drink_tea__state"]) == ("3", "answered")
+    assert (row["drink_cocoa"], row["drink_cocoa__state"]) == ("", "unanswered")
+    assert row["when_evening__state"] == "irrelevant"
+    book = codebook(v)
+    tea = next(x for x in book.data["variables"] if x["name"] == "drink_tea")
+    assert tea["type"] == "single" and tea["matrix"] == "taste" and tea["required"] is True
+    assert [c["code"] for c in tea["choices"]] == [1, 2, 3]
+    cocoa = next(x for x in book.data["variables"] if x["name"] == "drink_cocoa")
+    assert cocoa["required"] is False
+    assert "Row of matrix `taste`" in book.markdown
+
+    s = _version("39-slider")
+    sleep = next(x for x in codebook(s).data["variables"] if x["name"] == "sleep")
+    assert (sleep["type"], sleep["valueType"], sleep["step"]) == ("slider", "decimal", "0.5")
+    rec = {"answers": {"pain": {"state": "answered", "value": 4},
+                       "sleep": {"state": "answered", "value": "7.5"}}}  # fmt: skip
+    row = _rows(export_csv(s, [StoredResponse("r1", record=rec)]))[0]
+    assert (row["pain"], row["sleep"], row["mood__state"]) == ("4", "7.5", "")

@@ -1643,6 +1643,134 @@
       "pattern": "^[A-Za-z]{2,3}(-[A-Za-z0-9]{1,8})*$",
       "type": "string"
     },
+    "MatrixQuestion": {
+      "additionalProperties": false,
+      "description": "Rows of single-choice sub-questions sharing one choice list (the columns).\n\nThe matrix itself stores no value: each row is its own variable with its own state\n(semantics.md §2, C2c-1). Exactly one of `choiceList` / `choices` is set, as for choice\nquestions. Rows have no `showIf` or `constraint` of their own (C2c-2).",
+      "properties": {
+        "choiceList": {
+          "anyOf": [
+            {
+              "$ref": "#/$defs/Identifier"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null
+        },
+        "choices": {
+          "anyOf": [
+            {
+              "items": {
+                "$ref": "#/$defs/Choice"
+              },
+              "minItems": 1,
+              "type": "array"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Choices"
+        },
+        "help": {
+          "anyOf": [
+            {
+              "$ref": "#/$defs/Text"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null
+        },
+        "id": {
+          "$ref": "#/$defs/Identifier"
+        },
+        "label": {
+          "$ref": "#/$defs/Text"
+        },
+        "name": {
+          "anyOf": [
+            {
+              "$ref": "#/$defs/Identifier"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null
+        },
+        "required": {
+          "default": false,
+          "title": "Required",
+          "type": "boolean"
+        },
+        "rows": {
+          "items": {
+            "$ref": "#/$defs/MatrixRow"
+          },
+          "minItems": 1,
+          "title": "Rows",
+          "type": "array"
+        },
+        "showIf": {
+          "anyOf": [
+            {
+              "$ref": "#/$defs/Condition"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null
+        },
+        "type": {
+          "const": "matrix",
+          "title": "Type",
+          "type": "string"
+        }
+      },
+      "required": [
+        "id",
+        "label",
+        "type",
+        "rows"
+      ],
+      "title": "MatrixQuestion",
+      "type": "object"
+    },
+    "MatrixRow": {
+      "additionalProperties": false,
+      "description": "One row of a `matrix`: a single-choice sub-question with its own variable\n(semantics.md §2, C2c-1). `id` is unique within its matrix; the row's variable id is\n`<matrix id>_<row id>` and its export name `<matrix name>_<row id>`.",
+      "properties": {
+        "id": {
+          "$ref": "#/$defs/Identifier"
+        },
+        "label": {
+          "$ref": "#/$defs/Text"
+        },
+        "required": {
+          "anyOf": [
+            {
+              "type": "boolean"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Required"
+        }
+      },
+      "required": [
+        "id",
+        "label"
+      ],
+      "title": "MatrixRow",
+      "type": "object"
+    },
     "Metadata": {
       "additionalProperties": false,
       "properties": {
@@ -2120,9 +2248,11 @@
           "date": "#/$defs/DateQuestion",
           "decimal": "#/$defs/DecimalQuestion",
           "integer": "#/$defs/IntegerQuestion",
+          "matrix": "#/$defs/MatrixQuestion",
           "multi": "#/$defs/MultiQuestion",
           "note": "#/$defs/NoteQuestion",
           "single": "#/$defs/SingleQuestion",
+          "slider": "#/$defs/SliderQuestion",
           "text": "#/$defs/TextQuestion"
         },
         "propertyName": "type"
@@ -2145,6 +2275,12 @@
         },
         {
           "$ref": "#/$defs/DateQuestion"
+        },
+        {
+          "$ref": "#/$defs/MatrixQuestion"
+        },
+        {
+          "$ref": "#/$defs/SliderQuestion"
         },
         {
           "$ref": "#/$defs/NoteQuestion"
@@ -2500,6 +2636,157 @@
         "type"
       ],
       "title": "SingleQuestion",
+      "type": "object"
+    },
+    "SliderQuestion": {
+      "additionalProperties": false,
+      "description": "A number picked on a track from `min` to `max` in `step`s. Starts unanswered: no\nvalue until the participant sets one (runtime-design.md §6; semantics.md §2, C2c-3).\nStored like an `integer` or `decimal` answer, by `valueType`.",
+      "properties": {
+        "constraint": {
+          "anyOf": [
+            {
+              "$ref": "#/$defs/Condition"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null
+        },
+        "constraintMessage": {
+          "anyOf": [
+            {
+              "$ref": "#/$defs/Text"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null
+        },
+        "help": {
+          "anyOf": [
+            {
+              "$ref": "#/$defs/Text"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null
+        },
+        "id": {
+          "$ref": "#/$defs/Identifier"
+        },
+        "label": {
+          "$ref": "#/$defs/Text"
+        },
+        "max": {
+          "anyOf": [
+            {
+              "type": "integer"
+            },
+            {
+              "$ref": "#/$defs/DecimalText"
+            }
+          ],
+          "default": 100,
+          "title": "Max"
+        },
+        "maxLabel": {
+          "anyOf": [
+            {
+              "$ref": "#/$defs/Text"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null
+        },
+        "min": {
+          "anyOf": [
+            {
+              "type": "integer"
+            },
+            {
+              "$ref": "#/$defs/DecimalText"
+            }
+          ],
+          "default": 0,
+          "title": "Min"
+        },
+        "minLabel": {
+          "anyOf": [
+            {
+              "$ref": "#/$defs/Text"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null
+        },
+        "name": {
+          "anyOf": [
+            {
+              "$ref": "#/$defs/Identifier"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null
+        },
+        "required": {
+          "default": false,
+          "title": "Required",
+          "type": "boolean"
+        },
+        "showIf": {
+          "anyOf": [
+            {
+              "$ref": "#/$defs/Condition"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null
+        },
+        "step": {
+          "anyOf": [
+            {
+              "type": "integer"
+            },
+            {
+              "$ref": "#/$defs/DecimalText"
+            }
+          ],
+          "default": 1,
+          "title": "Step"
+        },
+        "type": {
+          "const": "slider",
+          "title": "Type",
+          "type": "string"
+        },
+        "valueType": {
+          "default": "integer",
+          "enum": [
+            "integer",
+            "decimal"
+          ],
+          "title": "Valuetype",
+          "type": "string"
+        }
+      },
+      "required": [
+        "id",
+        "label",
+        "type"
+      ],
+      "title": "SliderQuestion",
       "type": "object"
     },
     "Text": {
