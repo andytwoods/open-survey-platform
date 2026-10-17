@@ -2,6 +2,10 @@
 
 Every session call carries the resume token as ``Authorization: Bearer <token>``
 (never in a URL, so it stays out of logs and referrers).
+
+No IP address or user agent is stored or logged here (runtime-design §7, review §9 Q8):
+the client address is only a key for the in-memory rate limiter. Consent, decline and
+withdrawal (semantics.md §11): ``/consent``, ``/decline``, ``/withdraw``.
 """
 
 from __future__ import annotations
@@ -13,6 +17,7 @@ from fastapi import APIRouter, Depends, FastAPI, Request, Response
 from fastapi.responses import JSONResponse
 from fastapi.security import HTTPAuthorizationCredentials, HTTPBearer
 from osp_runtime import (
+    ConsentRequired,
     InvalidPayload,
     InvalidToken,
     NotFoundError,
@@ -37,6 +42,7 @@ STATUS: dict[type[SessionError], int] = {
     SessionExpired: 410,
     SessionSubmitted: 409,
     SaveModeForbidden: 403,
+    ConsentRequired: 403,
     StaleRevision: 409,
     SubmitMismatch: 409,
     InvalidPayload: 422,
@@ -124,6 +130,24 @@ class SubmitResponse(BaseModel):
             "expired. Accepted, flagged, and not counted toward quotas."
         ),
     )
+
+
+class ConsentRequest(BaseModel):
+    model_config = ConfigDict(extra="forbid")
+    consentVersion: str = Field(
+        max_length=80, description="The plan's `consent.version` the participant agreed to."
+    )
+
+
+class ConsentResponse(BaseModel):
+    consentVersion: str
+    consentedAt: datetime = Field(description="Server time of the (first) agreement.")
+    replay: bool
+
+
+class WithdrawResponse(BaseModel):
+    withdrawn: Literal[True]
+    responsesDeleted: int
 
 
 class ResumeResponse(BaseModel):
@@ -250,6 +274,42 @@ def install(app: FastAPI, service: SessionService | None) -> None:
             replay=ack.replay,
             late=ack.late,
         )
+
+    @r.post(
+        "/sessions/{session_id}/consent",
+        operation_id="giveConsent",
+        responses=_errors(401, 404, 409, 410, 422),
+    )
+    def consent(session_id: str, body: ConsentRequest, s: Svc, token: Token) -> ConsentResponse:
+        """The participant agreed (semantics.md §11). Until then the server takes no
+        snapshot, quota check or submit for a survey with a consent page."""
+        ack = s.consent(session_id, _token(token), body.consentVersion)
+        return ConsentResponse(
+            consentVersion=ack.version, consentedAt=ack.consented_at, replay=ack.replay
+        )
+
+    @r.post(
+        "/sessions/{session_id}/decline",
+        operation_id="declineConsent",
+        status_code=204,
+        responses=_errors(401, 404, 422),
+    )
+    def decline(session_id: str, s: Svc, token: Token) -> None:
+        """The participant declined: the session is deleted. Nothing is kept but an
+        anonymous count, and only if the survey asks for one."""
+        s.decline(session_id, _token(token))
+
+    @r.post(
+        "/sessions/{session_id}/withdraw",
+        operation_id="withdrawSession",
+        responses=_errors(401, 404),
+    )
+    def withdraw(session_id: str, s: Svc, token: Token) -> WithdrawResponse:
+        """The participant withdraws (before or after submitting): their response and
+        session are deleted, and an audit entry without answer data is written. The resume
+        token stops working."""
+        n = s.withdraw(session_id, _token(token))
+        return WithdrawResponse(withdrawn=True, responsesDeleted=n)
 
     @r.get("/sessions/resume", operation_id="resumeSession", responses=_errors(401, 410, 429))
     def resume(request: Request, s: Svc, token: Token) -> ResumeResponse:

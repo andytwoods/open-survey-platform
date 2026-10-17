@@ -54,6 +54,13 @@ class SaveModeForbidden(SessionError):
     code = "save_mode.end_only"
 
 
+class ConsentRequired(SessionError):
+    """The survey has a consent page and this session has not agreed: no response data
+    is accepted (403, semantics.md §11)."""
+
+    code = "consent.required"
+
+
 class StaleRevision(SessionError):
     """Conditional write lost: ``baseRevision`` is not the current revision (409)."""
 

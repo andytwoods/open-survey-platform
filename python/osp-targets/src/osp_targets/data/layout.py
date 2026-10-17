@@ -398,9 +398,26 @@ META_COLUMNS: list[tuple[str, str]] = [
 ]
 
 
+# Only for a version with a consent page (semantics.md §11). A declined session leaves no
+# response and a withdrawn one is deleted, so every row here is a consented one.
+CONSENT_COLUMNS: list[tuple[str, str]] = [
+    (
+        "_consent_version",
+        "The consent text the participant agreed to: sha256 checksum of the consent page's "
+        "texts (every language) as published. A changed wording is a new version.",
+    ),
+    ("_consented_at", "When the participant agreed (server clock), UTC, ISO 8601."),
+]
+
+
+def meta_columns(lay: Layout) -> list[tuple[str, str]]:
+    """The meta columns of a version: the consent columns only if it has a consent page."""
+    return META_COLUMNS + (CONSENT_COLUMNS if lay.survey.consent is not None else [])
+
+
 def csv_columns(lay: Layout, opts: CsvOptions) -> list[Column]:
     cols: list[Column] = []
-    for header, _ in META_COLUMNS:
+    for header, _ in meta_columns(lay):
         cols.append(Column(header, "meta", None, lambda r, h=header: r.meta(h)))
     for v in lay.assigned:
         cols.append(Column(v.name, "condition", v.name, lambda r, i=v.id: r.condition(i)))

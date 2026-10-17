@@ -19,6 +19,12 @@ import each other).
   ``release_after`` (24 h) idle (R-3, C3a-3). This is a separate timer from the token:
   a session whose holds were released can still resume, and then takes its places
   again if they are free (the store does this atomically).
+- **Consent** (semantics.md §11): for a survey with a consent page, no URL parameters are
+  stored at start, and snapshots, quota checks and submits are refused
+  (:class:`ConsentRequired`) until the session agreed to the plan's consent version. A
+  decline deletes the session and keeps at most an anonymous count; a withdrawal
+  (after agreeing, before or after submit) deletes session and response, audited
+  without answer data.
 - **Submit**: idempotent on the session; validates shape, plan checksum, assignment.
   Accepted even after the token's expiry or after the holds were released: such a
   submit is flagged ``late`` (``SubmitAck.late`` and ``server.late`` in the stored
@@ -40,6 +46,7 @@ from osp_engine.random import MAX_SEED, assign, node_seed
 
 from .config import RuntimeConfig, SaveMode
 from .errors import (
+    ConsentRequired,
     InvalidPayload,
     InvalidToken,
     NotFoundError,
@@ -80,6 +87,7 @@ class CredentialRow(Protocol):
     submitted_at: datetime | None
     expired_at: datetime | None  # holds released (not the token's expiry)
     publication_id: str
+    consented_at: datetime | None
 
 
 class SessionRow(Protocol):
@@ -91,6 +99,8 @@ class SessionRow(Protocol):
     revision: int
     snapshot: Any
     submitted_at: datetime | None
+    consent_version: str | None
+    consented_at: datetime | None
 
 
 class ParticipantRepo(Protocol):
@@ -148,6 +158,9 @@ class ParticipantRepo(Protocol):
         late: bool = False,
     ) -> Any: ...
     def release_inactive(self, cutoff: datetime) -> Any: ...
+    def record_consent(self, tenant_id: str, session_id: str, version: str) -> Any: ...
+    def decline(self, tenant_id: str, session_id: str, count: bool) -> bool: ...
+    def withdraw(self, tenant_id: str, session_id: str, reason: str) -> int: ...
 
 
 # -- results ------------------------------------------------------------------------
@@ -197,6 +210,13 @@ class Resumed:
     plan_checksum: str
     save_mode: str
     submitted: bool
+
+
+@dataclass(frozen=True, slots=True)
+class ConsentAck:
+    version: str
+    consented_at: datetime
+    replay: bool
 
 
 @dataclass(frozen=True)
@@ -342,7 +362,8 @@ class SessionService:
             assigned,
             hash_token(token),
             # end-only: no response data before submit, URL parameters included (§5.0).
-            params if cfg.save_mode == "every-page" else None,
+            # A consent page: nothing about the participant before they agree (§11).
+            params if cfg.save_mode == "every-page" and cfg.consent is None else None,
             tuple(cfg.balanced),
             choose,
         )
@@ -380,12 +401,63 @@ class SessionService:
             raise SessionExpired("this session expired after inactivity")
         return cred
 
+    def _config(self, cred: CredentialRow) -> RuntimeConfig:
+        pub = self._repo.get_publication(cred.tenant_id, cred.publication_id)
+        return RuntimeConfig.from_json(pub.config)
+
+    @staticmethod
+    def _require_consent(cfg: RuntimeConfig, cred: CredentialRow) -> None:
+        """semantics.md §11: no response data before the participant agreed."""
+        if cfg.consent is not None and getattr(cred, "consented_at", None) is None:
+            raise ConsentRequired("the participant has not agreed to take part")
+
+    # -- consent, decline, withdrawal (semantics.md §11) -----------------------------
+
+    def consent(self, session_id: str, token: object, version: object) -> ConsentAck:
+        """Record the participant's agreement to the plan's consent ``version`` (server
+        time). Idempotent; a different version than the plan's is refused."""
+        cred = self._auth(token, session_id)
+        cfg = self._config(cred)
+        if cfg.consent is None:
+            raise NotFoundError("this survey has no consent page")
+        if version != cfg.consent.version:
+            raise InvalidPayload("this is not the survey's consent version", "consent.version")
+        r = self._repo.record_consent(cred.tenant_id, session_id, cfg.consent.version)
+        match r.status:
+            case "ok" | "replay":
+                return ConsentAck(r.version, r.consented_at, r.status == "replay")
+            case "submitted":
+                raise SessionSubmitted("this session was submitted")
+            case _:
+                raise InvalidPayload("another consent version was recorded", "consent.version")
+
+    def decline(self, session_id: str, token: object) -> bool:
+        """The participant declined: the session is deleted (its token stops working) and
+        nothing is kept but, if the survey asks for it, an anonymous count. Refused after
+        agreeing (use withdraw)."""
+        cred = self._auth(token, session_id, allow_expired=True)
+        cfg = self._config(cred)
+        if cfg.consent is None:
+            raise NotFoundError("this survey has no consent page")
+        if not self._repo.decline(cred.tenant_id, session_id, cfg.consent.count_declines):
+            raise InvalidPayload(
+                "the participant already agreed; withdraw instead", "consent.already_given"
+            )
+        return True
+
+    def withdraw(self, session_id: str, token: object) -> int:
+        """Participant withdrawal (before or after submit): delete the session and its
+        response. Audited by the store without answer data. Returns responses deleted."""
+        cred = self._auth(token, session_id, allow_expired=True)
+        return self._repo.withdraw(cred.tenant_id, session_id, "participant withdrawal")
+
     # -- snapshot --------------------------------------------------------------------
 
     def save_snapshot(
         self, session_id: str, token: object, base_revision: object, snapshot: object
     ) -> SnapshotAck:
         cred = self._auth(token, session_id)
+        self._require_consent(self._config(cred), cred)
         if isinstance(base_revision, bool) or not isinstance(base_revision, int):
             raise InvalidPayload("baseRevision must be an integer")
         if base_revision < 0:
@@ -412,7 +484,9 @@ class SessionService:
             raise SessionSubmitted("this session was submitted")
         sess = self._repo.get(cred.tenant_id, session_id)
         pub = self._repo.get_publication(cred.tenant_id, sess.publication_id)
-        q = RuntimeConfig.from_json(pub.config).quota_by_node.get(node_id)
+        cfg = RuntimeConfig.from_json(pub.config)
+        self._require_consent(cfg, cred)
+        q = cfg.quota_by_node.get(node_id)
         if q is None:
             raise NotFoundError(f"no quotaCheck node {node_id!r} in this survey")
         c = self._repo.claim_quota(cred.tenant_id, session_id, node_id, q.quota)
@@ -435,18 +509,26 @@ class SessionService:
         text = _size(record, self.policy.max_record_bytes, "record")
         sess = self._repo.get(cred.tenant_id, session_id)
         pub = self._repo.get_publication(cred.tenant_id, sess.publication_id)
+        cfg = RuntimeConfig.from_json(pub.config)
+        if cred.submitted_at is None:
+            self._require_consent(cfg, cred)
         answers, orders, engine_version = validate_record(record, sess, pub)
-        stored = {
-            "record": record,
-            "server": {
-                "saveMode": sess.save_mode,
-                "allocationMode": "server",
-                "sessionSeed": sess.session_seed,
-                "assigned": sess.assigned,
-                "planChecksum": pub.plan_checksum,
-                "late": late,  # the store sets the final value
-            },
+        server: dict[str, Any] = {
+            "saveMode": sess.save_mode,
+            "allocationMode": "server",
+            "sessionSeed": sess.session_seed,
+            "assigned": sess.assigned,
+            "planChecksum": pub.plan_checksum,
+            "late": late,  # the store sets the final value
         }
+        if cfg.consent is not None:
+            if cred.submitted_at is None and record.get("consentVersion") != cfg.consent.version:
+                raise InvalidPayload("consentVersion does not match the survey", "submit.consent")
+            # The server's own record of what was agreed and when (semantics.md §11).
+            consented = getattr(sess, "consented_at", None)
+            server["consentVersion"] = getattr(sess, "consent_version", None)
+            server["consentedAt"] = consented.isoformat() if consented else None
+        stored = {"record": record, "server": server}
         r = self._repo.submit(
             cred.tenant_id,
             session_id,

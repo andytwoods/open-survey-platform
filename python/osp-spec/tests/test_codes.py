@@ -184,13 +184,13 @@ def m_quota_forward(s):
                  {"type": "quotaCheck", "id": "f2", "quota": "qt"},
                  {"type": "block", "id": "f3", "block": "b2"}]  # fmt: skip
 
+
 def m_consent_pipe(s: dict) -> None:
     s["consent"] = {"text": "Consent?", "agreeLabel": "Yes, ${q1}"}
 
 
 def m_consent_outcome(s: dict) -> None:
     s["consent"] = {"text": "Consent?", "declineOutcome": "complete"}
-
 
 
 TABLE: list[tuple[Callable[[dict], None], list[tuple[str, str]]]] = [

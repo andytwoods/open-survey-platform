@@ -365,6 +365,47 @@
           }
         ]
       },
+      "ConsentRequest": {
+        "additionalProperties": false,
+        "properties": {
+          "consentVersion": {
+            "description": "The plan's `consent.version` the participant agreed to.",
+            "maxLength": 80,
+            "title": "Consentversion",
+            "type": "string"
+          }
+        },
+        "required": [
+          "consentVersion"
+        ],
+        "title": "ConsentRequest",
+        "type": "object"
+      },
+      "ConsentResponse": {
+        "properties": {
+          "consentVersion": {
+            "title": "Consentversion",
+            "type": "string"
+          },
+          "consentedAt": {
+            "description": "Server time of the (first) agreement.",
+            "format": "date-time",
+            "title": "Consentedat",
+            "type": "string"
+          },
+          "replay": {
+            "title": "Replay",
+            "type": "boolean"
+          }
+        },
+        "required": [
+          "consentVersion",
+          "consentedAt",
+          "replay"
+        ],
+        "title": "ConsentResponse",
+        "type": "object"
+      },
       "CreateChoiceListParams": {
         "additionalProperties": false,
         "properties": {
@@ -2558,6 +2599,25 @@
         ],
         "title": "VersionInfo",
         "type": "object"
+      },
+      "WithdrawResponse": {
+        "properties": {
+          "responsesDeleted": {
+            "title": "Responsesdeleted",
+            "type": "integer"
+          },
+          "withdrawn": {
+            "const": true,
+            "title": "Withdrawn",
+            "type": "boolean"
+          }
+        },
+        "required": [
+          "withdrawn",
+          "responsesDeleted"
+        ],
+        "title": "WithdrawResponse",
+        "type": "object"
       }
     },
     "securitySchemes": {
@@ -3378,6 +3438,165 @@
         ]
       }
     },
+    "/api/sessions/{session_id}/consent": {
+      "post": {
+        "description": "The participant agreed (semantics.md §11). Until then the server takes no\nsnapshot, quota check or submit for a survey with a consent page.",
+        "operationId": "giveConsent",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "session_id",
+            "required": true,
+            "schema": {
+              "title": "Session Id",
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/ConsentRequest"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ConsentResponse"
+                }
+              }
+            },
+            "description": "Successful Response"
+          },
+          "401": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorBody"
+                }
+              }
+            },
+            "description": "Unauthorized"
+          },
+          "404": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorBody"
+                }
+              }
+            },
+            "description": "Not Found"
+          },
+          "409": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/StaleBody"
+                }
+              }
+            },
+            "description": "Conflict"
+          },
+          "410": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorBody"
+                }
+              }
+            },
+            "description": "Gone"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorBody"
+                }
+              }
+            },
+            "description": "Unprocessable Content"
+          }
+        },
+        "security": [
+          {
+            "HTTPBearer": []
+          }
+        ],
+        "summary": "Consent",
+        "tags": [
+          "participant"
+        ]
+      }
+    },
+    "/api/sessions/{session_id}/decline": {
+      "post": {
+        "description": "The participant declined: the session is deleted. Nothing is kept but an\nanonymous count, and only if the survey asks for one.",
+        "operationId": "declineConsent",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "session_id",
+            "required": true,
+            "schema": {
+              "title": "Session Id",
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "204": {
+            "description": "Successful Response"
+          },
+          "401": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorBody"
+                }
+              }
+            },
+            "description": "Unauthorized"
+          },
+          "404": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorBody"
+                }
+              }
+            },
+            "description": "Not Found"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorBody"
+                }
+              }
+            },
+            "description": "Unprocessable Content"
+          }
+        },
+        "security": [
+          {
+            "HTTPBearer": []
+          }
+        ],
+        "summary": "Decline",
+        "tags": [
+          "participant"
+        ]
+      }
+    },
     "/api/sessions/{session_id}/quota/{node_id}": {
       "post": {
         "operationId": "checkQuota",
@@ -3673,6 +3892,74 @@
           }
         ],
         "summary": "Submit",
+        "tags": [
+          "participant"
+        ]
+      }
+    },
+    "/api/sessions/{session_id}/withdraw": {
+      "post": {
+        "description": "The participant withdraws (before or after submitting): their response and\nsession are deleted, and an audit entry without answer data is written. The resume\ntoken stops working.",
+        "operationId": "withdrawSession",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "session_id",
+            "required": true,
+            "schema": {
+              "title": "Session Id",
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/WithdrawResponse"
+                }
+              }
+            },
+            "description": "Successful Response"
+          },
+          "401": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorBody"
+                }
+              }
+            },
+            "description": "Unauthorized"
+          },
+          "404": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorBody"
+                }
+              }
+            },
+            "description": "Not Found"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            },
+            "description": "Validation Error"
+          }
+        },
+        "security": [
+          {
+            "HTTPBearer": []
+          }
+        ],
+        "summary": "Withdraw",
         "tags": [
           "participant"
         ]
@@ -4646,6 +4933,81 @@
         "summary": "Redo",
         "tags": [
           "ops"
+        ]
+      }
+    },
+    "/api/surveys/{survey_id}/responses/{response_id}": {
+      "delete": {
+        "description": "Delete one response and its session (audited, without answer data).",
+        "operationId": "deleteResponse",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "survey_id",
+            "required": true,
+            "schema": {
+              "title": "Survey Id",
+              "type": "string"
+            }
+          },
+          {
+            "in": "path",
+            "name": "response_id",
+            "required": true,
+            "schema": {
+              "title": "Response Id",
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "204": {
+            "description": "Successful Response"
+          },
+          "401": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorBody"
+                }
+              }
+            },
+            "description": "Unauthorized"
+          },
+          "403": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorBody"
+                }
+              }
+            },
+            "description": "Forbidden"
+          },
+          "404": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorBody"
+                }
+              }
+            },
+            "description": "Not Found"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            },
+            "description": "Validation Error"
+          }
+        },
+        "summary": "Delete Response",
+        "tags": [
+          "surveys"
         ]
       }
     },
