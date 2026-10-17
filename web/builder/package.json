@@ -23,6 +23,8 @@
 		"@lezer/highlight": "^1.2.5",
 		"@lucide/svelte": "^1.50.0",
 		"@osp/api-client": "workspace:*",
+		"@osp/engine": "workspace:*",
+		"@osp/runtime": "workspace:*",
 		"@osp/ui-components": "workspace:*",
 		"bits-ui": "^2.19.5"
 	},

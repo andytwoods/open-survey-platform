@@ -10,6 +10,10 @@
 	import { localStorageBackup, MemoryStore, openIndexedDb } from './lib/storage';
 	import { domId, errorText, plain } from './lib/view-map';
 	import type { Device } from '@osp/engine';
+	import type { PreviewMount } from './lib/preview-mount';
+
+	/** Preview mode (B11): run on a given plan with no server and memory-only storage. */
+	let { preview }: { preview?: PreviewMount } = $props();
 
 	let session = $state.raw<Session | null>(null);
 	let bootError = $state.raw<BootError | null>(null);
@@ -150,15 +154,16 @@
 
 	async function start() {
 		bootError = null;
-		const { resumeToken, urlParams } = readUrl();
+		const { resumeToken, urlParams } = preview ? { resumeToken: null, urlParams: {} } : readUrl();
+		if (preview) slug = preview.slug;
 		if (!slug) {
 			bootError = new BootError('not-found', 'This survey link is not valid.');
 			return;
 		}
-		const store = (await openIndexedDb()) ?? new MemoryStore();
-		const env: Env = {
+		const store = preview ? null : ((await openIndexedDb()) ?? new MemoryStore());
+		const env: Env = preview?.env ?? {
 			api: httpApi(''),
-			store,
+			store: store!,
 			backup: localStorageBackup(),
 			now: () => Date.now(),
 			random: Math.random,
@@ -167,7 +172,9 @@
 			log: (msg, detail) => console.warn(`[osp-runtime] ${msg}`, detail ?? '')
 		};
 		try {
-			const s = await boot(env, { slug, resumeToken, urlParams, language: navigator.language, device: device() });
+			const language = preview?.language ?? navigator.language;
+			const s = await boot(env, { slug, resumeToken, urlParams, language, device: device() });
+			preview?.onSession?.(s);
 			const planTheme = (s.plan as unknown as { theme?: Theme }).theme;
 			if (planTheme) applyTheme(planTheme);
 			s.subscribe(() => version++);
