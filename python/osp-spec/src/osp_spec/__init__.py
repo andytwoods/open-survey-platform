@@ -8,6 +8,7 @@ from .diagnostics import CODES, Diagnostic, has_errors
 from .expr import Condition, Expression
 from .model import (
     FLOW_NODE_TYPES,
+    HOOK_EVENTS,
     QUESTION_TYPES,
     SPEC_VERSION,
     AnswerableQuestion,
@@ -26,6 +27,7 @@ from .model import (
     EmbeddedVariable,
     EndNode,
     FlowNode,
+    Hooks,
     Identifier,
     IntegerQuestion,
     LanguageTag,
@@ -59,6 +61,8 @@ from .validate import BUILTIN_PIPES, parse, publish_diagnostics, validate
 __all__ = [
     "CODES",
     "FLOW_NODE_TYPES",
+    "HOOK_EVENTS",
+    "Hooks",
     "QUESTION_TYPES",
     "RESERVED_NAMES",
     "SPEC_VERSION",

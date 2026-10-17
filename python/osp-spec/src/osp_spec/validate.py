@@ -40,6 +40,7 @@ from pydantic import ValidationError
 
 from . import expr as ex
 from .diagnostics import Diagnostic, make, pointer
+from .hooks import check_hooks
 from .model import (
     SPEC_VERSION,
     AssignedVariable,
@@ -242,6 +243,7 @@ class _Checker:
         self._settings()
         self._consent()
         self._choice_codes()
+        self._hooks()
         unique: dict[tuple[str, str, str], Diagnostic] = {}
         for d in self.out:
             unique.setdefault((d.code, d.pointer, d.message), d)
@@ -1039,7 +1041,23 @@ def _consent(self: _Checker) -> None:
         self.emit("consent.outcome", "/consent/declineOutcome", "a decline cannot end 'complete'")
 
 
+def _hooks(self: _Checker) -> None:
+    """runtime-design.md §7a: a handler reads only things that hold a value (answerable
+    questions, matrix rows, variables; a matrix or note has none) and writes only hook
+    variables; redirect templates and the parent origin follow the hook host's rules."""
+    if self.s.hooks is None:
+        return
+    readable = [
+        qid
+        for qid, info in self.questions.items()
+        if not isinstance(info.q, NoteQuestion | MatrixQuestion)
+    ] + list(self.variables)
+    # osp-survey/0.1 has no `hook` variable kind yet, so nothing can be written.
+    check_hooks(self.s.hooks, readable=readable, hook_variables=(), emit=self.emit)
+
+
 _Checker._same_page_only = _same_page_only  # type: ignore[attr-defined]
+_Checker._hooks = _hooks  # type: ignore[attr-defined]
 _Checker._same_page_cycles = _same_page_cycles  # type: ignore[attr-defined]
 _Checker._bounds = _bounds  # type: ignore[attr-defined]
 _Checker._slider = _slider  # type: ignore[attr-defined]

@@ -1,4 +1,5 @@
 <script lang="ts">
+	import type { Extension } from '@codemirror/state';
 	import type { EditorView } from '@codemirror/view';
 	import { onMount } from 'svelte';
 	import { createEditor, showDiagnostics } from './codemirror';
@@ -13,13 +14,20 @@
 		label,
 		describedBy,
 		diagnostics = [],
-		onchange
+		onchange,
+		language,
+		placeholder,
+		testid = 'condition-text'
 	}: {
 		value: string;
 		label: string;
 		describedBy?: string;
 		diagnostics?: readonly ExprDiagnostic[];
 		onchange: (text: string) => void;
+		/** Another language than the condition syntax (e.g. JavaScript for researcher hooks). */
+		language?: Extension;
+		placeholder?: string;
+		testid?: string;
 	} = $props();
 
 	let host: HTMLDivElement;
@@ -31,6 +39,8 @@
 			doc: value,
 			label,
 			describedBy,
+			language,
+			placeholder,
 			onChange: (text) => {
 				if (!external) onchange(text);
 			}
@@ -53,7 +63,7 @@
 	});
 </script>
 
-<div class="editor" bind:this={host} data-testid="condition-text"></div>
+<div class="editor" bind:this={host} data-testid={testid}></div>
 
 <style>
 	.editor {

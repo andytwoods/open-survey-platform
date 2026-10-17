@@ -1343,6 +1343,455 @@
       "pattern": "^#[0-9a-fA-F]{6}$",
       "type": "string"
     },
+    "HookArraySchema": {
+      "additionalProperties": false,
+      "properties": {
+        "items": {
+          "$ref": "#/$defs/HookPayloadSchema"
+        },
+        "maxItems": {
+          "maximum": 1000,
+          "minimum": 0,
+          "title": "Maxitems",
+          "type": "integer"
+        },
+        "type": {
+          "const": "array",
+          "title": "Type",
+          "type": "string"
+        }
+      },
+      "required": [
+        "type",
+        "items",
+        "maxItems"
+      ],
+      "title": "HookArraySchema",
+      "type": "object"
+    },
+    "HookBooleanSchema": {
+      "additionalProperties": false,
+      "properties": {
+        "type": {
+          "const": "boolean",
+          "title": "Type",
+          "type": "string"
+        }
+      },
+      "required": [
+        "type"
+      ],
+      "title": "HookBooleanSchema",
+      "type": "object"
+    },
+    "HookEvent": {
+      "enum": [
+        "onStart",
+        "onResume",
+        "onPageInit",
+        "onPageShown",
+        "onAnswer",
+        "onPageNext",
+        "onBack",
+        "onValidationError",
+        "onBeforeSubmit",
+        "onSubmitted"
+      ],
+      "type": "string"
+    },
+    "HookHandler": {
+      "additionalProperties": false,
+      "description": "One event handler's declarations. ``ctx.results`` and ``ctx.vars`` hold only the\n``reads``; ``setVariable`` is accepted only for the ``writes``.",
+      "properties": {
+        "reads": {
+          "items": {
+            "$ref": "#/$defs/Identifier"
+          },
+          "title": "Reads",
+          "type": "array"
+        },
+        "timeoutMs": {
+          "anyOf": [
+            {
+              "maximum": 5000,
+              "minimum": 1,
+              "type": "integer"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Timeoutms"
+        },
+        "writes": {
+          "items": {
+            "$ref": "#/$defs/Identifier"
+          },
+          "title": "Writes",
+          "type": "array"
+        }
+      },
+      "required": [
+        "reads",
+        "writes"
+      ],
+      "title": "HookHandler",
+      "type": "object"
+    },
+    "HookNullSchema": {
+      "additionalProperties": false,
+      "properties": {
+        "type": {
+          "const": "null",
+          "title": "Type",
+          "type": "string"
+        }
+      },
+      "required": [
+        "type"
+      ],
+      "title": "HookNullSchema",
+      "type": "object"
+    },
+    "HookNumberSchema": {
+      "additionalProperties": false,
+      "properties": {
+        "maximum": {
+          "anyOf": [
+            {
+              "type": "integer"
+            },
+            {
+              "type": "number"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Maximum"
+        },
+        "minimum": {
+          "anyOf": [
+            {
+              "type": "integer"
+            },
+            {
+              "type": "number"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Minimum"
+        },
+        "type": {
+          "enum": [
+            "number",
+            "integer"
+          ],
+          "title": "Type",
+          "type": "string"
+        }
+      },
+      "required": [
+        "type"
+      ],
+      "title": "HookNumberSchema",
+      "type": "object"
+    },
+    "HookObjectSchema": {
+      "additionalProperties": false,
+      "description": "Objects never allow undeclared properties.",
+      "properties": {
+        "properties": {
+          "additionalProperties": {
+            "$ref": "#/$defs/HookPayloadSchema"
+          },
+          "propertyNames": {
+            "$ref": "#/$defs/Name"
+          },
+          "title": "Properties",
+          "type": "object"
+        },
+        "required": {
+          "anyOf": [
+            {
+              "items": {
+                "$ref": "#/$defs/Name"
+              },
+              "type": "array"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Required"
+        },
+        "type": {
+          "const": "object",
+          "title": "Type",
+          "type": "string"
+        }
+      },
+      "required": [
+        "type",
+        "properties"
+      ],
+      "title": "HookObjectSchema",
+      "type": "object"
+    },
+    "HookParent": {
+      "additionalProperties": false,
+      "description": "Messages the hooks may post to the embedding page: one origin, typed messages.",
+      "properties": {
+        "messages": {
+          "additionalProperties": {
+            "$ref": "#/$defs/HookPayloadSchema"
+          },
+          "propertyNames": {
+            "$ref": "#/$defs/Name"
+          },
+          "title": "Messages",
+          "type": "object"
+        },
+        "origin": {
+          "title": "Origin",
+          "type": "string"
+        }
+      },
+      "required": [
+        "origin",
+        "messages"
+      ],
+      "title": "HookParent",
+      "type": "object"
+    },
+    "HookPayloadSchema": {
+      "discriminator": {
+        "mapping": {
+          "array": "#/$defs/HookArraySchema",
+          "boolean": "#/$defs/HookBooleanSchema",
+          "integer": "#/$defs/HookNumberSchema",
+          "null": "#/$defs/HookNullSchema",
+          "number": "#/$defs/HookNumberSchema",
+          "object": "#/$defs/HookObjectSchema",
+          "string": "#/$defs/HookStringSchema"
+        },
+        "propertyName": "type"
+      },
+      "oneOf": [
+        {
+          "$ref": "#/$defs/HookStringSchema"
+        },
+        {
+          "$ref": "#/$defs/HookNumberSchema"
+        },
+        {
+          "$ref": "#/$defs/HookBooleanSchema"
+        },
+        {
+          "$ref": "#/$defs/HookNullSchema"
+        },
+        {
+          "$ref": "#/$defs/HookObjectSchema"
+        },
+        {
+          "$ref": "#/$defs/HookArraySchema"
+        }
+      ]
+    },
+    "HookRedirect": {
+      "additionalProperties": false,
+      "description": "An end-of-survey redirect template: an https URL with ``{name}`` placeholders after\nthe origin, each declared in ``params``.",
+      "properties": {
+        "params": {
+          "additionalProperties": {
+            "$ref": "#/$defs/HookRedirectParam"
+          },
+          "propertyNames": {
+            "$ref": "#/$defs/Name"
+          },
+          "title": "Params",
+          "type": "object"
+        },
+        "url": {
+          "title": "Url",
+          "type": "string"
+        }
+      },
+      "required": [
+        "url",
+        "params"
+      ],
+      "title": "HookRedirect",
+      "type": "object"
+    },
+    "HookRedirectParam": {
+      "additionalProperties": false,
+      "properties": {
+        "pattern": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Pattern"
+        }
+      },
+      "title": "HookRedirectParam",
+      "type": "object"
+    },
+    "HookStringSchema": {
+      "additionalProperties": false,
+      "properties": {
+        "enum": {
+          "anyOf": [
+            {
+              "items": {
+                "type": "string"
+              },
+              "type": "array"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Enum"
+        },
+        "maxLength": {
+          "anyOf": [
+            {
+              "minimum": 0,
+              "type": "integer"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Maxlength"
+        },
+        "pattern": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Pattern"
+        },
+        "type": {
+          "const": "string",
+          "title": "Type",
+          "type": "string"
+        }
+      },
+      "required": [
+        "type"
+      ],
+      "title": "HookStringSchema",
+      "type": "object"
+    },
+    "Hooks": {
+      "additionalProperties": false,
+      "description": "The hook manifest (``osp-hooks/1``).",
+      "properties": {
+        "exportsConfirmedFor": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Exportsconfirmedfor"
+        },
+        "format": {
+          "const": "osp-hooks/1",
+          "title": "Format",
+          "type": "string"
+        },
+        "handlers": {
+          "additionalProperties": {
+            "$ref": "#/$defs/HookHandler"
+          },
+          "propertyNames": {
+            "$ref": "#/$defs/HookEvent"
+          },
+          "title": "Handlers",
+          "type": "object"
+        },
+        "parent": {
+          "anyOf": [
+            {
+              "$ref": "#/$defs/HookParent"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null
+        },
+        "redirects": {
+          "anyOf": [
+            {
+              "additionalProperties": {
+                "$ref": "#/$defs/HookRedirect"
+              },
+              "propertyNames": {
+                "$ref": "#/$defs/Name"
+              },
+              "type": "object"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Redirects"
+        },
+        "source": {
+          "title": "Source",
+          "type": "string"
+        },
+        "urlParams": {
+          "anyOf": [
+            {
+              "items": {
+                "$ref": "#/$defs/Name"
+              },
+              "type": "array"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Urlparams"
+        }
+      },
+      "required": [
+        "format",
+        "source",
+        "handlers"
+      ],
+      "title": "Hooks",
+      "type": "object"
+    },
     "Identifier": {
       "maxLength": 64,
       "minLength": 1,
@@ -2011,6 +2460,11 @@
       ],
       "title": "MultiQuestion",
       "type": "object"
+    },
+    "Name": {
+      "maxLength": 256,
+      "minLength": 1,
+      "type": "string"
     },
     "Not": {
       "additionalProperties": false,
@@ -3207,6 +3661,17 @@
       },
       "title": "Flow",
       "type": "array"
+    },
+    "hooks": {
+      "anyOf": [
+        {
+          "$ref": "#/$defs/Hooks"
+        },
+        {
+          "type": "null"
+        }
+      ],
+      "default": null
     },
     "id": {
       "$ref": "#/$defs/Identifier"

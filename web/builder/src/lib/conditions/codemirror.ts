@@ -73,15 +73,18 @@ export interface EditorOptions {
 	label: string;
 	describedBy?: string;
 	onChange: (text: string) => void;
+	/** The language (default: the osp-expr condition syntax). */
+	language?: Extension;
+	placeholder?: string;
 }
 
 export function editorExtensions(opts: EditorOptions): Extension[] {
 	return [
 		history(),
 		keymap.of([...defaultKeymap, ...historyKeymap]),
-		exprLanguage,
+		opts.language ?? exprLanguage,
 		syntaxHighlighting(classHighlighter),
-		placeholder('e.g. age >= 18 and answered(q3)'),
+		placeholder(opts.placeholder ?? 'e.g. age >= 18 and answered(q3)'),
 		EditorView.lineWrapping,
 		EditorView.contentAttributes.of({
 			'aria-label': opts.label,

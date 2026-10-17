@@ -209,10 +209,11 @@ def _items(survey: dict) -> list[dict]:
 
 @pytest.mark.parametrize("path", [*VALID, *FIXTURES], ids=lambda p: f"{p.parent.name}/{p.stem}")
 def test_every_plan_validates_against_the_contract(path: Path) -> None:
-    plan, diags = compile_survey(_survey(path))
+    survey = _survey(path)
+    plan, diags = compile_survey(survey)
     if plan is None:
         pytest.skip(f"does not compile: {[d.code for d in diags]}")
-    assert "hooks" not in plan
+    assert ("hooks" in plan) == ("hooks" in survey)
     assert valid(SCHEMA, plan)
 
 
@@ -337,3 +338,63 @@ def test_hooks_problem_never_raises_on_junk() -> None:
         plan, diags = compile_survey(_survey(WORKED), hooks=h)
         assert plan is None and diags[-1].code == "plan.hooks_invalid"
     assert hooks_problem(HOOKS) is None
+
+
+# --- the survey's own `hooks` field (task R11) -----------------------------------------
+
+HOOKS_CASE = REPO / "python/osp-spec/tests/cases/valid/v12_hooks.json"
+
+
+def test_the_surveys_own_hooks_are_compiled_into_the_plan() -> None:
+    data = _survey(HOOKS_CASE)
+    plan, diags = compile_survey(data)
+    assert plan is not None, diags
+    assert plan["hooks"] == {k: v for k, v in data["hooks"].items() if v is not None}
+    assert "exportsConfirmedFor" not in plan["hooks"]  # null is left out for the host
+    assert plan["checksum"] == checksum(plan)
+    assert valid(SCHEMA, plan)
+    without = dict(data)
+    del without["hooks"]
+    plain, _ = compile_survey(without)
+    assert plain["checksum"] != plan["checksum"]
+    survey, _ = parse(data)
+    assert survey is not None
+    assert compile_plan(survey) == plan
+
+
+def test_a_manifest_given_beside_the_survey_replaces_its_own() -> None:
+    data = _survey(HOOKS_CASE)
+    other = {"format": "osp-hooks/1", "source": "", "handlers": {}}
+    plan, _ = compile_survey(data, hooks=other)
+    assert plan["hooks"] == other
+    survey, _ = parse(data)
+    assert compile_plan(survey, hooks=other) == plan
+
+
+def test_hook_reference_errors_block_the_plan() -> None:
+    data = _survey(HOOKS_CASE)
+    data["hooks"]["handlers"]["onPageNext"]["reads"].append("nope")
+    plan, diags = compile_survey(data)
+    assert plan is None
+    assert [(d.code, d.pointer) for d in diags if d.severity == "error"] == [
+        ("hooks.unknown_ref", "/hooks/handlers/onPageNext/reads/2")
+    ]
+    # The same manifest given beside the survey is checked the same way.
+    plain = _survey(HOOKS_CASE)
+    bad = plain.pop("hooks")
+    plan, diags = compile_survey(plain, hooks=data["hooks"])
+    assert plan is None and [d.code for d in diags] == ["hooks.unknown_ref"]
+    survey, _ = parse(plain)
+    assert survey is not None
+    with pytest.raises(PlanError) as err:
+        compile_plan(survey, hooks=data["hooks"])
+    assert [d.code for d in err.value.diagnostics] == ["hooks.unknown_ref"]
+    assert bad is not None
+
+
+def test_malformed_hooks_in_the_survey_itself_are_schema_errors() -> None:
+    data = _survey(HOOKS_CASE)
+    data["hooks"]["handlers"]["onExplode"] = {"reads": [], "writes": []}
+    plan, diags = compile_survey(data)
+    assert plan is None
+    assert diags[0].code.startswith("schema.") and diags[0].pointer.startswith("/hooks/handlers")

@@ -483,7 +483,7 @@
 		</main>
 	{:else if view === 'settings' && store}
 		<main id="pane-settings" class="flow" aria-labelledby="settings-heading">
-			<SettingsView {store} />
+			<SettingsView {store} onpreview={() => (previewOpen = true)} />
 		</main>
 	{:else if view === 'flow' && store}
 		<main id="pane-flow" class="flow" aria-labelledby="flow-heading">

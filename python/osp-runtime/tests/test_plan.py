@@ -50,7 +50,7 @@ def test_every_valid_case_compiles(path: Path) -> None:
     assert plan["planVersion"] == PLAN_VERSION
     assert plan["engineVersion"] == ENGINE_VERSION
     assert plan["checksum"] == checksum(plan)
-    assert set(plan) == set(SCHEMA["required"])
+    assert set(plan) - {"hooks"} == set(SCHEMA["required"])  # `hooks` only when the survey has them
     # Ids resolve: every page item is an item, every block node's pages exist.
     for page in plan["pages"].values():
         for item in page["items"]:

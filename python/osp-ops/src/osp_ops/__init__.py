@@ -14,6 +14,7 @@ from . import (  # noqa: F401
     condition_ops,
     consent_ops,
     flow_ops,
+    hooks_ops,
     matrix_row_ops,
     metadata_ops,
     page_ops,

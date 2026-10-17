@@ -1,0 +1,94 @@
+{
+  "description": "Researcher hooks (runtime-design.md §7a): a manifest that reads a question and a variable, declares a URL parameter, a redirect template and a parent message type.",
+  "expect": [],
+  "survey": {
+    "specVersion": "osp-survey/0.1",
+    "id": "srv_hooks",
+    "metadata": {
+      "title": "Hooks",
+      "languages": [
+        "en"
+      ]
+    },
+    "variables": [
+      {
+        "kind": "embedded",
+        "id": "pid",
+        "param": "PROLIFIC_PID"
+      }
+    ],
+    "blocks": [
+      {
+        "id": "b1",
+        "pages": [
+          {
+            "id": "p1",
+            "items": [
+              {
+                "id": "q1",
+                "type": "integer",
+                "label": "Question q1"
+              }
+            ]
+          }
+        ]
+      }
+    ],
+    "flow": [
+      {
+        "type": "block",
+        "id": "f_b1",
+        "block": "b1"
+      }
+    ],
+    "hooks": {
+      "format": "osp-hooks/1",
+      "source": "osp.on('onPageShown', function (ctx, data, act) { act.addParadata('shownTrial', ctx.trial); });\nosp.on('onPageNext', function (ctx, data, act) { var a = ctx.results.q1; if (a && a.value === 99) act.rejectPage({ itemId: 'q1', message: 'Not 99.' }); });",
+      "handlers": {
+        "onPageShown": {
+          "reads": [],
+          "writes": []
+        },
+        "onPageNext": {
+          "reads": [
+            "q1",
+            "pid"
+          ],
+          "writes": [],
+          "timeoutMs": 1500
+        }
+      },
+      "urlParams": [
+        "PROLIFIC_PID"
+      ],
+      "redirects": {
+        "done": {
+          "url": "https://app.prolific.com/submissions/complete?cc={code}",
+          "params": {
+            "code": {
+              "pattern": "[A-Z0-9]{6,8}"
+            }
+          }
+        }
+      },
+      "parent": {
+        "origin": "https://lab.example.org",
+        "messages": {
+          "progress": {
+            "type": "object",
+            "properties": {
+              "page": {
+                "type": "integer",
+                "minimum": 0
+              }
+            },
+            "required": [
+              "page"
+            ]
+          }
+        }
+      },
+      "exportsConfirmedFor": null
+    }
+  }
+}

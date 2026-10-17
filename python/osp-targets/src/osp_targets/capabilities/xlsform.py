@@ -107,6 +107,29 @@ _row("Consent.declineLabel", "unsupported", "See Survey.consent.")
 _row("Consent.declineOutcome", "unsupported", "See Survey.consent.")
 _row("Consent.countDeclines", "unsupported", "See Survey.consent.")
 _row(
+    "Survey.hooks",
+    "unsupported",
+    "Researcher hooks (custom code on key events, runtime-design.md §7a) run only in our "
+    "runtime's sandbox; XLSForm has no event scripting, so the hooks are not exported and the "
+    "form runs without them.",
+)
+for _def, _fields in (
+    ("Hooks", ("format", "source", "handlers", "urlParams", "redirects", "parent",
+               "exportsConfirmedFor")),
+    ("HookHandler", ("reads", "writes", "timeoutMs")),
+    ("HookRedirect", ("url", "params")),
+    ("HookRedirectParam", ("pattern",)),
+    ("HookParent", ("origin", "messages")),
+    ("HookStringSchema", ("type", "maxLength", "pattern", "enum")),
+    ("HookNumberSchema", ("type", "minimum", "maximum")),
+    ("HookBooleanSchema", ("type",)),
+    ("HookNullSchema", ("type",)),
+    ("HookObjectSchema", ("type", "properties", "required")),
+    ("HookArraySchema", ("type", "items", "maxItems")),
+):  # fmt: skip
+    for _f in _fields:
+        _row(f"{_def}.{_f}", "unsupported", "See Survey.hooks.")
+_row(
     "Settings.backNavigation=false",
     "unsupported",
     "XLSForm cannot disable Back (Enketo has no option; Collect only via device settings).",

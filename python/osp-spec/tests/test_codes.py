@@ -217,6 +217,49 @@ def m_matrix_ref(s):
     _items(s)[1] = _matrix()
 
 
+def _hooks(**extra: Any) -> dict:
+    return {"format": "osp-hooks/1", "source": "osp.on('onStart', function () {});",
+            "handlers": {"onStart": {"reads": ["q1"], "writes": []}}, **extra}  # fmt: skip
+
+
+def m_hooks_unknown_ref(s):
+    s["hooks"] = _hooks()
+    s["hooks"]["handlers"]["onPageNext"] = {"reads": ["q1", "nope"], "writes": []}
+
+
+def m_hooks_read_matrix(s):
+    _items(s)[1] = _matrix()  # a matrix has no value of its own: read its rows
+    s["hooks"] = _hooks()
+    s["hooks"]["handlers"]["onStart"]["reads"] = ["m", "m_a"]
+
+
+def m_hooks_write_target(s):
+    s["hooks"] = _hooks()
+    s["hooks"]["handlers"]["onStart"]["writes"] = ["q2"]
+
+
+def m_hooks_write_on_submitted(s):
+    s["hooks"] = _hooks()
+    s["hooks"]["handlers"]["onSubmitted"] = {"reads": [], "writes": ["q2"]}
+
+
+def m_hooks_redirect(s):
+    s["hooks"] = _hooks(redirects={
+        "ok": {"url": "https://x.org/done/{code}", "params": {"code": {}}},
+        "http": {"url": "http://x.org/done/{code}", "params": {"code": {}}},
+        "origin": {"url": "https://{host}/done", "params": {"host": {}}},
+        "dup": {"url": "https://x.org/{a}/{a}", "params": {"a": {}}},
+        "params": {"url": "https://x.org/{a}", "params": {"b": {}}},
+        "pattern": {"url": "https://x.org/{a}", "params": {"a": {"pattern": "("}}},
+        "bare": {"url": "https://x.org", "params": {}},
+        "junk": {"url": "not a url", "params": {}},
+    })  # fmt: skip
+
+
+def m_hooks_parent_origin(s):
+    s["hooks"] = _hooks(parent={"origin": "https://x.org/", "messages": {}})
+
+
 def m_slider_range(s):
     _items(s)[1] = {"id": "q2", "type": "slider", "label": "S", "min": 5, "max": 5}
 
@@ -266,6 +309,18 @@ TABLE: list[tuple[Callable[[dict], None], list[tuple[str, str]]]] = [
     (m_slider_range, [("question.slider", f"{P0}/1/min")]),
     (m_slider_grid, [("question.slider", f"{P0}/1/step")]),
     (m_slider_integer_step, [("question.slider", f"{P0}/1/step")]),
+    (m_hooks_unknown_ref, [("hooks.unknown_ref", "/hooks/handlers/onPageNext/reads/1")]),
+    (m_hooks_read_matrix, [("hooks.unknown_ref", "/hooks/handlers/onStart/reads/0")]),
+    (m_hooks_write_target, [("hooks.write_target", "/hooks/handlers/onStart/writes/0")]),
+    (m_hooks_write_on_submitted, [("hooks.write_target", "/hooks/handlers/onSubmitted/writes/0")]),
+    (
+        m_hooks_redirect,
+        [
+            ("hooks.redirect", f"/hooks/redirects/{k}")
+            for k in ("http", "origin", "dup", "params", "pattern", "bare", "junk")
+        ],
+    ),  # fmt: skip
+    (m_hooks_parent_origin, [("hooks.parent_origin", "/hooks/parent/origin")]),
 ]
 
 
