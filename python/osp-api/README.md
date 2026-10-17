@@ -87,4 +87,6 @@ headers = sign_identity_headers(
 # forward to osp-api with these headers added (after stripping any incoming X-OSP-*)
 ```
 
-How a host serves the builder pages and proxies `/osp/api` is `docs/hosting.md` (task P4).
+How a host serves the builder pages and proxies `/osp/api` is
+[`docs/hosting.md`](../../docs/hosting.md), with a minimal Django example; its proxy is
+tested in `tests/test_hosting_example.py`.
