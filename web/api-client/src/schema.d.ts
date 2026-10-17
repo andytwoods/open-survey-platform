@@ -569,6 +569,46 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
+    "/api/surveys/{survey_id}/results/query": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /**
+         * Query Results
+         * @description Aggregate tables per question card (survey.export; audited, no answer values).
+         */
+        post: operations["queryResults"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/surveys/{survey_id}/results/text/{question}": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /**
+         * Results Text
+         * @description Verbatim answers of one text question (survey.export; audited).
+         */
+        get: operations["resultsText"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
     "/api/surveys/{survey_id}/simulate": {
         parameters: {
             query?: never;
@@ -825,6 +865,19 @@ export interface components {
                 [key: string]: components["schemas"]["JsonValue"];
             };
         };
+        /** AnswerFilter */
+        AnswerFilter: {
+            /**
+             * In
+             * @description Keep responses that answered with one of these codes (multiple choice: chose at least one of them). Codes compare as text.
+             */
+            in: (number | string)[];
+            /**
+             * Question
+             * @description Id of a single-choice, multiple-choice or matrix-row variable (<matrix id>_<row id>)
+             */
+            question: string;
+        };
         /** AnswerIn */
         AnswerIn: {
             /**
@@ -846,6 +899,24 @@ export interface components {
         };
         /** @enum {string} */
         Arm: "then" | "else" | "children";
+        /** BinSpec */
+        BinSpec: {
+            /**
+             * Count
+             * @description Number of numeric bins
+             */
+            count?: number | null;
+            /**
+             * Unit
+             * @description Date questions: period per bar (default month)
+             */
+            unit?: ("day" | "week" | "month" | "year") | null;
+            /**
+             * Width
+             * @description Numeric bin width
+             */
+            width?: number | null;
+        };
         /** BulkPasteChoices */
         BulkPasteChoicesParams: {
             /**
@@ -874,6 +945,113 @@ export interface components {
             /** Note */
             note: string;
         };
+        /** Card */
+        Card: {
+            /**
+             * Binedges
+             * @description Shared numeric bin edges (len = bins + 1)
+             */
+            binEdges?: number[] | null;
+            /** Binunit */
+            binUnit?: ("day" | "week" | "month" | "year") | null;
+            /** Binning */
+            binning?: ("categories" | "values" | "bins" | "periods") | null;
+            /**
+             * Categories
+             * @description Choices / matrix columns in declared order, shared by all groups
+             */
+            categories?: components["schemas"]["Category"][] | null;
+            /**
+             * Facets
+             * @description Versions whose definitions differ: one facet per version, top-level groups empty (see warnings)
+             */
+            facets?: components["schemas"]["Facet"][] | null;
+            /** Groups */
+            groups?: components["schemas"]["Group"][];
+            /** Label */
+            label: string;
+            /** Name */
+            name: string;
+            /**
+             * Ordered
+             * @description Choices / columns are an ordered scale (numeric codes ascending)
+             */
+            ordered?: boolean | null;
+            /** Question */
+            question: string;
+            /**
+             * Rows
+             * @description Matrix questions only
+             */
+            rows?: components["schemas"]["RowResult"][] | null;
+            /** @description Response-state counts. answered + unanswered make up the 'shown' denominator; irrelevant, notReached and notInVersion are never in a denominator. unrecorded: the stored record has no state for the question; invalid: answered with a value that does not fit the question (e.g. a code it does not declare). Both are outside denominators. */
+            states?: components["schemas"]["StateCounts"] | null;
+            /**
+             * Type
+             * @enum {string}
+             */
+            type: "single" | "multi" | "integer" | "decimal" | "slider" | "date" | "text" | "matrix" | "note";
+            /**
+             * Versionsused
+             * @description Versions that contain the question
+             */
+            versionsUsed: number[];
+            /** Warnings */
+            warnings?: components["schemas"]["ResultWarning"][];
+        };
+        /** CardRequest */
+        CardRequest: {
+            bins?: components["schemas"]["BinSpec"] | null;
+            /**
+             * Question
+             * @description Question id (a matrix: the matrix id)
+             */
+            question: string;
+        };
+        /** Category */
+        Category: {
+            /** Code */
+            code: number | string;
+            /**
+             * Key
+             * @description The choice code as text (cells refer to it)
+             */
+            key: string;
+            /** Label */
+            label: string;
+        };
+        /** Cell */
+        Cell: {
+            /**
+             * Ci
+             * @description Wilson 95 % interval of pct, if asked
+             */
+            ci?: number[] | null;
+            /** Count */
+            count: number;
+            /**
+             * Hi
+             * @description Numeric bin upper edge (exclusive; the last bin includes it)
+             */
+            hi?: number | null;
+            /**
+             * Key
+             * @description Choice code as text, bin index ('0', '1', ...), slider value or date period ('2026-10', '2026-W42', '2026-10-17', '2026')
+             */
+            key: string;
+            /** Label */
+            label: string;
+            /**
+             * Lo
+             * @description Numeric bin lower edge (inclusive)
+             */
+            lo?: number | null;
+            /**
+             * Pct
+             * @description 100 * count / group n; null when n is 0. Multiple choice: % of respondents, can sum to more than 100
+             */
+            pct: number | null;
+        };
         /** ChangeQuestionType */
         ChangeQuestionTypeParams: {
             /**
@@ -893,6 +1071,16 @@ export interface components {
             type: components["schemas"]["QuestionType"];
         };
         ChoiceValue: number | string;
+        /** ConditionFilter */
+        ConditionFilter: {
+            /** In */
+            in: (number | string)[];
+            /**
+             * Variable
+             * @description Id of an assigned variable
+             */
+            variable: string;
+        };
         /** ConsentRequest */
         ConsentRequest: {
             /**
@@ -1234,6 +1422,63 @@ export interface components {
         };
         /** @enum {string} */
         ExprField: "showIf" | "constraint" | "if" | "when" | "expr";
+        /** Facet */
+        Facet: {
+            /**
+             * Binedges
+             * @description Shared numeric bin edges (len = bins + 1)
+             */
+            binEdges?: number[] | null;
+            /** Binunit */
+            binUnit?: ("day" | "week" | "month" | "year") | null;
+            /** Binning */
+            binning?: ("categories" | "values" | "bins" | "periods") | null;
+            /**
+             * Categories
+             * @description Choices / matrix columns in declared order, shared by all groups
+             */
+            categories?: components["schemas"]["Category"][] | null;
+            /** Groups */
+            groups?: components["schemas"]["Group"][];
+            /**
+             * Rows
+             * @description Matrix questions only
+             */
+            rows?: components["schemas"]["RowResult"][] | null;
+            /** @description Response-state counts. answered + unanswered make up the 'shown' denominator; irrelevant, notReached and notInVersion are never in a denominator. unrecorded: the stored record has no state for the question; invalid: answered with a value that does not fit the question (e.g. a code it does not declare). Both are outside denominators. */
+            states?: components["schemas"]["StateCounts"] | null;
+            /** Version */
+            version: number;
+        };
+        /** Group */
+        Group: {
+            /** Cells */
+            cells: components["schemas"]["Cell"][];
+            /**
+             * Key
+             * @description 'all' without a split; else the split code, or '_missing' for responses with no split value
+             */
+            key: string;
+            /** Label */
+            label: string;
+            /**
+             * Missing
+             * @default false
+             */
+            missing: boolean;
+            /**
+             * N
+             * @description The group's denominator for this card
+             */
+            n: number;
+            /**
+             * Responses
+             * @description Responses in the group (after filters)
+             */
+            responses: number;
+            states: components["schemas"]["StateCounts"];
+            stats: components["schemas"]["Stats"];
+        };
         /** HTTPValidationError */
         HTTPValidationError: {
             /** Detail */
@@ -1710,6 +1955,113 @@ export interface components {
         } & {
             [key: string]: unknown;
         };
+        /** ResultWarning */
+        ResultWarning: {
+            /**
+             * Code
+             * @description versions.incompatible | language.unknown | bins.coarsened | values.invalid | question.not_found | question.note
+             */
+            code: string;
+            /** Message */
+            message: string;
+            /** Question */
+            question?: string | null;
+        };
+        /** ResultsQuery */
+        ResultsQuery: {
+            /**
+             * Cards
+             * @description Omitted: every question of the newest version used, in survey order
+             */
+            cards?: components["schemas"]["CardRequest"][] | null;
+            condition?: components["schemas"]["ConditionFilter"] | null;
+            /**
+             * Denominator
+             * @description shown = answered + unanswered
+             * @default answered
+             * @enum {string}
+             */
+            denominator: "answered" | "shown";
+            /** Filters */
+            filters?: components["schemas"]["AnswerFilter"][];
+            /**
+             * Intervals
+             * @description Add 95 % intervals: Wilson for proportions, t for means
+             * @default false
+             */
+            intervals: boolean;
+            /**
+             * Language
+             * @description Label language; default the survey's main language
+             */
+            language?: string | null;
+            split?: components["schemas"]["SplitSpec"] | null;
+            /**
+             * Status
+             * @description complete: responses whose end outcome is 'complete' (or that carry no outcome at all); all: every submitted response
+             * @default complete
+             * @enum {string}
+             */
+            status: "complete" | "all";
+            /**
+             * Submittedfrom
+             * @description Inclusive; naive is UTC
+             */
+            submittedFrom?: string | null;
+            /**
+             * Submittedto
+             * @description Exclusive; naive is UTC
+             */
+            submittedTo?: string | null;
+            /**
+             * Versions
+             * @description Published version numbers; omitted: the latest published version
+             */
+            versions?: number[] | null;
+        };
+        /** ResultsResponse */
+        ResultsResponse: {
+            /** Cached */
+            cached: boolean;
+            /** Cards */
+            cards: components["schemas"]["Card"][];
+            /**
+             * Denominator
+             * @enum {string}
+             */
+            denominator: "answered" | "shown";
+            /**
+             * Generatedat
+             * Format: date-time
+             */
+            generatedAt: string;
+            /** Language */
+            language: string;
+            /** Languages */
+            languages: string[];
+            /**
+             * Queryhash
+             * @description Hash of the normalised query (versions resolved)
+             */
+            queryHash: string;
+            /**
+             * Responses
+             * @description Responses after status, date and answer filters
+             */
+            responses: number;
+            split?: components["schemas"]["SplitInfo"] | null;
+            /** Surveyid */
+            surveyId: string;
+            /** Versionsused */
+            versionsUsed: number[];
+            /** Warnings */
+            warnings?: components["schemas"]["ResultWarning"][];
+            /**
+             * Watermark
+             * @description Changes whenever the versions' responses change
+             */
+            watermark: string;
+        };
         /** ResumeResponse */
         ResumeResponse: {
             /** Assigned */
@@ -1791,6 +2143,24 @@ export interface components {
             currentRevision: number;
             /** Message */
             message: string;
+        };
+        /**
+         * RowResult
+         * @description One matrix row: its own variable with its own n (V-D5).
+         */
+        RowResult: {
+            /** Groups */
+            groups: components["schemas"]["Group"][];
+            /**
+             * Id
+             * @description Row variable id <matrix id>_<row id>
+             */
+            id: string;
+            /** Label */
+            label: string;
+            /** Name */
+            name: string;
+            states: components["schemas"]["StateCounts"];
         };
         /** SetChoice */
         SetChoiceParams: {
@@ -2243,6 +2613,50 @@ export interface components {
              */
             superseded?: boolean;
         };
+        /** SplitGroup */
+        SplitGroup: {
+            /** Key */
+            key: string;
+            /** Label */
+            label: string;
+            /**
+             * Missing
+             * @default false
+             */
+            missing: boolean;
+            /** Responses */
+            responses: number;
+        };
+        /** SplitInfo */
+        SplitInfo: {
+            /** Condition */
+            condition?: string | null;
+            /** Groups */
+            groups: components["schemas"]["SplitGroup"][];
+            /** Label */
+            label: string;
+            /** Question */
+            question?: string | null;
+        };
+        /**
+         * SplitSpec
+         * @description Exactly one of ``question`` (single choice or matrix row) or ``condition``.
+         */
+        SplitSpec: {
+            /**
+             * Condition
+             * @description Assigned variable id
+             */
+            condition?: string | null;
+            /**
+             * Excludemissing
+             * @description Drop the 'no value' group instead of showing it
+             * @default false
+             */
+            excludeMissing: boolean;
+            /** Question */
+            question?: string | null;
+        };
         /** StaleBody */
         StaleBody: {
             /** Code */
@@ -2297,6 +2711,94 @@ export interface components {
             sessionId: string;
             /** Sessionseed */
             sessionSeed: number;
+        };
+        /** StateCounts */
+        StateCounts: {
+            /** Answered */
+            answered: number;
+            /** Invalid */
+            invalid: number;
+            /** Irrelevant */
+            irrelevant: number;
+            /** Notinversion */
+            notInVersion: number;
+            /** Notreached */
+            notReached: number;
+            /** Unanswered */
+            unanswered: number;
+            /** Unrecorded */
+            unrecorded: number;
+        };
+        /**
+         * Stats
+         * @description Statistics that apply to the card type. An applicable statistic that is undefined
+         *     for the data (e.g. SD with n < 2) is null and listed in ``notAvailable``.
+         */
+        Stats: {
+            /** Bottom2 */
+            bottom2?: number | null;
+            /**
+             * Earliest
+             * @description Date: earliest answer
+             */
+            earliest?: string | null;
+            /** Latest */
+            latest?: string | null;
+            /** Max */
+            max?: number | null;
+            /** Mean */
+            mean?: number | null;
+            /**
+             * Meanci
+             * @description t 95 % interval of the mean
+             */
+            meanCi?: number[] | null;
+            /**
+             * Meanlength
+             * @description Text: characters per answer
+             */
+            meanLength?: number | null;
+            /**
+             * Meanoptions
+             * @description Multiple choice: options per answer
+             */
+            meanOptions?: number | null;
+            /**
+             * Median
+             * @description Numbers: median; ordered choices: the median category key
+             */
+            median?: number | string | null;
+            /** Min */
+            min?: number | null;
+            /**
+             * Mode
+             * @description Category key(s) with the top count
+             */
+            mode?: string[] | null;
+            /**
+             * N
+             * @description The denominator: answered (or shown) responses
+             */
+            n: number;
+            /** Notavailable */
+            notAvailable?: string[];
+            /**
+             * Q1
+             * @description Quartiles: linear interpolation (type 7)
+             */
+            q1?: number | null;
+            /** Q3 */
+            q3?: number | null;
+            /**
+             * Sd
+             * @description Sample SD (n - 1)
+             */
+            sd?: number | null;
+            /**
+             * Top2
+             * @description Ordered choices (>= 4): % in the top two
+             */
+            top2?: number | null;
         };
         /** SubmitResponse */
         SubmitResponse: {
@@ -2394,6 +2896,42 @@ export interface components {
         };
         Text: string | {
             [key: string]: string;
+        };
+        /** TextItem */
+        TextItem: {
+            /** Language */
+            language: string | null;
+            /** Responseid */
+            responseId: string;
+            /** Submittedat */
+            submittedAt: string | null;
+            /** Value */
+            value: string;
+            /** Version */
+            version: number;
+        };
+        /** TextPage */
+        TextPage: {
+            /** Items */
+            items: components["schemas"]["TextItem"][];
+            /** Label */
+            label: string;
+            /** Name */
+            name: string;
+            /** Nextcursor */
+            nextCursor: string | null;
+            /** Question */
+            question: string;
+            states: components["schemas"]["StateCounts"];
+            /**
+             * Total
+             * @description Answered responses matching the filters
+             */
+            total: number;
+            /** Versionsused */
+            versionsUsed: number[];
+            /** Watermark */
+            watermark: string;
         };
         /** ThemeLibrary */
         ThemeLibrary: {
@@ -4233,6 +4771,140 @@ export interface operations {
                 };
                 content: {
                     "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    queryResults: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                survey_id: string;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["ResultsQuery"];
+            };
+        };
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ResultsResponse"];
+                };
+            };
+            /** @description Unauthorized */
+            401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorBody"];
+                };
+            };
+            /** @description Forbidden */
+            403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorBody"];
+                };
+            };
+            /** @description Not Found */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorBody"];
+                };
+            };
+            /** @description Unprocessable Content */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["RejectedBody"];
+                };
+            };
+        };
+    };
+    resultsText: {
+        parameters: {
+            query?: {
+                /** @description Version numbers (repeat); default latest */
+                versions?: number[] | null;
+                status?: "complete" | "all";
+                submittedFrom?: string | null;
+                submittedTo?: string | null;
+                /** @description Answer filter '<question>:<code>[,<code>...]' (repeat to AND) */
+                filter?: string[] | null;
+                /** @description Condition filter '<variable>:<level>[,<level>...]' */
+                condition?: string | null;
+                cursor?: string | null;
+                limit?: number;
+            };
+            header?: never;
+            path: {
+                survey_id: string;
+                /** @description Text question id */
+                question: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["TextPage"];
+                };
+            };
+            /** @description Unauthorized */
+            401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorBody"];
+                };
+            };
+            /** @description Forbidden */
+            403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorBody"];
+                };
+            };
+            /** @description Not Found */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorBody"];
+                };
+            };
+            /** @description Unprocessable Content */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["RejectedBody"];
                 };
             };
         };
