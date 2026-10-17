@@ -353,3 +353,14 @@ Paste `planning/question-bank.md` and ask:
 6. Anything in the sharing model (lab / host / file) that creates a licence or privacy problem?
 
 Record their answers at the end of this file under "Review log" with what was changed as a result.
+
+## Lead decisions (17 Oct 2026)
+
+1. **Provenance:** a per-object `source` field on question/page/block, as recommended, plus a dedicated survey-level `metadata.instruments` list (instrument id, version, licence, citation) derived from the sources at publish, for the codebook and the preregistration export (OS1).
+2. **Host sharing:** keep it opt-in per item, and add a host switch `OSP_BANK_HOST_SHARING` (default on) so hosts that run unrelated labs can turn it off.
+3. **Default licence for a lab's own items: `unknown`**, with the one-click "these are our own words, CC BY 4.0" at share time.
+4. **No non-commercial instruments bundled**, not even behind a host switch. Stub entry plus the private "bring your own licensed copy" path.
+5. **Asking rights holders is the owner's job** (needs human: Andy). The lead drafts the standard letter (QB2 includes the draft); permission letters go in `osp-instruments/permissions/`.
+6. **Community registry:** a later row, not now.
+7. **Licence audit verification:** the audit was written from memory (no web access on that worker), so QB2 must verify every class A/B row against the rights holder's current page, with the URL and access date recorded, before anything is bundled. QB2 runs on a machine with web access.
+

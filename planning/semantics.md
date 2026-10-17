@@ -156,3 +156,7 @@ Matrix and slider (C2c, 16 Oct 2026). C2c-1 and C2c-3 above follow from existing
 Deferred to `osp-survey/0.2` (decided, not modelled yet): dedicated `scores` (null unless every item is answered, or an explicit `minAnswered` is set; reversal is `min + max − value`) and reverse scoring [C3a-4], and page-order shuffling within a block [C2-9]. Use computed variables with `if()` meanwhile.
 
 None open.
+
+### Quota places and non-complete outcomes (decided 17 Oct 2026, end-of-survey plan §4.5)
+Quota places count completes only. A session that passed a `quotaCheck` and then ends with any non-complete outcome releases its place when it ends. A submitted complete response that is later withdrawn keeps its place (C-1).
+

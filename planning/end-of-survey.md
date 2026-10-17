@@ -183,3 +183,12 @@ Proposed rows for `planning/tasks.md` (Wave H), in build order. Effort is a roug
 | EN6 | Quota editor in the builder | – | Settings → Quotas: list, add, rename, limit, `when` (condition editor), `onFull` block picker + outcome; ops `add_quota` / `set_quota` / `delete_quota` (own module, inverse, fuzz; `delete` refuses while a `quotaCheck` uses it unless `force`); Flow view's Quota check card links to it; e2e; docs `docs/logic.md` | S |
 
 EX2 (external task step + Prolific) should depend on EN1 and EN2: with those, Prolific completion codes per ending are `settings.endings.<outcome>.redirect` with a literal `cc` param and `${prolific_pid}` from an embedded variable; EX2 then only adds the return step and the signed return token.
+
+## Lead decisions (17 Oct 2026)
+
+1. **Endings are keyed by outcome**, shared by every end node with that outcome; a node's own `message` still shows above the ending. Accepted as recommended.
+2. **Redirects default to `auto` after 5 s with a visible countdown** (0 allowed; `link` mode available). Panel providers expect the automatic return; the countdown plus "Go now / Stay on this page" keeps it accessible.
+3. **Piped answers in redirect parameters are a data export**: the owner confirms them, they are listed in the codebook and consent template, and audited, through the same code path as hooks.
+4. **Closing defaults to `finish`**: participants already in progress may finish; `immediate` is opt-in.
+5. **Quota places count completes only.** A session that passed a `quotaCheck` but ends with any non-complete outcome (screened out, quota full elsewhere, declined, withdrawn before submit) releases its place at submit. This fixes the behaviour for running surveys; recorded in `semantics.md` (quotas). A *submitted complete* response that is later withdrawn keeps its place (C-1, unchanged).
+
