@@ -90,7 +90,7 @@ test('edits in the properties panel update the card at once', async ({ page }) =
 	await expect(card(page, 'taste')).toContainText('Rate these hot drinks');
 	await expect(saved(page)).toHaveText(/All changes saved/);
 
-	// A column label, in the choices editor (rows have no editor yet: "Edit rows…").
+	// A column label, in the choices editor (rows have their own, e2e/rows.spec.ts).
 	await props.getByRole('button', { name: /Edit choices/ }).click();
 	const dialog = page.getByRole('dialog', { name: 'Edit choices' });
 	await expect(dialog).toBeVisible();
