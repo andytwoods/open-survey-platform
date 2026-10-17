@@ -210,5 +210,5 @@ Plan V: `planning/results-viewer.md` (decisions V-D1–V-D10). V1 publishes the 
 | RT4 | Rich text: exports (XLSForm Markdown with escaping, LSS HTML) | RT2 | RT4 | todo |
 | RT5 | Rich text: choice and row editors | RT3 | RT5 | todo |
 | RT6 | Rich text: translations pane | RT3 | RT6 | todo |
-| F5 | Flaky (residual): results-layouts.spec "drag a card by its handle to reorder" still fails ~1 per full `make web-e2e` run on a loaded Mac (passes 8/8 alone) after CI2's fix | CI2 | Root-cause the remaining race (native HTML5 drag under load: dragstart/dragover timing, or Save racing the reorder), fix without retries; 30 repeats in a full parallel run green | review |
+| F5 | Flaky (residual): results-layouts.spec "drag a card by its handle to reorder" still fails ~1 per full `make web-e2e` run on a loaded Mac (passes 8/8 alone) after CI2's fix | CI2 | Root-cause the remaining race (native HTML5 drag under load: dragstart/dragover timing, or Save racing the reorder), fix without retries; 30 repeats in a full parallel run green | done |
 
