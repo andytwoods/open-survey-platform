@@ -1,0 +1,138 @@
+{
+  "format": "osp-fixture-expected/0",
+  "fixture": "40-consent",
+  "script": "agree-withdraw",
+  "pending": [],
+  "steps": [
+    {
+      "index": 0,
+      "page": "$consent",
+      "visible": [],
+      "errors": {},
+      "nav": null,
+      "questions": {
+        "q_sleep": {
+          "state": "not-reached",
+          "value": null
+        },
+        "q_note": {
+          "state": "not-reached",
+          "value": null
+        }
+      },
+      "orders": {
+        "blocks": {},
+        "items": {},
+        "choices": {}
+      },
+      "conditions": {},
+      "end": null
+    },
+    {
+      "index": 1,
+      "page": "p1",
+      "visible": [
+        "q_sleep"
+      ],
+      "errors": {},
+      "nav": {
+        "back": false
+      },
+      "questions": {
+        "q_sleep": {
+          "state": "unanswered",
+          "value": null
+        },
+        "q_note": {
+          "state": "not-reached",
+          "value": null
+        }
+      },
+      "orders": {
+        "blocks": {},
+        "items": {},
+        "choices": {}
+      },
+      "conditions": {},
+      "end": null
+    },
+    {
+      "index": 2,
+      "page": "p2",
+      "visible": [
+        "q_note"
+      ],
+      "errors": {},
+      "nav": {
+        "back": true
+      },
+      "questions": {
+        "q_sleep": {
+          "state": "answered",
+          "value": 5
+        },
+        "q_note": {
+          "state": "unanswered",
+          "value": null
+        }
+      },
+      "orders": {
+        "blocks": {},
+        "items": {},
+        "choices": {}
+      },
+      "conditions": {},
+      "end": null
+    },
+    {
+      "index": 3,
+      "page": null,
+      "visible": [],
+      "errors": {},
+      "nav": null,
+      "questions": {
+        "q_sleep": {
+          "state": "answered",
+          "value": 5
+        },
+        "q_note": {
+          "state": "unanswered",
+          "value": null
+        }
+      },
+      "orders": {
+        "blocks": {},
+        "items": {},
+        "choices": {}
+      },
+      "conditions": {},
+      "end": "complete"
+    },
+    {
+      "index": 4,
+      "page": null,
+      "visible": [],
+      "errors": {},
+      "nav": null,
+      "questions": {
+        "q_sleep": {
+          "state": "answered",
+          "value": 5
+        },
+        "q_note": {
+          "state": "unanswered",
+          "value": null
+        }
+      },
+      "orders": {
+        "blocks": {},
+        "items": {},
+        "choices": {}
+      },
+      "conditions": {},
+      "end": "complete"
+    }
+  ],
+  "invariants": [],
+  "response": null
+}

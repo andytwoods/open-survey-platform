@@ -42,7 +42,7 @@ from dataclasses import dataclass
 from datetime import datetime
 from typing import Any, Literal
 
-from sqlalchemy import Connection, insert, select, update
+from sqlalchemy import Connection, delete, insert, select, update
 
 from . import schema as t
 from .context import SystemContext, TenantContext, require_ctx, require_system
@@ -82,6 +82,7 @@ class SessionCredential:
     submitted_at: datetime | None
     expired_at: datetime | None  # holds released (not the token's expiry)
     publication_id: str
+    consented_at: datetime | None = None  # semantics.md §11 (0006_consent)
 
 
 @dataclass(frozen=True, slots=True)
@@ -101,6 +102,18 @@ class ParticipantSession:
     submitted_at: datetime | None
     expired_at: datetime | None
     response_id: str | None
+    consent_version: str | None = None  # agreed consent version (semantics.md §11)
+    consented_at: datetime | None = None
+
+
+@dataclass(frozen=True, slots=True)
+class ConsentRecord:
+    """``ok``: recorded now; ``replay``: this version was already recorded; ``mismatch``:
+    another version was recorded; ``submitted``: the session is closed."""
+
+    status: Literal["ok", "replay", "mismatch", "submitted"]
+    version: str | None
+    consented_at: datetime | None
 
 
 @dataclass(frozen=True, slots=True)
@@ -446,6 +459,8 @@ class ParticipantStore:
             r["submitted_at"],
             r["expired_at"],
             r["response_id"],
+            r["consent_version"],
+            r["consented_at"],
         )
 
     def get(self, ctx: TenantContext, session_id: str) -> ParticipantSession:
@@ -465,6 +480,7 @@ class ParticipantStore:
                     ps.submitted_at,
                     ps.expired_at,
                     ps.publication_id,
+                    ps.consented_at,
                 ).where(where)
             ).first()
         return None if r is None else SessionCredential(*r)
@@ -488,7 +504,14 @@ class ParticipantStore:
         return self._ps_where(ctx, session_id) & ps.submitted_at.is_(None)
 
     def _release(
-        self, conn: Connection, tenant_id: str, actor: str, sid: str, now: datetime, action: str
+        self,
+        conn: Connection,
+        tenant_id: str,
+        actor: str,
+        sid: str,
+        now: datetime,
+        action: str,
+        audit: bool = True,
     ) -> tuple[int, int]:
         """Give back the session's held quota places and balanced counts and set
         ``expired_at``. The caller holds the session row. Returns (quota, assignment)."""
@@ -529,9 +552,10 @@ class ParticipantStore:
                 )
                 .values(count=ac.count - 1)
             ).rowcount
-        self._s._audit(
-            conn, tenant_id, actor, action, "session", sid, {"quota_released": len(claims)}
-        )
+        if audit:
+            self._s._audit(
+                conn, tenant_id, actor, action, "session", sid, {"quota_released": len(claims)}
+            )
         return len(claims), assignment
 
     def _reacquire(self, conn: Connection, ctx: TenantContext, sid: str) -> bool:
@@ -705,6 +729,102 @@ class ParticipantStore:
                 )
                 for r in rows
             ]
+
+    # -- consent and withdrawal (semantics.md §11) ----------------------------------
+
+    def record_consent(self, ctx: TenantContext, session_id: str, version: str) -> ConsentRecord:
+        """Record that the participant agreed to consent ``version`` (server time). The
+        first agreement is kept: a repeat with the same version is a ``replay``."""
+        ctx = require_ctx(ctx)
+        sid = _id(session_id)
+        version = _name(version, "consent version", 80)
+        ps = t.participant_sessions.c
+        now = self._s._now()
+        with self._s._tx() as conn:
+            n = conn.execute(
+                update(t.participant_sessions)
+                .where(self._open(ctx, sid) & ps.consented_at.is_(None))
+                .values(consent_version=version, consented_at=now, last_active_at=now)
+            ).rowcount
+            if n == 1:
+                self._s._audit(
+                    conn,
+                    ctx.tenant_id,
+                    ctx.actor,
+                    "session.consent",
+                    "session",
+                    sid,
+                    {"version": version},
+                )
+                return ConsentRecord("ok", version, now)
+            cur = self._get(conn, ctx, sid)  # NotFound for another tenant's session
+            if cur.consented_at is not None:
+                same = cur.consent_version == version
+                return ConsentRecord(
+                    "replay" if same else "mismatch", cur.consent_version, cur.consented_at
+                )
+            return ConsentRecord("submitted", None, None)
+
+    def decline(self, ctx: TenantContext, session_id: str, *, count: bool = False) -> bool:
+        """The participant declined consent: delete the session (seed, assignment, token)
+        and give back its balanced-assignment counts, writing **no** audit entry and
+        nothing else about them. With ``count``, add one to the publication's anonymous
+        decline count. False (nothing changed) if the session already agreed or was
+        submitted."""
+        ctx = require_ctx(ctx)
+        sid = _id(session_id)
+        ps = t.participant_sessions.c
+        with self._s._tx() as conn:
+            row = conn.execute(
+                select(ps.publication_id, ps.consented_at, ps.submitted_at).where(
+                    self._ps_where(ctx, sid)
+                )
+            ).first()
+            if row is None:
+                raise NotFound("no such session")
+            if row.consented_at is not None or row.submitted_at is not None:
+                return False
+            self._release(conn, ctx.tenant_id, ctx.actor, sid, self._s._now(), "", audit=False)
+            conn.execute(delete(t.sessions).where(self._s._session_where(ctx, sid)))
+            if count:
+                pc = t.publications.c
+                conn.execute(
+                    update(t.publications)
+                    .where((pc.tenant_id == ctx.tenant_id) & (pc.id == row.publication_id))
+                    .values(declines=pc.declines + 1)
+                )
+        return True
+
+    def decline_count(self, ctx: TenantContext, publication_id: str) -> int:
+        """The anonymous decline count of one publication."""
+        ctx = require_ctx(ctx)
+        pc = t.publications.c
+        with self._s._engine.connect() as conn:
+            row = conn.execute(
+                select(pc.declines).where(
+                    (pc.tenant_id == ctx.tenant_id) & (pc.id == _id(publication_id))
+                )
+            ).first()
+        if row is None:
+            raise NotFound("no such publication")
+        return int(row.declines)
+
+    def withdraw(self, ctx: TenantContext, session_id: str, reason: str) -> int:
+        """Participant withdrawal: give back the holds of an unsubmitted session, then
+        delete the session and its response through ``Store.delete_session`` (which writes
+        the audit entry, without answer data). Returns the number of responses deleted."""
+        ctx = require_ctx(ctx)
+        sid = _id(session_id)
+        ps = t.participant_sessions.c
+        with self._s._tx() as conn:
+            row = conn.execute(
+                select(ps.submitted_at, ps.expired_at).where(self._ps_where(ctx, sid))
+            ).first()
+            if row is not None and row.submitted_at is None and row.expired_at is None:
+                self._release(
+                    conn, ctx.tenant_id, ctx.actor, sid, self._s._now(), "session.withdraw"
+                )
+        return self._s.delete_session(ctx, sid, reason=reason)
 
     # -- quotas ----------------------------------------------------------------------
 

@@ -124,3 +124,15 @@ class StoreParticipantRepo:
 
     def release_inactive(self, cutoff: datetime) -> Any:
         return self.ps.release_inactive(SystemContext("system:release"), cutoff)
+
+    # -- consent (M5, semantics.md §11) --------------------------------------------
+
+    def record_consent(self, tenant_id: str, session_id: str, version: str) -> Any:
+        return self.ps.record_consent(_participant(tenant_id, session_id), session_id, version)
+
+    def decline(self, tenant_id: str, session_id: str, count: bool) -> bool:
+        # The actor names no session: a decline leaves nothing about the participant.
+        return self.ps.decline(_participant(tenant_id), session_id, count=count)
+
+    def withdraw(self, tenant_id: str, session_id: str, reason: str) -> int:
+        return self.ps.withdraw(_participant(tenant_id, session_id), session_id, reason)

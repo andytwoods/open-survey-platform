@@ -1,0 +1,62 @@
+{
+  "format": "osp-fixture-expected/0",
+  "fixture": "40-consent",
+  "script": "decline",
+  "pending": [],
+  "steps": [
+    {
+      "index": 0,
+      "page": "$consent",
+      "visible": [],
+      "errors": {},
+      "nav": null,
+      "questions": {
+        "q_sleep": {
+          "state": "not-reached",
+          "value": null
+        },
+        "q_note": {
+          "state": "not-reached",
+          "value": null
+        }
+      },
+      "orders": {
+        "blocks": {},
+        "items": {},
+        "choices": {}
+      },
+      "conditions": {},
+      "end": null
+    },
+    {
+      "index": 1,
+      "page": null,
+      "visible": [],
+      "errors": {},
+      "nav": null,
+      "questions": {
+        "q_sleep": {
+          "state": "not-reached",
+          "value": null
+        },
+        "q_note": {
+          "state": "not-reached",
+          "value": null
+        }
+      },
+      "orders": {
+        "blocks": {},
+        "items": {},
+        "choices": {}
+      },
+      "conditions": {},
+      "end": "declined"
+    }
+  ],
+  "invariants": [],
+  "response": null,
+  "network": {
+    "snapshotWrites": 0,
+    "submits": 0
+  }
+}

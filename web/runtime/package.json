@@ -21,6 +21,7 @@
 	},
 	"dependencies": {
 		"@osp/engine": "workspace:*",
+		"@osp/hooks-sandbox": "workspace:*",
 		"@osp/ui-components": "workspace:*"
 	},
 	"devDependencies": {

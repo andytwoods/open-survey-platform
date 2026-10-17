@@ -168,6 +168,12 @@
 						<Button size="sm" onclick={() => dbg.restart()}>Restart run</Button>
 					</div>
 				</form>
+			{:else if v.status === 'consent'}
+				<p>The consent page is shown.</p>
+				<div class="row">
+					<Button size="sm" variant="primary" onclick={() => dbg.consent('agree')}>Agree</Button>
+					<Button size="sm" onclick={() => dbg.consent('decline')}>Decline</Button>
+				</div>
 			{:else}
 				<div class="row">
 					<Button size="sm" disabled={!dbg.canBack()} onclick={() => dbg.back()}>Back</Button>

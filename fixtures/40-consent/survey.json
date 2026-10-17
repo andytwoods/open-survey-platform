@@ -1,0 +1,67 @@
+{
+  "specVersion": "osp-survey/0.1",
+  "id": "f40_consent",
+  "version": 1,
+  "metadata": {
+    "title": "Consent before collection",
+    "description": "semantics.md §11 (M5): the consent page comes before any question; nothing is saved before agreement; a decline records no response; a withdrawal deletes it.",
+    "languages": [
+      "en"
+    ]
+  },
+  "settings": {
+    "backNavigation": true
+  },
+  "consent": {
+    "text": "This is a synthetic study about sleep. Taking part is voluntary and you can withdraw at any time.",
+    "agreeLabel": "I agree to take part",
+    "declineLabel": "I do not want to take part",
+    "declineOutcome": "declined",
+    "countDeclines": true
+  },
+  "blocks": [
+    {
+      "id": "p1",
+      "pages": [
+        {
+          "id": "p1_page",
+          "items": [
+            {
+              "type": "integer",
+              "id": "q_sleep",
+              "label": "How many hours did you sleep last night?",
+              "required": true
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "id": "p2",
+      "pages": [
+        {
+          "id": "p2_page",
+          "items": [
+            {
+              "type": "text",
+              "id": "q_note",
+              "label": "Anything else? (optional)"
+            }
+          ]
+        }
+      ]
+    }
+  ],
+  "flow": [
+    {
+      "type": "block",
+      "id": "n_p1",
+      "block": "p1"
+    },
+    {
+      "type": "block",
+      "id": "n_p2",
+      "block": "p2"
+    }
+  ]
+}

@@ -1275,6 +1275,7 @@
       },
       "hidden": {
         "settings.retention": "Chosen in the publish dialog; publishing is refused until it is set.",
+        "consent": "The consent page (text, button labels, decline outcome, decline count); edited in the JSON view until the builder has a consent editor.",
         "specVersion": "Format version, written by the platform.",
         "id": "Stable survey identity, assigned at creation.",
         "version": "Published version number, set by publishing.",
@@ -1331,6 +1332,19 @@
           "group": "Logic",
           "help": {
             "en": "Show the question only when this condition is true. Always shown when empty."
+          }
+        },
+        "multiline": {
+          "kind": "bool",
+          "label": {
+            "en": "Long text"
+          },
+          "required": false,
+          "default": false,
+          "translatable": false,
+          "group": "Basics",
+          "help": {
+            "en": "Show a multi-line box that keeps line breaks, for longer answers."
           }
         },
         "required": {

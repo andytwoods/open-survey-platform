@@ -96,7 +96,10 @@ export function previewApi(cfg: PreviewConfig): Api {
 			const result = (quota && cfg.quotas?.[quota]) || 'open';
 			return { nodeId, quota, result, replay: false } as unknown as QuotaResponse;
 		},
-		submit: async () => ({ responseId: ID, submittedAt: now(), late: false, replay: false }) as unknown as SubmitResponse
+		submit: async () => ({ responseId: ID, submittedAt: now(), late: false, replay: false }) as unknown as SubmitResponse,
+		consent: async () => ({ ok: true }),
+		decline: async () => ({ ok: true }),
+		withdraw: async () => ({ ok: true })
 	};
 }
 

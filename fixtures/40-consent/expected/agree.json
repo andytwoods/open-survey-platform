@@ -1,0 +1,142 @@
+{
+  "format": "osp-fixture-expected/0",
+  "fixture": "40-consent",
+  "script": "agree",
+  "pending": [],
+  "steps": [
+    {
+      "index": 0,
+      "page": "$consent",
+      "visible": [],
+      "errors": {},
+      "nav": null,
+      "questions": {
+        "q_sleep": {
+          "state": "not-reached",
+          "value": null
+        },
+        "q_note": {
+          "state": "not-reached",
+          "value": null
+        }
+      },
+      "orders": {
+        "blocks": {},
+        "items": {},
+        "choices": {}
+      },
+      "conditions": {},
+      "end": null
+    },
+    {
+      "index": 1,
+      "page": "p1",
+      "visible": [
+        "q_sleep"
+      ],
+      "errors": {},
+      "nav": {
+        "back": false
+      },
+      "questions": {
+        "q_sleep": {
+          "state": "unanswered",
+          "value": null
+        },
+        "q_note": {
+          "state": "not-reached",
+          "value": null
+        }
+      },
+      "orders": {
+        "blocks": {},
+        "items": {},
+        "choices": {}
+      },
+      "conditions": {},
+      "end": null
+    },
+    {
+      "index": 2,
+      "page": "p2",
+      "visible": [
+        "q_note"
+      ],
+      "errors": {},
+      "nav": {
+        "back": true
+      },
+      "questions": {
+        "q_sleep": {
+          "state": "answered",
+          "value": 7
+        },
+        "q_note": {
+          "state": "unanswered",
+          "value": null
+        }
+      },
+      "orders": {
+        "blocks": {},
+        "items": {},
+        "choices": {}
+      },
+      "conditions": {},
+      "end": null
+    },
+    {
+      "index": 3,
+      "page": null,
+      "visible": [],
+      "errors": {},
+      "nav": null,
+      "questions": {
+        "q_sleep": {
+          "state": "answered",
+          "value": 7
+        },
+        "q_note": {
+          "state": "answered",
+          "value": "slept well"
+        }
+      },
+      "orders": {
+        "blocks": {},
+        "items": {},
+        "choices": {}
+      },
+      "conditions": {},
+      "end": "complete"
+    }
+  ],
+  "invariants": [],
+  "response": {
+    "surveyId": "f40_consent",
+    "surveyVersion": 1,
+    "end": "complete",
+    "allocation": "server",
+    "sessionSeed": 4001,
+    "conditions": {},
+    "orders": {
+      "blocks": {},
+      "items": {},
+      "choices": {}
+    },
+    "answers": {
+      "q_sleep": {
+        "state": "answered",
+        "value": 7
+      },
+      "q_note": {
+        "state": "answered",
+        "value": "slept well"
+      }
+    },
+    "csvState": {
+      "q_sleep__state": "answered",
+      "q_note__state": "answered"
+    },
+    "consentVersion": "sha256:409d86757dbb5865d0077df1be895ba6cc94997011db60e2a6bf4f4814a6329f",
+    "consentedAt": "<engine>"
+  }
+}

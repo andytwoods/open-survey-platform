@@ -14,7 +14,7 @@ interface Sess {
 	revision: number;
 	snapshot: Snapshot | null;
 	submitted: ResponseRecord | null;
-	quotas: Record<string, 'admitted' | 'full'>;
+	quotas: Record<string, 'open' | 'full'>;
 }
 
 export class FakeServer {
@@ -27,7 +27,7 @@ export class FakeServer {
 	dropReplies = 0;
 	/** Per call name: the next N such requests are applied but their replies are lost. */
 	dropOn: Record<string, number> = {};
-	quotaResult: 'admitted' | 'full' = 'admitted';
+	quotaResult: 'open' | 'full' = 'open';
 	private n = 0;
 
 	constructor(

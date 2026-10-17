@@ -22,11 +22,18 @@ laptop and nothing else: with ``OSP_ENV=production`` it is never read or written
 
 The builder talks to this server through its dev server's ``/api`` proxy
 (``web/builder/vite.config.ts``), so the browser sees one origin and no CORS is needed.
+
+Logs never hold a client IP address (runtime-design §7, review §9 Q8): uvicorn's access
+log is written without ``client_addr`` (``LOG_CONFIG``), and :class:`NoClientAddress`
+blanks the address in the arguments of every uvicorn log record, so no other handler or
+format can print it either. ``proxy_headers`` stays off, so no forwarded address is read.
 """
 
 from __future__ import annotations
 
 import argparse
+import copy
+import logging
 import os
 import sys
 from collections.abc import Mapping, Sequence
@@ -129,6 +136,34 @@ def prepare(settings: Settings, environ: Mapping[str, str] | None = None) -> Sto
     return Store(engine, keyring)
 
 
+class NoClientAddress(logging.Filter):
+    """Blank the client address in uvicorn log records. uvicorn passes it as the first
+    argument of its access lines (``'%s - "%s %s HTTP/%s" %d'``) and of its WebSocket
+    lines; the record is changed in place, so every handler sees ``-`` instead."""
+
+    def filter(self, record: logging.LogRecord) -> bool:
+        if (
+            isinstance(record.args, tuple)
+            and record.args
+            and isinstance(record.msg, str)
+            and record.msg.startswith("%s - ")
+        ):
+            record.args = ("-", *record.args[1:])
+        return True
+
+
+def log_config() -> dict:
+    """uvicorn's default logging, minus the client address (see module docstring)."""
+    import uvicorn.config
+
+    cfg = copy.deepcopy(uvicorn.config.LOGGING_CONFIG)
+    cfg["formatters"]["access"]["fmt"] = '%(levelprefix)s "%(request_line)s" %(status_code)s'
+    cfg.setdefault("filters", {})["no_client_address"] = {"()": NoClientAddress}
+    for name in ("uvicorn", "uvicorn.error", "uvicorn.access"):
+        cfg["loggers"].setdefault(name, {})["filters"] = ["no_client_address"]
+    return cfg
+
+
 def build_app(settings: Settings, environ: Mapping[str, str] | None = None) -> FastAPI:
     from .app import create_app
 
@@ -165,6 +200,7 @@ def main(argv: Sequence[str] | None = None) -> int:
         host=args.host or settings.host,
         port=args.port or settings.port,
         log_level="info",
+        log_config=log_config(),
         proxy_headers=False,
     )
     return 0

@@ -216,7 +216,7 @@ describe('engine properties', () => {
 					expect(canonicalJson(roundTrip(s).data)).toBe(canonicalJson(s.data));
 				}
 			}),
-			{ numRuns: RUNS }
+			{ numRuns: RUNS, ...(process.env.OSP_PROPERTY_SEED ? { seed: Number(process.env.OSP_PROPERTY_SEED) } : {}) }
 		);
 	});
 
@@ -254,7 +254,7 @@ describe('engine properties', () => {
 				expect(view(s).status).toBe('ended');
 				expect(view(s).nav).toBeNull();
 			}),
-			{ numRuns: RUNS }
+			{ numRuns: RUNS, ...(process.env.OSP_PROPERTY_SEED ? { seed: Number(process.env.OSP_PROPERTY_SEED) } : {}) }
 		);
 	});
 });

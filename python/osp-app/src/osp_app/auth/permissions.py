@@ -25,6 +25,7 @@ class Action(StrEnum):
     SURVEY_PUBLISH = "survey.publish"
     SURVEY_EXPORT = "survey.export"  # includes response data
     SURVEY_DELETE = "survey.delete"
+    RESPONSE_DELETE = "response.delete"  # delete one participant's response (withdrawal)
     MEMBERS_VIEW = "members.view"
     MEMBERS_MANAGE = "members.manage"  # invite, remove, change roles
 
@@ -40,6 +41,7 @@ _ACTION_KIND: Mapping[Action, ResourceKind] = {
     Action.SURVEY_PUBLISH: ResourceKind.SURVEY,
     Action.SURVEY_EXPORT: ResourceKind.SURVEY,
     Action.SURVEY_DELETE: ResourceKind.SURVEY,
+    Action.RESPONSE_DELETE: ResourceKind.SURVEY,
     Action.MEMBERS_VIEW: ResourceKind.TENANT,
     Action.MEMBERS_MANAGE: ResourceKind.TENANT,
 }
@@ -52,6 +54,7 @@ POLICY: Mapping[Role, frozenset[Action]] = {
             Action.SURVEY_EDIT,
             Action.SURVEY_PUBLISH,
             Action.SURVEY_EXPORT,
+            Action.RESPONSE_DELETE,
             Action.MEMBERS_VIEW,
         }
     ),

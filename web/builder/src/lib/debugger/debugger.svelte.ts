@@ -3,7 +3,7 @@
  * fixture-style script and jump through it, compare with an expected trace, export the run.
  * It drives the preview host's engine state; the host keeps the device frames on it.
  */
-import { back, canGoBack, next, tryAnswer, view, type State } from '@osp/engine';
+import { back, canGoBack, next, tryAnswer, tryConsent, view, type State } from '@osp/engine';
 import type { PreviewHost } from '../preview/host.svelte';
 import { compareStep, exportScript, parseScript, playScript, settle, startState, traceStep, type Diff, type Script } from './script';
 
@@ -83,6 +83,20 @@ export class DebuggerState {
 		this.afterNext = true;
 		this.detach();
 		this.host.setState(s);
+	}
+
+	/** The consent page (semantics §11): agree or decline. */
+	consent(decision: 'agree' | 'decline') {
+		const s = this.state;
+		if (!s) return;
+		const r = tryConsent(s, decision);
+		if (r.rejected) {
+			this.message = `${decision}: ${r.rejected}`;
+			return;
+		}
+		this.afterNext = false;
+		this.detach();
+		this.host.setState(r.state);
 	}
 
 	canBack(): boolean {

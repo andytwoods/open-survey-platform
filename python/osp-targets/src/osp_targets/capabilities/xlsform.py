@@ -73,6 +73,17 @@ _row("Retention.kind", "unsupported", "See Settings.retention.")
 _row("Retention.days", "unsupported", "See Settings.retention.")
 _row("Retention.until", "unsupported", "See Settings.retention.")
 _row(
+    "Survey.consent",
+    "unsupported",
+    "Our runtime's consent page (no data before agreement); not written, so the exported "
+    "form has no consent gate. Add an equivalent first question by hand.",
+)
+_row("Consent.text", "unsupported", "See Survey.consent.")
+_row("Consent.agreeLabel", "unsupported", "See Survey.consent.")
+_row("Consent.declineLabel", "unsupported", "See Survey.consent.")
+_row("Consent.declineOutcome", "unsupported", "See Survey.consent.")
+_row("Consent.countDeclines", "unsupported", "See Survey.consent.")
+_row(
     "Settings.backNavigation=false",
     "unsupported",
     "XLSForm cannot disable Back (Enketo has no option; Collect only via device settings).",
@@ -114,6 +125,7 @@ _rows(
 )
 _row("DecimalQuestion.type", "native", "`decimal`.")
 _row("TextQuestion.type", "native", "`text`; trimming follows Enketo (§2).")
+_row("TextQuestion.multiline", "native", "`appearance: multiline` (a textarea in Enketo).")
 _row("SingleQuestion.type", "native", "`select_one <list>`.")
 _row("MultiQuestion.type", "native", "`select_multiple <list>`.")
 _row("DateQuestion.type", "native", "`date`.")

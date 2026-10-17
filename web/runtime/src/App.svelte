@@ -3,13 +3,16 @@
 	import { onMount, tick } from 'svelte';
 	import { httpApi } from './lib/api';
 	import ErrorSummary from './lib/ErrorSummary.svelte';
+	import { browserHooks } from './lib/hooks';
 	import { keyboard } from './lib/keyboard.svelte';
-	import { fill, ui } from './lib/messages';
+	import { fill, negotiateLanguage, STRINGS, ui, useLanguage } from './lib/messages';
 	import Question from './lib/Question.svelte';
 	import { boot, BootError, type Env, type Session } from './lib/session';
-	import { localStorageBackup, MemoryStore, openIndexedDb } from './lib/storage';
+	import { localStorageBackup, localStoragePointer, MemoryStore, openIndexedDb, sessionPointer } from './lib/storage';
 	import { domId, errorText, plain } from './lib/view-map';
-	import type { Device } from '@osp/engine';
+	import ConsentPage from './lib/ConsentPage.svelte';
+	import Withdraw from './lib/Withdraw.svelte';
+	import { declinedConsent, type Device } from '@osp/engine';
 	import type { PreviewMount } from './lib/preview-mount';
 
 	/** Preview mode (B11): run on a given plan with no server and memory-only storage. */
@@ -19,7 +22,7 @@
 	let bootError = $state.raw<BootError | null>(null);
 	/** Bumped on every session change: the session is a plain object, not reactive. */
 	let version = $state(0);
-	let drafts = $state<Record<string, string>>({});
+	let drafts = $state<Record<string, string | undefined>>({});
 	let heading = $state<HTMLElement | null>(null);
 	let summary = $state<HTMLElement | null>(null);
 	let navHeight = $state(0);
@@ -52,11 +55,25 @@
 		return new Set(view.items.filter((i) => !firstItems.has(i.id)).map((i) => i.id));
 	});
 
-	const errors = $derived(
-		(view?.items ?? [])
+	const errors = $derived.by(() => {
+		if (!view) return [];
+		const out = view.items
 			.filter((i) => i.error)
-			.map((i) => ({ id: i.id, domId: domId(i.id), label: plain(i.label), message: errorText(i) ?? '' }))
-	);
+			.map((i) => ({ id: i.id, domId: domId(i.id), label: plain(i.label), message: errorText(i) ?? '' }));
+		// A hook's rejectPage without an item is a page-level message (§7a).
+		const pageError = view.page ? view.errors[view.page] : undefined;
+		if (pageError) out.unshift({ id: view.page!, domId: '', label: '', message: plain(pageError.message) || ui.constraint });
+		return out;
+	});
+	const sessionNotice = $derived.by(() => {
+		void version;
+		const n = session?.notice ?? null;
+		return n ? { kind: n, text: n === 'conflict' ? ui.conflict : ui.restarted } : null;
+	});
+	const hookRetry = $derived.by(() => {
+		void version;
+		return session?.hookRetry ?? false;
+	});
 	const title = $derived(view ? plain(view.title) : '');
 	const resumeLink = $derived(
 		session && session.saveMode === 'every-page'
@@ -65,6 +82,7 @@
 	);
 	const notice = $derived.by(() => {
 		if (!session?.storageBlocked) return '';
+		if (session.memory === 'chosen') return ui.memoryChosen;
 		return session.saveMode === 'end-only' ? ui.memoryEndOnly : ui.memoryEveryPage;
 	});
 	const status = $derived.by(() => {
@@ -89,7 +107,7 @@
 		lastReplaced = replaced;
 		if (changed || wasReplaced) drafts = {};
 		// Wait out a quota check or the submit: focus goes to what comes after it.
-		const waiting = phase === 'pending' || phase === 'submitting';
+		const waiting = phase === 'pending' || phase === 'hook' || phase === 'submitting';
 		if (wasReplaced || (changed && focusOnPage && !waiting)) {
 			focusOnPage = null;
 			void tick().then(() => heading?.focus());
@@ -99,7 +117,7 @@
 	async function onNext() {
 		if (!session) return;
 		focusOnPage = 'heading';
-		const outcome = session.next();
+		const outcome = await session.next();
 		if (outcome === 'invalid') {
 			focusOnPage = null;
 			await tick();
@@ -107,29 +125,48 @@
 			summary?.scrollIntoView({ block: 'start' });
 		}
 	}
-	function onBack() {
+	async function onBack() {
 		if (!session) return;
 		focusOnPage = 'heading';
-		if (!session.back()) focusOnPage = null;
+		if (!(await session.back())) focusOnPage = null;
 	}
 	function onAnswer(id: string, value: unknown) {
-		if (typeof value === 'string') drafts[id] = value;
+		// What the widget holds as typed (null: empty or not a number yet).
+		drafts[id] = typeof value === 'string' ? value : undefined;
 		session?.answer(id, value);
+	}
+	async function onRetryHook() {
+		focusOnPage = 'heading';
+		await session?.retryHook();
 	}
 
 	// -- theme (§6a) -------------------------------------------------------------------
 	const DEFAULT_THEME = (THEME_PRESETS.find((p) => p.id === 'clean') ?? THEME_PRESETS[0]!).theme as Theme;
-	function applyTheme(theme: Theme) {
+	/** The theme on screen: the plan's (`plan.theme`, when the survey has one) or the default preset. */
+	let currentTheme: Theme = DEFAULT_THEME;
+	let darkQuery: MediaQueryList | undefined;
+	function paintTheme() {
 		const root = document.documentElement;
-		const dark = window.matchMedia?.('(prefers-color-scheme: dark)');
-		const apply = () => {
-			for (const [k, v] of Object.entries(themeToCssVars(theme, resolveMode(theme, !!dark?.matches)))) {
-				root.style.setProperty(k, v);
-			}
-			for (const [k, v] of Object.entries(themeDataAttributes(theme))) root.setAttribute(k, v);
-		};
-		apply();
-		dark?.addEventListener?.('change', apply);
+		const theme = currentTheme;
+		for (const [k, v] of Object.entries(themeToCssVars(theme, resolveMode(theme, !!darkQuery?.matches)))) {
+			root.style.setProperty(k, v);
+		}
+		for (const [k, v] of Object.entries(themeDataAttributes(theme))) root.setAttribute(k, v);
+	}
+	function applyTheme(theme: Theme) {
+		currentTheme = theme;
+		if (!darkQuery) {
+			darkQuery = window.matchMedia?.('(prefers-color-scheme: dark)');
+			darkQuery?.addEventListener?.('change', paintTheme);
+		}
+		try {
+			paintTheme();
+		} catch (e) {
+			// A theme this app can't read (e.g. a newer format): keep the default preset.
+			console.warn('[osp-runtime] theme not applied', e);
+			currentTheme = DEFAULT_THEME;
+			paintTheme();
+		}
 	}
 
 	// -- boot ------------------------------------------------------------------------
@@ -161,22 +198,33 @@
 			return;
 		}
 		const store = preview ? null : ((await openIndexedDb()) ?? new MemoryStore());
+		const log = (msg: string, detail?: unknown) => console.warn(`[osp-runtime] ${msg}`, detail ?? '');
 		const env: Env = preview?.env ?? {
 			api: httpApi(''),
 			store: store!,
 			backup: localStorageBackup(),
+			pointer: sessionPointer(),
+			devicePointer: localStoragePointer(),
+			hooks: browserHooks({ slug, log }),
 			now: () => Date.now(),
 			random: Math.random,
 			setTimer: (fn, ms) => setTimeout(fn, ms),
 			clearTimer: (h) => clearTimeout(h as number),
-			log: (msg, detail) => console.warn(`[osp-runtime] ${msg}`, detail ?? '')
+			log
 		};
+		const languages = navigator.languages?.length ? navigator.languages : [navigator.language];
 		try {
-			const language = preview?.language ?? navigator.language;
-			const s = await boot(env, { slug, resumeToken, urlParams, language, device: device() });
+			const s = await boot(env, {
+				slug,
+				resumeToken,
+				urlParams,
+				languages: preview?.language ? [preview.language] : languages,
+				device: device()
+			});
 			preview?.onSession?.(s);
+			useLanguage(s.view().language);
 			const planTheme = (s.plan as unknown as { theme?: Theme }).theme;
-			if (planTheme) applyTheme(planTheme);
+			if (planTheme && typeof planTheme === 'object') applyTheme(planTheme);
 			s.subscribe(() => version++);
 			session = s;
 			(window as unknown as { __osp?: unknown }).__osp = s; // test and debugging hook
@@ -190,6 +238,8 @@
 	async function startAgain() {
 		const store = (await openIndexedDb()) ?? null;
 		await store?.delete(slug);
+		sessionPointer().clear(slug);
+		localStoragePointer()?.clear(slug);
 		location.reload();
 	}
 
@@ -206,7 +256,21 @@
 		if (title) document.title = view?.page ? `${title} – ${fill(ui.page, { n: view.trial })}` : title;
 	});
 
+	// A hook chose a declared end redirect (e.g. back to Prolific): go there after thanks.
+	let redirected = false;
+	$effect(() => {
+		void version;
+		const url = phase === 'done' ? session?.redirectUrl : null;
+		if (url && !redirected) {
+			redirected = true;
+			setTimeout(() => location.assign(url), 1500);
+		}
+	});
+
 	onMount(() => {
+		// The app's own strings before the plan is known: the browser's languages.
+		useLanguage(negotiateLanguage(navigator.languages ?? [navigator.language], Object.keys(STRINGS), 'en'));
+		(window as unknown as { __ospUi?: unknown }).__ospUi = ui; // Next/Back names for the harness
 		applyTheme(DEFAULT_THEME);
 		const stopKeyboard = keyboard.start();
 		const hidden = () => {
@@ -222,6 +286,7 @@
 		const pagehide = () => {
 			session?.flushLocalSync();
 			session?.flushKeepalive();
+			session?.unloading();
 		};
 		const online = () => session?.wake();
 		document.addEventListener('visibilitychange', hidden);
@@ -254,6 +319,8 @@
 		<main class="page" id="main" aria-busy="true">
 			<p class="muted">{ui.loading}</p>
 		</main>
+	{:else if view.status === 'consent' || declinedConsent(session.state)}
+		<ConsentPage {session} {view} />
 	{:else if phase === 'done'}
 		<main class="page" id="main">
 			<h1 tabindex="-1" bind:this={heading} data-testid="thanks">{ui.thanksTitle}</h1>
@@ -261,6 +328,10 @@
 				<p>{plain(view.end.message)}</p>
 			{/if}
 			<p>{ui.thanks}</p>
+			{#if session.redirectUrl}
+				<p><a href={session.redirectUrl}>{ui.redirecting}</a></p>
+			{/if}
+			<Withdraw {session} {version} />
 		</main>
 	{:else if phase === 'fatal'}
 		<main class="page" id="main">
@@ -275,6 +346,16 @@
 	{:else}
 		<main class="page" id="main" lang={view.language} onfocusout={() => session?.blur()}>
 			{#if notice}<p class="notice" data-testid="storage-notice">{notice}</p>{/if}
+			{#if sessionNotice}
+				<!-- R6-6 / R6-5: inserted while the page is shown, so role=alert announces it once. -->
+				<p class="notice" role="alert" data-notice={sessionNotice.kind} data-testid="session-notice">{sessionNotice.text}</p>
+			{/if}
+			{#if hookRetry}
+				<div class="notice" role="alert" data-testid="hook-retry">
+					<p>{ui.hookRetry}</p>
+					<button type="button" class="btn primary" onclick={onRetryHook} disabled={phase !== 'page'}>{ui.retry}</button>
+				</div>
+			{/if}
 			<h1 tabindex="-1" bind:this={heading}>
 				{title}
 				<span class="pageno">{fill(ui.page, { n: view.trial })}</span>
@@ -290,6 +371,7 @@
 							lang={view.language}
 							revealed={revealed.has(item.id)}
 							draft={drafts[item.id]}
+							multiline={(session.plan.items[item.id] as { multiline?: boolean } | undefined)?.multiline === true}
 							onanswer={onAnswer}
 						/>
 					{/each}
@@ -311,6 +393,7 @@
 						<button type="button" class="btn" onclick={copyLink}>{copied ? ui.copied : ui.copy}</button>
 					</div>
 				</details>
+				<Withdraw {session} {version} />
 			{/if}
 		</main>
 		<nav class="nav" class:docked={keyboard.open} aria-label="Survey" bind:offsetHeight={navHeight}>

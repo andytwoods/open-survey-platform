@@ -100,6 +100,8 @@ export interface QuestionItem extends ItemBase {
 	/** Inclusive bounds for `integer`, `slider` (integers) and `decimal` (integers or decimal text). */
 	min?: number | string;
 	max?: number | string;
+	/** `text` only: long text (a multi-line field that keeps line breaks, semantics §2). */
+	multiline?: boolean;
 	/** A matrix row: the matrix item it belongs to (its relevance is the matrix's). */
 	matrix?: Id;
 	/** `slider` only: stored as an integer or a canonical decimal; answers are min + k·step. */
@@ -220,6 +222,23 @@ export type FlowNode =
 	| QuotaCheckNode
 	| EndNode;
 
+/**
+ * The consent page (semantics.md §11): shown before the flow, at most once. `version` is
+ * the checksum of the compiled texts; a decline ends with `declineOutcome` and records
+ * no response.
+ */
+export interface ConsentPlan {
+	version: string;
+	text: Text;
+	agree: Text;
+	decline: Text;
+	declineOutcome: Id;
+	countDeclines: boolean;
+}
+
+/** The page id the view reports while the consent page is shown (the `$` namespace is reserved). */
+export const CONSENT_PAGE = '$consent';
+
 // --- Plan ----------------------------------------------------------------------------
 
 export interface Plan {
@@ -246,6 +265,8 @@ export interface Plan {
 		/** Days of inactivity after which a resume link stops working. */
 		resumeExpiryDays: number;
 	};
+	/** Optional consent page, shown before any question (semantics.md §11). */
+	consent?: ConsentPlan;
 	items: Record<Id, Item>;
 	/** Answerable question ids in flow order (export column order). */
 	questions: Id[];
@@ -254,6 +275,19 @@ export interface Plan {
 	variables: Record<Id, Variable>;
 	quotas: Record<Id, Quota>;
 	flow: FlowNode[];
+	/**
+	 * Researcher hooks declared at publish (runtime-design.md §7a): the `osp-hooks/1`
+	 * manifest (`web/hooks-sandbox` HookManifest). Opaque to the engine, but part of the plan
+	 * and so of its checksum. Absent when the survey runs no custom code.
+	 */
+	hooks?: PlanHooks;
+}
+
+export interface PlanHooks {
+	format: 'osp-hooks/1';
+	source: string;
+	handlers: Record<string, { reads: Id[]; writes: Id[]; timeoutMs?: number }>;
+	[key: string]: unknown;
 }
 
 /** An item that stores a value (not a note, not a matrix: a matrix's rows are questions). */

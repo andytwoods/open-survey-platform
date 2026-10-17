@@ -2,6 +2,7 @@
 
 from .config import Assignment, QuotaNode, RuntimeConfig
 from .errors import (
+    ConsentRequired,
     InvalidPayload,
     InvalidToken,
     NotFoundError,
@@ -18,6 +19,7 @@ from .errors import (
 from .limiter import TokenBucket
 from .ports import Clock, RandomSource, SystemRandom, system_clock
 from .session import (
+    ConsentAck,
     ParticipantRepo,
     QuotaOutcome,
     Resumed,
@@ -33,6 +35,8 @@ from .session import (
 __all__ = [
     "Assignment",
     "Clock",
+    "ConsentAck",
+    "ConsentRequired",
     "InvalidPayload",
     "InvalidToken",
     "NotFoundError",

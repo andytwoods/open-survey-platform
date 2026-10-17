@@ -41,6 +41,8 @@ interface DomState {
 	items: DomItem[];
 	snapshot: unknown;
 	sid: string | null;
+	/** A runtime notice on screen (`data-notice`: "conflict", "restarted"), FORMAT.md §3. */
+	notice: string | null;
 }
 
 export interface Problem {
@@ -74,7 +76,7 @@ class QuotaGate {
 	calls: Record<string, number> = {};
 	permits = 0;
 	lastFate: QuotaFate | null = null;
-	private held: Array<{ route: Route; node: string }> = [];
+	private held: Array<{ route: Route; node: string; at: number }> = [];
 	private busy: Promise<void> = Promise.resolve();
 
 	constructor(private fates: Record<string, QuotaFate[]>) {}
@@ -88,8 +90,15 @@ class QuotaGate {
 			this.calls[node] = (this.calls[node] ?? 0) + 1;
 			return route.continue();
 		}
-		this.held.push({ route, node });
+		this.held.push({ route, node, at: Date.now() });
 		this.pump();
+	}
+
+	/** Drop requests held since before `t` (sent by a page that has since been reloaded). */
+	discardBefore(t: number) {
+		const old = this.held.filter((h) => h.at < t);
+		this.held = this.held.filter((h) => h.at >= t);
+		for (const h of old) void h.route.abort('aborted').catch(() => undefined);
 	}
 
 	allow(n = 1) {
@@ -199,16 +208,20 @@ function probe(): DomState {
 		back: false, // filled in by role (observe)
 		items,
 		snapshot: s?.rec?.snapshot ?? null,
-		sid: s?.rec?.sessionId ?? null
+		sid: s?.rec?.sessionId ?? null,
+		notice: document.querySelector('[data-notice]')?.getAttribute('data-notice') ?? null
 	};
 }
 
 /** The app is idle and the screen shows the engine's current page. */
 function settled(): boolean {
-	const s = (window as unknown as { __osp?: { phase: string; view(): { page: string | null; items: unknown[] } } }).__osp;
+	const s = (window as unknown as { __osp?: { phase: string; saving?: boolean; view(): { page: string | null; items: unknown[] } } }).__osp;
 	if (!s) return false;
 	if (s.phase === 'submitting') return false;
-	if (s.phase === 'done') return !!document.querySelector('[data-testid="thanks"]');
+	// A save in flight can still come back 409 and replace the page (R6-6): wait for it.
+	if (s.saving) return false;
+	// A declined consent (M5) ends on its own closing screen.
+	if (s.phase === 'done') return !!document.querySelector('[data-testid="thanks"], [data-testid="declined"]');
 	if (s.phase === 'fatal') return true;
 	const v = s.view();
 	const el = document.querySelector('.items[data-page]');
@@ -358,7 +371,7 @@ export class Player {
 	async observe(index: number): Promise<Record<string, unknown>> {
 		const page = this.page;
 		const dom = await page.evaluate(probe);
-		dom.back = (await page.getByRole('button', { name: 'Back', exact: true }).count()) > 0;
+		dom.back = (await page.getByRole('button', { name: await navName(page, 'back'), exact: true }).count()) > 0;
 		const plan = this.plan!;
 		const at = `steps[${index}]`;
 		// One participant, one session: a refresh, resume or device switch must continue it.
@@ -434,7 +447,8 @@ export class Player {
 			page: ended ? null : blockOfPage(plan, dom.page),
 			visible: ended ? [] : dom.items.map((i) => i.id),
 			errors,
-			nav: ended ? null : { back: dom.back },
+			// The consent page (M5) has no navigation bar.
+			nav: ended || dom.page === '$consent' ? null : { back: dom.back },
 			questions: eng.questions,
 			orders: eng.orders,
 			conditions: eng.conditions,
@@ -443,7 +457,8 @@ export class Player {
 			choiceLabels: ended ? {} : choiceLabels,
 			effect: eng.effect,
 			device: this.device,
-			builtins: eng.builtins
+			builtins: eng.builtins,
+			notice: dom.notice
 		};
 		return step;
 	}
@@ -541,24 +556,40 @@ export class Player {
 				await this.next(i);
 				break;
 			case 'back': {
-				const btn = page.getByRole('button', { name: 'Back', exact: true });
+				const btn = page.getByRole('button', { name: await navName(page, 'back'), exact: true });
 				if ((await btn.count()) === 0) throw new ScriptError(i, 'back: no Back button');
 				await btn.focus();
 				await btn.press('Enter');
 				await this.settle();
 				break;
 			}
-			case 'refresh':
+			case 'refresh': {
+				// A pending effect is re-sent once by the reloaded app (FORMAT.md `retry`, R6-4).
+				const pending = await this.isPending(page);
+				const at = Date.now();
 				await page.reload();
+				if (pending) {
+					this.gate.discardBefore(at);
+					this.gate.allow(1);
+				}
 				await this.waitBoot(page);
+				if (pending) await this.awaitQuota();
 				break;
+			}
 			case 'resume': {
 				// Leave (close the tab, no unload handlers) and come back to the link later.
 				const entry = this.contexts.get(this.device)!;
+				const pending = await this.isPending(entry.page);
+				const at = Date.now();
 				await entry.page.close();
+				if (pending) {
+					this.gate.discardBefore(at);
+					this.gate.allow(1);
+				}
 				entry.page = await entry.ctx.newPage();
 				await entry.page.goto(`/s/${encodeURIComponent(this.o.slug)}`);
 				await this.waitBoot(entry.page);
+				if (pending) await this.awaitQuota();
 				break;
 			}
 			case 'switchDevice':
@@ -570,6 +601,38 @@ export class Player {
 				await page.evaluate(() => window.dispatchEvent(new Event('online')));
 				await this.awaitQuota();
 				break;
+			case 'agree':
+			case 'decline': {
+				// The consent page (M5): its buttons are named by the plan's labels.
+				const label = await page.evaluate((which) => {
+					const c = (window as unknown as { __osp: { view(): { consent?: Record<string, Array<{ text: string }>> } } }).__osp.view().consent;
+					return (c?.[which] ?? []).map((p) => p.text).join('');
+				}, a.do);
+				const btn = page.getByRole('button', { name: exactName(label) });
+				if (!label || (await btn.count()) === 0) throw new ScriptError(i, `${a.do}: no consent button "${label}"`);
+				await btn.click();
+				if (a.do === 'decline') await page.getByTestId('declined').waitFor({ timeout: SETTLE_MS });
+				else {
+					// Agreeing waits for the server's acknowledgement before the flow starts.
+					await page
+						.waitForFunction(
+							() => (window as unknown as { __osp: { view(): { status: string } } }).__osp.view().status !== 'consent',
+							null,
+							{ timeout: SETTLE_MS }
+						)
+						.catch(() => this.problems.push({ path: 'agree', expected: 'the flow starts', actual: 'still on the consent page' }));
+				}
+				await this.settle();
+				break;
+			}
+			case 'withdraw': {
+				const open = page.getByRole('button', { name: 'Withdraw my answers', exact: true });
+				if ((await open.count()) === 0) throw new ScriptError(i, 'withdraw: no Withdraw button');
+				await open.click();
+				await page.getByRole('button', { name: 'Yes, delete my answers', exact: true }).click();
+				await page.getByTestId('withdrawn').waitFor({ timeout: SETTLE_MS });
+				break;
+			}
 			case 'offline':
 				await this.contexts.get(this.device)!.ctx.setOffline(true);
 				break;
@@ -582,6 +645,10 @@ export class Player {
 		}
 	}
 
+	private isPending(page: Page): Promise<boolean> {
+		return page.evaluate(() => (window as unknown as { __osp?: { phase: string } }).__osp?.phase === 'pending');
+	}
+
 	private async waitBoot(page: Page) {
 		await page.waitForFunction(() => !!(window as unknown as { __osp?: unknown }).__osp, null, { timeout: SETTLE_MS });
 		await this.settle(page);
@@ -589,7 +656,7 @@ export class Player {
 
 	private async next(i: number) {
 		const page = this.page;
-		const btn = page.getByRole('button', { name: 'Next', exact: true });
+		const btn = page.getByRole('button', { name: await navName(page, 'next'), exact: true });
 		if ((await btn.count()) === 0) throw new ScriptError(i, 'next: no Next button');
 		this.gate.allow(1); // `next` sends the first quota call itself
 		await btn.focus();
@@ -621,6 +688,16 @@ export class Player {
 	private async switchDevice(i: number, a: Action) {
 		const to = a.device ?? (this.device === 'A' ? 'B' : 'A');
 		const existing = this.contexts.get(to);
+		const page = this.page;
+		// The participant leaves this device: the answer being typed is saved (blur), and the
+		// save lands before they pick up the other device.
+		await page.evaluate(() => (document.activeElement as HTMLElement | null)?.blur?.());
+		const endOnly = (await page.getByTestId('save-status').getAttribute('data-status').catch(() => null)) === 'local';
+		if (!endOnly) await page
+			.getByTestId('save-status')
+			.and(page.locator('[data-status="saved"]'))
+			.waitFor({ timeout: 45_000 })
+			.catch(() => this.problems.push({ path: 'switchDevice', expected: 'saved before leaving', actual: 'not saved' }));
 		if (a.restoreFrom === 'local') {
 			// A stale tab: that device's page as it was, not reloaded.
 			if (!existing) throw new ScriptError(i, `switchDevice: no device ${to} to revive`);
@@ -629,15 +706,7 @@ export class Player {
 			await this.settle();
 			return;
 		}
-		const page = this.page;
-		// The participant leaves this device: the answer being typed is saved (blur), then the
-		// resume link from "Continue on another device".
-		await page.evaluate(() => (document.activeElement as HTMLElement | null)?.blur?.());
-		await page
-			.getByTestId('save-status')
-			.and(page.locator('[data-status="saved"]'))
-			.waitFor({ timeout: 45_000 })
-			.catch(() => this.problems.push({ path: 'switchDevice', expected: 'saved before leaving', actual: 'not saved' }));
+		// Then the resume link from "Continue on another device".
 		await page.getByText('Continue on another device', { exact: true }).click();
 		const link = await page.getByRole('textbox', { name: exactName('Continue on another device') }).inputValue();
 		if (!link.includes('#resume=')) throw new ScriptError(i, `switchDevice: no resume link (${link})`);
@@ -737,6 +806,8 @@ export class Player {
 		const sid = this.sid;
 		if (!sid) return { response: null, source: 'none' };
 		const r = await page.request.get(`/__harness/sessions/${encodeURIComponent(sid)}`);
+		// Declined or withdrawn (M5): the server deleted the session and any response.
+		if (r.status() === 404) return { response: null, source: 'none' };
 		const s = (await r.json()) as {
 			submitted: boolean;
 			responses: number;
@@ -809,6 +880,15 @@ export class ScriptError extends Error {
 	) {
 		super(`action ${action}: ${message}`);
 	}
+}
+
+/**
+ * The Next / Back button names in the session language: the app's string table (runtime
+ * `messages.ts`, exposed as `window.__ospUi`), English when the app does not expose one.
+ */
+async function navName(page: Page, key: 'next' | 'back'): Promise<string> {
+	const names = await page.evaluate(() => (window as unknown as { __ospUi?: { next: string; back: string } }).__ospUi ?? null);
+	return names?.[key] ?? (key === 'next' ? 'Next' : 'Back');
 }
 
 /** Type like a participant: clear the field, then the keys. Control characters are pasted. */

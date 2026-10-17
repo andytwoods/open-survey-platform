@@ -21,6 +21,7 @@ import {
 	start,
 	toHtml,
 	tryAnswer,
+	tryConsent,
 	view,
 	type EngineEvent,
 	type Plan,
@@ -31,7 +32,7 @@ export type ScriptAction = {
 	expectPage?: string;
 	set?: Record<string, unknown>;
 	setIfShown?: Record<string, unknown>;
-	do: 'next' | 'back' | 'refresh' | 'resume' | 'retry' | 'switchDevice';
+	do: 'next' | 'back' | 'refresh' | 'resume' | 'retry' | 'switchDevice' | 'agree' | 'decline' | 'withdraw';
 	device?: string;
 };
 
@@ -66,7 +67,7 @@ export function parseScript(text: string): { script: Script } | { error: string 
 		return { error: 'sessionSeed must be a positive whole number.' };
 	}
 	if (!Array.isArray(s.actions)) return { error: 'actions must be a list.' };
-	const DOS = new Set(['next', 'back', 'refresh', 'resume', 'retry', 'switchDevice']);
+	const DOS = new Set(['next', 'back', 'refresh', 'resume', 'retry', 'switchDevice', 'agree', 'decline', 'withdraw']);
 	for (const [i, a] of s.actions.entries()) {
 		if (!a || typeof a !== 'object' || !DOS.has((a as { do?: unknown }).do as string)) {
 			return { error: `Action ${i + 1}: "do" must be one of ${[...DOS].join(', ')}.` };
@@ -197,6 +198,14 @@ export function applyAction(state: State, action: ScriptAction, script: Script, 
 			return settle(state, quotas);
 		case 'back':
 			return back(state);
+		case 'agree':
+		case 'decline': {
+			const r = tryConsent(state, action.do);
+			if (r.rejected) throw new Error(`Action ${i + 1}: ${action.do} was refused (${r.rejected}).`);
+			return r.state;
+		}
+		case 'withdraw':
+			return state; // the server deletes the response (semantics §11); the engine keeps its state
 		case 'refresh':
 		case 'resume':
 		case 'switchDevice': {
@@ -238,6 +247,7 @@ export function exportScript(state: State, id = 'debugger-run'): Script {
 	for (const e of events) {
 		if (e.rejected) continue;
 		if (e.type === 'answer') set[e.item] = e.value;
+		else if (e.type === 'consent') actions.push({ expectPage: '$consent', do: e.decision });
 		else if (e.type === 'next' || e.type === 'back') {
 			const a: ScriptAction = { do: e.type };
 			const page = blockOfPage(state.plan, e.from);

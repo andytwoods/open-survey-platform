@@ -64,6 +64,10 @@ class StoredResponse:
     submitted_at: datetime | None = None
     late: bool | None = None  # the server's flag (stored record ``server.late``); None = false
     after_close: bool | None = None  # submitted after the survey closed; None = not known
+    # semantics.md §11: the consent agreed to (server record ``server.consentVersion`` /
+    # ``server.consentedAt``); None falls back to the record's own fields.
+    consent_version: str | None = None
+    consented_at: datetime | str | None = None
 
 
 @dataclass(frozen=True)

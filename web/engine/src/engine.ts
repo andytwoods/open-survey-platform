@@ -40,6 +40,7 @@ import { evaluate, evaluateCondition, type DiagnosticSink, type Lookup, type Val
 import * as dec from './decimal.ts';
 import {
 	ENGINE_VERSION,
+	CONSENT_PAGE,
 	PLAN_VERSION,
 	isMatrix,
 	isQuestion,
@@ -696,6 +697,19 @@ function applyEvent(plan: Plan, d: Data, ev: EngineEvent): StepResult | undefine
 	switch (ev.type) {
 		case 'start': {
 			for (const v of Object.values(plan.variables)) if (v.kind === 'embedded') embeddedRaw(plan, d, v.id);
+			// semantics.md §11: with a consent page, the flow starts only once they agree.
+			if (plan.consent) return pageChanged(plan, d, undefined);
+			const out = walk(plan, d, [{ k: 'root', i: 0 }], ev.t);
+			return pageChanged(plan, d, finishWalk(d, out, ev.t));
+		}
+		case 'consent': {
+			const c = plan.consent;
+			if (!c || d.consent || d.ended) return undefined;
+			d.consent = { decision: ev.decision, version: ev.version, at: ev.t };
+			if (ev.decision === 'decline') {
+				d.ended = { outcome: c.declineOutcome, nodeId: null, at: ev.t };
+				return { outcome: 'ended', to: null, effect: endEffect(d)! };
+			}
 			const out = walk(plan, d, [{ k: 'root', i: 0 }], ev.t);
 			return pageChanged(plan, d, finishWalk(d, out, ev.t));
 		}
@@ -709,6 +723,7 @@ function applyEvent(plan: Plan, d: Data, ev: EngineEvent): StepResult | undefine
 				delete d.invalid[ev.item];
 			}
 			delete d.errors[ev.item];
+			dropHiddenErrors(plan, d);
 			return undefined;
 		case 'next': {
 			const page = currentPage(d);
@@ -875,12 +890,26 @@ function checkHookResolution(plan: Plan, d: Data, event: string, value: unknown)
 
 type NewEvent = EngineEvent extends infer E ? (E extends EngineEvent ? Omit<E, 'seq' | 'rev'> : never) : never;
 
+/**
+ * An answer can hide another question on the page (live show-if). The error a failed Next
+ * left on it goes with it: a hidden question is never demanded (semantics §4, `required`
+ * applies only while relevant). Since SEM1's two-valued logic, clearing an answer hides
+ * questions whose `showIf` compares it (`null != 0` is false), so this case is reachable.
+ * Page-level errors (a hook's rejectPage, keyed by page id) stay.
+ */
+function dropHiddenErrors(plan: Plan, d: Data) {
+	const ids = Object.keys(d.errors).filter((id) => plan.items[id] !== undefined);
+	if (!ids.length) return;
+	const env = new Env(plan, d);
+	for (const id of ids) if (!env.relevant(id)) delete d.errors[id];
+}
+
 function commit(state: State, partial: NewEvent): { state: State; result?: StepResult } {
 	const d = clone(state.data);
 	const ev = { ...partial, seq: d.events.length + 1, rev: d.revision + 1 } as EngineEvent;
 	let result: StepResult | undefined;
 	if (ev.rejected === undefined) result = apply(state.plan, d, ev);
-	if (result !== undefined && (ev.type === 'next' || ev.type === 'resolve')) ev.result = result;
+	if (result !== undefined && (ev.type === 'next' || ev.type === 'resolve' || ev.type === 'consent')) ev.result = result;
 	if (ev.type === 'back' && ev.rejected === undefined) ev.to = currentPage(d);
 	d.revision += 1;
 	d.events.push(ev);
@@ -982,7 +1011,41 @@ export type Rejection =
 	| 'stale'
 	| 'unsupported'
 	| 'bad-result'
-	| 'unknown-language';
+	| 'unknown-language'
+	/** semantics.md §11: the consent page is still shown. */
+	| 'consent-pending'
+	/** There is no consent page, or the participant already decided. */
+	| 'no-consent';
+
+/** The consent page is shown: the plan has one and the participant has not decided. */
+export function awaitingConsent(state: State): boolean {
+	return !!state.plan.consent && !state.data.consent && !state.data.ended;
+}
+
+/** The participant declined consent (the session records no response). */
+export function declinedConsent(state: State): boolean {
+	return state.data.consent?.decision === 'decline';
+}
+
+/**
+ * The participant's decision on the consent page (semantics.md §11). `agree` starts the
+ * flow; `decline` ends the session with the plan's `declineOutcome`. Refused (and
+ * unchanged) without a consent page or once decided.
+ */
+export function tryConsent(state: State, decision: 'agree' | 'decline'): { state: State; rejected?: Rejection } {
+	const c = state.plan.consent;
+	if (!c || !awaitingConsent(state)) return { state, rejected: 'no-consent' };
+	if (decision !== 'agree' && decision !== 'decline') return { state, rejected: 'bad-result' };
+	return { state: commit(state, { type: 'consent', t: now(state.clock), decision, version: c.version }).state };
+}
+
+export function agree(state: State): State {
+	return tryConsent(state, 'agree').state;
+}
+
+export function decline(state: State): State {
+	return tryConsent(state, 'decline').state;
+}
 
 /** `answer`, also saying why a call was refused (refusals change nothing). */
 export function tryAnswer(state: State, itemId: Id, value: unknown): { state: State; rejected?: Rejection } {
@@ -991,6 +1054,7 @@ export function tryAnswer(state: State, itemId: Id, value: unknown): { state: St
 	let rejected: Rejection | undefined;
 	const item: Item | undefined = state.plan.items[itemId];
 	if (d.ended) rejected = 'ended';
+	else if (awaitingConsent(state)) rejected = 'consent-pending';
 	else if (d.pending) rejected = 'pending';
 	else if (!item) rejected = 'unknown-item';
 	else if (!isQuestion(item)) rejected = 'not-a-question';
@@ -1026,6 +1090,8 @@ export function next(state: State): { state: State; effect?: Effect; result: Ste
 		const effect = d.pending.effect;
 		return { state, effect, result: { outcome: 'effect', effect } };
 	}
+	// The consent page is answered with agree/decline, never with Next (semantics.md §11).
+	if (awaitingConsent(state)) return { state, result: { outcome: 'invalid', to: null } };
 	const out = commit(state, { type: 'next', t: now(state.clock), from: currentPage(d) });
 	const result = out.result ?? { outcome: 'invalid' as const };
 	return { state: out.state, effect: result.effect, result };
@@ -1283,6 +1349,25 @@ export function view(state: State): PageView {
 		}
 	}
 	const endNode = d.ended?.nodeId ? index(plan).nodes.get(d.ended.nodeId) : undefined;
+	if (plan.consent && awaitingConsent(state)) {
+		const c = plan.consent;
+		return {
+			status: 'consent',
+			page: CONSENT_PAGE,
+			block: null,
+			language: d.language,
+			title: render(plan, d, env, plan.title),
+			items: [],
+			errors: {},
+			nav: null,
+			focus: 'heading',
+			effect: null,
+			end: null,
+			trial: 0,
+			position: null,
+			consent: { text: render(plan, d, env, c.text), agree: render(plan, d, env, c.agree), decline: render(plan, d, env, c.decline) }
+		};
+	}
 	return {
 		status: d.ended ? 'ended' : d.pending ? 'pending' : 'page',
 		page,
@@ -1464,7 +1549,13 @@ export function result(state: State): ResponseRecord {
 		endedAt: d.ended?.at ?? null,
 		revision: d.revision,
 		events: clone(d.events),
-		...(d.hooks ? { hooks: { vars: { ...d.hooks.vars }, paradata: clone(d.hooks.paradata), redirect: clone(d.hooks.redirect) } } : {})
+		...(d.hooks ? { hooks: { vars: { ...d.hooks.vars }, paradata: clone(d.hooks.paradata), redirect: clone(d.hooks.redirect) } } : {}),
+		...(plan.consent
+			? {
+					consentVersion: d.consent?.decision === 'agree' ? d.consent.version : null,
+					consentedAt: d.consent?.decision === 'agree' ? d.consent.at : null
+				}
+			: {})
 	};
 }
 
@@ -1557,7 +1648,7 @@ export function replay(plan: Plan, events: EngineEvent[], opts: { clock?: Clock 
 			}
 			if (ev.rejected === undefined) {
 				const res = apply(plan, d, ev);
-				const recorded = ev.type === 'next' || ev.type === 'resolve' ? ev.result : undefined;
+				const recorded = ev.type === 'next' || ev.type === 'resolve' || ev.type === 'consent' ? ev.result : undefined;
 				if (canonicalJson(res ?? null) !== canonicalJson(recorded ?? null)) {
 					return { error: { code: 'replay.diverged', message: `event ${i + 1} (${ev.type}) gave a different result` } };
 				}

@@ -82,6 +82,17 @@ _row("Settings.retention", "unsupported", "Data retention is a platform policy, 
 _row("Retention.kind", "unsupported", "See Settings.retention.")
 _row("Retention.days", "unsupported", "See Settings.retention.")
 _row("Retention.until", "unsupported", "See Settings.retention.")
+_row(
+    "Survey.consent",
+    "unsupported",
+    "Our runtime's consent page (no data before agreement); not written, so the exported "
+    "survey has no consent gate. Add an equivalent first question by hand.",
+)
+_row("Consent.text", "unsupported", "See Survey.consent.")
+_row("Consent.agreeLabel", "unsupported", "See Survey.consent.")
+_row("Consent.declineLabel", "unsupported", "See Survey.consent.")
+_row("Consent.declineOutcome", "unsupported", "See Survey.consent.")
+_row("Consent.countDeclines", "unsupported", "See Survey.consent.")
 
 # --- Choices -----------------------------------------------------------------------------
 _row("ChoiceList.id", "native", "Not written: each question gets its own answer rows.")
@@ -140,6 +151,7 @@ _row(
 )
 _row("DecimalQuestion.type", "native", "Type N (numerical input).")
 _row("TextQuestion.type", "native", "Type S (short free text).")
+_row("TextQuestion.multiline", "native", "Type T (long free text) instead of S.")
 _row("SingleQuestion.type", "native", "Type L (list, radio).")
 _row(
     "MultiQuestion.type",
