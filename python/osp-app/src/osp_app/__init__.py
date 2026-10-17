@@ -1,6 +1,7 @@
 """osp-app (layer L5): permissions, host identity, builder services and app commands.
 See README.md."""
 
+from . import results as results  # registers the results commands
 from .builder import Builder, EditResult, ExportResult, HistoryEntry, PublishResult, SurveyView
 from .commands import COMMANDS, AppCommand, command, dispatch
 from .data_export import DataExport

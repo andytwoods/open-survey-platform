@@ -1007,6 +1007,22 @@ class Store(ThemeLibrary):  # theme-library methods: themes.py
 
     # -- audit ---------------------------------------------------------------------
 
+    def audit(
+        self,
+        ctx: TenantContext,
+        action: str,
+        target_type: str | None = None,
+        target_id: str | None = None,
+        detail: Mapping[str, Any] | None = None,
+    ) -> None:
+        """Write one audit entry for an app-level action (e.g. ``results.read``). The
+        caller makes sure ``detail`` holds no participant data."""
+        ctx = require_ctx(ctx)
+        if not isinstance(action, str) or not 0 < len(action) <= 80:
+            raise InvalidInput("action must be 1-80 characters")
+        with self._tx() as conn:
+            self._audit(conn, ctx.tenant_id, ctx.actor, action, target_type, target_id, detail)
+
     def list_audit(self, ctx: TenantContext, limit: int = 1000) -> list[AuditEntry]:
         ctx = require_ctx(ctx)
         with self._engine.connect() as conn:

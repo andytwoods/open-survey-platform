@@ -17,7 +17,7 @@ from __future__ import annotations
 from datetime import datetime
 from typing import Annotated, Any, Literal
 
-from fastapi import APIRouter, HTTPException, Path, Query
+from fastapi import APIRouter, Path, Query
 from pydantic import BaseModel, ConfigDict, Field
 
 from .common import Auth, Services, errors
@@ -311,7 +311,6 @@ def query_results(
     survey_id: str, body: ResultsQuery, auth: Auth, services: Services
 ) -> dict[str, Any]:
     """Aggregate tables per question card (survey.export; audited, no answer values)."""
-    raise HTTPException(501, "Not implemented yet (task V1).")
     return services.builder.run(
         "survey.results_query",
         auth.actor,
@@ -351,7 +350,6 @@ def results_text(
     limit: Annotated[int, Query(ge=1, le=200)] = 50,
 ) -> dict[str, Any]:
     """Verbatim answers of one text question (survey.export; audited)."""
-    raise HTTPException(501, "Not implemented yet (task V1).")
     return services.builder.run(
         "survey.results_text",
         auth.actor,

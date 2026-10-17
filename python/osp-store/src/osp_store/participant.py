@@ -37,17 +37,18 @@ from __future__ import annotations
 
 import json
 import uuid
-from collections.abc import Callable, Mapping, Sequence
+from collections.abc import Callable, Iterator, Mapping, Sequence
 from dataclasses import dataclass
 from datetime import datetime
 from typing import Any, Literal
 
-from sqlalchemy import Connection, delete, insert, select, update
+from sqlalchemy import Connection, delete, func, insert, select, update
 
 from . import schema as t
 from .context import SystemContext, TenantContext, require_ctx, require_system
 from .crypto import canonical_json
 from .errors import Conflict, InvalidInput, NotFound
+from .records import Response
 from .store import Store, _answers, _id, _json, _seed
 
 SaveMode = Literal["every-page", "end-only"]
@@ -1043,6 +1044,64 @@ class ParticipantStore:
         return self._s._dec(
             r["record_ct"], r["record_key_id"], "response_records", "record", r["id"]
         )
+
+    def response_watermark(self, ctx: TenantContext, version_id: str) -> tuple[int, str]:
+        """(count, newest submitted_at as ISO text) of one version's responses, without
+        reading (or auditing) any answers. Any new or deleted response changes it."""
+        ctx = require_ctx(ctx)
+        r = t.responses.c
+        with self._s.engine.connect() as conn:
+            n, newest = conn.execute(
+                select(func.count(), func.max(r.submitted_at)).where(
+                    (r.tenant_id == ctx.tenant_id) & (r.version_id == _id(version_id))
+                )
+            ).one()
+        return int(n), "" if newest is None else str(newest)
+
+    def stream_responses(
+        self, ctx: TenantContext, version_id: str, purpose: str = "results"
+    ) -> Iterator[tuple[Response, Any]]:
+        """Every response of one version with its full record (or None), decrypted one at
+        a time in submission order: one pass, constant memory. Audited up front as one
+        ``responses.read`` (count + purpose), like ``Store.list_responses``."""
+        ctx = require_ctx(ctx)
+        vid = _id(version_id)
+        r, rr = t.responses.c, t.response_records.c
+        where = (r.tenant_id == ctx.tenant_id) & (r.version_id == vid)
+        with self._s._tx() as conn:
+            self._s._one(conn, select(t.versions.c.id).where(self._s._version_where(ctx, vid)))
+            n = conn.execute(select(func.count()).where(where)).scalar_one()
+            self._s._audit(
+                conn,
+                ctx.tenant_id,
+                ctx.actor,
+                "responses.read",
+                "version",
+                vid,
+                {"count": n, "purpose": str(purpose)[:40]},
+            )
+        stmt = (
+            select(t.responses, rr.record_ct, rr.record_key_id)
+            .select_from(
+                t.responses.outerjoin(
+                    t.response_records, (rr.id == r.id) & (rr.tenant_id == r.tenant_id)
+                )
+            )
+            .where(where)
+            .order_by(r.submitted_at, r.id)
+        )
+        with self._s.engine.connect() as conn:
+            for row in conn.execution_options(yield_per=500).execute(stmt).mappings():
+                record = None
+                if row["record_ct"] is not None:
+                    record = self._s._dec(
+                        row["record_ct"],
+                        row["record_key_id"],
+                        "response_records",
+                        "record",
+                        row["id"],
+                    )
+                yield self._s._response(row), record
 
     # -- inactivity release (decision R-3) -------------------------------------------
 
