@@ -260,8 +260,7 @@
 		margin: 0 0 var(--space-2);
 		font-size: var(--text-sm);
 	}
-	.exports span,
-	.muted {
+	.exports span {
 		color: var(--color-text-muted);
 	}
 </style>
