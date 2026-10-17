@@ -23,6 +23,7 @@ from datetime import datetime
 from typing import Annotated, Any, Literal
 
 from osp_spec import Diagnostic
+from osp_spec.theme import PRESETS
 from osp_store import Conflict, InvalidInput, NotFound, StoredResultsLayout
 from pydantic import BaseModel, ConfigDict, Field, StrictBool, ValidationError, model_validator
 
@@ -107,6 +108,45 @@ class CardLayout(_Model):
     caption: str | None = Field(None, max_length=2000, description="Edited caption (V-D8)")
 
 
+class LayoutTheme(_Model):
+    """The colours the Results page draws its cards and figures in (task V6): the app's own
+    colours, the survey's theme, a built-in preset or a lab library theme. A theme id is a
+    reference only; the theme document itself is never stored in a layout."""
+
+    kind: Literal["app", "survey", "preset", "library"] = "app"
+    id: str | None = Field(
+        None,
+        min_length=1,
+        max_length=64,
+        pattern=r"^[A-Za-z0-9_-]+$",
+        description="The preset id or lab library theme id (presets and library themes only)",
+    )
+
+    @model_validator(mode="after")
+    def _id_matches_kind(self) -> LayoutTheme:
+        if self.kind in ("app", "survey"):
+            if self.id is not None:
+                raise ValueError(f"theme kind {self.kind!r} takes no id")
+        elif self.id is None:
+            raise ValueError(f"theme kind {self.kind!r} needs an id")
+        elif self.kind == "preset" and self.id not in PRESETS:
+            raise ValueError(f"unknown theme preset {self.id!r}")
+        return self
+
+
+class LayoutExport(_Model):
+    """V4's figure export settings and the "Export all" bundle (task V6)."""
+
+    widthMm: int = Field(85, ge=30, le=500, description="Final figure width")
+    dpi: Literal[150, 300, 600] = 300
+    hideCountsBelow: int | None = Field(
+        None, ge=2, le=1000, description='k for "Hide counts below k"; null: off'
+    )
+    bundle: Literal["svg", "png", "all"] = Field(
+        "all", description='What "Export all" puts in the ZIP'
+    )
+
+
 class LayoutSettings(_Model):
     """What a saved layout holds: settings only, never response data."""
 
@@ -118,6 +158,8 @@ class LayoutSettings(_Model):
         description="Cards in display order; questions not listed follow in survey order",
     )
     showNotes: StrictBool = Field(False, description="Show note items as headings")
+    theme: LayoutTheme = Field(default_factory=LayoutTheme)
+    export: LayoutExport = Field(default_factory=LayoutExport)
 
     @model_validator(mode="after")
     def _unique_questions(self) -> LayoutSettings:

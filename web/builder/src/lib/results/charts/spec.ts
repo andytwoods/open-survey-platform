@@ -4,7 +4,7 @@
 // come from V1 (V-D5), so an exported spec re-renders the same in Altair or vegawidget.
 import type { TopLevelSpec } from 'vega-lite';
 import { chartsFor, isChart, splitsFor } from './menu';
-import { inkOn, likertPalette, LIGHT_TOKENS, luminance, textColors, themeConfig } from './theme';
+import { defaultTokens, inkOn, likertPalette, luminance, textColors, themeConfig } from './theme';
 import type { BuildOptions, Card, Cell, ChartChoice, Group, HiddenCell, MenuChoice, SplitLayout, StateCounts } from './types';
 
 export const VEGA_LITE_SCHEMA = 'https://vega.github.io/schema/vega-lite/v6.json';
@@ -434,7 +434,7 @@ function heatmap(ctx: Ctx, data: Datum[], rowOrder: string[], cats: string[], al
 	const max = Math.max(0.0001, ...all.map((d) => Number(d.p ?? 0)));
 	const values = data.map((d) => ({ ...d, strong: Number(d.p ?? 0) / max > 0.55 }));
 	const theme = ctx.opts.theme;
-	const dark = theme === 'app' && luminance(ctx.opts.tokens.bg) < 0.2;
+	const dark = luminance(ctx.opts.tokens.bg) < 0.2;
 	const y = { field: 'rowLabel', type: 'nominal', sort: rowOrder, title: null, axis: ROW_AXIS };
 	const x = { field: 'label', type: 'nominal', sort: cats, title: null, axis: { labelAngle: -30, labelAlign: 'right', labelLimit: 140 } };
 	return {
@@ -821,10 +821,11 @@ export function buildSpec(card: Card, chartChoice: MenuChoice, opts: BuildOption
 	if (!isChart(chartChoice)) throw new Error(`"${chartChoice}" is not a chart`);
 	if (!FITS[chartChoice].includes(card.type)) throw new Error(`"${chartChoice}" does not fit a ${card.type} card`);
 	hiddenText = opts.hiddenLabel ?? 'n<5';
+	const theme = opts.theme ?? 'app';
 	const resolved: Ctx['opts'] = {
 		...opts,
-		theme: opts.theme ?? 'app',
-		tokens: opts.tokens ?? LIGHT_TOKENS,
+		theme,
+		tokens: opts.tokens ?? defaultTokens(theme),
 		intervals: opts.intervals ?? false,
 		denominator: opts.denominator ?? 'answered'
 	};

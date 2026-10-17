@@ -25,6 +25,7 @@
 	import { health } from '../health.svelte';
 	import { leaveTo, link, optionalLink } from '../host/links';
 	import { resultsCommands } from '../results/commands';
+	import { presentation } from '../results/presentation.svelte';
 	import { MOCK_SURVEY } from '../mock/survey';
 	import { addedQuestionId, allIds, defaultLanguage, outlineFromSurvey, surveyTitle, targetPage } from '../model/outline';
 	import { StructureActions } from '../structure/actions.svelte';
@@ -457,7 +458,8 @@
 		resultsCommands({
 			inResults: () => view === 'results',
 			canOpen: () => hasResults,
-			open: () => goto(routeOf('results'))
+			open: () => goto(routeOf('results')),
+			present: () => presentation.toggle()
 		})
 	);
 	// The lab's panel profile page (B21), when the host serves it (its link is optional).
@@ -471,6 +473,8 @@
 	);
 	// Loaded only on the Results page, so the editor's pages never fetch its code.
 	const resultsView = $derived(view === 'results' && store ? import('../results/ResultsView.svelte') : null);
+	/** Presentation mode (V6): the Results page shows only its cards and the shell hides its chrome. */
+	const presenting = $derived(view === 'results' && presentation.active);
 
 	/** A publish problem's link: the settings section, the Appearance view or the item. */
 	async function goToProblem(p: PublishProblem) {
@@ -537,22 +541,24 @@
 
 <svelte:window bind:innerWidth onkeydown={(e) => registry.handleKeydown(e)} />
 
-<div class="shell">
-	<TopBar
-		{title}
-		saveState={store?.saveState ?? 'saved'}
-		{view}
-		viewTabs={!!store}
-		results={hasResults}
-		profile={hasProfile}
-		{registry}
-		health={health.state}
-		{outlineCollapsible}
-		{propertiesCollapsible}
-		{outlineOpen}
-		{propertiesOpen}
-	/>
-	{#if store?.conflict}
+<div class="shell" data-presenting={presenting || undefined}>
+	{#if !presenting}
+		<TopBar
+			{title}
+			saveState={store?.saveState ?? 'saved'}
+			{view}
+			viewTabs={!!store}
+			results={hasResults}
+			profile={hasProfile}
+			{registry}
+			health={health.state}
+			{outlineCollapsible}
+			{propertiesCollapsible}
+			{outlineOpen}
+			{propertiesOpen}
+		/>
+	{/if}
+	{#if store?.conflict && !presenting}
 		<ConflictBanner
 			message={store.conflict.message}
 			onreload={() => void store?.reload()}

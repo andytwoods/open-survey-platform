@@ -2,6 +2,7 @@
 	import { buildSpec, CHART_LABELS, chartsFor, isChart, ResultsChart, splitsFor } from './charts';
 	import type { MenuChoice, SplitLayout, ThemeTokens } from './charts/types';
 	import ExportMenu from './export/ExportMenu.svelte';
+	import { captionFor } from './export/run';
 	import { cardSections, DATE_UNITS, stateRows, TYPE_NAMES } from './model';
 	import type { ResultsController } from './results.svelte';
 	import ResultsTable from './ResultsTable.svelte';
@@ -16,19 +17,23 @@
 	 * truth), split layout and date period where they apply, the Vega-Lite chart (or its
 	 * Table view), statistics and the Export menu. Versions that do not combine show as
 	 * per-version facets; a grid has one chart for all rows and one table per row.
+	 * Presenting (task V6): only the title, the chart (or table) and its caption.
 	 */
 	let {
 		card,
 		controller,
 		tokens,
-		tools
+		tools,
+		presenting = false
 	}: {
 		card: Card;
 		controller: ResultsController;
-		/** The app's light/dark design tokens: palettes are baked into specs, so a change rebuilds. */
+		/** The design tokens to draw with (the app's, or the page theme's: V6); a change rebuilds the spec. */
 		tokens: ThemeTokens;
 		/** The page's per-card tools (move, hide: task V5b), beside the title. */
 		tools?: Snippet;
+		/** Presentation mode: no controls, meta, states or statistics; the figure's caption under it. */
+		presenting?: boolean;
 	} = $props();
 
 	const LAYOUT_LABELS: Record<SplitLayout, string> = {
@@ -71,6 +76,8 @@
 			return null;
 		}
 	});
+	/** Presenting: the figure's caption (as edited, or written from the question, filters and n). */
+	const caption = $derived(presenting ? captionFor(card, { filters: controller.activeFilters }, controller.exports, 0).text : '');
 </script>
 
 {#snippet states(s: StateCounts, label: string)}
@@ -84,19 +91,37 @@
 	</dl>
 {/snippet}
 
-<article class="result-card" id="result-{card.question}" aria-labelledby="{uid}-h" data-type={card.type}>
+<article class="result-card" class:presenting id="result-{card.question}" aria-labelledby="{uid}-h" data-type={card.type}>
 	<header>
 		<div class="title-row">
-			<h3 id="{uid}-h">{title}</h3>
-			{#if tools}<div class="tools">{@render tools()}</div>{/if}
+			<!-- Presenting, the page heading is the h1, so cards are h2 (heading order). -->
+			<svelte:element this={presenting ? 'h2' : 'h3'} id="{uid}-h" class="card-title">{title}</svelte:element>
+			{#if tools && !presenting}<div class="tools">{@render tools()}</div>{/if}
 		</div>
-		<p class="meta">
-			<code>{card.name}</code>
-			<span>{TYPE_NAMES[card.type]}</span>
-			<span>{versions}</span>
-		</p>
+		{#if !presenting}
+			<p class="meta">
+				<code>{card.name}</code>
+				<span>{TYPE_NAMES[card.type]}</span>
+				<span>{versions}</span>
+			</p>
+		{/if}
 	</header>
 
+	{#if presenting}
+		{#if spec}
+			<div class="chart" data-chart={chart} data-layout={layouts.length ? layout : undefined}>
+				<ResultsChart {spec} theme="app" {tokens} {title} {description} />
+			</div>
+		{:else if card.type !== 'text'}
+			{#each facets as f (f.facet ?? 'all')}
+				{#each f.sections as s (s.key)}
+					{@const name = [title, f.facet !== null ? `version ${f.facet}` : null, s.heading].filter(Boolean).join(', ')}
+					<ResultsTable unit={s.unit} type={card.type} {denominator} caption={name} />
+				{/each}
+			{/each}
+		{/if}
+		{#if caption}<p class="caption" data-testid="card-caption">{caption}</p>{/if}
+	{:else}
 	{#if card.warnings?.length}
 		<ul class="warnings" aria-label="Warnings for {card.label || card.name}">
 			{#each card.warnings as w, i (i)}
@@ -164,7 +189,7 @@
 
 	{#if spec}
 		<div class="chart" data-chart={chart} data-layout={layouts.length ? layout : undefined}>
-			<ResultsChart {spec} theme="app" {title} {description} />
+			<ResultsChart {spec} theme="app" {tokens} {title} {description} />
 		</div>
 	{/if}
 
@@ -197,6 +222,7 @@
 			filters={controller.applied}
 		/>
 	{/if}
+	{/if}
 </article>
 
 <style>
@@ -215,7 +241,7 @@
 		flex-direction: column;
 		gap: var(--space-1);
 	}
-	h3 {
+	.card-title {
 		margin: 0;
 		font-size: var(--text-md);
 		overflow-wrap: anywhere;
@@ -227,7 +253,7 @@
 		gap: var(--space-2);
 		min-width: 0;
 	}
-	.title-row h3 {
+	.title-row .card-title {
 		flex: 1 1 auto;
 		min-width: 0;
 	}
@@ -355,5 +381,13 @@
 	.facet[data-facet] {
 		padding-top: var(--space-2);
 		border-top: 1px solid var(--color-border);
+	}
+	.caption {
+		margin: 0;
+		color: var(--color-text-muted);
+		font-size: var(--text-sm);
+	}
+	.result-card.presenting {
+		break-inside: avoid;
 	}
 </style>

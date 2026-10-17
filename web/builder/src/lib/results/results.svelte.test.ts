@@ -291,6 +291,89 @@ describe('ResultsView', () => {
 		expect(s.queries).toEqual([]);
 	});
 
+	it('presentation mode (V6): only the cards and a way out; Escape leaves; the URL carries the flag', async () => {
+		history.replaceState(null, '', '/surveys/s1/results');
+		await setup();
+		expect(screen.getByRole('button', { name: 'Export all' })).toBeTruthy();
+		await fireEvent.click(screen.getByRole('button', { name: 'Present' }));
+		await waitFor(() => expect(screen.getByTestId('exit-presentation')).toBeTruthy());
+		expect(location.search).toBe('?present=1');
+		expect(screen.queryByRole('button', { name: 'Export all' })).toBeNull();
+		expect(screen.queryByRole('button', { name: 'Show results' })).toBeNull();
+		expect(screen.queryByTestId('theme-picker')).toBeNull();
+		expect(screen.queryByRole('button', { name: 'Hide Fruit?' })).toBeNull();
+		const fruit = cardOf('Fruit?');
+		expect(within(fruit).queryByRole('combobox', { name: 'Chart' })).toBeNull();
+		expect(within(fruit).queryByRole('button', { name: 'Export Fruit?' })).toBeNull();
+		expect(fruit.querySelector('[data-chart="bars"]')).toBeTruthy();
+		expect(within(fruit).getByTestId('card-caption').textContent).toBe(
+			'Fruit? (fruit). Version 1; Complete responses only; Denominator: answered. n = 3 responses.'
+		);
+		// The page heading stays for the landmark, visually hidden, and is the page's h1 now the top bar is gone.
+		expect(screen.getByRole('heading', { name: 'Results', level: 1 })).toBeTruthy();
+		await waitFor(() => expect(document.activeElement).toBe(screen.getByTestId('exit-presentation')));
+
+		await fireEvent.keyDown(window, { key: 'Escape' });
+		await waitFor(() => expect(screen.getByRole('button', { name: 'Export all' })).toBeTruthy());
+		expect(location.search).toBe('');
+		expect(screen.queryByTestId('exit-presentation')).toBeNull();
+		await waitFor(() => expect(document.activeElement).toBe(screen.getByRole('button', { name: 'Present' })));
+		expect(within(cardOf('Fruit?')).getByRole('combobox', { name: 'Chart' })).toBeTruthy();
+	});
+
+	it('opens in presentation mode from ?present=1, and the floating button leaves it', async () => {
+		history.replaceState(null, '', '/surveys/s1/results?present=1&layout=lay_9');
+		await setup();
+		await waitFor(() => expect(screen.getByTestId('exit-presentation')).toBeTruthy());
+		expect(screen.queryByTestId('layout-bar')).toBeNull();
+		await fireEvent.click(screen.getByTestId('exit-presentation'));
+		await waitFor(() => expect(screen.getByRole('button', { name: 'Present' })).toBeTruthy());
+		expect(location.search).toBe('?layout=lay_9'); // only the presentation flag is touched
+		history.replaceState(null, '', '/');
+	});
+
+	it('the theme picker (V6): the survey’s theme, presets and lab themes recolour the charts; contrast is checked', async () => {
+		const warmLight = { accent: '#a3431a', background: '#fdf8f1', surface: '#f5ecdf', text: '#2b2118', muted: '#65544a', error: '#a8201a', focus: '#a3431a' };
+		const warmDark = { accent: '#f2a571', background: '#1c1713', surface: '#262019', text: '#f3eadf', muted: '#c4b4a2', error: '#ff8f84', focus: '#f2a571' };
+		const faint = { ...warmLight, text: '#bbbbbb' };
+		const s = stub();
+		s.source.themes = async () => ({
+			ok: true,
+			data: {
+				themes: [
+					{ id: 'th1', name: 'Lab warm', theme: { colours: { light: warmLight, dark: warmDark } }, isDefault: true, diagnostics: [] },
+					{ id: 'th2', name: 'Faint', theme: { colours: { light: faint, dark: warmDark }, mode: 'light' }, isDefault: false, diagnostics: [] }
+				],
+				defaultThemeId: 'th1'
+			}
+		});
+		await setup({ source: s.source });
+		await screen.findByRole('list', { name: 'Questions' });
+		const picker = screen.getByLabelText('Theme') as HTMLSelectElement;
+		await waitFor(() => expect([...picker.options].map((o) => o.textContent)).toContain('Lab warm (lab default)'));
+		expect([...picker.options].map((o) => o.value)).toEqual(['app', 'survey', 'preset:clean', 'preset:warm', 'preset:high-contrast', 'preset:dark', 'preset:compact', 'library:th1', 'library:th2']);
+		expect(screen.getByTestId('theme-note').textContent).toContain('App colours.');
+		const list = screen.getByRole('list', { name: 'Questions' });
+		expect(list.getAttribute('style')).toBeNull();
+
+		// No survey theme: "this survey's theme" is the lab default.
+		await fireEvent.change(picker, { target: { value: 'survey' } });
+		expect(screen.getByTestId('theme-note').textContent).toContain('This survey’s theme: the lab default “Lab warm”, light colours.');
+		expect(list.getAttribute('style')).toContain('--color-bg: #fdf8f1');
+		expect(list.getAttribute('data-theme-mode')).toBe('light');
+		expect(screen.queryByTestId('theme-contrast')).toBeNull();
+
+		await fireEvent.change(picker, { target: { value: 'library:th2' } });
+		expect(screen.getByTestId('theme-note').textContent).toContain('Lab theme “Faint”');
+		expect(screen.getByTestId('theme-contrast').textContent).toContain('fails a contrast check for charts: axis titles and labels on the background');
+
+		await fireEvent.change(picker, { target: { value: 'preset:dark' } });
+		expect(list.getAttribute('data-theme-mode')).toBe('dark');
+		expect(list.getAttribute('style')).toContain('color-scheme: dark');
+		await fireEvent.change(picker, { target: { value: 'app' } });
+		expect(list.getAttribute('style')).toBeNull();
+	});
+
 	it('passes axe with cards, tables and a filter row', async () => {
 		const { t } = await setup();
 		await fireEvent.click(within(cardOf('Fruit?')).getByRole('button', { name: 'Table view' }));

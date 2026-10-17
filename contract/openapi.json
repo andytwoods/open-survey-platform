@@ -2302,6 +2302,57 @@
         "title": "LayoutCondition",
         "type": "object"
       },
+      "LayoutExport": {
+        "additionalProperties": false,
+        "description": "V4's figure export settings and the \"Export all\" bundle (task V6).",
+        "properties": {
+          "bundle": {
+            "default": "all",
+            "description": "What \"Export all\" puts in the ZIP",
+            "enum": [
+              "svg",
+              "png",
+              "all"
+            ],
+            "title": "Bundle",
+            "type": "string"
+          },
+          "dpi": {
+            "default": 300,
+            "enum": [
+              150,
+              300,
+              600
+            ],
+            "title": "Dpi",
+            "type": "integer"
+          },
+          "hideCountsBelow": {
+            "anyOf": [
+              {
+                "maximum": 1000.0,
+                "minimum": 2.0,
+                "type": "integer"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "description": "k for \"Hide counts below k\"; null: off",
+            "title": "Hidecountsbelow"
+          },
+          "widthMm": {
+            "default": 85,
+            "description": "Final figure width",
+            "maximum": 500.0,
+            "minimum": 30.0,
+            "title": "Widthmm",
+            "type": "integer"
+          }
+        },
+        "title": "LayoutExport",
+        "type": "object"
+      },
       "LayoutFilter": {
         "additionalProperties": false,
         "properties": {
@@ -2462,6 +2513,9 @@
             "title": "Cards",
             "type": "array"
           },
+          "export": {
+            "$ref": "#/components/schemas/LayoutExport"
+          },
           "query": {
             "$ref": "#/components/schemas/LayoutQuery"
           },
@@ -2476,6 +2530,9 @@
             "description": "Show note items as headings",
             "title": "Shownotes",
             "type": "boolean"
+          },
+          "theme": {
+            "$ref": "#/components/schemas/LayoutTheme"
           }
         },
         "title": "LayoutSettings",
@@ -2518,6 +2575,40 @@
           }
         },
         "title": "LayoutSplit",
+        "type": "object"
+      },
+      "LayoutTheme": {
+        "additionalProperties": false,
+        "description": "The colours the Results page draws its cards and figures in (task V6): the app's own\ncolours, the survey's theme, a built-in preset or a lab library theme. A theme id is a\nreference only; the theme document itself is never stored in a layout.",
+        "properties": {
+          "id": {
+            "anyOf": [
+              {
+                "maxLength": 64,
+                "minLength": 1,
+                "pattern": "^[A-Za-z0-9_-]+$",
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "description": "The preset id or lab library theme id (presets and library themes only)",
+            "title": "Id"
+          },
+          "kind": {
+            "default": "app",
+            "enum": [
+              "app",
+              "survey",
+              "preset",
+              "library"
+            ],
+            "title": "Kind",
+            "type": "string"
+          }
+        },
+        "title": "LayoutTheme",
         "type": "object"
       },
       "MoveBlockParams": {

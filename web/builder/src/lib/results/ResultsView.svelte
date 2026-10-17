@@ -2,7 +2,9 @@
 	import Eye from '@lucide/svelte/icons/eye';
 	import EyeOff from '@lucide/svelte/icons/eye-off';
 	import GripVertical from '@lucide/svelte/icons/grip-vertical';
-	import { Button, theme } from '@osp/ui-components';
+	import Presentation from '@lucide/svelte/icons/presentation';
+	import X from '@lucide/svelte/icons/x';
+	import { Button, cssVarsToStyle, theme, themeToCssVars } from '@osp/ui-components';
 	import { onDestroy, onMount, tick } from 'svelte';
 	import LayoutBar from './LayoutBar.svelte';
 	import { LayoutsController } from './layouts.svelte';
@@ -12,13 +14,19 @@
 	import ExportAll from './export/ExportAll.svelte';
 	import FilterBar from './FilterBar.svelte';
 	import { conditionVariables } from './model';
+	import { layoutIn, presentIn, withPresent } from './presentation';
+	import { presentation } from './presentation.svelte';
 	import ResultCard from './ResultCard.svelte';
+	import { surveyThemeOf } from './results-theme';
 	import { apiSource, ResultsController, type ResultsSource } from './results.svelte';
+	import ThemePicker from './ThemePicker.svelte';
 
 	/**
 	 * The Results page (task V2, planning/results-viewer.md): a filter bar, the active
 	 * filters in words, and one card per question in survey order. Every number is the
-	 * server's (V1); this page only asks and draws. Lazily loaded by the shell.
+	 * server's (V1); this page only asks and draws. Lazily loaded by the shell. Task V6
+	 * adds the page's own theme (the cards and every export are drawn in it) and a
+	 * presentation mode that shows only the cards (`?present=1`, Escape to leave).
 	 */
 	let {
 		surveyId,
@@ -27,7 +35,7 @@
 		source
 	}: {
 		surveyId: string;
-		/** The survey draft: its assigned variables give the condition filter's options. */
+		/** The survey draft: its assigned variables give the condition filter's options, its theme the "survey's theme" option. */
 		survey: unknown;
 		publishedVersions: number;
 		/** Where results come from (default: the API). */
@@ -42,6 +50,42 @@
 	const conditions = $derived(conditionVariables(survey));
 	const cards = $derived(controller.cards);
 	const notices = $derived(controller.chartNotices);
+
+	// -- the page's theme (V6) ---------------------------------------------------------------
+	$effect(() => {
+		controller.theme.surveyTheme = surveyThemeOf(survey);
+	});
+	const appMode = $derived(theme.resolved);
+	const pageTheme = $derived(controller.theme.theme);
+	const themeMode = $derived(controller.theme.mode(appMode));
+	/** The theme's tokens as CSS custom properties, for the cards (or, presenting, the page). */
+	const themeStyle = $derived(pageTheme ? cssVarsToStyle(themeToCssVars(pageTheme, themeMode)) : undefined);
+
+	// -- presentation mode (V6) ----------------------------------------------------------------
+	const presenting = $derived(presentation.active);
+	let presentButton = $state<HTMLButtonElement | null>(null);
+	let exitButton = $state<HTMLButtonElement | null>(null);
+	let urlSynced = false;
+	$effect(() => {
+		// Mirror the flag into the URL once the page has read its initial state.
+		const on = presentation.active;
+		if (!urlSynced || typeof history === 'undefined') return;
+		const next = withPresent(location.href, on);
+		if (next !== location.href) history.replaceState(history.state, '', next);
+	});
+	async function present(on: boolean) {
+		if (on) presentation.enter();
+		else presentation.exit();
+		await tick();
+		(on ? exitButton : presentButton)?.focus();
+	}
+	function onWindowKey(e: KeyboardEvent) {
+		if (!presenting || e.key !== 'Escape' || e.defaultPrevented) return;
+		// Escape inside an open dialog closes only the dialog.
+		if (document.querySelector('[role="dialog"][data-state="open"]')) return;
+		e.preventDefault();
+		void present(false);
+	}
 
 	// -- reordering (drag the handle, or focus it and use the arrow keys) --------------------
 	const uid = $props.id();
@@ -98,6 +142,8 @@
 	 * the specs (V3), so every card rebuilds its spec from these.
 	 */
 	let tokens = $state<ThemeTokens>(readTokens());
+	/** What the charts are drawn with: the page theme's tokens (V6), else the app's. */
+	const chartTokens = $derived(controller.theme.tokens(appMode) ?? tokens);
 	$effect(() => {
 		void theme.resolved;
 		const reread = () => {
@@ -120,23 +166,34 @@
 	const narrow = $derived(innerWidth < 720);
 
 	onMount(() => {
+		// A shared or printed link: `?present=1` opens in presentation mode, `?layout=` a layout.
+		const search = typeof location === 'undefined' ? '' : location.search;
+		presentation.active = presentIn(search);
+		urlSynced = true;
 		if (publishedVersions === 0) return;
+		void controller.theme.load(controller.source.themes?.bind(controller.source));
 		// The survey's default layout opens first; without one (or if the list fails), the defaults.
-		if (layouts) void layouts.init().then((opened) => (opened ? undefined : controller.load()));
+		if (layouts) void layouts.init(layoutIn(search)).then((opened) => (opened ? undefined : controller.load()));
 		else void controller.load();
 	});
-	onDestroy(() => controller.dispose());
+	onDestroy(() => {
+		controller.dispose();
+		presentation.exit();
+	});
 </script>
 
-<svelte:window bind:innerWidth />
+<svelte:window bind:innerWidth onkeydown={onWindowKey} />
 
-<div class="results" aria-busy={controller.loading}>
-	<header class="page-head">
-		<h2 id="results-heading">Results</h2>
-		<p class="lead">
-			One card per question, from the responses to the published survey. Counts are of responses, not
-			participants.
-		</p>
+<div class="results" class:presenting aria-busy={controller.loading} style={presenting ? themeStyle : undefined} data-presenting={presenting || undefined}>
+	<header class="page-head" class:visually-hidden={presenting}>
+		<!-- Presenting, the top bar (and its h1) is gone: this heading becomes the page's h1. -->
+		<svelte:element this={presenting ? 'h1' : 'h2'} id="results-heading">Results</svelte:element>
+		{#if !presenting}
+			<p class="lead">
+				One card per question, from the responses to the published survey. Counts are of responses, not
+				participants.
+			</p>
+		{/if}
 	</header>
 
 	{#if publishedVersions === 0}
@@ -144,23 +201,45 @@
 			Nothing is published yet. Publish the survey and collect responses to see results here.
 		</p>
 	{:else}
-		{#if layouts}<LayoutBar {layouts} />{/if}
-		<FilterBar {controller} {conditions} {publishedVersions} {narrow} />
+		{#if !presenting}
+			{#if layouts}<LayoutBar {layouts} />{/if}
+			<FilterBar {controller} {conditions} {publishedVersions} {narrow} />
 
-		<section class="summary" aria-labelledby="active-filters-h">
-			<h3 id="active-filters-h" class="visually-hidden">Active filters</h3>
-			<ul class="chips" data-testid="active-filters">
-				{#each active as a (a)}<li>{a}</li>{/each}
-			</ul>
-			{#if response}
-				<div class="export-all"><ExportAll {controller} /></div>
-				<p class="count" data-testid="results-count">
-					{`${response.responses} ${response.responses === 1 ? 'response' : 'responses'}`}{response.split
-						? ` · ${response.split.groups.map((g) => `${g.label}: ${g.responses}`).join(', ')}`
-						: ''}
-				</p>
-			{/if}
-		</section>
+			<section class="summary" aria-labelledby="active-filters-h">
+				<h3 id="active-filters-h" class="visually-hidden">Active filters</h3>
+				<ul class="chips" data-testid="active-filters">
+					{#each active as a (a)}<li>{a}</li>{/each}
+				</ul>
+				<div class="look">
+					<ThemePicker theme={controller.theme} mode={appMode} />
+				</div>
+				{#if response}
+					<div class="export-all">
+						<ExportAll {controller} />
+						<Button bind:ref={presentButton} onclick={() => void present(true)} disabled={!cards.length} aria-keyshortcuts="Escape">
+							<Presentation size={16} aria-hidden="true" /> Present
+						</Button>
+					</div>
+					<p class="count" data-testid="results-count">
+						{`${response.responses} ${response.responses === 1 ? 'response' : 'responses'}`}{response.split
+							? ` · ${response.split.groups.map((g) => `${g.label}: ${g.responses}`).join(', ')}`
+							: ''}
+					</p>
+				{/if}
+			</section>
+		{:else}
+			<button
+				bind:this={exitButton}
+				type="button"
+				class="exit-present"
+				data-testid="exit-presentation"
+				aria-keyshortcuts="Escape"
+				title="Exit presentation (Escape)"
+				onclick={() => void present(false)}
+			>
+				<X size={16} aria-hidden="true" /> Exit presentation
+			</button>
+		{/if}
 
 		<div class="live" role="status" aria-live="polite">
 			{#if controller.loading}
@@ -191,13 +270,13 @@
 			</div>
 		{/if}
 
-		{#if response?.warnings?.length}
+		{#if response?.warnings?.length && !presenting}
 			<ul class="warnings" aria-label="Warnings">
 				{#each response.warnings as w, i (i)}<li data-code={w.code}>{w.message}</li>{/each}
 			</ul>
 		{/if}
 
-		{#if notices.length}
+		{#if notices.length && !presenting}
 			<ul class="warnings" aria-label="Layout notices" data-testid="layout-notices">
 				{#each notices as n (n.question)}<li>{n.message}</li>{/each}
 			</ul>
@@ -210,10 +289,17 @@
 					to the start or end.
 				</p>
 				<div class="visually-hidden" role="status" aria-live="polite" data-testid="move-status">{moveMessage}</div>
-				<ol class="cards" aria-label="Questions">
+				<ol class="cards" aria-label="Questions" style={presenting ? undefined : themeStyle} data-theme-mode={pageTheme ? themeMode : undefined}>
 					{#each cards as card, i (card.question)}
 						{@const name = nameOf(card)}
 						{@const hidden = controller.charts.hidden(card.question)}
+						{#if presenting}
+							{#if !hidden}
+								<li data-question={card.question}>
+									<ResultCard {card} {controller} tokens={chartTokens} presenting />
+								</li>
+							{/if}
+						{:else}
 						<li
 							class:over={over === card.question && dragging !== card.question}
 							class:dragging={dragging === card.question}
@@ -266,7 +352,7 @@
 									</button>
 								</div>
 							{:else}
-								<ResultCard {card} {controller} {tokens}>
+								<ResultCard {card} {controller} tokens={chartTokens}>
 									{#snippet tools()}
 										{@render handle()}
 										<button
@@ -283,6 +369,7 @@
 								</ResultCard>
 							{/if}
 						</li>
+						{/if}
 					{/each}
 				</ol>
 			{:else}
@@ -302,7 +389,8 @@
 		padding: var(--space-5) var(--space-4) var(--space-6);
 		color: var(--color-text);
 	}
-	.page-head h2 {
+	.page-head h2,
+	.page-head h1 {
 		margin: 0;
 		font-size: var(--text-lg);
 	}
@@ -324,7 +412,54 @@
 		gap: var(--space-1);
 	}
 	.export-all {
+		display: flex;
+		flex-wrap: wrap;
+		gap: var(--space-2);
 		margin-top: var(--space-2);
+	}
+	.look {
+		margin-top: var(--space-2);
+	}
+	/* Presentation mode (V6): only the cards, on the theme's background, with a way out. */
+	.results.presenting {
+		min-height: 100vh;
+		max-width: none;
+		padding-top: var(--space-4);
+		background: var(--color-bg);
+		font-family: var(--font-sans);
+	}
+	.results.presenting .cards {
+		max-width: 64rem;
+		margin: 0 auto;
+		width: 100%;
+	}
+	.exit-present {
+		position: fixed;
+		right: var(--space-3);
+		bottom: var(--space-3);
+		z-index: 10;
+		display: inline-flex;
+		align-items: center;
+		gap: var(--space-1);
+		min-height: 2.75rem;
+		padding: 0 var(--space-3);
+		border: 1px solid var(--color-border-strong);
+		border-radius: var(--radius-full);
+		background: var(--color-surface-raised);
+		color: var(--color-text);
+		font: inherit;
+		font-size: var(--text-sm);
+		box-shadow: var(--shadow-md, 0 1px 3px rgb(0 0 0 / 0.2));
+		cursor: pointer;
+	}
+	.exit-present:focus-visible {
+		outline: 2px solid var(--color-focus);
+		outline-offset: 2px;
+	}
+	@media print {
+		.exit-present {
+			display: none;
+		}
 	}
 	.chips {
 		display: flex;

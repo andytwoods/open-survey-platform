@@ -43,6 +43,8 @@ FULL = {
         {"question": "why", "hidden": True},
     ],
     "showNotes": True,
+    "theme": {"kind": "library", "id": "th_01HZX"},
+    "export": {"widthMm": 180, "dpi": 600, "hideCountsBelow": 5, "bundle": "png"},
 }
 
 
@@ -63,7 +65,19 @@ def test_a_full_layout_round_trips():
     assert out["query"]["submittedFrom"] == "2026-10-01T00:00:00Z"
     assert [c["question"] for c in out["cards"]] == ["q1", "age", "when", "why"]
     assert out["cards"][1]["bins"] == {"width": 5.0, "count": None, "unit": None}
+    assert out["theme"] == {"kind": "library", "id": "th_01HZX"}
+    assert out["export"] == {"widthMm": 180, "dpi": 600, "hideCountsBelow": 5, "bundle": "png"}
     assert validate_settings(out) == out  # idempotent
+
+
+def test_theme_and_export_default_to_the_app_colours_and_v4s_defaults():
+    """A layout saved before V6 (no theme or export part) opens as it always did."""
+    out = validate_settings({"cards": [{"question": "q1"}]})
+    assert out["theme"] == {"kind": "app", "id": None}
+    assert out["export"] == {"widthMm": 85, "dpi": 300, "hideCountsBelow": None, "bundle": "all"}
+    for kind in ("app", "survey"):
+        assert validate_settings({"theme": {"kind": kind}})["theme"] == {"kind": kind, "id": None}
+    assert validate_settings({"theme": {"kind": "preset", "id": "warm"}})["theme"]["id"] == "warm"
 
 
 @pytest.mark.parametrize(
@@ -99,6 +113,19 @@ def test_a_full_layout_round_trips():
         ({"cards": [{"question": "q"}, {"question": "q"}]}, ""),  # listed twice
         ({"cards": [{"question": f"q{i}"} for i in range(501)]}, "/cards"),
         ({"showNotes": "yes"}, "/showNotes"),
+        ({"theme": {"kind": "rainbow"}}, "/theme/kind"),
+        ({"theme": {"kind": "app", "id": "x"}}, "/theme"),  # app and survey take no id
+        ({"theme": {"kind": "library"}}, "/theme"),  # presets and library themes need one
+        ({"theme": {"kind": "preset", "id": "neon"}}, "/theme"),  # not a built-in preset
+        ({"theme": {"kind": "library", "id": "a b"}}, "/theme/id"),
+        ({"theme": {"kind": "library", "id": "x" * 65}}, "/theme/id"),
+        ({"theme": {"kind": "library", "id": "x", "colours": {}}}, "/theme/colours"),  # a reference
+        ({"export": {"widthMm": 29}}, "/export/widthMm"),
+        ({"export": {"widthMm": 501}}, "/export/widthMm"),
+        ({"export": {"dpi": 72}}, "/export/dpi"),
+        ({"export": {"hideCountsBelow": 1}}, "/export/hideCountsBelow"),
+        ({"export": {"bundle": "pdf"}}, "/export/bundle"),
+        ({"export": {"caption": "x"}}, "/export/caption"),
         ([], ""),
         ("{}", ""),
     ],

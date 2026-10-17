@@ -113,6 +113,8 @@ test('save a layout, reload: restored; switch layouts, set the default, delete',
 });
 
 test('drag a card by its handle to reorder; Save keeps the order', async ({ page }) => {
+	// dragTo does not autoscroll: both the handle and the drop target must be on screen at once.
+	await page.setViewportSize({ width: 1280, height: 1400 });
 	const id = await seededSurvey(page);
 	await openResults(page, id);
 	await saveAs(page, 'Order');

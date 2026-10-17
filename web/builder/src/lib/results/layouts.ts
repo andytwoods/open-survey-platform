@@ -12,7 +12,10 @@
 import type { CardChoices } from './charts.svelte';
 import { CHART_LABELS, chartsFor } from './charts/menu';
 import type { MenuChoice, SplitLayout } from './charts/types';
+import { BUNDLES, DEFAULT_EXPORT, type Bundle, type ExportChoices } from './export/settings.svelte';
+import { DPI_CHOICES, MAX_MM, MIN_MM } from './export/model';
 import { cleanBins, defaultFilters, endExclusive, startInclusive, type ResultsFilters } from './model';
+import { APP_THEME, choiceFromLayout, type ThemeChoice } from './results-theme';
 import type { Card, CardLayout, LayoutSettings } from './types';
 
 export const SCHEMA_VERSION = 'osp-results-layout/0.1' as const;
@@ -27,6 +30,10 @@ export interface PageState {
 	/** Display order; questions not listed follow in survey order. */
 	order: string[];
 	showNotes: boolean;
+	/** The page's theme (V6): a reference, never a theme document. */
+	theme: ThemeChoice;
+	/** V4's export width, DPI and k, and what "Export all" bundles (V6). */
+	exports: ExportChoices;
 }
 
 export function emptyState(latest: number): PageState {
@@ -35,7 +42,9 @@ export function emptyState(latest: number): PageState {
 		cards: { chosen: {}, layouts: {}, bins: {}, hidden: {} },
 		captions: {},
 		order: [],
-		showNotes: false
+		showNotes: false,
+		theme: { ...APP_THEME },
+		exports: { ...DEFAULT_EXPORT }
 	};
 }
 
@@ -140,7 +149,32 @@ export function toSettings(state: PageState, latest: number, questions?: readonl
 		bins: cleanBins(c.bins[q]),
 		caption: q in state.captions ? state.captions[q].slice(0, MAX_CAPTION) : null
 	}));
-	return { schemaVersion: SCHEMA_VERSION, query, cards, showNotes: state.showNotes };
+	const t = state.theme;
+	const e = state.exports;
+	return {
+		schemaVersion: SCHEMA_VERSION,
+		query,
+		cards,
+		showNotes: state.showNotes,
+		theme: { kind: t.kind, id: t.kind === 'preset' || t.kind === 'library' ? t.id : null },
+		export: {
+			widthMm: Math.min(MAX_MM, Math.max(MIN_MM, Math.round(e.widthMm))),
+			dpi: ((DPI_CHOICES as readonly number[]).includes(e.dpi) ? e.dpi : DEFAULT_EXPORT.dpi) as 150 | 300 | 600,
+			hideCountsBelow: e.k === null ? null : Math.min(1000, Math.max(2, Math.round(e.k))),
+			bundle: BUNDLES.includes(e.bundle) ? e.bundle : DEFAULT_EXPORT.bundle
+		}
+	};
+}
+
+/** A layout's `export` part as the page's export choices (defaults for anything missing or wrong). */
+export function exportsFromLayout(e: LayoutSettings['export'] | null | undefined): ExportChoices {
+	const out = { ...DEFAULT_EXPORT };
+	if (!e) return out;
+	if (typeof e.widthMm === 'number' && e.widthMm >= MIN_MM && e.widthMm <= MAX_MM) out.widthMm = Math.round(e.widthMm);
+	if ((DPI_CHOICES as readonly number[]).includes(e.dpi as number)) out.dpi = e.dpi as number;
+	if (typeof e.hideCountsBelow === 'number' && e.hideCountsBelow >= 2) out.k = Math.min(1000, Math.round(e.hideCountsBelow));
+	if (BUNDLES.includes(e.bundle as Bundle)) out.bundle = e.bundle as Bundle;
+	return out;
 }
 
 // -- settings -> state ----------------------------------------------------------------------
@@ -180,6 +214,8 @@ export function fromSettings(settings: LayoutSettings | null | undefined, latest
 		if (typeof card.caption === 'string') state.captions[id] = card.caption;
 	}
 	state.showNotes = settings.showNotes === true;
+	state.theme = choiceFromLayout(settings.theme);
+	state.exports = exportsFromLayout(settings.export);
 	return state;
 }
 

@@ -53,6 +53,7 @@
 	const suppressed = $derived(suppressCard(plain, s.k));
 	const caption = $derived(page ? captionFor(plain, page, s, suppressed.hidden) : { text: '', edited: false });
 	const small = $derived(smallCells(suppressed.card));
+	const tokens = $derived(page?.theme?.tokens ?? null);
 	const figure = $derived(
 		open && choice.chart && format !== 'csv'
 			? figureSpec(plain, {
@@ -62,7 +63,8 @@
 					intervals,
 					widthMm: s.widthMm,
 					caption: caption.text,
-					k: s.k
+					k: s.k,
+					tokens
 				})
 			: null
 	);
@@ -154,8 +156,8 @@
 				<!-- A wide final size scrolls sideways; the scroller then takes keyboard focus. -->
 				<!-- svelte-ignore a11y_no_noninteractive_tabindex -->
 				<div class="sheet" id="{uid}-preview" role="region" aria-label="Figure preview" tabindex="0">
-					<div class="paper" style:width="{cssWidth(s.widthMm)}px">
-						<ResultsChart spec={figure.spec} theme="export" title={card.label || card.name} description={caption.text} onview={measure} />
+					<div class="paper" style:width="{cssWidth(s.widthMm)}px" style:background={tokens?.bg ?? undefined}>
+						<ResultsChart spec={figure.spec} theme="export" tokens={tokens ?? undefined} title={card.label || card.name} description={caption.text} onview={measure} />
 					</div>
 				</div>
 			{:else}
@@ -164,6 +166,9 @@
 		</section>
 
 		<p class="files">Downloads: {#each files as f, i (f)}{i ? ', ' : ''}<code>{f}</code>{/each}</p>
+		{#if format !== 'csv' && page}
+			<p class="files" data-testid="export-theme">Colours: {page.theme?.description}</p>
+		{/if}
 		<div class="live" role="status" aria-live="polite">
 			{#if busy}Preparing the export…{:else if done}{done}{/if}
 		</div>

@@ -21,7 +21,7 @@ import {
 	wrapText
 } from './model';
 import { pixelsPerMetre, pngInfo, withDpi } from './png';
-import { figureChoice } from './run';
+import { bundleFormats, exportCards, figureChoice, zipName } from './run';
 import { readZip, zipStore } from './zip';
 
 // Figure export, the pure parts (task V4): sizes, PNG pHYs, ZIP, suppression, captions,
@@ -217,6 +217,38 @@ describe('export spec', () => {
 		expect(choice).toEqual({ chart: 'bars', layout: 'stacked' });
 		expect(figureChoice(card('fruit'), { get: () => 'donut', layout: () => 'stacked' })).toEqual({ chart: 'donut', layout: undefined });
 	});
+
+	it('draws in a results theme’s colours when given tokens (V6): background, bars, caption', () => {
+		const tokens = { bg: '#fdf8f1', surface: '#f5ecdf', border: '#e0d6c8', borderStrong: '#65544a', text: '#2b2118', textMuted: '#65544a', accent: '#a3431a', font: 'Georgia, serif' };
+		const { spec } = figureSpec(card('fruit'), { chart: 'bars', denominator: 'answered', intervals: false, widthMm: 85, caption: 'Fig.', k: null, tokens });
+		const s = spec as unknown as Json;
+		expect(s.config).toMatchObject({ background: '#fdf8f1', font: 'Georgia, serif', bar: { color: '#a3431a' } });
+		expect((s.title as Json).color).toBe('#2b2118');
+		expect(((s.config as Json).axis as Json).labelFontSize).toBe(11); // export sizes stay
+		// Without tokens: the publication look, as before.
+		const plainSpec = figureSpec(card('fruit'), { chart: 'bars', denominator: 'answered', intervals: false, widthMm: 85, caption: 'Fig.', k: null }).spec as unknown as Json;
+		expect(plainSpec.config).toMatchObject({ background: '#ffffff', bar: { color: '#0072B2' } });
+		expect((plainSpec.title as Json).color).toBe('#000000');
+	});
+});
+
+describe('Export all bundles (V6)', () => {
+	it('SVG only, PNG only or everything; the ZIP says which', () => {
+		expect(bundleFormats('svg')).toEqual(['svg']);
+		expect(bundleFormats('png')).toEqual(['png']);
+		expect(bundleFormats('all')).toEqual(['svg', 'png', 'csv', 'vega-lite']);
+		expect(bundleFormats(undefined)).toEqual(['svg', 'png', 'csv', 'vega-lite']);
+		expect(zipName('fixture-survey-id', 'svg', '2026-10-17')).toBe('results-fixture--2026-10-17-svg.zip');
+		expect(zipName('abcdefgh1234', 'png', '2026-10-17')).toBe('results-abcdefgh-2026-10-17-png.zip');
+		expect(zipName('abcdefgh1234', 'all', '2026-10-17')).toBe('results-abcdefgh-2026-10-17.zip');
+	});
+
+	it('exports the page’s cards in display order, hidden cards and notes left out', () => {
+		const charts = { hidden: (q: string) => q === 'why' } as never;
+		expect(exportCards({ response: plain, charts }).map((c) => c.question)).toEqual(plain.cards.map((c) => c.question).filter((q) => q !== 'why'));
+		const ordered = [card('grid'), card('fruit')];
+		expect(exportCards({ response: plain, charts, cards: ordered })).toEqual(ordered);
+	});
 });
 
 describe('CSV', () => {
@@ -275,7 +307,21 @@ describe('file names and manifest', () => {
 			split: null,
 			suppression: { hideCountsBelow: 5, marker: 'n<5' },
 			platform: { version: '1.2.3' },
-			vega: { vegaLite: '6.4.3' }
+			vega: { vegaLite: '6.4.3' },
+			theme: 'export (white background, Okabe-Ito palette, text >= 8 pt at final size)'
 		});
+		const themed = manifest({
+			response: plain,
+			query: { status: 'complete', denominator: 'answered', intervals: false },
+			filters: FILTERS,
+			k: null,
+			figures: [],
+			exportedAt: '2026-10-17T13:00:00Z',
+			platform: { name: 'osp', version: '1.2.3' },
+			libraries: { vega: '6.4.0', vegaLite: '6.4.3', vegaEmbed: '7.3.0' },
+			scope: 'page',
+			theme: 'Lab theme “Warm” (light colours; text >= 8 pt at final size)'
+		});
+		expect(themed.theme).toBe('Lab theme “Warm” (light colours; text >= 8 pt at final size)');
 	});
 });

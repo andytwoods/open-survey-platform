@@ -4,5 +4,5 @@
 export { default as ResultsChart } from './ResultsChart.svelte';
 export { buildSpec, defaultSpec, VEGA_LITE_SCHEMA } from './spec';
 export { CHART_LABELS, chartsFor, isChart, isSplit, splitsFor } from './menu';
-export { EXPORT_TEXT, LIGHT_TOKENS, OKABE_ITO, likertPalette, readTokens, themeConfig } from './theme';
+export { chartContrast, EXPORT_TEXT, EXPORT_TOKENS, LIGHT_TOKENS, OKABE_ITO, likertPalette, readTokens, themeConfig, tokensFromTheme } from './theme';
 export * from './types';
