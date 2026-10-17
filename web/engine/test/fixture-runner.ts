@@ -6,8 +6,11 @@
 import { readFileSync, existsSync, readdirSync } from 'node:fs';
 import { join, resolve } from 'node:path';
 import {
+	agree,
 	answers,
 	back,
+	decline,
+	declinedConsent,
 	next,
 	resolve as resolveEffect,
 	restart,
@@ -40,7 +43,7 @@ export interface Script {
 		expectPage?: string;
 		set?: Record<string, unknown>;
 		setIfShown?: Record<string, unknown>;
-		do: 'next' | 'back' | 'refresh' | 'resume' | 'retry' | 'switchDevice';
+		do: 'next' | 'back' | 'refresh' | 'resume' | 'retry' | 'switchDevice' | 'agree' | 'decline' | 'withdraw';
 		device?: string;
 		restoreFrom?: 'local';
 	}>;
@@ -143,7 +146,9 @@ export function trace(state: State, index: number, device = 'A', notice: string 
 	};
 }
 
+/** The stored response, or null: a declined session records none (semantics.md §11). */
 export function responseOf(state: State) {
+	if (declinedConsent(state)) return null;
 	const r = result(state);
 	return { ...r, orders: renameOrders(state.plan, r.orders) };
 }
@@ -194,6 +199,9 @@ export function play(plan: Plan, script: Script) {
 	// semantics §5 (R6-6): the server revision each device last saw; a device whose save is
 	// stale (another device moved on) shows the server copy instead, with a notice.
 	const seen: Record<string, number> = { A: state.data.revision };
+	// semantics.md §11: a withdrawal deletes the response on the server; the engine state
+	// (the page the participant sees) is unchanged.
+	let withdrawn = false;
 	script.actions.forEach((action, i) => {
 		let notice: string | null = null;
 		const v = view(state);
@@ -220,6 +228,15 @@ export function play(plan: Plan, script: Script) {
 			}
 			case 'retry':
 				state = settle(state);
+				break;
+			case 'agree':
+				state = agree(state);
+				break;
+			case 'decline':
+				state = decline(state);
+				break;
+			case 'withdraw':
+				withdrawn = true;
 				break;
 			case 'back':
 				state = back(state);
@@ -267,7 +284,7 @@ export function play(plan: Plan, script: Script) {
 		if (action.do !== 'next') step.errors = {};
 		steps.push(step);
 	});
-	return { state, steps, response: responseOf(state) };
+	return { state, steps, response: withdrawn ? null : responseOf(state) };
 }
 
 function reload(plan: Plan, state: State, clock: () => number, i: number): State {

@@ -240,6 +240,7 @@ class _Checker:
         self._references()
         self._same_page_cycles()
         self._settings()
+        self._consent()
         self._choice_codes()
         unique: dict[tuple[str, str, str], Diagnostic] = {}
         for d in self.out:
@@ -1021,17 +1022,37 @@ def _settings(self: _Checker) -> None:
             self.emit("settings.retention", ptr + "/until", f"{r.until!r} is not a date")
 
 
+def _consent(self: _Checker) -> None:
+    """semantics.md §11: the consent page comes before the flow, so nothing can be piped
+    into it, and declining must not look like a completed response."""
+    c = self.s.consent
+    if c is None:
+        return
+    for key in ("text", "agreeLabel", "declineLabel"):
+        text = getattr(c, key)
+        ptr = "/consent/" + key
+        self._text(text, ptr, None)
+        values = [text] if isinstance(text, str) else list(text.values())
+        if any(_PIPE.search(v) for v in values):
+            self.emit("consent.pipe", ptr, "the consent page is shown first: nothing can be piped")
+    if c.declineOutcome == "complete":
+        self.emit("consent.outcome", "/consent/declineOutcome", "a decline cannot end 'complete'")
+
+
 _Checker._same_page_only = _same_page_only  # type: ignore[attr-defined]
 _Checker._same_page_cycles = _same_page_cycles  # type: ignore[attr-defined]
 _Checker._bounds = _bounds  # type: ignore[attr-defined]
 _Checker._slider = _slider  # type: ignore[attr-defined]
 _Checker._settings = _settings  # type: ignore[attr-defined]
+_Checker._consent = _consent  # type: ignore[attr-defined]
 
 
 def publish_diagnostics(data: Any) -> list[Diagnostic]:
     """Diagnostics that block **publishing** but not editing or previewing: everything
     `validate` reports, plus `publish.retention_required` when no retention policy is set
-    (decided 16 Oct 2026: required before publishing, no silent default). Never raises."""
+    (decided 16 Oct 2026: required before publishing, no silent default), plus the warning
+    `publish.consent_missing` when participants answer questions but there is no consent
+    page (a warning: some studies take consent elsewhere). Never raises."""
     survey, diagnostics = parse(data)
     if survey is not None and survey.settings.retention is None:
         diagnostics = [
@@ -1042,7 +1063,21 @@ def publish_diagnostics(data: Any) -> list[Diagnostic]:
                 "choose how long participant data is kept before publishing",
             ),
         ]
+    if survey is not None and survey.consent is None and _asks_questions(survey):
+        diagnostics = [
+            *diagnostics,
+            make(
+                "publish.consent_missing",
+                "/consent",
+                "the survey asks participants questions but has no consent page",
+            ),
+        ]
     return diagnostics
+
+
+def _asks_questions(survey: Survey) -> bool:
+    """Any item that records an answer (everything but a note)."""
+    return any(q.type != "note" for b in survey.blocks for p in b.pages for q in p.items)
 
 
 def _default_fits(value_type: str, default: str | int) -> bool:

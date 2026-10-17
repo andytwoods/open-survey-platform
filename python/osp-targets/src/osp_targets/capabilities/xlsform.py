@@ -96,6 +96,17 @@ _row("Theme.preset", "unsupported", "See Settings.theme.")
 _row("Theme.radius", "unsupported", "See Settings.theme.")
 _row("Theme.themeVersion", "unsupported", "See Settings.theme.")
 _row(
+    "Survey.consent",
+    "unsupported",
+    "Our runtime's consent page (no data before agreement); not written, so the exported "
+    "form has no consent gate. Add an equivalent first question by hand.",
+)
+_row("Consent.text", "unsupported", "See Survey.consent.")
+_row("Consent.agreeLabel", "unsupported", "See Survey.consent.")
+_row("Consent.declineLabel", "unsupported", "See Survey.consent.")
+_row("Consent.declineOutcome", "unsupported", "See Survey.consent.")
+_row("Consent.countDeclines", "unsupported", "See Survey.consent.")
+_row(
     "Settings.backNavigation=false",
     "unsupported",
     "XLSForm cannot disable Back (Enketo has no option; Collect only via device settings).",

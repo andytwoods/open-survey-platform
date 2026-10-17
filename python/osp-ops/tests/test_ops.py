@@ -399,3 +399,12 @@ def test_set_theme_rejects_a_bad_theme_with_a_pointer() -> None:
     assert not res.ok
     assert res.diagnostics[0].code == "op.invalid_result"
     assert res.diagnostics[0].pointer.startswith("/settings/theme/colours")
+
+
+def test_set_consent_validates_and_removes() -> None:
+    res = run("set_consent", base(), {"consent": {"text": "Agree?", "countDeclines": True}})
+    assert res.ok, res.diagnostics
+    assert res.survey["consent"]["countDeclines"] is True
+    bad = run("set_consent", base(), {"consent": {"agreeLabel": "Yes"}})  # no text
+    assert not bad.ok and codes(bad) == ["op.invalid_result", "schema.missing"]
+    assert run("set_consent", res.survey, {"consent": None}).survey == base()

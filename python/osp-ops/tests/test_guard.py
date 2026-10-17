@@ -138,6 +138,10 @@ EXAMPLES: dict[str, list[dict[str, Any]]] = {
         {"languages": ["en"], "cascade": True},
         {"languages": ["de", "en"]},
     ],
+    "set_consent": [
+        {"consent": {"text": {"en": "Do you agree?"}, "countDeclines": True}},
+        {"consent": {"text": "Agree?", "agreeLabel": "Yes", "declineLabel": "No"}},
+    ],
     "set_theme": [
         {"theme": PRESETS["warm"].model_dump(mode="json", by_alias=True)},
         {"theme": {**PRESETS["clean"].model_dump(mode="json"), "radius": 0}},

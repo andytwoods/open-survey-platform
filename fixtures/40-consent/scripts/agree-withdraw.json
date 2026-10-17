@@ -1,0 +1,27 @@
+{
+  "format": "osp-fixture-script/0",
+  "id": "agree-withdraw",
+  "description": "Agree, answer, submit, then withdraw from the end screen: the server deletes the response and the session, so no response remains.",
+  "sessionSeed": 4003,
+  "language": "en",
+  "actions": [
+    {
+      "expectPage": "$consent",
+      "do": "agree"
+    },
+    {
+      "expectPage": "p1",
+      "set": {
+        "q_sleep": 5
+      },
+      "do": "next"
+    },
+    {
+      "expectPage": "p2",
+      "do": "next"
+    },
+    {
+      "do": "withdraw"
+    }
+  ]
+}

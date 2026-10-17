@@ -68,8 +68,12 @@ CODES: dict[str, Severity] = {
     "matrix.row_id": "error",
     # Settings
     "settings.retention": "error",
+    # Consent (semantics.md §11)
+    "consent.pipe": "error",
+    "consent.outcome": "error",
     # Publishing only (publish_diagnostics; never from validate)
     "publish.retention_required": "error",
+    "publish.consent_missing": "warning",  # participant questions but no consent page
     # Variables
     "variable.cycle": "error",
     "variable.never_assigned": "warning",

@@ -12,6 +12,7 @@ from . import (  # noqa: F401
     choice_list_ops,
     choice_ops,
     condition_ops,
+    consent_ops,
     flow_ops,
     metadata_ops,
     page_ops,

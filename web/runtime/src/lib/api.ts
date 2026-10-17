@@ -47,6 +47,10 @@ export interface Api {
 	): Promise<SnapshotResponse>;
 	quota(sessionId: string, token: string, nodeId: string): Promise<QuotaResponse>;
 	submit(sessionId: string, token: string, record: ResponseRecord): Promise<SubmitResponse>;
+	/** Consent (semantics.md §11, M5). Optional so older test doubles still type-check. */
+	consent?(sessionId: string, token: string, version: string): Promise<unknown>;
+	decline?(sessionId: string, token: string): Promise<unknown>;
+	withdraw?(sessionId: string, token: string): Promise<unknown>;
 }
 
 /** Browsers cap the total body of in-flight keepalive requests at 64 KiB. */
@@ -83,7 +87,7 @@ export function httpApi(base = '', fetchImpl: typeof fetch = (...a) => fetch(...
 		}
 		let json: unknown = null;
 		try {
-			json = await res.json();
+			json = res.status === 204 ? {} : await res.json();
 		} catch {
 			if (res.ok) throw new NetworkError('unreadable response');
 		}
@@ -105,6 +109,10 @@ export function httpApi(base = '', fetchImpl: typeof fetch = (...a) => fetch(...
 				keepalive: o?.keepalive
 			}),
 		quota: (sid, token, nodeId) => call('POST', `/api/sessions/${enc(sid)}/quota/${enc(nodeId)}`, { token }),
-		submit: (sid, token, record) => call('POST', `/api/sessions/${enc(sid)}/submit`, { token, body: record })
+		submit: (sid, token, record) => call('POST', `/api/sessions/${enc(sid)}/submit`, { token, body: record }),
+		consent: (sid, token, version) =>
+			call('POST', `/api/sessions/${enc(sid)}/consent`, { token, body: { consentVersion: version } }),
+		decline: (sid, token) => call('POST', `/api/sessions/${enc(sid)}/decline`, { token }),
+		withdraw: (sid, token) => call('POST', `/api/sessions/${enc(sid)}/withdraw`, { token })
 	};
 }

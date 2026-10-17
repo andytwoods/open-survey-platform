@@ -313,6 +313,48 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
+    "/api/sessions/{session_id}/consent": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /**
+         * Consent
+         * @description The participant agreed (semantics.md section 11). Until then the server takes no
+         *     snapshot, quota check or submit for a survey with a consent page.
+         */
+        post: operations["giveConsent"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/sessions/{session_id}/decline": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /**
+         * Decline
+         * @description The participant declined: the session is deleted. Nothing is kept but an
+         *     anonymous count, and only if the survey asks for one.
+         */
+        post: operations["declineConsent"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
     "/api/sessions/{session_id}/quota/{node_id}": {
         parameters: {
             query?: never;
@@ -358,6 +400,28 @@ export interface paths {
         put?: never;
         /** Submit */
         post: operations["submitSession"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/sessions/{session_id}/withdraw": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /**
+         * Withdraw
+         * @description The participant withdraws (before or after submitting): their response and
+         *     session are deleted, and an audit entry without answer data is written. The resume
+         *     token stops working.
+         */
+        post: operations["withdrawSession"];
         delete?: never;
         options?: never;
         head?: never;
@@ -548,6 +612,26 @@ export interface paths {
         /** Redo */
         post: operations["redo"];
         delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/surveys/{survey_id}/responses/{response_id}": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        post?: never;
+        /**
+         * Delete Response
+         * @description Delete one response and its session (audited, without answer data).
+         */
+        delete: operations["deleteResponse"];
         options?: never;
         head?: never;
         patch?: never;
@@ -820,6 +904,27 @@ export interface components {
             note: string;
         };
         ChoiceValue: number | string;
+        /** ConsentRequest */
+        ConsentRequest: {
+            /**
+             * Consentversion
+             * @description The plan's `consent.version` the participant agreed to.
+             */
+            consentVersion: string;
+        };
+        /** ConsentResponse */
+        ConsentResponse: {
+            /** Consentversion */
+            consentVersion: string;
+            /**
+             * Consentedat
+             * Format: date-time
+             * @description Server time of the (first) agreement.
+             */
+            consentedAt: string;
+            /** Replay */
+            replay: boolean;
+        };
         /** CreateChoiceList */
         CreateChoiceListParams: {
             /**
@@ -1345,7 +1450,7 @@ export interface components {
         /** @enum {string} */
         OpErrorCode: "op.cascade_blocked" | "op.conflict" | "op.dangling_ref" | "op.duplicate_id" | "op.expr_syntax" | "op.internal" | "op.invalid_result" | "op.invalid_survey" | "op.not_allowed" | "op.not_applicable" | "op.not_found" | "op.params" | "op.patch" | "op.unknown";
         /** @enum {string} */
-        OpId: "add_block" | "add_choice" | "add_page" | "add_question" | "add_variable" | "apply_patch" | "bulk_paste_choices" | "create_choice_list" | "delete_block" | "delete_choice" | "delete_choice_list" | "delete_flow_node" | "delete_page" | "delete_question" | "delete_variable" | "duplicate_question" | "insert_flow_node" | "move_block" | "move_choice" | "move_flow_node" | "move_page" | "move_question" | "rename_block" | "rename_page" | "replace_survey" | "set_choice" | "set_condition" | "set_languages" | "set_property" | "set_theme" | "set_title";
+        OpId: "add_block" | "add_choice" | "add_page" | "add_question" | "add_variable" | "apply_patch" | "bulk_paste_choices" | "create_choice_list" | "delete_block" | "delete_choice" | "delete_choice_list" | "delete_flow_node" | "delete_page" | "delete_question" | "delete_variable" | "duplicate_question" | "insert_flow_node" | "move_block" | "move_choice" | "move_flow_node" | "move_page" | "move_question" | "rename_block" | "rename_page" | "replace_survey" | "set_choice" | "set_condition" | "set_consent" | "set_languages" | "set_property" | "set_theme" | "set_title";
         /** OpsRequest */
         OpsRequest: {
             /** Baserevision */
@@ -1681,6 +1786,16 @@ export interface components {
             field: components["schemas"]["ExprField"] | null;
             /** Target */
             target: string;
+        };
+        /** SetConsent */
+        SetConsentParams: {
+            /**
+             * Consent
+             * @default null
+             */
+            consent: {
+                [key: string]: components["schemas"]["JsonValue"];
+            } | null;
         };
         /** SetDefaultThemeRequest */
         SetDefaultThemeRequest: {
@@ -2317,6 +2432,16 @@ export interface components {
             name: string;
             /** Version */
             version: string;
+        };
+        /** WithdrawResponse */
+        WithdrawResponse: {
+            /** Responsesdeleted */
+            responsesDeleted: number;
+            /**
+             * Withdrawn
+             * @constant
+             */
+            withdrawn: true;
         };
     };
     responses: never;
@@ -3064,6 +3189,124 @@ export interface operations {
             };
         };
     };
+    giveConsent: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                session_id: string;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["ConsentRequest"];
+            };
+        };
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ConsentResponse"];
+                };
+            };
+            /** @description Unauthorized */
+            401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorBody"];
+                };
+            };
+            /** @description Not Found */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorBody"];
+                };
+            };
+            /** @description Conflict */
+            409: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["StaleBody"];
+                };
+            };
+            /** @description Gone */
+            410: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorBody"];
+                };
+            };
+            /** @description Unprocessable Content */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorBody"];
+                };
+            };
+        };
+    };
+    declineConsent: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                session_id: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            204: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+            /** @description Unauthorized */
+            401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorBody"];
+                };
+            };
+            /** @description Not Found */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorBody"];
+                };
+            };
+            /** @description Unprocessable Content */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorBody"];
+                };
+            };
+        };
+    };
     checkQuota: {
         parameters: {
             query?: never;
@@ -3279,6 +3522,55 @@ export interface operations {
                 };
                 content: {
                     "application/json": components["schemas"]["ErrorBody"];
+                };
+            };
+        };
+    };
+    withdrawSession: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                session_id: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["WithdrawResponse"];
+                };
+            };
+            /** @description Unauthorized */
+            401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorBody"];
+                };
+            };
+            /** @description Not Found */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorBody"];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
                 };
             };
         };
@@ -4067,6 +4359,63 @@ export interface operations {
                 };
                 content: {
                     "application/json": components["schemas"]["RejectedBody"];
+                };
+            };
+        };
+    };
+    deleteResponse: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                survey_id: string;
+                response_id: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            204: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+            /** @description Unauthorized */
+            401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorBody"];
+                };
+            };
+            /** @description Forbidden */
+            403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorBody"];
+                };
+            };
+            /** @description Not Found */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorBody"];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
                 };
             };
         };

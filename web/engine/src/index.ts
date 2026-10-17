@@ -7,8 +7,13 @@
 export * from './plan.ts';
 export * from './types.ts';
 export {
+	agree,
 	answer,
 	answers,
+	awaitingConsent,
+	decline,
+	declinedConsent,
+	tryConsent,
 	back,
 	canGoBack,
 	checkPlan,

@@ -17,6 +17,8 @@ The plan (`contract/runtime-plan.schema.json`, TS types in `web/engine/src/plan.
 - splits every translatable text into segments per language: a plain string, or
   `{"pipe": id}` for `${id}` (semantics.md §8). The engine fills pipes; the renderer
   HTML-escapes the filled values;
+- carries the optional consent page (`consent`, semantics.md §11) with its version, the
+  checksum of its compiled texts;
 - records `planVersion`, `engineVersion` (the engine API major the plan targets) and a
   `checksum` (SHA-256 of the canonical JSON of the plan without `checksum`).
 
@@ -62,6 +64,7 @@ __all__ = [
     "checksum",
     "compile_plan",
     "compile_survey",
+    "consent_version",
     "embed_theme",
     "expr_json",
     "runtime_config",
@@ -172,13 +175,29 @@ def runtime_config(plan: Json, *, save_mode: str | None = None) -> Json:
         if v["kind"] == "assigned"
     ]
     settings = plan.get("settings", {})
-    return {
+    out = {
         "surveyVersion": plan["survey"]["seedVersion"],
         "saveMode": save_mode or settings.get("saveMode", "every-page"),
         "resumeExpiryDays": settings.get("resumeExpiryDays", 30),
         "assignments": assignments,
         "quotas": quotas,
     }
+    consent = plan.get("consent")
+    if consent:
+        # semantics.md §11: the server refuses response data before this version is agreed.
+        out["consent"] = {
+            "version": consent["version"],
+            "countDeclines": bool(consent.get("countDeclines")),
+        }
+    return out
+
+
+def consent_version(text: Json, agree: Json, decline: Json) -> str:
+    """The consent version (semantics.md §11): `sha256:<hex>` of the canonical JSON of the
+    compiled consent texts (every language), so any change to the wording is a new version.
+    """
+    body = {"text": text, "agree": agree, "decline": decline}
+    return "sha256:" + hashlib.sha256(canonical_json(body).encode("utf-8")).hexdigest()
 
 
 def seed_version(survey: Survey) -> str:
@@ -417,6 +436,21 @@ class _Compiler:
             "quotas": quotas,
             "flow": flow,
         }
+        if s.consent is not None:
+            c = s.consent
+            text, agree, decline = (
+                self.text(c.text),
+                self.text(c.agreeLabel),
+                self.text(c.declineLabel),
+            )
+            plan["consent"] = {
+                "version": consent_version(text, agree, decline),
+                "text": text,
+                "agree": agree,
+                "decline": decline,
+                "declineOutcome": c.declineOutcome,
+                "countDeclines": c.countDeclines,
+            }
         plan["checksum"] = checksum(plan)
         return plan
 

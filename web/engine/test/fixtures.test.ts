@@ -33,7 +33,7 @@ interface Expected {
 	pending: string[];
 	steps: Array<Record<string, unknown>>;
 	invariants: Invariant[];
-	response: Record<string, unknown>;
+	response: Record<string, unknown> | null;
 }
 
 type Status = 'passed' | 'pending' | 'failed';
@@ -123,9 +123,12 @@ for (const name of fixtureNames()) {
 				if (run.steps.length !== expected.steps.length) {
 					diffs.push({ path: 'steps.length', expected: expected.steps.length, actual: run.steps.length });
 				}
+				// A declined or withdrawn session has no response (null, semantics.md §11).
 				const response = compare(
 					expected.response,
-					pick(run.response as unknown as Record<string, unknown>, expected.response),
+					run.response === null || expected.response === null
+						? run.response
+						: pick(run.response as unknown as Record<string, unknown>, expected.response),
 					'response',
 					diffs,
 					realised
