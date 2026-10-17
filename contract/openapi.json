@@ -270,6 +270,40 @@
         "title": "AddVariable",
         "type": "object"
       },
+      "AnswerFilter": {
+        "additionalProperties": false,
+        "properties": {
+          "in": {
+            "description": "Keep responses that answered with one of these codes (multiple choice: chose at least one of them). Codes compare as text.",
+            "items": {
+              "anyOf": [
+                {
+                  "type": "integer"
+                },
+                {
+                  "type": "string"
+                }
+              ]
+            },
+            "maxItems": 500,
+            "minItems": 1,
+            "title": "In",
+            "type": "array"
+          },
+          "question": {
+            "description": "Id of a single-choice, multiple-choice or matrix-row variable (<matrix id>_<row id>)",
+            "maxLength": 200,
+            "title": "Question",
+            "type": "string"
+          }
+        },
+        "required": [
+          "question",
+          "in"
+        ],
+        "title": "AnswerFilter",
+        "type": "object"
+      },
       "AnswerIn": {
         "additionalProperties": true,
         "properties": {
@@ -320,6 +354,58 @@
           "children"
         ],
         "type": "string"
+      },
+      "BinSpec": {
+        "additionalProperties": false,
+        "properties": {
+          "count": {
+            "anyOf": [
+              {
+                "maximum": 200.0,
+                "minimum": 1.0,
+                "type": "integer"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "description": "Number of numeric bins",
+            "title": "Count"
+          },
+          "unit": {
+            "anyOf": [
+              {
+                "enum": [
+                  "day",
+                  "week",
+                  "month",
+                  "year"
+                ],
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "description": "Date questions: period per bar (default month)",
+            "title": "Unit"
+          },
+          "width": {
+            "anyOf": [
+              {
+                "exclusiveMinimum": 0.0,
+                "type": "number"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "description": "Numeric bin width",
+            "title": "Width"
+          }
+        },
+        "title": "BinSpec",
+        "type": "object"
       },
       "BulkPasteChoicesParams": {
         "additionalProperties": false,
@@ -379,6 +465,318 @@
         "title": "CapabilityRow",
         "type": "object"
       },
+      "Card": {
+        "properties": {
+          "binEdges": {
+            "anyOf": [
+              {
+                "items": {
+                  "type": "number"
+                },
+                "type": "array"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "description": "Shared numeric bin edges (len = bins + 1)",
+            "title": "Binedges"
+          },
+          "binUnit": {
+            "anyOf": [
+              {
+                "enum": [
+                  "day",
+                  "week",
+                  "month",
+                  "year"
+                ],
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Binunit"
+          },
+          "binning": {
+            "anyOf": [
+              {
+                "enum": [
+                  "categories",
+                  "values",
+                  "bins",
+                  "periods"
+                ],
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Binning"
+          },
+          "categories": {
+            "anyOf": [
+              {
+                "items": {
+                  "$ref": "#/components/schemas/Category"
+                },
+                "type": "array"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "description": "Choices / matrix columns in declared order, shared by all groups",
+            "title": "Categories"
+          },
+          "facets": {
+            "anyOf": [
+              {
+                "items": {
+                  "$ref": "#/components/schemas/Facet"
+                },
+                "type": "array"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "description": "Versions whose definitions differ: one facet per version, top-level groups empty (see warnings)",
+            "title": "Facets"
+          },
+          "groups": {
+            "items": {
+              "$ref": "#/components/schemas/Group"
+            },
+            "title": "Groups",
+            "type": "array"
+          },
+          "label": {
+            "title": "Label",
+            "type": "string"
+          },
+          "name": {
+            "title": "Name",
+            "type": "string"
+          },
+          "ordered": {
+            "anyOf": [
+              {
+                "type": "boolean"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "description": "Choices / columns are an ordered scale (numeric codes ascending)",
+            "title": "Ordered"
+          },
+          "question": {
+            "title": "Question",
+            "type": "string"
+          },
+          "rows": {
+            "anyOf": [
+              {
+                "items": {
+                  "$ref": "#/components/schemas/RowResult"
+                },
+                "type": "array"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "description": "Matrix questions only",
+            "title": "Rows"
+          },
+          "states": {
+            "anyOf": [
+              {
+                "$ref": "#/components/schemas/StateCounts"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "description": "Response-state counts. answered + unanswered make up the 'shown' denominator; irrelevant, notReached and notInVersion are never in a denominator. unrecorded: the stored record has no state for the question; invalid: answered with a value that does not fit the question (e.g. a code it does not declare). Both are outside denominators."
+          },
+          "type": {
+            "enum": [
+              "single",
+              "multi",
+              "integer",
+              "decimal",
+              "slider",
+              "date",
+              "text",
+              "matrix",
+              "note"
+            ],
+            "title": "Type",
+            "type": "string"
+          },
+          "versionsUsed": {
+            "description": "Versions that contain the question",
+            "items": {
+              "type": "integer"
+            },
+            "title": "Versionsused",
+            "type": "array"
+          },
+          "warnings": {
+            "items": {
+              "$ref": "#/components/schemas/ResultWarning"
+            },
+            "title": "Warnings",
+            "type": "array"
+          }
+        },
+        "required": [
+          "question",
+          "name",
+          "type",
+          "label",
+          "versionsUsed"
+        ],
+        "title": "Card",
+        "type": "object"
+      },
+      "CardRequest": {
+        "additionalProperties": false,
+        "properties": {
+          "bins": {
+            "anyOf": [
+              {
+                "$ref": "#/components/schemas/BinSpec"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
+          "question": {
+            "description": "Question id (a matrix: the matrix id)",
+            "maxLength": 200,
+            "title": "Question",
+            "type": "string"
+          }
+        },
+        "required": [
+          "question"
+        ],
+        "title": "CardRequest",
+        "type": "object"
+      },
+      "Category": {
+        "properties": {
+          "code": {
+            "anyOf": [
+              {
+                "type": "integer"
+              },
+              {
+                "type": "string"
+              }
+            ],
+            "title": "Code"
+          },
+          "key": {
+            "description": "The choice code as text (cells refer to it)",
+            "title": "Key",
+            "type": "string"
+          },
+          "label": {
+            "title": "Label",
+            "type": "string"
+          }
+        },
+        "required": [
+          "key",
+          "code",
+          "label"
+        ],
+        "title": "Category",
+        "type": "object"
+      },
+      "Cell": {
+        "properties": {
+          "ci": {
+            "anyOf": [
+              {
+                "items": {
+                  "type": "number"
+                },
+                "type": "array"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "description": "Wilson 95 % interval of pct, if asked",
+            "title": "Ci"
+          },
+          "count": {
+            "title": "Count",
+            "type": "integer"
+          },
+          "hi": {
+            "anyOf": [
+              {
+                "type": "number"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "description": "Numeric bin upper edge (exclusive; the last bin includes it)",
+            "title": "Hi"
+          },
+          "key": {
+            "description": "Choice code as text, bin index ('0', '1', ...), slider value or date period ('2026-10', '2026-W42', '2026-10-17', '2026')",
+            "title": "Key",
+            "type": "string"
+          },
+          "label": {
+            "title": "Label",
+            "type": "string"
+          },
+          "lo": {
+            "anyOf": [
+              {
+                "type": "number"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "description": "Numeric bin lower edge (inclusive)",
+            "title": "Lo"
+          },
+          "pct": {
+            "anyOf": [
+              {
+                "type": "number"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "description": "100 * count / group n; null when n is 0. Multiple choice: % of respondents, can sum to more than 100",
+            "title": "Pct"
+          }
+        },
+        "required": [
+          "key",
+          "label",
+          "count",
+          "pct"
+        ],
+        "title": "Cell",
+        "type": "object"
+      },
       "ChangeQuestionTypeParams": {
         "additionalProperties": false,
         "properties": {
@@ -426,6 +824,39 @@
             "type": "string"
           }
         ]
+      },
+      "ConditionFilter": {
+        "additionalProperties": false,
+        "properties": {
+          "in": {
+            "items": {
+              "anyOf": [
+                {
+                  "type": "integer"
+                },
+                {
+                  "type": "string"
+                }
+              ]
+            },
+            "maxItems": 500,
+            "minItems": 1,
+            "title": "In",
+            "type": "array"
+          },
+          "variable": {
+            "description": "Id of an assigned variable",
+            "maxLength": 200,
+            "title": "Variable",
+            "type": "string"
+          }
+        },
+        "required": [
+          "variable",
+          "in"
+        ],
+        "title": "ConditionFilter",
+        "type": "object"
       },
       "ConsentRequest": {
         "additionalProperties": false,
@@ -1110,6 +1541,168 @@
           "expr"
         ],
         "type": "string"
+      },
+      "Facet": {
+        "properties": {
+          "binEdges": {
+            "anyOf": [
+              {
+                "items": {
+                  "type": "number"
+                },
+                "type": "array"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "description": "Shared numeric bin edges (len = bins + 1)",
+            "title": "Binedges"
+          },
+          "binUnit": {
+            "anyOf": [
+              {
+                "enum": [
+                  "day",
+                  "week",
+                  "month",
+                  "year"
+                ],
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Binunit"
+          },
+          "binning": {
+            "anyOf": [
+              {
+                "enum": [
+                  "categories",
+                  "values",
+                  "bins",
+                  "periods"
+                ],
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Binning"
+          },
+          "categories": {
+            "anyOf": [
+              {
+                "items": {
+                  "$ref": "#/components/schemas/Category"
+                },
+                "type": "array"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "description": "Choices / matrix columns in declared order, shared by all groups",
+            "title": "Categories"
+          },
+          "groups": {
+            "items": {
+              "$ref": "#/components/schemas/Group"
+            },
+            "title": "Groups",
+            "type": "array"
+          },
+          "rows": {
+            "anyOf": [
+              {
+                "items": {
+                  "$ref": "#/components/schemas/RowResult"
+                },
+                "type": "array"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "description": "Matrix questions only",
+            "title": "Rows"
+          },
+          "states": {
+            "anyOf": [
+              {
+                "$ref": "#/components/schemas/StateCounts"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "description": "Response-state counts. answered + unanswered make up the 'shown' denominator; irrelevant, notReached and notInVersion are never in a denominator. unrecorded: the stored record has no state for the question; invalid: answered with a value that does not fit the question (e.g. a code it does not declare). Both are outside denominators."
+          },
+          "version": {
+            "title": "Version",
+            "type": "integer"
+          }
+        },
+        "required": [
+          "version"
+        ],
+        "title": "Facet",
+        "type": "object"
+      },
+      "Group": {
+        "properties": {
+          "cells": {
+            "items": {
+              "$ref": "#/components/schemas/Cell"
+            },
+            "title": "Cells",
+            "type": "array"
+          },
+          "key": {
+            "description": "'all' without a split; else the split code, or '_missing' for responses with no split value",
+            "title": "Key",
+            "type": "string"
+          },
+          "label": {
+            "title": "Label",
+            "type": "string"
+          },
+          "missing": {
+            "default": false,
+            "title": "Missing",
+            "type": "boolean"
+          },
+          "n": {
+            "description": "The group's denominator for this card",
+            "title": "N",
+            "type": "integer"
+          },
+          "responses": {
+            "description": "Responses in the group (after filters)",
+            "title": "Responses",
+            "type": "integer"
+          },
+          "states": {
+            "$ref": "#/components/schemas/StateCounts"
+          },
+          "stats": {
+            "$ref": "#/components/schemas/Stats"
+          }
+        },
+        "required": [
+          "key",
+          "label",
+          "responses",
+          "n",
+          "states",
+          "cells",
+          "stats"
+        ],
+        "title": "Group",
+        "type": "object"
       },
       "HTTPValidationError": {
         "properties": {
@@ -2230,6 +2823,267 @@
         "title": "ResponseRecordIn",
         "type": "object"
       },
+      "ResultWarning": {
+        "properties": {
+          "code": {
+            "description": "versions.incompatible | language.unknown | bins.coarsened | values.invalid | question.not_found | question.note",
+            "title": "Code",
+            "type": "string"
+          },
+          "message": {
+            "title": "Message",
+            "type": "string"
+          },
+          "question": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Question"
+          }
+        },
+        "required": [
+          "code",
+          "message"
+        ],
+        "title": "ResultWarning",
+        "type": "object"
+      },
+      "ResultsQuery": {
+        "additionalProperties": false,
+        "properties": {
+          "cards": {
+            "anyOf": [
+              {
+                "items": {
+                  "$ref": "#/components/schemas/CardRequest"
+                },
+                "maxItems": 500,
+                "type": "array"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "description": "Omitted: every question of the newest version used, in survey order",
+            "title": "Cards"
+          },
+          "condition": {
+            "anyOf": [
+              {
+                "$ref": "#/components/schemas/ConditionFilter"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
+          "denominator": {
+            "default": "answered",
+            "description": "shown = answered + unanswered",
+            "enum": [
+              "answered",
+              "shown"
+            ],
+            "title": "Denominator",
+            "type": "string"
+          },
+          "filters": {
+            "items": {
+              "$ref": "#/components/schemas/AnswerFilter"
+            },
+            "maxItems": 20,
+            "title": "Filters",
+            "type": "array"
+          },
+          "intervals": {
+            "default": false,
+            "description": "Add 95 % intervals: Wilson for proportions, t for means",
+            "title": "Intervals",
+            "type": "boolean"
+          },
+          "language": {
+            "anyOf": [
+              {
+                "maxLength": 35,
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "description": "Label language; default the survey's main language",
+            "title": "Language"
+          },
+          "split": {
+            "anyOf": [
+              {
+                "$ref": "#/components/schemas/SplitSpec"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
+          "status": {
+            "default": "complete",
+            "description": "complete: responses whose end outcome is 'complete' (or that carry no outcome at all); all: every submitted response",
+            "enum": [
+              "complete",
+              "all"
+            ],
+            "title": "Status",
+            "type": "string"
+          },
+          "submittedFrom": {
+            "anyOf": [
+              {
+                "format": "date-time",
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "description": "Inclusive; naive is UTC",
+            "title": "Submittedfrom"
+          },
+          "submittedTo": {
+            "anyOf": [
+              {
+                "format": "date-time",
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "description": "Exclusive; naive is UTC",
+            "title": "Submittedto"
+          },
+          "versions": {
+            "anyOf": [
+              {
+                "items": {
+                  "minimum": 1.0,
+                  "type": "integer"
+                },
+                "maxItems": 50,
+                "minItems": 1,
+                "type": "array"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "description": "Published version numbers; omitted: the latest published version",
+            "title": "Versions"
+          }
+        },
+        "title": "ResultsQuery",
+        "type": "object"
+      },
+      "ResultsResponse": {
+        "properties": {
+          "cached": {
+            "title": "Cached",
+            "type": "boolean"
+          },
+          "cards": {
+            "items": {
+              "$ref": "#/components/schemas/Card"
+            },
+            "title": "Cards",
+            "type": "array"
+          },
+          "denominator": {
+            "enum": [
+              "answered",
+              "shown"
+            ],
+            "title": "Denominator",
+            "type": "string"
+          },
+          "generatedAt": {
+            "format": "date-time",
+            "title": "Generatedat",
+            "type": "string"
+          },
+          "language": {
+            "title": "Language",
+            "type": "string"
+          },
+          "languages": {
+            "items": {
+              "type": "string"
+            },
+            "title": "Languages",
+            "type": "array"
+          },
+          "queryHash": {
+            "description": "Hash of the normalised query (versions resolved)",
+            "title": "Queryhash",
+            "type": "string"
+          },
+          "responses": {
+            "description": "Responses after status, date and answer filters",
+            "title": "Responses",
+            "type": "integer"
+          },
+          "split": {
+            "anyOf": [
+              {
+                "$ref": "#/components/schemas/SplitInfo"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
+          "surveyId": {
+            "title": "Surveyid",
+            "type": "string"
+          },
+          "versionsUsed": {
+            "items": {
+              "type": "integer"
+            },
+            "title": "Versionsused",
+            "type": "array"
+          },
+          "warnings": {
+            "items": {
+              "$ref": "#/components/schemas/ResultWarning"
+            },
+            "title": "Warnings",
+            "type": "array"
+          },
+          "watermark": {
+            "description": "Changes whenever the versions' responses change",
+            "title": "Watermark",
+            "type": "string"
+          }
+        },
+        "required": [
+          "surveyId",
+          "queryHash",
+          "watermark",
+          "generatedAt",
+          "cached",
+          "versionsUsed",
+          "language",
+          "languages",
+          "denominator",
+          "responses",
+          "cards"
+        ],
+        "title": "ResultsResponse",
+        "type": "object"
+      },
       "ResumeResponse": {
         "properties": {
           "assigned": {
@@ -2417,6 +3271,43 @@
           "currentRevision"
         ],
         "title": "RevisionConflictBody",
+        "type": "object"
+      },
+      "RowResult": {
+        "description": "One matrix row: its own variable with its own n (V-D5).",
+        "properties": {
+          "groups": {
+            "items": {
+              "$ref": "#/components/schemas/Group"
+            },
+            "title": "Groups",
+            "type": "array"
+          },
+          "id": {
+            "description": "Row variable id <matrix id>_<row id>",
+            "title": "Id",
+            "type": "string"
+          },
+          "label": {
+            "title": "Label",
+            "type": "string"
+          },
+          "name": {
+            "title": "Name",
+            "type": "string"
+          },
+          "states": {
+            "$ref": "#/components/schemas/StateCounts"
+          }
+        },
+        "required": [
+          "id",
+          "name",
+          "label",
+          "states",
+          "groups"
+        ],
+        "title": "RowResult",
         "type": "object"
       },
       "SetChoiceParams": {
@@ -3506,6 +4397,116 @@
         "title": "SnapshotResponse",
         "type": "object"
       },
+      "SplitGroup": {
+        "properties": {
+          "key": {
+            "title": "Key",
+            "type": "string"
+          },
+          "label": {
+            "title": "Label",
+            "type": "string"
+          },
+          "missing": {
+            "default": false,
+            "title": "Missing",
+            "type": "boolean"
+          },
+          "responses": {
+            "title": "Responses",
+            "type": "integer"
+          }
+        },
+        "required": [
+          "key",
+          "label",
+          "responses"
+        ],
+        "title": "SplitGroup",
+        "type": "object"
+      },
+      "SplitInfo": {
+        "properties": {
+          "condition": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Condition"
+          },
+          "groups": {
+            "items": {
+              "$ref": "#/components/schemas/SplitGroup"
+            },
+            "title": "Groups",
+            "type": "array"
+          },
+          "label": {
+            "title": "Label",
+            "type": "string"
+          },
+          "question": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Question"
+          }
+        },
+        "required": [
+          "label",
+          "groups"
+        ],
+        "title": "SplitInfo",
+        "type": "object"
+      },
+      "SplitSpec": {
+        "additionalProperties": false,
+        "description": "Exactly one of ``question`` (single choice or matrix row) or ``condition``.",
+        "properties": {
+          "condition": {
+            "anyOf": [
+              {
+                "maxLength": 200,
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "description": "Assigned variable id",
+            "title": "Condition"
+          },
+          "excludeMissing": {
+            "default": false,
+            "description": "Drop the 'no value' group instead of showing it",
+            "title": "Excludemissing",
+            "type": "boolean"
+          },
+          "question": {
+            "anyOf": [
+              {
+                "maxLength": 200,
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Question"
+          }
+        },
+        "title": "SplitSpec",
+        "type": "object"
+      },
       "StaleBody": {
         "properties": {
           "code": {
@@ -3611,6 +4612,254 @@
           "revision"
         ],
         "title": "StartResponse",
+        "type": "object"
+      },
+      "StateCounts": {
+        "properties": {
+          "answered": {
+            "title": "Answered",
+            "type": "integer"
+          },
+          "invalid": {
+            "title": "Invalid",
+            "type": "integer"
+          },
+          "irrelevant": {
+            "title": "Irrelevant",
+            "type": "integer"
+          },
+          "notInVersion": {
+            "title": "Notinversion",
+            "type": "integer"
+          },
+          "notReached": {
+            "title": "Notreached",
+            "type": "integer"
+          },
+          "unanswered": {
+            "title": "Unanswered",
+            "type": "integer"
+          },
+          "unrecorded": {
+            "title": "Unrecorded",
+            "type": "integer"
+          }
+        },
+        "required": [
+          "answered",
+          "unanswered",
+          "irrelevant",
+          "notReached",
+          "notInVersion",
+          "unrecorded",
+          "invalid"
+        ],
+        "title": "StateCounts",
+        "type": "object"
+      },
+      "Stats": {
+        "description": "Statistics that apply to the card type. An applicable statistic that is undefined\nfor the data (e.g. SD with n < 2) is null and listed in ``notAvailable``.",
+        "properties": {
+          "bottom2": {
+            "anyOf": [
+              {
+                "type": "number"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Bottom2"
+          },
+          "earliest": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "description": "Date: earliest answer",
+            "title": "Earliest"
+          },
+          "latest": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Latest"
+          },
+          "max": {
+            "anyOf": [
+              {
+                "type": "number"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Max"
+          },
+          "mean": {
+            "anyOf": [
+              {
+                "type": "number"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Mean"
+          },
+          "meanCi": {
+            "anyOf": [
+              {
+                "items": {
+                  "type": "number"
+                },
+                "type": "array"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "description": "t 95 % interval of the mean",
+            "title": "Meanci"
+          },
+          "meanLength": {
+            "anyOf": [
+              {
+                "type": "number"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "description": "Text: characters per answer",
+            "title": "Meanlength"
+          },
+          "meanOptions": {
+            "anyOf": [
+              {
+                "type": "number"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "description": "Multiple choice: options per answer",
+            "title": "Meanoptions"
+          },
+          "median": {
+            "anyOf": [
+              {
+                "type": "number"
+              },
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "description": "Numbers: median; ordered choices: the median category key",
+            "title": "Median"
+          },
+          "min": {
+            "anyOf": [
+              {
+                "type": "number"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Min"
+          },
+          "mode": {
+            "anyOf": [
+              {
+                "items": {
+                  "type": "string"
+                },
+                "type": "array"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "description": "Category key(s) with the top count",
+            "title": "Mode"
+          },
+          "n": {
+            "description": "The denominator: answered (or shown) responses",
+            "title": "N",
+            "type": "integer"
+          },
+          "notAvailable": {
+            "items": {
+              "type": "string"
+            },
+            "title": "Notavailable",
+            "type": "array"
+          },
+          "q1": {
+            "anyOf": [
+              {
+                "type": "number"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "description": "Quartiles: linear interpolation (type 7)",
+            "title": "Q1"
+          },
+          "q3": {
+            "anyOf": [
+              {
+                "type": "number"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Q3"
+          },
+          "sd": {
+            "anyOf": [
+              {
+                "type": "number"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "description": "Sample SD (n - 1)",
+            "title": "Sd"
+          },
+          "top2": {
+            "anyOf": [
+              {
+                "type": "number"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "description": "Ordered choices (>= 4): % in the top two",
+            "title": "Top2"
+          }
+        },
+        "required": [
+          "n"
+        ],
+        "title": "Stats",
         "type": "object"
       },
       "SubmitResponse": {
@@ -3810,6 +5059,120 @@
             "type": "object"
           }
         ]
+      },
+      "TextItem": {
+        "properties": {
+          "language": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Language"
+          },
+          "responseId": {
+            "title": "Responseid",
+            "type": "string"
+          },
+          "submittedAt": {
+            "anyOf": [
+              {
+                "format": "date-time",
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Submittedat"
+          },
+          "value": {
+            "title": "Value",
+            "type": "string"
+          },
+          "version": {
+            "title": "Version",
+            "type": "integer"
+          }
+        },
+        "required": [
+          "responseId",
+          "version",
+          "submittedAt",
+          "language",
+          "value"
+        ],
+        "title": "TextItem",
+        "type": "object"
+      },
+      "TextPage": {
+        "properties": {
+          "items": {
+            "items": {
+              "$ref": "#/components/schemas/TextItem"
+            },
+            "title": "Items",
+            "type": "array"
+          },
+          "label": {
+            "title": "Label",
+            "type": "string"
+          },
+          "name": {
+            "title": "Name",
+            "type": "string"
+          },
+          "nextCursor": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Nextcursor"
+          },
+          "question": {
+            "title": "Question",
+            "type": "string"
+          },
+          "states": {
+            "$ref": "#/components/schemas/StateCounts"
+          },
+          "total": {
+            "description": "Answered responses matching the filters",
+            "title": "Total",
+            "type": "integer"
+          },
+          "versionsUsed": {
+            "items": {
+              "type": "integer"
+            },
+            "title": "Versionsused",
+            "type": "array"
+          },
+          "watermark": {
+            "title": "Watermark",
+            "type": "string"
+          }
+        },
+        "required": [
+          "question",
+          "name",
+          "label",
+          "versionsUsed",
+          "states",
+          "total",
+          "items",
+          "nextCursor",
+          "watermark"
+        ],
+        "title": "TextPage",
+        "type": "object"
       },
       "ThemeLibrary": {
         "properties": {
@@ -6370,6 +7733,311 @@
         "summary": "Delete Response",
         "tags": [
           "surveys"
+        ]
+      }
+    },
+    "/api/surveys/{survey_id}/results/query": {
+      "post": {
+        "description": "Aggregate tables per question card (survey.export; audited, no answer values).",
+        "operationId": "queryResults",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "survey_id",
+            "required": true,
+            "schema": {
+              "title": "Survey Id",
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/ResultsQuery"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ResultsResponse"
+                }
+              }
+            },
+            "description": "Successful Response"
+          },
+          "401": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorBody"
+                }
+              }
+            },
+            "description": "Unauthorized"
+          },
+          "403": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorBody"
+                }
+              }
+            },
+            "description": "Forbidden"
+          },
+          "404": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorBody"
+                }
+              }
+            },
+            "description": "Not Found"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/RejectedBody"
+                }
+              }
+            },
+            "description": "Unprocessable Content"
+          }
+        },
+        "summary": "Query Results",
+        "tags": [
+          "results"
+        ]
+      }
+    },
+    "/api/surveys/{survey_id}/results/text/{question}": {
+      "get": {
+        "description": "Verbatim answers of one text question (survey.export; audited).",
+        "operationId": "resultsText",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "survey_id",
+            "required": true,
+            "schema": {
+              "title": "Survey Id",
+              "type": "string"
+            }
+          },
+          {
+            "description": "Text question id",
+            "in": "path",
+            "name": "question",
+            "required": true,
+            "schema": {
+              "description": "Text question id",
+              "maxLength": 200,
+              "title": "Question",
+              "type": "string"
+            }
+          },
+          {
+            "description": "Version numbers (repeat); default latest",
+            "in": "query",
+            "name": "versions",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "items": {
+                    "type": "integer"
+                  },
+                  "type": "array"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "description": "Version numbers (repeat); default latest",
+              "title": "Versions"
+            }
+          },
+          {
+            "in": "query",
+            "name": "status",
+            "required": false,
+            "schema": {
+              "default": "complete",
+              "enum": [
+                "complete",
+                "all"
+              ],
+              "title": "Status",
+              "type": "string"
+            }
+          },
+          {
+            "in": "query",
+            "name": "submittedFrom",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "format": "date-time",
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "title": "Submittedfrom"
+            }
+          },
+          {
+            "in": "query",
+            "name": "submittedTo",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "format": "date-time",
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "title": "Submittedto"
+            }
+          },
+          {
+            "description": "Answer filter '<question>:<code>[,<code>...]' (repeat to AND)",
+            "in": "query",
+            "name": "filter",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "items": {
+                    "type": "string"
+                  },
+                  "type": "array"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "description": "Answer filter '<question>:<code>[,<code>...]' (repeat to AND)",
+              "title": "Filter"
+            }
+          },
+          {
+            "description": "Condition filter '<variable>:<level>[,<level>...]'",
+            "in": "query",
+            "name": "condition",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "description": "Condition filter '<variable>:<level>[,<level>...]'",
+              "title": "Condition"
+            }
+          },
+          {
+            "in": "query",
+            "name": "cursor",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "maxLength": 100,
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "title": "Cursor"
+            }
+          },
+          {
+            "in": "query",
+            "name": "limit",
+            "required": false,
+            "schema": {
+              "default": 50,
+              "maximum": 200,
+              "minimum": 1,
+              "title": "Limit",
+              "type": "integer"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/TextPage"
+                }
+              }
+            },
+            "description": "Successful Response"
+          },
+          "401": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorBody"
+                }
+              }
+            },
+            "description": "Unauthorized"
+          },
+          "403": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorBody"
+                }
+              }
+            },
+            "description": "Forbidden"
+          },
+          "404": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorBody"
+                }
+              }
+            },
+            "description": "Not Found"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/RejectedBody"
+                }
+              }
+            },
+            "description": "Unprocessable Content"
+          }
+        },
+        "summary": "Results Text",
+        "tags": [
+          "results"
         ]
       }
     },
