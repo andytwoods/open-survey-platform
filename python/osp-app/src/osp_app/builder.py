@@ -78,6 +78,7 @@ _MAX_TITLE = 500
 class SurveyView:
     survey: Survey
     draft: Draft
+    published_versions: int = 0  # how many versions have been published (0: never)
 
 
 @dataclass(frozen=True)
@@ -323,7 +324,11 @@ class Builder:
     @command("survey.get", label="Get survey draft", action=Action.SURVEY_READ)
     def get_survey(self, actor: Actor, *, survey_id: str) -> SurveyView:
         ctx = self._locate(actor, survey_id, Action.SURVEY_READ)
-        return SurveyView(self.store.get_survey(ctx, survey_id), self._draft(ctx, survey_id))
+        return SurveyView(
+            self.store.get_survey(ctx, survey_id),
+            self._draft(ctx, survey_id),
+            len(self.store.list_versions(ctx, survey_id)),
+        )
 
     @command("survey.delete", label="Delete survey", action=Action.SURVEY_DELETE)
     def delete_survey(self, actor: Actor, *, survey_id: str) -> None:

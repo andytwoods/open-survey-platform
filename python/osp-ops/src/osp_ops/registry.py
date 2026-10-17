@@ -42,6 +42,7 @@ OP_CODES: dict[str, str] = {
     "op.duplicate_id": "the edit would create a duplicate id",
     "op.dangling_ref": "the delete would leave references to deleted objects",
     "op.cascade_blocked": "cascade cannot repair a required expression",
+    "op.type_conflict": "the type change would break conditions or piping that use the answer",
     "op.invalid_result": "the edit would make the survey structurally invalid",
     "op.expr_syntax": "condition text does not parse",
     "op.patch": "the JSON Patch is malformed or does not apply",
