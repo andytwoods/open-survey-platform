@@ -40,7 +40,9 @@
 </script>
 
 <Dialog bind:open title="Command palette" hideTitle showClose={false} placement="top" {onCloseAutoFocus}>
-	<Command.Root class="palette" label="Commands" loop>
+	<!-- No vim bindings: Bits UI would take Ctrl+K (and Ctrl+J/N/P) as "move selection" and
+	     prevent its default, so the registry's Mod+K toggle never saw it on Windows/Linux. -->
+	<Command.Root class="palette" label="Commands" loop vimBindings={false}>
 		<Command.Input
 			class="palette-input"
 			placeholder="Type a command…"
