@@ -31,7 +31,8 @@ Every entry exports `mount(el, config)` and also mounts itself when the document
 ```
 
 plus the page's CSS and preload links from the manifest. Escape `<` in the JSON as
-`<` (Django: `{{ config|json_script:"osp-config" }}` does this).
+`<` (Django: `{{ config|json_script:"osp-config" }}` does this). The full host guide is
+[`docs/hosting.md`](../../docs/hosting.md).
 
 ## Config (`OspPageConfig`, `src/lib/host/config.ts`)
 
