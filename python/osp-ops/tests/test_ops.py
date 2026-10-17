@@ -408,3 +408,51 @@ def test_set_consent_validates_and_removes() -> None:
     bad = run("set_consent", base(), {"consent": {"agreeLabel": "Yes"}})  # no text
     assert not bad.ok and codes(bad) == ["op.invalid_result", "schema.missing"]
     assert run("set_consent", res.survey, {"consent": None}).survey == base()
+
+
+# --- duplicate page / block (B20) -----------------------------------------------------
+
+
+def test_duplicate_page_copies_after_itself_with_fresh_ids_and_internal_refs() -> None:
+    res = run("duplicate_page", base(), {"id": "p_demo"})
+    assert res.ok, codes(res)
+    pages = res.survey["blocks"][0]["pages"]
+    assert [p["id"] for p in pages] == ["p_consent", "p_demo", "p_demo_copy"]
+    copy_ = pages[2]
+    assert [q["id"] for q in copy_["items"]] == ["age_copy", "fruit_copy", "why_pear_copy"]
+    # References inside the copy follow it: the constraint, the pipe and the show-if.
+    assert copy_["items"][0]["constraint"]["left"] == {"kind": "ref", "id": "age_copy"}
+    assert copy_["items"][2]["label"]["en"] == "Why pears, ${age_copy}?"
+    assert copy_["items"][2]["showIf"]["ref"] == {"kind": "ref", "id": "fruit_copy"}
+    # The original is untouched.
+    assert question(res.survey, "why_pear")["label"]["en"] == "Why pears, ${age}?"
+
+
+def test_duplicate_page_keeps_outside_refs_and_maps_grid_rows() -> None:
+    res = run("duplicate_page", base(), {"id": "p_main"})
+    assert res.ok, codes(res)
+    why = question(res.survey, "grid_why_copy")
+    assert why["label"]["en"] == "Why ${grid_copy_taste}?"
+    assert why["showIf"]["ref"] == {"kind": "ref", "id": "grid_copy_price"}
+    # rating's show-if refers to consent, outside the page: unchanged.
+    assert question(res.survey, "rating_copy")["showIf"]["left"] == {"kind": "ref", "id": "consent"}
+
+
+def test_duplicate_block_is_not_placed_in_the_flow_and_titles_the_copy() -> None:
+    res = run("duplicate_block", base(), {"id": "b_intro", "new_id": "b_intro2"})
+    assert res.ok, codes(res)
+    blocks = res.survey["blocks"]
+    assert [b["id"] for b in blocks][:2] == ["b_intro", "b_intro2"]
+    assert blocks[1]["title"] == "Intro (copy)"
+    assert [p["id"] for p in blocks[1]["pages"]] == ["p_consent_copy", "p_demo_copy"]
+    assert res.survey["flow"] == base()["flow"]
+    dup = run("duplicate_block", base(), {"id": "b_intro", "new_id": "b_main"})
+    assert codes(dup)[0] == "op.duplicate_id"
+
+
+def test_duplicate_twice_numbers_the_copies() -> None:
+    once = run("duplicate_page", base(), {"id": "p_extra"})
+    twice = run("duplicate_page", once.survey, {"id": "p_extra"})
+    assert twice.ok
+    ids = [p["id"] for p in twice.survey["blocks"][2]["pages"]]
+    assert ids == ["p_extra", "p_extra_copy1", "p_extra_copy"]

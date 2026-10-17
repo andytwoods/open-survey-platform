@@ -90,6 +90,8 @@ EXAMPLES: dict[str, list[dict[str, Any]]] = {
     "delete_block": [{"id": "b_extra", "cascade": True}, {"id": "b_full", "cascade": True}],
     "rename_block": [{"id": "b_main", "title": "Main"}, {"id": "b_intro", "title": None}],
     "move_block": [{"id": "b_full", "index": 0}],
+    "duplicate_page": [{"id": "p_demo"}, {"id": "p_main", "new_id": "p_main_b"}],
+    "duplicate_block": [{"id": "b_intro"}, {"id": "b_main", "new_id": "b_main_b"}],
     "add_choice": [
         {"owner": "fruit", "label": "Fig"},
         {"owner": "yesno", "label": {"en": "Maybe", "de": "Vielleicht"}, "value": 9, "index": 0},
