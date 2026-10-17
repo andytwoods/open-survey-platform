@@ -185,6 +185,26 @@
 	let insertAtType = $state<QuestionTypeId | null>(null);
 	let insertAtReturnId = $state<string | null>(null);
 
+	// Narrow screens (B19): the outline overlay covers the canvas, so a tap on a type picks
+	// it up instead and the canvas shows a "Place here" button in every gap.
+	let placingType = $state<QuestionTypeId | null>(null);
+	function startPlacing(type: QuestionTypeId) {
+		placingType = type;
+		outlineOpen = false;
+		canvasTab = 'canvas';
+		const name = questionTypeInfo(type)?.name ?? type;
+		announce(`Placing ${name}. Choose Place here where it should go, or Cancel.`);
+	}
+	function place(target: DropTarget) {
+		const t = placingType;
+		placingType = null;
+		if (t) void addQuestionOfType(t, target.parent ?? undefined, target.slot);
+	}
+	function cancelPlacing() {
+		placingType = null;
+		announce('Not added.');
+	}
+
 	function chooseWhere(type: QuestionTypeId) {
 		insertAtType = type;
 		const active = document.activeElement;
@@ -519,7 +539,8 @@
 						<TypeToolbox
 							drag={typeDrag}
 							bind:collapsed={toolboxCollapsed}
-							onadd={(t) => void addQuestionOfType(t)}
+							tapToPlace={outlineCollapsible}
+							onadd={(t) => (outlineCollapsible ? startPlacing(t) : void addQuestionOfType(t))}
 							oninsert={(t, target) => void addQuestionOfType(t, target.parent ?? undefined, target.slot)}
 							onchoosewhere={chooseWhere}
 						/>
@@ -551,6 +572,12 @@
 					onBadge={store ? (b) => void goTo(ownerOf(store.survey, b.pointer)) : undefined}
 					diagnostics={store?.diagnostics ?? []}
 					onDiagnostic={store ? (d) => void goTo(ownerOf(store.survey, d.pointer)) : undefined}
+					typeDrag={store && editing ? typeDrag : undefined}
+					onMove={store && editing ? moveItems : undefined}
+					placing={placingType ? (questionTypeInfo(placingType)?.name ?? placingType) : null}
+					placeDefault={placingType ? (targetPage(pages, selection.id) ?? null) : null}
+					onPlace={place}
+					onCancelPlace={cancelPlacing}
 				/>
 			{/snippet}
 			{#snippet jsonView()}

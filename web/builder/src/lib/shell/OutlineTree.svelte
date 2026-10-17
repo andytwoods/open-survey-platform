@@ -4,7 +4,7 @@
 	import { tick, untrack } from 'svelte';
 	import { SvelteSet } from 'svelte/reactivity';
 	import type { OutlineNode } from '../model/outline';
-	import { dropTargetAt, insertTargetAt, measureRows, type DragHit, type RowBox } from '../outline/drag';
+	import { describeGap, dropTargetAt, insertTargetAt, measureRows, type DragHit, type RowBox } from '../outline/drag';
 	import type { TypeDrag } from '../question-types/type-drag.svelte';
 	import { indexTree, keyboardTarget, movableIds, type DropTarget, type MovableType } from '../outline/moves';
 	import { MultiSelection } from '../outline/multi-select.svelte';
@@ -251,7 +251,7 @@
 			const inside = (b: DOMRect) => x >= b.left && x <= b.right && y >= b.top && y <= b.bottom;
 			if (!inside(r) || !inside(v)) return null;
 			const hit = insertTargetAt(measureRows(tree, rows), y, roots);
-			return hit && { hit, description: describeHit(hit) };
+			return hit && { hit, description: describeGap(roots, hit.target) };
 		});
 	});
 
