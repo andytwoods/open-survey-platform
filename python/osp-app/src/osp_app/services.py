@@ -18,6 +18,7 @@ from .auth import Actor
 from .auth.ports import Clock
 from .builder import Builder
 from .identity import Identity
+from .osf import Transport
 from .runtime_repo import StoreParticipantRepo
 
 SYS = SystemContext("system:identity")
@@ -30,6 +31,8 @@ class AppServices:
     builder: Builder
     sessions: SessionService  # participant sessions; publish registers plans here
     auto_create_labs: bool = True  # OSP_AUTO_CREATE_LABS (D6)
+    # How the OSF upload (osp_app.prereg) reaches the network; None: urllib. Tests set a fake.
+    osf_transport: Transport | None = None
     _labs: set[str] = field(default_factory=set, repr=False)
     _touched: dict[str, tuple[str | None, float]] = field(default_factory=dict, repr=False)
     _lock: threading.Lock = field(default_factory=threading.Lock, repr=False)

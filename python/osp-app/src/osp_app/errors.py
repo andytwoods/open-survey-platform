@@ -49,6 +49,13 @@ class RevisionConflictError(AppError):
         self.current_revision = current_revision
 
 
+class UpstreamError(AppError):
+    """An outside service (OSF) refused or could not be reached. The message never
+    carries a credential."""
+
+    code = "upstream"
+
+
 class Rejected(AppError):
     """The edit, publish or export was refused; ``diagnostics`` say why."""
 
