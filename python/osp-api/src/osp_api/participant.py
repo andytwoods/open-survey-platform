@@ -4,8 +4,10 @@ Every session call carries the resume token as ``Authorization: Bearer <token>``
 (never in a URL, so it stays out of logs and referrers).
 
 No IP address or user agent is stored or logged here (runtime-design §7, review §9 Q8):
-the client address is only a key for the in-memory rate limiter. Consent, decline and
-withdrawal (semantics.md §11): ``/consent``, ``/decline``, ``/withdraw``.
+the client address is only a key for the in-memory rate limiter (behind a host it comes
+from ``X-Forwarded-For``, and only from ``OSP_TRUSTED_PROXIES``: ``client_address.py``).
+Consent, decline and withdrawal (semantics.md §11): ``/consent``, ``/decline``,
+``/withdraw``.
 """
 
 from __future__ import annotations
@@ -36,6 +38,8 @@ from osp_runtime import (
 )
 from osp_store import AccessDenied, InvalidInput, NotFound
 from pydantic import BaseModel, ConfigDict, Field
+
+from .client_address import client_key
 
 STATUS: dict[type[SessionError], int] = {
     NotFoundError: 404,
@@ -204,7 +208,11 @@ DEFAULT_PARTICIPANT_URL = "/r/?s={slug}"
 
 def participant_url(slug: str) -> str:
     """Where participants open a survey. The deployment sets OSP_PARTICIPANT_URL_TEMPLATE
-    (with a `{slug}` placeholder) when the participant app is served elsewhere."""
+    (with a `{slug}` placeholder) when the participant app is served elsewhere.
+
+    The page at that link finds the API at `/api` on its own origin, or under the prefix
+    in its mount's `data-api-base` (D15, docs/hosting.md section 4). Server URLs this API
+    returns (`planUrl`) stay under `/api/`; the app maps them onto that prefix."""
     template = os.environ.get(PARTICIPANT_URL_ENV, "").strip() or DEFAULT_PARTICIPANT_URL
     if "{slug}" not in template:
         template = DEFAULT_PARTICIPANT_URL
@@ -266,8 +274,7 @@ def install(app: FastAPI, service: SessionService | None) -> None:
     def start_session(
         slug: str, request: Request, s: Svc, body: StartRequest | None = None
     ) -> StartResponse:
-        client = request.client.host if request.client else None  # memory only, never stored
-        st = s.start(slug, (body or StartRequest()).urlParams, client_key=client)
+        st = s.start(slug, (body or StartRequest()).urlParams, client_key=client_key(request))
         return StartResponse(
             sessionId=st.session_id,
             resumeToken=st.resume_token,
@@ -359,8 +366,7 @@ def install(app: FastAPI, service: SessionService | None) -> None:
 
     @r.get("/sessions/resume", operation_id="resumeSession", responses=_errors(401, 410, 429))
     def resume(request: Request, s: Svc, token: Token) -> ResumeResponse:
-        client = request.client.host if request.client else None
-        st = s.resume(_token(token), client_key=client)
+        st = s.resume(_token(token), client_key=client_key(request))
         return ResumeResponse(
             sessionId=st.session_id,
             revision=st.revision,

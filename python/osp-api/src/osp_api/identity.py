@@ -5,7 +5,9 @@ request into an :class:`~osp_app.identity.Identity` (an :class:`~osp_app.auth.Ac
 user id + ``{lab: role}``, and an optional display name), or ``None`` (401). Shipped:
 
 - :class:`TrustedHeaders`: a host or reverse proxy authenticates the request, then forwards
-  it with HMAC-signed ``X-OSP-*`` headers (D2; format in :mod:`osp_api.signing`).
+  it with HMAC-signed ``X-OSP-*`` headers (D2; format in :mod:`osp_api.signing`). Nonces
+  are remembered in memory (:class:`NonceCache`) or in the database, shared by every
+  worker (:class:`DatabaseNonces`, D16).
 - :class:`InProcess`: a Python host that mounts the ASGI app passes a callable.
 - :class:`Dev`: everyone is the dev researcher (D12): only with ``OSP_ENV=dev`` and a
   loopback bind.
@@ -24,16 +26,21 @@ import threading
 import time
 from collections import OrderedDict
 from collections.abc import Awaitable, Callable, Mapping
-from typing import Protocol, runtime_checkable
+from datetime import UTC, datetime, timedelta
+from typing import TYPE_CHECKING, Protocol, runtime_checkable
 from urllib.parse import quote, unquote
 
 from osp_app import Identity, InvalidIdentity, make_identity
 from osp_app.auth import Actor
 from osp_app.identity import dev_identity, parse_roles
+from osp_store import NonceLedger
 from starlette.concurrency import run_in_threadpool
 from starlette.requests import Request
 
 from . import signing
+
+if TYPE_CHECKING:
+    from sqlalchemy import Engine
 
 log = logging.getLogger("osp_api.identity")
 
@@ -102,9 +109,16 @@ def parse_keyring(text: str) -> dict[str, bytes]:
     return keys
 
 
+class NonceStore(Protocol):
+    def add(self, nonce: str, now: float) -> bool:
+        """True if ``nonce`` is new (and now remembered), False on a replay."""
+        ...
+
+
 class NonceCache:
-    """Nonces seen in the last ``ttl`` seconds (one process, in memory: a documented limit;
-    several workers each keep their own). Full of live nonces: refuse, never evict."""
+    """Nonces seen in the last ``ttl`` seconds, in memory, for one process (dev and tests;
+    several workers each keep their own, so use :class:`DatabaseNonces` there). Full of
+    live nonces: refuse, never evict."""
 
     def __init__(self, ttl: float = NONCE_TTL_S, max_size: int = NONCE_CACHE_MAX) -> None:
         self.ttl = ttl
@@ -126,6 +140,39 @@ class NonceCache:
             return True
 
 
+class DatabaseNonces:
+    """Nonces in the database (``identity_nonces``, D16): shared by every worker on it.
+    A database error refuses the request (fail closed)."""
+
+    def __init__(self, ledger: NonceLedger, ttl: float = NONCE_TTL_S) -> None:
+        self.ledger = ledger
+        self.ttl = timedelta(seconds=ttl)
+
+    def add(self, nonce: str, now: float) -> bool:
+        try:
+            return self.ledger.claim(nonce, datetime.fromtimestamp(now, UTC), self.ttl)
+        except Exception as exc:  # never crash on a request: refuse it
+            log.error("identity refused: nonce store failed (%s)", type(exc).__name__)
+            return False
+
+
+NONCE_STORES = ("memory", "database")
+
+
+def nonce_store_from_name(name: str, engine: Engine | None) -> NonceStore:
+    """``OSP_NONCE_STORE``: ``memory`` (one process) or ``database`` (shared, D16)."""
+    name = (name or "").strip().lower()
+    if name == "memory":
+        return NonceCache()
+    if name == "database":
+        if engine is None:
+            raise IdentityConfigError("OSP_NONCE_STORE=database needs the database")
+        return DatabaseNonces(NonceLedger(engine))
+    raise IdentityConfigError(
+        f"OSP_NONCE_STORE must be one of {', '.join(NONCE_STORES)}, not {name[:20]!r}"
+    )
+
+
 def _raw_path(request: Request) -> str:
     raw = request.scope.get("raw_path")
     if isinstance(raw, bytes | bytearray):
@@ -145,17 +192,19 @@ class TrustedHeaders:
         *,
         clock: Callable[[], float] = time.time,
         max_skew: float = MAX_SKEW_S,
-        nonces: NonceCache | None = None,
+        nonces: NonceStore | None = None,
     ) -> None:
         if not keys:
             raise IdentityConfigError("TrustedHeaders needs at least one key")
         self.keys = {k: v.encode("utf-8") if isinstance(v, str) else v for k, v in keys.items()}
         self.clock = clock
         self.max_skew = max_skew
-        self.nonces = nonces or NonceCache()
+        self.nonces: NonceStore = nonces or NonceCache()
 
     @classmethod
-    def from_env(cls, environ: Mapping[str, str]) -> TrustedHeaders:
+    def from_env(
+        cls, environ: Mapping[str, str], nonces: NonceStore | None = None
+    ) -> TrustedHeaders:
         text = environ.get("OSP_IDENTITY_KEYS", "")
         if not text.strip():
             raise IdentityConfigError(
@@ -163,7 +212,7 @@ class TrustedHeaders:
                 "(a shared secret of at least 32 bytes, also given to the host); "
                 "for local development use OSP_IDENTITY=dev"
             )
-        return cls(parse_keyring(text))
+        return cls(parse_keyring(text), nonces=nonces)
 
     def _refuse(self, why: str) -> None:
         log.warning("identity refused: %s", why)
@@ -209,7 +258,11 @@ class TrustedHeaders:
         )
         if not hmac.compare_digest(signing.signature(secret, canonical), sig):
             return self._refuse("bad signature")
-        if not self.nonces.add(nonce, now):
+        if isinstance(self.nonces, NonceCache):
+            fresh = self.nonces.add(nonce, now)
+        else:  # may block (a database): off the event loop
+            fresh = await run_in_threadpool(self.nonces.add, nonce, now)
+        if not fresh:
             return self._refuse("replayed nonce")
         try:
             name_raw = values[signing.H_NAME]
@@ -278,11 +331,13 @@ class Nobody:
 PROVIDERS = ("trusted-headers", "dev")
 
 
-def provider_from_env(environ: Mapping[str, str], *, env: str, host: str) -> IdentityProvider:
+def provider_from_env(
+    environ: Mapping[str, str], *, env: str, host: str, nonces: NonceStore | None = None
+) -> IdentityProvider:
     """``OSP_IDENTITY`` = ``trusted-headers`` (default) or ``dev``."""
     name = (environ.get("OSP_IDENTITY") or "trusted-headers").strip().lower()
     if name == "trusted-headers":
-        return TrustedHeaders.from_env(environ)
+        return TrustedHeaders.from_env(environ, nonces)
     if name == "dev":
         return Dev(env=env, host=host)
     raise IdentityConfigError(f"OSP_IDENTITY must be one of {', '.join(PROVIDERS)}, not {name!r}")

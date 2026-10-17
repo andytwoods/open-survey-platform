@@ -49,12 +49,14 @@ def install(
     services: AppServices | None,
     allowed_origins: Iterable[str] = (),
     identity: IdentityProvider | None = None,
+    public_origins: Iterable[str] = (),
 ) -> None:
     """``services`` backs the builder routes; without it they answer 503. ``identity``
     says who each request is; without it every builder request is 401."""
     app.state.builder_services = services
     app.state.identity = identity
     app.state.allowed_origins = tuple(allowed_origins)
+    app.state.public_origins = tuple(public_origins)
     install_error_handlers(app)
     for module in (
         me,

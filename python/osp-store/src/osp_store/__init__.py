@@ -16,6 +16,7 @@ from .errors import (
     RevisionConflict,
     StoreError,
 )
+from .nonces import NonceLedger
 from .participant import (
     ConsentRecord,
     ParticipantSession,
@@ -53,6 +54,7 @@ __all__ = [
     "Draft",
     "InvalidInput",
     "Keyring",
+    "NonceLedger",
     "NotFound",
     "OpLogEntry",
     "OpRecord",

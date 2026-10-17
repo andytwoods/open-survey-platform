@@ -17,6 +17,7 @@ from osp_runtime import SessionService
 from pydantic import BaseModel
 
 from . import participant, routes
+from .client_address import parse_trusted_proxies
 from .identity import IdentityProvider
 
 API_TITLE = "Open Survey Platform API"
@@ -37,6 +38,8 @@ def create_app(
     *,
     identity: IdentityProvider | None = None,
     allowed_origins: Sequence[str] = (),
+    public_origins: Sequence[str] = (),
+    trusted_proxies: Sequence[str] = (),
 ) -> FastAPI:
     """``sessions`` backs the participant endpoints and ``builder`` the builder ones
     (surveys, ops, meta, me); without them they answer 503. Given only ``builder``,
@@ -44,7 +47,13 @@ def create_app(
 
     ``identity`` says who a builder request is (``osp_api.identity``: TrustedHeaders,
     InProcess, Dev); without one every builder request is 401. ``allowed_origins``
-    (exact origins, D11) may make unsafe requests cross-origin, with credentials."""
+    (exact origins, D11) may make unsafe requests cross-origin, with credentials (CORS).
+    ``public_origins`` (D14) are the host's own public origins: accepted by the Origin check
+    on unsafe requests, without CORS. ``trusted_proxies`` (IPs/CIDRs, D13) are the peers
+    whose ``X-Forwarded-For`` gives the participant address for rate limiting."""
+    for o in (*allowed_origins, *public_origins):
+        if o == "*" or not o.startswith(("https://", "http://")) or o.count("/") != 2:
+            raise ValueError("origins must be exact http(s) origins, no wildcard or path")
     if sessions is None and builder is not None:
         sessions = builder.sessions
     pkg_version = version("osp-api")
@@ -64,11 +73,10 @@ def create_app(
     def get_version() -> VersionInfo:
         return VersionInfo(name="osp-api", version=pkg_version)
 
+    app.state.trusted_proxies = parse_trusted_proxies(trusted_proxies)
     participant.install(app, sessions)
-    routes.install(app, builder, allowed_origins, identity)
+    routes.install(app, builder, allowed_origins, identity, public_origins)
     if allowed_origins:
-        if any(o == "*" or not o.startswith(("https://", "http://")) for o in allowed_origins):
-            raise ValueError("allowed_origins must be exact http(s) origins, no wildcard")
         app.add_middleware(
             CORSMiddleware,
             allow_origins=list(allowed_origins),

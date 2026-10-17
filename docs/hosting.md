@@ -3,7 +3,7 @@
 This project has no accounts, passwords or sessions. A **host** does that: your
 university's Django or Rails app, or a reverse proxy with single sign-on. The host signs the
 researcher in, serves the builder pages, and tells `osp-api` who the researcher is on every
-request. The design is `planning/pages-split.md` (its §Decisions D1–D12).
+request. The design is `planning/pages-split.md` (its §Decisions D1–D16).
 
 A tested version of the proxy below is `python/osp-api/tests/test_hosting_example.py`.
 
@@ -31,7 +31,10 @@ Other settings (all in `python/osp-api/src/osp_api/serve.py`):
 | `OSP_IDENTITY` | `trusted-headers` or `dev` | `trusted-headers` |
 | `OSP_IDENTITY_KEYS` | `kid:secret,...` shared with the host (each secret at least 32 bytes) | required |
 | `OSP_AUTO_CREATE_LABS` | create a lab the first time the host names it | `on` |
-| `OSP_ALLOWED_ORIGINS` | exact origins allowed to call the API cross-origin | none |
+| `OSP_PUBLIC_ORIGINS` | your public origin(s), e.g. `https://surveys.example.ac.uk`: accepted by osp-api's Origin check, no CORS (section 3) | none |
+| `OSP_ALLOWED_ORIGINS` | exact origins allowed to call the API cross-origin (CORS, with credentials) | none |
+| `OSP_TRUSTED_PROXIES` | IPs or CIDRs of your proxy, whose `X-Forwarded-For` gives the participant's address (section 4) | none |
+| `OSP_NONCE_STORE` | where replayed signatures are caught: `database` (every worker) or `memory` (one process) | `database` in production, `memory` in dev |
 | `OSP_PARTICIPANT_URL_TEMPLATE` | where participants open a survey (`{slug}`) | `/r/?s={slug}` |
 
 Never use `OSP_IDENTITY=dev` on a server. It makes everyone the lab owner, so osp-api refuses
@@ -117,8 +120,9 @@ osp-api's `/api`. For each request:
 
 1. Check your own session. No session: answer 401 yourself, and forward nothing.
 2. Check your own CSRF token on `POST`, `PUT`, `PATCH` and `DELETE`. Bad token: refuse.
-3. Copy only the headers osp-api needs (`Content-Type`, `Accept`). This drops any
-   `X-OSP-*` header the browser sent, along with your cookies.
+3. Copy only the headers osp-api needs (`Content-Type`, `Accept`, `Origin`,
+   `Sec-Fetch-Site`). This drops any `X-OSP-*` header the browser sent, along with your
+   cookies.
 4. Sign with `sign_identity_headers` (`osp_api.signing`, standard library only) and add
    the headers it returns.
 5. Send the body **byte for byte** as signed, to `http://127.0.0.1:8000` + the API path.
@@ -144,7 +148,10 @@ It returns `X-OSP-Key-Id`, `X-OSP-User`, `X-OSP-Roles`, `X-OSP-Display-Name` (on
 name), `X-OSP-Timestamp`, `X-OSP-Nonce` and `X-OSP-Signature`. The signature covers the
 method, path, sorted query, a hash of the body, the identity, the time and a one-time
 nonce. osp-api answers 401 if the signature is missing or wrong, more than 60 seconds old,
-or reused. The format is in `python/osp-api/README.md` and `osp_api/signing.py`.
+or reused. With `OSP_NONCE_STORE=database` (the production default) the used nonces are kept
+in the database for 120 seconds, so a reused one is refused by every osp-api worker and
+machine on that database; run as many workers as you like. The format is in
+`python/osp-api/README.md` and `osp_api/signing.py`.
 
 Roles come from you on every request, so your app is the single source of truth for who
 is in which lab. With `OSP_AUTO_CREATE_LABS=on` (the default) a lab exists as soon as you
@@ -160,11 +167,24 @@ in it confers nothing.
 
 ### osp-api's own Origin check
 
-osp-api refuses a write whose `Origin` is not its own address (`403`), and a write whose
-body is not `application/json` (`415`). The proxy above does not forward `Origin`, so this
-check passes and your CSRF check is what protects writes. To keep the Origin check as a
-second line, forward `Origin` and `Sec-Fetch-Site` too, and set `OSP_ALLOWED_ORIGINS` to
-your public origin (osp-api sees its own address as `http://127.0.0.1:8000`, not yours).
+osp-api refuses a write whose `Origin` is not allowed (`403`), and a write whose body is
+not `application/json` (`415`). This is a second line behind your CSRF check, so keep it
+working: forward `Origin` and `Sec-Fetch-Site` (step 3) and set `OSP_PUBLIC_ORIGINS` to
+your public origin, for example `OSP_PUBLIC_ORIGINS=https://surveys.example.ac.uk`.
+osp-api sees its own address as `http://127.0.0.1:8000`, not yours, so without that
+setting every forwarded write is refused.
+
+The allowed `Origin`s are:
+
+- osp-api's own address, as the request gives it (scheme and `Host`);
+- `OSP_PUBLIC_ORIGINS`: your public origins. They only pass this check; they do not turn
+  on CORS, so no other site's JavaScript can read the API;
+- `OSP_ALLOWED_ORIGINS`: the cross-origin opt-in (section 5, item 7). These get CORS
+  headers with credentials and pass the check even as `Sec-Fetch-Site: cross-site`.
+
+Any other `Origin`, `Origin: null`, or `Sec-Fetch-Site: cross-site` from a non-allowed
+origin is refused. A write without `Origin` (a non-browser client, or a proxy that does not
+forward it) is checked on `Sec-Fetch-Site` only.
 
 ### The in-process alternative (Python hosts)
 
@@ -188,14 +208,22 @@ def who(request):  # a Starlette Request; a sync function runs in a worker threa
 
 settings = Settings.from_env()
 services = build_services(prepare(settings), auto_create_labs=settings.auto_create_labs)
-osp = create_app(builder=services, identity=InProcess(who))
+osp = create_app(
+    builder=services,
+    identity=InProcess(who),
+    public_origins=("https://surveys.example.ac.uk",),  # your public origin
+    trusted_proxies=settings.trusted_proxies,  # OSP_TRUSTED_PROXIES, if TLS ends in a proxy
+)
 # mount `osp` so that /api/... reaches it, e.g. Starlette Mount("/", app=osp) or your ASGI router
 ```
 
 The CSRF duty is the same: check your CSRF token **before** the request reaches `osp`
 (middleware in front of the mount). osp-api's Origin check compares `Origin` with the
-request's own scheme and `Host`. If TLS ends in a proxy in front of you, make sure the ASGI
-scope says `https` (for example uvicorn `--proxy-headers`), or writes are refused with 403.
+request's own scheme and `Host`, and with `public_origins`. If TLS ends in a proxy in front
+of you, the ASGI scope says `http` while the browser's `Origin` says `https`; listing your
+public origin in `public_origins` makes that pass without trusting any forwarded scheme
+header. (Setting uvicorn `--proxy-headers` also works, but then make sure only your proxy
+can reach the server.)
 
 ## 4. Participants
 
@@ -204,9 +232,19 @@ Participants never sign in. They hold a bearer resume token instead.
 1. Serve `web/runtime/dist/`. Its files go under `/r/` (the build uses `base: '/r/'`). Serve
    `dist/index.html` for `/r/` and for every `/s/{slug}`. The file carries its own
    Content-Security-Policy meta tag.
-2. On the same origin, forward `/api/s/*` and `/api/sessions/*` to osp-api unchanged
-   (method, body, `Content-Type`, `Authorization`). The participant app always calls
-   `/api/...`; it has no `apiBase`. Do not sign these, and do strip `X-OSP-*`.
+2. On the same origin, forward the participant API to osp-api's `/api/s/*` and
+   `/api/sessions/*` (method, body, `Content-Type`, `Authorization`, and `X-Forwarded-For`,
+   see below). Do not sign these, and do strip `X-OSP-*`.
+
+   The app calls `/api/...` by default. If you forward it under another prefix, say so on
+   the mount in the `index.html` you serve:
+   ```html
+   <div id="app" data-api-base="/osp/api"></div>
+   ```
+   The value must be a path on the same origin (or a URL on the page's own origin), with no
+   query or fragment; anything else stops the app with an error. There is no cross-origin
+   option: the page's CSP allows `connect-src 'self'` only. URLs the API returns, such as
+   the plan URL `/api/s/{slug}/plan/{checksum}`, are mapped onto the prefix by the app.
 3. Set `OSP_PARTICIPANT_URL_TEMPLATE` to the public link with a `{slug}` placeholder, for
    example `https://surveys.example.ac.uk/s/{slug}`. The builder shows this link after a
    publish. Without `{slug}` the default `/r/?s={slug}` is used.
@@ -225,9 +263,24 @@ The public endpoints are:
 | `POST` | `/api/sessions/{session_id}/decline` |
 | `POST` | `/api/sessions/{session_id}/withdraw` |
 
-Known limit: osp-api rate-limits starts and resumes per client address, and it does not
-read forwarded addresses. Behind your proxy every participant has the proxy's address, so
-they share one budget (starts: a burst of 10, then one every 6 seconds).
+### Rate limits and the participant's address
+
+osp-api rate-limits starts and resumes per client address (starts: a burst of 10, then one
+every 6 seconds; resumes: 20, then one a second). Behind your proxy every request comes from
+the proxy, so set `OSP_TRUSTED_PROXIES` to its address(es), for example
+`OSP_TRUSTED_PROXIES=127.0.0.1,::1` when the proxy runs on the same machine, and make the
+proxy append the peer's address to `X-Forwarded-For` (nginx:
+`proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;`).
+
+- osp-api reads `X-Forwarded-For` only when the direct peer is in `OSP_TRUSTED_PROXIES`.
+  From anyone else the header is ignored, so a browser cannot pick its own address.
+- It takes the right-most address in the header that is not itself a trusted proxy. The
+  left part is whatever the browser claimed and is never used. List every proxy in the
+  chain (a load balancer in front of your app too).
+- IPv6 addresses count per /64 network, since one network can use any address in it.
+- The address is a key in memory for the limiter only; it is never stored or logged.
+
+Without `OSP_TRUSTED_PROXIES` all participants behind your proxy share one budget.
 
 ## 5. Security checklist
 
@@ -248,9 +301,9 @@ they share one budget (starts: a burst of 10, then one every 6 seconds).
    `allowedOrigins`.
 8. Turn `OSP_AUTO_CREATE_LABS` off if your app should not be able to make a lab just by
    naming it; then create labs with `osp-cli lab create`.
-9. Run **one** osp-api process. The nonce cache that stops replays is in memory, per
-   process, for 120 seconds. With several workers each keeps its own, so a captured request
-   could be replayed once per worker within the 60-second window.
+9. Keep `OSP_NONCE_STORE=database` (the production default) when you run several osp-api
+   workers or machines: they then share the used-nonce list and a captured request cannot
+   be replayed against another worker. `memory` is per process and only safe with one.
 10. The config is escaped with `json_script` (or `<` for `<`), never `|safe`.
 
 ## 6. A minimal Django example
@@ -263,6 +316,9 @@ OSP_STATIC = "/static/osp/"  # where that folder is served
 OSP_API_URL = "http://127.0.0.1:8000"
 OSP_KEY_ID, OSP_SECRET = env("OSP_HOST_KEY").split(":", 1)  # one OSP_IDENTITY_KEYS entry
 ```
+
+and osp-api runs with `OSP_PUBLIC_ORIGINS=https://<your site>` (the proxy forwards
+`Origin`) and `OSP_TRUSTED_PROXIES=127.0.0.1` (Django calls it from the same machine).
 
 `views.py`:
 
@@ -288,7 +344,7 @@ LINKS = {
     "themes": "/research/appearance/",
     "previewFrame": "/research/preview-frame/",
 }
-REQUEST_HEADERS = ("content-type", "accept")
+REQUEST_HEADERS = ("content-type", "accept", "origin", "sec-fetch-site")
 RESPONSE_HEADERS = ("content-type", "content-disposition", "cache-control")
 
 

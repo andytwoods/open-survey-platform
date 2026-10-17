@@ -163,6 +163,11 @@ class Store(ThemeLibrary):  # theme-library methods: themes.py
         self._keys = keyring
         self._clock = clock
 
+    @property
+    def engine(self) -> Engine:
+        """The database engine (for infrastructure on the same database, e.g. NonceLedger)."""
+        return self._engine
+
     # -- plumbing ------------------------------------------------------------------
 
     def _now(self) -> datetime:

@@ -18,7 +18,13 @@ OSP_IDENTITY        ``trusted-headers`` or ``dev`` (who a       ``trusted-header
 OSP_IDENTITY_KEYS   ``kid:secret,...`` shared with the host     (required for
                     (TrustedHeaders; >= 32 bytes each)          trusted-headers)
 OSP_AUTO_CREATE_LABS  create a lab on first sight of its id     ``on``
-OSP_ALLOWED_ORIGINS   exact origins allowed cross-origin        none
+OSP_ALLOWED_ORIGINS   exact origins allowed cross-origin (CORS)  none
+OSP_PUBLIC_ORIGINS    the host's public origins: pass the        none
+                      Origin check, no CORS (D14)
+OSP_TRUSTED_PROXIES   IPs/CIDRs whose X-Forwarded-For gives the  none
+                      participant address (rate limits, D13)
+OSP_NONCE_STORE       ``memory`` or ``database`` (D16)           ``memory`` in dev,
+                                                                 ``database`` in production
 ==================  ==========================================  =====================
 
 Identity (plan P): osp-api has no sign-in. Behind a host, ``trusted-headers`` verifies the
@@ -37,7 +43,8 @@ The builder talks to this server through its dev server's ``/api`` proxy
 Logs never hold a client IP address (runtime-design §7, review §9 Q8): uvicorn's access
 log is written without ``client_addr`` (``LOG_CONFIG``), and :class:`NoClientAddress`
 blanks the address in the arguments of every uvicorn log record, so no other handler or
-format can print it either. ``proxy_headers`` stays off, so no forwarded address is read.
+format can print it either. uvicorn's ``proxy_headers`` stays off; a forwarded address is
+read only from ``OSP_TRUSTED_PROXIES`` peers, only as a rate-limit key (``client_address``).
 """
 
 from __future__ import annotations
@@ -55,8 +62,17 @@ from fastapi import FastAPI
 from osp_app import build_services
 from osp_store import Keyring, Store, create_engine, generate_key, migrate
 from osp_store.crypto import ENV_ACTIVE, ENV_KEYS
+from sqlalchemy import Engine
 
-from .identity import IdentityConfigError, IdentityProvider, provider_from_env
+from .client_address import TrustedProxiesError, parse_trusted_proxies
+from .identity import (
+    NONCE_STORES,
+    IdentityConfigError,
+    IdentityProvider,
+    TrustedHeaders,
+    nonce_store_from_name,
+    provider_from_env,
+)
 
 ENVIRONMENTS = ("dev", "production")
 _ON = frozenset({"1", "true", "on", "yes"})
@@ -77,6 +93,9 @@ class Settings:
     port: int
     auto_create_labs: bool = True
     allowed_origins: tuple[str, ...] = ()
+    public_origins: tuple[str, ...] = ()
+    trusted_proxies: tuple[str, ...] = ()
+    nonce_store: str = "memory"
 
     @property
     def production(self) -> bool:
@@ -101,14 +120,44 @@ class Settings:
         auto = (env.get("OSP_AUTO_CREATE_LABS") or "on").strip().lower()
         if auto not in _ON | _OFF:
             raise ConfigError(f"OSP_AUTO_CREATE_LABS must be on or off, not {auto[:20]!r}")
-        origins = tuple(
-            o.strip().rstrip("/") for o in (env.get("OSP_ALLOWED_ORIGINS") or "").split(",")
+        allowed = _origins(env, "OSP_ALLOWED_ORIGINS")
+        public = _origins(env, "OSP_PUBLIC_ORIGINS")
+        proxies = tuple(p.strip() for p in (env.get("OSP_TRUSTED_PROXIES") or "").split(","))
+        proxies = tuple(p for p in proxies if p)
+        try:
+            parse_trusted_proxies(proxies)
+        except TrustedProxiesError as exc:
+            raise ConfigError(str(exc)) from None
+        # D16: production shares nonces through the database (several workers); dev keeps
+        # them in memory (one process, nothing to set up).
+        nonces = (env.get("OSP_NONCE_STORE") or "").strip().lower() or (
+            "database" if name == "production" else "memory"
         )
-        origins = tuple(o for o in origins if o)
-        for o in origins:
-            if o == "*" or not o.startswith(("https://", "http://")) or o.count("/") != 2:
-                raise ConfigError(f"OSP_ALLOWED_ORIGINS takes exact origins, not {o[:60]!r}")
-        return cls(name, data_dir, db, host, int(raw_port), auto in _ON, origins)
+        if nonces not in NONCE_STORES:
+            raise ConfigError(
+                f"OSP_NONCE_STORE must be one of {', '.join(NONCE_STORES)}, not {nonces[:20]!r}"
+            )
+        return cls(
+            name,
+            data_dir,
+            db,
+            host,
+            int(raw_port),
+            auto in _ON,
+            allowed,
+            public,
+            proxies,
+            nonces,
+        )
+
+
+def _origins(env: Mapping[str, str], var: str) -> tuple[str, ...]:
+    origins = tuple(o.strip().rstrip("/") for o in (env.get(var) or "").split(","))
+    origins = tuple(o for o in origins if o)
+    for o in origins:
+        if o == "*" or not o.startswith(("https://", "http://")) or o.count("/") != 2:
+            raise ConfigError(f"{var} takes exact origins, not {o[:60]!r}")
+    return origins
 
 
 def _read_env_file(path: Path) -> dict[str, str]:
@@ -192,11 +241,17 @@ def log_config() -> dict:
 
 
 def identity_provider(
-    settings: Settings, host: str, environ: Mapping[str, str] | None = None
+    settings: Settings,
+    host: str,
+    environ: Mapping[str, str] | None = None,
+    engine: Engine | None = None,
 ) -> IdentityProvider:
     env = os.environ if environ is None else environ
     try:
-        return provider_from_env(env, env=settings.env, host=host)
+        provider = provider_from_env(env, env=settings.env, host=host)
+        if isinstance(provider, TrustedHeaders):
+            provider.nonces = nonce_store_from_name(settings.nonce_store, engine)
+        return provider
     except IdentityConfigError as exc:
         raise ConfigError(str(exc)) from exc
 
@@ -206,11 +261,16 @@ def build_app(
 ) -> FastAPI:
     from .app import create_app
 
-    identity = identity_provider(settings, host or settings.host, environ)
-    services = build_services(
-        prepare(settings, environ), auto_create_labs=settings.auto_create_labs
+    store = prepare(settings, environ)
+    identity = identity_provider(settings, host or settings.host, environ, store.engine)
+    services = build_services(store, auto_create_labs=settings.auto_create_labs)
+    return create_app(
+        builder=services,
+        identity=identity,
+        allowed_origins=settings.allowed_origins,
+        public_origins=settings.public_origins,
+        trusted_proxies=settings.trusted_proxies,
     )
-    return create_app(builder=services, identity=identity, allowed_origins=settings.allowed_origins)
 
 
 def _parser() -> argparse.ArgumentParser:

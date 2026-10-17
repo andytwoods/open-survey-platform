@@ -41,9 +41,15 @@ first/last seen; audit rows snapshot the name) and creates each named lab on fir
 lab confers nothing).
 
 CSRF is the host's job before it signs or calls in (D4). osp-api still refuses unsafe
-requests that are cross-origin (`Origin` / `Sec-Fetch-Site`; `OSP_ALLOWED_ORIGINS` lists
-exact origins allowed cross-origin, with CORS credentials) and unsafe requests whose body is
-not `application/json` (415).
+requests that are cross-origin (403) and unsafe requests whose body is not
+`application/json` (415). Accepted `Origin`s (D14): osp-api's own address as the request
+gives it, `OSP_PUBLIC_ORIGINS` (the host's public origins; no CORS) and
+`OSP_ALLOWED_ORIGINS` (exact origins allowed cross-origin, with CORS credentials).
+`Sec-Fetch-Site: cross-site` is refused unless the `Origin` is in `OSP_ALLOWED_ORIGINS`.
+
+Participant rate limits (starts, resumes) key on the client address (D13). It comes from
+`X-Forwarded-For` (right-most untrusted hop) only when the direct peer is in
+`OSP_TRUSTED_PROXIES` (IPs/CIDRs); IPv6 keys on the /64 (`osp_api/client_address.py`).
 
 `osp-api serve` binds 127.0.0.1 by default (D3). The host must be the only route to the API
 and must strip any `X-OSP-*` header a browser sends. Without a valid signature a request is
@@ -58,16 +64,17 @@ and must strip any `X-OSP-*` header a browser sends. Without a valid signature a
 | `X-OSP-Roles` | `lab:role,...` sorted by lab id (empty: no labs) |
 | `X-OSP-Display-Name` | optional; UTF-8, percent-encoded |
 | `X-OSP-Timestamp` | Unix seconds; at most 60 s from osp-api's clock |
-| `X-OSP-Nonce` | 128 random bits (base64url); each accepted once (in-memory, per process, 120 s) |
+| `X-OSP-Nonce` | 128 random bits (base64url); each accepted once within 120 s (`OSP_NONCE_STORE`) |
 | `X-OSP-Signature` | hex HMAC-SHA256 of the canonical string |
 
 The canonical string is, one per line: `OSP-HMAC-SHA256-v1`, the method, the
 percent-decoded path as osp-api routes it, the query with pairs sorted and RFC 3986-encoded,
 the SHA-256 hex of the exact body bytes, then the user, roles, display-name, timestamp and
 nonce header values (`osp_api/signing.py`, the one implementation both sides use). Secrets
-are at least 32 bytes. Comparison is constant-time. The nonce cache is per process: with
-several workers, pin a host to one or accept the per-worker replay window (documented
-limit; JWT/JWKS is a later option, P5).
+are at least 32 bytes. Comparison is constant-time. Nonces (D16) live in the database
+(`identity_nonces`, migration 0008; shared by every worker on it; default with
+`OSP_ENV=production`) or in memory per process (`OSP_NONCE_STORE=memory`, the dev default).
+JWT/JWKS is a later option.
 
 A host signs with the same module (standard library only):
 

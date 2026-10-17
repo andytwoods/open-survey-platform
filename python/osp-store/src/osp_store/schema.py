@@ -401,6 +401,18 @@ principals = Table(
     _ts("last_seen_at"),
 )
 
+# --- Identity nonces (migration 0008_identity_nonces, planning/pages-split.md D16) -------
+# The one-time ``X-OSP-Nonce`` of each signed host request, until it can no longer be
+# replayed (its timestamp is outside the clock skew). Shared by every osp-api worker on
+# this database, so a captured request is refused by all of them. Not tenant data.
+identity_nonces = Table(
+    "identity_nonces",
+    metadata,
+    Column("nonce", String(64), primary_key=True),
+    _ts("expires_at"),
+    Index("ix_identity_nonces_expires_at", "expires_at"),
+)
+
 #: (table, ciphertext column, key-id column) for every encrypted field. The AEAD field
 #: name is the ciphertext column without ``_ct``; the row id is the table's ``id``.
 ENCRYPTED_FIELDS: tuple[tuple[Table, str, str], ...] = (
