@@ -17,8 +17,15 @@ const titles = (page: Page) => page.getByRole('list', { name: 'Questions' }).get
  * `dragTo` causes whenever the two cards don't fit one viewport, as with Linux's taller
  * fonts), so the handle is centred first and the drop lands near the bottom of the target
  * card, just above it. The mouse is released only once the target shows the drop state.
+ *
+ * The press waits until the handle actually receives pointer events (task F5). A dialog
+ * that has just closed (Save as…) leaves `pointer-events: none` on <body> until bits-ui's
+ * scroll lock releases it on a 24 ms timer; a raw `mouse.down` inside that window lands on
+ * <html>, nothing under the press is draggable, and the drag never starts. `hover()` makes
+ * that check and retries (re-scrolling while it waits), hence the centring after it.
  */
 async function dragCardOnto(page: Page, handle: Locator, target: Locator) {
+	await handle.hover();
 	await handle.evaluate((el) => el.scrollIntoView({ block: 'center' }));
 	const from = (await handle.boundingBox())!;
 	const to = (await target.boundingBox())!;
