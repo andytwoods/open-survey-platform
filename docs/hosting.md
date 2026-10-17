@@ -14,12 +14,20 @@ A tested version of the proxy below is `python/osp-api/tests/test_hosting_exampl
 | Builder pages | Static JS and CSS, one entry per page, plus `manifest.json` | `make web-build` writes `web/builder/build/` |
 | Participant app | One static bundle; participants never sign in | `pnpm -C web/runtime build` writes `web/runtime/dist/` |
 | `osp-api` | The HTTP API (FastAPI, run by uvicorn) | `osp-api serve` |
-| Database | Any SQLAlchemy URL | `OSP_DATABASE_URL` |
+| Database | SQLite or Postgres URL (below) | `OSP_DATABASE_URL` |
 | Encryption keys | Keyring for stored responses (`osp-cli gen-key`) | `OSP_STORE_KEYS` (optional `OSP_STORE_ACTIVE_KEY`) |
 
 Run `osp-api` with `OSP_ENV=production`. It then refuses to start unless `OSP_DATABASE_URL`
 and `OSP_STORE_KEYS` are set. Keep the keys in your secret store: without them the stored
 responses cannot be read.
+
+`OSP_DATABASE_URL` takes the URL your PaaS gives you. Postgres always goes through the
+pg8000 driver (BSD; psycopg is LGPL and not installed), so `postgres://…` and
+`postgresql://…` (Heroku, Dokku, Render, Appliku) both mean `postgresql+pg8000://…`, which
+you can also write yourself. A libpq `?sslmode=` on the URL is honoured: `disable`,
+`allow` and `prefer` connect without TLS; `require` uses TLS without checking the
+certificate (as libpq does); `verify-ca` and `verify-full` check it against the system
+trust store. SQLite (`sqlite:///path/osp.db`) suits one machine with one osp-api process.
 
 `osp-api serve` binds `127.0.0.1` by default (`OSP_HOST`, `OSP_PORT`; port 8000). Keep it
 that way. The host must be the **only** route to the API.

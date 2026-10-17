@@ -10,7 +10,8 @@ variable            meaning                                     dev default
 ==================  ==========================================  =====================
 OSP_ENV             ``dev`` or ``production``                   ``dev``
 OSP_DATA_DIR        where dev state lives (gitignored)          ``.data``
-OSP_DATABASE_URL    SQLAlchemy URL                              ``sqlite:///<data>/osp.db``
+OSP_DATABASE_URL    SQLAlchemy URL; ``postgres://`` and         ``sqlite:///<data>/osp.db``
+                    ``postgresql://`` mean pg8000
 OSP_STORE_KEYS      encryption keyring (``osp-cli gen-key``)    see below
 OSP_HOST/OSP_PORT   where to listen                             ``127.0.0.1`` / ``8000``
 OSP_IDENTITY        ``trusted-headers`` or ``dev`` (who a       ``trusted-headers``
@@ -60,7 +61,7 @@ from pathlib import Path
 
 from fastapi import FastAPI
 from osp_app import build_services
-from osp_store import Keyring, Store, create_engine, generate_key, migrate
+from osp_store import DatabaseUrlError, Keyring, Store, create_engine, generate_key, migrate
 from osp_store.crypto import ENV_ACTIVE, ENV_KEYS
 from sqlalchemy import Engine
 
@@ -207,7 +208,10 @@ def prepare(settings: Settings, environ: Mapping[str, str] | None = None) -> Sto
     if settings.database_url.startswith("sqlite:///") and not settings.production:
         settings.data_dir.mkdir(parents=True, exist_ok=True)
     keyring = Keyring.from_env(keyring_env(settings, environ))
-    engine = create_engine(settings.database_url)
+    try:
+        engine = create_engine(settings.database_url)
+    except DatabaseUrlError as exc:
+        raise ConfigError(f"OSP_DATABASE_URL: {exc}") from None
     migrate(engine)
     return Store(engine, keyring)
 

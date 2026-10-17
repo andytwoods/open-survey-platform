@@ -6,7 +6,7 @@ by survey id + draft revision, or version id + checksum.
 
 from .context import SystemContext, TenantContext
 from .crypto import Keyring, canonical_json, generate_key
-from .db import create_engine, downgrade, migrate
+from .db import DatabaseUrlError, create_engine, downgrade, migrate, normalise_database_url
 from .errors import (
     AccessDenied,
     Conflict,
@@ -52,6 +52,7 @@ __all__ = [
     "Conflict",
     "ConsentRecord",
     "CryptoError",
+    "DatabaseUrlError",
     "Draft",
     "InvalidInput",
     "Keyring",
@@ -89,5 +90,6 @@ __all__ = [
     "downgrade",
     "generate_key",
     "migrate",
+    "normalise_database_url",
     "plan_retention",
 ]
