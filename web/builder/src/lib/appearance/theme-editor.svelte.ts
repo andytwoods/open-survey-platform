@@ -39,6 +39,21 @@ export function normalise(t: Theme): Required<Theme> {
 	} as Required<Theme>;
 }
 
+function canonical(v: unknown): string {
+	if (Array.isArray(v)) return `[${v.map(canonical).join(',')}]`;
+	if (v && typeof v === 'object')
+		return `{${Object.keys(v)
+			.sort()
+			.map((k) => `${JSON.stringify(k)}:${canonical((v as Record<string, unknown>)[k])}`)
+			.join(',')}}`;
+	return JSON.stringify(v);
+}
+
+/** Whether two themes are the same once defaults are filled in (key order ignored). */
+export function sameTheme(a: Theme, b: Theme): boolean {
+	return canonical(normalise(a)) === canonical(normalise(b));
+}
+
 export function presetTheme(id: PresetId): Required<Theme> {
 	const p = THEME_PRESETS.find((x) => x.id === id) ?? THEME_PRESETS[0];
 	return normalise(p.theme);

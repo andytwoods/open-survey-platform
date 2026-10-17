@@ -25,7 +25,7 @@
 	import { MIN_INPUT_FONT_PX, byPointer, type ThemeDiagnostic } from './guard';
 	import PreviewFrames from './PreviewFrames.svelte';
 	import RangeField from './RangeField.svelte';
-	import { themeEditor as ed } from './theme-editor.svelte';
+	import { sameTheme, themeEditor as ed } from './theme-editor.svelte';
 	import type { ImportProblem } from './validate';
 
 	/**
@@ -99,7 +99,7 @@
 			| Parameters<typeof ed.loadTheme>[0]
 			| undefined
 	);
-	const usesOwn = $derived(!!surveyTheme && JSON.stringify(surveyTheme) === JSON.stringify(t));
+	const usesOwn = $derived(!!surveyTheme && sameTheme(surveyTheme, t));
 	const labDefault = $derived(library.themes.find((x) => x.id === library.defaultId));
 	const nameTaken = $derived(!!library.byName(themeName));
 
@@ -117,7 +117,6 @@
 
 	function done(kind: 'ok' | 'error', text: string) {
 		saveMessage = { kind, text };
-		announce(text);
 	}
 
 	async function saveToLibrary(): Promise<string | null> {

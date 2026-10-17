@@ -23,7 +23,7 @@
 	const surveySchema = $derived(schemaFor(propertySchemas.doc, 'survey', store.survey));
 	const savingSchema = $derived(
 		surveySchema &&
-			subsetSchema(surveySchema, ['settings.saveMode', 'settings.localCopy'], 'Saving', 'How answers are saved')
+			subsetSchema(surveySchema, ['settings.saveMode', 'settings.localCopy'], 'Save options', 'How answers are saved')
 	);
 	const navSchema = $derived(
 		surveySchema &&
@@ -83,7 +83,7 @@
 				target={store.survey}
 				language={lang}
 				{diagnostics}
-				groups={['Saving']}
+				groups={['Save options']}
 				onOp={(op) => void store.submit([op])}
 				onDirty={(d) => store.markDirty(d)}
 			/>
@@ -102,7 +102,7 @@
 	</section>
 
 	<section class="card" aria-labelledby="h-nav">
-		<h3 id="h-nav">Navigation and resume</h3>
+		<h3 id="h-nav">Moving through the survey</h3>
 		{#if navSchema && propertySchemas.doc}
 			<PropertyPanel
 				bind:this={panels[1]}
