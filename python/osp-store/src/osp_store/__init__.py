@@ -18,6 +18,7 @@ from .errors import (
     StoreError,
 )
 from .participant import (
+    ConsentRecord,
     ParticipantSession,
     ParticipantStore,
     Publication,
@@ -51,6 +52,7 @@ __all__ = [
     "AccessDenied",
     "AuditEntry",
     "Conflict",
+    "ConsentRecord",
     "CryptoError",
     "Draft",
     "InvalidInput",

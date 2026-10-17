@@ -1,0 +1,27 @@
+{
+  "format": "osp-fixture-script/0",
+  "id": "agree",
+  "description": "The consent page is shown first, with no question and no navigation. Agreeing starts the flow; the response records the consent version and time.",
+  "sessionSeed": 4001,
+  "language": "en",
+  "actions": [
+    {
+      "expectPage": "$consent",
+      "do": "agree"
+    },
+    {
+      "expectPage": "p1",
+      "set": {
+        "q_sleep": 7
+      },
+      "do": "next"
+    },
+    {
+      "expectPage": "p2",
+      "set": {
+        "q_note": "slept well"
+      },
+      "do": "next"
+    }
+  ]
+}

@@ -971,6 +971,15 @@ class Store(ThemeLibrary):  # theme-library methods: themes.py
             )
         return [self._response(r) for r in rows]
 
+    def locate_response(self, ctx: TenantContext, response_id: str) -> str:
+        """The version a response belongs to, without reading (or auditing) its answers."""
+        ctx = require_ctx(ctx)
+        with self._engine.connect() as conn:
+            return self._one(
+                conn,
+                select(t.responses.c.version_id).where(self._response_where(ctx, response_id)),
+            )["version_id"]
+
     def delete_response(
         self, ctx: TenantContext, response_id: str, reason: str = "withdrawal"
     ) -> None:

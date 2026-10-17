@@ -220,7 +220,8 @@ function settled(): boolean {
 	if (s.phase === 'submitting') return false;
 	// A save in flight can still come back 409 and replace the page (R6-6): wait for it.
 	if (s.saving) return false;
-	if (s.phase === 'done') return !!document.querySelector('[data-testid="thanks"]');
+	// A declined consent (M5) ends on its own closing screen.
+	if (s.phase === 'done') return !!document.querySelector('[data-testid="thanks"], [data-testid="declined"]');
 	if (s.phase === 'fatal') return true;
 	const v = s.view();
 	const el = document.querySelector('.items[data-page]');
@@ -446,7 +447,8 @@ export class Player {
 			page: ended ? null : blockOfPage(plan, dom.page),
 			visible: ended ? [] : dom.items.map((i) => i.id),
 			errors,
-			nav: ended ? null : { back: dom.back },
+			// The consent page (M5) has no navigation bar.
+			nav: ended || dom.page === '$consent' ? null : { back: dom.back },
 			questions: eng.questions,
 			orders: eng.orders,
 			conditions: eng.conditions,
@@ -599,6 +601,38 @@ export class Player {
 				await page.evaluate(() => window.dispatchEvent(new Event('online')));
 				await this.awaitQuota();
 				break;
+			case 'agree':
+			case 'decline': {
+				// The consent page (M5): its buttons are named by the plan's labels.
+				const label = await page.evaluate((which) => {
+					const c = (window as unknown as { __osp: { view(): { consent?: Record<string, Array<{ text: string }>> } } }).__osp.view().consent;
+					return (c?.[which] ?? []).map((p) => p.text).join('');
+				}, a.do);
+				const btn = page.getByRole('button', { name: exactName(label) });
+				if (!label || (await btn.count()) === 0) throw new ScriptError(i, `${a.do}: no consent button "${label}"`);
+				await btn.click();
+				if (a.do === 'decline') await page.getByTestId('declined').waitFor({ timeout: SETTLE_MS });
+				else {
+					// Agreeing waits for the server's acknowledgement before the flow starts.
+					await page
+						.waitForFunction(
+							() => (window as unknown as { __osp: { view(): { status: string } } }).__osp.view().status !== 'consent',
+							null,
+							{ timeout: SETTLE_MS }
+						)
+						.catch(() => this.problems.push({ path: 'agree', expected: 'the flow starts', actual: 'still on the consent page' }));
+				}
+				await this.settle();
+				break;
+			}
+			case 'withdraw': {
+				const open = page.getByRole('button', { name: 'Withdraw my answers', exact: true });
+				if ((await open.count()) === 0) throw new ScriptError(i, 'withdraw: no Withdraw button');
+				await open.click();
+				await page.getByRole('button', { name: 'Yes, delete my answers', exact: true }).click();
+				await page.getByTestId('withdrawn').waitFor({ timeout: SETTLE_MS });
+				break;
+			}
 			case 'offline':
 				await this.contexts.get(this.device)!.ctx.setOffline(true);
 				break;
@@ -772,6 +806,8 @@ export class Player {
 		const sid = this.sid;
 		if (!sid) return { response: null, source: 'none' };
 		const r = await page.request.get(`/__harness/sessions/${encodeURIComponent(sid)}`);
+		// Declined or withdrawn (M5): the server deleted the session and any response.
+		if (r.status() === 404) return { response: null, source: 'none' };
 		const s = (await r.json()) as {
 			submitted: boolean;
 			responses: number;

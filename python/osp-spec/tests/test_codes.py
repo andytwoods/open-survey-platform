@@ -185,6 +185,14 @@ def m_quota_forward(s):
                  {"type": "block", "id": "f3", "block": "b2"}]  # fmt: skip
 
 
+def m_consent_pipe(s: dict) -> None:
+    s["consent"] = {"text": "Consent?", "agreeLabel": "Yes, ${q1}"}
+
+
+def m_consent_outcome(s: dict) -> None:
+    s["consent"] = {"text": "Consent?", "declineOutcome": "complete"}
+
+
 def _matrix(rows: list[dict] | None = None) -> dict:
     rows = rows if rows is not None else [{"id": "a", "label": "A"}, {"id": "b", "label": "B"}]
     return {"id": "m", "type": "matrix", "label": "M", "rows": rows,
@@ -249,6 +257,8 @@ TABLE: list[tuple[Callable[[dict], None], list[tuple[str, str]]]] = [
     (m_decimal_bound_too_long, [("question.bounds", f"{P0}/1/max")]),
     (m_retention, [("settings.retention", "/settings/retention")]),
     (m_page_showif_own_item, [("ref.forward", "/blocks/0/pages/0/showIf")]),
+    (m_consent_pipe, [("consent.pipe", "/consent/agreeLabel")]),
+    (m_consent_outcome, [("consent.outcome", "/consent/declineOutcome")]),
     (m_matrix_duplicate_row, [("matrix.duplicate_row", f"{P0}/1/rows/1/id")]),
     (m_matrix_row_id, [("matrix.row_id", f"{P0}/1/rows/0/id")]),
     (m_matrix_row_clash, [("id.duplicate", f"{P0}/1/rows/0/id")]),

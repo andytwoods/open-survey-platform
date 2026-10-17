@@ -222,6 +222,23 @@ export type FlowNode =
 	| QuotaCheckNode
 	| EndNode;
 
+/**
+ * The consent page (semantics.md §11): shown before the flow, at most once. `version` is
+ * the checksum of the compiled texts; a decline ends with `declineOutcome` and records
+ * no response.
+ */
+export interface ConsentPlan {
+	version: string;
+	text: Text;
+	agree: Text;
+	decline: Text;
+	declineOutcome: Id;
+	countDeclines: boolean;
+}
+
+/** The page id the view reports while the consent page is shown (the `$` namespace is reserved). */
+export const CONSENT_PAGE = '$consent';
+
 // --- Plan ----------------------------------------------------------------------------
 
 export interface Plan {
@@ -248,6 +265,8 @@ export interface Plan {
 		/** Days of inactivity after which a resume link stops working. */
 		resumeExpiryDays: number;
 	};
+	/** Optional consent page, shown before any question (semantics.md §11). */
+	consent?: ConsentPlan;
 	items: Record<Id, Item>;
 	/** Answerable question ids in flow order (export column order). */
 	questions: Id[];

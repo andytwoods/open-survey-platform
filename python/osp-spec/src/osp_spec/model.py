@@ -91,6 +91,27 @@ class Settings(Model):
     retention: Retention | None = None  # required at publish (osp_spec.publish_diagnostics)
 
 
+class Consent(Model):
+    """The consent page (MVP 12b, semantics.md §11). Survey-level, not a flow node: it is
+    always shown first, before any question, at most once, and nothing about the
+    participant reaches the server before they agree.
+
+    - `text`: the information and consent statement (translatable; no piping).
+    - `agreeLabel` / `declineLabel`: the two buttons.
+    - `declineOutcome`: the end code of a decline (`declined`). A decline records no
+      response; only `countDeclines` (off by default) keeps an anonymous count.
+
+    The consent version is the checksum of the texts as compiled (`osp_runtime.plan`), so
+    any edit to the wording is a new version, recorded with each response.
+    """
+
+    text: Text
+    agreeLabel: Text = "I agree"
+    declineLabel: Text = "I do not agree"
+    declineOutcome: Identifier = "declined"
+    countDeclines: bool = False
+
+
 # --- Choices ----------------------------------------------------------------------------
 
 
@@ -403,6 +424,7 @@ class Survey(Model):
     version: StrictInt | None = Field(default=None, ge=1)  # published version (§9)
     metadata: Metadata
     settings: Settings = Field(default_factory=Settings)
+    consent: Consent | None = None  # shown before the flow (semantics.md §11)
     choiceLists: list[ChoiceList] = Field(default_factory=list)
     variables: list[Variable] = Field(default_factory=list)
     blocks: list[Block] = Field(default_factory=list)

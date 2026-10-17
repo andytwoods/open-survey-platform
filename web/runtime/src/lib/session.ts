@@ -26,6 +26,8 @@
  *    resume token are kept in the tab (`SessionPointer`), so a refresh resumes the server's
  *    copy (every-page, R4-3) or restarts the same session with the same seed and conditions
  *    and says so (end-only, R6-5).
+ * 9. Consent (semantics.md §11, M5): while the consent page is shown nothing is saved to
+ *    the server in either mode; agree/decline/withdraw are at the end of this class.
  */
 import * as E from '@osp/engine';
 import type { Effect, PageView, Plan, Snapshot, State } from '@osp/engine';
@@ -313,7 +315,7 @@ export class Session {
 	 */
 	blur() {
 		if (!this.rec.snapshot || this.rec.snapshot.revision === this.rec.syncedEngineRev) return;
-		if (this.saveMode !== 'every-page') return;
+		if (this.saveMode !== 'every-page' || !this.reconciled || E.awaitingConsent(this.state)) return;
 		// Say so at once: whoever waits for "Saved" (leaving for another device) waits for it.
 		if (this.net !== 'offline') this.setNet('saving');
 		this.scheduleSave(this.env.blurDelayMs ?? 250);
@@ -423,6 +425,7 @@ export class Session {
 	/** The page is being hidden or unloaded: last-chance save with `keepalive`. */
 	flushKeepalive() {
 		if (this.saveMode !== 'every-page' || this.closed || !this.reconciled) return;
+		if (E.awaitingConsent(this.state)) return; // §11: nothing before agreement
 		const snap = this.rec.snapshot;
 		if (!snap) return;
 		if (!this.rec.inflight && snap.revision === this.rec.syncedEngineRev) return;
@@ -470,6 +473,8 @@ export class Session {
 
 	private async startHooks() {
 		if (!this.plan.hooks || !this.env.hooks || this.hooks || this.closed) return;
+		// No researcher code runs before the participant agrees (semantics §11).
+		if (E.awaitingConsent(this.state)) return;
 		try {
 			this.hooks = await this.env.hooks(this.plan, this.state, (s) => this.fromHooks(s));
 		} catch (e) {
@@ -554,6 +559,7 @@ export class Session {
 	/** Send saves until the server holds the newest snapshot. One loop at a time. */
 	async pump(): Promise<void> {
 		if (this.saveMode !== 'every-page' || this.closed || !this.reconciled) return;
+		if (E.awaitingConsent(this.state)) return; // §11: nothing before agreement
 		if (this.pumping) {
 			this.again = true;
 			return;
@@ -718,7 +724,9 @@ export class Session {
 					continue;
 				}
 				if (v.status === 'ended') {
-					await this.submit();
+					// §11: a declined session records no response; never submit it.
+					if (E.declinedConsent(this.state)) await this.finish();
+					else await this.submit();
 					return;
 				}
 				this.phase = 'page';
@@ -820,6 +828,82 @@ export class Session {
 		this.phase = 'fatal';
 		this.fatal = message;
 		this.emit();
+	}
+
+	// -- consent and withdrawal (semantics.md §11, M5; UI in ConsentPage / Withdraw) ------
+
+	/** The consent call or the withdrawal is on the wire. */
+	consentBusy = false;
+	/** The participant withdrew: the server deleted their response and session. */
+	withdrawn = false;
+
+	/** Retry a consent-related call until the server answers; false if it refused. */
+	private async consentCall(fn: () => Promise<unknown> | undefined, gone: (e: HttpError) => boolean): Promise<boolean> {
+		this.consentBusy = true;
+		this.emit();
+		try {
+			for (;;) {
+				try {
+					await fn();
+					this.attempt = 0;
+					return true;
+				} catch (e) {
+					if (e instanceof HttpError && gone(e)) return true;
+					if (!retryable(e)) {
+						this.log('consent call refused', e);
+						return false;
+					}
+					this.setNet('offline');
+					await this.sleep(this.backoff());
+				}
+			}
+		} finally {
+			this.consentBusy = false;
+			this.emit();
+		}
+	}
+
+	/** Agree: the server records it first, then the flow starts and saving begins. */
+	async agree(): Promise<boolean> {
+		const c = this.plan.consent;
+		if (!c || !E.awaitingConsent(this.state) || this.consentBusy) return false;
+		const ok = await this.consentCall(
+			() => this.env.api.consent?.(this.rec.sessionId, this.rec.resumeToken, c.version),
+			() => false
+		);
+		if (!ok) {
+			this.fail('Your answer could not be recorded. Please reload the page and try again.');
+			return false;
+		}
+		if (this.saveMode === 'every-page') this.setNet('saved');
+		await this.commit(E.agree(this.state), 'now');
+		await this.startHooks(); // hooks start with the flow, after agreement (§11)
+		return true;
+	}
+
+	/** Decline: the server deletes the session; nothing is kept here either. */
+	async decline(): Promise<void> {
+		if (!E.awaitingConsent(this.state) || this.consentBusy) return;
+		await this.consentCall(
+			() => this.env.api.decline?.(this.rec.sessionId, this.rec.resumeToken),
+			(e) => e.status === 401 || e.status === 404 // already gone
+		);
+		this.state = E.decline(this.state);
+		this.rec.snapshot = E.snapshot(this.state); // in memory only: finish() deletes the copy
+		await this.finish();
+	}
+
+	/** Withdraw (after agreeing): the server deletes the response and session. */
+	async withdraw(): Promise<boolean> {
+		if (this.withdrawn || this.consentBusy || E.awaitingConsent(this.state)) return false;
+		const ok = await this.consentCall(
+			() => this.env.api.withdraw?.(this.rec.sessionId, this.rec.resumeToken),
+			(e) => e.status === 401 // the token no longer exists: already withdrawn
+		);
+		if (!ok) return false;
+		this.withdrawn = true;
+		await this.finish();
+		return true;
 	}
 
 	/** Stop timers (tests, teardown). */
