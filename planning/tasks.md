@@ -150,3 +150,9 @@ Plan V: `planning/results-viewer.md` (decisions V-D1–V-D10). V1 publishes the 
 | V6 | PDF figure + PDF/HTML report (phase 2) | V4 | Permissive libraries only; fonts/clipping checked; report from one frozen query | todo |
 | V7 | Combine compatible versions, numeric split bins, text word frequency (phase 2) | V1–V3 | Per V-D5; word frequency with stop words and PII redaction | todo |
 
+## Wave G (17 Oct 2026): polish
+
+| id | title | depends on | acceptance criteria | status |
+|---|---|---|---|---|
+| G1 | Favicon, app icons and page metadata for the builder, participant app and docs | — | One source SVG mark (original, no third-party logos) → favicon.svg + PNG 32/180/192/512 + `apple-touch-icon` + web manifest (name, theme colour, icons) for builder pages and the participant app; light/dark-safe; participant app icon overridable by the survey theme/host (documented in `docs/hosting.md`); social preview image (1280×640) for the GitHub repo; `<title>`/`description` per builder page; no new runtime deps beyond permissive; e2e asserts icons and manifest load (no 404s) | todo |
+
