@@ -72,11 +72,13 @@ test('settings → theme → publish → the participant link shows the survey i
 	await banner(page).getByRole('button', { name: 'Appearance', exact: true }).click();
 	await expect(page).toHaveURL(/\/appearance$/);
 	await page.getByRole('radio', { name: 'Warm' }).check();
-	await page.getByLabel('Theme name').fill('Lab warm');
+	// Library theme names are unique per lab, and the e2e server's lab outlives one run.
+	const themeName = `Lab warm ${test.info().repeatEachIndex}-${Date.now()}`;
+	await page.getByLabel('Theme name').fill(themeName);
 	await page.getByRole('button', { name: 'Save to lab library' }).click();
-	await expect(page.getByText('Saved "Lab warm" to the lab library.')).toBeVisible();
+	await expect(page.getByText(`Saved "${themeName}" to the lab library.`)).toBeVisible();
 	await page.getByRole('button', { name: 'Make lab default' }).click();
-	await expect(page.getByText('"Lab warm" is now the lab default theme.')).toBeVisible();
+	await expect(page.getByText(`"${themeName}" is now the lab default theme.`)).toBeVisible();
 	await page.getByRole('button', { name: 'Use for this survey' }).click();
 	await expect(page.getByTestId('survey-theme-status')).toHaveText(/This survey uses this theme/);
 	await expect(saved(page)).toHaveText(/All changes saved/);
