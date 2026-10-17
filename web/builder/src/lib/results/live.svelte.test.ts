@@ -6,7 +6,8 @@ import { LivePoller, type Fetched, type LiveHooks, type Watermark } from './live
 // only on a watermark change and only when idle (else the badge), at most once per
 // minRefreshMs and never two at once (a change seen mid-flight means one more), pauses in
 // a hidden tab and polls at once on return, backs off on failure, ends on 401/403, and
-// pauses while presenting (LV4's job to make that batched).
+// while presenting (task LV4, LV-D5) refreshes in batches: k new responses or the time cap,
+// busy ignored; or on every change when the presenter chose that.
 
 function harness(opts: { minRefreshMs?: number } = {}) {
 	const server = { watermark: 'a', responses: 5, pollAfterMs: 10_000 };
@@ -17,6 +18,7 @@ function harness(opts: { minRefreshMs?: number } = {}) {
 		busy: false,
 		hidden: false,
 		presenting: false,
+		refresh: 'batched' as 'batched' | 'every',
 		fail: null as { status: number; message: string } | null,
 		refreshMs: 0,
 		/** A response arrived (or `n` of them). */
@@ -45,7 +47,7 @@ function harness(opts: { minRefreshMs?: number } = {}) {
 		watermark: () => shown,
 		busy: () => h.busy,
 		hidden: () => h.hidden,
-		policy: () => livePolicy({ presenting: h.presenting })
+		policy: () => livePolicy({ presenting: h.presenting, refresh: h.refresh })
 	};
 	const poller = new LivePoller(hooks, opts);
 	// The same object the hooks read, so a test's `t.busy = true` is seen by the poller.
@@ -274,19 +276,102 @@ describe('LivePoller', () => {
 		expect(b.poller.error).toBeNull();
 	});
 
-	it('presenting pauses live (until LV4); wake() polls again at once', async () => {
+	it('presenting (LV-D5): refreshes only once k new responses have arrived, whatever "busy" says', async () => {
+		const t = harness();
+		t.presenting = true;
+		t.busy = true; // a lab screen: nobody is working on it
+		t.poller.start();
+		await tickTo(0);
+		expect(t.polls).toHaveLength(1);
+		expect(t.poller.status).toBe('waiting');
+		t.arrive(4);
+		await tickTo(10_000);
+		expect(t.poller.changed).toBe(true);
+		expect(t.poller.pending).toBe(4);
+		expect(t.refreshes).toEqual([]); // 4 < 5: the screen keeps what it shows
+		await tickTo(10_000);
+		expect(t.refreshes).toEqual([]);
+		t.arrive(1);
+		await tickTo(10_000);
+		expect(t.refreshes).toEqual([{ live: true, at: 30_000 }]);
+		expect(t.poller.changed).toBe(false);
+		expect(t.poller.pending).toBeNull();
+		// The next batch counts from the new baseline (10).
+		t.arrive(5);
+		await tickTo(10_000);
+		expect(t.refreshes).toHaveLength(2);
+		t.arrive(3);
+		await tickTo(10_000);
+		expect(t.refreshes).toHaveLength(2);
+		expect(t.poller.pending).toBe(3);
+	});
+
+	it('presenting: the time cap (10 min since the last refresh, or since live began) redraws a quiet room', async () => {
 		const t = harness();
 		t.presenting = true;
 		t.poller.start();
 		await tickTo(0);
-		expect(t.polls).toHaveLength(0);
-		expect(t.poller.status).toBe('paused');
-		expect(t.poller.pausedBy).toBe('presentation');
+		t.arrive(1);
+		await tickTo(10_000);
+		expect(t.refreshes).toEqual([]);
+		await tickTo(589_999); // 599 999 ms after start: not yet
+		expect(t.refreshes).toEqual([]);
+		await tickTo(1); // 600 000 ms: the cap, by the timer, not a poll
+		expect(t.refreshes).toEqual([{ live: true, at: 600_000 }]);
+		expect(t.poller.changed).toBe(false);
+		// Again, from the refresh: one more response at 610 s shows at 1200 s.
+		t.arrive(1);
+		await tickTo(10_000);
+		expect(t.refreshes).toHaveLength(1);
+		await tickTo(590_000);
+		expect(t.refreshes).toHaveLength(2);
+		expect(t.refreshes[1].at).toBe(1_200_000);
+		// Removals are a change but never "k new": they wait for the cap too.
+		t.server.responses -= 1;
+		t.server.watermark = 'fewer';
+		await tickTo(10_000);
+		expect(t.poller.changed).toBe(true);
+		expect(t.poller.pending).toBe(-1);
+		expect(t.refreshes).toHaveLength(2);
+	});
+
+	it('presenting on every change refreshes at once; switching cadence or leaving takes effect on wake()', async () => {
+		const t = harness();
+		t.presenting = true;
+		t.refresh = 'every';
+		t.busy = true;
+		t.poller.start();
+		await tickTo(0);
+		t.arrive(1);
+		await tickTo(10_000);
+		expect(t.refreshes).toEqual([{ live: true, at: 10_000 }]);
+
+		// Back to batched: two more wait; the presenter switches to every change: wake() refreshes now.
+		t.refresh = 'batched';
+		t.poller.wake();
+		await tickTo(0);
+		t.arrive(2);
+		await tickTo(10_000);
+		expect(t.refreshes).toHaveLength(1);
+		expect(t.poller.pending).toBe(2);
+		t.refresh = 'every';
+		t.poller.wake();
+		await tickTo(0);
+		expect(t.refreshes).toHaveLength(2);
+
+		// Leaving presentation while busy with 1 pending: the badge again, no refresh (LV-D4).
+		t.refresh = 'batched';
+		t.arrive(1);
+		await tickTo(10_000);
+		expect(t.refreshes).toHaveLength(2);
 		t.presenting = false;
 		t.poller.wake();
 		await tickTo(0);
-		expect(t.polls).toHaveLength(1);
-		expect(t.poller.status).toBe('waiting');
+		expect(t.refreshes).toHaveLength(2);
+		expect(t.poller.changed).toBe(true);
+		t.busy = false;
+		await tickTo(10_000);
+		expect(t.refreshes).toHaveLength(3);
 	});
 
 	it('set() toggles; stop() drops a poll in flight and clears the badge', async () => {

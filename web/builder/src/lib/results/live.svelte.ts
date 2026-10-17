@@ -4,10 +4,12 @@
  * backs off on failure, ends on 401/403, and when the watermark changes either refreshes
  * the results by itself (idle, policy allows) or shows "N new responses · Refresh" (the
  * researcher is busy). Refreshes are coalesced: at most one every `minRefreshMs`, never
- * two at once; a change seen mid-flight means one more afterwards. Pure of the DOM except
- * `document.visibilityState`, so vitest drives it with a fake clock.
+ * two at once; a change seen mid-flight means one more afterwards. Presenting (task LV4,
+ * LV-D5), the policy batches refreshes: k new responses or the time cap, busy ignored.
+ * Pure of the DOM except `document.visibilityState`, so vitest drives it with a fake clock.
  */
 import {
+	batchDue,
 	clampPoll,
 	DEFAULT_MIN_REFRESH_MS,
 	DEFAULT_POLL_MS,
@@ -34,7 +36,7 @@ export interface LiveHooks {
 	watermark(): string | null;
 	/** The researcher is busy (recent input, an open menu or dialog, unapplied filters, a query in flight). */
 	busy(): boolean;
-	/** Where the page is (presentation mode pauses live until LV4). */
+	/** Where the page is (presentation mode batches refreshes and ignores "busy"). */
 	policy?(): LivePolicy;
 	/** The tab is hidden (default: `document.visibilityState`). */
 	hidden?(): boolean;
@@ -46,7 +48,7 @@ export class LivePoller {
 	on = $state(false);
 	status = $state<LiveStatus>('off');
 	/** Why polling is paused. */
-	pausedBy = $state<'hidden' | 'presentation' | null>(null);
+	pausedBy = $state<'hidden' | null>(null);
 	/** The watermark differs from the results on screen (the badge shows). */
 	changed = $state(false);
 	/** New stored responses since the results on screen; null: unknown; <= 0: removed. */
@@ -75,6 +77,8 @@ export class LivePoller {
 	#last: { watermark: string; responses: number } | null = null;
 	/** Recent polls, newest last: what a watermark's stored count was (for a refresh overtaken mid-flight). */
 	#recent: { watermark: string; responses: number }[] = [];
+	/** When live was turned on: a batch's time cap runs from here until the first refresh. */
+	#startedAt = 0;
 	#onVisibility: (() => void) | null = null;
 
 	constructor(hooks: LiveHooks, opts: { minRefreshMs?: number } = {}) {
@@ -98,6 +102,7 @@ export class LivePoller {
 		this.#known = null;
 		this.#last = null;
 		this.#recent = [];
+		this.#startedAt = Date.now();
 		if (typeof document !== 'undefined' && !this.#onVisibility) {
 			this.#onVisibility = () => this.#visibility();
 			document.addEventListener('visibilitychange', this.#onVisibility);
@@ -122,7 +127,7 @@ export class LivePoller {
 		this.error = reason ? reason.error : null;
 	}
 
-	/** Something that pauses polling may have changed (presentation mode left): check now. */
+	/** The policy may have changed (presentation mode entered or left, its cadence switched): check now. */
 	wake() {
 		if (!this.on || this.#inFlight) return;
 		this.#schedule(0);
@@ -192,7 +197,6 @@ export class LivePoller {
 		const policy = this.#policy();
 		if (!policy.poll) {
 			this.status = 'paused';
-			this.pausedBy = policy.reason ?? null;
 			this.#arm(this.intervalMs); // checked again then, or sooner by wake()
 			return;
 		}
@@ -237,19 +241,35 @@ export class LivePoller {
 		this.#schedule(this.retryMs);
 	}
 
-	/** Refresh when allowed and idle, respecting `minRefreshMs`; else the badge stays. */
+	/**
+	 * Refresh when allowed and idle, respecting `minRefreshMs`; else the badge stays. A
+	 * batched policy (presenting, LV-D5) waits for k new responses or its time cap, whichever
+	 * first; the cap is kept with a timer, so a quiet room still redraws on time.
+	 */
 	#maybeRefresh(policy: LivePolicy = this.#policy()) {
-		if (!this.on || !this.changed || !policy.auto || this.#inFlight || this.#hidden() || this.#hooks.busy()) return;
-		const since = this.lastRefreshAt === null ? Infinity : Date.now() - this.lastRefreshAt;
+		if (!this.on || !this.changed || !policy.auto || this.#inFlight || this.#hidden()) return;
+		if (!policy.ignoreBusy && this.#hooks.busy()) return;
+		const now = Date.now();
+		if (policy.batch) {
+			const since = now - (this.lastRefreshAt ?? this.#startedAt);
+			if (!batchDue(policy.batch, this.pending, since)) return this.#armRefresh(policy.batch.maxWaitMs - since);
+		}
+		const since = this.lastRefreshAt === null ? Infinity : now - this.lastRefreshAt;
 		const wait = Math.max(0, this.minRefreshMs - since);
-		if (wait > 0) {
-			this.#refreshTimer ??= setTimeout(() => {
+		if (wait > 0) return this.#armRefresh(wait);
+		void this.#refresh(true);
+	}
+
+	/** Look again in `ms` (replacing an earlier, possibly longer, wait). */
+	#armRefresh(ms: number) {
+		if (this.#refreshTimer) clearTimeout(this.#refreshTimer);
+		this.#refreshTimer = setTimeout(
+			() => {
 				this.#refreshTimer = null;
 				this.#maybeRefresh();
-			}, wait);
-			return;
-		}
-		void this.#refresh(true);
+			},
+			Math.max(0, ms)
+		);
 	}
 
 	async #refresh(live: boolean): Promise<boolean> {

@@ -3,6 +3,7 @@ import { describe, expect, it } from 'vitest';
 import { FIXTURE_CARDS } from './fixtures';
 import { entryOptions, galleryEntries } from './gallery';
 import { chartsFor, splitsFor } from './menu';
+import { suppressCard } from '../export/model';
 import { buildSpec, defaultSpec } from './spec';
 import { LIGHT_TOKENS, likertPalette, luminance, OKABE_ITO, sequentialPalette, themeConfig } from './theme';
 import type { Card, ChartChoice } from './types';
@@ -230,5 +231,17 @@ describe('themes', () => {
 		expect(likertPalette(4)).not.toContain('#d4d4d4');
 		expect(likertPalette(7, 'app')).toHaveLength(7);
 		expect(likertPalette(1)).toEqual(['#d4d4d4']);
+	});
+});
+
+describe('hidden cells ("Hide counts below k", drawn on screen in presentation mode: LV4)', () => {
+	it('a donut whose every answered option is hidden says so, instead of an empty ring with no accessible name', () => {
+		const all = suppressCard(FIXTURE_CARDS.single, 1000).card;
+		const spec = buildSpec(all, 'donut', { hiddenLabel: 'n<1000' });
+		expect(compileStrict(spec).warnings).toEqual([]);
+		expect(rows(spec)).toEqual([{ message: 'Every option has n<1000 responses: counts hidden.' }]);
+		// Unsuppressed, the same card draws its slices, each labelled option and share.
+		const slices = rows(buildSpec(FIXTURE_CARDS.single, 'donut')).filter((r) => 'slice' in r);
+		expect(slices.length).toBeGreaterThan(0);
 	});
 });

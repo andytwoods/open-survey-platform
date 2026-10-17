@@ -4,6 +4,7 @@ import axe from 'axe-core';
 import { tick } from 'svelte';
 import { afterEach, describe, expect, it, vi } from 'vitest';
 import fixture from './fixtures/results.json';
+import { presentation } from './presentation.svelte';
 import type { Fetched, ResultsSource } from './results.svelte';
 import ResultsView from './ResultsView.svelte';
 import type { Card, ResultsQuery, ResultsResponse, TextPage } from './types';
@@ -88,7 +89,11 @@ async function setup(opts: { source?: ResultsSource; published?: number; minRefr
 
 const cardOf = (label: string) => screen.getByRole('article', { name: label });
 
-afterEach(() => vi.useRealTimers());
+afterEach(() => {
+	vi.useRealTimers();
+	// The presentation cadence is a module-level choice (a lab-screen link carries it): reset between tests.
+	presentation.refresh = 'batched';
+});
 
 describe('ResultsView', () => {
 	it('shows one card per question in survey order, with states and statistics', async () => {
@@ -325,11 +330,29 @@ describe('ResultsView', () => {
 		expect(s.queries).toEqual([]);
 	});
 
-	it('presentation mode (V6): only the cards and a way out; Escape leaves; the URL carries the flag', async () => {
+	/** Open the Present dialog and start with its defaults (or after `choose` has changed them). */
+	async function startPresenting(choose?: (dialog: HTMLElement) => Promise<void>) {
+		await fireEvent.click(screen.getByRole('button', { name: 'Present' }));
+		const dialog = await screen.findByRole('dialog', { name: 'Present results' });
+		if (choose) await choose(dialog);
+		await fireEvent.click(within(dialog).getByRole('button', { name: 'Start presenting' }));
+		await waitFor(() => expect(screen.getByTestId('exit-presentation')).toBeTruthy());
+		return dialog;
+	}
+
+	it('presentation mode (V6): only the cards and a way out; Escape leaves; the URL carries the flag; small cells hidden (LV4)', async () => {
 		history.replaceState(null, '', '/surveys/s1/results');
 		await setup();
 		expect(screen.getByRole('button', { name: 'Export all' })).toBeTruthy();
 		await fireEvent.click(screen.getByRole('button', { name: 'Present' }));
+		const dialog = await screen.findByRole('dialog', { name: 'Present results' });
+		// The safe defaults: live as it is (off), batched, counts below 5 hidden, windowed.
+		expect((within(dialog).getByTestId('present-live') as HTMLInputElement).checked).toBe(false);
+		expect(within(dialog).queryByTestId('present-batched')).toBeNull(); // the cadence only matters when live
+		expect((within(dialog).getByTestId('present-hide') as HTMLInputElement).checked).toBe(true);
+		expect((within(dialog).getByTestId('present-fullscreen') as HTMLInputElement).checked).toBe(false);
+		expect(within(dialog).queryByTestId('present-exact-warning')).toBeNull();
+		await fireEvent.click(within(dialog).getByRole('button', { name: 'Start presenting' }));
 		await waitFor(() => expect(screen.getByTestId('exit-presentation')).toBeTruthy());
 		expect(location.search).toBe('?present=1');
 		expect(screen.queryByRole('button', { name: 'Export all' })).toBeNull();
@@ -340,9 +363,11 @@ describe('ResultsView', () => {
 		expect(within(fruit).queryByRole('combobox', { name: 'Chart' })).toBeNull();
 		expect(within(fruit).queryByRole('button', { name: 'Export Fruit?' })).toBeNull();
 		expect(fruit.querySelector('[data-chart="bars"]')).toBeTruthy();
+		// LV-D5: Apple (2) and Banana (1) are below 5, so the screen hides them and the caption says so.
 		expect(within(fruit).getByTestId('card-caption').textContent).toBe(
-			'Fruit? (fruit). Version 1; Complete responses only; Denominator: answered. n = 3 responses.'
+			'Fruit? (fruit). Version 1; Complete responses only; Denominator: answered. n = 3 responses. Counts below 5 hidden (shown as "n<5"; 2 cells).'
 		);
+		expect(screen.getByTestId('present-footer').textContent).toMatch(/^5 responses · updated \d\d:\d\d · counts below 5 hidden$/);
 		// The page heading stays for the landmark, visually hidden, and is the page's h1 now the top bar is gone.
 		expect(screen.getByRole('heading', { name: 'Results', level: 1 })).toBeTruthy();
 		await waitFor(() => expect(document.activeElement).toBe(screen.getByTestId('exit-presentation')));
@@ -351,8 +376,128 @@ describe('ResultsView', () => {
 		await waitFor(() => expect(screen.getByRole('button', { name: 'Export all' })).toBeTruthy());
 		expect(location.search).toBe('');
 		expect(screen.queryByTestId('exit-presentation')).toBeNull();
+		expect(screen.queryByTestId('present-footer')).toBeNull();
 		await waitFor(() => expect(document.activeElement).toBe(screen.getByRole('button', { name: 'Present' })));
 		expect(within(cardOf('Fruit?')).getByRole('combobox', { name: 'Chart' })).toBeTruthy();
+		// Back in the app the exact numbers are back (V-D4).
+		await fireEvent.click(within(cardOf('Fruit?')).getByRole('button', { name: 'Table view' }));
+		expect(within(within(cardOf('Fruit?')).getByRole('table', { name: 'Fruit?' })).getByRole('row', { name: /Apple/ }).textContent).toContain('2');
+	});
+
+	it('presenting with the table view hides small cells as "n<5"; exact counts need the dialog’s switch, which warns (LV4)', async () => {
+		history.replaceState(null, '', '/surveys/s1/results');
+		await setup();
+		await fireEvent.click(within(cardOf('Fruit?')).getByRole('button', { name: 'Table view' }));
+		await startPresenting();
+		let table = within(cardOf('Fruit?')).getByRole('table', { name: 'Fruit?' });
+		let rows = within(table)
+			.getAllByRole('row')
+			.map((r) => [...r.querySelectorAll('th, td')].map((c) => c.textContent?.trim()));
+		expect(rows).toEqual([
+			['Option', 'Count', '% of answered'],
+			['Apple', 'n<5', ''],
+			['Banana', 'n<5', ''],
+			['Cherry', '0', '0 %'],
+			['n (answered)', '3', '']
+		]);
+		await fireEvent.click(screen.getByTestId('exit-presentation'));
+		await waitFor(() => expect(screen.getByRole('button', { name: 'Present' })).toBeTruthy());
+
+		// The switch is off by default each time; turning it off warns; the URL never carries it.
+		await startPresenting(async (dialog) => {
+			await fireEvent.click(within(dialog).getByTestId('present-hide'));
+			expect(within(dialog).getByTestId('present-exact-warning').textContent).toMatch(/the person who\s+just pressed Submit/);
+		});
+		table = within(cardOf('Fruit?')).getByRole('table', { name: 'Fruit?' });
+		rows = within(table)
+			.getAllByRole('row')
+			.map((r) => [...r.querySelectorAll('th, td')].map((c) => c.textContent?.trim()));
+		expect(rows[1]).toEqual(['Apple', '2', '66.7 %']);
+		expect(within(cardOf('Fruit?')).getByTestId('card-caption').textContent).not.toContain('hidden');
+		expect(screen.getByTestId('present-footer').textContent).toMatch(/^5 responses · updated \d\d:\d\d$/);
+		expect(location.search).toBe('?present=1');
+		await fireEvent.click(screen.getByTestId('exit-presentation'));
+		await waitFor(() => expect(screen.getByRole('button', { name: 'Present' })).toBeTruthy());
+		await fireEvent.click(screen.getByRole('button', { name: 'Present' }));
+		const again = await screen.findByRole('dialog', { name: 'Present results' });
+		expect((within(again).getByTestId('present-hide') as HTMLInputElement).checked).toBe(true);
+		await fireEvent.click(within(again).getByRole('button', { name: 'Cancel' }));
+		history.replaceState(null, '', '/');
+	});
+
+	it('presenting live (LV4): batched by default, refreshed in one go at k new responses, footer with count and time, never the delta; "every" is in the URL', async () => {
+		history.replaceState(null, '', '/surveys/s1/results');
+		const s = stub();
+		await setup({ source: s.source, minRefreshMs: 0 });
+		await screen.findByRole('list', { name: 'Questions' });
+		await fireEvent.click(screen.getByRole('button', { name: 'Present' }));
+		const dialog = await screen.findByRole('dialog', { name: 'Present results' });
+		await fireEvent.click(within(dialog).getByTestId('present-live'));
+		expect((within(dialog).getByTestId('present-batched') as HTMLInputElement).checked).toBe(true);
+		// The poller's timers must be the fake ones: start presenting (which turns Live on) under them.
+		vi.useFakeTimers({ toFake: ['setTimeout', 'clearTimeout', 'Date'] });
+		await fireEvent.click(within(dialog).getByRole('button', { name: 'Start presenting' }));
+		await tick();
+		expect(screen.getByTestId('exit-presentation')).toBeTruthy();
+		expect(location.search).toBe('?present=1&live=1');
+		await vi.advanceTimersByTimeAsync(0);
+		expect(s.server.polls).toBe(1);
+		expect(screen.getByTestId('present-footer').textContent).toMatch(/^5 responses · updated \d\d:\d\d · live · counts below 5 hidden$/);
+
+		// Four arrive: the screen keeps what it shows and says nothing about them.
+		for (let i = 0; i < 4; i++) s.server.arrive();
+		await vi.advanceTimersByTimeAsync(1000);
+		await tick();
+		expect(s.queries).toHaveLength(1);
+		expect(screen.getByTestId('present-footer').textContent).toContain('5 responses');
+		expect(screen.queryByTestId('live-badge')).toBeNull();
+		expect(document.body.textContent).not.toMatch(/new response/);
+		// The fifth: one refresh, announced once, with the hidden look kept (Apple is now 6: shown).
+		s.server.arrive();
+		await vi.advanceTimersByTimeAsync(1000);
+		await tick();
+		expect(s.queries).toHaveLength(2);
+		expect(s.queries[1].live).toBe(true);
+		expect(screen.getByTestId('present-footer').textContent).toContain('10 responses');
+		expect(screen.getByTestId('live-announce').textContent).toBe('Results updated: 10 responses.');
+		expect(document.body.textContent).not.toMatch(/new response/);
+		const caption = within(cardOf('Fruit?')).getByTestId('card-caption').textContent;
+		expect(caption).toContain('Counts below 5 hidden (shown as "n<5"; 1 cell).');
+
+		// Leaving: the page goes back to immediate refreshes; the live switch stays on.
+		await fireEvent.click(screen.getByTestId('exit-presentation'));
+		await vi.advanceTimersByTimeAsync(0);
+		await tick();
+		expect(screen.getByTestId('live-toggle').getAttribute('aria-checked')).toBe('true');
+		expect(location.search).toBe('?live=1');
+		vi.useRealTimers();
+
+		// On every change, chosen in the dialog, is carried in the URL for a lab-screen link.
+		await startPresenting(async (dialog) => {
+			await fireEvent.click(within(dialog).getByTestId('present-every'));
+		});
+		await tick();
+		expect(Object.fromEntries(new URLSearchParams(location.search))).toEqual({ present: '1', live: 'every' });
+		await fireEvent.click(screen.getByTestId('exit-presentation'));
+		await waitFor(() => expect(screen.getByRole('button', { name: 'Present' })).toBeTruthy());
+		history.replaceState(null, '', '/');
+	});
+
+	it('?live=every in a shared link sets the cadence; ?present=1 alone never shows exact counts (LV4)', async () => {
+		history.replaceState(null, '', '/surveys/s1/results?present=1&live=every');
+		const s = stub();
+		await setup({ source: s.source });
+		await waitFor(() => expect(screen.getByTestId('exit-presentation')).toBeTruthy());
+		await waitFor(() => expect(screen.getByTestId('present-footer').textContent).toMatch(/live · counts below 5 hidden$/));
+		expect(within(cardOf('Fruit?')).getByTestId('card-caption').textContent).toContain('Counts below 5 hidden');
+		await fireEvent.click(screen.getByTestId('exit-presentation'));
+		await waitFor(() => expect(screen.getByRole('button', { name: 'Present' })).toBeTruthy());
+		expect(location.search).toBe('?live=every');
+		await fireEvent.click(screen.getByRole('button', { name: 'Present' }));
+		const dialog = await screen.findByRole('dialog', { name: 'Present results' });
+		expect((within(dialog).getByTestId('present-every') as HTMLInputElement).checked).toBe(true);
+		await fireEvent.click(within(dialog).getByRole('button', { name: 'Cancel' }));
+		history.replaceState(null, '', '/');
 	});
 
 	it('opens in presentation mode from ?present=1, and the floating button leaves it', async () => {
@@ -360,6 +505,7 @@ describe('ResultsView', () => {
 		await setup();
 		await waitFor(() => expect(screen.getByTestId('exit-presentation')).toBeTruthy());
 		expect(screen.queryByTestId('layout-bar')).toBeNull();
+		expect(screen.getByTestId('present-footer').textContent).toMatch(/counts below 5 hidden$/); // never exact from a URL
 		await fireEvent.click(screen.getByTestId('exit-presentation'));
 		await waitFor(() => expect(screen.getByRole('button', { name: 'Present' })).toBeTruthy());
 		expect(location.search).toBe('?layout=lay_9'); // only the presentation flag is touched

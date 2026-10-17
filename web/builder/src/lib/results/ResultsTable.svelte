@@ -11,9 +11,18 @@
 		unit,
 		type,
 		denominator,
-		caption
-	}: { unit: ResultUnit; type: CardType; denominator: Denominator; caption: string } = $props();
+		caption,
+		hiddenLabel = 'n<5'
+	}: {
+		unit: ResultUnit;
+		type: CardType;
+		denominator: Denominator;
+		caption: string;
+		/** What a cell hidden by "Hide counts below k" reads (presentation mode, task LV4). */
+		hiddenLabel?: string;
+	} = $props();
 
+	const isHidden = (c: ResultUnit['groups'][number]['cells'][number]) => (c as { hidden?: boolean }).hidden === true;
 	const groups = $derived(unit.groups);
 	const multi = $derived(groups.length > 1);
 	const keys = $derived(groups[0]?.cells.map((c) => ({ key: c.key, label: c.label })) ?? []);
@@ -41,8 +50,13 @@
 					<th scope="row">{k.label}</th>
 					{#each groups as g, gi (g.key)}
 						{@const c = lookup[gi].get(k.key)}
-						<td class="num">{c ? c.count : 0}</td>
-						<td class="num">{fmtPct(c?.pct)}</td>
+						{#if c && isHidden(c)}
+							<td class="num hidden-cell" data-hidden>{hiddenLabel}</td>
+							<td class="num hidden-cell"></td>
+						{:else}
+							<td class="num">{c ? c.count : 0}</td>
+							<td class="num">{fmtPct(c?.pct)}</td>
+						{/if}
 					{/each}
 				</tr>
 			{:else}
@@ -106,5 +120,9 @@
 	}
 	.empty {
 		color: var(--color-text-muted);
+	}
+	.hidden-cell {
+		color: var(--color-text-muted);
+		font-style: italic;
 	}
 </style>
