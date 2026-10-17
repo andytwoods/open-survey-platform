@@ -87,6 +87,7 @@ def test_add_question_applies_profile_defaults() -> None:
     defaults = {"required": True, "custom.weight": 2.5, "custom.prereg": False}
     res = run("add_question", base(), {"page": "p_demo", "type": "text", "defaults": defaults})
     assert res.ok, [d.message for d in res.diagnostics]
+
     def page_items(survey):  # p_demo's items, wherever the page sits
         return next(p["items"] for b in survey["blocks"] for p in b["pages"] if p["id"] == "p_demo")
 
