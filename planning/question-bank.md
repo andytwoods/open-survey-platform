@@ -302,7 +302,7 @@ Not "instruments", but the most inserted questions of all, and clearly redistrib
 
 ## 8. Order of work (proposed task split; the lead creates the rows)
 
-1. **QB2 spec + instruments package**: `osp_spec.bank` (model, `extract_fragment`, `check_fragment`), `Source` on question/page/block (+ capability rows, codebook section, golden), `osp-instruments` with the first bundled set and its tests, licence-policy step.
+1. **QB2 spec + instruments package**: `osp_spec.bank` (model, `extract_fragment`, `check_fragment`), `Source` on question/page/block (+ capability rows, codebook section, golden), `osp-instruments` with the first bundled set and its tests, licence-policy step. **Acceptance criterion 1:** for every bundled instrument, `osp-instruments/LICENCES.md` quotes the operative sentence of the holder's current terms page with URL and access date, checked by a second person; a test fails on any library file whose licence class is not in the bundle allow-list or whose `LICENCES.md` entry is missing.
 2. **QB3 ops**: `insert_bank_item`, `clear_source`, the shared `_remap`, fuzz.
 3. **QB4 store + app + API**: migration 0011, `osp_store.bank`, permissions, commands, routes, contract, import/export file, audit.
 4. **QB5 builder**: Bank tab (search, preview, insert, drag), Save to bank, provenance line, Bank page, licensed-instrument wizard, docs, e2e + axe.
