@@ -64,6 +64,21 @@ export function dropTargetAt(
 	roots: readonly OutlineNode[],
 	ids: readonly string[]
 ): DragHit | null {
+	const hit = gapAt(boxes, y, type, roots);
+	if (!hit || !moveOps(roots, ids, hit.target).length) return null;
+	return hit;
+}
+
+/**
+ * Where a new question dropped at pointer `y` would go (a type dragged from the toolbox):
+ * before/after a question, or into a page at the end. Null over a block.
+ */
+export function insertTargetAt(boxes: readonly RowBox[], y: number, roots: readonly OutlineNode[]): DragHit | null {
+	return gapAt(boxes, y, 'question', roots);
+}
+
+/** The gap for an item of `type` at `y`, whether or not anything would move. */
+function gapAt(boxes: readonly RowBox[], y: number, type: MovableType, roots: readonly OutlineNode[]): DragHit | null {
 	if (!boxes.length) return null;
 	const byId = new Map(boxes.map((b) => [b.id, b]));
 	let row = boxes.find((b) => y >= b.top && y < b.bottom);
@@ -108,6 +123,5 @@ export function dropTargetAt(
 			};
 		}
 	}
-	if (!hit || !moveOps(roots, ids, hit.target).length) return null;
 	return hit;
 }
