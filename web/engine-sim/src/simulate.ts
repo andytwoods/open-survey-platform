@@ -38,6 +38,8 @@ import {
 	leavesEvidence,
 	numericPoints,
 	representative,
+	sliderCount,
+	sliderPoint,
 	structure,
 	usage,
 	type Answer,
@@ -409,6 +411,8 @@ function uniformDrawer(plan: Plan, r: Rng): Drawer {
 				const day = r.int(1, 28);
 				return `${y}-${String(m).padStart(2, '0')}-${String(day).padStart(2, '0')}`;
 			}
+			case 'slider':
+				return sliderPoint(q, r.int(0, sliderCount(q) - 1));
 		}
 	};
 }

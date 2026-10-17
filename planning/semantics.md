@@ -149,9 +149,9 @@ Resolved 16 Oct 2026: see `decisions-semantics-1.md` (C1-1 to C1-3, C3a-1 to C3a
 
 Matrix and slider (C2c, 16 Oct 2026). C2c-1 and C2c-3 above follow from existing rules (a matrix row is a `single` question; a slider is an `integer`/`decimal` question that starts empty). These parts were not covered, so the agent picked the conservative option, marked here for a human to confirm:
 
-- **C2c-2 (provisional)**: matrix rows have no `showIf` or `constraint` of their own, and neither rows nor columns can be shuffled, in `osp-survey/0.1`. Per-row display logic would need its own same-page rules; use separate questions meanwhile.
-- **C2c-4 (provisional)**: a slider value that is in range but off the step grid (typed into the numeric alternative) is refused as unreadable input (`value.off_step`), rather than rounded to the nearest step or accepted as is. Rounding would store a value the participant did not give.
+- **C2c-2 (decided by the lead, 17 Oct 2026, as proposed)**: matrix rows have no `showIf` or `constraint` of their own, and neither rows nor columns can be shuffled, in `osp-survey/0.1`. Per-row display logic would need its own same-page rules; use separate questions meanwhile.
+- **C2c-4 (decided by the lead, 17 Oct 2026, as proposed; the slider widget must show the error, never snap silently)**: a slider value that is in range but off the step grid (typed into the numeric alternative) is refused as unreadable input (`value.off_step`), rather than rounded to the nearest step or accepted as is. Rounding would store a value the participant did not give.
 
 Deferred to `osp-survey/0.2` (decided, not modelled yet): dedicated `scores` (null unless every item is answered, or an explicit `minAnswered` is set; reversal is `min + max − value`) and reverse scoring [C3a-4], and page-order shuffling within a block [C2-9]. Use computed variables with `if()` meanwhile.
 
-Open (provisional decisions in force): C2c-2, C2c-4. Open: C-1 and C-2 above (M5, consent).
+Open: C-1 and C-2 above (M5, consent).
