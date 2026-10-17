@@ -142,8 +142,8 @@ Added by M5 (MVP 12b). Where the docs were silent, the most protective option wa
 
 ## Open questions (need a human decision)
 
-- **C-1 (M5)**: when a participant withdraws a *submitted* response, should its quota place (and balanced-assignment count) be given back so another participant can take it? Currently it stays used.
-- **C-2 (M5)**: should declines be counted by default? Currently off; the researcher opts in.
+- **C-1 (M5; decided by the lead 17 Oct 2026: keep as is, the place stays used, so funded recruitment is never exceeded; researchers can raise the quota)**: when a participant withdraws a *submitted* response, should its quota place (and balanced-assignment count) be given back so another participant can take it? Currently it stays used.
+- **C-2 (M5; decided by the lead 17 Oct 2026: off by default, as built)**: should declines be counted by default? Currently off; the researcher opts in.
 
 Resolved 16 Oct 2026: see `decisions-semantics-1.md` (C1-1 to C1-3, C3a-1 to C3a-9, C2-1 to C2-9, R6-1 to R6-6, R1-1 to R1-8, S-1 to S-4), plus the lead's M2-1 to M2-3. Earlier: missing-value encoding (§1), back navigation default (§5), text trimming follows Enketo (§2).
 
@@ -154,4 +154,4 @@ Matrix and slider (C2c, 16 Oct 2026). C2c-1 and C2c-3 above follow from existing
 
 Deferred to `osp-survey/0.2` (decided, not modelled yet): dedicated `scores` (null unless every item is answered, or an explicit `minAnswered` is set; reversal is `min + max − value`) and reverse scoring [C3a-4], and page-order shuffling within a block [C2-9]. Use computed variables with `if()` meanwhile.
 
-Open: C-1 and C-2 above (M5, consent).
+None open.
