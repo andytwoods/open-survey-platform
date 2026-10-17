@@ -9,8 +9,14 @@
  * - Side by side, the other frames follow the one in use shortly after it changes.
  *
  * Nothing is saved anywhere: the frames run `web/runtime` in preview mode (memory only).
+ *
+ * Researcher hooks (task R10) run inside each frame, in the participant app's sandbox. Their
+ * outcomes are engine events, so they arrive with the snapshot; the app's own diagnostics
+ * (e.g. a refused hook manifest) arrive as `log` messages and are kept in `logs`. A change
+ * made only by hooks (say `onResume` in a frame that just loaded) is not mirrored to the
+ * other frames: each would answer with its own `onResume`, and so on forever.
  */
-import { isState, restore, snapshot, type Plan, type State } from '@osp/engine';
+import { isState, restore, snapshot, type EngineEvent, type Plan, type State } from '@osp/engine';
 import { api } from '../api';
 import { startState } from '../debugger/script';
 import { listenForFrames, type FrameConfig, type FrameHandle, type PreviewBridge } from './bridge';
@@ -30,6 +36,17 @@ export const DEVICES: ReadonlyArray<{ id: Device; label: string; width: number; 
 ];
 
 const MIRROR_MS = 250;
+const MAX_LOGS = 50;
+
+export interface PreviewLog {
+	frameId: string;
+	message: string;
+}
+
+/** Events a participant (or the debugger) caused: everything but recorded hook results. */
+export function participantEvents(events: readonly EngineEvent[]): number {
+	return events.filter((e) => !(e.type === 'resolve' && e.effect.kind === 'hook')).length;
+}
 
 export function randomSeed(): number {
 	return 1 + Math.floor(Math.random() * 1_000_000);
@@ -40,6 +57,8 @@ export class PreviewHost implements PreviewBridge {
 	/** Condition texts by engine site (from the server). */
 	texts = $state.raw<Record<string, string>>({});
 	diagnostics = $state.raw<PreviewDiagnostic[]>([]);
+	/** Diagnostics from the participant app in the frames, newest last. */
+	logs = $state.raw<PreviewLog[]>([]);
 	revision = $state<number | null>(null);
 	loading = $state(false);
 	error = $state<string | null>(null);
@@ -96,6 +115,7 @@ export class PreviewHost implements PreviewBridge {
 				return;
 			}
 			this.diagnostics = (data.diagnostics ?? []) as PreviewDiagnostic[];
+			this.logs = [];
 			this.texts = data.conditions ?? {};
 			this.revision = data.revision;
 			this.plan = (data.plan as unknown as Plan | null) ?? null;
@@ -112,6 +132,7 @@ export class PreviewHost implements PreviewBridge {
 	usePlan(plan: Plan, texts: Record<string, string> = {}) {
 		this.plan = plan;
 		this.texts = texts;
+		this.logs = [];
 		this.restart();
 	}
 
@@ -170,10 +191,14 @@ export class PreviewHost implements PreviewBridge {
 		} catch {
 			return;
 		}
+		// Two frames can reach the same revision by different events (each runs its own hooks),
+		// so the last event must match too.
+		const events = (snap as { data?: { events?: unknown[] } }).data?.events;
 		const same =
 			this.state &&
 			(snap as { revision?: number }).revision === this.state.data.revision &&
-			(snap as { data?: { events?: unknown[] } }).data?.events?.length === this.state.data.events.length;
+			events?.length === this.state.data.events.length &&
+			JSON.stringify(events.at(-1)) === JSON.stringify(this.state.data.events.at(-1));
 		this.phase = phase;
 		if (same) {
 			this.version++;
@@ -181,15 +206,21 @@ export class PreviewHost implements PreviewBridge {
 		}
 		const r = restore(this.plan, snap, { clock: () => Date.now() });
 		if (!isState(r)) return;
+		const byParticipant = !this.state || participantEvents(r.data.events) !== participantEvents(this.state.data.events);
 		this.state = r;
 		this.source = 'frame';
 		this.version++;
-		if (this.frames.size > 1) {
+		if (this.frames.size > 1 && byParticipant) {
 			if (this.mirror) clearTimeout(this.mirror);
 			this.mirror = setTimeout(() => {
 				this.mirror = null;
 				for (const id of this.frames.keys()) if (id !== frameId) this.push(id);
 			}, MIRROR_MS);
 		}
+	}
+
+	log(frameId: string, key: number, message: string) {
+		if (this.keys.get(frameId) !== key) return; // a frame since reloaded
+		this.logs = [...this.logs, { frameId, message }].slice(-MAX_LOGS);
 	}
 }

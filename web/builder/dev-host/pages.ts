@@ -5,6 +5,8 @@
  * A real host (planning/pages-split.md F1) does what `renderPage` does: one HTML page per
  * URL with `<div id="osp">`, the JSON config tag and the page's files from manifest.json.
  */
+import { createHash } from 'node:crypto';
+import { FRAME_SCRIPT } from '../../hooks-sandbox/src/frame-script.ts';
 import { DEFAULT_LINKS, type OspPageConfig } from '../src/lib/host/config.ts';
 
 /** Production pages: name → entry module. One JS entry (plus CSS) per page. */
@@ -127,8 +129,21 @@ export interface PageFiles {
 }
 
 /** One host page (what a host's view renders). URLs in `files` are used as given. */
-export function renderPage(opts: { title: string; config: unknown; files: PageFiles }): string {
+export function renderPage(opts: { title: string; config: unknown; files: PageFiles; themeScript?: boolean }): string {
 	const { title, config, files } = opts;
+	// The inline theme script is the dev host's shortcut (not for real hosts, §5); pages
+	// served with a strict CSP leave it out.
+	const theme =
+		opts.themeScript === false
+			? ''
+			: `
+		<script>
+			// Apply a saved theme before first paint (see ui-components/src/theme.svelte.ts).
+			try {
+				var t = localStorage.getItem('osp-theme');
+				if (t === 'light' || t === 'dark') document.documentElement.dataset.theme = t;
+			} catch (e) {}
+		</script>`;
 	const css = files.css.map((h) => `\t\t<link rel="stylesheet" href="${escapeHtml(h)}" />`).join('\n');
 	const pre = files.preload.map((h) => `\t\t<link rel="modulepreload" href="${escapeHtml(h)}" />`).join('\n');
 	return `<!doctype html>
@@ -138,14 +153,7 @@ export function renderPage(opts: { title: string; config: unknown; files: PageFi
 		<meta name="viewport" content="width=device-width, initial-scale=1" />
 		<meta name="text-scale" content="scale" />
 		<title>${escapeHtml(title)}</title>
-		<link rel="icon" href="/favicon.svg" />
-		<script>
-			// Apply a saved theme before first paint (see ui-components/src/theme.svelte.ts).
-			try {
-				var t = localStorage.getItem('osp-theme');
-				if (t === 'light' || t === 'dark') document.documentElement.dataset.theme = t;
-			} catch (e) {}
-		</script>
+		<link rel="icon" href="/favicon.svg" />${theme}
 ${css}
 ${pre}
 	</head>
@@ -157,6 +165,35 @@ ${pre}
 </html>
 `;
 }
+
+// -- CSP --------------------------------------------------------------------------------
+
+/** The researcher-hooks sandbox frame's only script, by hash (runtime-design §7a). */
+export const HOOKS_FRAME_SCRIPT_HASH = `'sha256-${createHash('sha256').update(FRAME_SCRIPT).digest('base64')}'`;
+
+/**
+ * The `preview-frame` page's CSP (task R10, docs/hosting.md §5). The page runs the
+ * participant app, and with it the survey's researcher hooks in their sandbox: a `srcdoc`
+ * iframe (it inherits this policy, then narrows itself to `default-src 'none'`) that starts
+ * a `blob:` worker. So, as in the participant app's own CSP (`web/runtime/vite.config.ts`),
+ * it allows the frame script by hash and `blob:` workers. `connect-src 'none'`: the
+ * preview never calls the API (pages-split D10); everything it runs on comes by
+ * `postMessage`. `frame-ancestors 'self'`: only the builder on this origin may embed it.
+ */
+export const PREVIEW_FRAME_CSP = [
+	"default-src 'none'",
+	`script-src 'self' ${HOOKS_FRAME_SCRIPT_HASH}`,
+	'worker-src blob:',
+	"style-src 'self' 'unsafe-inline'",
+	"img-src 'self' data: blob:",
+	"font-src 'self'",
+	"connect-src 'none'",
+	"frame-src 'self'",
+	"object-src 'none'",
+	"base-uri 'none'",
+	"form-action 'none'",
+	"frame-ancestors 'self'"
+].join('; ');
 
 // -- manifest -------------------------------------------------------------------------
 
@@ -174,6 +211,8 @@ export interface PageManifest {
 	version: 1;
 	/** Page name → its entry module, its CSS (shared chunks' too) and chunks to preload. */
 	pages: Record<string, PageFiles>;
+	/** Page name → the Content-Security-Policy header it needs beyond a host's default. */
+	csp: Record<string, string>;
 }
 
 /** Our `manifest.json` from Vite's: every page's JS, all the CSS it needs, its imports. */
@@ -197,5 +236,5 @@ export function pageManifest(vite: Record<string, ViteManifestChunk>, entries: R
 		walk(src, true);
 		pages[name] = { js: chunk.file, css, preload };
 	}
-	return { version: 1, pages };
+	return { version: 1, pages, csp: { 'preview-frame': PREVIEW_FRAME_CSP } };
 }

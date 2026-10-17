@@ -20,6 +20,11 @@ const names = Object.keys(manifest.pages ?? {}).sort();
 if (JSON.stringify(names) !== JSON.stringify([...PAGES].sort())) {
 	fail(`pages must be exactly ${PAGES.join(', ')}; got ${names.join(', ')}`);
 }
+// The preview frame runs researcher hooks (R10): its CSP must allow the sandbox's blob: worker.
+const frameCsp = manifest.csp?.['preview-frame'];
+if (typeof frameCsp !== 'string' || !/script-src 'self' 'sha256-/.test(frameCsp) || !frameCsp.includes('worker-src blob:')) {
+	fail('csp["preview-frame"] must allow the hooks frame script by hash and blob: workers');
+}
 const shared = new Map();
 for (const name of PAGES) {
 	const p = manifest.pages[name];

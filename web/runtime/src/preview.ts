@@ -8,6 +8,14 @@
  * The builder's preview frame mounts `App` with `preview={previewEnv(cfg)}`; the participant
  * entry (`main.ts`) never imports this file.
  *
+ * Researcher hooks (task R10, runtime-design §7a) run exactly as for participants: the same
+ * `browserHooks` factory, so the same sandboxed iframe + worker from `@osp/hooks-sandbox`.
+ * Only two things differ: the hook call in flight is not kept in `sessionStorage` (the
+ * builder remounts the app on every debugger step, which must not look like a crash), and
+ * `postToParent` is never delivered (the parent here is the builder, not the lab's page);
+ * it is reported through `log` instead. Hook outcomes themselves are in the engine's event
+ * log, which the debugger reads.
+ *
  * The store reports itself as `indexeddb` although it only keeps memory: the "your answers
  * are not kept on this device" notice is about a participant's blocked browser storage, so
  * showing it in every preview would make the preview differ from the real page.
@@ -15,6 +23,7 @@
 import type { Plan, Snapshot } from '@osp/engine';
 import type { Api, QuotaResponse, ResumeResponse, SnapshotResponse, StartResponse, SubmitResponse } from './lib/api';
 import type { PreviewMount } from './lib/preview-mount';
+import { browserHooks } from './lib/hooks';
 import type { Env, Session } from './lib/session';
 import { MemoryStore, type LocalRecord, type LocalStore } from './lib/storage';
 
@@ -38,6 +47,8 @@ export interface PreviewConfig {
 	language?: string;
 	/** Called with the session once it has booted (the debugger follows it). */
 	onSession?: (s: Session) => void;
+	/** The app's diagnostics (e.g. a refused hook manifest), for the debugger. */
+	log?: (msg: string, detail?: unknown) => void;
 }
 
 class PreviewStore implements LocalStore {
@@ -129,15 +140,22 @@ export async function previewEnv(cfg: PreviewConfig): Promise<PreviewMount> {
 			updatedAt: t
 		});
 	}
+	const log = cfg.log ?? (() => undefined);
 	const env: Env = {
 		api: previewApi(cfg),
 		store,
+		hooks: browserHooks({
+			slug: PREVIEW_SLUG,
+			log,
+			persistInflight: false,
+			deliverToParent: (origin, msg) => log(`postToParent "${msg.type}" to ${origin} (not sent from the preview)`, msg.payload)
+		}),
 		now: () => Date.now(),
 		random: Math.random,
 		setTimer: (fn, ms) => setTimeout(fn, ms),
 		clearTimer: (h) => clearTimeout(h as number),
 		debounceMs: 50,
-		log: () => undefined
+		log
 	};
 	return { env, slug: PREVIEW_SLUG, language: cfg.language, onSession: cfg.onSession };
 }

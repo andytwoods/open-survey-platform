@@ -13,7 +13,7 @@
  * page CSP allows through the frame script's hash and `worker-src blob:`.
  */
 import type { Plan, State } from '@osp/engine';
-import type { HookManifest, InflightMarker, InflightStore } from '@osp/hooks-sandbox';
+import type { HookManifest, InflightMarker, InflightStore, ParentMessage } from '@osp/hooks-sandbox';
 import type { HookDriver, HookFactory } from './session';
 
 /** Set at build time (vite `define`); empty means `srcdoc`. */
@@ -60,6 +60,14 @@ export interface HookFactoryOptions {
 	slug: string;
 	frameUrl?: string;
 	log?: (msg: string, detail?: unknown) => void;
+	/**
+	 * Keep the hook call in flight in `sessionStorage` (crash recovery, default true). The
+	 * builder preview turns it off: it remounts the app on every debugger step without a
+	 * `pagehide`, which would otherwise look like a crash mid-hook.
+	 */
+	persistInflight?: boolean;
+	/** Delivers an accepted `postToParent` (default: to the declared parent origin). */
+	deliverToParent?: (origin: string, msg: ParentMessage) => void;
 }
 
 /** The session's `Env.hooks`: a runner for a plan with hooks. Throws if it can't run. */
@@ -76,7 +84,8 @@ export function browserHooks(o: HookFactoryOptions): HookFactory {
 				invoker: host,
 				state,
 				onState,
-				inflight: sessionInflight(`osp-runtime:hook:${o.slug}`)
+				inflight: o.persistInflight === false ? undefined : sessionInflight(`osp-runtime:hook:${o.slug}`),
+				deliverToParent: o.deliverToParent
 			});
 		} catch (e) {
 			// An invalid manifest: never run the survey without its hooks (that could silently

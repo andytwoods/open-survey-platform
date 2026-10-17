@@ -10,8 +10,9 @@ import { devConfig, pageManifest, renderPage, route, TITLES, type PageManifest, 
 
 export const MANIFEST = 'manifest.json';
 
-function send(res: ServerResponse, html: string) {
+function send(res: ServerResponse, html: string, csp?: string) {
 	res.statusCode = 200;
+	if (csp) res.setHeader('Content-Security-Policy', csp);
 	res.setHeader('Content-Type', 'text/html; charset=utf-8');
 	res.setHeader('Cache-Control', 'no-store');
 	res.end(html);
@@ -31,13 +32,18 @@ export function ospPages(opts: { entries: Record<string, string>; devPages: bool
 			const files = manifest.pages[r.page];
 			if (!files) return next();
 			const abs = (f: string) => `/${f}`;
+			// The built pages get the CSP a host must send (manifest `csp`, docs/hosting.md §5).
+			// The dev server does not: Vite injects inline scripts and a websocket there.
+			const csp = manifest.csp?.[r.page];
 			send(
 				res,
 				renderPage({
 					title: TITLES[r.page],
 					config: devConfig(r),
-					files: { js: abs(files.js), css: files.css.map(abs), preload: files.preload.map(abs) }
-				})
+					files: { js: abs(files.js), css: files.css.map(abs), preload: files.preload.map(abs) },
+					themeScript: !csp
+				}),
+				csp
 			);
 		};
 	};
