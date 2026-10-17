@@ -240,6 +240,7 @@ class _Checker:
         self._references()
         self._same_page_cycles()
         self._settings()
+        self._consent()
         self._choice_codes()
         unique: dict[tuple[str, str, str], Diagnostic] = {}
         for d in self.out:
@@ -1021,11 +1022,29 @@ def _settings(self: _Checker) -> None:
             self.emit("settings.retention", ptr + "/until", f"{r.until!r} is not a date")
 
 
+def _consent(self: _Checker) -> None:
+    """semantics.md §11: the consent page comes before the flow, so nothing can be piped
+    into it, and declining must not look like a completed response."""
+    c = self.s.consent
+    if c is None:
+        return
+    for key in ("text", "agreeLabel", "declineLabel"):
+        text = getattr(c, key)
+        ptr = "/consent/" + key
+        self._text(text, ptr, None)
+        values = [text] if isinstance(text, str) else list(text.values())
+        if any(_PIPE.search(v) for v in values):
+            self.emit("consent.pipe", ptr, "the consent page is shown first: nothing can be piped")
+    if c.declineOutcome == "complete":
+        self.emit("consent.outcome", "/consent/declineOutcome", "a decline cannot end 'complete'")
+
+
 _Checker._same_page_only = _same_page_only  # type: ignore[attr-defined]
 _Checker._same_page_cycles = _same_page_cycles  # type: ignore[attr-defined]
 _Checker._bounds = _bounds  # type: ignore[attr-defined]
 _Checker._slider = _slider  # type: ignore[attr-defined]
 _Checker._settings = _settings  # type: ignore[attr-defined]
+_Checker._consent = _consent  # type: ignore[attr-defined]
 
 
 def publish_diagnostics(data: Any) -> list[Diagnostic]:

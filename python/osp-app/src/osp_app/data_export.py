@@ -17,6 +17,7 @@ from __future__ import annotations
 import json
 from collections.abc import Mapping
 from dataclasses import dataclass
+from datetime import datetime
 from typing import Any, Literal
 
 from osp_store import NotFound, ParticipantStore, Response, Survey, TenantContext, Version
@@ -85,9 +86,19 @@ def _stored(builder: Builder, ctx: TenantContext, survey: Survey, v: Version) ->
                 # submit after the session expired; a record without one is not late.
                 late=server.get("late") is True,
                 after_close=_after_close(survey, r),
+                consent_version=server.get("consentVersion"),
+                consented_at=_when(server.get("consentedAt")),
             )
         )
     return out
+
+
+def _when(value: Any) -> datetime | None:
+    """An ISO 8601 timestamp the server stored (``server.consentedAt``), or None."""
+    try:
+        return datetime.fromisoformat(value) if isinstance(value, str) else None
+    except ValueError:
+        return None
 
 
 def _save_mode(responses: list[StoredResponse]) -> Any:
@@ -152,6 +163,24 @@ def export_responses(
         )
     except ExportError as exc:
         raise Rejected(str(exc), exc.diagnostics) from exc
+
+
+@command("survey.delete_response", label="Delete response", action=Action.RESPONSE_DELETE)
+def delete_response(builder: Builder, actor: Actor, *, survey_id: str, response_id: str) -> None:
+    """Delete one participant's response and its session (e.g. a withdrawal request that
+    reached the researcher). Needs ``response.delete`` (owner, editor). The store writes a
+    ``response.delete`` audit entry naming the response and the reason, never answers.
+    A response of another survey is "not found", as for any other lab's data."""
+    ctx = builder._locate(actor, survey_id, Action.RESPONSE_DELETE)
+    if not isinstance(response_id, str) or not 0 < len(response_id) <= 36:
+        raise NotFoundError("Response not found.")
+    try:
+        version_id = builder.store.locate_response(ctx, response_id)
+    except NotFound as exc:
+        raise NotFoundError("Response not found.") from exc
+    if version_id not in {v.id for v in builder.store.list_versions(ctx, survey_id)}:
+        raise NotFoundError("Response not found.")
+    builder.store.delete_response(ctx, response_id, reason="researcher deletion")
 
 
 @command("survey.export_codebook", label="Export codebook", action=Action.SURVEY_EXPORT)

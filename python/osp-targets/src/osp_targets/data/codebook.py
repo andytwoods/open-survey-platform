@@ -12,11 +12,11 @@ from collections.abc import Collection, Sequence
 from typing import Any
 
 from .layout import (
-    META_COLUMNS,
     STATE_SUFFIX,
     QuestionInfo,
     build_layout,
     csv_columns,
+    meta_columns,
     split_names,
 )
 from .model import Codebook, CsvOptions, SurveyVersion
@@ -145,6 +145,20 @@ def _variable_missing(kind: str, opts: CsvOptions) -> str:
     )
 
 
+def _consent(lay: Any) -> dict[str, Any]:
+    """The consent page as published (semantics.md §11), for the study record."""
+    c = lay.survey.consent
+    return {
+        "text": lay.text(c.text),
+        "agreeLabel": lay.text(c.agreeLabel),
+        "declineLabel": lay.text(c.declineLabel),
+        "declineOutcome": c.declineOutcome,
+        "declinesCounted": c.countDeclines,
+        "note": "Every response agreed to the version in _consent_version. Declines leave "
+        "no response (only an anonymous count, if enabled); withdrawn responses are deleted.",
+    }
+
+
 def codebook_data(
     version: SurveyVersion, options: CsvOptions | None = None, split: Collection[str] = ()
 ) -> dict[str, Any]:
@@ -222,7 +236,8 @@ def codebook_data(
             "mode": save_mode,
             "implications": SAVE_MODES.get(save_mode or "", SAVE_MODE_UNKNOWN),
         },
-        "metaColumns": [{"column": h, "meaning": m} for h, m in META_COLUMNS],
+        "metaColumns": [{"column": h, "meaning": m} for h, m in meta_columns(lay)],
+        **({"consent": _consent(lay)} if lay.survey.consent is not None else {}),
         "conditions": [{"name": v.name, "id": v.id, "levels": v.levels} for v in lay.assigned],
         "randomisers": [
             {
@@ -360,6 +375,18 @@ def _render(data: dict[str, Any], heading: str = "#") -> str:
     add("")
     add(f"Mode: **{sm['mode'] or 'not recorded'}**. {sm['implications']}")
     add("")
+
+    if "consent" in data:
+        c = data["consent"]
+        add(f"{h2} Consent")
+        add("")
+        add(_md(c["note"]))
+        add("")
+        add(f"- Text: {_lang_text(c['text'], data['survey']['languages'])}")
+        add(f"- Agree button: {_lang_text(c['agreeLabel'], data['survey']['languages'])}")
+        add(f"- Decline button: {_lang_text(c['declineLabel'], data['survey']['languages'])}")
+        add(f"- Declines counted: {'yes' if c['declinesCounted'] else 'no'}")
+        add("")
 
     add(f"{h2} Response metadata columns")
     add("")

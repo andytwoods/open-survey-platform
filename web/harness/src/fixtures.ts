@@ -18,7 +18,7 @@ export interface Action {
 	expectPage?: string;
 	set?: Record<string, unknown>;
 	setIfShown?: Record<string, unknown>;
-	do: 'next' | 'back' | 'refresh' | 'resume' | 'retry' | 'switchDevice' | 'offline' | 'online';
+	do: 'next' | 'back' | 'refresh' | 'resume' | 'retry' | 'switchDevice' | 'offline' | 'online' | 'agree' | 'decline' | 'withdraw';
 	device?: string;
 	restoreFrom?: 'local';
 }
@@ -38,7 +38,7 @@ export interface Expected {
 	pending: string[];
 	steps: Array<Record<string, unknown>>;
 	invariants: Invariant[];
-	response: Record<string, unknown> | string;
+	response: Record<string, unknown> | string | null;
 	network?: Record<string, unknown>;
 }
 

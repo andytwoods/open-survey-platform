@@ -1,0 +1,13 @@
+{
+  "format": "osp-fixture-script/0",
+  "id": "decline",
+  "description": "Declining ends the session with outcome declined. No question is reached, nothing is saved or submitted, and the server keeps no response (only the anonymous count the survey enables).",
+  "sessionSeed": 4002,
+  "language": "en",
+  "actions": [
+    {
+      "expectPage": "$consent",
+      "do": "decline"
+    }
+  ]
+}

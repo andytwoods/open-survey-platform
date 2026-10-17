@@ -768,6 +768,37 @@
         }
       ]
     },
+    "Consent": {
+      "additionalProperties": false,
+      "description": "The consent page (MVP 12b, semantics.md §11). Survey-level, not a flow node: it is\nalways shown first, before any question, at most once, and nothing about the\nparticipant reaches the server before they agree.\n\n- `text`: the information and consent statement (translatable; no piping).\n- `agreeLabel` / `declineLabel`: the two buttons.\n- `declineOutcome`: the end code of a decline (`declined`). A decline records no\n  response; only `countDeclines` (off by default) keeps an anonymous count.\n\nThe consent version is the checksum of the texts as compiled (`osp_runtime.plan`), so\nany edit to the wording is a new version, recorded with each response.",
+      "properties": {
+        "agreeLabel": {
+          "$ref": "#/$defs/Text",
+          "default": "I agree"
+        },
+        "countDeclines": {
+          "default": false,
+          "title": "Countdeclines",
+          "type": "boolean"
+        },
+        "declineLabel": {
+          "$ref": "#/$defs/Text",
+          "default": "I do not agree"
+        },
+        "declineOutcome": {
+          "$ref": "#/$defs/Identifier",
+          "default": "declined"
+        },
+        "text": {
+          "$ref": "#/$defs/Text"
+        }
+      },
+      "required": [
+        "text"
+      ],
+      "title": "Consent",
+      "type": "object"
+    },
     "Contains": {
       "additionalProperties": false,
       "description": "``contains(q, value)``: true iff multi-choice ``q`` includes ``value`` (§3).",
@@ -2949,6 +2980,17 @@
       },
       "title": "Choicelists",
       "type": "array"
+    },
+    "consent": {
+      "anyOf": [
+        {
+          "$ref": "#/$defs/Consent"
+        },
+        {
+          "type": "null"
+        }
+      ],
+      "default": null
     },
     "flow": {
       "items": {

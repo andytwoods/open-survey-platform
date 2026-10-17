@@ -91,6 +91,10 @@ class ResponseView:
                 return rec.get("end")
             case "_language":
                 return rec.get("language")
+            case "_consent_version":  # the server's record wins over the browser's
+                return self._first(r.consent_version, rec.get("consentVersion"))
+            case "_consented_at":
+                return iso_utc(self._first(r.consented_at, rec.get("consentedAt")))
         return None
 
     def sort_key(self) -> tuple[str, str]:

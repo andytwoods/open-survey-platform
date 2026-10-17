@@ -9,7 +9,9 @@
 	import { boot, BootError, type Env, type Session } from './lib/session';
 	import { localStorageBackup, MemoryStore, openIndexedDb } from './lib/storage';
 	import { domId, errorText, plain } from './lib/view-map';
-	import type { Device } from '@osp/engine';
+	import ConsentPage from './lib/ConsentPage.svelte';
+	import Withdraw from './lib/Withdraw.svelte';
+	import { declinedConsent, type Device } from '@osp/engine';
 
 	let session = $state.raw<Session | null>(null);
 	let bootError = $state.raw<BootError | null>(null);
@@ -247,6 +249,8 @@
 		<main class="page" id="main" aria-busy="true">
 			<p class="muted">{ui.loading}</p>
 		</main>
+	{:else if view.status === 'consent' || declinedConsent(session.state)}
+		<ConsentPage {session} {view} />
 	{:else if phase === 'done'}
 		<main class="page" id="main">
 			<h1 tabindex="-1" bind:this={heading} data-testid="thanks">{ui.thanksTitle}</h1>
@@ -254,6 +258,7 @@
 				<p>{plain(view.end.message)}</p>
 			{/if}
 			<p>{ui.thanks}</p>
+			<Withdraw {session} {version} />
 		</main>
 	{:else if phase === 'fatal'}
 		<main class="page" id="main">
@@ -304,6 +309,7 @@
 						<button type="button" class="btn" onclick={copyLink}>{copied ? ui.copied : ui.copy}</button>
 					</div>
 				</details>
+				<Withdraw {session} {version} />
 			{/if}
 		</main>
 		<nav class="nav" class:docked={keyboard.open} aria-label="Survey" bind:offsetHeight={navHeight}>

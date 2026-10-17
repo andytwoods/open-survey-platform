@@ -125,7 +125,25 @@ Raw `-99`-style codes are **never** written into CSV, where they would silently 
 - **Late submits are accepted** [S-2]: a submit that arrives after the session's quota holds were released (24 hours idle) or after its resume link expired is stored, flagged `late` by the server, and **not counted toward quotas**. Rejecting it would lose data.
 - **Retries** [S-4]: a submit retry with identical data returns the original success (same response); different data for an already submitted session gives 409.
 
+## 11. Consent and withdrawal
+
+Added by M5 (MVP 12b). Where the docs were silent, the most protective option was taken; those choices are marked **[M5, protective]** for the lead to confirm.
+
+- **The consent page is survey-level** (`consent`), not a flow node: it is shown first, before any question, at most once. A flow node could be placed after a block or inside a branch, which would need extra rules to keep "consent before collection"; the survey-level setting makes it structural.
+- It has `text`, `agreeLabel`, `declineLabel` (all translatable; **nothing can be piped** into them, `consent.pipe`), `declineOutcome` (default `declined`; never `complete`, `consent.outcome`) and `countDeclines` (default **off** **[M5, protective]**).
+- **Version**: the consent version is `sha256:` of the canonical JSON of the compiled texts in every language (`osp_runtime.plan.consent_version`). Any wording change is a new version.
+- **Before agreement nothing about the participant is saved** [M5, protective], in both save modes. The server creates the session (seed and assignment only, as in `end-only`), stores **no URL parameters** for a survey with a consent page (they travel in the response at submit), and refuses snapshots, quota checks and submits (`consent.required`, 403) until the session has agreed to exactly the plan's version. The runtime sends no snapshot before agreement.
+- **Agree**: the server records `consentVersion` and `consentedAt` (server clock) on the session; the engine records them too, and the response carries both (`server.consentVersion`, `server.consentedAt`; the record's own `consentVersion`, `consentedAt`). A submit whose `consentVersion` differs from the plan's is refused. Exports add `_consent_version` and `_consented_at` (only for versions with a consent page); the codebook includes the consent texts.
+- **Decline**: the session ends with `declineOutcome`, no question is reached and **no response is recorded**. The server deletes the session (seed, assignment, token), gives back any balanced-assignment count, writes **no audit entry** [M5, protective], and adds one to an anonymous per-publication count only if `countDeclines` is on. A decline after agreeing is refused (withdraw instead).
+- **Engine**: until the participant decides, the view's `status` is `consent` with page `$consent` (no items, no navigation); answers are refused (`consent-pending`) and Next does nothing. A memory-only restart (§5) shows the consent page again.
+- **Withdrawal**: after agreeing (before or after submit) the participant can withdraw from the end screen or via the resume link. The server deletes the response and the session through the store's deletion, gives back the held quota places of an unsubmitted session, and writes an audit entry with the reason and the number of responses deleted, **never answer data**. The resume token stops working. Quota places used by a *submitted* response stay used (open question C-1).
+- **Researcher deletion**: `DELETE /api/surveys/{id}/responses/{responseId}` needs `response.delete` (owner, editor) and writes a `response.delete` audit entry without answer data.
+- **No IP addresses**: no participant endpoint stores or logs a client address (it is only an in-memory rate-limit key); `osp-api serve` writes access logs without it and blanks it in every uvicorn log record.
+
 ## Open questions (need a human decision)
+
+- **C-1 (M5)**: when a participant withdraws a *submitted* response, should its quota place (and balanced-assignment count) be given back so another participant can take it? Currently it stays used.
+- **C-2 (M5)**: should declines be counted by default? Currently off; the researcher opts in.
 
 Resolved 16 Oct 2026: see `decisions-semantics-1.md` (C1-1 to C1-3, C3a-1 to C3a-9, C2-1 to C2-9, R6-1 to R6-6, R1-1 to R1-8, S-1 to S-4), plus the lead's M2-1 to M2-3. Earlier: missing-value encoding (§1), back navigation default (§5), text trimming follows Enketo (§2).
 
@@ -136,4 +154,4 @@ Matrix and slider (C2c, 16 Oct 2026). C2c-1 and C2c-3 above follow from existing
 
 Deferred to `osp-survey/0.2` (decided, not modelled yet): dedicated `scores` (null unless every item is answered, or an explicit `minAnswered` is set; reversal is `min + max − value`) and reverse scoring [C3a-4], and page-order shuffling within a block [C2-9]. Use computed variables with `if()` meanwhile.
 
-None open.
+Open: C-1 and C-2 above (M5, consent).

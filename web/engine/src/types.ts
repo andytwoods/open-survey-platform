@@ -160,7 +160,16 @@ export type EngineEvent =
 			value: unknown;
 			result?: StepResult;
 	  })
-	| (EventBase & { type: 'language'; language: string });
+	| (EventBase & { type: 'language'; language: string })
+	/** The participant's answer on the consent page (semantics.md §11). */
+	| (EventBase & { type: 'consent'; decision: 'agree' | 'decline'; version: string; result?: StepResult });
+
+/** What the participant decided on the consent page, and when (engine clock). */
+export interface ConsentDecision {
+	decision: 'agree' | 'decline';
+	version: string;
+	at: number;
+}
 
 export interface Data {
 	format: 'osp-engine-state/1';
@@ -207,6 +216,8 @@ export interface Data {
 	events: EngineEvent[];
 	/** What researcher hooks recorded (R7). Absent until the first hook result. */
 	hooks?: HookData;
+	/** The consent decision (semantics.md §11). Absent until one is made. */
+	consent?: ConsentDecision;
 }
 
 export interface State {
@@ -274,7 +285,8 @@ export interface Position {
 }
 
 export interface PageView {
-	status: 'page' | 'pending' | 'ended';
+	/** `consent`: the consent page is shown (page `$consent`, no items, no nav). */
+	status: 'page' | 'pending' | 'ended' | 'consent';
 	page: Id | null;
 	block: Id | null;
 	language: string;
@@ -288,6 +300,8 @@ export interface PageView {
 	end: { outcome: Id; message: RenderedText | null } | null;
 	trial: number;
 	position: Position | null;
+	/** The consent page's texts, while it is shown (semantics.md §11). */
+	consent?: { text: RenderedText; agree: RenderedText; decline: RenderedText } | null;
 }
 
 export interface AnswerRecord {
@@ -333,6 +347,9 @@ export interface ResponseRecord {
 	events: EngineEvent[];
 	/** Hook variables, paradata and the chosen end redirect (R7). Present once a hook ran. */
 	hooks?: { vars: HookData['vars']; paradata: HookData['paradata']; redirect: HookData['redirect'] };
+	/** Surveys with a consent page (semantics.md §11): the version agreed to and when. */
+	consentVersion?: string | null;
+	consentedAt?: number | null;
 }
 
 export interface Ctx {

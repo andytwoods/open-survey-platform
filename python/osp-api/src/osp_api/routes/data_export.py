@@ -1,6 +1,7 @@
 """Response data export (task M2). Thin: HTTP <-> ``osp_app.data_export`` commands.
 
 Permission ``survey.export`` (owner, editor). Viewers get 403, other labs 404.
+Deleting one response (M5, withdrawal on request) needs ``response.delete`` (owner, editor).
 """
 
 from __future__ import annotations
@@ -77,6 +78,19 @@ def export_responses(
         events=events,
     )
     return _download(r.content, r.filename, r.media_type)
+
+
+@router.delete(
+    "/{survey_id}/responses/{response_id}",
+    operation_id="deleteResponse",
+    status_code=204,
+    responses=errors(401, 403, 404),
+)
+def delete_response(survey_id: str, response_id: str, auth: Auth, services: Services) -> None:
+    """Delete one response and its session (audited, without answer data)."""
+    services.builder.run(
+        "survey.delete_response", auth.actor, survey_id=survey_id, response_id=response_id
+    )
 
 
 @router.get(
