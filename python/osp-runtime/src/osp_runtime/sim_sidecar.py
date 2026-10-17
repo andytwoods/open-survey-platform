@@ -17,6 +17,7 @@ import os
 import shutil
 import subprocess
 import threading
+from collections.abc import Mapping
 from dataclasses import dataclass
 from pathlib import Path
 from typing import Any
@@ -54,6 +55,29 @@ def _command(cli: Path | None, node: str | None) -> list[str]:
     return [node_bin, path.as_posix()]
 
 
+# The sidecar gets a minimal environment: PATH (to find node's own helpers) and an empty
+# NODE_OPTIONS (so nothing injects flags). On Windows, node also needs SYSTEMROOT (winsock
+# and the CRT fail to start without it) and a temp directory; the shell-less Popen on
+# Windows passes the environment as given, so these are copied in by name when present.
+_WINDOWS_PASSTHROUGH = ("SYSTEMROOT", "TEMP", "TMP")
+
+
+def sidecar_env(
+    environ: Mapping[str, str] | None = None, *, windows: bool | None = None
+) -> dict[str, str]:
+    """The environment the sidecar runs with, built from ``environ`` (default ``os.environ``)."""
+    src = os.environ if environ is None else environ
+    env = {"PATH": src.get("PATH", ""), "NODE_OPTIONS": ""}
+    if os.name == "nt" if windows is None else windows:
+        # Windows environment names are case-insensitive; os.environ upper-cases them, a
+        # caller's mapping may not.
+        upper = {k.upper(): v for k, v in src.items()}
+        for name in _WINDOWS_PASSTHROUGH:
+            if name in upper:
+                env[name] = upper[name]
+    return env
+
+
 def run_sidecar(
     payload: dict[str, Any],
     *,
@@ -74,7 +98,7 @@ def run_sidecar(
             stdin=subprocess.PIPE,
             stdout=subprocess.PIPE,
             stderr=subprocess.DEVNULL,
-            env={"PATH": os.environ.get("PATH", ""), "NODE_OPTIONS": ""},
+            env=sidecar_env(),
         )
     except OSError as exc:
         raise SimulatorError("sim.unavailable", f"could not start node: {exc.strerror}") from exc

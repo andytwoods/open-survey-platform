@@ -3,7 +3,8 @@ name: CI
 # `make check` split into jobs that run side by side (task CI1), so a run finishes well
 # under 20 minutes:
 #   check          Ubuntu: `make check` without the browser suite (harness-quick)
-#   web-e2e        Ubuntu: builder end-to-end (Playwright, `make web-e2e`); advisory until W2
+#   web-e2e        Ubuntu and Windows: builder end-to-end (Playwright, `make web-e2e`),
+#                  each against its own platform's visual snapshots (task W2)
 #   harness-quick  Ubuntu: fixture harness in desktop Chromium (`make harness-quick`)
 #   windows        Windows: `make check` without the browser suite and without py-test
 #                  (see the job for what py-test still needs on Windows)
@@ -11,6 +12,9 @@ name: CI
 
 on:
   push:
+    # `snapshots/**` branches only draw the e2e snapshots (snapshots.yml).
+    branches-ignore:
+      - "snapshots/**"
   pull_request:
 
 permissions:
@@ -56,17 +60,26 @@ jobs:
         run: make check CHECK_SKIP="harness-quick"
 
   web-e2e:
-    name: builder e2e (ubuntu, advisory until W2)
-    runs-on: ubuntu-latest
+    name: builder e2e (${{ matrix.os }})
+    strategy:
+      fail-fast: false
+      matrix:
+        os: [ubuntu-latest, windows-latest]
+    runs-on: ${{ matrix.os }}
     timeout-minutes: 20
-    # The builder's visual snapshots are drawn on macOS (one file per name, see
-    # web/builder/playwright.config.ts); on Linux and Windows the fonts measure differently,
-    # so the snapshot tests (and a few visibility checks that depend on layout) fail while
-    # everything else passes. Task W2 makes them per-platform; until then this job reports
-    # but doesn't fail the run. Its traces are uploaded below.
-    continue-on-error: true
+    defaults:
+      run:
+        shell: bash
+    # The visual snapshots are one file per platform (`-linux`, `-win32`, `-darwin`; see
+    # web/builder/playwright.config.ts). Redraw a platform's set with the "Draw e2e
+    # snapshots" workflow (snapshots.yml) when a change to the UI is intended.
     steps:
       - uses: actions/checkout@v4
+
+      # The Makefile needs GNU make and bash; the Windows runner has Git Bash but no make.
+      - name: Install GNU make (Windows)
+        if: runner.os == 'Windows'
+        run: choco install make --no-progress --yes
 
       - uses: astral-sh/setup-uv@v6
         with:
@@ -99,7 +112,7 @@ jobs:
         if: failure()
         uses: actions/upload-artifact@v4
         with:
-          name: builder-e2e-results
+          name: builder-e2e-results-${{ matrix.os }}
           path: web/builder/test-results
           if-no-files-found: ignore
           retention-days: 7

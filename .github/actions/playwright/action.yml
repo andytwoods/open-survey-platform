@@ -20,11 +20,13 @@ runs:
         echo "version=$v" >> "$GITHUB_OUTPUT"
         echo "Playwright $v"
 
+    # Playwright keeps its browsers under ~/.cache on Linux and macOS and under
+    # %LOCALAPPDATA% on Windows (https://playwright.dev/docs/browsers#managing-browser-binaries).
     - name: Cache browsers
       id: cache
       uses: actions/cache@v4
       with:
-        path: ~/.cache/ms-playwright
+        path: ${{ runner.os == 'Windows' && '~\AppData\Local\ms-playwright' || '~/.cache/ms-playwright' }}
         key: playwright-${{ runner.os }}-${{ steps.version.outputs.version }}
 
     - name: Install Chromium
@@ -33,6 +35,6 @@ runs:
       run: pnpm -C "${{ inputs.package }}" exec playwright install --with-deps chromium
 
     - name: Install system libraries
-      if: steps.cache.outputs.cache-hit == 'true'
+      if: steps.cache.outputs.cache-hit == 'true' && runner.os != 'Windows'
       shell: bash
       run: pnpm -C "${{ inputs.package }}" exec playwright install-deps chromium

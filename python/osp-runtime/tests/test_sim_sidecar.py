@@ -15,6 +15,7 @@ from osp_runtime.sim_sidecar import (
     SidecarLimits,
     SimulatorError,
     run_sidecar,
+    sidecar_env,
     simulate_plan,
 )
 
@@ -94,6 +95,27 @@ def test_missing_cli_or_node_is_unavailable(tmp_path, monkeypatch):
     with pytest.raises(SimulatorError) as exc:
         run_sidecar({}, cli=_fake(tmp_path, ""), node=str(tmp_path / "no-node"))
     assert exc.value.code == "sim.unavailable"
+
+
+def test_sidecar_env_is_minimal_and_windows_gets_what_node_needs():
+    src = {
+        "PATH": "/usr/bin",
+        "NODE_OPTIONS": "--inspect",
+        "SystemRoot": r"C:\Windows",
+        "Temp": r"C:\tmp",
+        "HOME": "/home/x",
+        "OSP_SECRET": "no",
+    }
+    assert sidecar_env(src, windows=False) == {"PATH": "/usr/bin", "NODE_OPTIONS": ""}
+    assert sidecar_env(src, windows=True) == {
+        "PATH": "/usr/bin",
+        "NODE_OPTIONS": "",
+        "SYSTEMROOT": r"C:\Windows",
+        "TEMP": r"C:\tmp",
+    }
+    assert sidecar_env({}, windows=True) == {"PATH": "", "NODE_OPTIONS": ""}
+    # The default reads the process environment for this platform.
+    assert sidecar_env()["NODE_OPTIONS"] == ""
 
 
 @pytest.mark.parametrize("n", [0, 10_001, 1.5, "10", None, True])

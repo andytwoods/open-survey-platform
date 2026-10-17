@@ -1,0 +1,90 @@
+name: Draw e2e snapshots
+
+# The builder's visual snapshots are one file per platform (task W2; see
+# web/builder/playwright.config.ts). macOS snapshots are drawn on a Mac with
+# `make web-e2e E2E_ARGS=--update-snapshots`; this workflow draws the Linux and Windows
+# sets on the same runner images CI compares against, and uploads them as artifacts.
+# Run it from the Actions tab (or `gh workflow run snapshots.yml --ref <branch> -f os=…`),
+# download `e2e-snapshots-<os>`, unzip into web/builder/e2e/__screenshots__/, review the
+# diff and commit. Nothing is committed by the workflow. GitHub only dispatches workflows
+# it knows from the default branch, so a branch can also ask for both sets by pushing its
+# head as `snapshots/<name>` (`git push origin HEAD:snapshots/W2`); ci.yml ignores those.
+
+on:
+  push:
+    branches:
+      - "snapshots/**"
+  workflow_dispatch:
+    inputs:
+      os:
+        description: Which runner draws the snapshots
+        type: choice
+        default: both
+        options:
+          - both
+          - ubuntu-latest
+          - windows-latest
+
+permissions:
+  contents: read
+
+env:
+  UV_VERSION: "0.11.23"
+  NODE_VERSION: "24"
+
+jobs:
+  draw:
+    name: draw (${{ matrix.os }})
+    strategy:
+      fail-fast: false
+      matrix:
+        os: ${{ (inputs.os == 'both' || inputs.os == '') && fromJSON('["ubuntu-latest", "windows-latest"]') || fromJSON(format('["{0}"]', inputs.os)) }}
+    runs-on: ${{ matrix.os }}
+    timeout-minutes: 30
+    defaults:
+      run:
+        shell: bash
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Install GNU make (Windows)
+        if: runner.os == 'Windows'
+        run: choco install make --no-progress --yes
+
+      - uses: astral-sh/setup-uv@v6
+        with:
+          version: ${{ env.UV_VERSION }}
+          enable-cache: true
+          cache-dependency-glob: uv.lock
+
+      - uses: pnpm/action-setup@v4
+        with:
+          package_json_file: web/package.json
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: ${{ env.NODE_VERSION }}
+          cache: pnpm
+          cache-dependency-path: web/pnpm-lock.yaml
+
+      - name: Install (from lockfiles)
+        run: make install
+
+      - name: Playwright browsers (Chromium)
+        uses: ./.github/actions/playwright
+        with:
+          package: web/builder
+
+      # --update-snapshots rewrites every snapshot this platform draws; the run's other
+      # tests still have to pass, so a red step here means the branch itself is broken.
+      - name: make web-e2e --update-snapshots
+        run: make web-e2e E2E_ARGS=--update-snapshots
+
+      - name: Upload this platform's snapshots
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: e2e-snapshots-${{ matrix.os }}
+          path: web/builder/e2e/__screenshots__/**/*-${{ runner.os == 'Windows' && 'win32' || 'linux' }}.png
+          if-no-files-found: error
+          retention-days: 7
