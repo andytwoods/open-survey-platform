@@ -1,3 +1,6 @@
+# Generated output (demo videos: make demo-videos)
+.build/
+
 # Python
 .venv/
 __pycache__/
