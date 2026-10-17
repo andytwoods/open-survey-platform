@@ -65,6 +65,7 @@ describe('preview host with researcher hooks (R10)', () => {
 		expect(host.state!.data.events.length).toBe(s0.data.events.length + 1);
 		vi.advanceTimersByTime(1000);
 		expect(loads.phone).toHaveLength(1);
+		expect(host.source).toBe('debugger');
 
 		// The participant answers on the phone: the desktop frame follows.
 		report('phone', answer(s0, 'a', 3));
@@ -78,6 +79,17 @@ describe('preview host with researcher hooks (R10)', () => {
 		vi.advanceTimersByTime(1000);
 		expect(loads.phone).toHaveLength(1);
 		expect(host.source).toBe('frame');
+	});
+
+	it('starts frames as a new session until the run moves, so onStart hooks run', () => {
+		vi.useFakeTimers();
+		const { host, loads, report } = setup();
+		expect(loads.phone[0]!.snapshotJson).toBeNull();
+		report('phone', answer(host.state!, 'a', 3));
+		vi.advanceTimersByTime(1000);
+		expect(JSON.parse(loads.desktop.at(-1)!.snapshotJson!).data.values).toEqual({ a: 3 });
+		host.restart();
+		expect(loads.phone.at(-1)!.snapshotJson).toBeNull();
 	});
 
 	it('keeps frame diagnostics for the debugger, only from the frame as loaded now', () => {

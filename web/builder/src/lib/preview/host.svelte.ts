@@ -43,6 +43,19 @@ export interface PreviewLog {
 	message: string;
 }
 
+/** An event as JSON without its time. */
+function untimed(e: unknown): string {
+	if (!e || typeof e !== 'object') return JSON.stringify(e ?? null);
+	const { t: _t, ...rest } = e as Record<string, unknown>;
+	void _t;
+	return JSON.stringify(rest);
+}
+
+/** Only the session start: nothing answered, no step taken, no hook run. */
+export function pristine(state: State): boolean {
+	return state.data.events.every((e) => e.type === 'start');
+}
+
 /** Events a participant (or the debugger) caused: everything but recorded hook results. */
 export function participantEvents(events: readonly EngineEvent[]): number {
 	return events.filter((e) => !(e.type === 'resolve' && e.effect.kind === 'hook')).length;
@@ -161,7 +174,9 @@ export class PreviewHost implements PreviewBridge {
 			sessionSeed: this.seed,
 			assigned: { ...this.assigned },
 			quotas: { ...this.quotas },
-			snapshotJson: this.state ? JSON.stringify(snapshot(this.state)) : null,
+			// A run nobody has moved yet starts in the frame as a new session (the same seed and
+			// conditions give the same start), so `onStart` hooks run as for a participant.
+			snapshotJson: this.state && !pristine(this.state) ? JSON.stringify(snapshot(this.state)) : null,
 			language: this.language
 		};
 	}
@@ -192,13 +207,14 @@ export class PreviewHost implements PreviewBridge {
 			return;
 		}
 		// Two frames can reach the same revision by different events (each runs its own hooks),
-		// so the last event must match too.
+		// so the last event must match too, apart from its time (a frame that started the run
+		// itself has its own clock).
 		const events = (snap as { data?: { events?: unknown[] } }).data?.events;
 		const same =
 			this.state &&
 			(snap as { revision?: number }).revision === this.state.data.revision &&
 			events?.length === this.state.data.events.length &&
-			JSON.stringify(events.at(-1)) === JSON.stringify(this.state.data.events.at(-1));
+			untimed(events.at(-1)) === untimed(this.state.data.events.at(-1));
 		this.phase = phase;
 		if (same) {
 			this.version++;
@@ -208,7 +224,9 @@ export class PreviewHost implements PreviewBridge {
 		if (!isState(r)) return;
 		const byParticipant = !this.state || participantEvents(r.data.events) !== participantEvents(this.state.data.events);
 		this.state = r;
-		this.source = 'frame';
+		// Hooks that ran as a frame loaded (or a frame starting the run itself) follow from
+		// whoever moved the run last; only a participant's own step makes it the frame's run.
+		if (byParticipant) this.source = 'frame';
 		this.version++;
 		if (this.frames.size > 1 && byParticipant) {
 			if (this.mirror) clearTimeout(this.mirror);
