@@ -145,14 +145,22 @@ osp-api's `/api`. For each request:
 3. Copy only the headers osp-api needs (`Content-Type`, `Accept`, `Origin`,
    `Sec-Fetch-Site`). This drops any `X-OSP-*` header the browser sent, along with your
    cookies.
-4. Sign with `sign_identity_headers` (`osp_api.signing`, standard library only) and add
+4. Sign with `sign_identity_headers` from the `osp-host-signing` package (below) and add
    the headers it returns.
 5. Send the body **byte for byte** as signed, to `http://127.0.0.1:8000` + the API path.
 6. Return the status, the body and the `Content-Type`, `Content-Disposition` and
    `Cache-Control` headers.
 
+Install the signer in your host. It is one module, standard library only, Python 3.9+, MIT,
+and it is the code osp-api verifies with (`osp_api.signing` re-exports it). It is not on
+PyPI; install it from the repository (pin a commit in production):
+
+```sh
+pip install "osp-host-signing @ git+https://github.com/andytwoods/open-survey-platform#subdirectory=python/osp-host-signing"
+```
+
 ```python
-from osp_api.signing import sign_identity_headers
+from osp_host_signing import sign_identity_headers
 
 headers = sign_identity_headers(
     key_id="host1",  # the kid of one OSP_IDENTITY_KEYS entry
@@ -173,7 +181,7 @@ nonce. osp-api answers 401 if the signature is missing or wrong, more than 60 se
 or reused. With `OSP_NONCE_STORE=database` (the production default) the used nonces are kept
 in the database for 120 seconds, so a reused one is refused by every osp-api worker and
 machine on that database; run as many workers as you like. The format is in
-`python/osp-api/README.md` and `osp_api/signing.py`.
+`python/osp-host-signing/README.md`.
 
 Roles come from you on every request, so your app is the single source of truth for who
 is in which lab. With `OSP_AUTO_CREATE_LABS=on` (the default) a lab exists as soon as you
@@ -385,7 +393,7 @@ from django.contrib.auth.decorators import login_required
 from django.http import Http404, HttpResponse, JsonResponse
 from django.middleware.csrf import get_token
 from django.shortcuts import render
-from osp_api.signing import sign_identity_headers
+from osp_host_signing import sign_identity_headers
 
 MANIFEST = json.loads((settings.OSP_BUILD_DIR / "manifest.json").read_text())["pages"]
 UPSTREAM = httpx.Client(base_url=settings.OSP_API_URL, timeout=60)

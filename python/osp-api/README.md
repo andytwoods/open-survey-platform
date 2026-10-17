@@ -70,16 +70,18 @@ and must strip any `X-OSP-*` header a browser sends. Without a valid signature a
 The canonical string is, one per line: `OSP-HMAC-SHA256-v1`, the method, the
 percent-decoded path as osp-api routes it, the query with pairs sorted and RFC 3986-encoded,
 the SHA-256 hex of the exact body bytes, then the user, roles, display-name, timestamp and
-nonce header values (`osp_api/signing.py`, the one implementation both sides use). Secrets
+nonce header values (the `osp-host-signing` package in `python/osp-host-signing`,
+re-exported as `osp_api.signing`: the one implementation both sides use). Secrets
 are at least 32 bytes. Comparison is constant-time. Nonces (D16) live in the database
 (`identity_nonces`, migration 0008; shared by every worker on it; default with
 `OSP_ENV=production`) or in memory per process (`OSP_NONCE_STORE=memory`, the dev default).
 JWT/JWKS is a later option.
 
-A host signs with the same module (standard library only):
+A host signs with the same code, installed on its own (standard library only, Python 3.9+):
+`pip install "osp-host-signing @ git+https://github.com/andytwoods/open-survey-platform#subdirectory=python/osp-host-signing"`.
 
 ```python
-from osp_api.signing import sign_identity_headers
+from osp_host_signing import sign_identity_headers
 
 headers = sign_identity_headers(
     key_id="host1",

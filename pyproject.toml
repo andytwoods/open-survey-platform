@@ -9,6 +9,7 @@ members = ["python/*"]
 dev = [
     # Every workspace member, so a plain `uv sync` installs them all (editable).
     "osp-expr",
+    "osp-host-signing",
     "osp-spec",
     "osp-engine",
     "osp-ops",
@@ -29,6 +30,7 @@ dev = [
 
 [tool.uv.sources]
 osp-expr = { workspace = true }
+osp-host-signing = { workspace = true }
 osp-spec = { workspace = true }
 osp-engine = { workspace = true }
 osp-ops = { workspace = true }
@@ -49,6 +51,7 @@ osp-mcp = { workspace = true }
 [tool.importlinter]
 root_packages = [
     "osp_expr",
+    "osp_host_signing",
     "osp_spec",
     "osp_engine",
     "osp_ops",
@@ -75,9 +78,12 @@ layers = [
     "osp_targets | osp_qa",          # L3
     "osp_engine | osp_ops",          # L2
     "osp_spec",                      # L1
-    "osp_expr",                      # L0
+    "osp_expr | osp_host_signing",   # L0
 ]
 
+# osp_host_signing is L0 (no workspace deps; hosts install it alone) but is left out of
+# pure-core on purpose: signing a request reads the clock and draws a random nonce
+# (`secrets`). It does no network, database or process I/O.
 [[tool.importlinter.contracts]]
 id = "pure-core"
 name = "L0-L3 do no I/O (network, database, processes, global randomness)"

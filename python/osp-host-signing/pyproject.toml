@@ -1,0 +1,28 @@
+[project]
+name = "osp-host-signing"
+version = "1.0.0"
+description = "Open Survey Platform: sign the X-OSP-* identity headers a host sends to osp-api (stdlib only; layer L0)"
+readme = "README.md"
+license = "MIT"
+license-files = ["LICENSE"]
+# Hosts run their own Python (a Django app on 3.10, say), so this package stays on 3.9+
+# and the standard library. The rest of the workspace needs 3.14.
+requires-python = ">=3.9"
+dependencies = []
+keywords = ["hmac", "signing", "open-survey-platform"]
+classifiers = [
+    "License :: OSI Approved :: MIT License",
+    "Programming Language :: Python :: 3",
+    "Typing :: Typed",
+]
+
+[project.urls]
+Source = "https://github.com/andytwoods/open-survey-platform/tree/main/python/osp-host-signing"
+
+[build-system]
+requires = ["uv_build>=0.11,<0.12"]
+build-backend = "uv_build"
+
+[tool.ruff]
+extend = "../../pyproject.toml"
+target-version = "py39"
