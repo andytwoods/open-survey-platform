@@ -186,7 +186,8 @@
 
 <div class="results" class:presenting aria-busy={controller.loading} style={presenting ? themeStyle : undefined} data-presenting={presenting || undefined}>
 	<header class="page-head" class:visually-hidden={presenting}>
-		<h2 id="results-heading">Results</h2>
+		<!-- Presenting, the top bar (and its h1) is gone: this heading becomes the page's h1. -->
+		<svelte:element this={presenting ? 'h1' : 'h2'} id="results-heading">Results</svelte:element>
 		{#if !presenting}
 			<p class="lead">
 				One card per question, from the responses to the published survey. Counts are of responses, not
@@ -388,7 +389,8 @@
 		padding: var(--space-5) var(--space-4) var(--space-6);
 		color: var(--color-text);
 	}
-	.page-head h2 {
+	.page-head h2,
+	.page-head h1 {
 		margin: 0;
 		font-size: var(--text-lg);
 	}

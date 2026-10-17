@@ -309,8 +309,8 @@ describe('ResultsView', () => {
 		expect(within(fruit).getByTestId('card-caption').textContent).toBe(
 			'Fruit? (fruit). Version 1; Complete responses only; Denominator: answered. n = 3 responses.'
 		);
-		// The page heading stays for the landmark, visually hidden.
-		expect(screen.getByRole('heading', { name: 'Results', level: 2 })).toBeTruthy();
+		// The page heading stays for the landmark, visually hidden, and is the page's h1 now the top bar is gone.
+		expect(screen.getByRole('heading', { name: 'Results', level: 1 })).toBeTruthy();
 		await waitFor(() => expect(document.activeElement).toBe(screen.getByTestId('exit-presentation')));
 
 		await fireEvent.keyDown(window, { key: 'Escape' });

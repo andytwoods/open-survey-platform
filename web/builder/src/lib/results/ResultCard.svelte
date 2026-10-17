@@ -94,7 +94,8 @@
 <article class="result-card" class:presenting id="result-{card.question}" aria-labelledby="{uid}-h" data-type={card.type}>
 	<header>
 		<div class="title-row">
-			<h3 id="{uid}-h">{title}</h3>
+			<!-- Presenting, the page heading is the h1, so cards are h2 (heading order). -->
+			<svelte:element this={presenting ? 'h2' : 'h3'} id="{uid}-h" class="card-title">{title}</svelte:element>
 			{#if tools && !presenting}<div class="tools">{@render tools()}</div>{/if}
 		</div>
 		{#if !presenting}
@@ -240,7 +241,7 @@
 		flex-direction: column;
 		gap: var(--space-1);
 	}
-	h3 {
+	.card-title {
 		margin: 0;
 		font-size: var(--text-md);
 		overflow-wrap: anywhere;
@@ -252,7 +253,7 @@
 		gap: var(--space-2);
 		min-width: 0;
 	}
-	.title-row h3 {
+	.title-row .card-title {
 		flex: 1 1 auto;
 		min-width: 0;
 	}
