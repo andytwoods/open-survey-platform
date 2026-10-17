@@ -1,7 +1,7 @@
 import { answers, canonicalJson, restore, isState, view, withChecksum, type Plan } from '@osp/engine';
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 import { boot, isPrefix, type Env, type Session } from '../src/lib/session';
-import { MemoryStore, type LocalStore } from '../src/lib/storage';
+import { MemoryStore, type LocalStore, type PointerRecord, type SessionPointer } from '../src/lib/storage';
 import { FakeServer } from './fake-server';
 
 const t = (s: string) => ({ en: [s] });
@@ -211,6 +211,7 @@ describe('every-page saving', () => {
 		expect(server.conflicts).toHaveLength(1);
 		expect(a.state.data.values.why).toBe('from device B');
 		expect(server.only.snapshot?.data.values.why).toBe('from device B');
+		expect(a.notice).toBe('conflict'); // R6-6: the device that lost says so
 		expect(isPrefix(server.only.snapshot, a.rec.snapshot)).toBe(true);
 	});
 
@@ -305,5 +306,81 @@ describe('effects and submit', () => {
 		await settle(100);
 		expect(b.phase).toBe('done');
 		expect(server.only.submitted?.answers.age?.value).toBe(5);
+	});
+});
+
+/** A tab's sessionStorage pointer, in memory. */
+function tabPointer(): SessionPointer & { map: Map<string, PointerRecord> } {
+	const map = new Map<string, PointerRecord>();
+	return {
+		kind: 'sessionStorage',
+		map,
+		get: (k) => (map.has(k) ? (JSON.parse(JSON.stringify(map.get(k))) as PointerRecord) : null),
+		set: (k, p) => void map.set(k, JSON.parse(JSON.stringify(p)) as PointerRecord),
+		clear: (k) => void map.delete(k)
+	};
+}
+
+describe('no durable local copy (R4-3, R6-5)', () => {
+	it('every-page, storage blocked: a refresh resumes the same session from the server', async () => {
+		const p = plan();
+		const server = new FakeServer(p);
+		const pointer = tabPointer();
+		const a = await open({ ...env(server, new MemoryStore()), pointer });
+		a.answer('age', '20');
+		await a.next();
+		await settle();
+		a.dispose();
+		// Refresh: a new page, a new (empty) MemoryStore, the same tab pointer.
+		const b = await open({ ...env(server, new MemoryStore()), pointer });
+		expect(b.rec.sessionId).toBe(a.rec.sessionId);
+		expect(view(b.state).page).toBe('p2');
+		expect(b.state.data.values.age).toBe(20);
+		expect(server.sessions.size).toBe(1);
+		expect(b.notice).toBeNull();
+	});
+
+	it('end-only, storage blocked: a refresh restarts the session with the same seed and a notice', async () => {
+		const p = plan();
+		const server = new FakeServer(p, 'end-only');
+		const pointer = tabPointer();
+		const a = await open({ ...env(server, new MemoryStore()), pointer });
+		a.answer('age', '20');
+		await a.next();
+		expect(view(a.state).page).toBe('p2');
+		a.dispose();
+		const b = await open({ ...env(server, new MemoryStore()), pointer });
+		expect(b.rec.sessionId).toBe(a.rec.sessionId);
+		expect(view(b.state).page).toBe('p1');
+		expect(b.state.data.values.age).toBeUndefined();
+		expect(b.state.data.sessionSeed).toBe(a.state.data.sessionSeed);
+		expect(b.notice).toBe('restarted');
+		expect(server.calls).not.toContain('save');
+		// Moving on clears the notice; the end submits once, to the same session.
+		b.answer('age', '21');
+		await b.next();
+		expect(b.notice).toBeNull();
+		await b.next();
+		await b.next();
+		await settle();
+		expect(server.only.submitted?.answers.age).toEqual({ state: 'answered', value: 21 });
+		expect(pointer.map.size).toBe(0);
+	});
+});
+
+describe('errors after a refresh (R4-2)', () => {
+	it('a restored page shows no error until the next Next', async () => {
+		const p = plan();
+		const server = new FakeServer(p);
+		const store = durable();
+		const a = await open(env(server, store));
+		expect(await a.next()).toBe('invalid');
+		expect(Object.keys(a.view().errors)).toEqual(['age']);
+		a.dispose();
+		const b = await open(env(server, store));
+		expect(b.view().errors).toEqual({});
+		expect(b.view().items.every((i) => i.error === null)).toBe(true);
+		expect(await b.next()).toBe('invalid');
+		expect(Object.keys(b.view().errors)).toEqual(['age']);
 	});
 });

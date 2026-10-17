@@ -220,6 +220,10 @@ The same position fields are **built-in variables in expressions and piping**: `
   - stale results, refresh during a hook, duplicate submit
   - `end-only` mode with blocked storage
 
+**In the participant app (R3b).** The manifest is the plan's optional `hooks` field (`contract/runtime-plan.schema.json`; `compile_plan(survey, hooks=…)`), so it is inside the plan checksum. When it is present, `web/runtime` loads `@osp/hooks-sandbox` as a separate chunk and drives the session through `HookRunner` (`src/lib/hooks.ts`); surveys without hooks never download it. An invalid manifest stops the session with a message rather than running without its hooks. The built `index.html` carries the page CSP: `script-src 'self'` plus the frame script's hash, and `worker-src blob:` (a `srcdoc` iframe inherits the page CSP; its own CSP then narrows it to `default-src 'none'`).
+
+**Production: a separate sandbox origin.** Build with `OSP_HOOKS_FRAME_URL=https://<sandbox-site>/hooks-frame.html` and serve `dist/hooks-frame.html` (written by the build) at that URL, on a different *site* from the app, so site isolation puts a hook that exhausts memory in its own process. The build adds that origin to the CSP's `frame-src`; the sandbox host should serve the file with the same `default-src 'none'` CSP as a header. Without the variable the frame is a `srcdoc` iframe on the app's origin (fine for development and tests).
+
 Later (not MVP): custom **expression functions** (sync, pure, usable in conditions), and jsPsych-style trial timing (stimulus onset, response latency at frame accuracy), which needs its own design. Qualtrics-style DOM manipulation is deliberately unsupported.
 
 ## 8. Scope for the pilot (acceptance gates)

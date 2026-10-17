@@ -11,6 +11,7 @@ the runtime plan and gives the survey its public slug:
     quota     fixtures/24-quota-pending-retry        every-page (quotaCheck node)
     assign    fixtures/16-assign                     every-page (server assignment)
     endonly   fixtures/33-end-only-save              end-only
+    hooks     web/runtime/e2e/surveys/flow           every-page, plus HOOKS (researcher code)
 
 It serves ``osp_api.app.create_app`` (the real participant API under ``/api``), the built
 app (``web/runtime/dist``) at ``/s/{slug}`` and ``/r/*``, and test-only routes under
@@ -34,6 +35,7 @@ from osp_app import build_services
 from osp_app.runtime_repo import StoreParticipantRepo
 from osp_cli.main import seed_fixture
 from osp_runtime import TokenBucket
+from osp_runtime.plan import checksum, hooks_problem
 from osp_store import Keyring, Store, TenantContext, create_engine, generate_key, migrate
 from osp_store import schema as t
 from sqlalchemy import func, select
@@ -48,6 +50,26 @@ SURVEYS: dict[str, tuple[Path, str]] = {
     "quota": (ROOT / "fixtures" / "24-quota-pending-retry", "every-page"),
     "assign": (ROOT / "fixtures" / "16-assign", "every-page"),
     "endonly": (ROOT / "fixtures" / "33-end-only-save", "end-only"),
+    "hooks": (HERE / "surveys" / "flow", "every-page"),
+}
+
+# The `hooks` survey's manifest (runtime-design §7a). osp-survey/0.1 has no hooks field, so
+# the publish is intercepted and the manifest goes into the plan (and its checksum), as the
+# plan compiler's `hooks=` does. onPageNext rejects age 99 with a hook message;
+# onBeforeSubmit records paradata, which must be in the stored response.
+HOOKS: dict[str, Any] = {
+    "format": "osp-hooks/1",
+    "source": (
+        "osp.on('onPageNext', function (ctx, data, act) {"
+        " var a = ctx.results.age;"
+        " if (a && a.value === 99) act.rejectPage({ itemId: 'age', message: 'Hook says: not 99.' });"
+        " });\n"
+        "osp.on('onBeforeSubmit', function (ctx, data, act) { act.addParadata('hooked', true); });"
+    ),
+    "handlers": {
+        "onPageNext": {"reads": ["age"], "writes": []},
+        "onBeforeSubmit": {"reads": [], "writes": []},
+    },
 }
 
 
@@ -77,7 +99,21 @@ def build(db: Path) -> FastAPI:
 
     slugs: dict[str, str] = {}
     tenant_id = ""
+    publish = s.publish
+    with_hooks = {"on": False}
+
+    def publish_hooked(
+        tenant: str, actor: str, version: str, slug: str, plan: Any, config: Any
+    ) -> Any:
+        if with_hooks["on"]:
+            assert hooks_problem(HOOKS) is None, hooks_problem(HOOKS)
+            plan = {**plan, "hooks": HOOKS}
+            plan["checksum"] = checksum(plan)
+        return publish(tenant, actor, version, slug, plan, config)
+
+    s.publish = publish_hooked  # type: ignore[method-assign]
     for name, (folder, mode) in SURVEYS.items():
+        with_hooks["on"] = name == "hooks"
         seeded = seed_fixture(services, folder, save_mode=mode)
         slugs[name] = seeded["slug"]
         tenant_id = seeded["tenantId"]
