@@ -1,0 +1,202 @@
+{
+  "format": "osp-codebook/1",
+  "survey": {
+    "id": "f40_consent",
+    "title": {
+      "en": "Consent before collection"
+    },
+    "version": 1,
+    "checksum": "sha256:test-40-consent",
+    "languages": [
+      "en"
+    ],
+    "defaultLanguage": "en"
+  },
+  "csv": {
+    "stateColumns": true,
+    "multi": "columns",
+    "bom": false,
+    "escapeFormulas": true,
+    "columns": [
+      "_response_id",
+      "_session_id",
+      "_version",
+      "_version_checksum",
+      "_plan_checksum",
+      "_engine_version",
+      "_allocation_mode",
+      "_save_mode",
+      "_seed",
+      "_started_at",
+      "_submitted_at",
+      "_late",
+      "_after_close",
+      "_end",
+      "_language",
+      "_consent_version",
+      "_consented_at",
+      "q_sleep",
+      "q_sleep__state",
+      "q_note",
+      "q_note__state"
+    ]
+  },
+  "missingValues": {
+    "states": [
+      {
+        "state": "answered",
+        "meaning": "Shown and answered.",
+        "csv": "the value",
+        "json": "the value"
+      },
+      {
+        "state": "unanswered",
+        "meaning": "Shown, left empty (only possible when not required).",
+        "csv": "empty",
+        "json": "null"
+      },
+      {
+        "state": "irrelevant",
+        "meaning": "Its page was reached, but its show-if hid it.",
+        "csv": "empty",
+        "json": "null"
+      },
+      {
+        "state": "not-reached",
+        "meaning": "The flow never got to its page.",
+        "csv": "empty",
+        "json": "null"
+      }
+    ],
+    "csv": "Empty value cell plus the <var>__state column. No numeric missing codes (such as -99) are ever written.",
+    "json": "value null plus state per answer."
+  },
+  "saveMode": {
+    "mode": "every-page",
+    "implications": "Answers were saved to the server on every page change. Partial sessions exist on the server, so drop-outs are visible to the researcher, but this export holds only submitted responses."
+  },
+  "metaColumns": [
+    {
+      "column": "_response_id",
+      "meaning": "Response id (server)."
+    },
+    {
+      "column": "_session_id",
+      "meaning": "Participant session id (pseudonymous)."
+    },
+    {
+      "column": "_version",
+      "meaning": "Published survey version the response belongs to (semantics §9)."
+    },
+    {
+      "column": "_version_checksum",
+      "meaning": "Checksum of that version's survey document."
+    },
+    {
+      "column": "_plan_checksum",
+      "meaning": "Checksum of the runtime plan the participant's browser ran."
+    },
+    {
+      "column": "_engine_version",
+      "meaning": "Version of the participant engine (web/engine)."
+    },
+    {
+      "column": "_allocation_mode",
+      "meaning": "How conditions were assigned: server (our server, at session start), seeded (the engine drew at least one condition from the session seed), or limesurvey-native."
+    },
+    {
+      "column": "_save_mode",
+      "meaning": "every-page or end-only (runtime-design §5.0)."
+    },
+    {
+      "column": "_seed",
+      "meaning": "Session seed (positive integer, semantics §7); reproduces every order."
+    },
+    {
+      "column": "_started_at",
+      "meaning": "Session start, UTC, ISO 8601."
+    },
+    {
+      "column": "_submitted_at",
+      "meaning": "Submission accepted by the server, UTC, ISO 8601."
+    },
+    {
+      "column": "_late",
+      "meaning": "true if the server accepted the submit after the session had expired (its quota holds were released or its resume link had expired); a late response is not counted toward quotas (semantics S-2). Set by the server, never by the browser."
+    },
+    {
+      "column": "_after_close",
+      "meaning": "true if the response was submitted after the survey was closed; empty if not known."
+    },
+    {
+      "column": "_end",
+      "meaning": "End outcome reached (e.g. complete); empty if none was recorded."
+    },
+    {
+      "column": "_language",
+      "meaning": "Language the participant used."
+    },
+    {
+      "column": "_consent_version",
+      "meaning": "The consent text the participant agreed to: sha256 checksum of the consent page's texts (every language) as published. A changed wording is a new version."
+    },
+    {
+      "column": "_consented_at",
+      "meaning": "When the participant agreed (server clock), UTC, ISO 8601."
+    }
+  ],
+  "consent": {
+    "text": {
+      "en": "This is a synthetic study about sleep. Taking part is voluntary and you can withdraw at any time."
+    },
+    "agreeLabel": {
+      "en": "I agree to take part"
+    },
+    "declineLabel": {
+      "en": "I do not want to take part"
+    },
+    "declineOutcome": "declined",
+    "declinesCounted": true,
+    "note": "Every response agreed to the version in _consent_version. Declines leave no response (only an anonymous count, if enabled); withdrawn responses are deleted."
+  },
+  "conditions": [],
+  "randomisers": [],
+  "orders": [],
+  "variables": [
+    {
+      "name": "q_sleep",
+      "id": "q_sleep",
+      "type": "integer",
+      "label": {
+        "en": "How many hours did you sleep last night?"
+      },
+      "block": "p1",
+      "page": "p1_page",
+      "required": true,
+      "csvColumns": [
+        "q_sleep",
+        "q_sleep__state"
+      ],
+      "missing": "Answered: the value. Unanswered, irrelevant, not-reached: empty; q_sleep__state says which state applies."
+    },
+    {
+      "name": "q_note",
+      "id": "q_note",
+      "type": "text",
+      "label": {
+        "en": "Anything else? (optional)"
+      },
+      "block": "p2",
+      "page": "p2_page",
+      "required": false,
+      "csvColumns": [
+        "q_note",
+        "q_note__state"
+      ],
+      "missing": "Answered: the value. Unanswered, irrelevant, not-reached: empty; q_note__state says which state applies."
+    }
+  ],
+  "otherVariables": [],
+  "quotas": [],
+  "hooks": []
+}

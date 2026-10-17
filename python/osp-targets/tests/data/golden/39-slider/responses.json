@@ -1,0 +1,275 @@
+{
+  "format": "osp-response-export/1",
+  "survey": {
+    "id": "f39_slider",
+    "title": "Sliders",
+    "version": 1,
+    "checksum": "sha256:test-39-slider"
+  },
+  "missingValues": "Every answer is {state, value}. state is answered, unanswered (shown, left empty), irrelevant (page reached, hidden by its show-if) or not-reached (the flow never got to its page); value is null unless state is answered. state is null only if the stored record has no entry for the question. Embedded and computed variables are {state, value} too: answered when they have a value; otherwise unanswered, or (computed) irrelevant / not-reached when every question they read is.",
+  "options": {
+    "events": true
+  },
+  "responses": [
+    {
+      "responseId": "resp-main",
+      "sessionId": "sess-main",
+      "version": 1,
+      "versionChecksum": "sha256:test-39-slider",
+      "planChecksum": "sha256:1438d28eea57e5de0dbb840a6575602a308813a7c85503cf6c2a25d0a351cbc9",
+      "engineVersion": "1",
+      "allocationMode": "server",
+      "saveMode": "every-page",
+      "seed": 3901,
+      "startedAt": "2026-10-16T09:30:00.000Z",
+      "submittedAt": "2026-10-16T09:30:30.250Z",
+      "late": false,
+      "afterClose": null,
+      "end": "complete",
+      "language": "en",
+      "conditions": {},
+      "answers": {
+        "pain": {
+          "state": "answered",
+          "value": 8
+        },
+        "sleep": {
+          "state": "answered",
+          "value": "7.5"
+        },
+        "pain_why": {
+          "state": "answered",
+          "value": "rest"
+        },
+        "mood": {
+          "state": "unanswered",
+          "value": null
+        }
+      },
+      "variables": {},
+      "orders": {
+        "blocks": {},
+        "items": {},
+        "choices": {}
+      },
+      "quotas": {},
+      "urlParams": {},
+      "events": [
+        {
+          "type": "start",
+          "seq": 1,
+          "rev": 1,
+          "t": 2000,
+          "sessionSeed": 3901,
+          "assigned": {},
+          "language": "en",
+          "device": null,
+          "urlParams": {},
+          "sessionId": null
+        },
+        {
+          "type": "next",
+          "t": 3000,
+          "from": "p1_page",
+          "seq": 2,
+          "rev": 2,
+          "result": {
+            "outcome": "invalid",
+            "to": "p1_page",
+            "errors": {
+              "pain": {
+                "kind": "required"
+              }
+            }
+          }
+        },
+        {
+          "type": "answer",
+          "t": 4000,
+          "item": "pain",
+          "value": 8,
+          "seq": 3,
+          "rev": 3
+        },
+        {
+          "type": "answer",
+          "t": 5000,
+          "item": "sleep",
+          "value": "7.5",
+          "seq": 4,
+          "rev": 4
+        },
+        {
+          "type": "next",
+          "t": 6000,
+          "from": "p1_page",
+          "seq": 5,
+          "rev": 5,
+          "result": {
+            "outcome": "advanced",
+            "to": "p2_page"
+          }
+        },
+        {
+          "type": "answer",
+          "t": 7000,
+          "item": "pain_why",
+          "value": "rest",
+          "seq": 6,
+          "rev": 6
+        },
+        {
+          "type": "next",
+          "t": 8000,
+          "from": "p2_page",
+          "seq": 7,
+          "rev": 7,
+          "result": {
+            "outcome": "ended",
+            "to": null,
+            "effect": {
+              "kind": "end",
+              "outcome": "complete",
+              "nodeId": null
+            }
+          }
+        }
+      ]
+    },
+    {
+      "responseId": "resp-off-step",
+      "sessionId": "sess-off-step",
+      "version": 1,
+      "versionChecksum": "sha256:test-39-slider",
+      "planChecksum": "sha256:1438d28eea57e5de0dbb840a6575602a308813a7c85503cf6c2a25d0a351cbc9",
+      "engineVersion": "1",
+      "allocationMode": "server",
+      "saveMode": "every-page",
+      "seed": 3902,
+      "startedAt": "2026-10-16T09:31:00.000Z",
+      "submittedAt": "2026-10-16T09:31:30.250Z",
+      "late": false,
+      "afterClose": null,
+      "end": "complete",
+      "language": "en",
+      "conditions": {},
+      "answers": {
+        "pain": {
+          "state": "answered",
+          "value": 3
+        },
+        "sleep": {
+          "state": "answered",
+          "value": "6"
+        },
+        "pain_why": {
+          "state": "irrelevant",
+          "value": null
+        },
+        "mood": {
+          "state": "answered",
+          "value": -2
+        }
+      },
+      "variables": {},
+      "orders": {
+        "blocks": {},
+        "items": {},
+        "choices": {}
+      },
+      "quotas": {},
+      "urlParams": {},
+      "events": [
+        {
+          "type": "start",
+          "seq": 1,
+          "rev": 1,
+          "t": 2000,
+          "sessionSeed": 3902,
+          "assigned": {},
+          "language": "en",
+          "device": null,
+          "urlParams": {},
+          "sessionId": null
+        },
+        {
+          "type": "answer",
+          "t": 3000,
+          "item": "pain",
+          "value": 3,
+          "seq": 2,
+          "rev": 2
+        },
+        {
+          "type": "answer",
+          "t": 4000,
+          "item": "sleep",
+          "value": null,
+          "invalid": "value.off_step",
+          "seq": 3,
+          "rev": 3
+        },
+        {
+          "type": "next",
+          "t": 5000,
+          "from": "p1_page",
+          "seq": 4,
+          "rev": 4,
+          "result": {
+            "outcome": "invalid",
+            "to": "p1_page",
+            "errors": {
+              "sleep": {
+                "kind": "invalid",
+                "code": "value.off_step"
+              }
+            }
+          }
+        },
+        {
+          "type": "answer",
+          "t": 6000,
+          "item": "sleep",
+          "value": "6",
+          "seq": 5,
+          "rev": 5
+        },
+        {
+          "type": "next",
+          "t": 7000,
+          "from": "p1_page",
+          "seq": 6,
+          "rev": 6,
+          "result": {
+            "outcome": "advanced",
+            "to": "p2_page"
+          }
+        },
+        {
+          "type": "answer",
+          "t": 8000,
+          "item": "mood",
+          "value": -2,
+          "seq": 7,
+          "rev": 7
+        },
+        {
+          "type": "next",
+          "t": 9000,
+          "from": "p2_page",
+          "seq": 8,
+          "rev": 8,
+          "result": {
+            "outcome": "ended",
+            "to": null,
+            "effect": {
+              "kind": "end",
+              "outcome": "complete",
+              "nodeId": null
+            }
+          }
+        }
+      ]
+    }
+  ]
+}

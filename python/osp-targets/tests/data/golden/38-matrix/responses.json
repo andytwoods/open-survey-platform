@@ -1,0 +1,351 @@
+{
+  "format": "osp-response-export/1",
+  "survey": {
+    "id": "f38_matrix",
+    "title": "Matrix questions",
+    "version": 1,
+    "checksum": "sha256:test-38-matrix"
+  },
+  "missingValues": "Every answer is {state, value}. state is answered, unanswered (shown, left empty), irrelevant (page reached, hidden by its show-if) or not-reached (the flow never got to its page); value is null unless state is answered. state is null only if the stored record has no entry for the question. Embedded and computed variables are {state, value} too: answered when they have a value; otherwise unanswered, or (computed) irrelevant / not-reached when every question they read is.",
+  "options": {
+    "events": true
+  },
+  "responses": [
+    {
+      "responseId": "resp-back-change-row",
+      "sessionId": "sess-back-change-row",
+      "version": 1,
+      "versionChecksum": "sha256:test-38-matrix",
+      "planChecksum": "sha256:c109f44b1d9ea53edb1cab368de82363046efd4902a39a556143bd2d002c64b3",
+      "engineVersion": "1",
+      "allocationMode": "server",
+      "saveMode": "every-page",
+      "seed": 3802,
+      "startedAt": "2026-10-16T09:30:00.000Z",
+      "submittedAt": "2026-10-16T09:30:30.250Z",
+      "late": false,
+      "afterClose": null,
+      "end": "complete",
+      "language": "en",
+      "conditions": {},
+      "answers": {
+        "drink_tea": {
+          "state": "answered",
+          "value": 1
+        },
+        "drink_coffee": {
+          "state": "answered",
+          "value": 2
+        },
+        "drink_cocoa": {
+          "state": "answered",
+          "value": 1
+        },
+        "cups": {
+          "state": "irrelevant",
+          "value": null
+        },
+        "when_morning": {
+          "state": "answered",
+          "value": "daily"
+        },
+        "when_evening": {
+          "state": "answered",
+          "value": "never"
+        }
+      },
+      "variables": {},
+      "orders": {
+        "blocks": {},
+        "items": {},
+        "choices": {}
+      },
+      "quotas": {},
+      "urlParams": {},
+      "events": [
+        {
+          "type": "start",
+          "seq": 1,
+          "rev": 1,
+          "t": 2000,
+          "sessionSeed": 3802,
+          "assigned": {},
+          "language": "en",
+          "device": null,
+          "urlParams": {},
+          "sessionId": null
+        },
+        {
+          "type": "answer",
+          "t": 3000,
+          "item": "taste_tea",
+          "value": 3,
+          "seq": 2,
+          "rev": 2
+        },
+        {
+          "type": "answer",
+          "t": 4000,
+          "item": "taste_coffee",
+          "value": 2,
+          "seq": 3,
+          "rev": 3
+        },
+        {
+          "type": "answer",
+          "t": 5000,
+          "item": "taste_cocoa",
+          "value": 1,
+          "seq": 4,
+          "rev": 4
+        },
+        {
+          "type": "next",
+          "t": 6000,
+          "from": "p1_page",
+          "seq": 5,
+          "rev": 5,
+          "result": {
+            "outcome": "advanced",
+            "to": "p2_page"
+          }
+        },
+        {
+          "type": "answer",
+          "t": 7000,
+          "item": "cups",
+          "value": 4,
+          "seq": 6,
+          "rev": 6
+        },
+        {
+          "type": "answer",
+          "t": 8000,
+          "item": "when_morning",
+          "value": "daily",
+          "seq": 7,
+          "rev": 7
+        },
+        {
+          "type": "next",
+          "t": 9000,
+          "from": "p2_page",
+          "seq": 8,
+          "rev": 8,
+          "result": {
+            "outcome": "invalid",
+            "to": "p2_page",
+            "errors": {
+              "when_evening": {
+                "kind": "required"
+              }
+            }
+          }
+        },
+        {
+          "type": "back",
+          "t": 10000,
+          "from": "p2_page",
+          "seq": 9,
+          "rev": 9,
+          "to": "p1_page"
+        },
+        {
+          "type": "answer",
+          "t": 11000,
+          "item": "taste_tea",
+          "value": 1,
+          "seq": 10,
+          "rev": 10
+        },
+        {
+          "type": "next",
+          "t": 12000,
+          "from": "p1_page",
+          "seq": 11,
+          "rev": 11,
+          "result": {
+            "outcome": "advanced",
+            "to": "p2_page"
+          }
+        },
+        {
+          "type": "answer",
+          "t": 13000,
+          "item": "when_evening",
+          "value": "never",
+          "seq": 12,
+          "rev": 12
+        },
+        {
+          "type": "next",
+          "t": 14000,
+          "from": "p2_page",
+          "seq": 13,
+          "rev": 13,
+          "result": {
+            "outcome": "ended",
+            "to": null,
+            "effect": {
+              "kind": "end",
+              "outcome": "complete",
+              "nodeId": null
+            }
+          }
+        }
+      ]
+    },
+    {
+      "responseId": "resp-main",
+      "sessionId": "sess-main",
+      "version": 1,
+      "versionChecksum": "sha256:test-38-matrix",
+      "planChecksum": "sha256:c109f44b1d9ea53edb1cab368de82363046efd4902a39a556143bd2d002c64b3",
+      "engineVersion": "1",
+      "allocationMode": "server",
+      "saveMode": "every-page",
+      "seed": 3801,
+      "startedAt": "2026-10-16T09:31:00.000Z",
+      "submittedAt": "2026-10-16T09:31:30.250Z",
+      "late": false,
+      "afterClose": null,
+      "end": "complete",
+      "language": "en",
+      "conditions": {},
+      "answers": {
+        "drink_tea": {
+          "state": "answered",
+          "value": 3
+        },
+        "drink_coffee": {
+          "state": "answered",
+          "value": 1
+        },
+        "drink_cocoa": {
+          "state": "unanswered",
+          "value": null
+        },
+        "cups": {
+          "state": "answered",
+          "value": 2
+        },
+        "when_morning": {
+          "state": "irrelevant",
+          "value": null
+        },
+        "when_evening": {
+          "state": "irrelevant",
+          "value": null
+        }
+      },
+      "variables": {},
+      "orders": {
+        "blocks": {},
+        "items": {},
+        "choices": {}
+      },
+      "quotas": {},
+      "urlParams": {},
+      "events": [
+        {
+          "type": "start",
+          "seq": 1,
+          "rev": 1,
+          "t": 2000,
+          "sessionSeed": 3801,
+          "assigned": {},
+          "language": "en",
+          "device": null,
+          "urlParams": {},
+          "sessionId": null
+        },
+        {
+          "type": "next",
+          "t": 3000,
+          "from": "p1_page",
+          "seq": 2,
+          "rev": 2,
+          "result": {
+            "outcome": "invalid",
+            "to": "p1_page",
+            "errors": {
+              "taste_tea": {
+                "kind": "required"
+              },
+              "taste_coffee": {
+                "kind": "required"
+              }
+            }
+          }
+        },
+        {
+          "type": "answer",
+          "t": 4000,
+          "item": "taste_tea",
+          "value": 3,
+          "seq": 3,
+          "rev": 3
+        },
+        {
+          "type": "answer",
+          "t": 5000,
+          "item": "taste_coffee",
+          "value": 1,
+          "seq": 4,
+          "rev": 4
+        },
+        {
+          "type": "next",
+          "t": 6000,
+          "from": "p1_page",
+          "seq": 5,
+          "rev": 5,
+          "result": {
+            "outcome": "advanced",
+            "to": "p2_page"
+          }
+        },
+        {
+          "type": "next",
+          "t": 7000,
+          "from": "p2_page",
+          "seq": 6,
+          "rev": 6,
+          "result": {
+            "outcome": "invalid",
+            "to": "p2_page",
+            "errors": {
+              "cups": {
+                "kind": "required"
+              }
+            }
+          }
+        },
+        {
+          "type": "answer",
+          "t": 8000,
+          "item": "cups",
+          "value": 2,
+          "seq": 7,
+          "rev": 7
+        },
+        {
+          "type": "next",
+          "t": 9000,
+          "from": "p2_page",
+          "seq": 8,
+          "rev": 8,
+          "result": {
+            "outcome": "ended",
+            "to": null,
+            "effect": {
+              "kind": "end",
+              "outcome": "complete",
+              "nodeId": null
+            }
+          }
+        }
+      ]
+    }
+  ]
+}

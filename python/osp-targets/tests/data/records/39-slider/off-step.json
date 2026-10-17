@@ -1,0 +1,148 @@
+{
+ "format": "osp-response/1",
+ "surveyId": "f39_slider",
+ "surveyVersion": 1,
+ "planVersion": "osp-runtime-plan/1",
+ "planChecksum": "sha256:1438d28eea57e5de0dbb840a6575602a308813a7c85503cf6c2a25d0a351cbc9",
+ "engineVersion": "1",
+ "sessionSeed": 3902,
+ "sessionId": null,
+ "language": "en",
+ "device": null,
+ "end": "complete",
+ "endNode": null,
+ "allocation": "server",
+ "assigned": {},
+ "conditions": {},
+ "conditionSources": {},
+ "orders": {
+  "blocks": {},
+  "items": {},
+  "choices": {}
+ },
+ "answers": {
+  "pain": {
+   "state": "answered",
+   "value": 3
+  },
+  "sleep": {
+   "state": "answered",
+   "value": "6"
+  },
+  "pain_why": {
+   "state": "irrelevant",
+   "value": null
+  },
+  "mood": {
+   "state": "answered",
+   "value": -2
+  }
+ },
+ "csvState": {
+  "pain__state": "answered",
+  "sleep__state": "answered",
+  "pain_why__state": "irrelevant",
+  "mood__state": "answered"
+ },
+ "embedded": {},
+ "computed": {},
+ "variableStates": {},
+ "quotas": {},
+ "diagnostics": [],
+ "effects": [],
+ "urlParams": {},
+ "startedAt": 2000,
+ "endedAt": 9000,
+ "revision": 8,
+ "events": [
+  {
+   "type": "start",
+   "seq": 1,
+   "rev": 1,
+   "t": 2000,
+   "sessionSeed": 3902,
+   "assigned": {},
+   "language": "en",
+   "device": null,
+   "urlParams": {},
+   "sessionId": null
+  },
+  {
+   "type": "answer",
+   "t": 3000,
+   "item": "pain",
+   "value": 3,
+   "seq": 2,
+   "rev": 2
+  },
+  {
+   "type": "answer",
+   "t": 4000,
+   "item": "sleep",
+   "value": null,
+   "invalid": "value.off_step",
+   "seq": 3,
+   "rev": 3
+  },
+  {
+   "type": "next",
+   "t": 5000,
+   "from": "p1_page",
+   "seq": 4,
+   "rev": 4,
+   "result": {
+    "outcome": "invalid",
+    "to": "p1_page",
+    "errors": {
+     "sleep": {
+      "kind": "invalid",
+      "code": "value.off_step"
+     }
+    }
+   }
+  },
+  {
+   "type": "answer",
+   "t": 6000,
+   "item": "sleep",
+   "value": "6",
+   "seq": 5,
+   "rev": 5
+  },
+  {
+   "type": "next",
+   "t": 7000,
+   "from": "p1_page",
+   "seq": 6,
+   "rev": 6,
+   "result": {
+    "outcome": "advanced",
+    "to": "p2_page"
+   }
+  },
+  {
+   "type": "answer",
+   "t": 8000,
+   "item": "mood",
+   "value": -2,
+   "seq": 7,
+   "rev": 7
+  },
+  {
+   "type": "next",
+   "t": 9000,
+   "from": "p2_page",
+   "seq": 8,
+   "rev": 8,
+   "result": {
+    "outcome": "ended",
+    "to": null,
+    "effect": {
+     "kind": "end",
+     "outcome": "complete",
+     "nodeId": null
+    }
+   }
+  }
+ ]
+}
