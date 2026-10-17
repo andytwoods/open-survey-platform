@@ -3,12 +3,13 @@
 	 * Inside a device frame (the previewFrame page): the participant app (`web/runtime`) in
 	 * preview mode, on the plan the builder hands over by `postMessage`. Every engine change
 	 * goes back the same way. Only messages from the parent window, from the builder origin
-	 * named in `?origin=`, in our schema, are used (bridge.ts, D10).
+	 * named in `?origin=`, in our schema, are used (bridge.ts, D10). Researcher hooks run in the
+	 * participant app's own sandbox (task R10); its diagnostics go back as `log` messages.
 	 */
 	import { snapshot, type Plan, type Snapshot } from '@osp/engine';
 	import { previewEnv, RuntimeApp, type PreviewMount, type Session } from '@osp/runtime/preview';
 	import { onMount } from 'svelte';
-	import { isFrameId, parseHostMessage, PROTOCOL, type FrameConfig, type FrameMessage } from './bridge';
+	import { isFrameId, logText, parseHostMessage, PROTOCOL, type FrameConfig, type FrameMessage } from './bridge';
 
 	let mount = $state.raw<PreviewMount | null>(null);
 	let key = $state(0);
@@ -33,6 +34,7 @@
 			quotas: JSON.parse(JSON.stringify(cfg.quotas)),
 			snapshot: snap,
 			language: cfg.language,
+			log: (msg, detail) => send({ protocol: PROTOCOL, v: 1, type: 'log', frameId, key: cfg.key, message: logText(msg, detail) }),
 			onSession: (s) => {
 				current = s;
 				let last = -1;

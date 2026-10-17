@@ -17,6 +17,7 @@ export const PROTOCOL_VERSION = 1;
 const MAX_FRAME_ID = 40;
 const MAX_JSON = 20_000_000;
 const MAX_PHASE = 40;
+export const MAX_LOG = 500;
 
 export interface FrameConfig {
 	/** Bumped on every load: the frame remounts the participant app. */
@@ -40,13 +41,16 @@ export interface PreviewBridge {
 	detach(frameId: string): void;
 	/** The engine in `frameId` changed: its snapshot (JSON) and the app's phase. */
 	changed(frameId: string, key: number, snapshotJson: string, phase: string): void;
+	/** A diagnostic from the app in `frameId` (e.g. a refused hook manifest), as text. */
+	log(frameId: string, key: number, message: string): void;
 }
 
 /** Frame → builder. */
 export type FrameMessage =
 	| { protocol: typeof PROTOCOL; v: 1; type: 'attach'; frameId: string }
 	| { protocol: typeof PROTOCOL; v: 1; type: 'detach'; frameId: string }
-	| { protocol: typeof PROTOCOL; v: 1; type: 'changed'; frameId: string; key: number; snapshotJson: string; phase: string };
+	| { protocol: typeof PROTOCOL; v: 1; type: 'changed'; frameId: string; key: number; snapshotJson: string; phase: string }
+	| { protocol: typeof PROTOCOL; v: 1; type: 'log'; frameId: string; key: number; message: string };
 
 /** Builder → frame. */
 export interface HostMessage {
@@ -86,6 +90,10 @@ export function parseFrameMessage(data: unknown): FrameMessage | null {
 			phase: data.phase
 		};
 	}
+	if (data.type === 'log') {
+		if (!isInt(data.key) || !isStr(data.message, MAX_LOG)) return null;
+		return { protocol: PROTOCOL, v: 1, type: 'log', frameId: data.frameId, key: data.key, message: data.message };
+	}
 	return null;
 }
 
@@ -117,6 +125,22 @@ export function parseHostMessage(data: unknown): HostMessage | null {
 			language: c.language
 		}
 	};
+}
+
+/** A frame diagnostic as one line of text, cut to `MAX_LOG`. */
+export function logText(msg: string, detail?: unknown): string {
+	let d = '';
+	if (detail instanceof Error) d = detail.message;
+	else if (typeof detail === 'string') d = detail;
+	else if (detail !== undefined && detail !== '') {
+		try {
+			d = JSON.stringify(detail) ?? '';
+		} catch {
+			d = String(detail);
+		}
+	}
+	const text = d ? `${msg}: ${d}` : msg;
+	return text.length > MAX_LOG ? `${text.slice(0, MAX_LOG - 1)}…` : text;
 }
 
 export function hostMessage(cfg: FrameConfig): HostMessage {
@@ -154,6 +178,7 @@ export function listenForFrames(
 			const cfg = bridge.attach(msg.frameId, handle);
 			if (cfg) handle.load(cfg);
 		} else if (msg.type === 'detach') bridge.detach(msg.frameId);
+		else if (msg.type === 'log') bridge.log(msg.frameId, msg.key, msg.message);
 		else bridge.changed(msg.frameId, msg.key, msg.snapshotJson, msg.phase);
 	};
 	w.addEventListener('message', onMessage);

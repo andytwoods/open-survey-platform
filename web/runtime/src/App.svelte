@@ -269,10 +269,11 @@
 	});
 
 	// A hook chose a declared end redirect (e.g. back to Prolific): go there after thanks.
+	// Never from the builder preview: the choice is in the event log the debugger shows.
 	let redirected = false;
 	$effect(() => {
 		void version;
-		const url = phase === 'done' ? session?.redirectUrl : null;
+		const url = phase === 'done' && !preview ? session?.redirectUrl : null;
 		if (url && !redirected) {
 			redirected = true;
 			setTimeout(() => location.assign(url), 1500);

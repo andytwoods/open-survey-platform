@@ -1,6 +1,7 @@
 import { describe, expect, it } from 'vitest';
 import { parseConfig, parseFrameConfig } from '../src/lib/host/config';
-import { DEV_PAGES, devConfig, pageManifest, PAGES, renderPage, route, scriptJson } from './pages';
+import { FRAME_SCRIPT_HASH } from '../../hooks-sandbox/src/sandbox-source.ts';
+import { DEV_PAGES, devConfig, pageManifest, PAGES, PREVIEW_FRAME_CSP, renderPage, route, scriptJson } from './pages';
 
 describe('dev host routes', () => {
 	it("serves the pages at today's URLs", () => {
@@ -63,6 +64,38 @@ describe('host page rendering', () => {
 		expect(html).toContain('<link rel="modulepreload" href="/assets/c.js" />');
 		expect(html).toContain('<title>T &lt;x&gt;</title>');
 	});
+
+	it('leaves the inline theme script out of pages served with a strict CSP', () => {
+		const page = (themeScript?: boolean) =>
+			renderPage({ title: 'T', config: { version: 1 }, files: { js: '/a.js', css: [], preload: [] }, themeScript });
+		expect(page()).toContain('osp-theme');
+		const strict = page(false);
+		expect(strict).not.toContain('osp-theme');
+		expect(strict.match(/<script(?![^>]*type="(module|application\/json)")/g)).toBeNull();
+	});
+});
+
+describe('preview-frame CSP (R10)', () => {
+	const directives = Object.fromEntries(
+		PREVIEW_FRAME_CSP.split('; ').map((d) => {
+			const [k, ...v] = d.split(' ');
+			return [k, v.join(' ')];
+		})
+	);
+
+	it("allows the hooks sandbox exactly as the participant app's CSP does", () => {
+		expect(directives['script-src']).toBe(`'self' ${FRAME_SCRIPT_HASH}`);
+		expect(directives['worker-src']).toBe('blob:');
+		expect(directives['frame-src']).toBe("'self'");
+	});
+
+	it('never lets the preview reach the API, and only the builder may embed it', () => {
+		expect(directives['default-src']).toBe("'none'");
+		expect(directives['connect-src']).toBe("'none'");
+		expect(directives['frame-ancestors']).toBe("'self'");
+		expect(PREVIEW_FRAME_CSP).not.toContain('unsafe-eval');
+		expect(directives['script-src']).not.toContain('unsafe-inline');
+	});
 });
 
 describe('manifest', () => {
@@ -88,7 +121,8 @@ describe('manifest', () => {
 					css: ['assets/mount-1.css', 'assets/shell-1.css'],
 					preload: ['assets/mount-1.js', 'assets/svelte-1.js', 'assets/shell-1.js']
 				}
-			}
+			},
+			csp: { 'preview-frame': PREVIEW_FRAME_CSP }
 		});
 		expect(() => pageManifest(vite, { flow: 'src/pages/flow.ts' })).toThrow(/flow/);
 	});

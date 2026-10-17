@@ -8,6 +8,7 @@
 	import type { PreviewHost } from '../preview/host.svelte';
 	import { DebuggerState } from './debugger.svelte';
 	import { branches, explainPage, show } from './explain';
+	import { hookLog } from './hooks';
 	import { blockOfPage } from './script';
 	import SimulationPanel from './SimulationPanel.svelte';
 
@@ -26,6 +27,8 @@
 	const res = $derived(run ? result(run) : null);
 	const items = $derived(run ? explainPage(run, host.texts) : []);
 	const flowBranches = $derived(run ? branches(run, host.texts) : []);
+	const hasHooks = $derived(!!(run?.plan as { hooks?: unknown } | undefined)?.hooks);
+	const hookCalls = $derived(run ? hookLog(run) : []);
 	const path = $derived(run ? run.data.history.map((h) => blockOfPage(run.plan, h.page) ?? h.page) : []);
 	const trace = $derived.by(() => {
 		void host.version;
@@ -286,6 +289,37 @@
 			{/if}
 		</section>
 
+		{#if hasHooks || host.logs.length}
+			<section aria-labelledby="dbg-hooks" data-testid="dbg-hooks">
+				<h3 id="dbg-hooks">Researcher hooks ({hookCalls.length})</h3>
+				<p class="muted">
+					The survey's custom code runs in each preview frame, in the same sandbox as for participants. Nothing it sends leaves the preview.
+				</p>
+				{#if host.logs.length}
+					<ul class="logs" aria-label="Preview messages">
+						{#each host.logs as l, i (i)}
+							<li class="warn" data-testid="dbg-hook-log"><span class="muted">{l.frameId}:</span> {l.message}</li>
+						{/each}
+					</ul>
+				{/if}
+				{#if hookCalls.length === 0}
+					<p class="muted">No hook has run yet.</p>
+				{:else}
+					<ol class="events hooks">
+						{#each hookCalls as c (c.seq)}
+							<li data-testid="dbg-hook" data-event={c.event} data-status={c.status}>
+								<code>{c.event}</code>
+								<span class="pill" data-on={c.status === 'ok'}>{c.status}</span>
+								{#if c.error}<span class="hook-error" data-testid="dbg-hook-error">{c.error}</span>{/if}
+								{#each c.actions as a, i (i)}<div class="muted">{a}</div>{/each}
+								{#each c.diagnostics as d, i (i)}<div class="hook-error">refused action: {d}</div>{/each}
+							</li>
+						{/each}
+					</ol>
+				{/if}
+			</section>
+		{/if}
+
 		<section aria-labelledby="dbg-events">
 			<h3 id="dbg-events">Event log ({run.data.events.length})</h3>
 			<ol class="events" start="0">
@@ -354,6 +388,19 @@
 	.reads {
 		gap: 0;
 		padding-inline-start: var(--space-3);
+	}
+	.logs {
+		margin: 0 0 var(--space-2);
+		padding-inline-start: 0;
+		list-style: none;
+		overflow-wrap: anywhere;
+	}
+	.hooks > li + li {
+		border-top: 1px solid var(--color-border);
+	}
+	.hook-error {
+		color: var(--color-danger);
+		font-weight: var(--weight-bold);
 	}
 	.events {
 		gap: 0;

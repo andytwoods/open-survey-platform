@@ -134,7 +134,10 @@ branch `agent/<id>` to GitHub (`origin`) with `make check` exit code and test co
 | B16 | Question-type toolbox in the outline pane (click or drag a type onto a page) | B13 | Click adds to the selected/last page; drag onto a page or between questions inserts there; keyboard alternative; same picker catalogue; e2e + axe | done |
 | B17 | Top-bar targets at 320 px are 20 px (axe flags them under dialog overlays) | — | All top-bar targets ≥ 44 px at 320/375 px (overflow menu if needed); axe clean with any dialog open at 320 px; no horizontal scroll | done |
 | B18 | Canvas cards show validator error/warning counts | B14 | Cards receive diagnostics per question; counts and click-to-property; e2e | done |
-| R10 | Researcher hooks run in the builder Preview | R7 | Preview frame runs hooks in the same sandbox as the participant app; hook errors visible in the debugger; CSP for preview documented; e2e | todo |
+| R10 | Researcher hooks run in the builder Preview | R7 | Preview frame runs hooks in the same sandbox as the participant app; hook errors visible in the debugger; CSP for preview documented; e2e | done |
+
+| B18 | Canvas cards show validator error/warning counts | B14 | Cards receive diagnostics per question; counts and click-to-property; e2e | todo |
+| R10 | Researcher hooks run in the builder Preview | R7 | Preview frame runs hooks in the same sandbox as the participant app; hook errors visible in the debugger; CSP for preview documented; e2e | done |
 
 ## Wave F (17 Oct 2026): results viewer with exportable charts
 

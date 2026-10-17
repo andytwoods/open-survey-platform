@@ -50,9 +50,11 @@ theme), `themes` (the lab's theme library) and `preview-frame`. You choose their
 2. Read `build/manifest.json` once at start-up. It looks like this:
    ```json
    { "version": 1,
-     "pages": { "editor": { "js": "assets/editor-….js", "css": ["assets/….css"], "preload": ["assets/….js"] } } }
+     "pages": { "editor": { "js": "assets/editor-….js", "css": ["assets/….css"], "preload": ["assets/….js"] } },
+     "csp": { "preview-frame": "default-src 'none'; …" } }
    ```
-   Paths are relative to `build/`.
+   Paths are relative to `build/`. `csp` is the header a page needs instead of your
+   default policy (section 5, item 6).
 3. Add one route per page, behind your login. Each route renders:
    - every `css` file as `<link rel="stylesheet">`;
    - every `preload` file as `<link rel="modulepreload">`;
@@ -293,9 +295,27 @@ Without `OSP_TRUSTED_PROXIES` all participants behind your proxy share one budge
    'none'; base-uri 'none'`). The config tag is JSON, not script, so it needs no
    exception. Do not copy the dev host's inline theme script.
 6. Every page except `preview-frame` sends `frame-ancestors 'none'`. `preview-frame` sends
-   `frame-ancestors 'self'`: the builder shows it in a sandboxed iframe on your origin. It
-   runs the participant app, so if previews run survey hooks, give it the participant
-   app's CSP allowances too (see `CSP` in `web/runtime/vite.config.ts`).
+   its own policy instead, which `build/manifest.json` gives you exactly as
+   `csp["preview-frame"]`. Send it as the page's `Content-Security-Policy` header,
+   unchanged:
+   ```text
+   default-src 'none'; script-src 'self' 'sha256-…'; worker-src blob:;
+   style-src 'self' 'unsafe-inline'; img-src 'self' data: blob:; font-src 'self';
+   connect-src 'none'; frame-src 'self'; object-src 'none'; base-uri 'none';
+   form-action 'none'; frame-ancestors 'self'
+   ```
+   - The page runs the participant app, and with it the survey's researcher hooks, in
+     the same sandbox participants get (runtime-design §7a). That sandbox is a `srcdoc`
+     iframe that inherits this policy and then narrows itself to `default-src 'none'`,
+     and it starts its worker from a `blob:` URL. So the policy allows the sandbox's one
+     script by its hash (`'sha256-…'`; it changes only when `web/hooks-sandbox` does, so
+     read it from the manifest on each deploy) and `worker-src blob:`. Without those two,
+     surveys without hooks still preview, but every hook call fails (the debugger's
+     "Researcher hooks" list shows them as failed).
+   - `connect-src 'none'`: the preview never calls the API. It gets the compiled plan
+     from the builder by `postMessage`, never the API base or a CSRF token.
+   - `frame-ancestors 'self'`: the builder shows it in a sandboxed iframe on your origin.
+   - Serve the page without the dev host's inline theme script (the policy blocks it).
 7. Keep everything same-origin. Cross-origin is opt-in: list exact origins in
    `OSP_ALLOWED_ORIGINS` (no wildcard; credentials allowed) and in the page config's
    `allowedOrigins`.

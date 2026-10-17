@@ -3,6 +3,8 @@ import {
 	frameUrl,
 	hostMessage,
 	listenForFrames,
+	logText,
+	MAX_LOG,
 	parseFrameMessage,
 	parseHostMessage,
 	PROTOCOL,
@@ -48,6 +50,30 @@ describe('preview messages (D10)', () => {
 	});
 });
 
+describe('frame diagnostics (R10)', () => {
+	it('a log message is short text with a key', () => {
+		const msg = { protocol: PROTOCOL, v: 1, type: 'log', frameId: 'phone', key: 2, message: 'hook manifest refused: x' };
+		expect(parseFrameMessage(msg)).toEqual(msg);
+		expect(parseFrameMessage({ ...msg, message: 'x'.repeat(MAX_LOG + 1) })).toBeNull();
+		expect(parseFrameMessage({ ...msg, message: { html: '<b>' } })).toBeNull();
+		expect(parseFrameMessage({ ...msg, key: 'k' })).toBeNull();
+	});
+
+	it('logText joins the message and its detail, within the cap', () => {
+		expect(logText('hooks unavailable')).toBe('hooks unavailable');
+		expect(logText('hook manifest refused', new Error('invalid hook manifest: onStart writes q1'))).toBe(
+			'hook manifest refused: invalid hook manifest: onStart writes q1'
+		);
+		expect(logText('postToParent', { page: 2 })).toBe('postToParent: {"page":2}');
+		const cyclic: Record<string, unknown> = {};
+		cyclic.self = cyclic;
+		expect(logText('odd', cyclic)).toBe('odd: [object Object]');
+		const long = logText('x', 'y'.repeat(MAX_LOG * 2));
+		expect(long).toHaveLength(MAX_LOG);
+		expect(long.endsWith('…')).toBe(true);
+	});
+});
+
 describe('listenForFrames', () => {
 	function setup() {
 		const listeners: ((e: MessageEvent) => void)[] = [];
@@ -61,7 +87,8 @@ describe('listenForFrames', () => {
 		const bridge: PreviewBridge = {
 			attach: (id) => (events.push(`attach ${id}`), CFG),
 			detach: (id) => void events.push(`detach ${id}`),
-			changed: (id, key) => void events.push(`changed ${id} ${key}`)
+			changed: (id, key) => void events.push(`changed ${id} ${key}`),
+			log: (id, key, message) => void events.push(`log ${id} ${key} ${message}`)
 		};
 		listenForFrames(w, 'https://lab.example.org', (id) => (id === 'phone' ? phone : null), bridge);
 		const send = (data: unknown, origin = 'https://lab.example.org', source: unknown = phone) =>
@@ -73,7 +100,8 @@ describe('listenForFrames', () => {
 		const t = setup();
 		t.send({ protocol: PROTOCOL, v: 1, type: 'attach', frameId: 'phone' });
 		t.send({ protocol: PROTOCOL, v: 1, type: 'changed', frameId: 'phone', key: 1, snapshotJson: '{}', phase: 'page' });
-		expect(t.events).toEqual(['attach phone', 'changed phone 1']);
+		t.send({ protocol: PROTOCOL, v: 1, type: 'log', frameId: 'phone', key: 1, message: 'hooks unavailable' });
+		expect(t.events).toEqual(['attach phone', 'changed phone 1', 'log phone 1 hooks unavailable']);
 		expect(t.posted).toEqual([[hostMessage(CFG), 'https://lab.example.org']]);
 	});
 
