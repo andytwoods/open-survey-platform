@@ -56,6 +56,17 @@ FORBIDDEN = frozenset(
 )
 
 
+def _reserved(cls: type[BaseModel], prop: str) -> bool:
+    """Never set in place: FORBIDDEN, plus question-bank provenance (`source` on questions,
+    pages and blocks, written by the bank insert op) and the derived
+    `metadata.instruments` (planning/question-bank.md §2.3, §4)."""
+    if prop in FORBIDDEN:
+        return True
+    if prop == "source":
+        return cls is not m.EmbeddedVariable  # an embedded variable's `source` is "url"
+    return prop == "instruments" and cls is m.Metadata
+
+
 def model_fields(cls: type[BaseModel]) -> list[str]:
     return [f.alias or name for name, f in cls.model_fields.items()]
 
@@ -105,11 +116,11 @@ def set_property(ctx: Ctx, p: SetProperty) -> Invocation:
     had_settings = "settings" in ctx.doc
     path, cls = resolve(ctx, p.target)
     allowed = model_fields(cls)
-    if p.property in FORBIDDEN or p.property not in allowed:
-        editable = ", ".join(f for f in allowed if f not in FORBIDDEN)
+    if _reserved(cls, p.property) or p.property not in allowed:
+        editable = ", ".join(f for f in allowed if not _reserved(cls, f))
         # A field of another variant (a note's `constraint`) is "not applicable" to this
         # one; ids, discriminators, child collections and unknown names are "not allowed".
-        unknown = p.property in FORBIDDEN or p.property not in family_fields(cls)
+        unknown = _reserved(cls, p.property) or p.property not in family_fields(cls)
         raise OpError(
             "op.not_allowed" if unknown else "op.not_applicable",
             f"{p.property[:40]!r} is not an editable property of {cls.__name__} "

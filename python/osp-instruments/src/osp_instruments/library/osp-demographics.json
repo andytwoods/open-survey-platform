@@ -1,0 +1,104 @@
+{
+  "bankVersion": "osp-bank-item/0.1",
+  "id": "osp-demographics",
+  "version": 1,
+  "kind": "block",
+  "title": "Basic demographics (Open Survey Platform)",
+  "abbreviation": "Demographics",
+  "description": "A plain starter set written for this project: age in years, country, first language, handedness and vision correction. Adapt freely; harmonised national standards (for example the UK ONS / GSS harmonised standards) are better where comparability matters.",
+  "tags": [
+    "demographics",
+    "background"
+  ],
+  "languages": [
+    "en"
+  ],
+  "licence": {
+    "class": "cc0",
+    "holder": "Open Survey Platform contributors",
+    "statement": "Written for Open Survey Platform and dedicated to the public domain under CC0 1.0 Universal.",
+    "url": "https://creativecommons.org/publicdomain/zero/1.0/",
+    "evidenceDate": "2026-10-17"
+  },
+  "citation": {
+    "text": "Open Survey Platform contributors (2026). Basic demographics question set. CC0 1.0."
+  },
+  "source": {
+    "url": "https://creativecommons.org/publicdomain/zero/1.0/",
+    "note": "Our own wording; no third-party text."
+  },
+  "scoring": {
+    "text": "No scores. Age is a whole number of years (0–120)."
+  },
+  "fragment": {
+    "choiceLists": [],
+    "variables": [],
+    "block": {
+      "id": "demographics_block",
+      "title": "Demographics",
+      "pages": [
+        {
+          "id": "demographics_page",
+          "items": [
+            {
+              "id": "demo_age",
+              "type": "integer",
+              "name": "age",
+              "label": "What is your age in years?",
+              "min": 0,
+              "max": 120
+            },
+            {
+              "id": "demo_country",
+              "type": "text",
+              "name": "country",
+              "label": "In which country do you live?"
+            },
+            {
+              "id": "demo_language",
+              "type": "text",
+              "name": "first_language",
+              "label": "What is your first language?"
+            },
+            {
+              "id": "demo_handedness",
+              "type": "single",
+              "name": "handedness",
+              "label": "Which hand do you write with?",
+              "choices": [
+                {
+                  "value": 1,
+                  "label": "Right"
+                },
+                {
+                  "value": 2,
+                  "label": "Left"
+                },
+                {
+                  "value": 3,
+                  "label": "Either"
+                }
+              ]
+            },
+            {
+              "id": "demo_vision",
+              "type": "single",
+              "name": "vision_correction",
+              "label": "Do you normally wear glasses or contact lenses?",
+              "choices": [
+                {
+                  "value": 1,
+                  "label": "Yes"
+                },
+                {
+                  "value": 2,
+                  "label": "No"
+                }
+              ]
+            }
+          ]
+        }
+      ]
+    }
+  }
+}

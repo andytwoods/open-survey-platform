@@ -13,6 +13,7 @@ dev = [
     "osp-spec",
     "osp-engine",
     "osp-ops",
+    "osp-instruments",
     "osp-targets",
     "osp-qa",
     "osp-runtime",
@@ -43,6 +44,7 @@ osp-host-signing = { workspace = true }
 osp-spec = { workspace = true }
 osp-engine = { workspace = true }
 osp-ops = { workspace = true }
+osp-instruments = { workspace = true }
 osp-targets = { workspace = true }
 osp-qa = { workspace = true }
 osp-runtime = { workspace = true }
@@ -64,6 +66,7 @@ root_packages = [
     "osp_spec",
     "osp_engine",
     "osp_ops",
+    "osp_instruments",
     "osp_targets",
     "osp_qa",
     "osp_runtime",
@@ -85,7 +88,7 @@ layers = [
     "osp_app",                       # L5
     "osp_runtime | osp_store",       # L4
     "osp_targets | osp_qa",          # L3
-    "osp_engine | osp_ops",          # L2
+    "osp_engine | osp_ops | osp_instruments",  # L2
     "osp_spec",                      # L1
     "osp_expr | osp_host_signing",   # L0
 ]
@@ -102,6 +105,7 @@ source_modules = [
     "osp_spec",
     "osp_engine",
     "osp_ops",
+    "osp_instruments",
     "osp_targets",
     "osp_qa",
 ]

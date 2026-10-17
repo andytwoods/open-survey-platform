@@ -176,6 +176,47 @@ def _custom_text(custom: dict[str, Any]) -> str:
     return "; ".join(f"{_code(k)} = {_code(json.dumps(v))}" for k, v in sorted(custom.items()))
 
 
+def _instruments(lay: Any) -> list[dict[str, Any]]:
+    """The "Instruments used" section (question-bank.md §5): each distinct (library, bank
+    item, version) with the description captured in `metadata.instruments` at publish,
+    the variables it produced and the computed (scoring) variables that read only those."""
+
+    def key(d: Any) -> tuple[str, str, int]:
+        return (d["library"], d["bank"], d["version"])
+
+    described = {
+        key(e): e
+        for e in (
+            i.model_dump(mode="json", by_alias=True, exclude_none=True)
+            for i in lay.survey.metadata.instruments or []
+        )
+    }
+    order: dict[tuple[str, str, int], dict[str, Any]] = {}
+    for q in lay.questions:
+        if q.source is None:
+            continue
+        k = key(q.source)
+        entry = order.get(k)
+        if entry is None:
+            entry = order[k] = {
+                **described.get(k, dict(q.source)),
+                "variables": [],
+                "ids": set(),
+                "scoringVariables": [],
+            }
+        entry["variables"].append(q.name)
+        entry["ids"].add(q.id)
+    for x in lay.computed:
+        for entry in order.values():
+            if x.inputs and set(x.inputs) <= entry["ids"]:
+                entry["scoringVariables"].append(x.name)
+    out = []
+    for entry in order.values():
+        entry.pop("ids")
+        out.append(entry)
+    return out
+
+
 def codebook_data(
     version: SurveyVersion, options: CsvOptions | None = None, split: Collection[str] = ()
 ) -> dict[str, Any]:
@@ -220,11 +261,13 @@ def codebook_data(
             "matrixLabel": q.matrix_label,
             **(q.scale or {}),
             "custom": q.custom,
+            "source": q.source,
             "csvColumns": _question_columns(q, opts),
             "missing": _encoding(q, opts),
         }
         variables.append({k: v for k, v in entry.items() if v is not None})
     custom_keys = _custom_keys(lay.questions)
+    instruments = _instruments(lay)
     return {
         "format": FORMAT,
         "survey": {
@@ -258,6 +301,7 @@ def codebook_data(
         "metaColumns": [{"column": h, "meaning": m} for h, m in meta_columns(lay)],
         **({"consent": _consent(lay)} if lay.survey.consent is not None else {}),
         **({"customProperties": custom_keys} if custom_keys else {}),
+        **({"instruments": instruments} if instruments else {}),
         "conditions": [{"name": v.name, "id": v.id, "levels": v.levels} for v in lay.assigned],
         "randomisers": [
             {
@@ -474,6 +518,44 @@ def _render(data: dict[str, Any], heading: str = "#") -> str:
             add(f"| {_code(c['key'])} | {', '.join(c['types'])} |")
         add("")
 
+    if data.get("instruments"):
+        add(f"{h2} Instruments used")
+        add("")
+        add(
+            "Questions inserted from a question bank, with the citation and licence recorded "
+            "when the version was published. Cite each instrument you report."
+        )
+        add("")
+        for ins in data["instruments"]:
+            title = ins.get("title") or ins["bank"]
+            abbr = f" ({_md(ins['abbreviation'])})" if ins.get("abbreviation") else ""
+            add(f"{h3} {_md(title)}{abbr}")
+            add("")
+            add(
+                f"- Bank item: {_code(ins['bank'])}, version {ins['version']}, "
+                f"{ins['library']} library"
+            )
+            cit = ins.get("citation")
+            if cit:
+                doi = f" doi:{_md(cit['doi'])}" if cit.get("doi") else ""
+                add(f"- Citation: {_md(cit['text'])}{doi}")
+            lic = ins.get("licence")
+            if lic:
+                parts = [f"class {_code(lic['class'])}"]
+                if lic.get("holder"):
+                    parts.append(f"holder {_md(lic['holder'])}")
+                if lic.get("url"):
+                    parts.append(f"terms {_md(lic['url'])}")
+                if lic.get("evidenceDate"):
+                    parts.append(f"read {lic['evidenceDate']}")
+                add(f"- Licence: {', '.join(parts)}")
+                if lic.get("statement"):
+                    add(f"- Licence statement: {_md(lic['statement'])}")
+            add(f"- Variables: {', '.join(_code(v) for v in ins['variables'])}")
+            if ins["scoringVariables"]:
+                add(f"- Scoring variables: {', '.join(_code(v) for v in ins['scoringVariables'])}")
+            add("")
+
     add(f"{h2} Questions")
     add("")
     add("In survey (flow) order. Conditions refer to other variables by export name.")
@@ -505,6 +587,9 @@ def _render(data: dict[str, Any], heading: str = "#") -> str:
             )
         if v.get("custom"):
             add(f"- Lab properties: {_custom_text(v['custom'])}")
+        if v.get("source"):
+            src = v["source"]
+            add(f"- From bank item: {_code(src['bank'])} v{src['version']} ({src['library']})")
         add(f"- CSV columns: {', '.join(_code(c) for c in v['csvColumns'])}")
         add(f"- Missing values: {v['missing']}")
         if v.get("choiceOrder") == "shuffle":

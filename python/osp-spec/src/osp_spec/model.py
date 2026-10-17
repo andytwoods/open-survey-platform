@@ -62,9 +62,9 @@ type BankRef = Annotated[
     str, StringConstraints(pattern=r"^[A-Za-z0-9][A-Za-z0-9_.-]*$", min_length=1, max_length=64)
 ]
 type BankLibrary = Literal["lab", "host", "bundled", "file"]
-# How an instrument may be used (question-bank.md §2.1, §7). Only the first five may be
-# bundled with the software (licence-policy.toml `[instruments]`); `free-use` means the
-# holder's published terms allow reproduction, distribution and adaptation without asking.
+# How an instrument may be used (question-bank.md §2.1, §7). Which classes may be bundled
+# with the software is licence-policy.toml `[instruments] allowed`. `free-use`: the holder
+# grants free use but says nothing on redistribution or adaptation (not bundle-able).
 type LicenceClass = Literal[
     "public-domain",
     "cc0",

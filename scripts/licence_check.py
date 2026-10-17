@@ -13,6 +13,9 @@ everything else (dev groups, tooling) counts as *dev*. JS deps come from
 `--extra FILE` adds synthetic dependencies (JSON list) so tests can prove that a
 GPL dependency fails the gate without adding GPL code to the tree.
 
+Bundled instruments (python/osp-instruments) are listed and judged against the
+`[instruments]` table too.
+
 Exit codes: 0 ok, 1 policy violations, 2 could not collect dependencies.
 """
 
@@ -31,6 +34,7 @@ from pathlib import Path
 
 REPO = Path(__file__).resolve().parents[1]
 POLICY_PATH = REPO / "licence-policy.toml"
+INSTRUMENTS_DIR = REPO / "python" / "osp-instruments" / "src" / "osp_instruments" / "library"
 
 
 @dataclass(frozen=True)
@@ -337,6 +341,35 @@ def load_extra(path: Path) -> list[Dep]:
     ]
 
 
+# --- Bundled instruments (planning/question-bank.md §3) ---------------------------
+
+
+def instrument_problems(
+    policy: dict, library: Path = INSTRUMENTS_DIR
+) -> tuple[list[str], list[str]]:
+    """``(listing, problems)`` for the bundled instrument library: one line per instrument
+    (id, class, terms page), and every instrument whose licence class is not in
+    ``[instruments] allowed`` or whose evidence (statement, url, date) is missing."""
+    allowed = set(policy.get("instruments", {}).get("allowed", []))
+    listing: list[str] = []
+    problems: list[str] = []
+    for path in sorted(library.glob("*.json")) if library.is_dir() else []:
+        try:
+            doc = json.loads(path.read_text(encoding="utf-8"))
+            lic = doc.get("licence") or {}
+            ident, cls = doc.get("id", path.stem), lic.get("class")
+        except (OSError, ValueError, AttributeError) as exc:
+            problems.append(f"{path.name}: unreadable ({exc})")
+            continue
+        listing.append(f"{ident}: {cls} ({lic.get('url')}, read {lic.get('evidenceDate')})")
+        if cls not in allowed:
+            problems.append(f"{ident}: licence class {cls!r} may not be bundled")
+        missing = [k for k in ("statement", "url", "evidenceDate") if not lic.get(k)]
+        if missing:
+            problems.append(f"{ident}: licence evidence missing: {', '.join(missing)}")
+    return listing, problems
+
+
 # --- CLI -------------------------------------------------------------------------
 
 
@@ -345,6 +378,9 @@ def main(argv: list[str] | None = None) -> int:
     ap.add_argument("--no-python", action="store_true", help="skip Python dependencies")
     ap.add_argument("--no-js", action="store_true", help="skip JS dependencies")
     ap.add_argument("--extra", type=Path, help="JSON list of extra deps to judge (tests)")
+    ap.add_argument(
+        "--instruments", type=Path, default=INSTRUMENTS_DIR, help="bundled instrument library"
+    )
     ap.add_argument("--policy", type=Path, default=POLICY_PATH)
     ap.add_argument("-v", "--verbose", action="store_true", help="list every dependency")
     args = ap.parse_args(argv)
@@ -375,13 +411,20 @@ def main(argv: list[str] | None = None) -> int:
             f"LICENCE FAIL [{v.dep.ecosystem} {kind}] {v.dep.name}@{v.dep.version}: {v.reason}",
             file=sys.stderr,
         )
+    listing, instrument_bad = instrument_problems(policy, args.instruments)
+    for line in listing:
+        print(f"  bundled instrument {line}")
+    for line in instrument_bad:
+        print(f"LICENCE FAIL [instrument] {line}", file=sys.stderr)
     counts = {eco: sum(d.ecosystem == eco for d in deps) for eco in ("python", "js")}
     note = ", ".join(sorted({f"{v.dep.name} ({v.spdx})" for v in dev_only}))
     print(
         f"licence check: {len(deps)} deps (python {counts['python']}, js {counts['js']}), "
-        f"{len(bad)} violations" + (f"; dev-only licences: {note}" if note else "")
+        f"{len(bad)} violations"
+        + (f"; dev-only licences: {note}" if note else "")
+        + f"; {len(listing)} bundled instruments, {len(instrument_bad)} instrument violations"
     )
-    return 1 if bad else 0
+    return 1 if bad or instrument_bad else 0
 
 
 if __name__ == "__main__":

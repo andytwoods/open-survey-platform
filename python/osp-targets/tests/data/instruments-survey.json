@@ -1,0 +1,54 @@
+{
+  "specVersion": "osp-survey/0.1",
+  "id": "bank_demo",
+  "version": 1,
+  "metadata": {
+    "title": "Question bank provenance (invented test data)",
+    "languages": ["en"],
+    "instruments": [
+      {
+        "bank": "demo2",
+        "version": 1,
+        "library": "bundled",
+        "title": "Demo two-item scale",
+        "abbreviation": "DEMO-2",
+        "licence": {
+          "class": "cc0",
+          "holder": "Invented for tests",
+          "statement": "Invented test data; no real instrument.",
+          "url": "https://example.org/terms",
+          "evidenceDate": "2026-10-17"
+        },
+        "citation": {"text": "Nobody, A. (2026). An invented scale.", "doi": "10.0000/invented"}
+      },
+      {"bank": "3f1c2d4e-lab", "version": 2, "library": "lab", "title": "Our lab's mood item"}
+    ]
+  },
+  "choiceLists": [
+    {"id": "often4", "choices": [
+      {"value": 0, "label": "Never"}, {"value": 1, "label": "Sometimes"},
+      {"value": 2, "label": "Often"}, {"value": 3, "label": "Always"}
+    ]}
+  ],
+  "variables": [
+    {"id": "demo_total", "kind": "computed",
+     "expr": {"kind": "arith", "op": "+", "left": {"kind": "ref", "id": "demo_q1"}, "right": {"kind": "ref", "id": "demo_q2"}}}
+  ],
+  "blocks": [
+    {"id": "demo", "title": "DEMO-2", "source": {"bank": "demo2", "version": 1, "library": "bundled"},
+     "pages": [{"id": "p_demo", "title": "In the last week, how often did you ...", "items": [
+       {"id": "demo_q1", "type": "single", "label": "... feel invented?", "choiceList": "often4",
+        "source": {"bank": "demo2", "version": 1, "library": "bundled", "item": "q1"}},
+       {"id": "demo_q2", "type": "single", "label": "... feel like test data?", "choiceList": "often4"}
+     ]}]},
+    {"id": "own", "pages": [{"id": "p_own", "items": [
+      {"id": "mood", "type": "slider", "label": "Mood right now", "min": 0, "max": 10,
+       "source": {"bank": "3f1c2d4e-lab", "version": 2, "library": "lab"}},
+      {"id": "age", "type": "integer", "label": "Age"}
+    ]}]}
+  ],
+  "flow": [
+    {"type": "block", "id": "f_demo", "block": "demo"},
+    {"type": "block", "id": "f_own", "block": "own"}
+  ]
+}

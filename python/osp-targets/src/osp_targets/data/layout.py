@@ -70,6 +70,9 @@ class QuestionInfo:
     # The lab's own annotations on the question (planning/property-profiles.md §5); a
     # matrix row carries its matrix's.
     custom: dict[str, Any] | None = None
+    # Question-bank provenance (question-bank.md §2.3): {bank, version, library} of the
+    # question's own source, else its page's, else its block's; a matrix row has its matrix's.
+    source: dict[str, Any] | None = None
 
 
 @dataclass(frozen=True)
@@ -158,6 +161,15 @@ def _rename_refs(node: Any, names: dict[str, str]) -> Any:
     return node
 
 
+def _source(*objs: Any) -> dict[str, Any] | None:
+    """The nearest `source` of a question, its page, its block (as {bank, version, library})."""
+    for o in objs:
+        src = getattr(o, "source", None)
+        if src is not None:
+            return {"bank": src.bank, "version": src.version, "library": src.library}
+    return None
+
+
 def parse_version(version: SurveyVersion) -> Survey:
     survey = version.survey
     if isinstance(survey, Survey):
@@ -239,6 +251,7 @@ def build_layout(version: SurveyVersion, split: Collection[str] = ()) -> Layout:
                                 matrix=q.id,
                                 matrix_label=lay.text(q.label),
                                 custom=dict(q.custom) if q.custom else None,
+                                source=_source(q, page, block),
                             )
                         )
                     continue
@@ -288,6 +301,7 @@ def build_layout(version: SurveyVersion, split: Collection[str] = ()) -> Layout:
                             else None
                         ),
                         custom=dict(q.custom) if q.custom else None,
+                        source=_source(q, page, block),
                     )
                 )
 

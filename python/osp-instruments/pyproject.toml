@@ -1,0 +1,19 @@
+[project]
+name = "osp-instruments"
+version = "0.0.0"
+description = "Open Survey Platform: osp-instruments (layer L2), the bundled instrument library"
+readme = "README.md"
+# The code is MIT. Each bundled instrument keeps its own terms (public domain or CC0 only,
+# licence-policy.toml [instruments]); LICENCES.md lists them with the evidence.
+license = "MIT"
+requires-python = ">=3.14"
+dependencies = [
+    "osp-spec",
+]
+
+[tool.uv.sources]
+osp-spec = { workspace = true }
+
+[build-system]
+requires = ["uv_build>=0.11,<0.12"]
+build-backend = "uv_build"

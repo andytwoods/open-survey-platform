@@ -34,6 +34,16 @@ dev_only = ["MPL-2.0"]
 # Listed for clearer error messages; anything not in `allowed`/`dev_only` fails anyway.
 denied_prefixes = ["GPL", "AGPL", "LGPL", "BUSL", "SSPL", "Commons-Clause"]
 
+# Bundled instruments (python/osp-instruments, planning/question-bank.md §3, §7): the
+# licence classes whose item text may ship inside the MIT-licensed program. Reproduction,
+# distribution and adaptation must all be covered, so non-commercial-only, share-alike,
+# "free to use" without a redistribution grant, and registration-gated instruments never
+# qualify (lead decision 4); `author-permission` needs the holder's reply filed under
+# python/osp-instruments/permissions/. scripts/licence_check.py lists every bundled
+# instrument and fails on any other class.
+[instruments]
+allowed = ["public-domain", "cc0", "cc-by-4.0", "author-permission"]
+
 # runtime_exceptions: named packages whose dev_only licence is accepted at
 # runtime too, because we use them unmodified. Human decision only.
 [[runtime_exception]]

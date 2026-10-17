@@ -1,5 +1,5 @@
 version = 1
-revision = 5
+revision = 3
 requires-python = ">=3.14"
 
 [manifest]
@@ -10,6 +10,7 @@ members = [
     "osp-engine",
     "osp-expr",
     "osp-host-signing",
+    "osp-instruments",
     "osp-mcp",
     "osp-ops",
     "osp-qa",
@@ -18,7 +19,6 @@ members = [
     "osp-store",
     "osp-targets",
 ]
-default-groups = ["dev", "docs"]
 
 [manifest.dependency-groups]
 dev = [
@@ -30,6 +30,7 @@ dev = [
     { name = "osp-engine", editable = "python/osp-engine" },
     { name = "osp-expr", editable = "python/osp-expr" },
     { name = "osp-host-signing", editable = "python/osp-host-signing" },
+    { name = "osp-instruments", editable = "python/osp-instruments" },
     { name = "osp-mcp", editable = "python/osp-mcp" },
     { name = "osp-ops", editable = "python/osp-ops" },
     { name = "osp-qa", editable = "python/osp-qa" },
@@ -994,6 +995,7 @@ version = "0.0.0"
 source = { editable = "python/osp-app" }
 dependencies = [
     { name = "osp-engine" },
+    { name = "osp-instruments" },
     { name = "osp-ops" },
     { name = "osp-qa" },
     { name = "osp-runtime" },
@@ -1006,6 +1008,7 @@ dependencies = [
 [package.metadata]
 requires-dist = [
     { name = "osp-engine", editable = "python/osp-engine" },
+    { name = "osp-instruments", editable = "python/osp-instruments" },
     { name = "osp-ops", editable = "python/osp-ops" },
     { name = "osp-qa", editable = "python/osp-qa" },
     { name = "osp-runtime", editable = "python/osp-runtime" },
@@ -1070,6 +1073,17 @@ dev = [{ name = "hypothesis", specifier = ">=6" }]
 name = "osp-host-signing"
 version = "1.0.0"
 source = { editable = "python/osp-host-signing" }
+
+[[package]]
+name = "osp-instruments"
+version = "0.0.0"
+source = { editable = "python/osp-instruments" }
+dependencies = [
+    { name = "osp-spec" },
+]
+
+[package.metadata]
+requires-dist = [{ name = "osp-spec", editable = "python/osp-spec" }]
 
 [[package]]
 name = "osp-mcp"

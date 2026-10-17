@@ -117,6 +117,26 @@ def test_gpl_test_dependency_fails_the_gate(tmp_path):
     assert "fake-gpl-widget" in result.stderr
 
 
+def test_bundled_instruments_are_listed_and_pass():
+    listing, problems = lc.instrument_problems(POLICY)
+    assert problems == []
+    assert any(line.startswith("phq9: public-domain") for line in listing)
+    result = _run("--no-python", "--no-js")
+    assert result.returncode == 0, result.stdout + result.stderr
+    assert "bundled instrument phq9: public-domain" in result.stdout
+
+
+def test_non_commercial_instrument_fails_the_gate(tmp_path):
+    """A non-commercial (or evidence-free) instrument cannot land unnoticed."""
+    (tmp_path / "nc.json").write_text(
+        json.dumps({"id": "nc", "licence": {"class": "free-noncommercial", "url": "https://x"}})
+    )
+    result = _run("--no-python", "--no-js", "--instruments", str(tmp_path))
+    assert result.returncode == 1
+    assert "nc: licence class 'free-noncommercial' may not be bundled" in result.stderr
+    assert "nc: licence evidence missing: statement, evidenceDate" in result.stderr
+
+
 def test_runtime_exception_only_for_named_package():
     assert lc.judge(_dep("MPL-2.0", eco="python", name="certifi"), POLICY).ok
     assert not lc.judge(_dep("MPL-2.0", eco="python", name="other"), POLICY).ok

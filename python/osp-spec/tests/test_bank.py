@@ -206,9 +206,7 @@ def test_check_fragment_errors() -> None:
     dang = copy.deepcopy(frag)
     dang["block"]["pages"][0]["items"][0]["showIf"] = {"kind": "answered", "ref": ref("zz")}
     got = check_fragment(dang)
-    assert [(d.code, d.pointer) for d in got] == [
-        ("ref.unknown", "/block/pages/0/items/0/showIf")
-    ]
+    assert [(d.code, d.pointer) for d in got] == [("ref.unknown", "/block/pages/0/items/0/showIf")]
     many = {"question": None, "page": {"id": "p", "items": [
         {"id": f"n{i}", "type": "note", "label": "x"} for i in range(MAX_ITEMS + 1)]}}  # fmt: skip
     assert codes(check_fragment(many)) == ["bank.too_large"]

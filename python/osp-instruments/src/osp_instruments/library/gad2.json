@@ -1,0 +1,106 @@
+{
+  "bankVersion": "osp-bank-item/0.1",
+  "id": "gad2",
+  "version": 1,
+  "kind": "block",
+  "title": "Generalized Anxiety Disorder-2 (ultra-brief)",
+  "abbreviation": "GAD-2",
+  "description": "The first two items of the GAD-7 under the GAD-7 stem (instruction manual, Table 1: \"First 2 items of GAD-7. Ultra-brief anxiety screener\").",
+  "tags": [
+    "anxiety",
+    "screener",
+    "mental-health",
+    "gad"
+  ],
+  "languages": [
+    "en"
+  ],
+  "licence": {
+    "class": "public-domain",
+    "holder": "Pfizer Inc. (developed by Drs. Robert L. Spitzer, Janet B.W. Williams, Kurt Kroenke and colleagues)",
+    "statement": "All PHQ, GAD-7 screeners and translations are downloadable from this website and no permission is required to reproduce, translate, display or distribute them. (Instruction manual: \"All of the measures included in Table 1 are in the public domain. No permission is required to reproduce, translate, display or distribute.\")",
+    "url": "https://www.phqscreeners.com/select-screener",
+    "evidenceDate": "2026-10-17"
+  },
+  "citation": {
+    "text": "Kroenke K, Spitzer RL, Williams JBW, Monahan PO, Löwe B (2007). Anxiety disorders in primary care: prevalence, impairment, comorbidity, and detection. Annals of Internal Medicine 146(5):317–325.",
+    "doi": "10.7326/0003-4819-146-5-200703060-00004"
+  },
+  "source": {
+    "url": "https://www.phqscreeners.com/images/sites/g/files/g10016261/f/201412/instructions.pdf",
+    "note": "Items 1–2 of the English GAD-7 form; the manual defines the GAD-2 as those items."
+  },
+  "scoring": {
+    "text": "Sum of the two items (0–6), in gad2_total. The manual: \"the recommended cutpoints for each when used as screeners is a score of 3 or greater\"."
+  },
+  "fragment": {
+    "choiceLists": [
+      {
+        "id": "phq_frequency",
+        "choices": [
+          {
+            "value": 0,
+            "label": "Not at all"
+          },
+          {
+            "value": 1,
+            "label": "Several days"
+          },
+          {
+            "value": 2,
+            "label": "More than half the days"
+          },
+          {
+            "value": 3,
+            "label": "Nearly every day"
+          }
+        ]
+      }
+    ],
+    "variables": [
+      {
+        "id": "gad2_total",
+        "kind": "computed",
+        "expr": {
+          "kind": "arith",
+          "op": "+",
+          "left": {
+            "kind": "ref",
+            "id": "gad2_q1"
+          },
+          "right": {
+            "kind": "ref",
+            "id": "gad2_q2"
+          }
+        }
+      }
+    ],
+    "block": {
+      "id": "gad2_block",
+      "title": "GAD-2",
+      "pages": [
+        {
+          "id": "gad2_page",
+          "items": [
+            {
+              "id": "gad2",
+              "type": "matrix",
+              "label": "Over the last 2 weeks, how often have you been bothered by the following problems?",
+              "choiceList": "phq_frequency",
+              "rows": [
+                {
+                  "id": "q1",
+                  "label": "Feeling nervous, anxious or on edge"
+                },
+                {
+                  "id": "q2",
+                  "label": "Not being able to stop or control worrying"
+                }
+              ]
+            }
+          ]
+        }
+      ]
+    }
+  }
+}
