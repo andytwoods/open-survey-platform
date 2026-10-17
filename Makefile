@@ -238,3 +238,16 @@ dev: engine-bundle
 dev-reset:
 	rm -rf $(DEV_DATA)
 	@echo "dev-reset: removed $(DEV_DATA)/; the next make dev starts fresh"
+
+# Scripted demo videos (task DM1, docs/demos.md). Not part of `make check`. Playwright
+# drives a fresh stack (osp-api on a throwaway SQLite store serving the participant app, and
+# the built builder pages) on free ports, records each video (web/builder/demo/*.demo.ts),
+# then web/builder/demo/render.sh makes MP4 (H.264) + GIF with ffmpeg. Output: .build/demo/.
+# Needs Playwright Chromium and ffmpeg. OSP_DEMO_PACE=0.3 for a quick dry run.
+.PHONY: demo-videos
+demo-videos:
+	rm -rf .build/demo/raw
+	OSP_DEMO_PORT="$${OSP_DEMO_PORT:-$(HARNESS_FREE_PORT)}" OSP_DEMO_API_PORT="$${OSP_DEMO_API_PORT:-$(HARNESS_FREE_PORT)}" \
+		OSP_DEMO_RAW="$(CURDIR)/.build/demo/raw" \
+		$(PNPM) -C web --filter @osp/builder exec playwright test -c demo/playwright.config.ts $(DEMO_ARGS)
+	OSP_DEMO_OUT=.build/demo web/builder/demo/render.sh
