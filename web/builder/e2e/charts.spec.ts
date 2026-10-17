@@ -68,6 +68,8 @@ for (const [name, query, scheme] of [
 	['export', '?theme=export', 'light']
 ] as const) {
 	test(`gallery ${name}: axe-clean, snapshot`, async ({ page }) => {
+		// 55 charts: axe and a full-page screenshot take a while on a busy machine.
+		test.setTimeout(120_000);
 		await page.emulateMedia({ colorScheme: scheme });
 		await open(page, query);
 		expect(await axe(page)).toEqual([]);
