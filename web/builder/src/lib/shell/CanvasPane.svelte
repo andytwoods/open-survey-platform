@@ -1,19 +1,30 @@
 <script lang="ts">
 	import Plus from '@lucide/svelte/icons/plus';
+	import QuestionCard from '../cards/QuestionCard.svelte';
+	import { choiceListsOf } from '../choices/model';
 	import ExportBadges from '../diagnostics/ExportBadges.svelte';
 	import type { ExportBadge } from '../diagnostics/model';
-	import type { OutlineNode } from '../model/outline';
+	import { defaultLanguage, type OutlineNode } from '../model/outline';
+	import { schemaFor } from '../properties/schemas.svelte';
+	import type { PropertySchemasDoc } from '../properties/types';
 	import type { SelectionStore } from '../selection.svelte';
+	import { canvasQuestions, cardSchema } from './canvas';
 	import { iconFor } from './icons';
 
 	/**
-	 * Simple cards for the outline tree: sections (level 1), groups (level 2), question
-	 * cards. Real survey: block → page → question; the `?mock` tree: page → block → question.
-	 * Rich per-family cards are task B5 (lib/cards).
+	 * The outline tree as cards: sections (level 1), groups (level 2), question cards.
+	 * Real survey: block → page → question; the `?mock` tree: page → block → question.
+	 * Questions of a real survey are the rich per-family cards (lib/cards, task B5), fed the
+	 * question's own JSON from `survey`, its property schema, the shared choice lists and
+	 * the default language: a read-only participant preview that follows every patch.
+	 * Editing stays in the properties panel. The mock tree has no question JSON, and an
+	 * outline node not (yet) in `survey` has none either: those get the simple card.
 	 */
 	let {
 		pages,
 		selection,
+		survey = null,
+		schemas = null,
 		mock = false,
 		onAddQuestion,
 		exportBadges,
@@ -21,6 +32,10 @@
 	}: {
 		pages: OutlineNode[];
 		selection: SelectionStore;
+		/** The survey document the cards preview (null: simple cards only, e.g. `?mock`). */
+		survey?: unknown;
+		/** The property schemas (GET /api/meta/property-schemas), once loaded. */
+		schemas?: PropertySchemasDoc | null;
 		mock?: boolean;
 		/** Present when editing is connected: shows "Add question" under each page. */
 		onAddQuestion?: (pageId: string) => void;
@@ -32,6 +47,9 @@
 
 	const cardId = (id: string) => `card-${id}`;
 	const firstId = $derived(pages[0]?.id);
+	const questions = $derived(canvasQuestions(survey));
+	const choiceLists = $derived(choiceListsOf(survey));
+	const lang = $derived(defaultLanguage(survey));
 	const kind = (n: OutlineNode) => (n.type === 'page' ? 'Page' : n.type === 'block' ? 'Block' : '');
 
 	$effect(() => {
@@ -89,22 +107,36 @@
 					<ul class="cards">
 						{#each group.children ?? [] as question (question.id)}
 							{@const QIcon = iconFor(question)}
+							{@const full = questions.get(question.id)}
 							<li>
-								<button
-									type="button"
-									id={cardId(question.id)}
-									class="card"
-									aria-current={selection.id === question.id ? 'true' : undefined}
-									data-pane-focus={focusMark(question.id)}
-									onclick={() => selection.select(question.id)}
-								>
-									<span class="card-type">
-										<QIcon size={16} aria-hidden="true" />
-										{question.questionType || question.family}
-									</span>
-									<span class="card-label">{question.label}</span>
-									<span class="card-placeholder" aria-hidden="true"></span>
-								</button>
+								{#if full}
+									<QuestionCard
+										id={cardId(question.id)}
+										question={full}
+										schema={cardSchema(schemaFor(schemas, 'question', full))}
+										selected={selection.id === question.id}
+										{lang}
+										{choiceLists}
+										data-pane-focus={focusMark(question.id)}
+										onselect={() => selection.select(question.id)}
+									/>
+								{:else}
+									<button
+										type="button"
+										id={cardId(question.id)}
+										class="card"
+										aria-current={selection.id === question.id ? 'true' : undefined}
+										data-pane-focus={focusMark(question.id)}
+										onclick={() => selection.select(question.id)}
+									>
+										<span class="card-type">
+											<QIcon size={16} aria-hidden="true" />
+											{question.questionType || question.family}
+										</span>
+										<span class="card-label">{question.label}</span>
+										<span class="card-placeholder" aria-hidden="true"></span>
+									</button>
+								{/if}
 								{@render badgeList(question)}
 							</li>
 						{/each}

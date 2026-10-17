@@ -39,6 +39,7 @@
 	import { cyclePane } from './panes';
 	import PropertiesPane from './PropertiesPane.svelte';
 	import PreviewPanel from '../preview/PreviewPanel.svelte';
+	import { propertySchemas } from '../properties/schemas.svelte';
 	import {
 		isQuestionType,
 		lastUsedType,
@@ -365,6 +366,8 @@
 	onMount(() => {
 		const offTheme = theme.init();
 		void health.check();
+		// The canvas cards read the property schemas too (the properties pane may be closed).
+		if (store) void propertySchemas.load(() => api.GET('/api/meta/property-schemas'));
 		// Arrived from another page to look at one item (a publish problem): select it.
 		const m = /^#select=(.+)$/.exec(location.hash);
 		if (m && store && editing) {
@@ -471,6 +474,8 @@
 				<CanvasPane
 					{pages}
 					{selection}
+					survey={store?.survey ?? null}
+					schemas={propertySchemas.doc}
 					mock={!store}
 					onAddQuestion={store ? (id) => addQuestion(id) : undefined}
 					exportBadges={badges}
