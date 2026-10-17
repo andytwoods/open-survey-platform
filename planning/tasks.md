@@ -136,9 +136,6 @@ branch `agent/<id>` to GitHub (`origin`) with `make check` exit code and test co
 | B18 | Canvas cards show validator error/warning counts | B14 | Cards receive diagnostics per question; counts and click-to-property; e2e | done |
 | R10 | Researcher hooks run in the builder Preview | R7 | Preview frame runs hooks in the same sandbox as the participant app; hook errors visible in the debugger; CSP for preview documented; e2e | done |
 
-| B18 | Canvas cards show validator error/warning counts | B14 | Cards receive diagnostics per question; counts and click-to-property; e2e | todo |
-| R10 | Researcher hooks run in the builder Preview | R7 | Preview frame runs hooks in the same sandbox as the participant app; hook errors visible in the debugger; CSP for preview documented; e2e | done |
-
 ## Wave F (17 Oct 2026): results viewer with exportable charts
 
 Plan V: `planning/results-viewer.md` (decisions V-D1–V-D10). V1 publishes the contract first.
