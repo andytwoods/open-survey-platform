@@ -46,6 +46,7 @@ Other settings (all in `python/osp-api/src/osp_api/serve.py`):
 | `OSP_TRUSTED_PROXIES` | IPs or CIDRs of your proxy, whose `X-Forwarded-For` gives the participant's address (section 4) | none |
 | `OSP_NONCE_STORE` | where replayed signatures are caught: `database` (every worker) or `memory` (one process) | `database` in production, `memory` in dev |
 | `OSP_PARTICIPANT_URL_TEMPLATE` | where participants open a survey (`{slug}`) | `/r/?s={slug}` |
+| `OSP_LIVE_POLL_MS` | how often a live results page may ask whether responses changed (milliseconds, 1000–3600000); every poll is one signed request through your proxy, so raise it under load | `10000` |
 
 Never use `OSP_IDENTITY=dev` on a server. It makes everyone the lab owner, so osp-api refuses
 it unless `OSP_ENV=dev` and the bind is loopback.
@@ -191,6 +192,27 @@ Roles come from you on every request, so your app is the single source of truth 
 is in which lab. With `OSP_AUTO_CREATE_LABS=on` (the default) a lab exists as soon as you
 first name it. With `off`, create it first (`osp-cli lab create <id>`); until then a role
 in it confers nothing.
+
+### Live results polling
+
+With *Live* on, the Results page polls `GET /api/surveys/{id}/results/watermark` and
+re-queries only when the watermark changes. The poll is an ordinary signed GET, so your
+proxy needs nothing new: no streaming, no longer timeouts, no WebSocket upgrade. Things to
+know:
+
+- **Volume.** Each open live page makes one poll per `pollAfterMs` (the server's
+  `OSP_LIVE_POLL_MS`, default 10 s): one request through your proxy, one signature check
+  and, with `OSP_NONCE_STORE=database`, one nonce insert. 20 viewers at 10 s is 2
+  requests a second. The page pauses while its tab is hidden. Under load, raise
+  `OSP_LIVE_POLL_MS`: the page uses whatever interval the server sends.
+- **Rate limit.** osp-api allows each user a burst of 5 polls, then one a second, per
+  worker process. Faster polling gets `429` with `code: "rate_limited"`. Pass the 429
+  through unchanged; the page backs off.
+- **Caching.** Don't cache the poll in your proxy or CDN. A cached watermark makes the page
+  look frozen. Forward osp-api's `Cache-Control` as step 6 says.
+- **Audit.** The poll reads no answers and is not audited. An automatic refresh is audited
+  as `results.live`: one row per user and query per 15 minutes, plus a new row when the
+  query changes. A manual *Show results* stays `results.read`.
 
 ### Rotating the key
 

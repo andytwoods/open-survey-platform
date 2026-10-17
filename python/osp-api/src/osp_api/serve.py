@@ -30,6 +30,8 @@ OSP_PARTICIPANT_DIR   a built ``web/runtime/dist``: serve it at  none (the host 
                       ``/r/`` and ``/s/{slug}`` (static_files)   it)
 OSP_BUILDER_DIR       a built ``web/builder/build``: serve its   none
                       files at ``/builder/``
+OSP_LIVE_POLL_MS      how often the live results page may poll   ``10000``
+                      the watermark (ms, 1000-3600000; LV2)
 ==================  ==========================================  =====================
 
 Identity (plan P): osp-api has no sign-in. Behind a host, ``trusted-headers`` verifies the
@@ -78,6 +80,7 @@ from .identity import (
     nonce_store_from_name,
     provider_from_env,
 )
+from .routes.results import DEFAULT_LIVE_POLL_MS, MAX_LIVE_POLL_MS, MIN_LIVE_POLL_MS
 from .static_files import check_builder_dir, check_participant_dir, mount_static
 
 ENVIRONMENTS = ("dev", "production")
@@ -104,6 +107,7 @@ class Settings:
     nonce_store: str = "memory"
     participant_dir: Path | None = None
     builder_dir: Path | None = None
+    live_poll_ms: int = DEFAULT_LIVE_POLL_MS
 
     @property
     def production(self) -> bool:
@@ -145,6 +149,12 @@ class Settings:
             raise ConfigError(
                 f"OSP_NONCE_STORE must be one of {', '.join(NONCE_STORES)}, not {nonces[:20]!r}"
             )
+        raw_poll = (env.get("OSP_LIVE_POLL_MS") or str(DEFAULT_LIVE_POLL_MS)).strip()
+        if not raw_poll.isdigit() or not MIN_LIVE_POLL_MS <= int(raw_poll) <= MAX_LIVE_POLL_MS:
+            raise ConfigError(
+                f"OSP_LIVE_POLL_MS must be a number of milliseconds from {MIN_LIVE_POLL_MS} "
+                f"to {MAX_LIVE_POLL_MS}, not {raw_poll[:20]!r}"
+            )
         return cls(
             name,
             data_dir,
@@ -158,6 +168,7 @@ class Settings:
             nonces,
             _static_dir(env, "OSP_PARTICIPANT_DIR", check_participant_dir),
             _static_dir(env, "OSP_BUILDER_DIR", check_builder_dir),
+            int(raw_poll),
         )
 
 
@@ -296,6 +307,7 @@ def build_app(
         allowed_origins=settings.allowed_origins,
         public_origins=settings.public_origins,
         trusted_proxies=settings.trusted_proxies,
+        live_poll_ms=settings.live_poll_ms,
     )
     mount_static(app, participant_dir=settings.participant_dir, builder_dir=settings.builder_dir)
     return app

@@ -32,21 +32,27 @@ All of the V-D5 semantics live here, so the API, CLI and tests share one definit
 Answers are encrypted at rest: each request streams and decrypts every response of the
 versions once (``ParticipantStore.stream_responses``) and computes every requested card
 in that pass. Results are cached in memory per (tenant, survey, versions, response
-watermark, normalised query); a new or deleted response changes the watermark.
+watermark, normalised query); a new or deleted response changes the watermark. Identical
+concurrent misses compute once (single-flight, ``planning/live-results.md`` LV-D3).
 
 Access: ``survey.export`` (owner, editor) only. Every call writes a ``results.read``
 audit entry with the actor, the normalised query and the versions, never answer values.
+An automatic refresh (``live: true`` in the query, LV-D7) writes ``results.live``
+instead, coalesced: one row per actor, survey and query hash per 15-minute window
+(:class:`LiveAudit`). The cheap watermark check lives in ``results_live.py``.
 """
 
 from __future__ import annotations
 
+import atexit
 import base64
 import hashlib
 import json
 import math
 import threading
+import weakref
 from collections import OrderedDict
-from collections.abc import Iterable, Mapping, Sequence
+from collections.abc import Callable, Iterable, Mapping, Sequence
 from dataclasses import dataclass, field
 from datetime import UTC, date, datetime, timedelta
 from decimal import Decimal, InvalidOperation
@@ -80,6 +86,8 @@ MAX_BINS = 200
 MAX_PERIODS = 1000
 SLIDER_VALUE_STEPS = 21
 CACHE_SIZE = 32
+LIVE_WINDOW = timedelta(minutes=15)  # LV-D7: one results.live row per window
+LIVE_MAX_WINDOWS = 1000  # open coalescing windows kept per process
 Z95 = 1.959963984540054
 # t(0.975, df) for df = 1..30; larger df use a Cornish-Fisher expansion (error < 1e-5).
 _T975 = (
@@ -171,6 +179,9 @@ class Query:
     intervals: bool = False
     cards: tuple[tuple[str, Bins], ...] | None = None
     language: str | None = None
+    # An automatic refresh by the live page (LV-D7): audited as results.live, coalesced.
+    # Never part of the normalised form, so it changes neither the hash nor the cache key.
+    live: bool = False
 
     def normalised(self, versions: Sequence[int]) -> dict[str, Any]:
         """JSON form with versions resolved: what the hash, the cache and the audit use."""
@@ -330,6 +341,11 @@ def parse_query(raw: Any) -> Query:
     language = raw.get("language")
     if language is not None:
         language = _str(language, "language", 35)
+    live = raw.get("live")
+    if live is None:
+        live = False
+    if not isinstance(live, bool):
+        raise InvalidRequest("live must be true or false")
     return Query(
         versions=versions,
         status=status,
@@ -344,6 +360,7 @@ def parse_query(raw: Any) -> Query:
         intervals=raw.get("intervals") is True,
         cards=cards,
         language=language,
+        live=live,
     )
 
 
@@ -1278,13 +1295,28 @@ def scan(
 # -- cache ------------------------------------------------------------------------------
 
 
+class _Flight:
+    """One computation in progress: waiters block on ``done`` and take its outcome."""
+
+    __slots__ = ("done", "error", "value", "waiters")
+
+    def __init__(self) -> None:
+        self.done = threading.Event()
+        self.value: Any = None
+        self.error: BaseException | None = None
+        self.waiters = 0  # callers blocked on this flight (besides the leader)
+
+
 class ResultsCache:
     """A small LRU of computed results. Keys carry the response watermark, so a new or
-    deleted response misses; ``put`` also drops older watermarks of the same survey."""
+    deleted response misses; ``put`` also drops older watermarks of the same survey.
+    ``get_or_compute`` is single-flight (LV-D3): identical concurrent misses share one
+    computation instead of each scanning the responses."""
 
     def __init__(self, size: int = CACHE_SIZE) -> None:
         self.size = size
         self._d: OrderedDict[tuple, Any] = OrderedDict()
+        self._flights: dict[tuple, _Flight] = {}
         self._lock = threading.Lock()
 
     def get(self, key: tuple) -> Any:
@@ -1293,6 +1325,51 @@ class ResultsCache:
             if value is not None:
                 self._d.move_to_end(key)
             return value
+
+    def get_or_compute(self, key: tuple, compute: Callable[[], Any]) -> tuple[Any, bool]:
+        """``(value, hit)``: the cached value, or ``compute()`` run once for every caller
+        that asks for ``key`` while it runs. ``hit`` is True for a cache hit and for a
+        waiter that took the leader's result (nothing was scanned for it). A failing
+        computation raises in the leader and in every waiter; the next call computes
+        again."""
+        with self._lock:
+            value = self._d.get(key)
+            if value is not None:
+                self._d.move_to_end(key)
+                return value, True
+            flight = self._flights.get(key)
+            leader = flight is None
+            if flight is None:
+                flight = self._flights[key] = _Flight()
+            else:
+                flight.waiters += 1
+        if not leader:
+            flight.done.wait()
+            if flight.error is not None:
+                raise flight.error
+            return flight.value, True
+        try:
+            value = compute()
+            self.put(key, value)
+            flight.value = value
+            return value, False
+        except BaseException as exc:
+            flight.error = exc
+            raise
+        finally:
+            with self._lock:
+                self._flights.pop(key, None)
+            flight.done.set()
+
+    @property
+    def in_flight(self) -> int:
+        return len(self._flights)
+
+    def waiting(self, key: tuple) -> int:
+        """Callers blocked on ``key``'s computation in progress (0 when none runs)."""
+        with self._lock:
+            flight = self._flights.get(key)
+            return flight.waiters if flight is not None else 0
 
     def put(self, key: tuple, value: Any) -> None:
         tenant, survey, _versions, watermark = key[:4]
@@ -1350,22 +1427,39 @@ def _version_info_cached(v: Version) -> VersionInfo:
     return info
 
 
-def load(builder: Builder, actor: Actor, survey_id: object, numbers: Any) -> Loaded:
+def choose_versions(
+    builder: Builder, actor: Actor, survey_id: object, numbers: Any
+) -> tuple[TenantContext, list[Version]]:
+    """Access check (``survey.export``; 403 / 404 first), then the published versions a
+    query uses: the latest, or the requested numbers in order."""
     ctx = builder._locate(actor, survey_id, Action.SURVEY_EXPORT)
     published = builder.store.list_versions(ctx, str(survey_id))
     if not published:
         raise NotFoundError("Nothing published yet.")
     if numbers is None:
-        chosen = [max(published, key=lambda v: v.number)]
-    else:
-        by = {v.number: v for v in published}
-        missing = [n for n in numbers if n not in by]
-        if missing:
-            raise NotFoundError(f"No such published version: {missing[0]}.")
-        chosen = [by[n] for n in sorted(numbers)]
+        return ctx, [max(published, key=lambda v: v.number)]
+    by = {v.number: v for v in published}
+    missing = [n for n in numbers if n not in by]
+    if missing:
+        raise NotFoundError(f"No such published version: {missing[0]}.")
+    return ctx, [by[n] for n in sorted(numbers)]
+
+
+def watermark_of(
+    builder: Builder, ctx: TenantContext, versions: Sequence[Version]
+) -> tuple[str, int]:
+    """``(watermark, responses)`` of the versions: a hash of each version's (response
+    count, newest submitted_at) and the counts' sum. One ``COUNT`` / ``MAX`` per version;
+    no answer is read and nothing is audited."""
     participants = ParticipantStore(builder.store)
-    marks = [(v.number, *participants.response_watermark(ctx, v.id)) for v in chosen]
+    marks = [(v.number, *participants.response_watermark(ctx, v.id)) for v in versions]
     watermark = hashlib.sha256(json.dumps(marks).encode()).hexdigest()[:16]
+    return watermark, sum(m[1] for m in marks)
+
+
+def load(builder: Builder, actor: Actor, survey_id: object, numbers: Any) -> Loaded:
+    ctx, chosen = choose_versions(builder, actor, survey_id, numbers)
+    watermark, _ = watermark_of(builder, ctx, chosen)
     return Loaded(ctx, [_version_info_cached(v) for v in chosen], watermark)
 
 
@@ -1401,6 +1495,151 @@ def _now() -> datetime:
     return datetime.now(UTC)
 
 
+# -- live audit (LV-D7) ------------------------------------------------------------------
+
+
+@dataclass
+class _Window:
+    """Automatic refreshes of one (tenant, actor, survey, query hash) being coalesced."""
+
+    query_hash: str
+    versions: list[int]
+    opened_at: datetime
+    last_at: datetime
+    first_watermark: str
+    last_watermark: str
+    refreshes: int = 1
+
+    def summary(self) -> dict[str, Any]:
+        return {
+            "queryHash": self.query_hash,
+            "versions": self.versions,
+            "refreshes": self.refreshes,
+            "firstWatermark": self.first_watermark,
+            "lastWatermark": self.last_watermark,
+            "openedAt": self.opened_at.isoformat(),
+            "lastAt": self.last_at.isoformat(),
+        }
+
+
+class LiveAudit:
+    """Coalesced audit of automatic refreshes (``planning/live-results.md`` §6, LV-D7).
+
+    The first automatic refresh of a (tenant, actor, survey, query hash) writes a
+    ``results.live`` row with the normalised query, like ``results.read``. Later ones
+    within ``window`` (15 minutes) with the same hash write nothing: they bump an
+    in-memory tally. The next row for that key, after the window, carries the ended
+    window under ``previous`` (``refreshes``, first and last watermark, opened / last
+    times). A different query hash is a different key, so a changed query always writes
+    a row at once. ``flush`` writes the tallies of open windows with more than one refresh
+    as closing rows (``closed``): at process exit on a best-effort basis, and when a
+    window is evicted because more than ``max_windows`` are open.
+
+    Per process, like the results cache: several API workers each coalesce their own
+    share, so an auditor sees at most one row per worker per window per key."""
+
+    def __init__(
+        self,
+        store: Any,
+        clock: Callable[[], datetime] = _now,
+        window: timedelta = LIVE_WINDOW,
+        max_windows: int = LIVE_MAX_WINDOWS,
+    ) -> None:
+        self.store = store
+        self.clock = clock
+        self.window = window
+        self.max_windows = max_windows
+        self._w: OrderedDict[tuple[str, str, str, str], _Window] = OrderedDict()
+        self._lock = threading.Lock()
+
+    def record(
+        self,
+        ctx: TenantContext,
+        survey_id: str,
+        query_hash: str,
+        watermark: str,
+        detail: Mapping[str, Any],
+    ) -> bool:
+        """Count one automatic refresh; True when a ``results.live`` row was written."""
+        now = self.clock()
+        key = (ctx.tenant_id, ctx.actor, survey_id, query_hash)
+        versions = list(detail.get("versions") or [])
+        with self._lock:
+            w = self._w.get(key)
+            if w is not None and now - w.opened_at < self.window:
+                w.refreshes += 1
+                w.last_at = now
+                w.last_watermark = watermark
+                return False
+            previous = w.summary() if w is not None else None
+            self._w[key] = _Window(query_hash, versions, now, now, watermark, watermark)
+            self._w.move_to_end(key)
+            evicted = []
+            while len(self._w) > self.max_windows:
+                evicted.append(self._w.popitem(last=False))
+        self.store.audit(
+            ctx,
+            "results.live",
+            "survey",
+            survey_id,
+            {**detail, "watermark": watermark, "previous": previous},
+        )
+        self._close(evicted, "evicted")
+        return True
+
+    def flush(self, reason: str = "exit") -> int:
+        """Write the tally of every open window with more than one refresh as a closing
+        row and forget them all. Returns the number of rows written."""
+        with self._lock:
+            items = list(self._w.items())
+            self._w.clear()
+        return self._close(items, reason)
+
+    def _close(self, items: list[tuple[tuple[str, str, str, str], _Window]], reason: str) -> int:
+        n = 0
+        for (tenant_id, actor, survey_id, _hash), w in items:
+            if w.refreshes > 1:
+                self.store.audit(
+                    TenantContext(tenant_id, actor),
+                    "results.live",
+                    "survey",
+                    survey_id,
+                    {**w.summary(), "closed": reason},
+                )
+                n += 1
+        return n
+
+    def __len__(self) -> int:
+        return len(self._w)
+
+
+_LIVE_AUDITS: weakref.WeakSet[LiveAudit] = weakref.WeakSet()
+
+
+def _flush_live_audits() -> None:
+    """At process exit: best effort, never an error (the database may be gone)."""
+    for audit in list(_LIVE_AUDITS):
+        try:
+            audit.flush("exit")
+        except Exception:  # noqa: BLE001 (nothing to do at exit)
+            pass
+
+
+atexit.register(_flush_live_audits)
+
+
+def live_audit_for(builder: Builder) -> LiveAudit:
+    audit = getattr(builder, "_live_audit", None)
+    if audit is None:
+        with _CACHES_LOCK:
+            audit = getattr(builder, "_live_audit", None)
+            if audit is None:
+                audit = LiveAudit(builder.store)
+                builder._live_audit = audit  # type: ignore[attr-defined]
+                _LIVE_AUDITS.add(audit)
+    return audit
+
+
 # -- commands ---------------------------------------------------------------------------
 
 
@@ -1417,19 +1656,14 @@ def results_query(
         json.dumps(norm, sort_keys=True, separators=(",", ":")).encode()
     ).hexdigest()[:16]
     key = (loaded.ctx.tenant_id, survey_id, tuple(numbers), loaded.watermark, query_hash)
-    cache = cache_for(builder)
-    result = cache.get(key)
-    cached = result is not None
-    if result is None:
-        result = _compute(builder, loaded, q, survey_id, query_hash)
-        cache.put(key, result)
-    builder.store.audit(
-        loaded.ctx,
-        "results.read",
-        "survey",
-        survey_id,
-        {"query": norm, "versions": numbers, "queryHash": query_hash, "cached": cached},
+    result, cached = cache_for(builder).get_or_compute(
+        key, lambda: _compute(builder, loaded, q, survey_id, query_hash)
     )
+    detail = {"query": norm, "versions": numbers, "queryHash": query_hash, "cached": cached}
+    if q.live:
+        live_audit_for(builder).record(loaded.ctx, survey_id, query_hash, loaded.watermark, detail)
+    else:
+        builder.store.audit(loaded.ctx, "results.read", "survey", survey_id, detail)
     return {**result, "cached": cached}
 
 

@@ -8,6 +8,10 @@ is audited as ``results.read`` (actor, query, versions; never answer values).
   cards (counts, percentages, bins, statistics). The browser never gets response rows.
 - ``GET /api/surveys/{id}/results/text/{question}``: the verbatim answers of one text
   question, paginated with an opaque cursor.
+- ``GET /api/surveys/{id}/results/watermark`` (task LV2, ``planning/live-results.md``):
+  the cheap "did anything change?" check the live page polls. Not audited; rate-limited
+  per actor (a burst of 5, then one a second); ``pollAfterMs`` is the interval the server
+  wants (``OSP_LIVE_POLL_MS``, default 10 s).
 
 Semantics (V-D5) live in ``osp_app.results``; units are responses, never participants.
 """
@@ -17,12 +21,24 @@ from __future__ import annotations
 from datetime import datetime
 from typing import Annotated, Any, Literal
 
-from fastapi import APIRouter, Path, Query
+from fastapi import APIRouter, Path, Query, Request, Response
+from osp_runtime import TokenBucket
 from pydantic import BaseModel, ConfigDict, Field
 
-from .common import Auth, Services, errors
+from .common import Auth, RateLimited, Services, errors
 
 router = APIRouter(prefix="/api/surveys", tags=["results"])
+
+DEFAULT_LIVE_POLL_MS = 10_000
+MIN_LIVE_POLL_MS, MAX_LIVE_POLL_MS = 1_000, 3_600_000
+WATERMARK_BURST, WATERMARK_PER_SECOND = 5, 1.0
+
+
+def watermark_limiter() -> TokenBucket:
+    """The per-actor budget of the watermark poll: a burst of 5, then 1 a second (the
+    pattern of the participant start / resume limits; per process, memory only)."""
+    return TokenBucket(WATERMARK_BURST, WATERMARK_PER_SECOND)
+
 
 Code = int | str
 STATE_DOC = (
@@ -113,6 +129,12 @@ class ResultsQuery(_In):
     )
     language: str | None = Field(
         None, max_length=35, description="Label language; default the survey's main language"
+    )
+    live: bool | None = Field(
+        None,
+        description="true for an automatic refresh by the live page: audited as "
+        "results.live, coalesced per actor and query (one row per 15 minutes) instead of "
+        "results.read. Omitted, null or false: a manual query. Not part of queryHash.",
     )
 
 
@@ -298,6 +320,24 @@ class TextPage(BaseModel):
     watermark: str
 
 
+class WatermarkResponse(BaseModel):
+    """The live page's poll (LV-D2): compare ``watermark`` with the last
+    ``ResultsResponse.watermark`` and re-query only when it differs."""
+
+    watermark: str = Field(
+        description="The same value a results query of these versions returns; changes "
+        "whenever a response is added or deleted"
+    )
+    responses: int = Field(
+        description="Stored responses of the versions used (every status, before filters)"
+    )
+    versionsUsed: list[int]
+    pollAfterMs: int = Field(
+        description="How long to wait before polling again (the server's OSP_LIVE_POLL_MS); "
+        "polling faster is rate-limited (429)"
+    )
+
+
 # -- routes -----------------------------------------------------------------------------
 
 
@@ -364,6 +404,36 @@ def results_text(
         cursor=cursor,
         limit=limit,
     )
+
+
+@router.get(
+    "/{survey_id}/results/watermark",
+    operation_id="resultsWatermark",
+    response_model=WatermarkResponse,
+    responses=errors(401, 403, 404, 422, 429),
+)
+def results_watermark(
+    survey_id: str,
+    auth: Auth,
+    services: Services,
+    request: Request,
+    response: Response,
+    versions: Annotated[
+        list[Annotated[int, Query(ge=1)]] | None,
+        Query(max_length=50, description="Version numbers (repeat); default latest"),
+    ] = None,
+) -> dict[str, Any]:
+    """Did the responses change? (survey.export; not audited; per actor a burst of 5 calls,
+    then one a second; sent ``no-store`` so no proxy serves a stale watermark.)"""
+    response.headers["Cache-Control"] = "no-store"
+    limiter = getattr(request.app.state, "watermark_limiter", None)
+    if limiter is not None and not limiter.allow(auth.actor.user_id):
+        raise RateLimited("Too many watermark requests: wait pollAfterMs between polls.")
+    out = services.builder.run(
+        "survey.results_watermark", auth.actor, survey_id=survey_id, versions=versions
+    )
+    poll = getattr(request.app.state, "live_poll_ms", None) or DEFAULT_LIVE_POLL_MS
+    return {**out, "pollAfterMs": poll}
 
 
 # -- figure export audit (task V4) ------------------------------------------------------

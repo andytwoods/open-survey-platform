@@ -4316,6 +4316,18 @@
             "description": "Label language; default the survey's main language",
             "title": "Language"
           },
+          "live": {
+            "anyOf": [
+              {
+                "type": "boolean"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "description": "true for an automatic refresh by the live page: audited as results.live, coalesced per actor and query (one row per 15 minutes) instead of results.read. Omitted, null or false: a manual query. Not part of queryHash.",
+            "title": "Live"
+          },
           "split": {
             "anyOf": [
               {
@@ -6890,6 +6902,41 @@
           "version"
         ],
         "title": "VersionInfo",
+        "type": "object"
+      },
+      "WatermarkResponse": {
+        "description": "The live page's poll (LV-D2): compare ``watermark`` with the last\n``ResultsResponse.watermark`` and re-query only when it differs.",
+        "properties": {
+          "pollAfterMs": {
+            "description": "How long to wait before polling again (the server's OSP_LIVE_POLL_MS); polling faster is rate-limited (429)",
+            "title": "Pollafterms",
+            "type": "integer"
+          },
+          "responses": {
+            "description": "Stored responses of the versions used (every status, before filters)",
+            "title": "Responses",
+            "type": "integer"
+          },
+          "versionsUsed": {
+            "items": {
+              "type": "integer"
+            },
+            "title": "Versionsused",
+            "type": "array"
+          },
+          "watermark": {
+            "description": "The same value a results query of these versions returns; changes whenever a response is added or deleted",
+            "title": "Watermark",
+            "type": "string"
+          }
+        },
+        "required": [
+          "watermark",
+          "responses",
+          "versionsUsed",
+          "pollAfterMs"
+        ],
+        "title": "WatermarkResponse",
         "type": "object"
       },
       "WithdrawResponse": {
@@ -10665,6 +10712,112 @@
           }
         },
         "summary": "Results Text",
+        "tags": [
+          "results"
+        ]
+      }
+    },
+    "/api/surveys/{survey_id}/results/watermark": {
+      "get": {
+        "description": "Did the responses change? (survey.export; not audited; per actor a burst of 5 calls,\nthen one a second; sent ``no-store`` so no proxy serves a stale watermark.)",
+        "operationId": "resultsWatermark",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "survey_id",
+            "required": true,
+            "schema": {
+              "title": "Survey Id",
+              "type": "string"
+            }
+          },
+          {
+            "description": "Version numbers (repeat); default latest",
+            "in": "query",
+            "name": "versions",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "items": {
+                    "minimum": 1,
+                    "type": "integer"
+                  },
+                  "maxItems": 50,
+                  "type": "array"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "description": "Version numbers (repeat); default latest",
+              "title": "Versions"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/WatermarkResponse"
+                }
+              }
+            },
+            "description": "Successful Response"
+          },
+          "401": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorBody"
+                }
+              }
+            },
+            "description": "Unauthorized"
+          },
+          "403": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorBody"
+                }
+              }
+            },
+            "description": "Forbidden"
+          },
+          "404": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorBody"
+                }
+              }
+            },
+            "description": "Not Found"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/RejectedBody"
+                }
+              }
+            },
+            "description": "Unprocessable Content"
+          },
+          "429": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorBody"
+                }
+              }
+            },
+            "description": "Too Many Requests"
+          }
+        },
+        "summary": "Results Watermark",
         "tags": [
           "results"
         ]

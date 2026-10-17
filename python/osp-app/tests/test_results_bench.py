@@ -113,6 +113,52 @@ def test_bench_10k(tmp_path):
     assert first < 2.0
 
 
+def test_bench_20_concurrent_identical_queries_scan_once(tmp_path):
+    """LV-D3 (task LV2): 20 viewers asking the same thing at the same instant cost one
+    decrypt pass (one ``responses.read`` row), and all 20 get the same result."""
+    import threading
+
+    engine = create_engine(f"sqlite:///{tmp_path / 'bench.db'}")
+    migrate(engine)
+    store = Store(engine, Keyring({"k1": KEY}, active="k1"))
+    svc = build_services(store, clock=FakeClock())
+    owner = svc.admit(make_identity("owner-a", {"lab-a": "owner"}))
+    sid = svc.builder.run("survey.create", owner, title="B", survey=SURVEY).survey.id
+    ctx = TenantContext(next(iter(owner.roles)), "system:test")
+    v = publish(store, ctx, sid, SURVEY)
+    populate(store, ctx, v.id, v.checksum, 3_000)
+    query = {"split": {"condition": "arm"}, "intervals": True, "live": True}
+    viewers = 20
+    barrier = threading.Barrier(viewers)
+    outs: list[dict] = []
+    errors: list[BaseException] = []
+
+    def viewer():
+        try:
+            barrier.wait(10)
+            outs.append(svc.builder.run("survey.results_query", owner, survey_id=sid, query=query))
+        except BaseException as exc:  # noqa: BLE001 (reported below)
+            errors.append(exc)
+
+    threads = [threading.Thread(target=viewer) for _ in range(viewers)]
+    start = time.perf_counter()
+    for th in threads:
+        th.start()
+    for th in threads:
+        th.join(60)
+    elapsed = time.perf_counter() - start
+    print(f"\nresults 3k x {viewers} concurrent identical: {elapsed:.2f} s")
+    assert not errors, errors[0]
+    assert len(outs) == viewers
+    scans = [a for a in store.list_audit(ctx) if a.action == "responses.read"]
+    assert len(scans) == 1, "every viewer scanned"
+    assert sum(1 for o in outs if o["cached"] is False) == 1
+    assert len({o["generatedAt"] for o in outs}) == 1 and all(o["responses"] > 2_700 for o in outs)
+    live = [a for a in store.list_audit(ctx) if a.action == "results.live"]
+    assert len(live) == 1  # one actor, one query hash, one window: one row for all 20
+    assert not [a for a in store.list_audit(ctx) if a.action == "results.read"]
+
+
 @pytest.mark.nightly
 def test_bench_100k(tmp_path):
     first, cached, out = run_bench(tmp_path, 100_000)
