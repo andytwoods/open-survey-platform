@@ -907,6 +907,26 @@
       "title": "Contains",
       "type": "object"
     },
+    "CustomKey": {
+      "pattern": "^[a-z][a-z0-9_]{0,39}$",
+      "type": "string"
+    },
+    "CustomValue": {
+      "anyOf": [
+        {
+          "type": "string"
+        },
+        {
+          "type": "integer"
+        },
+        {
+          "type": "number"
+        },
+        {
+          "type": "boolean"
+        }
+      ]
+    },
     "Date": {
       "pattern": "^\\d{4}-\\d{2}-\\d{2}$",
       "type": "string"
@@ -935,6 +955,25 @@
             }
           ],
           "default": null
+        },
+        "custom": {
+          "anyOf": [
+            {
+              "additionalProperties": {
+                "$ref": "#/$defs/CustomValue"
+              },
+              "maxProperties": 40,
+              "propertyNames": {
+                "$ref": "#/$defs/CustomKey"
+              },
+              "type": "object"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Custom"
         },
         "help": {
           "anyOf": [
@@ -1046,6 +1085,25 @@
             }
           ],
           "default": null
+        },
+        "custom": {
+          "anyOf": [
+            {
+              "additionalProperties": {
+                "$ref": "#/$defs/CustomValue"
+              },
+              "maxProperties": 40,
+              "propertyNames": {
+                "$ref": "#/$defs/CustomKey"
+              },
+              "type": "object"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Custom"
         },
         "help": {
           "anyOf": [
@@ -1612,6 +1670,25 @@
           ],
           "default": null
         },
+        "custom": {
+          "anyOf": [
+            {
+              "additionalProperties": {
+                "$ref": "#/$defs/CustomValue"
+              },
+              "maxProperties": 40,
+              "propertyNames": {
+                "$ref": "#/$defs/CustomKey"
+              },
+              "type": "object"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Custom"
+        },
         "help": {
           "anyOf": [
             {
@@ -1729,6 +1806,25 @@
           ],
           "default": null,
           "title": "Choices"
+        },
+        "custom": {
+          "anyOf": [
+            {
+              "additionalProperties": {
+                "$ref": "#/$defs/CustomValue"
+              },
+              "maxProperties": 40,
+              "propertyNames": {
+                "$ref": "#/$defs/CustomKey"
+              },
+              "type": "object"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Custom"
         },
         "help": {
           "anyOf": [
@@ -1954,6 +2050,25 @@
           ],
           "default": null
         },
+        "custom": {
+          "anyOf": [
+            {
+              "additionalProperties": {
+                "$ref": "#/$defs/CustomValue"
+              },
+              "maxProperties": 40,
+              "propertyNames": {
+                "$ref": "#/$defs/CustomKey"
+              },
+              "type": "object"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Custom"
+        },
         "help": {
           "anyOf": [
             {
@@ -2099,6 +2214,25 @@
       "additionalProperties": false,
       "description": "Display-only text. Stores no value, so it has no `name`, `required` or `constraint`.",
       "properties": {
+        "custom": {
+          "anyOf": [
+            {
+              "additionalProperties": {
+                "$ref": "#/$defs/CustomValue"
+              },
+              "maxProperties": 40,
+              "propertyNames": {
+                "$ref": "#/$defs/CustomKey"
+              },
+              "type": "object"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Custom"
+        },
         "help": {
           "anyOf": [
             {
@@ -2685,6 +2819,25 @@
           ],
           "default": null
         },
+        "custom": {
+          "anyOf": [
+            {
+              "additionalProperties": {
+                "$ref": "#/$defs/CustomValue"
+              },
+              "maxProperties": 40,
+              "propertyNames": {
+                "$ref": "#/$defs/CustomKey"
+              },
+              "type": "object"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Custom"
+        },
         "help": {
           "anyOf": [
             {
@@ -2768,6 +2921,25 @@
             }
           ],
           "default": null
+        },
+        "custom": {
+          "anyOf": [
+            {
+              "additionalProperties": {
+                "$ref": "#/$defs/CustomValue"
+              },
+              "maxProperties": 40,
+              "propertyNames": {
+                "$ref": "#/$defs/CustomKey"
+              },
+              "type": "object"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Custom"
         },
         "help": {
           "anyOf": [
@@ -2955,6 +3127,25 @@
             }
           ],
           "default": null
+        },
+        "custom": {
+          "anyOf": [
+            {
+              "additionalProperties": {
+                "$ref": "#/$defs/CustomValue"
+              },
+              "maxProperties": 40,
+              "propertyNames": {
+                "$ref": "#/$defs/CustomKey"
+              },
+              "type": "object"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Custom"
         },
         "help": {
           "anyOf": [

@@ -151,7 +151,8 @@
       },
       "hidden": {
         "id": "Stable identity used by every reference; assigned when the question is added, never edited in the panel.",
-        "type": "The discriminator; changing type is its own op, not a property edit."
+        "type": "The discriminator; changing type is its own op, not a property edit.",
+        "custom": "The lab's own properties (planning/property-profiles.md): defined by the lab panel profile and edited through its custom fields with the set_custom_property op, never as one object."
       }
     },
     {
@@ -276,7 +277,8 @@
       },
       "hidden": {
         "id": "Stable identity used by every reference; assigned when the question is added, never edited in the panel.",
-        "type": "The discriminator; changing type is its own op, not a property edit."
+        "type": "The discriminator; changing type is its own op, not a property edit.",
+        "custom": "The lab's own properties (planning/property-profiles.md): defined by the lab panel profile and edited through its custom fields with the set_custom_property op, never as one object."
       }
     },
     {
@@ -401,7 +403,8 @@
       },
       "hidden": {
         "id": "Stable identity used by every reference; assigned when the question is added, never edited in the panel.",
-        "type": "The discriminator; changing type is its own op, not a property edit."
+        "type": "The discriminator; changing type is its own op, not a property edit.",
+        "custom": "The lab's own properties (planning/property-profiles.md): defined by the lab panel profile and edited through its custom fields with the set_custom_property op, never as one object."
       }
     },
     {
@@ -527,7 +530,8 @@
       "hidden": {
         "id": "Stable identity used by every reference; assigned when the question is added, never edited in the panel.",
         "type": "The discriminator; changing type is its own op, not a property edit.",
-        "choiceList": "Edited through the choices editor, which switches between inline choices and a shared list (exactly one is set)."
+        "choiceList": "Edited through the choices editor, which switches between inline choices and a shared list (exactly one is set).",
+        "custom": "The lab's own properties (planning/property-profiles.md): defined by the lab panel profile and edited through its custom fields with the set_custom_property op, never as one object."
       }
     },
     {
@@ -678,7 +682,8 @@
       "hidden": {
         "id": "Stable identity used by every reference; assigned when the question is added, never edited in the panel.",
         "type": "The discriminator; changing type is its own op, not a property edit.",
-        "choiceList": "Edited through the choices editor, which switches between inline choices and a shared list (exactly one is set)."
+        "choiceList": "Edited through the choices editor, which switches between inline choices and a shared list (exactly one is set).",
+        "custom": "The lab's own properties (planning/property-profiles.md): defined by the lab panel profile and edited through its custom fields with the set_custom_property op, never as one object."
       }
     },
     {
@@ -730,7 +735,8 @@
       },
       "hidden": {
         "id": "Stable identity used by every reference; assigned when the question is added, never edited in the panel.",
-        "type": "The discriminator; changing type is its own op, not a property edit."
+        "type": "The discriminator; changing type is its own op, not a property edit.",
+        "custom": "The lab's own properties (planning/property-profiles.md): defined by the lab panel profile and edited through its custom fields with the set_custom_property op, never as one object."
       }
     },
     {
@@ -946,7 +952,8 @@
       "hidden": {
         "id": "Stable identity used by every reference; assigned when the question is added, never edited in the panel.",
         "type": "The discriminator; changing type is its own op, not a property edit.",
-        "choiceList": "Edited through the choices editor, which switches between inline choices and a shared list (exactly one is set)."
+        "choiceList": "Edited through the choices editor, which switches between inline choices and a shared list (exactly one is set).",
+        "custom": "The lab's own properties (planning/property-profiles.md): defined by the lab panel profile and edited through its custom fields with the set_custom_property op, never as one object."
       }
     },
     {
@@ -1137,7 +1144,8 @@
       },
       "hidden": {
         "id": "Stable identity used by every reference; assigned when the question is added, never edited in the panel.",
-        "type": "The discriminator; changing type is its own op, not a property edit."
+        "type": "The discriminator; changing type is its own op, not a property edit.",
+        "custom": "The lab's own properties (planning/property-profiles.md): defined by the lab panel profile and edited through its custom fields with the set_custom_property op, never as one object."
       }
     },
     {
@@ -1400,7 +1408,8 @@
       },
       "hidden": {
         "id": "Stable identity used by every reference; assigned when the question is added, never edited in the panel.",
-        "type": "The discriminator; changing type is its own op, not a property edit."
+        "type": "The discriminator; changing type is its own op, not a property edit.",
+        "custom": "The lab's own properties (planning/property-profiles.md): defined by the lab panel profile and edited through its custom fields with the set_custom_property op, never as one object."
       }
     }
   ]

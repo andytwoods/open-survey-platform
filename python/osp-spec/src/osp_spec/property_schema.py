@@ -337,6 +337,18 @@ def _accepts(model: type[BaseModel], schema: TypeSchema, key: str, value: Any) -
     return True
 
 
+def accepts(schema: TypeSchema, key: str, value: Any) -> bool:
+    """Whether the model behind `schema` takes `value` for property `key` (on an otherwise
+    minimal object). False for a schema that fits no model. Never raises."""
+    model = model_for(schema)
+    if model is None:
+        return False
+    try:
+        return _accepts(model, schema, key, value)
+    except Exception:
+        return False
+
+
 _EXPR = {"kind": "answered", "ref": {"kind": "ref", "id": "q0"}}
 
 

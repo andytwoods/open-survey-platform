@@ -23,6 +23,7 @@ from pydantic import (
     ConfigDict,
     Field,
     JsonValue,
+    StrictBool,
     StrictInt,
     StrictStr,
     StringConstraints,
@@ -138,11 +139,23 @@ class ChoiceList(Model):
 # --- Questions --------------------------------------------------------------------------
 
 
+# A lab's own properties on a question (planning/property-profiles.md §2.2): plain scalar
+# annotations such as the construct an item measures. The runtime never reads them; the
+# codebook lists them. Keys are defined by the lab's panel profile (`osp_spec.panel_profile`),
+# which the survey does not depend on: any key of this shape is valid here.
+type CustomKey = Annotated[str, StringConstraints(pattern=r"^[a-z][a-z0-9_]{0,39}$")]
+type CustomValue = StrictStr | StrictInt | float | StrictBool
+MAX_CUSTOM_PROPERTIES = 40
+
+
 class _QuestionBase(Model):
     id: Identifier
     label: Text
     help: Text | None = None
     showIf: Condition | None = None
+    custom: dict[CustomKey, CustomValue] | None = Field(
+        default=None, max_length=MAX_CUSTOM_PROPERTIES
+    )
 
 
 class _AnswerableBase(_QuestionBase):

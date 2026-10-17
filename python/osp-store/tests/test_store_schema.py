@@ -32,6 +32,7 @@ EXPECTED_TABLES = {
     # host-owned identity (plan P, migration 0007 dropped users, user_mfa, auth_sessions)
     "principals",
     "identity_nonces",  # shared replay ledger (D16, migration 0008)
+    "panel_profiles",  # lab property panel profiles (task B21, migration 0010)
     # saved results layouts (plan V, V-D9, migration 0009)
     "results_layouts",
     "results_layout_defaults",

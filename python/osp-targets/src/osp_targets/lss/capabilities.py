@@ -139,6 +139,13 @@ _rows(QUESTIONS, "label", "native", "`question_l10ns.question`. Piping: see $pip
 _rows(QUESTIONS, "help", "native", "`question_l10ns.help`.")
 _rows(
     QUESTIONS,
+    "custom",
+    "unsupported",
+    "Lab annotations from the panel profile (planning/property-profiles.md); not part of "
+    "the form. They stay in the survey document and the codebook.",
+)
+_rows(
+    QUESTIONS,
     "showIf",
     "native",
     "Question `relevance` equation. LimeSurvey clears an irrelevant answer to NULL as soon as "
@@ -194,6 +201,7 @@ _row(
 _row("MatrixQuestion.id", "native", "The question code when `name` is unset.")
 _row("MatrixQuestion.label", "native", "`question_l10ns.question`.")
 _row("MatrixQuestion.help", "native", "`question_l10ns.help`.")
+_row("MatrixQuestion.custom", "unsupported", "Lab annotations; see the other question types.")
 _row(
     "MatrixQuestion.showIf",
     "native",

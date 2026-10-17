@@ -124,6 +124,13 @@ _rows(QUESTIONS, "label", "native", "`label::<language>`. Piping: see $pipe.*.")
 _rows(QUESTIONS, "help", "native", "`hint::<language>`.")
 _rows(
     QUESTIONS,
+    "custom",
+    "unsupported",
+    "Lab annotations from the panel profile (planning/property-profiles.md); not part of "
+    "the form. They stay in the survey document and the codebook.",
+)
+_rows(
+    QUESTIONS,
     "showIf",
     "approximated",
     "`relevant`. ODK/Enketo keep a value that becomes non-relevant until final submit, "
@@ -182,6 +189,7 @@ _row(
     "`label::<language>` of the header row, above the column labels.",
 )
 _row("MatrixQuestion.help", "native", "`hint::<language>` of the header row.")
+_row("MatrixQuestion.custom", "unsupported", "Lab annotations; see the other question types.")
 _row(
     "MatrixQuestion.showIf",
     "approximated",

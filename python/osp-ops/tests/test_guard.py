@@ -76,6 +76,12 @@ EXAMPLES: dict[str, list[dict[str, Any]]] = {
         {"target": "n_rand", "property": "pick", "value": 1},
         {"target": "spare", "property": "choices", "value": [{"value": "c", "label": "C"}]},
     ],
+    "set_custom_property": [
+        {"target": "age", "key": "construct", "value": "demographics"},
+        {"target": "fruit", "key": "weight", "value": 2.5},
+        {"target": "info", "key": "prereg", "value": True},
+        {"target": "age", "key": "n", "value": 1},
+    ],
     "add_page": [
         {"block": "b_main"},
         {"block": "b_intro", "index": 0, "id": "p_new", "question_type": "single"},

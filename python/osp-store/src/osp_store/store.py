@@ -34,6 +34,7 @@ from .errors import (
     RevisionConflict,
     StoreError,
 )
+from .panel_profiles import PanelProfiles
 from .records import (
     ANSWER_STATES,
     AuditEntry,
@@ -158,7 +159,7 @@ def _answers(value: object) -> dict[str, dict[str, Any]]:
     return out
 
 
-class Store(ThemeLibrary, ResultsLayoutLibrary):  # mixins: themes.py, results_layouts.py
+class Store(ThemeLibrary, ResultsLayoutLibrary, PanelProfiles):  # mixins (one module each)
     def __init__(self, engine: Engine, keyring: Keyring, clock: Clock = _utcnow) -> None:
         self._engine = engine
         self._keys = keyring

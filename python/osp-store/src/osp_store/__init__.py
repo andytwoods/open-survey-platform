@@ -17,6 +17,7 @@ from .errors import (
     StoreError,
 )
 from .nonces import NonceLedger
+from .panel_profiles import StoredPanelProfile
 from .participant import (
     ConsentRecord,
     ParticipantSession,
@@ -76,6 +77,7 @@ __all__ = [
     "Store",
     "SubmitResult",
     "StoreError",
+    "StoredPanelProfile",
     "StoredResultsLayout",
     "StoredTheme",
     "Survey",

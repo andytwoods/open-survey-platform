@@ -177,6 +177,67 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
+    "/api/panel-profile": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** Get Profile */
+        get: operations["getPanelProfile"];
+        /** Set Profile */
+        put: operations["setPanelProfile"];
+        post?: never;
+        /** Clear Profile */
+        delete: operations["clearPanelProfile"];
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/panel-profile/check/{survey_id}": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /**
+         * Check Survey
+         * @description Warnings about a survey draft's custom values judged by its lab's profile.
+         */
+        get: operations["checkCustomValues"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/panel-profile/schemas": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /**
+         * Effective Schemas
+         * @description The property schemas with the lab's profile applied: the shape of
+         *     ``GET /api/meta/property-schemas`` plus ``groupLabels``, ``defaults`` (per question
+         *     type, for new questions), ``profileApplied`` and the profile's ``diagnostics``.
+         */
+        get: operations["getEffectivePropertySchemas"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
     "/api/s/{slug}/plan/{checksum}": {
         parameters: {
             query?: never;
@@ -1921,7 +1982,7 @@ export interface components {
         /** @enum {string} */
         OpErrorCode: "op.cascade_blocked" | "op.conflict" | "op.dangling_ref" | "op.duplicate_id" | "op.expr_syntax" | "op.internal" | "op.invalid_result" | "op.invalid_survey" | "op.not_allowed" | "op.not_applicable" | "op.not_found" | "op.params" | "op.patch" | "op.type_conflict" | "op.unknown";
         /** @enum {string} */
-        OpId: "add_block" | "add_choice" | "add_matrix_row" | "add_page" | "add_question" | "add_variable" | "apply_patch" | "bulk_paste_choices" | "change_question_type" | "create_choice_list" | "delete_block" | "delete_choice" | "delete_choice_list" | "delete_flow_node" | "delete_matrix_row" | "delete_page" | "delete_question" | "delete_variable" | "duplicate_question" | "insert_flow_node" | "move_block" | "move_choice" | "move_flow_node" | "move_matrix_row" | "move_page" | "move_question" | "rename_block" | "rename_matrix_row" | "rename_page" | "replace_survey" | "set_choice" | "set_condition" | "set_consent" | "set_languages" | "set_matrix_row_required" | "set_property" | "set_theme" | "set_title";
+        OpId: "add_block" | "add_choice" | "add_matrix_row" | "add_page" | "add_question" | "add_variable" | "apply_patch" | "bulk_paste_choices" | "change_question_type" | "create_choice_list" | "delete_block" | "delete_choice" | "delete_choice_list" | "delete_flow_node" | "delete_matrix_row" | "delete_page" | "delete_question" | "delete_variable" | "duplicate_question" | "insert_flow_node" | "move_block" | "move_choice" | "move_flow_node" | "move_matrix_row" | "move_page" | "move_question" | "rename_block" | "rename_matrix_row" | "rename_page" | "replace_survey" | "set_choice" | "set_condition" | "set_consent" | "set_custom_property" | "set_languages" | "set_matrix_row_required" | "set_property" | "set_theme" | "set_title";
         /** OpsRequest */
         OpsRequest: {
             /** Baserevision */
@@ -1936,6 +1997,32 @@ export interface components {
              * @description Client-chosen id; a retry with the same id is not applied twice
              */
             transactionId?: string | null;
+        };
+        /** PanelProfileOut */
+        PanelProfileOut: {
+            /**
+             * Canmanage
+             * @description The caller may set and clear the profile (owner)
+             */
+            canManage: boolean;
+            /**
+             * Diagnostics
+             * @description Parts of the profile that do not apply (warnings); the stock schema stands in for them
+             */
+            diagnostics: components["schemas"]["Diagnostic"][];
+            /**
+             * Profile
+             * @description The profile document (osp-panel-profile/0.1); null means the stock panel
+             */
+            profile: {
+                [key: string]: unknown;
+            } | null;
+            /** Tenantid */
+            tenantId: string;
+            /** Updatedat */
+            updatedAt?: string | null;
+            /** Updatedby */
+            updatedBy?: string | null;
         };
         /** ParseExpressionRequest */
         ParseExpressionRequest: {
@@ -2515,6 +2602,23 @@ export interface components {
                 [key: string]: components["schemas"]["JsonValue"];
             } | null;
         };
+        /** SetCustomProperty */
+        SetCustomPropertyParams: {
+            /** Key */
+            key: string;
+            /** Target */
+            target: string;
+            /**
+             * Unset
+             * @default false
+             */
+            unset: boolean;
+            /**
+             * Value
+             * @default null
+             */
+            value: string | number | boolean | null;
+        };
         /** SetDefaultResultsLayoutRequest */
         SetDefaultResultsLayoutRequest: {
             /**
@@ -2564,6 +2668,21 @@ export interface components {
             required: boolean | null;
             /** Row */
             row: string;
+        };
+        /** SetPanelProfileRequest */
+        SetPanelProfileRequest: {
+            /**
+             * Profile
+             * @description The whole profile document; replaces it
+             */
+            profile: {
+                [key: string]: unknown;
+            };
+            /**
+             * Tenantid
+             * @description The lab; needed only if you belong to several labs
+             */
+            tenantId?: string | null;
         };
         /** SetProperty */
         SetPropertyParams: {
@@ -3662,6 +3781,271 @@ export interface operations {
                 };
                 content: {
                     "application/json": components["schemas"]["ErrorBody"];
+                };
+            };
+        };
+    };
+    getPanelProfile: {
+        parameters: {
+            query?: {
+                tenantId?: string | null;
+            };
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["PanelProfileOut"];
+                };
+            };
+            /** @description Unauthorized */
+            401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorBody"];
+                };
+            };
+            /** @description Forbidden */
+            403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorBody"];
+                };
+            };
+            /** @description Unprocessable Content */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["RejectedBody"];
+                };
+            };
+        };
+    };
+    setPanelProfile: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["SetPanelProfileRequest"];
+            };
+        };
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["PanelProfileOut"];
+                };
+            };
+            /** @description Unauthorized */
+            401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorBody"];
+                };
+            };
+            /** @description Forbidden */
+            403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorBody"];
+                };
+            };
+            /** @description Not Found */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorBody"];
+                };
+            };
+            /** @description Unprocessable Content */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["RejectedBody"];
+                };
+            };
+        };
+    };
+    clearPanelProfile: {
+        parameters: {
+            query?: {
+                tenantId?: string | null;
+            };
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            204: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+            /** @description Unauthorized */
+            401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorBody"];
+                };
+            };
+            /** @description Forbidden */
+            403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorBody"];
+                };
+            };
+            /** @description Unprocessable Content */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["RejectedBody"];
+                };
+            };
+        };
+    };
+    checkCustomValues: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                survey_id: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["Diagnostic"][];
+                };
+            };
+            /** @description Unauthorized */
+            401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorBody"];
+                };
+            };
+            /** @description Forbidden */
+            403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorBody"];
+                };
+            };
+            /** @description Not Found */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorBody"];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    getEffectivePropertySchemas: {
+        parameters: {
+            query?: {
+                tenantId?: string | null;
+            };
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": {
+                        [key: string]: unknown;
+                    };
+                };
+            };
+            /** @description Unauthorized */
+            401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorBody"];
+                };
+            };
+            /** @description Forbidden */
+            403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorBody"];
+                };
+            };
+            /** @description Unprocessable Content */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["RejectedBody"];
                 };
             };
         };

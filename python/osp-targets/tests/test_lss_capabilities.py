@@ -47,7 +47,7 @@ def test_guard_fails_on_a_removed_field() -> None:
 def test_lss_summary_is_stable() -> None:
     """Counts per level, so a change of level is a visible, reviewed diff."""
     counts = Counter(cap.level for cap in LSS.values())
-    assert dict(counts) == {"native": 142, "lowered": 50, "approximated": 23, "unsupported": 44}
+    assert dict(counts) == {"native": 142, "lowered": 50, "approximated": 23, "unsupported": 53}
     assert LSS["MatrixQuestion.type"].level == "native"
     assert LSS["SliderQuestion.type"].level == "approximated"
     assert LSS["Survey.quotas"].level == "lowered"

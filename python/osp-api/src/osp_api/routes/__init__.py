@@ -17,6 +17,7 @@ from . import (
     me,
     meta,
     ops,
+    panel_profile,
     preview,
     repro,
     results,
@@ -74,6 +75,7 @@ def install(
         meta,
         expressions,
         themes,
+        panel_profile,
     ):
         app.include_router(module.router)
     _with_op_schemas(app)
