@@ -8,7 +8,9 @@
 	import type { SurveyStore } from '../sync/survey-store.svelte';
 	import {
 		exportLinks,
+		osfNodeId,
 		participantLink,
+		preregLinks,
 		problemsOf,
 		reproLink,
 		type PublishDiagnostic,
@@ -40,11 +42,22 @@
 				link: string;
 				warnings: PublishProblem[];
 				repro: string;
+				prereg: { bundle: string; summary: string };
 		  };
+
+	/** The OSF upload (task OS1): the token is sent once, in the request body, and never kept. */
+	type Osf =
+		| { kind: 'idle' }
+		| { kind: 'uploading' }
+		| { kind: 'failed'; message: string }
+		| { kind: 'done'; nodeTitle: string; nodeUrl: string; files: { name: string; url: string | null }[] };
 
 	let phase = $state<Phase>({ kind: 'idle' });
 	let copied = $state(false);
 	let wasOpen = false;
+	let osfNode = $state('');
+	let osfToken = $state('');
+	let osf = $state<Osf>({ kind: 'idle' });
 
 	$effect(() => {
 		if (open && !wasOpen) void publish();
@@ -54,6 +67,8 @@
 	async function publish() {
 		phase = { kind: 'publishing' };
 		copied = false;
+		osf = { kind: 'idle' };
+		osfToken = '';
 		store.flushBuffers();
 		await store.settled();
 		try {
@@ -68,7 +83,8 @@
 					number: data.number,
 					link: participantLink(location.origin, data.participantUrl),
 					warnings,
-					repro: reproLink(store.surveyId, data.number, apiBase)
+					repro: reproLink(store.surveyId, data.number, apiBase),
+					prereg: preregLinks(store.surveyId, data.number, apiBase)
 				};
 				store.publishedVersions = Math.max(store.publishedVersions, data.number);
 				announce(`Published version ${data.number}.`);
@@ -106,6 +122,41 @@
 	function go(p: PublishProblem) {
 		open = false;
 		ongo(p);
+	}
+
+	async function uploadToOsf(version: number) {
+		const node = osfNodeId(osfNode);
+		if (!node) {
+			osf = { kind: 'failed', message: 'Give the OSF project id (like ab3de) or its URL.' };
+			return;
+		}
+		if (osfToken.trim().length < 8) {
+			osf = { kind: 'failed', message: 'Paste an OSF personal access token.' };
+			return;
+		}
+		osf = { kind: 'uploading' };
+		const token = osfToken;
+		osfToken = ''; // the field never keeps it longer than the request
+		try {
+			const { data, error, response } = await api.POST('/api/surveys/{survey_id}/versions/{version}/prereg-bundle/osf', {
+				params: { path: { survey_id: store.surveyId, version } },
+				body: { token, node }
+			});
+			if (data) {
+				osf = {
+					kind: 'done',
+					nodeTitle: data.nodeTitle,
+					nodeUrl: data.nodeUrl,
+					files: data.files.map((f) => ({ name: f.name, url: f.url ?? null }))
+				};
+				announce(`Uploaded to OSF project ${data.nodeTitle}.`);
+				return;
+			}
+			const body = (error ?? {}) as { message?: string };
+			osf = { kind: 'failed', message: body.message ?? `Upload failed (${response.status}).` };
+		} catch (e) {
+			osf = { kind: 'failed', message: (e as Error)?.message || 'Network error.' };
+		}
 	}
 </script>
 
@@ -168,7 +219,44 @@
 				{/each}
 				<!-- eslint-disable-next-line svelte/no-navigation-without-resolve -- API download -->
 				<li><a href={s.repro} download><Download size={14} aria-hidden="true" />Reproducibility package</a> <span>Version {s.number}</span></li>
+				<!-- eslint-disable-next-line svelte/no-navigation-without-resolve -- API download -->
+				<li><a href={s.prereg.bundle} download><Download size={14} aria-hidden="true" />Preregistration bundle</a> <span>Version {s.number}: definition, checksum, codebook, design, summary (no data)</span></li>
+				<!-- eslint-disable-next-line svelte/no-navigation-without-resolve -- API page -->
+				<li><a href={s.prereg.summary} target="_blank" rel="noopener"><ExternalLink size={14} aria-hidden="true" />Preregistration summary</a> <span>Readable page; print it to PDF</span></li>
 			</ul>
+			<h3>Upload the preregistration to OSF</h3>
+			<p class="hint">Puts the bundle and the summary into an OSF project's storage. The token is used for this one upload and never stored.</p>
+			<form class="osf" onsubmit={(e) => { e.preventDefault(); void uploadToOsf(s.number); }} data-testid="osf-upload">
+				<label class="field" for="osf-node">OSF project id or URL</label>
+				<input id="osf-node" type="text" bind:value={osfNode} autocomplete="off" spellcheck="false" placeholder="ab3de or https://osf.io/ab3de/" disabled={osf.kind === 'uploading'} />
+				<label class="field" for="osf-token">Personal access token</label>
+				<input id="osf-token" type="password" bind:value={osfToken} autocomplete="off" disabled={osf.kind === 'uploading'} />
+				<div class="osf-actions">
+					<Button type="submit" size="sm" disabled={osf.kind === 'uploading'}>{osf.kind === 'uploading' ? 'Uploading…' : 'Upload to OSF'}</Button>
+				</div>
+			</form>
+			{#if osf.kind === 'failed'}
+				<p role="alert" class="bad">{osf.message}</p>
+			{:else if osf.kind === 'done'}
+				<div role="status" class="osf-done">
+					<p>
+						<!-- eslint-disable-next-line svelte/no-navigation-without-resolve -- OSF, not a builder route -->
+						Uploaded to <a href={osf.nodeUrl} target="_blank" rel="noopener">{osf.nodeTitle}</a>. Register the project on OSF when you are ready.
+					</p>
+					<ul class="exports">
+						{#each osf.files as f (f.name)}
+							<li>
+								{#if f.url}
+									<!-- eslint-disable-next-line svelte/no-navigation-without-resolve -- OSF, not a builder route -->
+									<a href={f.url} target="_blank" rel="noopener">{f.name}</a>
+								{:else}
+									<span>{f.name}</span>
+								{/if}
+							</li>
+						{/each}
+					</ul>
+				</div>
+			{/if}
 		</div>
 	{/if}
 	{#snippet footer()}
@@ -267,5 +355,35 @@
 	}
 	.exports span {
 		color: var(--color-text-muted);
+	}
+	.hint {
+		font-size: var(--text-sm);
+		color: var(--color-text-muted);
+	}
+	.osf {
+		display: flex;
+		flex-direction: column;
+		gap: var(--space-1);
+		margin-bottom: var(--space-3);
+	}
+	.osf input {
+		min-block-size: 2.25rem;
+		padding: 0 var(--space-2);
+		border: 1px solid var(--color-border-strong);
+		border-radius: var(--radius-md);
+		background: var(--color-surface-raised);
+		color: var(--color-text);
+		font: inherit;
+		font-size: var(--text-sm);
+	}
+	.osf input:focus-visible {
+		outline: 2px solid var(--color-focus);
+		outline-offset: 2px;
+	}
+	.osf-actions {
+		margin-top: var(--space-2);
+	}
+	.osf-done {
+		font-size: var(--text-sm);
 	}
 </style>

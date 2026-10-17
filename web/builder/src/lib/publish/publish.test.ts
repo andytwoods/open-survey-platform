@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import { exportLinks, participantLink, placeOf, problemsOf, reproLink } from './model';
+import { exportLinks, osfNodeId, participantLink, placeOf, preregLinks, problemsOf, reproLink } from './model';
 
 const d = (code: string, pointer: string, severity = 'error') => ({ code, pointer, severity, message: code });
 
@@ -45,5 +45,20 @@ describe('links', () => {
 	});
 	it('links the reproducibility package of the version', () => {
 		expect(reproLink('s1', 2)).toBe('/api/surveys/s1/versions/2/repro-package');
+	});
+	it('links the preregistration bundle and summary of the version, under the API base', () => {
+		expect(preregLinks('s1', 2)).toEqual({
+			bundle: '/api/surveys/s1/versions/2/prereg-bundle',
+			summary: '/api/surveys/s1/versions/2/prereg-summary'
+		});
+		expect(preregLinks('s/1', 3, 'https://host.example/osp/api').bundle).toBe(
+			'https://host.example/osp/api/surveys/s%2F1/versions/3/prereg-bundle'
+		);
+	});
+	it('reads an OSF project id from the id or a project URL', () => {
+		expect(osfNodeId('ab3de')).toBe('ab3de');
+		expect(osfNodeId('  https://osf.io/ab3de/ ')).toBe('ab3de');
+		expect(osfNodeId('https://osf.io/ab3de/files/osfstorage')).toBe('ab3de');
+		for (const bad of ['', 'a', 'ab 3de', '../x', 'https://osf.io/']) expect(osfNodeId(bad)).toBeNull();
 	});
 });

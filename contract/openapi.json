@@ -2934,6 +2934,114 @@
         "title": "OpsRequest",
         "type": "object"
       },
+      "OsfUploadRequest": {
+        "additionalProperties": false,
+        "properties": {
+          "node": {
+            "description": "The OSF project id (e.g. ab3de) or its URL",
+            "maxLength": 200,
+            "minLength": 3,
+            "title": "Node",
+            "type": "string"
+          },
+          "token": {
+            "description": "An OSF personal access token with the osf.full_write scope. Used for this request only, never stored.",
+            "maxLength": 512,
+            "minLength": 8,
+            "title": "Token",
+            "type": "string"
+          }
+        },
+        "required": [
+          "token",
+          "node"
+        ],
+        "title": "OsfUploadRequest",
+        "type": "object"
+      },
+      "OsfUploadResponse": {
+        "properties": {
+          "checksum": {
+            "description": "The survey version checksum, for the registration form",
+            "title": "Checksum",
+            "type": "string"
+          },
+          "files": {
+            "items": {
+              "$ref": "#/components/schemas/OsfUploadedFile"
+            },
+            "title": "Files",
+            "type": "array"
+          },
+          "nodeId": {
+            "title": "Nodeid",
+            "type": "string"
+          },
+          "nodePublic": {
+            "title": "Nodepublic",
+            "type": "boolean"
+          },
+          "nodeTitle": {
+            "title": "Nodetitle",
+            "type": "string"
+          },
+          "nodeUrl": {
+            "title": "Nodeurl",
+            "type": "string"
+          },
+          "user": {
+            "description": "The OSF user the token belongs to",
+            "title": "User",
+            "type": "string"
+          }
+        },
+        "required": [
+          "nodeId",
+          "nodeTitle",
+          "nodeUrl",
+          "nodePublic",
+          "user",
+          "files",
+          "checksum"
+        ],
+        "title": "OsfUploadResponse",
+        "type": "object"
+      },
+      "OsfUploadedFile": {
+        "properties": {
+          "name": {
+            "title": "Name",
+            "type": "string"
+          },
+          "size": {
+            "anyOf": [
+              {
+                "type": "integer"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Size"
+          },
+          "url": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Url"
+          }
+        },
+        "required": [
+          "name"
+        ],
+        "title": "OsfUploadedFile",
+        "type": "object"
+      },
       "PanelProfileOut": {
         "properties": {
           "canManage": {
@@ -10292,6 +10400,291 @@
         "summary": "Undo",
         "tags": [
           "ops"
+        ]
+      }
+    },
+    "/api/surveys/{survey_id}/versions/{version}/prereg-bundle": {
+      "get": {
+        "operationId": "preregBundle",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "survey_id",
+            "required": true,
+            "schema": {
+              "title": "Survey Id",
+              "type": "string"
+            }
+          },
+          {
+            "description": "Published version number",
+            "in": "path",
+            "name": "version",
+            "required": true,
+            "schema": {
+              "description": "Published version number",
+              "minimum": 1,
+              "title": "Version",
+              "type": "integer"
+            }
+          },
+          {
+            "description": "Nest the version's reproducibility package (no data)",
+            "in": "query",
+            "name": "repro",
+            "required": false,
+            "schema": {
+              "default": true,
+              "description": "Nest the version's reproducibility package (no data)",
+              "title": "Repro",
+              "type": "boolean"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "content": {
+              "application/zip": {
+                "schema": {
+                  "format": "binary",
+                  "type": "string"
+                }
+              }
+            },
+            "description": "The preregistration bundle (deterministic zip, no participant data)"
+          },
+          "401": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorBody"
+                }
+              }
+            },
+            "description": "Unauthorized"
+          },
+          "403": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorBody"
+                }
+              }
+            },
+            "description": "Forbidden"
+          },
+          "404": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorBody"
+                }
+              }
+            },
+            "description": "Not Found"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/RejectedBody"
+                }
+              }
+            },
+            "description": "Unprocessable Content"
+          }
+        },
+        "summary": "Prereg Bundle",
+        "tags": [
+          "surveys"
+        ]
+      }
+    },
+    "/api/surveys/{survey_id}/versions/{version}/prereg-bundle/osf": {
+      "post": {
+        "operationId": "preregUploadOsf",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "survey_id",
+            "required": true,
+            "schema": {
+              "title": "Survey Id",
+              "type": "string"
+            }
+          },
+          {
+            "description": "Published version number",
+            "in": "path",
+            "name": "version",
+            "required": true,
+            "schema": {
+              "description": "Published version number",
+              "minimum": 1,
+              "title": "Version",
+              "type": "integer"
+            }
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/OsfUploadRequest"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/OsfUploadResponse"
+                }
+              }
+            },
+            "description": "Successful Response"
+          },
+          "401": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorBody"
+                }
+              }
+            },
+            "description": "Unauthorized"
+          },
+          "403": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorBody"
+                }
+              }
+            },
+            "description": "Forbidden"
+          },
+          "404": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorBody"
+                }
+              }
+            },
+            "description": "Not Found"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/RejectedBody"
+                }
+              }
+            },
+            "description": "Unprocessable Content"
+          },
+          "502": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorBody"
+                }
+              }
+            },
+            "description": "Bad Gateway"
+          }
+        },
+        "summary": "Prereg Upload Osf",
+        "tags": [
+          "surveys"
+        ]
+      }
+    },
+    "/api/surveys/{survey_id}/versions/{version}/prereg-summary": {
+      "get": {
+        "operationId": "preregSummary",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "survey_id",
+            "required": true,
+            "schema": {
+              "title": "Survey Id",
+              "type": "string"
+            }
+          },
+          {
+            "description": "Published version number",
+            "in": "path",
+            "name": "version",
+            "required": true,
+            "schema": {
+              "description": "Published version number",
+              "minimum": 1,
+              "title": "Version",
+              "type": "integer"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "content": {
+              "text/html": {
+                "schema": {
+                  "type": "string"
+                }
+              }
+            },
+            "description": "The human-readable preregistration summary (self-contained HTML)"
+          },
+          "401": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorBody"
+                }
+              }
+            },
+            "description": "Unauthorized"
+          },
+          "403": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorBody"
+                }
+              }
+            },
+            "description": "Forbidden"
+          },
+          "404": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorBody"
+                }
+              }
+            },
+            "description": "Not Found"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/RejectedBody"
+                }
+              }
+            },
+            "description": "Unprocessable Content"
+          }
+        },
+        "summary": "Prereg Summary",
+        "tags": [
+          "surveys"
         ]
       }
     },

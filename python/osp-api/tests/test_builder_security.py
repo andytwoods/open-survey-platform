@@ -28,6 +28,13 @@ ROUTES: list[tuple[str, str, dict | None]] = [
     ("GET", f"/api/surveys/{SID}/export/responses", None),
     ("GET", f"/api/surveys/{SID}/export/codebook", None),
     ("GET", f"/api/surveys/{SID}/versions/{{version}}/repro-package", None),
+    ("GET", f"/api/surveys/{SID}/versions/{{version}}/prereg-bundle", None),
+    ("GET", f"/api/surveys/{SID}/versions/{{version}}/prereg-summary", None),
+    (
+        "POST",
+        f"/api/surveys/{SID}/versions/{{version}}/prereg-bundle/osf",
+        {"token": "not-a-real-token-0123", "node": "ab3de"},
+    ),
     ("DELETE", f"/api/surveys/{SID}/responses/{{response_id}}", None),
     ("POST", f"/api/surveys/{SID}/simulate", {"n": 1}),
     ("POST", f"/api/surveys/{SID}/preview-plan", None),

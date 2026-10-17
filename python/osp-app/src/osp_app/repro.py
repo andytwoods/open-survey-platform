@@ -28,9 +28,9 @@ import osp_engine.random
 import osp_targets.repro
 from osp_runtime.plan import ENGINE_VERSION, PLAN_VERSION, compile_survey, runtime_config
 from osp_spec import SPEC_VERSION
-from osp_store import ParticipantStore, SystemContext, Version
+from osp_store import ParticipantStore, SystemContext, TenantContext, Version
 from osp_targets.data import ExportError
-from osp_targets.repro import ReproData, ReproInputs, ReproKit, build_repro_package
+from osp_targets.repro import ReproData, ReproInputs, ReproKit, ReproPackage, build_repro_package
 
 from .auth.permissions import Action, Actor, Resource, can
 from .builder import Builder, ExportResult
@@ -119,42 +119,38 @@ def _plan(builder: Builder, tenant_id: str, v: Version) -> tuple[Mapping[str, An
     return plan, "recompiled"
 
 
-@command("survey.repro_package", label="Reproducibility package", action=Action.SURVEY_READ)
-def repro_package(
-    builder: Builder,
-    actor: Actor,
-    *,
-    survey_id: str,
-    version: int,
-    data: bool = False,
-) -> ReproDownload:
-    ctx = builder._locate(actor, survey_id, Action.SURVEY_READ)
+def published_version(
+    builder: Builder, ctx: TenantContext, survey_id: str, version: object
+) -> Version:
+    """The stored version ``version`` of ``survey_id`` (already located), or an error."""
     if type(version) is not int or version < 1:
         raise InvalidRequest("version must be a positive integer")
-    resource = Resource.survey(ctx.tenant_id, survey_id)
-    if data is True and not can(actor, Action.SURVEY_EXPORT, resource):
-        raise Forbidden("Participant data needs export permission.")
     v = next((x for x in builder.store.list_versions(ctx, survey_id) if x.number == version), None)
     if v is None:
         raise NotFoundError("No such published version.")
     if not isinstance(v.body, Mapping):
         raise Rejected("The stored survey version is not an object.", [])
+    return v
 
+
+def build_for_version(
+    builder: Builder,
+    ctx: TenantContext,
+    survey_id: str,
+    v: Version,
+    *,
+    data: ReproData | None = None,
+) -> ReproPackage:
+    """The reproducibility package of one stored version (shared with the preregistration
+    bundle, which nests the data-free package)."""
     plan, source = _plan(builder, ctx.tenant_id, v)
     meta = v.meta if isinstance(v.meta, Mapping) else {}
     config = meta.get("runtimeConfig")
     if not isinstance(config, Mapping):
         config = runtime_config(plan)
-
-    repro_data = None
-    if data is True:
-        survey = builder.store.get_survey(ctx, survey_id)
-        rows = _stored(builder, ctx, survey, v)
-        repro_data = ReproData(rows, _save_mode(rows))
-
     bundle = engine_bundle()
     try:
-        pkg = build_repro_package(
+        return build_repro_package(
             ReproInputs(
                 survey=v.body,
                 survey_id=survey_id,
@@ -165,9 +161,33 @@ def repro_package(
                 versions=tool_versions(bundle),
                 runtime_config=config,
                 plan_source=source,
-                data=repro_data,
+                data=data,
             )
         )
     except ExportError as exc:
         raise Rejected(str(exc), exc.diagnostics) from exc
+
+
+@command("survey.repro_package", label="Reproducibility package", action=Action.SURVEY_READ)
+def repro_package(
+    builder: Builder,
+    actor: Actor,
+    *,
+    survey_id: str,
+    version: int,
+    data: bool = False,
+) -> ReproDownload:
+    ctx = builder._locate(actor, survey_id, Action.SURVEY_READ)
+    resource = Resource.survey(ctx.tenant_id, survey_id)
+    if data is True and not can(actor, Action.SURVEY_EXPORT, resource):
+        raise Forbidden("Participant data needs export permission.")
+    v = published_version(builder, ctx, survey_id, version)
+
+    repro_data = None
+    if data is True:
+        survey = builder.store.get_survey(ctx, survey_id)
+        rows = _stored(builder, ctx, survey, v)
+        repro_data = ReproData(rows, _save_mode(rows))
+
+    pkg = build_for_version(builder, ctx, survey_id, v, data=repro_data)
     return ReproDownload(pkg.content, pkg.filename, pkg.diagnostics)

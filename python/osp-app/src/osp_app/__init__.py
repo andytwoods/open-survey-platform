@@ -1,6 +1,7 @@
 """osp-app (layer L5): permissions, host identity, builder services and app commands.
 See README.md."""
 
+from . import prereg as prereg  # registers the preregistration commands
 from . import results as results  # registers the results commands
 from . import results_export as results_export  # registers survey.results_export
 from . import results_layouts as results_layouts  # registers the saved-layout commands
@@ -16,9 +17,11 @@ from .errors import (
     Rejected,
     RevisionConflictError,
     Unauthenticated,
+    UpstreamError,
 )
 from .identity import Identity, InvalidIdentity, make_identity
 from .panel_profile import PanelProfileView
+from .prereg import OsfUploadResult, PreregDownload
 from .preview import preview_plan
 from .repro import ReproDownload
 from .results_layouts import LayoutSettings, ResultsLayoutsView
@@ -45,7 +48,9 @@ __all__ = [
     "LabTheme",
     "LayoutSettings",
     "NotFoundError",
+    "OsfUploadResult",
     "PanelProfileView",
+    "PreregDownload",
     "PublishResult",
     "Rejected",
     "ReproDownload",
@@ -55,6 +60,7 @@ __all__ = [
     "SurveyView",
     "ThemeLibraryView",
     "Unauthenticated",
+    "UpstreamError",
     "build_services",
     "preview_plan",
     "simulate_survey",

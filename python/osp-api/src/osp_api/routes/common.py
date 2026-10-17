@@ -31,6 +31,7 @@ from osp_app import (
     Rejected,
     RevisionConflictError,
     Unauthenticated,
+    UpstreamError,
 )
 from osp_app.auth import Actor, PermissionDenied
 from pydantic import BaseModel, Field
@@ -76,6 +77,7 @@ STATUS: dict[type[AppError], int] = {
     RevisionConflictError: 409,
     InvalidRequest: 422,
     Rejected: 422,
+    UpstreamError: 502,
 }
 
 _MODELS: dict[int, type[BaseModel]] = {
@@ -85,6 +87,7 @@ _MODELS: dict[int, type[BaseModel]] = {
     409: ErrorBody,
     415: ErrorBody,
     422: RejectedBody,
+    502: ErrorBody,
     503: ErrorBody,
 }
 

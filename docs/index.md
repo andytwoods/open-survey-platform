@@ -34,6 +34,11 @@ test surveys; not yet deployed in production. Expect breaking changes.
     Publish checks, versions, the participant link, data exports and the reproducibility
     package.
 
+- :material-clipboard-check: **[Preregistration](preregistration.md)**
+
+    An OSF-ready bundle per version: the definition and checksum, codebook, randomisation,
+    planned exclusions and a readable summary; optional upload to an OSF project.
+
 - :material-chart-bar: **[Results](results.md)**
 
     A chart and a table per question, filters, splits and figure export.
