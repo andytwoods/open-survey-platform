@@ -324,7 +324,7 @@ export interface paths {
         put?: never;
         /**
          * Consent
-         * @description The participant agreed (semantics.md §11). Until then the server takes no
+         * @description The participant agreed (semantics.md section 11). Until then the server takes no
          *     snapshot, quota check or submit for a survey with a consent page.
          */
         post: operations["giveConsent"];

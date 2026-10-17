@@ -313,7 +313,7 @@ def install(app: FastAPI, service: SessionService | None) -> None:
         responses=_errors(401, 404, 409, 410, 422),
     )
     def consent(session_id: str, body: ConsentRequest, s: Svc, token: Token) -> ConsentResponse:
-        """The participant agreed (semantics.md §11). Until then the server takes no
+        """The participant agreed (semantics.md section 11). Until then the server takes no
         snapshot, quota check or submit for a survey with a consent page."""
         ack = s.consent(session_id, _token(token), body.consentVersion)
         return ConsentResponse(

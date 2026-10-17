@@ -4623,7 +4623,7 @@
     },
     "/api/sessions/{session_id}/consent": {
       "post": {
-        "description": "The participant agreed (semantics.md §11). Until then the server takes no\nsnapshot, quota check or submit for a survey with a consent page.",
+        "description": "The participant agreed (semantics.md section 11). Until then the server takes no\nsnapshot, quota check or submit for a survey with a consent page.",
         "operationId": "giveConsent",
         "parameters": [
           {
