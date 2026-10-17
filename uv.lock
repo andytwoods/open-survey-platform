@@ -731,6 +731,7 @@ version = "0.0.0"
 source = { editable = "python/osp-app" }
 dependencies = [
     { name = "argon2-cffi" },
+    { name = "osp-engine" },
     { name = "osp-ops" },
     { name = "osp-qa" },
     { name = "osp-runtime" },
@@ -742,6 +743,7 @@ dependencies = [
 [package.metadata]
 requires-dist = [
     { name = "argon2-cffi", specifier = ">=25.1,<26" },
+    { name = "osp-engine", editable = "python/osp-engine" },
     { name = "osp-ops", editable = "python/osp-ops" },
     { name = "osp-qa", editable = "python/osp-qa" },
     { name = "osp-runtime", editable = "python/osp-runtime" },

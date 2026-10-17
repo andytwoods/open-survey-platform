@@ -6101,6 +6101,103 @@
         ]
       }
     },
+    "/api/surveys/{survey_id}/versions/{version}/repro-package": {
+      "get": {
+        "operationId": "reproPackage",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "survey_id",
+            "required": true,
+            "schema": {
+              "title": "Survey Id",
+              "type": "string"
+            }
+          },
+          {
+            "description": "Published version number",
+            "in": "path",
+            "name": "version",
+            "required": true,
+            "schema": {
+              "description": "Published version number",
+              "minimum": 1,
+              "title": "Version",
+              "type": "integer"
+            }
+          },
+          {
+            "description": "Include the codebook and responses (needs export permission)",
+            "in": "query",
+            "name": "data",
+            "required": false,
+            "schema": {
+              "default": false,
+              "description": "Include the codebook and responses (needs export permission)",
+              "title": "Data",
+              "type": "boolean"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "content": {
+              "application/zip": {
+                "schema": {
+                  "format": "binary",
+                  "type": "string"
+                }
+              }
+            },
+            "description": "The reproducibility package (deterministic zip)"
+          },
+          "401": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorBody"
+                }
+              }
+            },
+            "description": "Unauthorized"
+          },
+          "403": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorBody"
+                }
+              }
+            },
+            "description": "Forbidden"
+          },
+          "404": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorBody"
+                }
+              }
+            },
+            "description": "Not Found"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/RejectedBody"
+                }
+              }
+            },
+            "description": "Unprocessable Content"
+          }
+        },
+        "summary": "Repro Package",
+        "tags": [
+          "surveys"
+        ]
+      }
+    },
     "/api/version": {
       "get": {
         "operationId": "getVersion",
