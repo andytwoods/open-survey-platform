@@ -39,7 +39,7 @@ from fastapi.staticfiles import StaticFiles
 from osp_api.app import create_app
 from osp_app import build_services
 from osp_app.runtime_repo import StoreParticipantRepo
-from osp_cli.main import DEFAULT_LAB, researcher, seed_fixture
+from osp_cli.main import researcher, seed_fixture
 from osp_engine.random import MAX_SEED
 from osp_runtime import TokenBucket
 from osp_store import Keyring, Store, TenantContext, create_engine, generate_key, migrate
@@ -162,7 +162,7 @@ def build(db: Path) -> FastAPI:
             # orders and `surveyVersion` match the engine runner, which reads the file.
             want = fixture_version(folder)
             if want > seeded["versionNumber"]:
-                actor = researcher(services, seeded["email"], seeded["password"], DEFAULT_LAB)
+                actor = researcher(services, seeded["userId"], seeded["tenantId"])
                 for _ in range(want - seeded["versionNumber"]):
                     services.builder.run(
                         "survey.publish", actor, survey_id=seeded["surveyId"], save_mode=mode

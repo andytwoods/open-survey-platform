@@ -169,11 +169,10 @@ def sys_ctx() -> SystemContext:
 
 @pytest.fixture
 def tenants(store: Store, sys_ctx: SystemContext) -> tuple[TenantContext, TenantContext]:
-    """Two tenants, each with one researcher; contexts act as that researcher."""
+    """Two tenants, each with one researcher (a host principal); contexts act as them."""
     out = []
     for name in ("Lab A", "Lab B"):
         tenant = store.create_tenant(sys_ctx, name)
-        admin = TenantContext(tenant.id, "system:bootstrap")
-        user = store.create_user(admin, f"r@{name[-1].lower()}.example", "researcher")
+        user = store.touch_principal(sys_ctx, f"researcher-{name[-1].lower()}", f"R {name}")
         out.append(TenantContext(tenant.id, user.id))
     return out[0], out[1]

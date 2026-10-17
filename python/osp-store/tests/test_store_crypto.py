@@ -14,7 +14,6 @@ KEY_A = "a" * 43 + "="  # test keys only (same as conftest)
 KEY_B = "b" * 43 + "="
 
 MARKER = "PLAINTEXT-MARKER-7f3a9c"
-TOTP = "JBSWY3DPEHPK3PXPMARKER"
 
 
 def _populate(store: Store, ctx) -> tuple[str, str]:
@@ -25,7 +24,6 @@ def _populate(store: Store, ctx) -> tuple[str, str]:
     r = store.record_response(
         ctx, v.id, {"q1": {"state": "answered", "value": MARKER + "-answer"}}, session_id=s.id
     )
-    store.set_totp_secret(ctx, ctx.actor, TOTP)
     return s.id, r.id
 
 
@@ -88,7 +86,7 @@ def test_encrypted_columns_never_hold_plaintext(store, tenants, engine):
             for v in conn.execute(select(table.c[ct])).scalars()
             if v is not None
         ]
-    assert len(blobs) == 3
+    assert len(blobs) == 2
     for blob in blobs:
         assert MARKER.encode() not in blob
         assert b"MARKER" not in blob
@@ -107,7 +105,6 @@ def test_raw_sqlite_file_does_not_contain_plaintext(store, tenants, backend):
             raw += p.read_bytes()
     assert b"not secret" in raw  # sanity: we are reading the real data file
     assert MARKER.encode() not in raw
-    assert TOTP.encode() not in raw
 
 
 def test_decrypts_through_the_store(store, tenants):
@@ -115,8 +112,6 @@ def test_decrypts_through_the_store(store, tenants):
     sid, rid = _populate(store, a)
     assert store.get_session(a, sid).instance == {"q1": MARKER + "-instance"}
     assert store.get_response(a, rid).answers["q1"]["value"] == MARKER + "-answer"
-    assert store.get_totp_secret(a, a.actor) == TOTP
-    assert store.get_user(a, a.actor).has_totp
 
 
 def test_ciphertext_moved_to_another_row_fails(store, tenants, engine):
@@ -136,23 +131,22 @@ def test_ciphertext_moved_to_another_row_fails(store, tenants, engine):
 def test_key_rotation(engine, tenants, store, clock, sys_ctx):
     a, _ = tenants
     sid, rid = _populate(store, a)
-    assert store.count_by_key(sys_ctx) == {"k1": 3}
+    assert store.count_by_key(sys_ctx) == {"k1": 2}
 
     # Deploy a new key: old rows stay readable, new writes use k2.
     rotated = Store(engine, Keyring({"k1": KEY_A, "k2": KEY_B}, active="k2"), clock=clock)
     assert rotated.get_response(a, rid).answers["q1"]["value"].startswith(MARKER)
     rotated.update_session(a, sid, current_page="p2")  # no instance change: stays on k1
-    assert rotated.count_by_key(sys_ctx) == {"k1": 3}
+    assert rotated.count_by_key(sys_ctx) == {"k1": 2}
 
-    assert rotated.rotate_keys(sys_ctx) == 3
-    assert rotated.count_by_key(sys_ctx) == {"k2": 3}
+    assert rotated.rotate_keys(sys_ctx) == 2
+    assert rotated.count_by_key(sys_ctx) == {"k2": 2}
     assert rotated.rotate_keys(sys_ctx) == 0  # idempotent
 
     # k1 can now be retired.
     k2_only = Store(engine, Keyring({"k2": KEY_B}, active="k2"), clock=clock)
     assert k2_only.get_response(a, rid).answers["q1"]["value"].startswith(MARKER)
     assert k2_only.get_session(a, sid).instance == {"q1": MARKER + "-instance"}
-    assert k2_only.get_totp_secret(a, a.actor) == TOTP
 
     # And a store without the right key cannot read anything.
     with pytest.raises(CryptoError):

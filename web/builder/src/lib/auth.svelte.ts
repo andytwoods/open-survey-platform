@@ -1,12 +1,16 @@
 /**
- * Who is signed in. Password first, then a TOTP (or recovery) code if the account has
- * one enrolled. The session itself is an HttpOnly cookie; we only keep `me` and the
- * CSRF token it carries.
+ * Who the host says we are (plan P: osp-api has no sign-in of its own any more).
+ *
+ * Interim shim by P1 so the builder still compiles after `/api/auth/*` was removed: it
+ * reads `GET /api/me`, and login/TOTP/logout are stubs. P2 deletes this file along with the
+ * login page, RequireAuth and the "Sign out" button.
  */
 import type { components } from '@osp/api-client';
 import { api, setCsrfToken } from './api';
 
-export type Me = components['schemas']['Me'];
+export type Identity = components['schemas']['Identity'];
+/** `email` kept for the existing header; it is the host's display name (or user id). */
+export type Me = Identity & { email: string };
 export type LoginStep = 'ok' | 'mfa' | 'failed' | 'offline';
 
 class Auth {
@@ -14,15 +18,15 @@ class Auth {
 	/** True once /me has answered (signed in or not). */
 	checked = $state(false);
 
-	#set(me: Me | null) {
-		this.me = me;
-		setCsrfToken(me?.csrfToken ?? null);
+	#set(me: Identity | null) {
+		this.me = me ? { ...me, email: me.displayName ?? me.userId } : null;
+		setCsrfToken(null);
 	}
 
-	/** Ask the server who we are. Returns true if signed in. */
+	/** Ask the server who we are. Returns true if the host vouched for us. */
 	async refresh(): Promise<boolean> {
 		try {
-			const { data, response } = await api.GET('/api/auth/me');
+			const { data, response } = await api.GET('/api/me');
 			this.#set(response.ok && data ? data : null);
 		} catch {
 			this.#set(null);
@@ -31,41 +35,25 @@ class Auth {
 		return this.me !== null;
 	}
 
+	/** Sign-in belongs to the host now: there is nothing to log in to here. */
 	async login(email: string, password: string): Promise<LoginStep> {
-		try {
-			const { data, response } = await api.POST('/api/auth/login', { body: { email, password } });
-			if (!response.ok || !data) return response.status >= 500 ? 'offline' : 'failed';
-			if (data.status === 'mfa_required') return 'mfa';
-			this.#set(data.me ?? null);
-			this.checked = true;
-			return this.me ? 'ok' : 'failed';
-		} catch {
-			return 'offline';
-		}
+		void email;
+		void password;
+		return (await this.refresh()) ? 'ok' : 'failed';
 	}
 
 	async loginTotp(code: string, recovery = false): Promise<LoginStep> {
-		try {
-			const { data, response } = await api.POST('/api/auth/login/totp', { body: { code, recovery } });
-			if (!response.ok || !data?.me) return response.status >= 500 ? 'offline' : 'failed';
-			this.#set(data.me);
-			this.checked = true;
-			return 'ok';
-		} catch {
-			return 'offline';
-		}
+		void code;
+		void recovery;
+		return (await this.refresh()) ? 'ok' : 'failed';
 	}
 
+	/** Signing out is the host's job; forget who we were locally. */
 	async logout(): Promise<void> {
-		try {
-			await api.POST('/api/auth/logout');
-		} catch {
-			// Signed out locally either way.
-		}
 		this.#set(null);
 	}
 
-	/** The session expired mid-edit (a 401): forget who we were. */
+	/** The host session ended mid-edit (a 401): forget who we were. */
 	expired() {
 		this.#set(null);
 	}

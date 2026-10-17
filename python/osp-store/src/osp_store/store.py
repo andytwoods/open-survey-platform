@@ -4,8 +4,10 @@
   ``tenant_id``. A row in another tenant is reported as :class:`NotFound`.
 - Cross-tenant maintenance takes a :class:`SystemContext` (a different type).
 - Survey JSON, op params/inverses and version meta are opaque JSON.
-- Participant answers, autosaved instances and TOTP secrets are encrypted with
-  the keyring before they reach the database.
+- Participant answers and autosaved instances are encrypted with the keyring
+  before they reach the database.
+- Researchers are host-owned: the store keeps only a ``principals`` row per host user
+  id (last display name, first/last seen) and snapshots the name into audit rows.
 """
 
 from __future__ import annotations
@@ -38,11 +40,11 @@ from .records import (
     Draft,
     OpLogEntry,
     OpRecord,
+    Principal,
     Response,
     Session,
     Survey,
     Tenant,
-    User,
     Version,
 )
 from .retention import (
@@ -111,6 +113,25 @@ def _id(value: object) -> str:
     return value
 
 
+PRINCIPAL_ID_MAX = 64
+DISPLAY_NAME_MAX = 200
+
+
+def _principal_id(value: object) -> str:
+    if not isinstance(value, str) or not 0 < len(value) <= PRINCIPAL_ID_MAX or ":" in value:
+        raise InvalidInput(f"principal id must be 1-{PRINCIPAL_ID_MAX} characters, no ':'")
+    return value
+
+
+def _display_name(value: object) -> str | None:
+    if value is None:
+        return None
+    if not isinstance(value, str):
+        raise InvalidInput("display name must be a string")
+    text = value.strip()[:DISPLAY_NAME_MAX]
+    return text or None
+
+
 def _aware(value: datetime, what: str) -> datetime:
     if not isinstance(value, datetime) or value.tzinfo is None:
         raise InvalidInput(f"{what} must be a timezone-aware datetime")
@@ -167,10 +188,16 @@ class Store(ThemeLibrary):  # theme-library methods: themes.py
         target_id: str | None = None,
         detail: Mapping[str, Any] | None = None,
     ) -> None:
+        actor_name = None
+        if not actor.startswith(("system:", "participant:")):
+            actor_name = conn.execute(
+                select(t.principals.c.display_name).where(t.principals.c.id == actor)
+            ).scalar_one_or_none()
         conn.execute(
             insert(t.audit_log).values(
                 tenant_id=tenant_id,
                 actor=actor,
+                actor_name=actor_name,
                 action=action,
                 target_type=target_type,
                 target_id=target_id,
@@ -210,163 +237,90 @@ class Store(ThemeLibrary):  # theme-library methods: themes.py
             r = self._one(conn, select(t.tenants).where(t.tenants.c.id == ctx.tenant_id))
         return Tenant(r["id"], r["name"], r["created_at"])
 
-    # -- users ---------------------------------------------------------------------
+    def ensure_tenant(self, sys: SystemContext, tenant_id: str, name: str | None = None) -> Tenant:
+        """The tenant with this caller-chosen id (a host's lab id), created if missing.
 
-    @staticmethod
-    def _user(r: Mapping[str, Any]) -> User:
-        return User(
-            id=r["id"],
-            tenant_id=r["tenant_id"],
-            email=r["email"],
-            role=r["role"],
-            password_hash=r["password_hash"],
-            has_totp=r["totp_secret_ct"] is not None,
-            failed_logins=r["failed_logins"],
-            locked_until=r["locked_until"],
-            created_at=r["created_at"],
-        )
+        Used for labs created on first sight (planning/pages-split.md D6). The id is
+        opaque here: 1-36 characters (the width of every ``tenant_id`` column)."""
+        sys = require_system(sys)
+        if not isinstance(tenant_id, str) or not 0 < len(tenant_id) <= 36:
+            raise InvalidInput("tenant id must be 1-36 characters")
+        label = (name if isinstance(name, str) and name.strip() else tenant_id).strip()[:200]
+        found = self.find_tenant(sys, tenant_id)
+        if found is not None:
+            return found
+        row = {"id": tenant_id, "name": label, "created_at": self._now()}
+        try:
+            with self._tx() as conn:
+                conn.execute(insert(t.tenants).values(**row))
+                self._audit(conn, tenant_id, sys.actor, "tenant.create", "tenant", tenant_id)
+        except Conflict:  # created meanwhile by a concurrent request
+            found = self.find_tenant(sys, tenant_id)
+            if found is None:
+                raise
+            return found
+        return Tenant(**row)
 
-    @staticmethod
-    def _email(email: object) -> str:
-        if not isinstance(email, str):
-            raise InvalidInput("email must be a string")
-        e = email.strip().lower()
-        if not 3 <= len(e) <= 320 or e.count("@") != 1 or e.startswith("@") or e.endswith("@"):
-            raise InvalidInput("not an email address")
-        return e
-
-    def create_user(
-        self, ctx: TenantContext, email: str, role: str, password_hash: str | None = None
-    ) -> User:
-        ctx = require_ctx(ctx)
-        if not isinstance(role, str) or not 0 < len(role) <= 32:
-            raise InvalidInput("role must be 1-32 characters")
-        if password_hash is not None and not isinstance(password_hash, str):
-            raise InvalidInput("password_hash must be a string")
-        uid = _new_id()
-        values = {
-            "id": uid,
-            "tenant_id": ctx.tenant_id,
-            "email": self._email(email),
-            "role": role,
-            "password_hash": password_hash,
-            "created_at": self._now(),
-        }
-        with self._tx() as conn:
-            self._one(conn, select(t.tenants.c.id).where(t.tenants.c.id == ctx.tenant_id))
-            taken = conn.execute(
-                select(t.users.c.id).where(t.users.c.email == values["email"])
-            ).first()
-            if taken is not None:
-                raise Conflict("email already registered")
-            conn.execute(insert(t.users).values(**values))
-            self._audit(conn, ctx.tenant_id, ctx.actor, "user.create", "user", uid)
-            return self._user(self._one(conn, select(t.users).where(t.users.c.id == uid)))
-
-    def _user_where(self, ctx: TenantContext, user_id: object) -> Any:
-        return (t.users.c.tenant_id == ctx.tenant_id) & (t.users.c.id == _id(user_id))
-
-    def get_user(self, ctx: TenantContext, user_id: str) -> User:
-        ctx = require_ctx(ctx)
+    def find_tenant(self, sys: SystemContext, tenant_id: str) -> Tenant | None:
+        require_system(sys)
+        if not isinstance(tenant_id, str) or not 0 < len(tenant_id) <= 36:
+            return None
         with self._engine.connect() as conn:
-            return self._user(
-                self._one(conn, select(t.users).where(self._user_where(ctx, user_id)))
+            r = (
+                conn.execute(select(t.tenants).where(t.tenants.c.id == tenant_id))
+                .mappings()
+                .first()
             )
+        return None if r is None else Tenant(r["id"], r["name"], r["created_at"])
 
-    def list_users(self, ctx: TenantContext) -> list[User]:
-        ctx = require_ctx(ctx)
-        with self._engine.connect() as conn:
-            rows = conn.execute(
-                select(t.users)
-                .where(t.users.c.tenant_id == ctx.tenant_id)
-                .order_by(t.users.c.email)
-            ).mappings()
-            return [self._user(r) for r in rows]
+    # -- principals (host-owned identities, migration 0007) ---------------------------
 
-    def find_user_for_login(self, sys: SystemContext, email: str) -> User | None:
-        """Login happens before a tenant is known, so this one lookup is cross-tenant."""
+    def touch_principal(
+        self, sys: SystemContext, user_id: str, display_name: str | None = None
+    ) -> Principal:
+        """Record that the host vouched for ``user_id`` now: insert, or bump ``last_seen_at``
+        and keep the latest display name (an absent name keeps the stored one)."""
+        sys = require_system(sys)
+        uid = _principal_id(user_id)
+        name = _display_name(display_name)
+        now = self._now()
+        values: dict[str, Any] = {"last_seen_at": now}
+        if name is not None:
+            values["display_name"] = name
+        where = t.principals.c.id == uid
+        for _ in range(2):
+            with self._tx() as conn:
+                if conn.execute(update(t.principals).where(where).values(**values)).rowcount:
+                    return self._principal(self._one(conn, select(t.principals).where(where)))
+            try:
+                with self._tx() as conn:
+                    conn.execute(
+                        insert(t.principals).values(
+                            id=uid, display_name=name, first_seen_at=now, last_seen_at=now
+                        )
+                    )
+                return Principal(uid, name, now, now)
+            except Conflict:  # inserted meanwhile: update it on the next pass
+                continue
+        raise Conflict("principal upsert raced twice")
+
+    def get_principal(self, sys: SystemContext, user_id: str) -> Principal | None:
         require_system(sys)
         try:
-            e = self._email(email)
+            uid = _principal_id(user_id)
         except InvalidInput:
             return None
         with self._engine.connect() as conn:
-            r = conn.execute(select(t.users).where(t.users.c.email == e)).mappings().first()
-        return None if r is None else self._user(r)
-
-    def _update_user(self, ctx: TenantContext, user_id: str, action: str, **values: Any) -> None:
-        with self._tx() as conn:
-            res = conn.execute(
-                update(t.users).where(self._user_where(ctx, user_id)).values(**values)
+            r = (
+                conn.execute(select(t.principals).where(t.principals.c.id == uid))
+                .mappings()
+                .first()
             )
-            if res.rowcount != 1:
-                raise NotFound("no such user")
-            self._audit(conn, ctx.tenant_id, ctx.actor, action, "user", user_id)
+        return None if r is None else self._principal(r)
 
-    def set_password_hash(self, ctx: TenantContext, user_id: str, password_hash: str) -> None:
-        ctx = require_ctx(ctx)
-        if not isinstance(password_hash, str) or not password_hash:
-            raise InvalidInput("password_hash must be a non-empty string")
-        self._update_user(ctx, user_id, "user.password", password_hash=password_hash)
-
-    def set_role(self, ctx: TenantContext, user_id: str, role: str) -> None:
-        ctx = require_ctx(ctx)
-        if not isinstance(role, str) or not 0 < len(role) <= 32:
-            raise InvalidInput("role must be 1-32 characters")
-        self._update_user(ctx, user_id, "user.role", role=role)
-
-    def set_totp_secret(self, ctx: TenantContext, user_id: str, secret: str | None) -> None:
-        """Store (encrypted) or clear the user's TOTP secret."""
-        ctx = require_ctx(ctx)
-        uid = _id(user_id)
-        if secret is None:
-            self._update_user(
-                ctx, uid, "user.totp.clear", totp_secret_ct=None, totp_secret_key_id=None
-            )
-            return
-        if not isinstance(secret, str) or not secret:
-            raise InvalidInput("TOTP secret must be a non-empty string")
-        blob, kid = self._enc(secret, "users", "totp_secret", uid)
-        self._update_user(ctx, uid, "user.totp.set", totp_secret_ct=blob, totp_secret_key_id=kid)
-
-    def get_totp_secret(self, ctx: TenantContext, user_id: str) -> str | None:
-        ctx = require_ctx(ctx)
-        with self._engine.connect() as conn:
-            r = self._one(
-                conn,
-                select(t.users.c.id, t.users.c.totp_secret_ct, t.users.c.totp_secret_key_id).where(
-                    self._user_where(ctx, user_id)
-                ),
-            )
-        if r["totp_secret_ct"] is None:
-            return None
-        return self._dec(
-            r["totp_secret_ct"], r["totp_secret_key_id"], "users", "totp_secret", r["id"]
-        )
-
-    def record_login_failure(
-        self, ctx: TenantContext, user_id: str, locked_until: datetime | None = None
-    ) -> int:
-        """Increment the failure counter (and optionally lock). Returns the new count."""
-        ctx = require_ctx(ctx)
-        if locked_until is not None:
-            _aware(locked_until, "locked_until")
-        with self._tx() as conn:
-            res = conn.execute(
-                update(t.users)
-                .where(self._user_where(ctx, user_id))
-                .values(failed_logins=t.users.c.failed_logins + 1, locked_until=locked_until)
-            )
-            if res.rowcount != 1:
-                raise NotFound("no such user")
-            self._audit(conn, ctx.tenant_id, ctx.actor, "user.login_failed", "user", user_id)
-            return conn.execute(
-                select(t.users.c.failed_logins).where(self._user_where(ctx, user_id))
-            ).scalar_one()
-
-    def reset_login_failures(self, ctx: TenantContext, user_id: str) -> None:
-        ctx = require_ctx(ctx)
-        self._update_user(ctx, user_id, "user.login_ok", failed_logins=0, locked_until=None)
+    @staticmethod
+    def _principal(r: Mapping[str, Any]) -> Principal:
+        return Principal(r["id"], r["display_name"], r["first_seen_at"], r["last_seen_at"])
 
     # -- surveys and drafts --------------------------------------------------------
 
@@ -1004,6 +958,48 @@ class Store(ThemeLibrary):  # theme-library methods: themes.py
                 {"reason": str(reason)[:200], "session_deleted": r["session_id"] is not None},
             )
 
+    # -- survey listing title, draft delete -----------------------------------------
+
+    def set_survey_title(self, ctx: TenantContext, survey_id: str, title: str) -> None:
+        """Keep the listing title in step with the draft's title."""
+        ctx = require_ctx(ctx)
+        if not isinstance(title, str) or not 0 < len(title) <= 500:
+            raise InvalidInput("title must be 1-500 characters")
+        with self._tx() as conn:
+            res = conn.execute(
+                update(t.surveys).where(self._survey_where(ctx, survey_id)).values(title=title)
+            )
+            if res.rowcount != 1:
+                raise NotFound("no such survey")
+
+    def delete_unpublished_survey(self, ctx: TenantContext, survey_id: str) -> None:
+        """Delete a survey with its draft and op log. A survey with a published version
+        is refused (:class:`Conflict`): versions and responses are research records."""
+        ctx = require_ctx(ctx)
+        with self._tx() as conn:
+            self._one(conn, select(t.surveys.c.id).where(self._survey_where(ctx, survey_id)))
+            published = conn.execute(
+                select(func.count())
+                .select_from(t.versions)
+                .where(
+                    (t.versions.c.tenant_id == ctx.tenant_id)
+                    & (t.versions.c.survey_id == survey_id)
+                )
+            ).scalar_one()
+            if published:
+                raise Conflict("survey has published versions")
+            where_child = (t.op_log.c.tenant_id == ctx.tenant_id) & (
+                t.op_log.c.survey_id == survey_id
+            )
+            conn.execute(delete(t.op_log).where(where_child))
+            conn.execute(
+                delete(t.drafts).where(
+                    (t.drafts.c.tenant_id == ctx.tenant_id) & (t.drafts.c.survey_id == survey_id)
+                )
+            )
+            conn.execute(delete(t.surveys).where(self._survey_where(ctx, survey_id)))
+            self._audit(conn, ctx.tenant_id, ctx.actor, "survey.delete", "survey", survey_id)
+
     # -- audit ---------------------------------------------------------------------
 
     def list_audit(self, ctx: TenantContext, limit: int = 1000) -> list[AuditEntry]:
@@ -1025,6 +1021,7 @@ class Store(ThemeLibrary):  # theme-library methods: themes.py
                     r["target_id"],
                     r["detail"],
                     r["at"],
+                    r["actor_name"],
                 )
                 for r in rows
             ]

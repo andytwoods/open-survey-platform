@@ -23,24 +23,24 @@ Every method takes a context first. `TenantContext(tenant_id, actor)` scopes eve
 | Table | Holds |
 |---|---|
 | `tenants` | organisations / labs |
-| `users` | email (globally unique, lower-cased), password hash (opaque), TOTP secret (encrypted), role, login-failure counter + lock |
+| `principals` | one row per host user id: last display name, first/last seen (plan P; display and audit only, never roles). Migration `0007_host_identity` |
 | `surveys` | title, owner actor, `closed_at`, retention policy, `public_slug` (participant link id, generated, unique; migration `0005_public_slug`) |
 | `drafts` | opaque survey JSON + `revision` (stale base revision → `RevisionConflict`) |
 | `op_log` | op id, params, inverse (opaque JSON), resulting revision, seq, `txn_id` (undo unit) |
 | `versions` | immutable: number, canonical JSON text, SHA-256 checksum (verified on every read), XForm blob, tool-version meta |
 | `sessions` | version, `sessionSeed` (positive int), assigned conditions, realised orders (append-only), current page, autosaved instance (encrypted) |
 | `responses` | version + checksum, allocation mode, seed, conditions, orders, engine version, answers with state (encrypted), timestamps |
-| `audit_log` | actor, action, target; never participant data. Reads of responses are audited |
+| `audit_log` | actor, the actor's display name when written (`actor_name`, 0007), action, target; never participant data. Reads of responses are audited |
 | `themes` | the lab's theme library: name (unique per lab), opaque theme JSON (`osp_spec.theme` validates it). Migration `0002_themes` |
 | `lab_theme_defaults` | one row per lab: the theme new surveys start with; composite FK to the lab's own theme, cleared when that theme is deleted |
-| `user_mfa` | per researcher: pending TOTP secret (encrypted), TOTP replay step, hashed recovery codes. Migration `0004_accounts` (`AccountStore`) |
-| `auth_sessions` | researcher sign-in sessions, keyed by SHA-256 of the token (never the token). Migration `0004_accounts` |
+
+Migration `0007_host_identity` dropped `users`, `user_mfa` and `auth_sessions` (passwords, TOTP, sign-in sessions): the host owns accounts (`planning/pages-split.md` D5). Labs a host names are made with `store.ensure_tenant(sys, lab_id)` (the host's id is the tenant id, 1-36 characters).
 
 Child rows reference parents through composite `(tenant_id, id)` foreign keys, so the database refuses cross-tenant references too.
 
 ## Encryption at rest
 
-AES-256-GCM (`cryptography`) per field: TOTP secrets, autosaved instances, answers. Each row stores `<field>_key_id` next to the ciphertext (`0x01 ‖ nonce ‖ ct‖tag`). The AEAD associated data is `osp-store/<table>.<field>/<row id>`, so a blob copied to another row fails to decrypt. Rotation: add the new key and make it active (old rows stay readable), run `store.rotate_keys(SystemContext("system:rotate"))`, and retire the old key once `count_by_key` shows no rows for it.
+AES-256-GCM (`cryptography`) per field: autosaved instances, answers, URL parameters, conflict snapshots, response records. Each row stores `<field>_key_id` next to the ciphertext (`0x01 ‖ nonce ‖ ct‖tag`). The AEAD associated data is `osp-store/<table>.<field>/<row id>`, so a blob copied to another row fails to decrypt. Rotation: add the new key and make it active (old rows stay readable), run `store.rotate_keys(SystemContext("system:rotate"))`, and retire the old key once `count_by_key` shows no rows for it.
 
 ## Data protection
 

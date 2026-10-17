@@ -1,29 +1,24 @@
-"""Shared plumbing for the builder routes: services, cookie auth, CSRF, error mapping.
+"""Shared plumbing for the builder routes: services, identity, origin checks, errors.
 
-Cookie auth (builder UI):
-- ``__Host-osp_session``: the opaque session token. HttpOnly, Secure, SameSite=Lax,
-  Path=/ (the ``__Host-`` prefix makes the browser refuse it without Secure/Path=/ and
-  from any subdomain).
-- ``__Host-osp_csrf``: the CSRF token, readable by the page. It is derived from the
-  session token (SHA-256 with a label), so a cookie planted by another origin can't
-  match a session it doesn't know.
-- Every unsafe request (POST/PUT/PATCH/DELETE) on a cookie-authenticated route must
-  send ``X-CSRF-Token`` equal to the derived token, and must not be cross-origin
-  (``Origin`` / ``Sec-Fetch-Site``). Pre-session routes (login, TOTP step) get the
-  origin check and must be ``application/json`` (which a cross-site form can't send).
+Identity (plan P, planning/pages-split.md): a host owns sign-in. Each builder request asks
+the app's :class:`~osp_api.identity.IdentityProvider` who it is; ``None`` is 401. Then the
+app admits the identity (principal row, labs created on first sight: ``AppServices.admit``)
+and every route checks the resource's lab against the actor's roles as before.
+
+CSRF (D4) is the host's job before it signs or calls in. As defence in depth, every unsafe
+request (POST/PUT/PATCH/DELETE) must not be cross-origin (``Origin`` /
+``Sec-Fetch-Site``; ``OSP_ALLOWED_ORIGINS`` adds exact origins), and one with a body must
+be ``application/json``.
 
 Participant routes (``participant.py``) use bearer tokens and are not affected.
 """
 
 from __future__ import annotations
 
-import base64
-import hashlib
-import hmac
 from dataclasses import dataclass
 from typing import Annotated, Any
 
-from fastapi import Depends, FastAPI, Request, Response
+from fastapi import Depends, FastAPI, Request
 from fastapi.responses import JSONResponse
 from osp_app import (
     AppError,
@@ -38,11 +33,10 @@ from osp_app import (
 )
 from osp_app.auth import Actor, PermissionDenied
 from pydantic import BaseModel, Field
+from starlette.concurrency import run_in_threadpool
 
-SESSION_COOKIE = "__Host-osp_session"
-CSRF_COOKIE = "__Host-osp_csrf"
-MFA_COOKIE = "__Host-osp_mfa"
-CSRF_HEADER = "X-CSRF-Token"
+from ..identity import IdentityProvider, Nobody
+
 UNSAFE = frozenset({"POST", "PUT", "PATCH", "DELETE"})
 
 
@@ -135,12 +129,7 @@ def get_services(request: Request) -> AppServices:
 Services = Annotated[AppServices, Depends(get_services)]
 
 
-# -- CSRF and origin -----------------------------------------------------------------
-
-
-def csrf_token_for(session_token: str) -> str:
-    digest = hashlib.sha256(b"osp-csrf\x00" + session_token.encode("utf-8")).digest()
-    return base64.urlsafe_b64encode(digest).decode("ascii").rstrip("=")
+# -- origin and content type (D4: defence in depth behind the host's own CSRF check) ------
 
 
 def _same_origin(request: Request) -> bool:
@@ -159,49 +148,44 @@ def check_origin(request: Request) -> None:
         raise Forbidden("Cross-origin request refused.")
 
 
+def _has_body(request: Request) -> bool:
+    length = request.headers.get("content-length")
+    if length is not None:
+        return length.strip() not in ("", "0")
+    return "transfer-encoding" in request.headers
+
+
 def require_json(request: Request) -> None:
+    """An unsafe request that carries a body must say ``application/json`` (which a
+    cross-site HTML form can't send)."""
+    if request.method not in UNSAFE or not _has_body(request):
+        return
     ctype = request.headers.get("content-type", "").split(";")[0].strip().lower()
     if ctype != "application/json":
         raise UnsupportedMediaType("Content-Type must be application/json.")
 
 
-def check_csrf(request: Request, session_token: str) -> None:
-    if request.method not in UNSAFE:
-        return
-    check_origin(request)
-    sent = request.headers.get(CSRF_HEADER, "")
-    if not sent or not hmac.compare_digest(sent, csrf_token_for(session_token)):
-        raise Forbidden("Missing or invalid CSRF token.")
-
-
-# -- authentication ------------------------------------------------------------------
+# -- identity (plan P: the host says who this is) -------------------------------------------
 
 
 @dataclass(frozen=True)
 class Authed:
     actor: Actor
-    token: str
+    display_name: str | None = None
 
 
-def authenticated(request: Request, services: Services) -> Authed:
-    token = request.cookies.get(SESSION_COOKIE)
-    actor = services.auth.actor(token) if token else None
-    if actor is None or token is None:
+def get_identity_provider(request: Request) -> IdentityProvider:
+    return getattr(request.app.state, "identity", None) or Nobody()
+
+
+async def authenticated(request: Request, services: Services) -> Authed:
+    identity = await get_identity_provider(request).identify(request)
+    if identity is None:
         raise Unauthenticated("Sign in first.")
-    check_csrf(request, token)
-    return Authed(actor, token)
+    check_origin(request)
+    require_json(request)
+    actor = await run_in_threadpool(services.admit, identity)
+    return Authed(actor, identity.display_name)
 
 
 Auth = Annotated[Authed, Depends(authenticated)]
-
-
-def set_session_cookies(response: Response, token: str) -> str:
-    response.set_cookie(SESSION_COOKIE, token, httponly=True, secure=True, samesite="lax", path="/")
-    csrf = csrf_token_for(token)
-    response.set_cookie(CSRF_COOKIE, csrf, httponly=False, secure=True, samesite="lax", path="/")
-    return csrf
-
-
-def clear_session_cookies(response: Response) -> None:
-    for name in (SESSION_COOKIE, CSRF_COOKIE, MFA_COOKIE):
-        response.delete_cookie(name, path="/", secure=True, httponly=True, samesite="lax")

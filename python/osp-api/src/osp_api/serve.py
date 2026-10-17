@@ -13,7 +13,18 @@ OSP_DATA_DIR        where dev state lives (gitignored)          ``.data``
 OSP_DATABASE_URL    SQLAlchemy URL                              ``sqlite:///<data>/osp.db``
 OSP_STORE_KEYS      encryption keyring (``osp-cli gen-key``)    see below
 OSP_HOST/OSP_PORT   where to listen                             ``127.0.0.1`` / ``8000``
+OSP_IDENTITY        ``trusted-headers`` or ``dev`` (who a       ``trusted-headers``
+                    builder request is; see ``identity.py``)
+OSP_IDENTITY_KEYS   ``kid:secret,...`` shared with the host     (required for
+                    (TrustedHeaders; >= 32 bytes each)          trusted-headers)
+OSP_AUTO_CREATE_LABS  create a lab on first sight of its id     ``on``
+OSP_ALLOWED_ORIGINS   exact origins allowed cross-origin        none
 ==================  ==========================================  =====================
+
+Identity (plan P): osp-api has no sign-in. Behind a host, ``trusted-headers`` verifies the
+host's signed ``X-OSP-*`` headers; the host must be the only route to the API and strip any
+``X-OSP-*`` a browser sends (D3), which is why the default bind is 127.0.0.1. ``dev`` makes
+everyone the dev researcher and is refused unless ``OSP_ENV=dev`` and the bind is loopback.
 
 Keys: in dev, if ``OSP_STORE_KEYS`` is unset, a keyring is generated on the first run into
 ``<data>/dev-keys.env`` (mode 0600) and reused after. That file is a convenience for a
@@ -45,7 +56,11 @@ from osp_app import build_services
 from osp_store import Keyring, Store, create_engine, generate_key, migrate
 from osp_store.crypto import ENV_ACTIVE, ENV_KEYS
 
+from .identity import IdentityConfigError, IdentityProvider, provider_from_env
+
 ENVIRONMENTS = ("dev", "production")
+_ON = frozenset({"1", "true", "on", "yes"})
+_OFF = frozenset({"0", "false", "off", "no"})
 DEV_KEYS_FILE = "dev-keys.env"
 
 
@@ -60,6 +75,8 @@ class Settings:
     database_url: str
     host: str
     port: int
+    auto_create_labs: bool = True
+    allowed_origins: tuple[str, ...] = ()
 
     @property
     def production(self) -> bool:
@@ -81,7 +98,17 @@ class Settings:
         if not raw_port.isdigit() or not 0 < int(raw_port) < 65536:
             raise ConfigError(f"OSP_PORT must be a port number, not {raw_port[:20]!r}")
         host = (env.get("OSP_HOST") or "127.0.0.1").strip()
-        return cls(name, data_dir, db, host, int(raw_port))
+        auto = (env.get("OSP_AUTO_CREATE_LABS") or "on").strip().lower()
+        if auto not in _ON | _OFF:
+            raise ConfigError(f"OSP_AUTO_CREATE_LABS must be on or off, not {auto[:20]!r}")
+        origins = tuple(
+            o.strip().rstrip("/") for o in (env.get("OSP_ALLOWED_ORIGINS") or "").split(",")
+        )
+        origins = tuple(o for o in origins if o)
+        for o in origins:
+            if o == "*" or not o.startswith(("https://", "http://")) or o.count("/") != 2:
+                raise ConfigError(f"OSP_ALLOWED_ORIGINS takes exact origins, not {o[:60]!r}")
+        return cls(name, data_dir, db, host, int(raw_port), auto in _ON, origins)
 
 
 def _read_env_file(path: Path) -> dict[str, str]:
@@ -164,10 +191,26 @@ def log_config() -> dict:
     return cfg
 
 
-def build_app(settings: Settings, environ: Mapping[str, str] | None = None) -> FastAPI:
+def identity_provider(
+    settings: Settings, host: str, environ: Mapping[str, str] | None = None
+) -> IdentityProvider:
+    env = os.environ if environ is None else environ
+    try:
+        return provider_from_env(env, env=settings.env, host=host)
+    except IdentityConfigError as exc:
+        raise ConfigError(str(exc)) from exc
+
+
+def build_app(
+    settings: Settings, environ: Mapping[str, str] | None = None, *, host: str | None = None
+) -> FastAPI:
     from .app import create_app
 
-    return create_app(builder=build_services(prepare(settings, environ)))
+    identity = identity_provider(settings, host or settings.host, environ)
+    services = build_services(
+        prepare(settings, environ), auto_create_labs=settings.auto_create_labs
+    )
+    return create_app(builder=services, identity=identity, allowed_origins=settings.allowed_origins)
 
 
 def _parser() -> argparse.ArgumentParser:
@@ -189,7 +232,8 @@ def main(argv: Sequence[str] | None = None) -> int:
             if not settings.production and not os.environ.get(ENV_KEYS):
                 print(f"osp-api: dev keys in {dev_keys_path(settings)}")
             return 0
-        app = build_app(settings)
+        host = args.host or settings.host
+        app = build_app(settings, host=host)
     except ConfigError as exc:
         print(f"osp-api: {exc}", file=sys.stderr)
         return 2
@@ -197,7 +241,7 @@ def main(argv: Sequence[str] | None = None) -> int:
 
     uvicorn.run(
         app,
-        host=args.host or settings.host,
+        host=host,
         port=args.port or settings.port,
         log_level="info",
         log_config=log_config(),
