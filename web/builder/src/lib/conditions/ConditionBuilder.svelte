@@ -29,7 +29,8 @@
 		onOps,
 		oncancel,
 		applyLabel = 'Apply',
-		headingLevel = 3
+		headingLevel = 3,
+		heading = 'Show this question if…'
 	}: {
 		/** Questions the condition may use (see `questionsFromSurvey`). */
 		questions: readonly QuestionInfo[];
@@ -46,6 +47,8 @@
 		applyLabel?: string;
 		/** Level of the builder's own heading, to fit the page's outline. */
 		headingLevel?: 2 | 3 | 4;
+		/** The builder's own heading, e.g. "Branch if…" for a flow branch. */
+		heading?: string;
 	} = $props();
 
 	const uid = $props.id();
@@ -213,7 +216,7 @@
 
 <section class="builder" data-testid="condition-builder" aria-labelledby="{uid}-title">
 	<div class="bar">
-		<svelte:element this={`h${headingLevel}`} id="{uid}-title" class="title">Show this question if…</svelte:element>
+		<svelte:element this={`h${headingLevel}`} id="{uid}-title" class="title">{heading}</svelte:element>
 		<div class="toggle" role="group" aria-label="Editor view">
 			<button
 				type="button"
