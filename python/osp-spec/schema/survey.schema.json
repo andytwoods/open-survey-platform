@@ -465,6 +465,17 @@
         "label": {
           "$ref": "#/$defs/Text"
         },
+        "media": {
+          "anyOf": [
+            {
+              "$ref": "#/$defs/Media"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null
+        },
         "value": {
           "$ref": "#/$defs/ChoiceValue"
         }
@@ -992,6 +1003,22 @@
         "label": {
           "$ref": "#/$defs/Text"
         },
+        "media": {
+          "anyOf": [
+            {
+              "items": {
+                "$ref": "#/$defs/Media"
+              },
+              "maxItems": 3,
+              "type": "array"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Media"
+        },
         "name": {
           "anyOf": [
             {
@@ -1136,6 +1163,22 @@
           ],
           "default": null,
           "title": "Max"
+        },
+        "media": {
+          "anyOf": [
+            {
+              "items": {
+                "$ref": "#/$defs/Media"
+              },
+              "maxItems": 3,
+              "type": "array"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Media"
         },
         "min": {
           "anyOf": [
@@ -2167,6 +2210,22 @@
           "default": null,
           "title": "Max"
         },
+        "media": {
+          "anyOf": [
+            {
+              "items": {
+                "$ref": "#/$defs/Media"
+              },
+              "maxItems": 3,
+              "type": "array"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Media"
+        },
         "min": {
           "anyOf": [
             {
@@ -2224,6 +2283,22 @@
     "LanguageTag": {
       "pattern": "^[A-Za-z]{2,3}(-[A-Za-z0-9]{1,8})*$",
       "type": "string"
+    },
+    "LocalisedUrl": {
+      "anyOf": [
+        {
+          "$ref": "#/$defs/Url"
+        },
+        {
+          "additionalProperties": {
+            "$ref": "#/$defs/Url"
+          },
+          "propertyNames": {
+            "$ref": "#/$defs/LanguageTag"
+          },
+          "type": "object"
+        }
+      ]
     },
     "MatrixQuestion": {
       "additionalProperties": false,
@@ -2291,6 +2366,22 @@
         },
         "label": {
           "$ref": "#/$defs/Text"
+        },
+        "media": {
+          "anyOf": [
+            {
+              "items": {
+                "$ref": "#/$defs/Media"
+              },
+              "maxItems": 3,
+              "type": "array"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Media"
         },
         "name": {
           "anyOf": [
@@ -2372,6 +2463,150 @@
       "title": "MatrixRow",
       "type": "object"
     },
+    "Media": {
+      "additionalProperties": false,
+      "description": "One image, audio clip or video.\n\n- ``url``: where participants load it from: ``https://…`` (no credentials) or a\n  same-origin absolute path (``/media/…``). Per language when the stimulus differs.\n- ``alt``: the text alternative of an image (required for images).\n- ``caption``: shown under the media.\n- ``transcriptUrl``: a page or file with the transcript (required for audio, recommended\n  for video). ``captionsUrl``: a WebVTT captions file (required for video), per language.\n- ``posterUrl``: the still shown before a video plays.\n- ``width`` / ``height``: pixel hints (both or neither) so the page reserves the space.\n- ``durationSeconds`` / ``mimeType``: hints for the player and the exports.\n- ``mustPlayToEnd``: the participant cannot leave the page before the clip has ended\n  (audio/video on a question or note only). ``autoplay``: video only; always muted and\n  never under ``prefers-reduced-motion: reduce``.",
+      "properties": {
+        "alt": {
+          "anyOf": [
+            {
+              "$ref": "#/$defs/Text"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null
+        },
+        "autoplay": {
+          "default": false,
+          "title": "Autoplay",
+          "type": "boolean"
+        },
+        "caption": {
+          "anyOf": [
+            {
+              "$ref": "#/$defs/Text"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null
+        },
+        "captionsUrl": {
+          "anyOf": [
+            {
+              "$ref": "#/$defs/LocalisedUrl"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null
+        },
+        "durationSeconds": {
+          "anyOf": [
+            {
+              "exclusiveMinimum": 0,
+              "maximum": 86400,
+              "type": "number"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Durationseconds"
+        },
+        "height": {
+          "anyOf": [
+            {
+              "maximum": 8192,
+              "minimum": 1,
+              "type": "integer"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Height"
+        },
+        "kind": {
+          "$ref": "#/$defs/MediaKind"
+        },
+        "mimeType": {
+          "anyOf": [
+            {
+              "$ref": "#/$defs/MimeType"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null
+        },
+        "mustPlayToEnd": {
+          "default": false,
+          "title": "Mustplaytoend",
+          "type": "boolean"
+        },
+        "posterUrl": {
+          "anyOf": [
+            {
+              "$ref": "#/$defs/Url"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null
+        },
+        "transcriptUrl": {
+          "anyOf": [
+            {
+              "$ref": "#/$defs/LocalisedUrl"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null
+        },
+        "url": {
+          "$ref": "#/$defs/LocalisedUrl"
+        },
+        "width": {
+          "anyOf": [
+            {
+              "maximum": 8192,
+              "minimum": 1,
+              "type": "integer"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Width"
+        }
+      },
+      "required": [
+        "kind",
+        "url"
+      ],
+      "title": "Media",
+      "type": "object"
+    },
+    "MediaKind": {
+      "enum": [
+        "image",
+        "audio",
+        "video"
+      ],
+      "type": "string"
+    },
     "Metadata": {
       "additionalProperties": false,
       "properties": {
@@ -2442,6 +2677,10 @@
       ],
       "title": "Metadata",
       "type": "object"
+    },
+    "MimeType": {
+      "pattern": "^(image|audio|video)/[A-Za-z0-9][A-Za-z0-9!#$&^_.+-]{0,126}$",
+      "type": "string"
     },
     "MultiQuestion": {
       "additionalProperties": false,
@@ -2534,6 +2773,22 @@
         },
         "label": {
           "$ref": "#/$defs/Text"
+        },
+        "media": {
+          "anyOf": [
+            {
+              "items": {
+                "$ref": "#/$defs/Media"
+              },
+              "maxItems": 3,
+              "type": "array"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Media"
         },
         "name": {
           "anyOf": [
@@ -2703,6 +2958,22 @@
         },
         "label": {
           "$ref": "#/$defs/Text"
+        },
+        "media": {
+          "anyOf": [
+            {
+              "items": {
+                "$ref": "#/$defs/Media"
+              },
+              "maxItems": 3,
+              "type": "array"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Media"
         },
         "showIf": {
           "anyOf": [
@@ -3309,6 +3580,22 @@
         "label": {
           "$ref": "#/$defs/Text"
         },
+        "media": {
+          "anyOf": [
+            {
+              "items": {
+                "$ref": "#/$defs/Media"
+              },
+              "maxItems": 3,
+              "type": "array"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Media"
+        },
         "name": {
           "anyOf": [
             {
@@ -3434,6 +3721,22 @@
             }
           ],
           "default": null
+        },
+        "media": {
+          "anyOf": [
+            {
+              "items": {
+                "$ref": "#/$defs/Media"
+              },
+              "maxItems": 3,
+              "type": "array"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Media"
         },
         "min": {
           "anyOf": [
@@ -3618,6 +3921,22 @@
         "label": {
           "$ref": "#/$defs/Text"
         },
+        "media": {
+          "anyOf": [
+            {
+              "items": {
+                "$ref": "#/$defs/Media"
+              },
+              "maxItems": 3,
+              "type": "array"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Media"
+        },
         "multiline": {
           "default": false,
           "title": "Multiline",
@@ -3793,6 +4112,11 @@
       ],
       "title": "Theme",
       "type": "object"
+    },
+    "Url": {
+      "maxLength": 2048,
+      "minLength": 1,
+      "type": "string"
     },
     "Variable": {
       "discriminator": {

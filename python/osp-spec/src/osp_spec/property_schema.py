@@ -75,13 +75,23 @@ KINDS = (
     "rows",
     "condition",
     "expression",
+    "media",
 )
 FAMILIES = ("choice", "text", "number", "matrix", "scale", "note")
 GROUPS = ("Basics", "Choices", "Logic", "Validation", "Advanced")
 ENTITIES = ("question", "page", "block", "survey")
 
 type Kind = Literal[
-    "text", "richtext", "number", "bool", "enum", "choicelist", "rows", "condition", "expression"
+    "text",
+    "richtext",
+    "number",
+    "bool",
+    "enum",
+    "choicelist",
+    "rows",
+    "condition",
+    "expression",
+    "media",
 ]
 type Family = Literal["choice", "text", "number", "matrix", "scale", "note"]
 type Group = Literal["Basics", "Choices", "Logic", "Validation", "Advanced"]
@@ -368,6 +378,8 @@ def _samples(spec: PropertySpec, translated: bool) -> list[Any]:
             return [[{"value": 1, "label": text}]]
         case "rows":
             return [[{"id": "r1", "label": text}]]
+        case "media":
+            return [[{"kind": "image", "url": "/media/x.png", "alt": text}]]
         case _:  # condition, expression
             return [_EXPR]
 

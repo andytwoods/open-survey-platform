@@ -19,6 +19,11 @@ properties:
     translatable: true
     group: Basics
     help: { en: "Shown under the question text." }
+  media:
+    kind: media
+    label: { en: "Media" }
+    group: Basics
+    help: { en: "Images, audio or video shown between the text and the help. Up to 3; images need alt text, audio a transcript, video captions." }
   showIf:
     kind: condition
     label: { en: "Show if" }

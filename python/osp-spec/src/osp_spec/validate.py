@@ -30,6 +30,7 @@ a branch) are warnings: the reference is legal but often `null` (semantics.md §
 from __future__ import annotations
 
 import re
+from collections.abc import Iterable
 from dataclasses import dataclass, field
 from datetime import date as _date
 from decimal import Decimal, InvalidOperation
@@ -41,6 +42,7 @@ from pydantic import ValidationError
 from . import expr as ex
 from .diagnostics import Diagnostic, make, pointer
 from .hooks import check_hooks
+from .media import MAX_MEDIA_PER_ITEM, Media, check_media, normalise_origins
 from .model import (
     SPEC_VERSION,
     AssignedVariable,
@@ -86,20 +88,29 @@ BUILTIN_PIPES = frozenset(
 PathElem = tuple[str, str, int]
 
 
-def validate(data: Any) -> list[Diagnostic]:
-    """Diagnostics for any input (a parsed JSON value). Never raises."""
-    return parse(data)[1]
+def validate(data: Any, *, media_origins: Iterable[str] | None = None) -> list[Diagnostic]:
+    """Diagnostics for any input (a parsed JSON value). Never raises.
+
+    `media_origins` (planning/media.md §2.3): the deployment's allowed media origins
+    (`OSP_MEDIA_ORIGINS`). When given, a media URL on any other origin is the error
+    `media.origin_not_allowed`; same-origin paths always pass. None: no origin check.
+    """
+    return parse(data, media_origins=media_origins)[1]
 
 
-def parse(data: Any) -> tuple[Survey | None, list[Diagnostic]]:
+def parse(
+    data: Any, *, media_origins: Iterable[str] | None = None
+) -> tuple[Survey | None, list[Diagnostic]]:
     """The parsed survey (None if structurally invalid) and its diagnostics. Never raises."""
     try:
-        return _parse(data)
+        return _parse(data, media_origins)
     except Exception as exc:  # never crash on input (AGENTS.md rule 3)
         return None, [make("internal.error", "", f"validator failed: {type(exc).__name__}")]
 
 
-def _parse(data: Any) -> tuple[Survey | None, list[Diagnostic]]:
+def _parse(
+    data: Any, media_origins: Iterable[str] | None = None
+) -> tuple[Survey | None, list[Diagnostic]]:
     if isinstance(data, dict) and "specVersion" in data:
         version = data["specVersion"]
         if isinstance(version, str) and version != SPEC_VERSION:
@@ -109,7 +120,8 @@ def _parse(data: Any) -> tuple[Survey | None, list[Diagnostic]]:
         survey = Survey.model_validate(data)
     except ValidationError as err:
         return None, _schema_diagnostics(err, data)
-    return survey, _Checker(survey).run()
+    origins = None if media_origins is None else normalise_origins(media_origins)
+    return survey, _Checker(survey, media_origins=origins).run()
 
 
 # --- Stage 1: pydantic errors -> diagnostics -------------------------------------------
@@ -224,6 +236,7 @@ class _Checker:
     counter: int = 0
     _cpos: dict[str, int | None] = field(default_factory=dict)
     _env: dict[str, str] | None = None
+    media_origins: frozenset[str] | None = None  # planning/media.md §2.3; None: unchecked
 
     def emit(self, code: str, ptr: str, message: str) -> None:
         self.out.append(make(code, ptr, message))
@@ -469,8 +482,30 @@ class _Checker:
                 self.emit("choice.duplicate_value", cp + "/value", f"code {key!r} is repeated")
             seen.add(key)
             self._text(c.label, cp + "/label", site)
+            if c.media is not None:
+                self._media(c.media, cp + "/media", site, on_choice=True)
         if len({type(c.value) for c in choices}) > 1:
             self.emit("choice.mixed_types", ptr, "list mixes integer and text codes")
+
+    # -- media (planning/media.md §2) ------------------------------------------------
+
+    def _media(self, media: Media, ptr: str, site: _Site | None, *, on_choice: bool) -> None:
+        """One media object: its texts pipe like labels; the rest is `check_media`."""
+        for key in ("alt", "caption"):
+            text = getattr(media, key)
+            if text is not None:
+                self._text(text, ptr + "/" + key, site)
+        check_media(
+            media, ptr, on_choice=on_choice, emit=self.emit, media_origins=self.media_origins
+        )
+
+    def _media_list(self, media: list[Media] | None, ptr: str, site: _Site | None) -> None:
+        if not media:
+            return
+        if len(media) > MAX_MEDIA_PER_ITEM:  # the model caps it too; a second line of defence
+            self.emit("schema.value", ptr, f"at most {MAX_MEDIA_PER_ITEM} media per question")
+        for k, m in enumerate(media):
+            self._media(m, ptr + pointer(k), site, on_choice=False)
 
     # -- variables and quotas -------------------------------------------------------
 
@@ -685,6 +720,7 @@ class _Checker:
         self._text(q.label, info.ptr + "/label", site)
         if q.help is not None:
             self._text(q.help, info.ptr + "/help", site)
+        self._media_list(q.media, info.ptr + "/media", site)
         if not isinstance(q, NoteQuestion | MatrixQuestion) and q.constraintMessage is not None:
             self._text(q.constraintMessage, info.ptr + "/constraintMessage", site)
         if isinstance(q, (SingleQuestion, MultiQuestion)) and q.choices is not None:
@@ -1065,13 +1101,16 @@ _Checker._settings = _settings  # type: ignore[attr-defined]
 _Checker._consent = _consent  # type: ignore[attr-defined]
 
 
-def publish_diagnostics(data: Any) -> list[Diagnostic]:
+def publish_diagnostics(
+    data: Any, *, media_origins: Iterable[str] | None = None
+) -> list[Diagnostic]:
     """Diagnostics that block **publishing** but not editing or previewing: everything
-    `validate` reports, plus `publish.retention_required` when no retention policy is set
-    (decided 16 Oct 2026: required before publishing, no silent default), plus the warning
+    `validate` reports (with the same `media_origins` check), plus
+    `publish.retention_required` when no retention policy is set (decided 16 Oct 2026:
+    required before publishing, no silent default), plus the warning
     `publish.consent_missing` when participants answer questions but there is no consent
     page (a warning: some studies take consent elsewhere). Never raises."""
-    survey, diagnostics = parse(data)
+    survey, diagnostics = parse(data, media_origins=media_origins)
     if survey is not None and survey.settings.retention is None:
         diagnostics = [
             *diagnostics,

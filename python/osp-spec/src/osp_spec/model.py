@@ -127,6 +127,9 @@ class Choice(Model):
 
     value: ChoiceValue
     label: Text
+    # planning/media.md §2.1: an image or audio clip shown with the option (also a matrix
+    # column's, since columns are choices). Edited with the `set_choice_media` op.
+    media: Media | None = None
 
 
 class ChoiceList(Model):
@@ -156,6 +159,9 @@ class _QuestionBase(Model):
     custom: dict[CustomKey, CustomValue] | None = Field(
         default=None, max_length=MAX_CUSTOM_PROPERTIES
     )
+    # planning/media.md §2.1: images, audio or video shown between the label and the help
+    # (a note's media is its content). At most MAX_MEDIA_PER_ITEM (osp_spec.media).
+    media: list[Media] | None = Field(default=None, max_length=3)
 
 
 class _AnswerableBase(_QuestionBase):
@@ -454,11 +460,31 @@ class Survey(Model):
     hooks: Hooks | None = None
 
 
-# Theme and Hooks live in theme.py / hooks.py, which build on this module's `Model`, so they
-# are imported last (everything they need is defined by now) and the models that use them
-# are rebuilt. `osp_spec/__init__` takes them from here, so this module always loads first.
+# Theme, Hooks and Media live in theme.py / hooks.py / media.py, which build on this module's
+# `Model`, so they are imported last (everything they need is defined by now) and the models
+# that use them are rebuilt. `osp_spec/__init__` takes them from here, so this module always
+# loads first.
 from .hooks import HOOK_EVENTS, Hooks  # noqa: E402, F401
+from .media import MEDIA_KINDS, Media  # noqa: E402, F401
 from .theme import Theme  # noqa: E402
 
-for _m in (BranchNode, RandomiserNode, Settings, Survey):
+for _m in (
+    Choice,
+    ChoiceList,
+    IntegerQuestion,
+    DecimalQuestion,
+    TextQuestion,
+    DateQuestion,
+    SingleQuestion,
+    MultiQuestion,
+    MatrixQuestion,
+    SliderQuestion,
+    NoteQuestion,
+    Page,
+    Block,
+    BranchNode,
+    RandomiserNode,
+    Settings,
+    Survey,
+):
     _m.model_rebuild()

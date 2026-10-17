@@ -76,6 +76,20 @@ CODES: dict[str, Severity] = {
     "hooks.write_target": "error",  # a handler writes something that is not a hook variable
     "hooks.redirect": "error",  # a redirect template breaks the host's URL rules
     "hooks.parent_origin": "error",  # the parent origin is not one https origin
+    # Media (planning/media.md §2; osp_spec.media.check_media)
+    "media.url": "error",  # not https / a same-origin path, credentials, whitespace
+    "media.url_insecure": "warning",  # http://localhost, for development only
+    "media.url_pipe": "error",  # `${…}` in a URL: answers never build URLs
+    "media.origin_not_allowed": "error",  # not in the deployment's OSP_MEDIA_ORIGINS
+    "media.alt_missing": "error",  # an image without alt text
+    "media.alt_kind": "warning",  # alt on audio/video
+    "media.transcript_missing": "error",  # audio without a transcript
+    "media.transcript_recommended": "warning",  # video without a transcript
+    "media.captions_missing": "error",  # video without a WebVTT captions file
+    "media.field_kind": "error",  # captions/poster/autoplay on non-video, mustPlayToEnd on image
+    "media.size_pair": "error",  # width without height or the reverse
+    "media.choice_kind": "error",  # a video on a choice
+    "media.must_play_choice": "error",  # mustPlayToEnd on a choice's media
     # Publishing only (publish_diagnostics; never from validate)
     "publish.retention_required": "error",
     "publish.consent_missing": "warning",  # participant questions but no consent page

@@ -272,7 +272,119 @@ def m_slider_integer_step(s):
     _items(s)[1] = {"id": "q2", "type": "slider", "label": "S", "max": 10, "step": "0.5"}
 
 
+def _image(**extra: Any) -> dict:
+    return {"kind": "image", "url": "/media/a.png", "alt": "A face", **extra}
+
+
+def _video(**extra: Any) -> dict:
+    return {"kind": "video", "url": "https://cdn.example.org/c.mp4",
+            "captionsUrl": "/media/c.vtt", "transcriptUrl": "/media/c.html", **extra}  # fmt: skip
+
+
+def m_media_url(s):
+    _items(s)[0]["media"] = [
+        _image(url="ftp://x.org/a.png"),
+        _image(url="//cdn.example.org/a.png"),
+        _image(url="https://user:pw@cdn.example.org/a.png"),
+    ]
+
+
+def m_media_url_insecure(s):
+    _items(s)[0]["media"] = [_image(url="http://localhost:5173/a.png")]
+
+
+def m_media_url_pipe(s):
+    _items(s)[0]["media"] = [_image(url="https://cdn.example.org/${q1}.png")]
+
+
+def m_media_alt_missing(s):
+    _items(s)[0]["media"] = [
+        {"kind": "image", "url": "/media/a.png"},
+        {"kind": "image", "url": "/media/b.png", "alt": {"en": "  "}},
+    ]
+
+
+def m_media_alt_kind(s):
+    _items(s)[0]["media"] = [_video(alt="spoken")]
+
+
+def m_media_transcript_missing(s):
+    _items(s)[0]["media"] = [{"kind": "audio", "url": "/media/a.mp3"}]
+
+
+def m_media_captions_missing(s):
+    _items(s)[0]["media"] = [{"kind": "video", "url": "/media/a.mp4", "transcriptUrl": "/t.html"}]
+
+
+def m_media_transcript_recommended(s):
+    _items(s)[0]["media"] = [{"kind": "video", "url": "/media/a.mp4", "captionsUrl": "/c.vtt"}]
+
+
+def m_media_field_kind(s):
+    _items(s)[0]["media"] = [
+        _image(captionsUrl="/c.vtt", posterUrl="/p.png", mustPlayToEnd=True, autoplay=True),
+        {"kind": "audio", "url": "/a.mp3", "transcriptUrl": "/t.html", "captionsUrl": "/c.vtt"},
+    ]
+
+
+def m_media_size_pair(s):
+    _items(s)[0]["media"] = [_image(width=100)]
+
+
+def m_media_choice_kind(s):
+    m_mixed(s)
+    _items(s)[0]["choices"][0]["value"] = "a"
+    _items(s)[0]["choices"][0]["media"] = _video()
+
+
+def m_media_must_play_choice(s):
+    m_mixed(s)
+    _items(s)[0]["choices"][0]["value"] = "a"
+    _items(s)[0]["choices"][1]["media"] = {
+        "kind": "audio", "url": "/a.mp3", "transcriptUrl": "/t.html", "mustPlayToEnd": True,
+    }  # fmt: skip
+
+
+def m_media_text_pipe(s):
+    _items(s)[0]["media"] = [_image(alt="You said ${q 1}", caption={"fr": "x"})]
+
+
 TABLE: list[tuple[Callable[[dict], None], list[tuple[str, str]]]] = [
+    (m_media_url, [("media.url", f"{P0}/0/media/{k}/url") for k in range(3)]),
+    (m_media_url_insecure, [("media.url_insecure", f"{P0}/0/media/0/url")]),
+    (m_media_url_pipe, [("media.url_pipe", f"{P0}/0/media/0/url")]),
+    (m_media_alt_missing, [("media.alt_missing", f"{P0}/0/media/{k}/alt") for k in range(2)]),
+    (m_media_alt_kind, [("media.alt_kind", f"{P0}/0/media/0/alt")]),
+    (m_media_transcript_missing, [("media.transcript_missing", f"{P0}/0/media/0/transcriptUrl")]),
+    (m_media_captions_missing, [("media.captions_missing", f"{P0}/0/media/0/captionsUrl")]),
+    (
+        m_media_transcript_recommended,
+        [("media.transcript_recommended", f"{P0}/0/media/0/transcriptUrl")],
+    ),
+    (
+        m_media_field_kind,
+        [
+            ("media.field_kind", f"{P0}/0/media/0/captionsUrl"),
+            ("media.field_kind", f"{P0}/0/media/0/posterUrl"),
+            ("media.field_kind", f"{P0}/0/media/0/mustPlayToEnd"),
+            ("media.field_kind", f"{P0}/0/media/0/autoplay"),
+            ("media.field_kind", f"{P0}/0/media/1/captionsUrl"),
+        ],
+    ),
+    (m_media_size_pair, [("media.size_pair", f"{P0}/0/media/0")]),
+    (m_media_choice_kind, [("media.choice_kind", f"{P0}/0/choices/0/media/kind")]),
+    (
+        m_media_must_play_choice,
+        [("media.must_play_choice", f"{P0}/0/choices/1/media/mustPlayToEnd")],
+    ),
+    (
+        m_media_text_pipe,
+        [
+            ("pipe.invalid", f"{P0}/0/media/0/alt"),
+            ("text.unknown_language", f"{P0}/0/media/0/caption/fr"),
+            ("text.missing_translation", f"{P0}/0/media/0/caption"),
+        ],
+    ),
     (m_lang_dup, [("lang.duplicate", "/metadata/languages/1")]),
     (m_lang_default, [("lang.unknown_default", "/metadata/defaultLanguage")]),
     (m_case_collision, [("name.case_collision", f"{P0}/1/name")]),
@@ -342,6 +454,7 @@ def test_every_code_is_exercised() -> None:
         covered |= {e["code"] for e in json.loads(path.read_text(encoding="utf-8"))["expect"]}
     covered.add("publish.retention_required")  # test_publish_needs_a_retention_policy
     covered.add("publish.consent_missing")  # test_publish_warns_without_consent
+    covered.add("media.origin_not_allowed")  # test_media.py (needs the deployment's origins)
     assert covered <= set(CODES)
     assert set(CODES) - covered == UNTESTABLE
 

@@ -1,0 +1,102 @@
+{
+  "description": "Media (planning/media.md): an image note, a question with a must-play audio clip and per-language URLs, image choices, and an image on a matrix column.",
+  "expect": [],
+  "survey": {
+    "specVersion": "osp-survey/0.1",
+    "id": "srv_media",
+    "metadata": {
+      "title": "Media",
+      "languages": ["en", "de"],
+      "defaultLanguage": "en"
+    },
+    "choiceLists": [
+      {
+        "id": "faces",
+        "choices": [
+          {
+            "value": "happy",
+            "label": {"en": "Happy", "de": "Fröhlich"},
+            "media": {"kind": "image", "url": "/media/faces/happy.png", "alt": {"en": "A smiling face", "de": "Ein lächelndes Gesicht"}, "width": 320, "height": 320}
+          },
+          {
+            "value": "sad",
+            "label": {"en": "Sad", "de": "Traurig"},
+            "media": {"kind": "image", "url": "/media/faces/sad.png", "alt": {"en": "A frowning face", "de": "Ein trauriges Gesicht"}, "width": 320, "height": 320}
+          }
+        ]
+      }
+    ],
+    "blocks": [
+      {
+        "id": "b1",
+        "pages": [
+          {
+            "id": "p1",
+            "items": [
+              {
+                "id": "stim",
+                "type": "note",
+                "label": {"en": "Look at the picture.", "de": "Sehen Sie sich das Bild an."},
+                "media": [
+                  {
+                    "kind": "image",
+                    "url": "https://cdn.example.org/stimuli/scene.jpg",
+                    "alt": {"en": "A busy street market", "de": "Ein belebter Straßenmarkt"},
+                    "caption": {"en": "Figure 1", "de": "Abbildung 1"},
+                    "width": 1280,
+                    "height": 853,
+                    "mimeType": "image/jpeg"
+                  }
+                ]
+              },
+              {
+                "id": "clip_rating",
+                "type": "slider",
+                "label": {"en": "How pleasant was the clip?", "de": "Wie angenehm war der Clip?"},
+                "min": 0,
+                "max": 10,
+                "media": [
+                  {
+                    "kind": "audio",
+                    "url": {"en": "/media/clips/intro-en.mp3", "de": "/media/clips/intro-de.mp3"},
+                    "transcriptUrl": {"en": "/media/clips/intro-en.html", "de": "/media/clips/intro-de.html"},
+                    "durationSeconds": 12.5,
+                    "mimeType": "audio/mpeg",
+                    "mustPlayToEnd": true
+                  },
+                  {
+                    "kind": "video",
+                    "url": "/media/clips/demo.mp4",
+                    "captionsUrl": {"en": "/media/clips/demo-en.vtt", "de": "/media/clips/demo-de.vtt"},
+                    "transcriptUrl": "/media/clips/demo.html",
+                    "posterUrl": "/media/clips/demo.jpg",
+                    "width": 1280,
+                    "height": 720,
+                    "autoplay": true
+                  }
+                ]
+              },
+              {
+                "id": "face",
+                "type": "single",
+                "label": {"en": "Which face matches your mood?", "de": "Welches Gesicht passt zu Ihrer Stimmung?"},
+                "choiceList": "faces"
+              },
+              {
+                "id": "grid",
+                "type": "matrix",
+                "label": {"en": "Rate each item", "de": "Bewerten Sie jedes Element"},
+                "rows": [{"id": "a", "label": {"en": "Item A", "de": "Element A"}}],
+                "choices": [
+                  {"value": 1, "label": {"en": "Thumbs down", "de": "Daumen runter"}, "media": {"kind": "image", "url": "/media/icons/down.svg", "alt": {"en": "Thumbs down", "de": "Daumen runter"}}},
+                  {"value": 2, "label": {"en": "Thumbs up", "de": "Daumen hoch"}, "media": {"kind": "image", "url": "/media/icons/up.svg", "alt": {"en": "Thumbs up", "de": "Daumen hoch"}}}
+                ]
+              }
+            ]
+          }
+        ]
+      }
+    ],
+    "flow": [{"type": "block", "id": "f_b1", "block": "b1"}]
+  }
+}
