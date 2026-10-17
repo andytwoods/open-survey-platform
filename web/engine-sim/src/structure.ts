@@ -291,7 +291,26 @@ export function representative(item: QuestionItem): Answer {
 			return 'sim';
 		case 'date':
 			return '2000-01-01';
+		case 'slider':
+			return sliderPoint(item, 0);
 	}
+}
+
+/** The k-th valid slider answer (min + k·step), clamped to max; as stored text for decimals. */
+export function sliderPoint(item: QuestionItem, k: number): Answer {
+	const lo = Number(item.min ?? 0);
+	const step = Number(item.step ?? 1) || 1;
+	const hi = item.max !== undefined ? Number(item.max) : lo + 10 * step;
+	const v = Math.min(hi, lo + Math.max(0, k) * step);
+	return item.valueType === 'decimal' ? String(Number(v.toFixed(10))) : Math.round(v);
+}
+
+/** How many valid slider answers there are (at least 1). */
+export function sliderCount(item: QuestionItem): number {
+	const lo = Number(item.min ?? 0);
+	const step = Number(item.step ?? 1) || 1;
+	const hi = item.max !== undefined ? Number(item.max) : lo + 10 * step;
+	return Math.max(1, Math.floor((hi - lo) / step + 1e-9) + 1);
 }
 
 export interface Domains {
@@ -369,6 +388,17 @@ export function exhaustiveDomains(plan: Plan): Domains {
 				if (general || lits.length) reasons.push(`date question ${q.id} is compared in a condition`);
 				domains.set(q.id, [...blank, '2000-01-01']);
 				break;
+			case 'slider': {
+				// Unreferenced: one value is enough. Referenced: every step, if there are few.
+				const n = sliderCount(q);
+				if (!general && !lits.length) domains.set(q.id, [...blank, sliderPoint(q, 0)]);
+				else if (n <= 50) domains.set(q.id, [...blank, ...Array.from({ length: n }, (_, k) => sliderPoint(q, k))]);
+				else {
+					reasons.push(`slider question ${q.id} has ${n} steps and is used in a condition`);
+					domains.set(q.id, [...blank, sliderPoint(q, 0)]);
+				}
+				break;
+			}
 		}
 	}
 	// Live show-if inside a page is enumerated in display order, so a show-if may only look
