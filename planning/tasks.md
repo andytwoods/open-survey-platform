@@ -154,5 +154,6 @@ Plan V: `planning/results-viewer.md` (decisions V-D1–V-D10). V1 publishes the 
 
 | id | title | depends on | acceptance criteria | status |
 |---|---|---|---|---|
+| F1 | Builder lost typed consent text (whole-value `set_consent` built from a stale survey while an op was in flight) | — | Proven from op patches; DOM test fails before the fix; publish spec 30/30 | done |
+| F2 | `LanguagesField` has the same whole-value pattern: two quick add/remove clicks can drop the first | F1 | Build on the last-sent value while an op is in flight (as F1's ConsentEditor), keep the reject/cascade flow; DOM test that fails before the fix; e2e quick double add/remove | todo |
 | G1 | Favicon, app icons and page metadata for the builder, participant app and docs | — | One source SVG mark (original, no third-party logos) → favicon.svg + PNG 32/180/192/512 + `apple-touch-icon` + web manifest (name, theme colour, icons) for builder pages and the participant app; light/dark-safe; participant app icon overridable by the survey theme/host (documented in `docs/hosting.md`); social preview image (1280×640) for the GitHub repo; `<title>`/`description` per builder page; no new runtime deps beyond permissive; e2e asserts icons and manifest load (no 404s) | todo |
-
