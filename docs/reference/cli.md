@@ -1,6 +1,6 @@
 # Command line
 
-Two small command-line tools come with the Python packages. Run them with `uv run` from a
+Three small command-line tools come with the Python packages. Run them with `uv run` from a
 checkout (or from the virtual environment `uv sync` makes).
 
 ## `osp-api`
@@ -39,6 +39,16 @@ Administrative commands. The database comes from `--db` or `OSP_DATABASE_URL`.
 | `osp-cli lab create <id> [--name NAME]` | Create a lab. Needed only when `OSP_AUTO_CREATE_LABS=off`; otherwise a lab exists as soon as the host first names it. |
 | `osp-cli seed-fixture <dir> [--user U] [--lab L] [--save-mode MODE]` | Import a fixture survey (one of `fixtures/NN-…`) into a lab and publish it. If the fixture has no retention policy, 30 days after close is set. |
 | `osp-cli dev-seed <dirs…> [--data-dir D] [--builder-url U] [--participant-link T]` | What `make dev` runs: seed several fixtures and print their builder and participant links. Refused when `OSP_ENV=production`. |
+
+## `osp-mcp`
+
+The MCP server through which an AI assistant drafts surveys; see
+[Drafting with an AI assistant](../ai-drafting.md) for the setup and the tools.
+
+| Command | What it does |
+|---|---|
+| `osp-mcp` | Serve MCP over standard input and output (an MCP client launches it). Needs `OSP_DATABASE_URL`, `OSP_STORE_KEYS`, `OSP_MCP_USER` and `OSP_MCP_LAB`; optional `OSP_MCP_ROLE`, `OSP_MCP_NAME`, `OSP_MCP_BUILDER_URL`. |
+| `osp-mcp tools` | Print the tool list as JSON and exit; no database needed. |
 
 ## Make targets
 
