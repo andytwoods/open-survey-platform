@@ -38,6 +38,11 @@ test surveys; not yet deployed in production. Expect breaking changes.
 
     A chart and a table per question, filters, splits and figure export.
 
+- :material-robot-outline: **[Drafting with an AI assistant](ai-drafting.md)**
+
+    Describe your study to an MCP-capable assistant and review its draft in the builder; it
+    can never publish.
+
 - :material-server: **[Hosting](hosting.md)**
 
     Run the platform behind your own sign-in, with a minimal Django example.

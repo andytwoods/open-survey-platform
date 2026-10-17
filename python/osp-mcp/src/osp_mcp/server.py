@@ -109,11 +109,12 @@ def open_services(settings: Settings, environ: Mapping[str, str] | None = None) 
     env = os.environ if environ is None else environ
     try:
         keyring = Keyring.from_env(env)
-        engine = create_engine(settings.database_url)
-    except DatabaseUrlError as exc:
-        raise ConfigError(f"OSP_DATABASE_URL: {exc}") from exc
     except StoreError as exc:
         raise ConfigError(str(exc)) from exc
+    try:
+        engine = create_engine(settings.database_url)
+    except (DatabaseUrlError, Exception) as exc:  # noqa: BLE001 - a bad URL, whatever the driver says
+        raise ConfigError(f"OSP_DATABASE_URL: {exc}") from exc
     migrate(engine)
     return build_services(Store(engine, keyring))
 
