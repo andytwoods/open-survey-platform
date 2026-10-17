@@ -34,6 +34,8 @@ export interface PageState {
 	theme: ThemeChoice;
 	/** V4's export width, DPI and k, and what "Export all" bundles (V6). */
 	exports: ExportChoices;
+	/** Live on (task LV3): the page polls and refreshes as responses arrive. */
+	live: boolean;
 }
 
 export function emptyState(latest: number): PageState {
@@ -44,7 +46,8 @@ export function emptyState(latest: number): PageState {
 		order: [],
 		showNotes: false,
 		theme: { ...APP_THEME },
-		exports: { ...DEFAULT_EXPORT }
+		exports: { ...DEFAULT_EXPORT },
+		live: false
 	};
 }
 
@@ -162,7 +165,8 @@ export function toSettings(state: PageState, latest: number, questions?: readonl
 			dpi: ((DPI_CHOICES as readonly number[]).includes(e.dpi) ? e.dpi : DEFAULT_EXPORT.dpi) as 150 | 300 | 600,
 			hideCountsBelow: e.k === null ? null : Math.min(1000, Math.max(2, Math.round(e.k))),
 			bundle: BUNDLES.includes(e.bundle) ? e.bundle : DEFAULT_EXPORT.bundle
-		}
+		},
+		live: state.live === true
 	};
 }
 
@@ -216,6 +220,7 @@ export function fromSettings(settings: LayoutSettings | null | undefined, latest
 	state.showNotes = settings.showNotes === true;
 	state.theme = choiceFromLayout(settings.theme);
 	state.exports = exportsFromLayout(settings.export);
+	state.live = settings.live === true; // layouts saved before LV3 open with Live off
 	return state;
 }
 

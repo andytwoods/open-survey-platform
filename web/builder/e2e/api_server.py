@@ -31,7 +31,8 @@ from osp_api.app import create_app
 from osp_api.identity import Dev, IdentityProvider
 from osp_app import build_services
 from osp_app.identity import DEV_LAB_ID
-from osp_store import Keyring, Store, TenantContext, create_engine, migrate
+from osp_runtime import TokenBucket
+from osp_store import Keyring, ParticipantStore, Store, TenantContext, create_engine, migrate
 
 # This server serves the participant app at /s/{slug}, so publish should link there.
 os.environ.setdefault("OSP_PARTICIPANT_URL_TEMPLATE", "/s/{slug}")
@@ -62,7 +63,11 @@ def build(db_dir: Path, host: str = "127.0.0.1") -> FastAPI:
     key = base64.b64encode(secrets.token_bytes(32)).decode("ascii")
     store = Store(engine, Keyring({"k1": key}, active="k1"))
     services = build_services(store)
-    app = create_app(builder=services, identity=identity_provider(host))
+    # Live results (task LV3): the shortest poll interval the server allows, so an e2e test
+    # sees a seeded response within a second or two; and a limiter wide enough for several
+    # live tests polling in parallel as the one dev user (production: a burst of 5, then 1/s).
+    app = create_app(builder=services, identity=identity_provider(host), live_poll_ms=1000)
+    app.state.watermark_limiter = TokenBucket(100, 50.0)
     # For callers that outlive the temp dir (results/fixtures/regenerate.py): dispose the
     # pool before removing e2e.db, or Windows refuses to delete the open file.
     app.state.engine = engine
@@ -82,6 +87,21 @@ def build(db_dir: Path, host: str = "127.0.0.1") -> FastAPI:
         version = results_data.publish(store, ctx, survey_id, results_data.SURVEY)
         ids = results_data.seed(store, ctx, version.id)
         return {"version": version.number, "responses": len(ids)}
+
+    # One more fixture response (a copy of the first), recorded now, into the survey's
+    # latest published version: what "a response arrives while the page is open" looks like
+    # to the live results page (task LV3). Returns the stored total.
+    @app.post("/api/e2e/results-seed-one/{survey_id}", include_in_schema=False)
+    def results_seed_one(survey_id: str) -> dict[str, Any]:
+        ctx = TenantContext(DEV_LAB_ID, "system:e2e")
+        versions = store.list_versions(ctx, survey_id)
+        if not versions:
+            return {"error": "not published"}
+        version = versions[-1]
+        assigned, answers = results_data.RESPONSES[0]
+        results_data.add_response(store, ctx, version.id, answers, assigned=assigned)
+        count, _newest = ParticipantStore(store).response_watermark(ctx, version.id)
+        return {"version": version.number, "responses": count}
 
     if (RUNTIME_DIST / "index.html").is_file():
 

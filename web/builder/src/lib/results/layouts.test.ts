@@ -49,6 +49,7 @@ function full(): PageState {
 	s.showNotes = true;
 	s.theme = { kind: 'library', id: 'th1' };
 	s.exports = { widthMm: 180, dpi: 600, k: 5, bundle: 'png' };
+	s.live = true;
 	return s;
 }
 
@@ -63,6 +64,7 @@ describe('page state <-> layout settings', () => {
 		expect(back.showNotes).toBe(true);
 		expect(back.theme).toEqual(s.theme);
 		expect(back.exports).toEqual(s.exports);
+		expect(back.live).toBe(true);
 		// The order comes back as the full display order the layout listed.
 		expect(back.order).toEqual(inOrder(plain.cards, s.order).map((c) => c.question));
 		expect(back.order.slice(0, 3)).toEqual(['grid', 'fruit', 'sat']);
@@ -72,7 +74,8 @@ describe('page state <-> layout settings', () => {
 
 	it('writes the schema V5a accepts: query, cards in display order, nothing else', () => {
 		const settings = toSettings(full(), LATEST, questions);
-		expect(Object.keys(settings).sort()).toEqual(['cards', 'export', 'query', 'schemaVersion', 'showNotes', 'theme']);
+		expect(Object.keys(settings).sort()).toEqual(['cards', 'export', 'live', 'query', 'schemaVersion', 'showNotes', 'theme']);
+		expect(settings.live).toBe(true);
 		expect(settings.schemaVersion).toBe('osp-results-layout/0.1');
 		expect(settings.theme).toEqual({ kind: 'library', id: 'th1' });
 		expect(settings.export).toEqual({ widthMm: 180, dpi: 600, hideCountsBelow: 5, bundle: 'png' });
@@ -161,7 +164,20 @@ describe('page state <-> layout settings', () => {
 		s.filters.versions = [2];
 		expect(toSettings(s, LATEST).query!.versions).toEqual([2]);
 		expect(fromSettings(null, LATEST)).toEqual(emptyState(LATEST));
-		expect(fromSettings({ schemaVersion: 'osp-results-layout/0.1', showNotes: false }, LATEST)).toEqual(emptyState(LATEST));
+		expect(fromSettings({ schemaVersion: 'osp-results-layout/0.1', showNotes: false, live: false }, LATEST)).toEqual(emptyState(LATEST));
+	});
+
+	it('live (LV3) is a layout setting: off for layouts saved before it, a change is unsaved', () => {
+		const pre = { schemaVersion: 'osp-results-layout/0.1', showNotes: false } as LayoutSettings; // saved before LV3
+		expect(fromSettings(pre, LATEST).live).toBe(false);
+		expect(fromSettings({ ...pre, live: true }, LATEST).live).toBe(true);
+		expect(fromSettings({ ...pre, live: 'yes' as unknown as boolean }, LATEST).live).toBe(false);
+		const base = emptyState(LATEST);
+		expect(toSettings(base, LATEST).live).toBe(false);
+		const lab = structuredClone(base);
+		lab.live = true;
+		expect(toSettings(lab, LATEST).live).toBe(true);
+		expect(sameLayout(lab, base, LATEST, questions)).toBe(false);
 	});
 
 	it('the defaults and an unchanged layout are not "unsaved"; a change is', () => {

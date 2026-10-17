@@ -87,6 +87,7 @@
 				finalize = result.finalize;
 				error = null;
 				status = 'ready';
+				el.style.minHeight = '';
 				measure();
 				onview?.(result.view);
 			})
@@ -94,10 +95,15 @@
 				if (cancelled) return;
 				error = e instanceof Error ? e.message : String(e);
 				status = 'error';
+				el.style.minHeight = '';
 			});
 		return () => {
 			cancelled = true;
 			finalize?.();
+			// A re-embed (new numbers from a live refresh, a theme change) keeps the figure's
+			// height until the new SVG is drawn, so the page never jumps or scrolls (LV3).
+			const h = el.offsetHeight;
+			if (h > 0) el.style.minHeight = `${h}px`;
 			target.remove();
 		};
 	});

@@ -2845,6 +2845,12 @@
           "export": {
             "$ref": "#/components/schemas/LayoutExport"
           },
+          "live": {
+            "default": false,
+            "description": "Open with Live on: the page polls the watermark and refreshes as responses arrive (task LV3, planning/live-results.md). Layouts saved before it open with Live off.",
+            "title": "Live",
+            "type": "boolean"
+          },
           "query": {
             "$ref": "#/components/schemas/LayoutQuery"
           },

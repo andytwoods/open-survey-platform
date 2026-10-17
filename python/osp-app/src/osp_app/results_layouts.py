@@ -160,6 +160,12 @@ class LayoutSettings(_Model):
     showNotes: StrictBool = Field(False, description="Show note items as headings")
     theme: LayoutTheme = Field(default_factory=LayoutTheme)
     export: LayoutExport = Field(default_factory=LayoutExport)
+    live: StrictBool = Field(
+        False,
+        description="Open with Live on: the page polls the watermark and refreshes as "
+        "responses arrive (task LV3, planning/live-results.md). Layouts saved before it "
+        "open with Live off.",
+    )
 
     @model_validator(mode="after")
     def _unique_questions(self) -> LayoutSettings:

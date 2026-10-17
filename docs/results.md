@@ -72,6 +72,34 @@ dark mode and export in their light colours; a dark-only theme exports dark. The
 kept in a saved layout as a reference; if the lab theme is later deleted, the layout falls
 back to the app colours and says so.
 
+## Live
+
+**Live**, next to the response count, keeps the page up to date as responses arrive. It is
+off by default. With it on, the page asks the server every few seconds whether anything
+changed (a cheap check that reads no answers and is not audited) and re-queries only when
+something did:
+
+- **Hands off, it refreshes by itself.** Cards whose numbers changed get a short outline
+  pulse (none with reduced motion), each card keeps its height while its chart is redrawn,
+  and a screen reader hears one line per refresh: "Results updated: 142 responses".
+- **While you are working** (you touched the page in the last few seconds, a menu or dialog
+  is open, or the filters have changes you have not applied yet), nothing moves: a badge
+  says **3 new responses · Refresh**, and Refresh applies them when you are ready.
+- **Text answers never refresh by themselves.** An open answers page keeps what it shows
+  and offers **Reload answers** when new ones have arrived.
+- A hidden tab stops checking and checks again the moment you come back. If the server
+  cannot be reached, the page keeps the last results and tries again, waiting longer each
+  time. Losing access to the survey turns Live off and says so.
+- Live is paused in presentation mode for now (a batched, suppressed form for projected
+  screens is coming).
+
+The status line says what Live is doing: "Checking every 10 s · updated 14:32". The
+interval is the server's (`OSP_LIVE_POLL_MS`, 10 s by default). The choice is kept in the
+URL (`?live=1`) and, as a setting, in a saved layout, so a layout for a lab screen opens
+live; layouts saved before this open with Live off. Automatic refreshes are recorded in the
+audit log as `results.live`, one row per person and query per quarter hour; pressing
+Refresh or Show results is an ordinary `results.read`.
+
 ## Presentation mode
 
 **Present** hides everything but the cards: no top bar, filters, layout bar or per-card
