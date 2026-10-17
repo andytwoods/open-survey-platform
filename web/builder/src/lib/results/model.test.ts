@@ -3,12 +3,10 @@ import fixture from './fixtures/results.json';
 import {
 	cardRequests,
 	cardSections,
-	chartMenu,
 	choiceVariables,
 	conditionVariables,
 	defaultFilters,
 	describeFilters,
-	effectiveChart,
 	endExclusive,
 	filterProblems,
 	NOT_AVAILABLE,
@@ -19,7 +17,7 @@ import {
 	toTextParams,
 	type ResultsFilters
 } from './model';
-import { chartSpec } from './spec';
+import { chartsFor } from './charts';
 import type { Card, ResultsResponse } from './types';
 
 // The results page's pure logic (task V2): filters → query, chart menus, labels. The
@@ -186,30 +184,21 @@ describe('filter options', () => {
 });
 
 describe('chart menu', () => {
-	it('offers the charts of the plan per question type, default first', () => {
-		const ids = (c: Card, split = false) => chartMenu(c, split).map((o) => o.id);
-		expect(ids(card('fruit'))).toEqual(['bars', 'sorted', 'donut', 'table']);
-		expect(ids(card('fruit'), true)).toEqual(['grouped', 'stacked100', 'small-multiples', 'table']);
-		expect(ids(card('col'))).toEqual(['bars-pct', 'bars-count', 'dot']);
-		expect(ids(card('age'))).toEqual(['histogram', 'box', 'cumulative']);
-		expect(ids(card('sl'))).toEqual(['frequency', 'box', 'cumulative']); // 0..10: values
-		expect(ids(card('big'))).toEqual(['histogram', 'box', 'cumulative']); // 0..100: bins
-		expect(ids(card('when'))).toEqual(['month', 'day', 'week', 'year']);
-		expect(ids(card('grid'))).toEqual(['diverging', 'stacked100', 'heatmap', 'table']); // ordered
-		expect(ids({ ...card('grid'), ordered: false })).toEqual(['grouped', 'heatmap', 'table']);
-		expect(ids(card('why'))).toEqual([]);
-	});
-
-	it('falls back to the default when the chosen chart is not offered', () => {
-		const menu = chartMenu(card('fruit'), true);
-		expect(effectiveChart(menu, 'donut')).toBe('grouped');
-		expect(effectiveChart(menu, 'table')).toBe('table');
-		expect(effectiveChart([], 'x')).toBeNull();
+	it('is V3\'s chartsFor per question type, default first (one source of truth)', () => {
+		const ids = (c: Card) => chartsFor(c).choices.map((o) => o.id);
+		expect(ids(card('fruit'))).toEqual(['bars', 'bars-sorted', 'donut', 'table']);
+		expect(ids(card('col'))).toEqual(['multi-pct', 'multi-counts', 'dot', 'table']);
+		expect(ids(card('sl'))).toEqual(['values', 'box', 'cumulative', 'table']); // 0..10: values
+		expect(ids(card('big'))).toEqual(['histogram', 'box', 'cumulative', 'table']); // 0..100: bins
+		expect(ids(card('when'))).toEqual(['periods', 'table']);
+		expect(chartsFor(card('when')).binUnits).toEqual(['day', 'week', 'month', 'year']);
+		expect(ids(card('grid'))).toEqual(['likert', 'stacked100', 'heatmap', 'table']); // ordered
+		expect(ids(card('why'))).toEqual(['states', 'table']);
 	});
 
 	it('asks for per-card bins only when a date card is not per month', () => {
 		expect(cardRequests(plain.cards, {})).toBeUndefined();
-		expect(cardRequests(plain.cards, { when: 'month', fruit: 'donut' })).toBeUndefined();
+		expect(cardRequests(plain.cards, { when: 'month' })).toBeUndefined();
 		const r = cardRequests(plain.cards, { when: 'week' })!;
 		expect(r.map((c) => c.question)).toEqual(plain.cards.map((c) => c.question));
 		expect(r.find((c) => c.question === 'when')).toEqual({ question: 'when', bins: { unit: 'week' } });
@@ -268,24 +257,5 @@ describe('card sections', () => {
 			]
 		};
 		expect(cardSections(faceted).map((x) => x.facet)).toEqual([1, 2]);
-	});
-
-	it('hands the chart slot a spec with the server rows and the chosen chart', () => {
-		const f = card('fruit');
-		const spec = chartSpec({
-			question: 'fruit',
-			label: 'Fruit?',
-			type: 'single',
-			chart: 'donut',
-			chartLabel: 'Donut',
-			denominator: 'answered',
-			unit: cardSections(f)[0].sections[0].unit
-		});
-		expect(spec.usermeta).toMatchObject({ chart: 'donut', question: 'fruit' });
-		expect(spec.data.values).toEqual([
-			{ group: 'All responses', category: 'Apple', count: 2, pct: 66.66666666666667 },
-			{ group: 'All responses', category: 'Banana', count: 1, pct: 33.333333333333336 },
-			{ group: 'All responses', category: 'Cherry', count: 0, pct: 0 }
-		]);
 	});
 });

@@ -406,6 +406,62 @@ def test_audit_rows_name_the_query_never_values(env):
         assert value not in dumped
 
 
+def _export(env, actor=None, **kw):
+    args = {"query": {}, "cards": ["fruit"], "formats": ["png"], **kw}
+    return env.svc.builder.run(
+        "survey.results_export", actor or env.owner, survey_id=env.sid, **args
+    )
+
+
+def test_export_audit_row_matches_the_query_hash(env):
+    query = {"denominator": "shown", "filters": [{"question": "fruit", "in": ["apple"]}]}
+    q = env.q(**query)
+    out = _export(env, query=query, formats=["zip", "csv", "csv"], scope="page", suppress_below=5)
+    assert out == {"recorded": True, "queryHash": q["queryHash"], "versions": [1],
+                   "formats": ["csv", "zip"]}  # fmt: skip
+    rows = [a for a in env.store.list_audit(env.ctx) if a.action == "results.export"]
+    assert len(rows) == 1 and rows[0].actor == "owner-a"
+    d = rows[0].detail
+    assert d["queryHash"] == q["queryHash"] and d["versions"] == [1]
+    assert d["formats"] == ["csv", "zip"] and d["scope"] == "page" and d["suppressBelow"] == 5
+    assert d["query"]["filters"] == [{"question": "fruit", "in": ["apple"]}]
+    for value in ("sunny", "banana", "count"):
+        assert value not in json.dumps(d)
+
+
+@pytest.mark.parametrize(
+    "bad",
+    [
+        {"formats": []},
+        {"formats": ["pdf"]},
+        {"formats": "png"},
+        {"cards": []},
+        {"cards": [3]},
+        {"cards": None},
+        {"scope": "all"},
+        {"suppress_below": 0},
+        {"suppress_below": True},
+        {"suppress_below": "5"},
+        {"query": "x"},
+        {"query": {"status": "x"}},
+    ],
+)
+def test_export_rejects_bad_input(env, bad):
+    with pytest.raises(InvalidRequest):
+        _export(env, **bad)
+    assert not [a for a in env.store.list_audit(env.ctx) if a.action == "results.export"]
+
+
+def test_export_access(env):
+    assert _export(env, actor=env.editor)["recorded"] is True
+    with pytest.raises(Forbidden):
+        _export(env, actor=env.viewer)
+    with pytest.raises(NotFoundError):
+        _export(env, actor=env.other)
+    with pytest.raises(NotFoundError):
+        _export(env, query={"versions": [4]})
+
+
 def test_cache_hits_and_new_responses_invalidate(env):
     first = env.q(cards=[{"question": "fruit"}])
     second = env.q(cards=[{"question": "fruit"}])

@@ -7,11 +7,15 @@
  */
 import { api } from '../api';
 import { ChartChoices } from './charts.svelte';
+import type { MenuChoice } from './charts/types';
+import type { ExportPage } from './export/run';
+import { ExportSettings } from './export/settings.svelte';
 import {
 	cardRequests,
 	choiceVariables,
 	cloneFilters,
 	defaultFilters,
+	describeFilters,
 	filterProblems,
 	sameFilters,
 	toQuery,
@@ -19,7 +23,7 @@ import {
 	type ChoiceVariable,
 	type ResultsFilters
 } from './model';
-import type { ResultsQuery, ResultsResponse, TextPage } from './types';
+import type { ResultsExportRecord, ResultsExportRequest, ResultsQuery, ResultsResponse, TextPage } from './types';
 
 export type Fetched<T> = { ok: true; data: T } | { ok: false; status: number; message: string; aborted?: boolean };
 
@@ -30,6 +34,10 @@ export interface ResultsSource {
 		params: ReturnType<typeof toTextParams> & { cursor?: string; limit?: number },
 		signal: AbortSignal
 	): Promise<Fetched<TextPage>>;
+	/** Writes the `results.export` audit row a figure export needs (task V4). */
+	recordExport(body: ResultsExportRequest): Promise<Fetched<ResultsExportRecord>>;
+	/** The platform's name and version, for export manifests. */
+	platform?(): Promise<{ name: string; version: string }>;
 }
 
 function failed(status: number, error: unknown, fallback: string): Fetched<never> {
@@ -67,6 +75,27 @@ export function apiSource(surveyId: string): ResultsSource {
 			} catch (e) {
 				return thrown(e, signal);
 			}
+		},
+		async recordExport(body) {
+			const signal = new AbortController().signal;
+			try {
+				const { data, error, response } = await api.POST('/api/surveys/{survey_id}/results/export', {
+					params: { path: { survey_id: surveyId } },
+					body
+				});
+				return data ? { ok: true, data } : failed(response.status, error, 'The export could not be recorded.');
+			} catch (e) {
+				return thrown(e, signal);
+			}
+		},
+		async platform() {
+			try {
+				const { data } = await api.GET('/api/version');
+				if (data) return { name: data.name, version: data.version };
+			} catch {
+				/* fall through */
+			}
+			return { name: 'Open Survey Platform', version: 'unknown' };
 		}
 	};
 }
@@ -77,6 +106,7 @@ export const SLOW_AFTER_MS = 1000;
 export class ResultsController {
 	readonly source: ResultsSource;
 	readonly charts = new ChartChoices();
+	readonly exports = new ExportSettings();
 	draft = $state<ResultsFilters>(defaultFilters(0));
 	applied = $state<ResultsFilters>(defaultFilters(0));
 	response = $state<ResultsResponse | null>(null);
@@ -100,6 +130,36 @@ export class ResultsController {
 		return filterProblems(this.draft);
 	}
 
+	/** The applied filters in words (the line above the cards and every export caption). */
+	get activeFilters(): string[] {
+		return describeFilters(this.applied, {
+			choices: this.choices,
+			versionsUsed: this.response?.versionsUsed,
+			splitLabel: this.response?.split?.label
+		});
+	}
+
+	/** What an export needs: the response, its query, the filters in words (V4). */
+	exportPage(): ExportPage | null {
+		if (!this.response) return null;
+		// A plain copy: figures are built from it and Vega clones specs (proxies cannot be cloned).
+		const response = $state.snapshot(this.response) as ResultsResponse;
+		const source = this.source;
+		const query = this.query();
+		return {
+			response,
+			query,
+			filters: this.activeFilters,
+			charts: this.charts,
+			async record(body) {
+				const r = await source.recordExport({ query, ...body } as ResultsExportRequest);
+				if (r.ok) return null;
+				return r.status === 403 ? 'You need owner or editor access to this survey to export its results.' : r.message;
+			},
+			platform: () => source.platform?.() ?? Promise.resolve({ name: 'Open Survey Platform', version: 'unknown' })
+		};
+	}
+
 	/** The draft differs from what the cards show. */
 	get dirty(): boolean {
 		return !sameFilters(this.draft, this.applied);
@@ -107,7 +167,7 @@ export class ResultsController {
 
 	/** The query the applied filters and chart choices make. */
 	query(): ResultsQuery {
-		return toQuery(this.applied, this.response ? cardRequests(this.response.cards, this.charts.all) : undefined);
+		return toQuery(this.applied, this.response ? cardRequests(this.response.cards, this.charts.units) : undefined);
 	}
 
 	/** Apply the draft filters and fetch. False when the draft has a problem. */
@@ -123,10 +183,15 @@ export class ResultsController {
 		return this.apply();
 	}
 
-	/** Choose a chart; a date card's period changes what the server computes. */
-	chooseChart(question: string, chart: string) {
-		const before = this.query();
+	/** Choose a chart: drawn from the same numbers, so nothing is re-asked. */
+	chooseChart(question: string, chart: MenuChoice) {
 		this.charts.choose(question, chart);
+	}
+
+	/** Choose a date card's period: the server computes it, so this re-asks. */
+	chooseUnit(question: string, unit: string) {
+		const before = this.query();
+		this.charts.setUnit(question, unit);
 		if (JSON.stringify(this.query()) !== JSON.stringify(before)) void this.load();
 	}
 

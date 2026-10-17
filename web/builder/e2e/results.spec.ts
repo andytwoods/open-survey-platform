@@ -55,7 +55,7 @@ test('the top bar opens Results; cards, Table view, filters, split, denominator 
 	const fruit = card(page, 'Fruit?');
 	await expect(fruit.locator('[data-state="answered"] dd')).toHaveText('3');
 	await expect(fruit.locator('[data-state="invalid"] dd')).toHaveText('1');
-	await expect(fruit.locator('[data-chart="bars"]')).toBeVisible();
+	await expect(fruit.locator('[data-chart="bars"] svg.marks')).toBeVisible();
 
 	// Table view: the exact numbers.
 	await fruit.getByRole('button', { name: 'Table view' }).click();
@@ -80,7 +80,10 @@ test('the top bar opens Results; cards, Table view, filters, split, denominator 
 	await expect(page.getByTestId('results-count')).toHaveText(/a: 2, b: 2, No condition: 1/);
 	await expect(table.getByRole('columnheader', { name: 'a: count' })).toBeVisible();
 	await expect(table.getByRole('row', { name: /n \(shown\)/ })).toBeVisible();
-	await expect(fruit.getByRole('combobox', { name: 'Chart' })).toHaveValue('grouped');
+	await expect(fruit.getByRole('combobox', { name: 'Chart' })).toHaveValue('bars');
+	await fruit.getByRole('button', { name: 'Chart', exact: true }).click();
+	await expect(fruit.getByRole('combobox', { name: 'Groups' })).toHaveValue('grouped');
+	await expect(fruit.locator('[data-chart="bars"][data-layout="grouped"] svg.marks')).toBeVisible();
 
 	// Text: the verbatim answers on request.
 	const why = card(page, 'Why?');
@@ -95,12 +98,12 @@ test('keyboard only: chart menu, Table view and the filters', async ({ page }) =
 	const id = await seededSurvey(page);
 	await openResults(page, id);
 	const when = card(page, 'When?');
-	const menu = when.getByRole('combobox', { name: 'Chart' });
+	const menu = when.getByRole('combobox', { name: 'Per' });
 	await menu.focus();
 	await menu.selectOption('week'); // a date card per week re-asks the server
 	await expect(when.getByRole('table', { name: 'Statistics' })).toBeVisible();
-	await expect(when.locator('[data-chart="week"]')).toBeVisible();
-	await expect(when.locator('[data-chart="week"]')).toContainText('2026-W');
+	await expect(when.locator('[data-chart="periods"] svg.marks')).toBeVisible();
+	await expect(when.locator('[data-chart="periods"] svg.marks')).toContainText('2026-W');
 	const tableButton = when.getByRole('button', { name: 'Table view' });
 	await tableButton.focus();
 	await page.keyboard.press('Enter');

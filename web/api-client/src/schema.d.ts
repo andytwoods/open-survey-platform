@@ -569,6 +569,26 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
+    "/api/surveys/{survey_id}/results/export": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /**
+         * Record Results Export
+         * @description Record a figure export (survey.export; audited as results.export, no values).
+         */
+        post: operations["recordResultsExport"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
     "/api/surveys/{survey_id}/results/query": {
         parameters: {
             query?: never;
@@ -1966,6 +1986,48 @@ export interface components {
             message: string;
             /** Question */
             question?: string | null;
+        };
+        /** ResultsExportRecord */
+        ResultsExportRecord: {
+            /** Formats */
+            formats: string[];
+            /**
+             * Queryhash
+             * @description Same hash as the results query's for this query
+             */
+            queryHash: string;
+            /** Recorded */
+            recorded: boolean;
+            /** Versions */
+            versions: number[];
+        };
+        /**
+         * ResultsExportRequest
+         * @description What a figure export contained. The files are drawn in the browser from the query's
+         *     aggregates; the server only checks access and writes a ``results.export`` audit row.
+         */
+        ResultsExportRequest: {
+            /**
+             * Cards
+             * @description Question ids of the exported cards
+             */
+            cards: string[];
+            /** Formats */
+            formats: ("svg" | "png" | "csv" | "vega-lite" | "manifest" | "zip")[];
+            /** @description The results query the figures were drawn from */
+            query: components["schemas"]["ResultsQuery"];
+            /**
+             * Scope
+             * @description One card, or Export all
+             * @default card
+             * @enum {string}
+             */
+            scope: "card" | "page";
+            /**
+             * Suppressbelow
+             * @description 'Hide counts below k' threshold; null: off
+             */
+            suppressBelow?: number | null;
         };
         /** ResultsQuery */
         ResultsQuery: {
@@ -4771,6 +4833,68 @@ export interface operations {
                 };
                 content: {
                     "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    recordResultsExport: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                survey_id: string;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["ResultsExportRequest"];
+            };
+        };
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ResultsExportRecord"];
+                };
+            };
+            /** @description Unauthorized */
+            401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorBody"];
+                };
+            };
+            /** @description Forbidden */
+            403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorBody"];
+                };
+            };
+            /** @description Not Found */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorBody"];
+                };
+            };
+            /** @description Unprocessable Content */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["RejectedBody"];
                 };
             };
         };

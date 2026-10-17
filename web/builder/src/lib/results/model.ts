@@ -45,6 +45,8 @@ export interface ResultsFilters {
 	answers: AnswerFilter[];
 	split: Split | null;
 	denominator: Denominator;
+	/** Draw 95 % intervals (Wilson for proportions, t for means); off by default. */
+	intervals: boolean;
 	/** Label language; null: the survey's main language. */
 	language: string | null;
 }
@@ -60,6 +62,7 @@ export function defaultFilters(publishedVersions: number): ResultsFilters {
 		answers: [],
 		split: null,
 		denominator: 'answered',
+		intervals: false,
 		language: null
 	};
 }
@@ -124,7 +127,7 @@ export function filterProblems(f: ResultsFilters): { field: 'from' | 'to'; messa
  * without a chosen code are left out. `cards` (with per-card bins) only when needed.
  */
 export function toQuery(f: ResultsFilters, cards?: CardRequest[]): ResultsQuery {
-	const q: ResultsQuery = { status: f.status, denominator: f.denominator, intervals: false };
+	const q: ResultsQuery = { status: f.status, denominator: f.denominator, intervals: f.intervals };
 	if (f.versions.length) q.versions = [...f.versions].sort((a, b) => a - b);
 	if (f.from && validDay(f.from)) q.submittedFrom = startInclusive(f.from);
 	if (f.to && validDay(f.to)) q.submittedTo = endExclusive(f.to);
@@ -245,107 +248,33 @@ export function describeFilters(
 		out.push(`Split by ${f.split.kind === 'condition' ? 'condition ' : ''}${name}`);
 	}
 	out.push(f.denominator === 'answered' ? 'Denominator: answered' : 'Denominator: shown (answered + unanswered)');
+	if (f.intervals) out.push('95 % intervals (Wilson for proportions, t for means)');
 	return out;
 }
 
-// -- chart menu (planning/results-viewer.md, "Chart menu per question type") -------------
+// -- chart menu ------------------------------------------------------------------------
+// Which charts suit a card, and the default, come from `chartsFor` (charts/menu.ts, task
+// V3): the one source of truth. A date card's period is its own choice (it re-queries).
 
-export interface ChartOption {
-	id: string;
-	label: string;
-}
-
-const TABLE: ChartOption = { id: 'table', label: 'Table' };
-const SPLIT_BARS: ChartOption[] = [
-	{ id: 'grouped', label: 'Grouped bars' },
-	{ id: 'stacked100', label: '100 % stacked bars' },
-	{ id: 'small-multiples', label: 'Small multiples' }
-];
 export const DATE_UNITS = ['month', 'day', 'week', 'year'] as const;
 export type DateUnit = (typeof DATE_UNITS)[number];
-
-/**
- * The charts that suit a card, default first. With a split, choice questions get the
- * split layouts (grouped, 100 % stacked, small multiples). Text has no chart (its card
- * is the verbatim table); notes are hidden.
- */
-export function chartMenu(card: Pick<Card, 'type' | 'ordered' | 'binning'>, split = false): ChartOption[] {
-	switch (card.type) {
-		case 'single':
-			return split
-				? [...SPLIT_BARS, TABLE]
-				: [
-						{ id: 'bars', label: 'Horizontal bars (declared order)' },
-						{ id: 'sorted', label: 'Sorted bars' },
-						{ id: 'donut', label: 'Donut' },
-						TABLE
-					];
-		case 'multi':
-			return split
-				? [...SPLIT_BARS, TABLE]
-				: [
-						{ id: 'bars-pct', label: 'Bars, % of respondents' },
-						{ id: 'bars-count', label: 'Bars, counts' },
-						{ id: 'dot', label: 'Dot plot' }
-					];
-		case 'integer':
-		case 'decimal':
-			return [
-				{ id: 'histogram', label: 'Histogram' },
-				{ id: 'box', label: 'Box plot' },
-				{ id: 'cumulative', label: 'Cumulative distribution' }
-			];
-		case 'slider':
-			return [
-				card.binning === 'values'
-					? { id: 'frequency', label: 'Frequency bars' }
-					: { id: 'histogram', label: 'Histogram' },
-				{ id: 'box', label: 'Box plot' },
-				{ id: 'cumulative', label: 'Cumulative distribution' }
-			];
-		case 'date':
-			return [
-				{ id: 'month', label: 'Counts per month' },
-				{ id: 'day', label: 'Counts per day' },
-				{ id: 'week', label: 'Counts per week' },
-				{ id: 'year', label: 'Counts per year' }
-			];
-		case 'matrix':
-			return card.ordered
-				? [
-						{ id: 'diverging', label: 'Diverging stacked bars' },
-						{ id: 'stacked100', label: '100 % stacked bars' },
-						{ id: 'heatmap', label: 'Heatmap' },
-						TABLE
-					]
-				: [{ id: 'grouped', label: 'Grouped bars' }, { id: 'heatmap', label: 'Heatmap' }, TABLE];
-		default:
-			return [];
-	}
-}
-
-/** The chosen chart if the menu has it, else the menu's default (or null: no chart). */
-export function effectiveChart(menu: readonly ChartOption[], chosen: string | undefined): string | null {
-	if (chosen && menu.some((o) => o.id === chosen)) return chosen;
-	return menu[0]?.id ?? null;
-}
 
 export function isDateUnit(id: string | null | undefined): id is DateUnit {
 	return !!id && (DATE_UNITS as readonly string[]).includes(id);
 }
 
 /**
- * Per-card requests when a chart choice changes what the server computes (a date card per
+ * Per-card requests when a card's period changes what the server computes (a date card per
  * day / week / year): every card of the last response in order, with its bins. Undefined
  * when nothing differs from the defaults (the server then sends every question).
  */
 export function cardRequests(
 	cards: readonly Pick<Card, 'question' | 'type'>[],
-	chosen: Readonly<Record<string, string>>
+	units: Readonly<Record<string, string>>
 ): CardRequest[] | undefined {
 	let custom = false;
 	const out = cards.map((c) => {
-		const unit = c.type === 'date' ? chosen[c.question] : undefined;
+		const unit = c.type === 'date' ? units[c.question] : undefined;
 		if (isDateUnit(unit) && unit !== 'month') {
 			custom = true;
 			return { question: c.question, bins: { unit } };

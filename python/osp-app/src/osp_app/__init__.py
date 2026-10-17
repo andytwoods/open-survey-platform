@@ -2,6 +2,7 @@
 See README.md."""
 
 from . import results as results  # registers the results commands
+from . import results_export as results_export  # registers survey.results_export
 from .builder import Builder, EditResult, ExportResult, HistoryEntry, PublishResult, SurveyView
 from .commands import COMMANDS, AppCommand, command, dispatch
 from .data_export import DataExport

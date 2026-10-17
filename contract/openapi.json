@@ -2990,6 +2990,111 @@
         "title": "ResultWarning",
         "type": "object"
       },
+      "ResultsExportRecord": {
+        "properties": {
+          "formats": {
+            "items": {
+              "type": "string"
+            },
+            "title": "Formats",
+            "type": "array"
+          },
+          "queryHash": {
+            "description": "Same hash as the results query's for this query",
+            "title": "Queryhash",
+            "type": "string"
+          },
+          "recorded": {
+            "title": "Recorded",
+            "type": "boolean"
+          },
+          "versions": {
+            "items": {
+              "type": "integer"
+            },
+            "title": "Versions",
+            "type": "array"
+          }
+        },
+        "required": [
+          "recorded",
+          "queryHash",
+          "versions",
+          "formats"
+        ],
+        "title": "ResultsExportRecord",
+        "type": "object"
+      },
+      "ResultsExportRequest": {
+        "additionalProperties": false,
+        "description": "What a figure export contained. The files are drawn in the browser from the query's\naggregates; the server only checks access and writes a ``results.export`` audit row.",
+        "properties": {
+          "cards": {
+            "description": "Question ids of the exported cards",
+            "items": {
+              "maxLength": 200,
+              "minLength": 1,
+              "type": "string"
+            },
+            "maxItems": 500,
+            "minItems": 1,
+            "title": "Cards",
+            "type": "array"
+          },
+          "formats": {
+            "items": {
+              "enum": [
+                "svg",
+                "png",
+                "csv",
+                "vega-lite",
+                "manifest",
+                "zip"
+              ],
+              "type": "string"
+            },
+            "maxItems": 6,
+            "minItems": 1,
+            "title": "Formats",
+            "type": "array"
+          },
+          "query": {
+            "$ref": "#/components/schemas/ResultsQuery",
+            "description": "The results query the figures were drawn from"
+          },
+          "scope": {
+            "default": "card",
+            "description": "One card, or Export all",
+            "enum": [
+              "card",
+              "page"
+            ],
+            "title": "Scope",
+            "type": "string"
+          },
+          "suppressBelow": {
+            "anyOf": [
+              {
+                "maximum": 1000.0,
+                "minimum": 1.0,
+                "type": "integer"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "description": "'Hide counts below k' threshold; null: off",
+            "title": "Suppressbelow"
+          }
+        },
+        "required": [
+          "query",
+          "cards",
+          "formats"
+        ],
+        "title": "ResultsExportRequest",
+        "type": "object"
+      },
       "ResultsQuery": {
         "additionalProperties": false,
         "properties": {
@@ -7901,6 +8006,89 @@
         "summary": "Delete Response",
         "tags": [
           "surveys"
+        ]
+      }
+    },
+    "/api/surveys/{survey_id}/results/export": {
+      "post": {
+        "description": "Record a figure export (survey.export; audited as results.export, no values).",
+        "operationId": "recordResultsExport",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "survey_id",
+            "required": true,
+            "schema": {
+              "title": "Survey Id",
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/ResultsExportRequest"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ResultsExportRecord"
+                }
+              }
+            },
+            "description": "Successful Response"
+          },
+          "401": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorBody"
+                }
+              }
+            },
+            "description": "Unauthorized"
+          },
+          "403": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorBody"
+                }
+              }
+            },
+            "description": "Forbidden"
+          },
+          "404": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorBody"
+                }
+              }
+            },
+            "description": "Not Found"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/RejectedBody"
+                }
+              }
+            },
+            "description": "Unprocessable Content"
+          }
+        },
+        "summary": "Record Results Export",
+        "tags": [
+          "results"
         ]
       }
     },
