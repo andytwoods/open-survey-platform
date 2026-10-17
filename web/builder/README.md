@@ -20,7 +20,7 @@ no sign-in UI here: the host owns accounts, sessions and sign-out.
 
 Dev-only entries (`src/pages/dev/*`, not in the production build): `/?mock` (the shell over
 static mock data) and the galleries `/dev/cards`, `/dev/choices`, `/dev/components`,
-`/dev/conditions`, `/dev/properties`, `/dev/themes`, `/dev/widgets`.
+`/dev/charts`, `/dev/conditions`, `/dev/properties`, `/dev/themes`, `/dev/widgets`.
 
 Every entry exports `mount(el, config)` and also mounts itself when the document has
 `<div id="osp">` and a config tag. A host page is just:
