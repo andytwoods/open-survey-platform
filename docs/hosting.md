@@ -358,6 +358,22 @@ Without `OSP_TRUSTED_PROXIES` all participants behind your proxy share one budge
      from the builder by `postMessage`, never the API base or a CSRF token.
    - `frame-ancestors 'self'`: the builder shows it in a sandboxed iframe on your origin.
    - Serve the page without the dev host's inline theme script (the policy blocks it).
+   - That iframe is `sandbox="allow-scripts allow-same-origin allow-forms"`, and Chrome's
+     console warns that a frame with both `allow-scripts` and `allow-same-origin` can
+     remove its own sandbox. That is expected, and the reason is the build format. The page
+     is Vite's ES-module build. A frame with an opaque origin (no `allow-same-origin`)
+     fetches module scripts and their chunks as CORS requests with `Origin: null`, and
+     your static files carry no `Access-Control-Allow-Origin`, so the browser blocks them
+     and nothing runs. Same origin also lets the builder and the frame address each other's
+     `postMessage` to one exact origin, rather than accepting `"null"` and sending with
+     `*`. So the sandbox here limits navigation and popups; it does not isolate script. The
+     CSP above does that: the page runs only your origin's own build (`script-src 'self'`)
+     plus the hooks bootstrap by hash, with no inline script, no `eval`, and
+     `connect-src 'none'`, so survey text that reaches the page cannot run as script. The
+     researchers' hook code, the only untrusted code, never runs in this document. It runs
+     one level down, in the participant app's own `allow-scripts`-only sandbox (opaque
+     origin, `default-src 'none'`), as it does for participants. Keep this policy exactly as
+     given: loosening `script-src` on this page is what would make the warning matter.
 7. Keep everything same-origin. Cross-origin is opt-in: list exact origins in
    `OSP_ALLOWED_ORIGINS` (no wildcard; credentials allowed) and in the page config's
    `allowedOrigins`.
