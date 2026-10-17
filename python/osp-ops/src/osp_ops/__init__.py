@@ -18,6 +18,7 @@ from . import (  # noqa: F401
     flow_ops,
     hooks_ops,
     matrix_row_ops,
+    media_ops,
     metadata_ops,
     page_ops,
     property_ops,

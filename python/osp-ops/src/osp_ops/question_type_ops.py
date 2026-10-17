@@ -49,7 +49,7 @@ CHOICE_TYPES = frozenset({"single", "multi"})
 WITH_COLUMNS = frozenset({"single", "multi", "matrix"})
 NUMBER_TYPES = frozenset({"integer", "decimal", "slider"})
 # Kept from the old question whenever the new type has the field.
-IDENTITY_KEYS = ("help", "showIf", "name", "required")
+IDENTITY_KEYS = ("help", "showIf", "name", "required", "media")
 # New validator problems that mean "something that referred to this answer broke".
 BREAKING_CODES = frozenset(
     {"expr.type", "ref.no_value", "ref.unknown", "ref.unknown_choice_code", "pipe.invalid"}

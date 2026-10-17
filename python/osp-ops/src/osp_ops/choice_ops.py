@@ -90,16 +90,21 @@ class AddChoice(Params):
     label: Text = ""
     value: ChoiceValue | None = None  # None: the next integer code
     index: int | None = Index
+    media: dict[str, Any] | None = None  # planning/media.md: an image or audio clip
 
 
 @op("add_choice", AddChoice, label="Add choice", area="choices")
 def add_choice(ctx: Ctx, p: AddChoice) -> Invocation:
-    """Add a choice (default: the next integer code, at the end)."""
+    """Add a choice (default: the next integer code, at the end), optionally with its
+    media (an image or audio clip, `osp_spec.media.Media`)."""
     choices, _, ptr = owner_choices(ctx, p.owner)
     value = next_code(choices) if p.value is None else p.value
     if any(same(c["value"], value) for c in choices):
         raise OpError("op.not_allowed", f"code {value!r} is already used", ptr)
-    insert_at(choices, p.index, {"value": value, "label": copy.deepcopy(p.label)})
+    choice: dict[str, Any] = {"value": value, "label": copy.deepcopy(p.label)}
+    if p.media is not None:
+        choice["media"] = copy.deepcopy(p.media)
+    insert_at(choices, p.index, choice)
     return Invocation(op="delete_choice", params={"owner": p.owner, "value": value, "force": True})
 
 
@@ -129,10 +134,15 @@ def delete_choice(ctx: Ctx, p: DeleteChoice) -> Invocation:
     )
     if cascaded:
         return REVERSE_PATCH
-    return Invocation(
-        op="add_choice",
-        params={"owner": p.owner, "label": c["label"], "value": c["value"], "index": i},
-    )
+    params: dict[str, Any] = {
+        "owner": p.owner,
+        "label": c["label"],
+        "value": c["value"],
+        "index": i,
+    }
+    if c.get("media") is not None:
+        params["media"] = c["media"]
+    return Invocation(op="add_choice", params=params)
 
 
 # --- move / set -----------------------------------------------------------------------

@@ -106,6 +106,29 @@ EXAMPLES: dict[str, list[dict[str, Any]]] = {
     "add_choice": [
         {"owner": "fruit", "label": "Fig"},
         {"owner": "yesno", "label": {"en": "Maybe", "de": "Vielleicht"}, "value": 9, "index": 0},
+        {
+            "owner": "grid",
+            "label": {"en": "Great", "de": "Super"},
+            "media": {"kind": "image", "url": "https://cdn.example.org/up.svg", "alt": "Thumbs up"},
+        },
+    ],
+    "set_choice_media": [
+        {
+            "owner": "fruit",
+            "value": 1,
+            "media": {"kind": "image", "url": "/media/apple.png", "alt": "An apple"},
+        },
+        {"owner": "spare", "value": "a", "unset": True},
+        {
+            "owner": "spare",
+            "value": "a",
+            "media": {"kind": "audio", "url": "/media/a.mp3", "transcriptUrl": "/media/a.html"},
+        },
+        {
+            "owner": "grid",
+            "value": 2,
+            "media": {"kind": "image", "url": "/media/good.png", "alt": "Good"},
+        },
     ],
     "delete_choice": [
         {"owner": "fruit", "value": 3},

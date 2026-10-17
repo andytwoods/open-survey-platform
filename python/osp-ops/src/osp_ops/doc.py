@@ -183,6 +183,21 @@ def insert_at(lst: list[Json], index: int | None, item: Json) -> int:
 # --- text and expression sites --------------------------------------------------------
 
 TEXT_KEYS_QUESTION = ("label", "help", "constraintMessage")
+TEXT_KEYS_MEDIA = ("alt", "caption")  # planning/media.md: a media object's translatable texts
+
+
+def _media_texts(media: Json, path: Path) -> Iterator[tuple[Path, Json]]:
+    if isinstance(media, dict):
+        for key in TEXT_KEYS_MEDIA:
+            if media.get(key) is not None:
+                yield (*path, key), media[key]
+
+
+def _choice_texts(choices: list[Json], path: Path) -> Iterator[tuple[Path, Json]]:
+    for k, c in enumerate(choices):
+        yield (*path, k, "label"), c["label"]
+        if c.get("media") is not None:
+            yield from _media_texts(c["media"], (*path, k, "media"))
 
 
 def text_sites(doc: Json) -> Iterator[tuple[Path, Json]]:
@@ -192,8 +207,7 @@ def text_sites(doc: Json) -> Iterator[tuple[Path, Json]]:
         if md.get(key) is not None:
             yield ("metadata", key), md[key]
     for i, cl in enumerate(doc.get("choiceLists", [])):
-        for k, c in enumerate(cl["choices"]):
-            yield ("choiceLists", i, "choices", k, "label"), c["label"]
+        yield from _choice_texts(cl["choices"], ("choiceLists", i, "choices"))
     for i, b in enumerate(doc.get("blocks", [])):
         for j, page in enumerate(b["pages"]):
             for k, q in enumerate(page["items"]):
@@ -201,8 +215,9 @@ def text_sites(doc: Json) -> Iterator[tuple[Path, Json]]:
                 for key in TEXT_KEYS_QUESTION:
                     if q.get(key) is not None:
                         yield (*qp, key), q[key]
-                for m, c in enumerate(q.get("choices") or []):
-                    yield (*qp, "choices", m, "label"), c["label"]
+                for m, media in enumerate(q.get("media") or []):
+                    yield from _media_texts(media, (*qp, "media", m))
+                yield from _choice_texts(q.get("choices") or [], (*qp, "choices"))
                 if q.get("type") == "matrix":
                     for m, r in enumerate(q.get("rows") or []):
                         yield (*qp, "rows", m, "label"), r["label"]

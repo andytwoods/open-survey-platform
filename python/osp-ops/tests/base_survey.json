@@ -17,7 +17,10 @@
     },
     {
       "id": "spare",
-      "choices": [{"value": "a", "label": "A"}, {"value": "b", "label": "B"}]
+      "choices": [
+        {"value": "a", "label": "A", "media": {"kind": "image", "url": "/media/a.png", "alt": {"en": "An A", "de": "Ein A"}}},
+        {"value": "b", "label": "B"}
+      ]
     }
   ],
   "variables": [
@@ -64,7 +67,9 @@
         {
           "id": "p_main",
           "items": [
-            {"id": "info", "type": "note", "label": {"en": "Thanks", "de": "Danke"}},
+            {"id": "info", "type": "note", "label": {"en": "Thanks", "de": "Danke"},
+             "media": [{"kind": "audio", "url": "/media/thanks.mp3", "transcriptUrl": "/media/thanks.html",
+                        "caption": {"en": "A thank-you", "de": "Ein Dankeschön"}, "mustPlayToEnd": true}]},
             {"id": "rating", "type": "decimal", "label": {"en": "Rate", "de": "Bewerten"},
              "showIf": {"kind": "compare", "op": "==", "left": {"kind": "ref", "id": "consent"}, "right": {"kind": "int", "value": 1}}},
             {"id": "grid", "type": "matrix", "label": {"en": "Rate", "de": "Bewerten"}, "required": true,
