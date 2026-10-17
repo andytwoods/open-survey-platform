@@ -209,6 +209,49 @@ def test_end_node_and_outcome() -> None:
     assert "EndNode.type" in {d.feature for d in diags}
 
 
+def test_endings_become_note_groups() -> None:
+    """EN1: another outcome's ending goes with its End node (title = group label, body after
+    the node's message); the `complete` ending is the final group."""
+    data = _survey(
+        [{"id": "ok", "type": "single", "label": "OK?", "choices": FRUIT}],
+        [
+            {
+                "type": "branch",
+                "id": "g",
+                "if": {
+                    "kind": "compare",
+                    "op": "==",
+                    "left": {"kind": "ref", "id": "ok"},
+                    "right": {"kind": "text", "value": "pear"},
+                },  # fmt: skip
+                "then": [{"type": "end", "id": "e1", "outcome": "screened", "message": "Bye"}],
+            }
+        ],
+        settings={
+            "endings": {
+                "complete": {"title": "Thanks", "body": "You chose ${ok}."},
+                "screened": {"title": "Sorry", "body": "Not this time.", "status": "none"},
+            }
+        },
+    )
+    form, diags = build_xlsform(data)
+    assert form is not None, diags
+    rows = {r.get("name"): r for r in form.survey}
+    names = [r.get("name") for r in form.survey]
+    assert rows["osp_end_e1"]["label::English (en)"] == "Sorry"
+    assert names.index("osp_end_e1_message") < names.index("osp_end_e1_ending")
+    assert rows["osp_end_e1_ending"]["label::English (en)"] == "Not this time."
+    final = rows["osp_ending_complete"]
+    assert final["label::English (en)"] == "Thanks"
+    assert final["relevant"] == rows["osp_end_e1"]["relevant"].join(["not(", ")"])
+    # A piped choice shows its label, as in question labels (semantics.md §8).
+    assert rows["osp_ending_complete_body"]["label::English (en)"] == "You chose ${osp_label_ok}."
+    levels = {d.feature: d.level for d in diags}
+    assert levels["Settings.endings"] == "lowered" and levels["Ending.status"] == "approximated"
+    xlsx, _ = export_xlsform(data)
+    _xform(xlsx)
+
+
 def test_unsupported_features_are_losses() -> None:
     data = _survey(
         [{"id": "a", "type": "integer", "label": "A"}],

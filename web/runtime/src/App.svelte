@@ -12,6 +12,7 @@
 	import { localStorageBackup, localStoragePointer, MemoryStore, openIndexedDb, sessionPointer } from './lib/storage';
 	import { domId, errorText, plain } from './lib/view-map';
 	import ConsentPage from './lib/ConsentPage.svelte';
+	import EndScreen from './lib/EndScreen.svelte';
 	import Withdraw from './lib/Withdraw.svelte';
 	import { declinedConsent, type Device } from '@osp/engine';
 	import type { PreviewMount } from './lib/preview-mount';
@@ -337,12 +338,8 @@
 	{:else if view.status === 'consent' || declinedConsent(session.state)}
 		<ConsentPage {session} {view} />
 	{:else if phase === 'done'}
-		<main class="page" id="main">
-			<h1 tabindex="-1" bind:this={heading} data-testid="thanks">{ui.thanksTitle}</h1>
-			{#if view.end?.message && plain(view.end.message)}
-				<p>{plain(view.end.message)}</p>
-			{/if}
-			<p>{ui.thanks}</p>
+		<main class="page" id="main" lang={view.language}>
+			<EndScreen end={view.end} testid="thanks" bind:heading />
 			{#if session.redirectUrl}
 				<p><a href={session.redirectUrl}>{ui.redirecting}</a></p>
 			{/if}

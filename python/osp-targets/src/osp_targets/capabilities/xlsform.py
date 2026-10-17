@@ -107,6 +107,23 @@ _row("Consent.declineLabel", "unsupported", "See Survey.consent.")
 _row("Consent.declineOutcome", "unsupported", "See Survey.consent.")
 _row("Consent.countDeclines", "unsupported", "See Survey.consent.")
 _row(
+    "Settings.endings",
+    "lowered",
+    "Endings per outcome (EN1) become note groups: the `complete` ending is the form's final "
+    "group (shown when the flow runs to its end or reaches an End node with outcome "
+    "`complete`); another outcome's ending goes in the group of each End node with that "
+    "outcome. Endings reached only through a quota or the consent decline have no place in "
+    "the form, as quotas and the consent page are not exported.",
+)
+_row("Ending.title", "lowered", "The note group's label (its heading).")
+_row("Ending.body", "lowered", "A note in the group, after the End node's own message; pipes kept.")
+_row(
+    "Ending.status",
+    "approximated",
+    "ODK and Enketo show their own message after a submit; our status line is not written.",
+)
+_row("Ending.summary", "unsupported", "Reserved (EN5); not exported.")
+_row(
     "Survey.hooks",
     "unsupported",
     "Researcher hooks (custom code on key events, runtime-design.md §7a) run only in our "

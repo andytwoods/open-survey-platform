@@ -278,6 +278,21 @@ export interface ViewItem {
 	};
 }
 
+/**
+ * How the session ended, resolved for the ending screen (end-of-survey plan §4.1). `message`
+ * is the end node's own text, shown above the ending's body. `ending` is the outcome's
+ * ending from the plan with its pipes filled, or null when the survey sets none (the app
+ * shows its defaults). `status` is the truthful status line the screen must show:
+ * `recorded` (a response was kept), `not-recorded` (a consent decline: nothing was kept), or
+ * null when the ending hides it (`status: none`; never for a decline).
+ */
+export interface EndView {
+	outcome: Id;
+	message: RenderedText | null;
+	ending: { title: RenderedText | null; body: RenderedText | null; summary: 'none' | 'answers' } | null;
+	status: 'recorded' | 'not-recorded' | null;
+}
+
 export interface Position {
 	randomiserId: Id;
 	index: number;
@@ -297,7 +312,7 @@ export interface PageView {
 	/** Where focus goes (runtime-design.md §6): the heading, or the error summary after a failed next. */
 	focus: 'heading' | 'error-summary' | null;
 	effect: Effect | null;
-	end: { outcome: Id; message: RenderedText | null } | null;
+	end: EndView | null;
 	trial: number;
 	position: Position | null;
 	/** The consent page's texts, while it is shown (semantics.md §11). */

@@ -13,7 +13,7 @@ export interface PublishDiagnostic {
 
 /** Where a problem is fixed: a Survey settings section, the Appearance view, or the editor. */
 export type ProblemPlace =
-	| { view: 'settings'; section: 'retention' | 'consent' | 'languages' | null }
+	| { view: 'settings'; section: 'retention' | 'consent' | 'languages' | 'endings' | null }
 	| { view: 'appearance' }
 	| { view: 'editor'; pointer: string };
 
@@ -33,6 +33,8 @@ export function placeOf(d: PublishDiagnostic): { place: ProblemPlace; action: st
 		return { place: { view: 'appearance' }, action: 'Fix in Appearance' };
 	if (d.code.startsWith('consent.') || d.code === 'publish.consent_missing' || under(p, '/consent'))
 		return { place: { view: 'settings', section: 'consent' }, action: 'Edit consent' };
+	if (d.code.startsWith('ending.') || under(p, '/settings/endings'))
+		return { place: { view: 'settings', section: 'endings' }, action: 'Edit endings' };
 	if (under(p, '/metadata/languages') || under(p, '/metadata/defaultLanguage'))
 		return { place: { view: 'settings', section: 'languages' }, action: 'Edit languages' };
 	if (under(p, '/settings')) return { place: { view: 'settings', section: null }, action: 'Open survey settings' };

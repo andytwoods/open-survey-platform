@@ -47,8 +47,14 @@
 	 */
 	let {
 		store,
-		onOpenConditionEditor
-	}: { store: SurveyStore; onOpenConditionEditor?: (nodeId: string) => void } = $props();
+		onOpenConditionEditor,
+		onOpenEnding
+	}: {
+		store: SurveyStore;
+		onOpenConditionEditor?: (nodeId: string) => void;
+		/** Opens Survey settings → Endings at an outcome (the End card's "Edit ending"). */
+		onOpenEnding?: (outcome: string) => void;
+	} = $props();
 
 	const uid = $props.id();
 	const survey = $derived(store.survey);
@@ -248,7 +254,8 @@
 			const to = dropTarget(store.survey, id, gap);
 			if (to) void moveTo(id, to);
 		},
-		openCondition
+		openCondition,
+		openEnding: (outcome) => onOpenEnding?.(outcome)
 	});
 
 	const typeReasons = $derived(Object.fromEntries(NODE_TYPES.map((t) => [t, unavailable(survey, t)])));

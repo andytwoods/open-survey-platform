@@ -185,6 +185,14 @@ EXAMPLES: dict[str, list[dict[str, Any]]] = {
         {"consent": {"text": {"en": "Do you agree?"}, "countDeclines": True}},
         {"consent": {"text": "Agree?", "agreeLabel": "Yes", "declineLabel": "No"}},
     ],
+    "set_ending": [
+        {"outcome": "screened_out", "ending": {"title": "Thanks", "body": "Bye ${age}"}},
+        {
+            "outcome": "complete",
+            "ending": {"body": {"en": "Done", "de": "Fertig"}, "status": "none"},
+        },
+        {"outcome": "hook-failed", "ending": {}},
+    ],
     "set_theme": [
         {"theme": PRESETS["warm"].model_dump(mode="json", by_alias=True)},
         {"theme": {**PRESETS["clean"].model_dump(mode="json"), "radius": 0}},

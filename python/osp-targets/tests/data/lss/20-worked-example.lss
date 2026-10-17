@@ -28,33 +28,40 @@
     <sid><![CDATA[713190]]></sid>
     <group_order><![CDATA[1]]></group_order>
     <randomization_group/>
-    <grelevance><![CDATA[!(!is_empty(consent.NAOK) and (consent.NAOK == "0"))]]></grelevance>
+    <grelevance><![CDATA[!is_empty(consent.NAOK) and (consent.NAOK == "0")]]></grelevance>
    </row>
    <row>
     <gid><![CDATA[3]]></gid>
     <sid><![CDATA[713190]]></sid>
     <group_order><![CDATA[2]]></group_order>
     <randomization_group/>
-    <grelevance><![CDATA[!(!is_empty(consent.NAOK) and (consent.NAOK == "0")) and (!is_empty(framing.NAOK) and (framing.NAOK == "gain"))]]></grelevance>
+    <grelevance><![CDATA[!(!is_empty(consent.NAOK) and (consent.NAOK == "0"))]]></grelevance>
    </row>
    <row>
     <gid><![CDATA[4]]></gid>
     <sid><![CDATA[713190]]></sid>
     <group_order><![CDATA[3]]></group_order>
     <randomization_group/>
-    <grelevance><![CDATA[!(!is_empty(consent.NAOK) and (consent.NAOK == "0")) and !(!is_empty(framing.NAOK) and (framing.NAOK == "gain"))]]></grelevance>
+    <grelevance><![CDATA[!(!is_empty(consent.NAOK) and (consent.NAOK == "0")) and (!is_empty(framing.NAOK) and (framing.NAOK == "gain"))]]></grelevance>
    </row>
    <row>
     <gid><![CDATA[5]]></gid>
     <sid><![CDATA[713190]]></sid>
     <group_order><![CDATA[4]]></group_order>
     <randomization_group/>
-    <grelevance><![CDATA[!(!is_empty(consent.NAOK) and (consent.NAOK == "0"))]]></grelevance>
+    <grelevance><![CDATA[!(!is_empty(consent.NAOK) and (consent.NAOK == "0")) and !(!is_empty(framing.NAOK) and (framing.NAOK == "gain"))]]></grelevance>
    </row>
    <row>
     <gid><![CDATA[6]]></gid>
     <sid><![CDATA[713190]]></sid>
     <group_order><![CDATA[5]]></group_order>
+    <randomization_group/>
+    <grelevance><![CDATA[!(!is_empty(consent.NAOK) and (consent.NAOK == "0"))]]></grelevance>
+   </row>
+   <row>
+    <gid><![CDATA[7]]></gid>
+    <sid><![CDATA[713190]]></sid>
+    <group_order><![CDATA[6]]></group_order>
     <randomization_group/>
     <grelevance><![CDATA[1]]></grelevance>
    </row>
@@ -86,69 +93,83 @@
    <row>
     <id><![CDATA[3]]></id>
     <gid><![CDATA[2]]></gid>
-    <group_name><![CDATA[demo_page]]></group_name>
+    <group_name><![CDATA[end_declined]]></group_name>
     <description/>
     <language><![CDATA[en]]></language>
    </row>
    <row>
     <id><![CDATA[4]]></id>
     <gid><![CDATA[2]]></gid>
-    <group_name><![CDATA[demo_page]]></group_name>
+    <group_name><![CDATA[end_declined]]></group_name>
     <description/>
     <language><![CDATA[de]]></language>
    </row>
    <row>
     <id><![CDATA[5]]></id>
     <gid><![CDATA[3]]></gid>
-    <group_name><![CDATA[stim_gain_page]]></group_name>
+    <group_name><![CDATA[demo_page]]></group_name>
     <description/>
     <language><![CDATA[en]]></language>
    </row>
    <row>
     <id><![CDATA[6]]></id>
     <gid><![CDATA[3]]></gid>
-    <group_name><![CDATA[stim_gain_page]]></group_name>
+    <group_name><![CDATA[demo_page]]></group_name>
     <description/>
     <language><![CDATA[de]]></language>
    </row>
    <row>
     <id><![CDATA[7]]></id>
     <gid><![CDATA[4]]></gid>
-    <group_name><![CDATA[stim_loss_page]]></group_name>
+    <group_name><![CDATA[stim_gain_page]]></group_name>
     <description/>
     <language><![CDATA[en]]></language>
    </row>
    <row>
     <id><![CDATA[8]]></id>
     <gid><![CDATA[4]]></gid>
-    <group_name><![CDATA[stim_loss_page]]></group_name>
+    <group_name><![CDATA[stim_gain_page]]></group_name>
     <description/>
     <language><![CDATA[de]]></language>
    </row>
    <row>
     <id><![CDATA[9]]></id>
     <gid><![CDATA[5]]></gid>
-    <group_name><![CDATA[attitudes_page]]></group_name>
+    <group_name><![CDATA[stim_loss_page]]></group_name>
     <description/>
     <language><![CDATA[en]]></language>
    </row>
    <row>
     <id><![CDATA[10]]></id>
     <gid><![CDATA[5]]></gid>
-    <group_name><![CDATA[attitudes_page]]></group_name>
+    <group_name><![CDATA[stim_loss_page]]></group_name>
     <description/>
     <language><![CDATA[de]]></language>
    </row>
    <row>
     <id><![CDATA[11]]></id>
     <gid><![CDATA[6]]></gid>
-    <group_name><![CDATA[ospoutcome]]></group_name>
+    <group_name><![CDATA[attitudes_page]]></group_name>
     <description/>
     <language><![CDATA[en]]></language>
    </row>
    <row>
     <id><![CDATA[12]]></id>
     <gid><![CDATA[6]]></gid>
+    <group_name><![CDATA[attitudes_page]]></group_name>
+    <description/>
+    <language><![CDATA[de]]></language>
+   </row>
+   <row>
+    <id><![CDATA[13]]></id>
+    <gid><![CDATA[7]]></gid>
+    <group_name><![CDATA[ospoutcome]]></group_name>
+    <description/>
+    <language><![CDATA[en]]></language>
+   </row>
+   <row>
+    <id><![CDATA[14]]></id>
+    <gid><![CDATA[7]]></gid>
     <group_name><![CDATA[ospoutcome]]></group_name>
     <description/>
     <language><![CDATA[de]]></language>
@@ -295,6 +316,25 @@
     <parent_qid><![CDATA[0]]></parent_qid>
     <sid><![CDATA[713190]]></sid>
     <gid><![CDATA[2]]></gid>
+    <type><![CDATA[X]]></type>
+    <title><![CDATA[ospendingenddeclined]]></title>
+    <preg/>
+    <other><![CDATA[N]]></other>
+    <mandatory><![CDATA[N]]></mandatory>
+    <encrypted><![CDATA[N]]></encrypted>
+    <question_order><![CDATA[1]]></question_order>
+    <scale_id><![CDATA[0]]></scale_id>
+    <same_default><![CDATA[0]]></same_default>
+    <relevance><![CDATA[1]]></relevance>
+    <question_theme_name><![CDATA[boilerplate]]></question_theme_name>
+    <modulename/>
+    <same_script><![CDATA[0]]></same_script>
+   </row>
+   <row>
+    <qid><![CDATA[8]]></qid>
+    <parent_qid><![CDATA[0]]></parent_qid>
+    <sid><![CDATA[713190]]></sid>
+    <gid><![CDATA[3]]></gid>
     <type><![CDATA[N]]></type>
     <title><![CDATA[age]]></title>
     <preg/>
@@ -310,10 +350,10 @@
     <same_script><![CDATA[0]]></same_script>
    </row>
    <row>
-    <qid><![CDATA[8]]></qid>
+    <qid><![CDATA[9]]></qid>
     <parent_qid><![CDATA[0]]></parent_qid>
     <sid><![CDATA[713190]]></sid>
-    <gid><![CDATA[2]]></gid>
+    <gid><![CDATA[3]]></gid>
     <type><![CDATA[*]]></type>
     <title><![CDATA[ageband]]></title>
     <preg/>
@@ -329,31 +369,12 @@
     <same_script><![CDATA[0]]></same_script>
    </row>
    <row>
-    <qid><![CDATA[9]]></qid>
-    <parent_qid><![CDATA[0]]></parent_qid>
-    <sid><![CDATA[713190]]></sid>
-    <gid><![CDATA[3]]></gid>
-    <type><![CDATA[X]]></type>
-    <title><![CDATA[stimg]]></title>
-    <preg/>
-    <other><![CDATA[N]]></other>
-    <mandatory><![CDATA[N]]></mandatory>
-    <encrypted><![CDATA[N]]></encrypted>
-    <question_order><![CDATA[1]]></question_order>
-    <scale_id><![CDATA[0]]></scale_id>
-    <same_default><![CDATA[0]]></same_default>
-    <relevance><![CDATA[1]]></relevance>
-    <question_theme_name><![CDATA[boilerplate]]></question_theme_name>
-    <modulename/>
-    <same_script><![CDATA[0]]></same_script>
-   </row>
-   <row>
     <qid><![CDATA[10]]></qid>
     <parent_qid><![CDATA[0]]></parent_qid>
     <sid><![CDATA[713190]]></sid>
     <gid><![CDATA[4]]></gid>
     <type><![CDATA[X]]></type>
-    <title><![CDATA[stiml]]></title>
+    <title><![CDATA[stimg]]></title>
     <preg/>
     <other><![CDATA[N]]></other>
     <mandatory><![CDATA[N]]></mandatory>
@@ -371,6 +392,25 @@
     <parent_qid><![CDATA[0]]></parent_qid>
     <sid><![CDATA[713190]]></sid>
     <gid><![CDATA[5]]></gid>
+    <type><![CDATA[X]]></type>
+    <title><![CDATA[stiml]]></title>
+    <preg/>
+    <other><![CDATA[N]]></other>
+    <mandatory><![CDATA[N]]></mandatory>
+    <encrypted><![CDATA[N]]></encrypted>
+    <question_order><![CDATA[1]]></question_order>
+    <scale_id><![CDATA[0]]></scale_id>
+    <same_default><![CDATA[0]]></same_default>
+    <relevance><![CDATA[1]]></relevance>
+    <question_theme_name><![CDATA[boilerplate]]></question_theme_name>
+    <modulename/>
+    <same_script><![CDATA[0]]></same_script>
+   </row>
+   <row>
+    <qid><![CDATA[12]]></qid>
+    <parent_qid><![CDATA[0]]></parent_qid>
+    <sid><![CDATA[713190]]></sid>
+    <gid><![CDATA[6]]></gid>
     <type><![CDATA[L]]></type>
     <title><![CDATA[att1]]></title>
     <preg/>
@@ -386,10 +426,10 @@
     <same_script><![CDATA[0]]></same_script>
    </row>
    <row>
-    <qid><![CDATA[12]]></qid>
+    <qid><![CDATA[13]]></qid>
     <parent_qid><![CDATA[0]]></parent_qid>
     <sid><![CDATA[713190]]></sid>
-    <gid><![CDATA[5]]></gid>
+    <gid><![CDATA[6]]></gid>
     <type><![CDATA[L]]></type>
     <title><![CDATA[att2]]></title>
     <preg/>
@@ -405,10 +445,10 @@
     <same_script><![CDATA[0]]></same_script>
    </row>
    <row>
-    <qid><![CDATA[13]]></qid>
+    <qid><![CDATA[14]]></qid>
     <parent_qid><![CDATA[0]]></parent_qid>
     <sid><![CDATA[713190]]></sid>
-    <gid><![CDATA[5]]></gid>
+    <gid><![CDATA[6]]></gid>
     <type><![CDATA[L]]></type>
     <title><![CDATA[att3]]></title>
     <preg/>
@@ -424,10 +464,10 @@
     <same_script><![CDATA[0]]></same_script>
    </row>
    <row>
-    <qid><![CDATA[14]]></qid>
+    <qid><![CDATA[15]]></qid>
     <parent_qid><![CDATA[0]]></parent_qid>
     <sid><![CDATA[713190]]></sid>
-    <gid><![CDATA[5]]></gid>
+    <gid><![CDATA[6]]></gid>
     <type><![CDATA[*]]></type>
     <title><![CDATA[attscore]]></title>
     <preg/>
@@ -443,10 +483,10 @@
     <same_script><![CDATA[0]]></same_script>
    </row>
    <row>
-    <qid><![CDATA[15]]></qid>
+    <qid><![CDATA[16]]></qid>
     <parent_qid><![CDATA[0]]></parent_qid>
     <sid><![CDATA[713190]]></sid>
-    <gid><![CDATA[6]]></gid>
+    <gid><![CDATA[7]]></gid>
     <type><![CDATA[*]]></type>
     <title><![CDATA[ospoutcome]]></title>
     <preg/>
@@ -572,7 +612,7 @@
    <row>
     <id><![CDATA[13]]></id>
     <qid><![CDATA[7]]></qid>
-    <question><![CDATA[How old are you?]]></question>
+    <question><![CDATA[<p>You chose not to take part in the study.</p>]]></question>
     <help/>
     <script/>
     <language><![CDATA[en]]></language>
@@ -580,7 +620,7 @@
    <row>
     <id><![CDATA[14]]></id>
     <qid><![CDATA[7]]></qid>
-    <question><![CDATA[How old are you?]]></question>
+    <question><![CDATA[<p>Sie haben sich gegen die Teilnahme entschieden.</p>]]></question>
     <help/>
     <script/>
     <language><![CDATA[de]]></language>
@@ -588,7 +628,7 @@
    <row>
     <id><![CDATA[15]]></id>
     <qid><![CDATA[8]]></qid>
-    <question><![CDATA[{if(!is_empty(age.NAOK) and (age.NAOK < 40), "18-39", "40+")}]]></question>
+    <question><![CDATA[How old are you?]]></question>
     <help/>
     <script/>
     <language><![CDATA[en]]></language>
@@ -596,7 +636,7 @@
    <row>
     <id><![CDATA[16]]></id>
     <qid><![CDATA[8]]></qid>
-    <question><![CDATA[{if(!is_empty(age.NAOK) and (age.NAOK < 40), "18-39", "40+")}]]></question>
+    <question><![CDATA[How old are you?]]></question>
     <help/>
     <script/>
     <language><![CDATA[de]]></language>
@@ -604,7 +644,7 @@
    <row>
     <id><![CDATA[17]]></id>
     <qid><![CDATA[9]]></qid>
-    <question><![CDATA[Programme A saves 200 people…]]></question>
+    <question><![CDATA[{if(!is_empty(age.NAOK) and (age.NAOK < 40), "18-39", "40+")}]]></question>
     <help/>
     <script/>
     <language><![CDATA[en]]></language>
@@ -612,7 +652,7 @@
    <row>
     <id><![CDATA[18]]></id>
     <qid><![CDATA[9]]></qid>
-    <question><![CDATA[Programme A saves 200 people…]]></question>
+    <question><![CDATA[{if(!is_empty(age.NAOK) and (age.NAOK < 40), "18-39", "40+")}]]></question>
     <help/>
     <script/>
     <language><![CDATA[de]]></language>
@@ -620,7 +660,7 @@
    <row>
     <id><![CDATA[19]]></id>
     <qid><![CDATA[10]]></qid>
-    <question><![CDATA[With Programme A, 400 people die…]]></question>
+    <question><![CDATA[Programme A saves 200 people…]]></question>
     <help/>
     <script/>
     <language><![CDATA[en]]></language>
@@ -628,7 +668,7 @@
    <row>
     <id><![CDATA[20]]></id>
     <qid><![CDATA[10]]></qid>
-    <question><![CDATA[With Programme A, 400 people die…]]></question>
+    <question><![CDATA[Programme A saves 200 people…]]></question>
     <help/>
     <script/>
     <language><![CDATA[de]]></language>
@@ -636,7 +676,7 @@
    <row>
     <id><![CDATA[21]]></id>
     <qid><![CDATA[11]]></qid>
-    <question><![CDATA[With the {incentive} you were offered, the programme seems fair.]]></question>
+    <question><![CDATA[With Programme A, 400 people die…]]></question>
     <help/>
     <script/>
     <language><![CDATA[en]]></language>
@@ -644,7 +684,7 @@
    <row>
     <id><![CDATA[22]]></id>
     <qid><![CDATA[11]]></qid>
-    <question><![CDATA[With the {incentive} you were offered, the programme seems fair.]]></question>
+    <question><![CDATA[With Programme A, 400 people die…]]></question>
     <help/>
     <script/>
     <language><![CDATA[de]]></language>
@@ -652,7 +692,7 @@
    <row>
     <id><![CDATA[23]]></id>
     <qid><![CDATA[12]]></qid>
-    <question><![CDATA[I would support Programme A.]]></question>
+    <question><![CDATA[With the {incentive} you were offered, the programme seems fair.]]></question>
     <help/>
     <script/>
     <language><![CDATA[en]]></language>
@@ -660,7 +700,7 @@
    <row>
     <id><![CDATA[24]]></id>
     <qid><![CDATA[12]]></qid>
-    <question><![CDATA[I would support Programme A.]]></question>
+    <question><![CDATA[With the {incentive} you were offered, the programme seems fair.]]></question>
     <help/>
     <script/>
     <language><![CDATA[de]]></language>
@@ -668,7 +708,7 @@
    <row>
     <id><![CDATA[25]]></id>
     <qid><![CDATA[13]]></qid>
-    <question><![CDATA[Programme A is too risky.]]></question>
+    <question><![CDATA[I would support Programme A.]]></question>
     <help/>
     <script/>
     <language><![CDATA[en]]></language>
@@ -676,7 +716,7 @@
    <row>
     <id><![CDATA[26]]></id>
     <qid><![CDATA[13]]></qid>
-    <question><![CDATA[Programme A is too risky.]]></question>
+    <question><![CDATA[I would support Programme A.]]></question>
     <help/>
     <script/>
     <language><![CDATA[de]]></language>
@@ -684,7 +724,7 @@
    <row>
     <id><![CDATA[27]]></id>
     <qid><![CDATA[14]]></qid>
-    <question><![CDATA[{if(!is_empty(att1.NAOK) and !is_empty(att2.NAOK) and !is_empty(att3.NAOK), ((att1.NAOK + att2.NAOK) + (6 - att3.NAOK)) / 3, "")}]]></question>
+    <question><![CDATA[Programme A is too risky.]]></question>
     <help/>
     <script/>
     <language><![CDATA[en]]></language>
@@ -692,7 +732,7 @@
    <row>
     <id><![CDATA[28]]></id>
     <qid><![CDATA[14]]></qid>
-    <question><![CDATA[{if(!is_empty(att1.NAOK) and !is_empty(att2.NAOK) and !is_empty(att3.NAOK), ((att1.NAOK + att2.NAOK) + (6 - att3.NAOK)) / 3, "")}]]></question>
+    <question><![CDATA[Programme A is too risky.]]></question>
     <help/>
     <script/>
     <language><![CDATA[de]]></language>
@@ -700,7 +740,7 @@
    <row>
     <id><![CDATA[29]]></id>
     <qid><![CDATA[15]]></qid>
-    <question><![CDATA[{if(!is_empty(consent.NAOK) and (consent.NAOK == "0"), "declined", "complete")}]]></question>
+    <question><![CDATA[{if(!is_empty(att1.NAOK) and !is_empty(att2.NAOK) and !is_empty(att3.NAOK), ((att1.NAOK + att2.NAOK) + (6 - att3.NAOK)) / 3, "")}]]></question>
     <help/>
     <script/>
     <language><![CDATA[en]]></language>
@@ -708,6 +748,22 @@
    <row>
     <id><![CDATA[30]]></id>
     <qid><![CDATA[15]]></qid>
+    <question><![CDATA[{if(!is_empty(att1.NAOK) and !is_empty(att2.NAOK) and !is_empty(att3.NAOK), ((att1.NAOK + att2.NAOK) + (6 - att3.NAOK)) / 3, "")}]]></question>
+    <help/>
+    <script/>
+    <language><![CDATA[de]]></language>
+   </row>
+   <row>
+    <id><![CDATA[31]]></id>
+    <qid><![CDATA[16]]></qid>
+    <question><![CDATA[{if(!is_empty(consent.NAOK) and (consent.NAOK == "0"), "declined", "complete")}]]></question>
+    <help/>
+    <script/>
+    <language><![CDATA[en]]></language>
+   </row>
+   <row>
+    <id><![CDATA[32]]></id>
+    <qid><![CDATA[16]]></qid>
     <question><![CDATA[{if(!is_empty(consent.NAOK) and (consent.NAOK == "0"), "declined", "complete")}]]></question>
     <help/>
     <script/>
@@ -754,39 +810,33 @@
     <language/>
    </row>
    <row>
-    <qid><![CDATA[7]]></qid>
+    <qid><![CDATA[8]]></qid>
     <attribute><![CDATA[num_value_int_only]]></attribute>
     <value><![CDATA[1]]></value>
     <language/>
    </row>
    <row>
-    <qid><![CDATA[7]]></qid>
+    <qid><![CDATA[8]]></qid>
     <attribute><![CDATA[em_validation_q]]></attribute>
     <value><![CDATA[is_empty(age.NAOK) or ((!is_empty(age.NAOK) and (age.NAOK >= 18)) and (!is_empty(age.NAOK) and (age.NAOK <= 120)))]]></value>
     <language/>
    </row>
    <row>
-    <qid><![CDATA[7]]></qid>
+    <qid><![CDATA[8]]></qid>
     <attribute><![CDATA[em_validation_q_tip]]></attribute>
     <value><![CDATA[Please enter an age between 18 and 120.]]></value>
     <language><![CDATA[en]]></language>
    </row>
    <row>
-    <qid><![CDATA[7]]></qid>
+    <qid><![CDATA[8]]></qid>
     <attribute><![CDATA[em_validation_q_tip]]></attribute>
     <value><![CDATA[Please enter an age between 18 and 120.]]></value>
     <language><![CDATA[de]]></language>
    </row>
    <row>
-    <qid><![CDATA[8]]></qid>
+    <qid><![CDATA[9]]></qid>
     <attribute><![CDATA[hidden]]></attribute>
     <value><![CDATA[1]]></value>
-    <language/>
-   </row>
-   <row>
-    <qid><![CDATA[11]]></qid>
-    <attribute><![CDATA[random_group]]></attribute>
-    <value><![CDATA[osppageattitudespage]]></value>
     <language/>
    </row>
    <row>
@@ -803,12 +853,18 @@
    </row>
    <row>
     <qid><![CDATA[14]]></qid>
+    <attribute><![CDATA[random_group]]></attribute>
+    <value><![CDATA[osppageattitudespage]]></value>
+    <language/>
+   </row>
+   <row>
+    <qid><![CDATA[15]]></qid>
     <attribute><![CDATA[hidden]]></attribute>
     <value><![CDATA[1]]></value>
     <language/>
    </row>
    <row>
-    <qid><![CDATA[15]]></qid>
+    <qid><![CDATA[16]]></qid>
     <attribute><![CDATA[hidden]]></attribute>
     <value><![CDATA[1]]></value>
     <language/>
@@ -843,7 +899,7 @@
    </row>
    <row>
     <aid><![CDATA[3]]></aid>
-    <qid><![CDATA[11]]></qid>
+    <qid><![CDATA[12]]></qid>
     <code><![CDATA[1]]></code>
     <sortorder><![CDATA[0]]></sortorder>
     <assessment_value><![CDATA[0]]></assessment_value>
@@ -851,7 +907,7 @@
    </row>
    <row>
     <aid><![CDATA[4]]></aid>
-    <qid><![CDATA[11]]></qid>
+    <qid><![CDATA[12]]></qid>
     <code><![CDATA[2]]></code>
     <sortorder><![CDATA[1]]></sortorder>
     <assessment_value><![CDATA[0]]></assessment_value>
@@ -859,7 +915,7 @@
    </row>
    <row>
     <aid><![CDATA[5]]></aid>
-    <qid><![CDATA[11]]></qid>
+    <qid><![CDATA[12]]></qid>
     <code><![CDATA[3]]></code>
     <sortorder><![CDATA[2]]></sortorder>
     <assessment_value><![CDATA[0]]></assessment_value>
@@ -867,7 +923,7 @@
    </row>
    <row>
     <aid><![CDATA[6]]></aid>
-    <qid><![CDATA[11]]></qid>
+    <qid><![CDATA[12]]></qid>
     <code><![CDATA[4]]></code>
     <sortorder><![CDATA[3]]></sortorder>
     <assessment_value><![CDATA[0]]></assessment_value>
@@ -875,7 +931,7 @@
    </row>
    <row>
     <aid><![CDATA[7]]></aid>
-    <qid><![CDATA[11]]></qid>
+    <qid><![CDATA[12]]></qid>
     <code><![CDATA[5]]></code>
     <sortorder><![CDATA[4]]></sortorder>
     <assessment_value><![CDATA[0]]></assessment_value>
@@ -883,7 +939,7 @@
    </row>
    <row>
     <aid><![CDATA[8]]></aid>
-    <qid><![CDATA[12]]></qid>
+    <qid><![CDATA[13]]></qid>
     <code><![CDATA[1]]></code>
     <sortorder><![CDATA[0]]></sortorder>
     <assessment_value><![CDATA[0]]></assessment_value>
@@ -891,7 +947,7 @@
    </row>
    <row>
     <aid><![CDATA[9]]></aid>
-    <qid><![CDATA[12]]></qid>
+    <qid><![CDATA[13]]></qid>
     <code><![CDATA[2]]></code>
     <sortorder><![CDATA[1]]></sortorder>
     <assessment_value><![CDATA[0]]></assessment_value>
@@ -899,7 +955,7 @@
    </row>
    <row>
     <aid><![CDATA[10]]></aid>
-    <qid><![CDATA[12]]></qid>
+    <qid><![CDATA[13]]></qid>
     <code><![CDATA[3]]></code>
     <sortorder><![CDATA[2]]></sortorder>
     <assessment_value><![CDATA[0]]></assessment_value>
@@ -907,7 +963,7 @@
    </row>
    <row>
     <aid><![CDATA[11]]></aid>
-    <qid><![CDATA[12]]></qid>
+    <qid><![CDATA[13]]></qid>
     <code><![CDATA[4]]></code>
     <sortorder><![CDATA[3]]></sortorder>
     <assessment_value><![CDATA[0]]></assessment_value>
@@ -915,7 +971,7 @@
    </row>
    <row>
     <aid><![CDATA[12]]></aid>
-    <qid><![CDATA[12]]></qid>
+    <qid><![CDATA[13]]></qid>
     <code><![CDATA[5]]></code>
     <sortorder><![CDATA[4]]></sortorder>
     <assessment_value><![CDATA[0]]></assessment_value>
@@ -923,7 +979,7 @@
    </row>
    <row>
     <aid><![CDATA[13]]></aid>
-    <qid><![CDATA[13]]></qid>
+    <qid><![CDATA[14]]></qid>
     <code><![CDATA[1]]></code>
     <sortorder><![CDATA[0]]></sortorder>
     <assessment_value><![CDATA[0]]></assessment_value>
@@ -931,7 +987,7 @@
    </row>
    <row>
     <aid><![CDATA[14]]></aid>
-    <qid><![CDATA[13]]></qid>
+    <qid><![CDATA[14]]></qid>
     <code><![CDATA[2]]></code>
     <sortorder><![CDATA[1]]></sortorder>
     <assessment_value><![CDATA[0]]></assessment_value>
@@ -939,7 +995,7 @@
    </row>
    <row>
     <aid><![CDATA[15]]></aid>
-    <qid><![CDATA[13]]></qid>
+    <qid><![CDATA[14]]></qid>
     <code><![CDATA[3]]></code>
     <sortorder><![CDATA[2]]></sortorder>
     <assessment_value><![CDATA[0]]></assessment_value>
@@ -947,7 +1003,7 @@
    </row>
    <row>
     <aid><![CDATA[16]]></aid>
-    <qid><![CDATA[13]]></qid>
+    <qid><![CDATA[14]]></qid>
     <code><![CDATA[4]]></code>
     <sortorder><![CDATA[3]]></sortorder>
     <assessment_value><![CDATA[0]]></assessment_value>
@@ -955,7 +1011,7 @@
    </row>
    <row>
     <aid><![CDATA[17]]></aid>
-    <qid><![CDATA[13]]></qid>
+    <qid><![CDATA[14]]></qid>
     <code><![CDATA[5]]></code>
     <sortorder><![CDATA[4]]></sortorder>
     <assessment_value><![CDATA[0]]></assessment_value>
@@ -1327,7 +1383,7 @@
     <surveyls_title><![CDATA[Framing and incentive study]]></surveyls_title>
     <surveyls_description><![CDATA[review.md §2.3 in full: consent gate, constraint, calculate, quota, 2x2 assign, branch, shuffled block, piping, score. Partly pending (C3a-1..5).]]></surveyls_description>
     <surveyls_welcometext/>
-    <surveyls_endtext/>
+    <surveyls_endtext><![CDATA[<p>Thank you</p><p>You told us you are {age}. Your {incentive} is on its way.</p>]]></surveyls_endtext>
     <surveyls_dateformat><![CDATA[1]]></surveyls_dateformat>
     <surveyls_numberformat><![CDATA[0]]></surveyls_numberformat>
    </row>
@@ -1337,7 +1393,7 @@
     <surveyls_title><![CDATA[Framing and incentive study]]></surveyls_title>
     <surveyls_description><![CDATA[review.md §2.3 in full: consent gate, constraint, calculate, quota, 2x2 assign, branch, shuffled block, piping, score. Partly pending (C3a-1..5).]]></surveyls_description>
     <surveyls_welcometext/>
-    <surveyls_endtext/>
+    <surveyls_endtext><![CDATA[<p>Vielen Dank</p><p>Sie sind {age} Jahre alt. Ihre Belohnung ({incentive}) ist unterwegs.</p>]]></surveyls_endtext>
     <surveyls_dateformat><![CDATA[1]]></surveyls_dateformat>
     <surveyls_numberformat><![CDATA[0]]></surveyls_numberformat>
    </row>

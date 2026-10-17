@@ -126,7 +126,13 @@
         "choices": {}
       },
       "conditions": {},
-      "end": "complete"
+      "end": "complete",
+      "ending": {
+        "title": "Thank you for your time",
+        "message": null,
+        "body": "You rated breakfast 8 out of 10.",
+        "status": "recorded"
+      }
     }
   ],
   "invariants": [],

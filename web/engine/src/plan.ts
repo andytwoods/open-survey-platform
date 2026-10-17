@@ -236,6 +236,19 @@ export interface ConsentPlan {
 	countDeclines: boolean;
 }
 
+/**
+ * The ending screen of one outcome (end-of-survey plan §4.1, osp-survey `settings.endings`).
+ * `title` and `body` pipe like labels; absent means the app's own default. `status: auto`
+ * shows the app's truthful status line, `none` hides it (a decline always shows it).
+ * `summary` is reserved (task EN5).
+ */
+export interface EndingPlan {
+	title?: Text;
+	body?: Text;
+	status: 'auto' | 'none';
+	summary: 'none' | 'answers';
+}
+
 /** The page id the view reports while the consent page is shown (the `$` namespace is reserved). */
 export const CONSENT_PAGE = '$consent';
 
@@ -267,6 +280,8 @@ export interface Plan {
 	};
 	/** Optional consent page, shown before any question (semantics.md §11). */
 	consent?: ConsentPlan;
+	/** Ending screens keyed by outcome; absent when the survey sets none (inside the checksum). */
+	endings?: Record<Id, EndingPlan>;
 	items: Record<Id, Item>;
 	/** Answerable question ids in flow order (export column order). */
 	questions: Id[];

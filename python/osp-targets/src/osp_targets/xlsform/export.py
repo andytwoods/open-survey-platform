@@ -221,6 +221,14 @@ def feature_uses(obj: object, ptr: str = "") -> Iterator[tuple[str, str, object]
     elif isinstance(obj, (list, tuple)):
         for i, item in enumerate(obj):
             yield from feature_uses(item, ptr + pointer(i))
+    elif isinstance(obj, dict):  # a map of models (`settings.endings`)
+        for k, item in obj.items():
+            if isinstance(item, BaseModel):
+                yield from feature_uses(item, ptr + pointer(str(k)))
+
+
+def _ending_ptr(outcome: str, field: str) -> str:
+    return pointer("settings", "endings", outcome, field)
 
 
 def _level(key: str) -> str | None:
@@ -245,6 +253,7 @@ class _Exporter:
         self.names: dict[str, str] = {}
         self.types: dict[str, str] = {}
         self.ends: list[tuple[str, str]] = []  # (condition, outcome)
+        self.complete_at: list[str] = []  # conditions of end nodes with outcome `complete`
         self.label_calcs: dict[str, str] = {}  # piped single question id -> calc name
         self._index()
 
@@ -358,6 +367,9 @@ class _Exporter:
         for node in _flow_nodes(self.s.flow):
             if isinstance(node, EndNode):
                 yield from strings(node.message)
+        for ending in self.s.settings.endings.values():
+            yield from strings(ending.title)
+            yield from strings(ending.body)
 
     def _xpath(self, self_id: str | None = None) -> XPathWriter:
         return XPathWriter(XPathContext(self.names, self.types, self_id))
@@ -428,7 +440,7 @@ class _Exporter:
 
         self._choice_lists()
         self._variables()
-        self._walk(self.s.flow, TRUE, "/flow")
+        self._complete_ending(self._walk(self.s.flow, TRUE, "/flow"))
         self._outcome()
         if any(not isinstance(q, NoteQuestion) for q in _questions(self.s)):
             self.note("$missingStates", "")
@@ -544,16 +556,53 @@ class _Exporter:
 
     def _end(self, node: EndNode, alive: str, ptr: str) -> None:
         self.ends.append((alive, node.outcome))
-        if node.message is None:
+        # EN1: the outcome's ending goes with the node (title as the group label, body as a
+        # note after the node's own message); `complete`'s is written once, at the end.
+        ending = None
+        if node.outcome == "complete":
+            self.complete_at.append(alive)
+        else:
+            ending = self.s.settings.endings.get(node.outcome)
+        has_ending = ending is not None and (ending.title is not None or ending.body is not None)
+        if node.message is None and not has_ending:
             return
         group = self._alloc(f"osp_end_{node.id}")
         row = {"type": "begin group", "name": group, "appearance": "field-list"}
         if alive != TRUE:
             row["relevant"] = alive
+        if ending is not None and ending.title is not None:
+            self._labelled(row, "label", ending.title, _ending_ptr(node.outcome, "title"))
         self.rows.append(row)
-        note = {"type": "note", "name": self._alloc(f"osp_end_{node.id}_message")}
-        self._labelled(note, "label", node.message, ptr + "/message")
-        self.rows.append(note)
+        if node.message is not None:
+            note = {"type": "note", "name": self._alloc(f"osp_end_{node.id}_message")}
+            self._labelled(note, "label", node.message, ptr + "/message")
+            self.rows.append(note)
+        if ending is not None and ending.body is not None:
+            body = {"type": "note", "name": self._alloc(f"osp_end_{node.id}_ending")}
+            self._labelled(body, "label", ending.body, _ending_ptr(node.outcome, "body"))
+            self.rows.append(body)
+        self.rows.append({"type": "end group"})
+
+    def _complete_ending(self, alive: str) -> None:
+        """The `complete` ending (EN1) as the form's final note group, shown when the form
+        runs off the end of the flow or reaches an end node with outcome `complete`."""
+        ending = self.s.settings.endings.get("complete")
+        if ending is None or (ending.title is None and ending.body is None):
+            return
+        relevant = or_(*self.complete_at, alive)
+        if relevant == FALSE:
+            return
+        name = self._alloc("osp_ending_complete")
+        row = {"type": "begin group", "name": name, "appearance": "field-list"}
+        if relevant != TRUE:
+            row["relevant"] = relevant
+        if ending.title is not None:
+            self._labelled(row, "label", ending.title, _ending_ptr("complete", "title"))
+        self.rows.append(row)
+        if ending.body is not None:
+            body = {"type": "note", "name": self._alloc("osp_ending_complete_body")}
+            self._labelled(body, "label", ending.body, _ending_ptr("complete", "body"))
+            self.rows.append(body)
         self.rows.append({"type": "end group"})
 
     def _outcome(self) -> None:

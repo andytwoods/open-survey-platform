@@ -4,13 +4,24 @@
   "version": 1,
   "metadata": {
     "title": "End nodes",
-    "description": "§6: explicit end nodes with codes, inside branches and at the end of the flow.",
+    "description": "§6: explicit end nodes with codes, inside branches and at the end of the flow; endings per outcome (end-of-survey plan §4.1): title, piped body, node message above it, status line hidden for one, defaults for an outcome without an ending.",
     "languages": [
       "en"
     ]
   },
   "settings": {
-    "backNavigation": true
+    "backNavigation": true,
+    "endings": {
+      "complete": {
+        "title": "Thank you for your time",
+        "body": "You rated breakfast ${rating} out of 10."
+      },
+      "ineligible": {
+        "title": "Thank you for your interest",
+        "body": "This study needs people willing to answer two more questions, so it ends here.",
+        "status": "none"
+      }
+    }
   },
   "choiceLists": [
     {
@@ -102,7 +113,8 @@
         {
           "type": "end",
           "id": "end_ineligible",
-          "outcome": "ineligible"
+          "outcome": "ineligible",
+          "message": "You chose not to go on."
         }
       ]
     },
@@ -130,7 +142,8 @@
         {
           "type": "end",
           "id": "end_early_exit",
-          "outcome": "early_exit"
+          "outcome": "early_exit",
+          "message": "Sorry your breakfast was not better."
         }
       ]
     },

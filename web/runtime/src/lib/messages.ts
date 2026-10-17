@@ -31,6 +31,7 @@ const en = {
 	submittingOffline: 'Waiting for a connection to send your answers. Please keep this page open.',
 	thanksTitle: 'Thank you',
 	thanks: 'Your answers have been sent.',
+	notRecorded: 'Nothing about you has been recorded. You can close this page.',
 	continueLater: 'Continue on another device',
 	continueHelp: 'Open this private link to carry on where you left off. Anyone with the link can see your answers.',
 	copy: 'Copy link',
@@ -84,6 +85,7 @@ const de: Strings = {
 	submittingOffline: 'Warten auf eine Verbindung, um Ihre Antworten zu senden. Bitte lassen Sie diese Seite offen.',
 	thanksTitle: 'Vielen Dank',
 	thanks: 'Ihre Antworten wurden gesendet.',
+	notRecorded: 'Es wurde nichts über Sie gespeichert. Sie können diese Seite schließen.',
 	continueLater: 'Auf einem anderen Gerät fortfahren',
 	continueHelp:
 		'Öffnen Sie diesen privaten Link, um dort weiterzumachen, wo Sie aufgehört haben. Wer den Link hat, kann Ihre Antworten sehen.',

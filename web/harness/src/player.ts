@@ -43,6 +43,8 @@ interface DomState {
 	sid: string | null;
 	/** A runtime notice on screen (`data-notice`: "conflict", "restarted"), FORMAT.md §3. */
 	notice: string | null;
+	/** The ending screen as shown (FORMAT.md §3 `ending`), or null while the survey runs. */
+	ending: { title: string | null; message: string | null; body: string | null; status: string | null } | null;
 }
 
 export interface Problem {
@@ -209,7 +211,21 @@ function probe(): DomState {
 		items,
 		snapshot: s?.rec?.snapshot ?? null,
 		sid: s?.rec?.sessionId ?? null,
-		notice: document.querySelector('[data-notice]')?.getAttribute('data-notice') ?? null
+		notice: document.querySelector('[data-notice]')?.getAttribute('data-notice') ?? null,
+		ending: (() => {
+			const h = document.querySelector('h1[data-testid="thanks"], h1[data-testid="declined"]');
+			if (!h) return null;
+			const paras = (sel: string) => {
+				const el = document.querySelector(sel);
+				return el ? [...el.querySelectorAll('p')].map((p) => text(p).trim()).join('\n\n') : null;
+			};
+			return {
+				title: h.hasAttribute('data-default') ? null : text(h).trim(),
+				message: paras('[data-ending="message"]'),
+				body: paras('[data-ending="body"]'),
+				status: document.querySelector('[data-ending-status]')?.getAttribute('data-ending-status') ?? null
+			};
+		})()
 	};
 }
 
@@ -472,6 +488,7 @@ export class Player {
 			effect: eng.effect,
 			device: this.device,
 			builtins: eng.builtins,
+			ending: ended ? dom.ending : null,
 			notice: dom.notice
 		};
 		return step;

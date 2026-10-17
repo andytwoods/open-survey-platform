@@ -71,6 +71,10 @@ CODES: dict[str, Severity] = {
     # Consent (semantics.md §11)
     "consent.pipe": "error",
     "consent.outcome": "error",
+    # Endings (end-of-survey plan §4.1, EN1)
+    "ending.unreachable": "warning",  # an ending for an outcome nothing in the survey reaches
+    "ending.declined_summary": "error",  # a decline records nothing, so it has no answers to show
+    "ending.summary_unsupported": "warning",  # `summary: answers` is reserved (EN5), not shown yet
     # Researcher hooks (runtime-design.md §7a; osp_spec.hooks.check_hooks)
     "hooks.unknown_ref": "error",  # a handler reads an id that is not a question or variable
     "hooks.write_target": "error",  # a handler writes something that is not a hook variable

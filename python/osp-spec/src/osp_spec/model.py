@@ -42,6 +42,14 @@ type ChoiceValue = StrictInt | StrictStr
 type Order = Literal["fixed", "shuffle"]
 # A decimal written as text, so no binary float sneaks in (semantics.md §2).
 type DecimalText = Annotated[str, StringConstraints(pattern=r"^-?(\d+(\.\d+)?)$", max_length=64)]
+# An outcome as `settings.endings` keys it: an identifier, or the built-in `hook-failed`
+# (runtime-design.md §7a), which is not one.
+type OutcomeKey = Annotated[
+    str,
+    StringConstraints(
+        pattern=r"^(?:[A-Za-z_][A-Za-z0-9_]*|hook-failed)$", min_length=1, max_length=64
+    ),
+]
 type Date = Annotated[str, StringConstraints(pattern=r"^\d{4}-\d{2}-\d{2}$")]
 
 
@@ -81,6 +89,28 @@ class Retention(Model):
     until: Date | None = None
 
 
+class Ending(Model):
+    """What the participant sees when the session ends with one outcome (end-of-survey plan
+    §4.1, task EN1). `settings.endings` maps an outcome identifier (an end node's `outcome`,
+    a quota's `onFull.outcome`, the consent `declineOutcome`, the built-ins `complete` and
+    `hook-failed`) to its ending, so the screen, the data and the exports agree.
+
+    - `title`: the heading; None: the app's own translated "Thank you".
+    - `body`: the text under it, with piping (`${id}`, variables, built-ins) as on pages
+      (semantics.md §8). Rendered as text, never as HTML. An end node's own `message` is
+      shown above it.
+    - `status`: `auto` shows the app's own truthful line ("Your answers have been sent." when
+      a response was recorded, "Nothing was recorded." for a decline); `none` hides it for a
+      recorded response. Researcher text never replaces it; a decline always shows it.
+    - `summary`: reserved for showing the participant's answers (task EN5); `none` today.
+    """
+
+    title: Text | None = None
+    body: Text | None = None
+    status: Literal["auto", "none"] = "auto"
+    summary: Literal["none", "answers"] = "none"
+
+
 class Settings(Model):
     backNavigation: bool = True  # semantics.md §5
     # semantics.md §5 (R6-5): `every-page` saves to the server on every change; `end-only`
@@ -95,6 +125,9 @@ class Settings(Model):
     # wherever it goes (exports, repro packages, another lab), and editing or deleting a
     # library theme never changes a survey silently. None: the lab default, else "clean".
     theme: Theme | None = None
+    # end-of-survey plan §4.1 (EN1): the ending screen per outcome. An outcome without one
+    # gets the app's defaults; an ending for an outcome nothing reaches is a warning.
+    endings: dict[OutcomeKey, Ending] = Field(default_factory=dict)
 
 
 class Consent(Model):

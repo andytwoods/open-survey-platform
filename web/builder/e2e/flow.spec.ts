@@ -11,6 +11,7 @@ import { axe, runFromPalette, signIn, writeHeaders } from './fixtures';
 function seedSurvey(flow: unknown[] = []) {
 	const s = JSON.parse(readFileSync(new URL('../../../fixtures/20-worked-example/survey.json', import.meta.url), 'utf8'));
 	s.flow = flow;
+	delete s.settings.endings; // endings.spec.ts covers them; an empty flow would warn about each
 	s.quotas = [
 		{
 			id: 'q_old',

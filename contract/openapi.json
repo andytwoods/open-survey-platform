@@ -3216,6 +3216,7 @@
           "set_condition",
           "set_consent",
           "set_custom_property",
+          "set_ending",
           "set_hooks",
           "set_languages",
           "set_matrix_row_required",
@@ -3370,6 +3371,12 @@
         ],
         "title": "OsfUploadedFile",
         "type": "object"
+      },
+      "OutcomeKey": {
+        "maxLength": 64,
+        "minLength": 1,
+        "pattern": "^(?:[A-Za-z_][A-Za-z0-9_]*|hook-failed)$",
+        "type": "string"
       },
       "PanelProfileOut": {
         "properties": {
@@ -4916,6 +4923,34 @@
           "themeId"
         ],
         "title": "SetDefaultThemeRequest",
+        "type": "object"
+      },
+      "SetEndingParams": {
+        "additionalProperties": false,
+        "properties": {
+          "ending": {
+            "anyOf": [
+              {
+                "additionalProperties": {
+                  "$ref": "#/components/schemas/JsonValue"
+                },
+                "type": "object"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "default": null,
+            "title": "Ending"
+          },
+          "outcome": {
+            "$ref": "#/components/schemas/OutcomeKey"
+          }
+        },
+        "required": [
+          "outcome"
+        ],
+        "title": "SetEnding",
         "type": "object"
       },
       "SetHooksParams": {

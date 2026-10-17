@@ -193,6 +193,23 @@ def m_consent_outcome(s: dict) -> None:
     s["consent"] = {"text": "Consent?", "declineOutcome": "complete"}
 
 
+def m_ending_unreachable(s: dict) -> None:
+    s["settings"] = {"endings": {"complete": {"body": "Thanks"}, "screened_out": {"body": "No"}}}
+
+
+def m_ending_declined_summary(s: dict) -> None:
+    s["consent"] = {"text": "Consent?"}
+    s["settings"] = {"endings": {"declined": {"summary": "answers"}}}
+
+
+def m_ending_summary_unsupported(s: dict) -> None:
+    s["settings"] = {"endings": {"complete": {"summary": "answers"}}}
+
+
+def m_ending_pipe(s: dict) -> None:
+    s["settings"] = {"endings": {"complete": {"title": "${q2}", "body": "You said ${nope}"}}}
+
+
 def _matrix(rows: list[dict] | None = None) -> dict:
     rows = rows if rows is not None else [{"id": "a", "label": "A"}, {"id": "b", "label": "B"}]
     return {"id": "m", "type": "matrix", "label": "M", "rows": rows,
@@ -302,6 +319,16 @@ TABLE: list[tuple[Callable[[dict], None], list[tuple[str, str]]]] = [
     (m_page_showif_own_item, [("ref.forward", "/blocks/0/pages/0/showIf")]),
     (m_consent_pipe, [("consent.pipe", "/consent/agreeLabel")]),
     (m_consent_outcome, [("consent.outcome", "/consent/declineOutcome")]),
+    (m_ending_unreachable, [("ending.unreachable", "/settings/endings/screened_out")]),
+    (
+        m_ending_declined_summary,
+        [("ending.declined_summary", "/settings/endings/declined/summary")],
+    ),
+    (
+        m_ending_summary_unsupported,
+        [("ending.summary_unsupported", "/settings/endings/complete/summary")],
+    ),
+    (m_ending_pipe, [("ref.unknown", "/settings/endings/complete/body")]),
     (m_matrix_duplicate_row, [("matrix.duplicate_row", f"{P0}/1/rows/1/id")]),
     (m_matrix_row_id, [("matrix.row_id", f"{P0}/1/rows/0/id")]),
     (m_matrix_row_clash, [("id.duplicate", f"{P0}/1/rows/0/id")]),

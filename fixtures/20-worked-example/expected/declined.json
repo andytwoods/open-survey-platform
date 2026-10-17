@@ -84,7 +84,13 @@
         "framing": "gain",
         "incentive": "£5 voucher"
       },
-      "end": "declined"
+      "end": "declined",
+      "ending": {
+        "title": null,
+        "message": null,
+        "body": "You chose not to take part in the study.",
+        "status": "recorded"
+      }
     }
   ],
   "invariants": [],
