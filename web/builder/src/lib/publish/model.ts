@@ -71,3 +71,17 @@ export function exportLinks(
 export function reproLink(surveyId: string, version: number, apiBase = '/api'): string {
 	return apiPath(apiBase, `/api/surveys/${encodeURIComponent(surveyId)}/versions/${version}/repro-package`);
 }
+
+/** The preregistration bundle (zip) and its readable summary page of one version (task OS1). */
+export function preregLinks(surveyId: string, version: number, apiBase = '/api'): { bundle: string; summary: string } {
+	const base = `/api/surveys/${encodeURIComponent(surveyId)}/versions/${version}`;
+	return { bundle: apiPath(apiBase, `${base}/prereg-bundle`), summary: apiPath(apiBase, `${base}/prereg-summary`) };
+}
+
+/** An OSF project id as typed (the id itself or a project URL); null when it can't be one. */
+export function osfNodeId(value: string): string | null {
+	const text = value.trim();
+	const fromUrl = /osf\.io\/([A-Za-z0-9]{3,40})\/?/.exec(text);
+	const id = fromUrl ? fromUrl[1] : text;
+	return /^[A-Za-z0-9]{3,40}$/.test(id) ? id : null;
+}

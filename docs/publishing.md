@@ -43,8 +43,10 @@ with:
 
 - the **Participant link**, with **Copy link** and **Open**;
 - any remaining warnings;
-- **Exports and records**: **XLSForm (.xlsx)**, **LimeSurvey (.lss)** and the
-  **Reproducibility package** for this version (all below).
+- **Exports and records**: **XLSForm (.xlsx)**, **LimeSurvey (.lss)**, the
+  **Reproducibility package** for this version (all below) and the
+  **Preregistration bundle** and summary ([Preregistration](preregistration.md)), with
+  an optional upload to an OSF project.
 
 <figure markdown="span">
   ![The publish dialog after a successful publish](assets/screenshots/publish.png){ loading=lazy }

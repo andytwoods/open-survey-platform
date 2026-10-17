@@ -90,7 +90,8 @@ def prereg_bundle(
 ) -> PreregDownload:
     if format not in ("zip", "html"):
         raise InvalidRequest("format must be zip or html")
-    b = _bundle(builder, actor, survey_id, version, repro is True and format == "zip")
+    # the summary page lists the bundle's contents, so it is built from the same bundle
+    b = _bundle(builder, actor, survey_id, version, repro is True)
     if format == "html":
         name = b.filename.removesuffix(".zip") + "-summary.html"
         return PreregDownload(b.summary_html, name, media_type=HTML_MEDIA)

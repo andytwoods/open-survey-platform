@@ -571,6 +571,7 @@ docker run -d --name osp-api --network <private network> \
 | `OSP_PARTICIPANT_DIR` | `/app/web/runtime`: the participant app at `/r/` and `/s/{slug}` |
 | `OSP_BUILDER_DIR` | `/app/web/builder`: the builder files at `/builder/` |
 | `OSP_ENGINE_BUNDLE`, `OSP_SIM_CLI`, `OSP_NODE` | the bundled engine, simulator and Node |
+| `OSP_OSF_API_URL`, `OSP_OSF_FILES_URL` | where the [preregistration upload](preregistration.md#uploading-to-osf) talks to OSF (default: osf.io; set the test servers to rehearse) |
 
 Everything else is as in section 1. Set `OSP_PARTICIPANT_URL_TEMPLATE` to your public
 participant link.

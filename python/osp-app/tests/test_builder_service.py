@@ -148,6 +148,13 @@ def test_every_command_fails_closed_for_non_members(env, command_id, who):
         "theme.set_default": {"theme_id": None},
         "survey.delete_response": {"survey_id": sid, "response_id": "r1"},
         "survey.repro_package": {"survey_id": sid, "version": 1, "data": True},
+        "survey.prereg_bundle": {"survey_id": sid, "version": 1},
+        "survey.prereg_osf_upload": {
+            "survey_id": sid,
+            "version": 1,
+            "token": "not-a-real-token-0123",
+            "node": "ab3de",
+        },
         "survey.results_layout_get": {"survey_id": sid, "layout_id": "l"},
         "survey.results_layout_create": {"survey_id": sid, "name": "x", "settings": {}},
         "survey.results_layout_update": {"survey_id": sid, "layout_id": "l", "name": "x"},
