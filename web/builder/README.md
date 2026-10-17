@@ -96,8 +96,8 @@ exists and each entry exports `mount`. `OSP_DEV_PAGES=1 vite build` adds the dev
 
 `vite dev` and `vite preview` serve the pages at the dev URLs above with a dev config
 (`dev-host/`), proxying `/api`, `/s/` and `/r/` to osp-api (`OSP_API_URL`, default
-`http://127.0.0.1:8000`). The dev config's CSRF scheme is osp-api's current cookie
-(`X-CSRF-Token` / `__Host-osp_csrf`); in `?mock` mode its links stay in mock mode.
+`http://127.0.0.1:8000`). osp-api runs with the Dev identity there (`make dev`, `make
+web-e2e`), so the dev config has no `csrf`; in `?mock` mode its links stay in mock mode.
 
 Checks: `pnpm -C web check` (svelte-check, eslint, dependency-cruiser), `pnpm -C web test`
 (vitest), `make web-e2e` (Playwright; all sign-in glue is in `e2e/fixtures.ts`).

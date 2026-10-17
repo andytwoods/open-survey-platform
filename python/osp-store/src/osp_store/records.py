@@ -20,18 +20,14 @@ class Tenant:
 
 
 @dataclass(frozen=True, slots=True)
-class User:
-    """A researcher account. The TOTP secret is fetched separately (``get_totp_secret``)."""
+class Principal:
+    """A researcher as the host names them (plan P: the host owns accounts). Only for
+    display and audit: roles come from the host on every request, never from here."""
 
-    id: str
-    tenant_id: str
-    email: str
-    role: str
-    password_hash: str | None
-    has_totp: bool
-    failed_logins: int
-    locked_until: datetime | None
-    created_at: datetime
+    id: str  # the host's opaque user id
+    display_name: str | None
+    first_seen_at: datetime
+    last_seen_at: datetime
 
 
 @dataclass(frozen=True, slots=True)
@@ -130,3 +126,4 @@ class AuditEntry:
     target_id: str | None
     detail: Any
     at: datetime
+    actor_name: str | None = None  # display name snapshot when written (migration 0007)

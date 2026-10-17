@@ -1,4 +1,4 @@
-"""Builder routes (task C10): auth, surveys, ops, meta. ``install`` wires them in."""
+"""Builder routes (task C10): identity, surveys, ops, meta. ``install`` wires them in."""
 
 from __future__ import annotations
 
@@ -9,8 +9,8 @@ from fastapi import FastAPI
 from osp_app import AppServices
 from osp_ops import openapi_components
 
+from ..identity import IdentityProvider
 from . import (
-    auth,
     data_export,
     export_check,
     expressions,
@@ -45,14 +45,18 @@ def _with_op_schemas(app: FastAPI) -> None:
 
 
 def install(
-    app: FastAPI, services: AppServices | None, allowed_origins: Iterable[str] = ()
+    app: FastAPI,
+    services: AppServices | None,
+    allowed_origins: Iterable[str] = (),
+    identity: IdentityProvider | None = None,
 ) -> None:
-    """``services`` backs the builder routes; without it they answer 503."""
+    """``services`` backs the builder routes; without it they answer 503. ``identity``
+    says who each request is; without it every builder request is 401."""
     app.state.builder_services = services
+    app.state.identity = identity
     app.state.allowed_origins = tuple(allowed_origins)
     install_error_handlers(app)
     for module in (
-        auth,
         me,
         surveys,
         data_export,

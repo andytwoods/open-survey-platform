@@ -86,8 +86,9 @@ export function route(pathname: string, search: string, devPages: boolean): Rout
 }
 
 /**
- * The dev host's config. Until the backend's host-signed identity lands (P1), osp-api
- * still has cookie sessions with its own CSRF cookie, so the dev scheme matches it.
+ * The dev host's config. osp-api runs with the Dev identity (`OSP_IDENTITY=dev`): every
+ * request is the dev researcher, so there is no sign-in and no CSRF token to send (the
+ * API's Origin check and JSON-only bodies still apply).
  */
 export function devConfig(r: Route): OspPageConfig | { version: 1 } {
 	if (r.page === 'preview-frame') return { version: 1 };
@@ -100,7 +101,6 @@ export function devConfig(r: Route): OspPageConfig | { version: 1 } {
 		version: 1,
 		apiBase: '/api',
 		links,
-		csrf: { header: 'X-CSRF-Token', cookie: '__Host-osp_csrf' },
 		onUnauthenticated: 'reload'
 	};
 	if (r.surveyId !== undefined) config.surveyId = r.surveyId;

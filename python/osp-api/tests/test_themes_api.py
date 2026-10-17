@@ -106,7 +106,7 @@ def test_other_labs_themes_are_invisible(benv):
 
 
 @pytest.mark.parametrize("method", ["get", "post", "put", "patch", "delete"])
-def test_themes_need_sign_in_and_csrf(benv, method):
+def test_themes_need_identity_and_same_origin(benv, method):
     anon = benv.client()
     path = "/api/themes/default" if method == "put" else "/api/themes"
     if method in ("patch", "delete"):
@@ -114,7 +114,7 @@ def test_themes_need_sign_in_and_csrf(benv, method):
     assert getattr(anon, method)(path).status_code == 401
     if method != "get":
         c = benv.login("owner@a.example")
-        del c.headers["X-CSRF-Token"]
+        c.headers["Origin"] = "https://evil.example"
         kwargs = {"json": {"themeId": None}} if method in ("post", "put", "patch") else {}
         assert getattr(c, method)(path, **kwargs).status_code == 403
 

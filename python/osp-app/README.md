@@ -2,38 +2,34 @@
 
 **Layer:** L5. Imports only packages in lower layers (enforced by `uv run lint-imports`). I/O allowed (L4 and up).
 
-**Job:** Session layer: auth, drafts, versions, publish; dispatches ops and app commands by id.
+**Job:** Session layer: permissions, host identity, drafts, versions, publish; dispatches ops and app commands by id.
 
 Internal package; not published.
 
-## `osp_app.auth` (task C10a)
+## `osp_app.auth` and `osp_app.identity` (plan P)
 
-Auth core, no HTTP. Built against repository Protocols (`UserRepo`, `MembershipRepo`,
-`SessionRepo`) with in-memory implementations; `osp-store` provides the DB-backed ones.
+Sign-in belongs to a host (`planning/pages-split.md`): there are no passwords, TOTP,
+sessions or account creation here any more (removed with migration `0007_host_identity`).
 
-- `passwords`: argon2id (`argon2-cffi`), NIST 800-63B rules (min 15, max 256, NFKC,
-  bundled blocklist `common_passwords.txt`, context words), rehash on login.
-- `totp`: own RFC 6238 (SHA-1, 6 digits, 30 s, ±1 step), replay guard, provisioning
-  URI, 10 single-use recovery codes stored as SHA-256.
-- `sessions`: 256-bit opaque tokens stored as SHA-256; 30 min idle, 12 h absolute,
-  5 min MFA-pending challenge; `rotate`, `revoke`, `revoke_all`.
-- `service.AuthService`: login → MFA → session, lockout with exponential backoff
-  (5 free attempts, 30 s doubling, cap 15 min), one uniform failure message.
-- `permissions.can(actor, action, resource)`: fail-closed policy; `requires(action)`
-  decorator for app commands.
-- `testing`: fake clock, deterministic randomness, cheap hasher (tests only).
+- `auth.permissions.can(actor, action, resource)`: fail-closed policy; `requires(action)`
+  decorator for app commands. `Actor` is a user id + `{lab id: Role}`.
+- `identity.make_identity(user_id, roles, display_name)`: checks what a host sent (id
+  lengths and characters, strict role names, at most 64 labs, printable display name) and
+  builds an `Identity` (actor + display name); anything bad raises `InvalidIdentity`.
+  `dev_identity()` is `dev-researcher`, owner of `dev-lab`.
+- `AppServices.admit(identity) -> Actor`: per request, upserts the `principals` row (so
+  audit rows carry the display name) and creates each named lab on first sight
+  (`auto_create_labs`, D6), or drops unknown labs when that is off.
 
 ## Builder services (task C10)
 
-- `store_repos`: `StoreUserRepo`, `StoreSessionRepo`, `StoreMembershipRepo` (osp-store backed;
-  one tenant per user, role from `users.role`, unknown roles fail closed).
 - `commands`: the app-command registry (`COMMANDS`, `dispatch`); refuses non-actors first.
 - `builder.Builder`: `survey.create/list/get/delete`, `survey.apply_ops` (load draft ->
   `osp_ops.apply_transaction` -> `save_draft` + op_log with per-op inverses), `survey.undo` /
   `survey.redo` (by transaction id; undo ids `u:…`, redo ids `r:…`), `survey.history`,
   `survey.publish` (below), `survey.export_xlsform` (osp-targets).
   Surveys in tenants the actor can't read are `NotFoundError`; missing permission is `Forbidden`.
-- `services.build_services(store, ...)` wires `AuthService` + `Builder` + one
+- `services.build_services(store, ...)` wires `Builder` + one
   `osp_runtime.SessionService` (over `runtime_repo.StoreParticipantRepo`), shared by publish
   and the participant API.
 

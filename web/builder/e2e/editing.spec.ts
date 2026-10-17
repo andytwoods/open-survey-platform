@@ -1,5 +1,5 @@
 import { expect, test, type Page } from '@playwright/test';
-import { axe, signIn, signInSession, writeHeaders } from './fixtures';
+import { axe, signIn, writeHeaders } from './fixtures';
 
 // End to end against a real osp-api on SQLite (e2e/api_server.py, started by the
 // Playwright config): create a survey, edit through ops, undo/redo, reload. Sign-in is the
@@ -31,7 +31,7 @@ async function addQuestionFromPalette(page: Page) {
 
 test('create, add, rename, undo, redo, reload', async ({ page }) => {
 	await signIn(page);
-	await expect(page.getByTestId('display-name')).toHaveText('researcher@lab.example');
+	await expect(page.getByTestId('display-name')).toHaveText('Dev researcher');
 	expect(await axe(page)).toEqual([]);
 
 	const title = `E2E survey ${Date.now()}`;
@@ -108,11 +108,13 @@ test('add question button on the canvas, and a 409 is replayed onto the newer re
 	await expect(page.getByTestId('conflict-banner')).toHaveCount(0);
 });
 
-test('without a host session: one reload, then the session-ended banner; signed in, the page works', async ({
+test('when the host session ends: one reload, then the session-ended banner; back, the page works', async ({
 	page
 }) => {
 	let loads = 0;
 	page.on('load', () => loads++);
+	// The Dev identity never answers 401, so the ended host session is simulated.
+	await page.route('**/api/**', (route) => route.fulfill({ status: 401, json: { code: 'auth', message: 'Sign in first.' } }));
 	await page.goto('/surveys/does-not-exist');
 	// The dev config says "reload": the page reloads once (the host's login would run), then
 	// shows the banner instead of reloading again.
@@ -122,7 +124,7 @@ test('without a host session: one reload, then the session-ended banner; signed 
 	expect(loads).toBe(2);
 	await expect(page).toHaveURL(/\/surveys\/does-not-exist$/);
 
-	await signInSession(page);
+	await page.unrouteAll();
 	await page.getByRole('button', { name: 'Reload to sign in' }).click();
 	await expect(page.getByRole('heading', { name: 'Could not open this survey' })).toBeVisible();
 	await expect(page.getByTestId('session-ended')).toHaveCount(0);

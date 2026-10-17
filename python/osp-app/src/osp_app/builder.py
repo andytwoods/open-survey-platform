@@ -39,7 +39,6 @@ from osp_runtime.plan import (
 )
 from osp_spec import SPEC_VERSION, Diagnostic, parse, publish_diagnostics
 from osp_store import (
-    AccountStore,
     Conflict,
     Draft,
     NotFound,
@@ -241,7 +240,6 @@ class Builder:
 
     def __init__(self, store: Store, sessions: SessionService | None = None) -> None:
         self.store = store
-        self.accounts = AccountStore(store)
         self.sessions = sessions or SessionService(StoreParticipantRepo(store))
 
     def run(self, command_id: str, actor: object, **params: Any) -> Any:
@@ -331,7 +329,7 @@ class Builder:
     def delete_survey(self, actor: Actor, *, survey_id: str) -> None:
         ctx = self._locate(actor, survey_id, Action.SURVEY_DELETE)
         try:
-            self.accounts.delete_unpublished_survey(ctx, survey_id)
+            self.store.delete_unpublished_survey(ctx, survey_id)
         except Conflict as exc:
             raise ConflictError("A published survey can't be deleted; close it instead.") from exc
 
@@ -377,7 +375,7 @@ class Builder:
             raise RevisionConflictError(base_revision, exc.current) from exc
         new_title, old_title = title_of(body), title_of(draft.body)
         if new_title and new_title != old_title:
-            self.accounts.set_survey_title(ctx, survey_id, new_title)
+            self.store.set_survey_title(ctx, survey_id, new_title)
         return EditResult(saved.revision, list(res.patch), list(res.diagnostics), txn_id)
 
     def _transaction(self, ctx: TenantContext, survey_id: str, txn_id: str) -> list[OpLogEntry]:

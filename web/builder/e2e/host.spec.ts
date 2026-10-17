@@ -56,8 +56,6 @@ function baseConfig(name: string, surveyId: string | null): Config | null {
 		version: 1,
 		apiBase: '/api',
 		links: HOST_LINKS,
-		// Until host-signed identity (P1): osp-api's own cookie CSRF (see fixtures.ts).
-		csrf: { header: 'X-CSRF-Token', cookie: '__Host-osp_csrf' },
 		onUnauthenticated: { redirect: '/host-login' },
 		...(surveyId ? { surveyId } : {})
 	};

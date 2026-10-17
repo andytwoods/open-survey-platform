@@ -184,9 +184,10 @@ lss-import-check:
 
 # Local dev: `make dev` runs osp-api (SQLite in .data/, port 8000) and the builder dev server
 # (5173, which serves each builder page at its usual URL with a dev config and proxies /api
-# to the API, so no CORS; web/builder/dev-host/) together; Ctrl+C stops both. The first
-# run makes dev-only keys, a dev login and three seeded surveys, all in .data/ (gitignored);
-# every run prints the login and the URLs. The participant app's dev server (5174, base
+# to the API, so no CORS; web/builder/dev-host/) together; Ctrl+C stops both. No sign-in:
+# OSP_IDENTITY=dev makes every request the dev researcher, owner of dev-lab (plan P; refused
+# off loopback or outside OSP_ENV=dev). The first run makes dev-only keys and three seeded
+# surveys, all in .data/ (gitignored); every run prints the URLs. The participant app's dev server (5174, base
 # /r/, proxying /api too) starts as well; its links are /r/?s=<slug>. `make dev-reset` wipes .data/. Dev only: never point this at real data.
 # It builds the engine bundle (make engine-bundle) first, so repro packages include replay.mjs.
 DEV_DATA := .data
@@ -194,7 +195,7 @@ DEV_API_PORT := 8000
 DEV_BUILDER_PORT := 5173
 DEV_RUNTIME_PORT := 5174
 DEV_FIXTURES := fixtures/01-all-types fixtures/13-randomiser-blocks fixtures/18-multi-language
-DEV_ENV := OSP_ENV=dev OSP_DATA_DIR=$(DEV_DATA) OSP_DATABASE_URL=sqlite:///$(DEV_DATA)/osp.db
+DEV_ENV := OSP_ENV=dev OSP_IDENTITY=dev OSP_DATA_DIR=$(DEV_DATA) OSP_DATABASE_URL=sqlite:///$(DEV_DATA)/osp.db
 DEV_PROXY := OSP_API_URL=http://127.0.0.1:$(DEV_API_PORT)
 
 .PHONY: dev dev-reset

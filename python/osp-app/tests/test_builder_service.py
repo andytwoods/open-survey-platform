@@ -1,86 +1,138 @@
-"""Store-backed auth repos and the builder app commands (no HTTP)."""
+"""Host identities admitted by the app, and the builder app commands (no HTTP)."""
 
 from __future__ import annotations
 
 import pytest
-from osp_app import COMMANDS, Forbidden, NotFoundError, Unauthenticated, build_services
-from osp_app.auth import Actor, LoginOk, MfaRequired, Role, totp
-from osp_app.auth.testing import FakeClock, FakeRandom, cheap_hasher
-from osp_store import Keyring, Store, SystemContext, create_engine, migrate
+from osp_app import (
+    COMMANDS,
+    Forbidden,
+    InvalidIdentity,
+    NotFoundError,
+    Unauthenticated,
+    build_services,
+    make_identity,
+)
+from osp_app.auth import Actor, Role
+from osp_app.auth.testing import FakeClock
+from osp_app.identity import dev_identity, format_roles, parse_roles
+from osp_store import Keyring, Store, SystemContext, TenantContext, create_engine, migrate
 
-PASSWORD = "correct horse battery staple 42"
 KEY = "a" * 43 + "="
+SYS = SystemContext("system:test")
+
+
+def _store(tmp_path) -> Store:
+    engine = create_engine(f"sqlite:///{tmp_path / 'app.db'}")
+    migrate(engine)
+    return Store(engine, Keyring({"k1": KEY}, active="k1"))
 
 
 @pytest.fixture
 def env(tmp_path):
-    engine = create_engine(f"sqlite:///{tmp_path / 'app.db'}")
-    migrate(engine)
-    store = Store(engine, Keyring({"k1": KEY}, active="k1"))
-    clock = FakeClock()
-    svc = build_services(store, clock=clock, rng=FakeRandom("app"), hasher=cheap_hasher())
-    sys = SystemContext("system:test")
-    a = store.create_tenant(sys, "Lab A").id
-    b = store.create_tenant(sys, "Lab B").id
-    ids = {
-        "owner_a": svc.create_account(a, "owner@a.example", PASSWORD, Role.OWNER),
-        "viewer_a": svc.create_account(a, "viewer@a.example", PASSWORD),  # default: viewer
-        "owner_b": svc.create_account(b, "owner@b.example", PASSWORD, Role.OWNER),
+    svc = build_services(_store(tmp_path), clock=FakeClock())
+    actors = {
+        "owner_a": svc.admit(make_identity("owner-a", {"lab-a": "owner"}, "Owner A")),
+        "viewer_a": svc.admit(make_identity("viewer-a", {"lab-a": "viewer"})),
+        "owner_b": svc.admit(make_identity("owner-b", {"lab-b": "owner"})),
     }
-    return svc, clock, ids
+    return svc, actors
 
 
-def _actor(svc, email):
-    res = svc.auth.login(email, PASSWORD)
-    assert isinstance(res, LoginOk)
-    return svc.auth.actor(res.token), res.token
+# -- identity checks -----------------------------------------------------------------
 
 
-def test_store_backed_login_lockout_and_totp(env):
-    svc, clock, ids = env
-    for _ in range(5):
-        assert not isinstance(svc.auth.login("owner@a.example", "nope nope nope nope"), LoginOk)
-    assert not isinstance(svc.auth.login("owner@a.example", PASSWORD), LoginOk)  # locked
-    clock.advance(minutes=1)
-    actor, token = _actor(svc, "owner@a.example")
-    assert actor.user_id == ids["owner_a"]
+def test_make_identity_builds_a_checked_actor():
+    ident = make_identity("u-1@host", {"lab-1": "editor", "lab-2": "viewer"}, "  Ada  ")
+    assert ident.actor == Actor("u-1@host", {"lab-1": Role.EDITOR, "lab-2": Role.VIEWER})
+    assert ident.display_name == "Ada"
+    assert make_identity("u", {}, "   ").display_name is None
 
-    enrol = svc.auth.start_totp_enrolment(token)
-    new_token, codes = svc.auth.confirm_totp_enrolment(token, totp.totp(enrol.secret, clock.now()))
-    assert len(codes) == 10 and svc.auth.actor(token) is None and svc.auth.actor(new_token)
-    stored = svc.auth.users.get(ids["owner_a"])
-    assert stored.totp_secret == enrol.secret and stored.totp_pending_secret is None
 
-    res = svc.auth.login("owner@a.example", PASSWORD)
-    assert isinstance(res, MfaRequired)
-    clock.advance(seconds=30)
-    assert isinstance(
-        svc.auth.login_totp(res.challenge, totp.totp(enrol.secret, clock.now())), LoginOk
+@pytest.mark.parametrize(
+    ("user", "roles", "name"),
+    [
+        ("", {}, None),
+        ("x" * 65, {}, None),
+        ("system:retention", {}, None),  # ':' would forge an actor tag
+        ("a b", {}, None),
+        ("u", {"lab": "superuser"}, None),  # strict role enum
+        ("u", {"lab": "Owner"}, None),
+        ("u", {"x" * 37: "owner"}, None),
+        ("u", {"a,b": "owner"}, None),
+        ("u", {"": "owner"}, None),
+        ("u", {f"l{i}": "viewer" for i in range(65)}, None),
+        ("u", {}, "x" * 201),
+        ("u", {}, "bell\x07"),
+        (7, {}, None),
+    ],
+)
+def test_bad_identities_are_refused_whole(user, roles, name):
+    with pytest.raises(InvalidIdentity):
+        make_identity(user, roles, name)
+
+
+def test_roles_header_round_trip():
+    roles = {"lab-b": Role.VIEWER, "lab-a": Role.OWNER}
+    text = format_roles(roles)
+    assert text == "lab-a:owner,lab-b:viewer"
+    assert make_identity("u", parse_roles(text)).actor.roles == roles
+    assert parse_roles("") == []
+    with pytest.raises(InvalidIdentity):
+        parse_roles("lab-a")
+    with pytest.raises(InvalidIdentity):
+        make_identity("u", parse_roles("lab-a:owner,lab-a:viewer"))  # listed twice
+
+
+def test_dev_identity_owns_the_dev_lab():
+    ident = dev_identity()
+    assert ident.actor.roles == {"dev-lab": Role.OWNER}
+
+
+# -- admit: principals and labs (D5, D6) -----------------------------------------------
+
+
+def test_admit_records_the_principal_and_creates_labs(env):
+    svc, actors = env
+    assert actors["owner_a"].roles == {"lab-a": Role.OWNER}
+    assert svc.store.find_tenant(SYS, "lab-a") is not None
+    assert svc.display_name("owner-a") == "Owner A"
+    assert svc.display_name("viewer-a") is None
+    svc.admit(make_identity("owner-a", {"lab-a": "owner"}, "Owner A (renamed)"))
+    assert svc.display_name("owner-a") == "Owner A (renamed)"  # a new name is written at once
+
+
+def test_audit_rows_carry_the_display_name(env):
+    svc, actors = env
+    sid = svc.builder.run("survey.create", actors["owner_a"], title="S").survey.id
+    entry = next(
+        e
+        for e in svc.store.list_audit(TenantContext("lab-a", "owner-a"))
+        if e.target_id == sid and e.action == "survey.create"
     )
+    assert (entry.actor, entry.actor_name) == ("owner-a", "Owner A")
 
 
-def test_store_backed_sessions_expire_and_revoke(env):
-    svc, clock, _ = env
-    _, token = _actor(svc, "owner@a.example")
-    clock.advance(minutes=31)  # idle timeout
-    assert svc.auth.actor(token) is None
-    _, token = _actor(svc, "owner@a.example")
-    svc.auth.logout(token)
-    assert svc.auth.actor(token) is None
+def test_auto_create_off_drops_unknown_labs(tmp_path):
+    svc = build_services(_store(tmp_path), auto_create_labs=False)
+    actor = svc.admit(make_identity("u", {"made": "owner", "unknown": "owner"}))
+    assert actor.roles == {}
+    assert svc.store.find_tenant(SYS, "unknown") is None
+    svc.create_lab("made", "Made by the CLI")
+    actor = svc.admit(make_identity("u", {"made": "owner", "unknown": "owner"}))
+    assert actor.roles == {"made": Role.OWNER}
+    with pytest.raises(NotFoundError):
+        # A role for a lab that doesn't exist opens nothing either.
+        svc.builder.run("survey.get", Actor("u", {"unknown": "owner"}), survey_id="0" * 36)
 
 
-def test_memberships_come_from_the_user_row(env):
-    svc, _, ids = env
-    actor, _ = _actor(svc, "viewer@a.example")
-    assert list(actor.roles.values()) == ["viewer"]
-    assert svc.auth.memberships.memberships_for_user("missing") == []
+# -- builder commands --------------------------------------------------------------------
 
 
 @pytest.mark.parametrize("command_id", sorted(COMMANDS))
 @pytest.mark.parametrize("who", [None, "not an actor", Actor("ghost", {})])
 def test_every_command_fails_closed_for_non_members(env, command_id, who):
-    svc, _, _ = env
-    owner, _ = _actor(svc, "owner@a.example")
+    svc, actors = env
+    owner = actors["owner_a"]
     sid = svc.builder.run("survey.create", owner, title="S").survey.id
     params = {
         "survey.create": {"title": "x"},
@@ -109,9 +161,8 @@ def test_every_command_fails_closed_for_non_members(env, command_id, who):
 
 
 def test_other_tenant_owner_sees_not_found(env):
-    svc, _, _ = env
-    owner_a, _ = _actor(svc, "owner@a.example")
-    owner_b, _ = _actor(svc, "owner@b.example")
+    svc, actors = env
+    owner_a, owner_b = actors["owner_a"], actors["owner_b"]
     sid = svc.builder.run("survey.create", owner_a, title="S").survey.id
     with pytest.raises(NotFoundError):
         svc.builder.run("survey.get", owner_b, survey_id=sid)

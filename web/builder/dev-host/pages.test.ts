@@ -36,9 +36,9 @@ describe('dev host routes', () => {
 		expect('links' in mock && mock.links.themes).toBe('/appearance?mock');
 	});
 
-	it("the dev config's CSRF scheme matches osp-api's cookie sessions (until host identity lands)", () => {
+	it('the dev config sends no CSRF token (Dev identity: nothing to protect with one)', () => {
 		const c = devConfig({ page: 'list' });
-		expect('csrf' in c && c.csrf).toEqual({ header: 'X-CSRF-Token', cookie: '__Host-osp_csrf' });
+		expect('csrf' in c).toBe(false);
 	});
 });
 
