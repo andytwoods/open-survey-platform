@@ -1,24 +1,17 @@
 import { expect, test, type Page } from '@playwright/test';
-import { axe } from './fixtures';
+import { axe, signIn } from './fixtures';
 
 // Survey settings, Appearance save actions and Publish (task B12), end to end against a
 // real osp-api on SQLite (e2e/api_server.py, which also serves the participant app):
 // publish is refused without retention and links to the fix; set retention, consent and a
 // theme; publish; the participant link opens the survey in the chosen theme.
 
-const EMAIL = process.env.OSP_E2E_EMAIL ?? 'researcher@lab.example';
-const PASSWORD = process.env.OSP_E2E_PASSWORD ?? 'plover tundra kettle 4417 orbit';
 const WARM_LIGHT_ACCENT = '#a3431a';
 
 test.use({ colorScheme: 'light' });
 
 async function signInAndCreate(page: Page, title: string) {
-	await page.goto('/');
-	await expect(page).toHaveURL(/\/login\?next=/);
-	await page.getByLabel('Email').fill(EMAIL);
-	await page.getByLabel('Password').fill(PASSWORD);
-	await page.getByRole('button', { name: 'Sign in' }).click();
-	await expect(page.getByRole('heading', { name: 'Your surveys' })).toBeVisible();
+	await signIn(page);
 	await page.getByLabel('New survey title').fill(title);
 	await page.getByRole('button', { name: 'Create survey' }).click();
 	await expect(page).toHaveURL(/\/surveys\/[^/]+$/);

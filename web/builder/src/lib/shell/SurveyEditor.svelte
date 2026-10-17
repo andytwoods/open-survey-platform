@@ -1,6 +1,6 @@
 <script lang="ts">
-	import { resolve } from '$app/paths';
 	import type { BuilderView } from '../appearance/commands';
+	import { link } from '../host/links';
 	import { storeFor } from '../sync/stores';
 	import Shell from './Shell.svelte';
 
@@ -21,7 +21,7 @@
 	<main class="state">
 		<h1>Could not open this survey</h1>
 		<p role="alert">{store.error}</p>
-		<p><a href={resolve('/')}>Back to your surveys</a></p>
+		<p><a href={link('list')}>Back to your surveys</a></p>
 	</main>
 {:else}
 	<main class="state">

@@ -1,6 +1,4 @@
 <script lang="ts">
-	import { goto } from '$app/navigation';
-	import { resolve } from '$app/paths';
 	import { announce, Announcer, Button, Dialog, PaneResizer, Tabs, theme, toast } from '@osp/ui-components';
 	import { api } from '../api';
 	import DiagnosticsStrip from '../diagnostics/DiagnosticsStrip.svelte';
@@ -23,6 +21,7 @@
 	import { CommandRegistry } from '../commands/registry';
 	import { detectMac } from '../commands/shortcut';
 	import { health } from '../health.svelte';
+	import { leaveTo, link } from '../host/links';
 	import { MOCK_SURVEY } from '../mock/survey';
 	import { addedQuestionId, allIds, outlineFromSurvey, surveyTitle, targetPage } from '../model/outline';
 	import { selection } from '../selection.svelte';
@@ -151,17 +150,17 @@
 		else if (out.status === 'applied') announce(which === 'undo' ? 'Undone.' : 'Redone.');
 	}
 
-	const routeOf = (v: BuilderView) => {
+	/** Each view is its own page, at the host's URL for it (host/links.ts). */
+	const routeOf = (v: BuilderView, hash?: string) => {
 		if (store) {
 			const id = store.surveyId;
-			if (v === 'flow') return resolve('/surveys/[id]/flow', { id });
-			if (v === 'settings') return resolve('/surveys/[id]/settings', { id });
-			return v === 'appearance'
-				? resolve('/surveys/[id]/appearance', { id })
-				: resolve('/surveys/[id]', { id });
+			const name = v === 'flow' || v === 'settings' || v === 'appearance' ? v : 'editor';
+			return link(name, { id }, { hash });
 		}
-		return v === 'appearance' ? resolve('/appearance') : `${resolve('/')}?mock`;
+		// No survey: the lab's theme library, or the survey list (the mock shell in dev).
+		return v === 'appearance' ? link('themes') : link('list');
 	};
+	const goto = (url: string) => leaveTo(url);
 
 	let innerWidth = $state(1280);
 	let outlineWidth = $state(280);
@@ -227,7 +226,6 @@
 	const offAppearance = registry.registerAll(
 		appearanceCommands({
 			view: () => view,
-			// eslint-disable-next-line svelte/no-navigation-without-resolve -- routeOf resolves
 			open: (v) => goto(routeOf(v))
 		})
 	);
@@ -235,7 +233,6 @@
 		flowCommands({
 			inFlow: () => view === 'flow',
 			canOpen: () => !!store,
-			// eslint-disable-next-line svelte/no-navigation-without-resolve -- routeOf resolves
 			open: () => goto(routeOf('flow')),
 			addNode: requestAddNode
 		})
@@ -246,7 +243,6 @@
 		settingsCommands({
 			inSettings: () => view === 'settings',
 			canOpen: () => !!store,
-			// eslint-disable-next-line svelte/no-navigation-without-resolve -- routeOf resolves
 			open: () => goto(routeOf('settings')),
 			publish: () => (publishOpen = true)
 		})
@@ -256,20 +252,17 @@
 	async function goToProblem(p: PublishProblem) {
 		if (!store) return;
 		if (p.place.view === 'settings') {
-			const hash = p.place.section ? `#${p.place.section}` : '';
 			if (view === 'settings') {
 				document.getElementById(`settings-${p.place.section}`)?.focus();
 			} else {
-				// eslint-disable-next-line svelte/no-navigation-without-resolve -- routeOf resolves
-				await goto(routeOf('settings') + hash);
+				await goto(routeOf('settings', p.place.section || undefined));
 			}
 		} else if (p.place.view === 'appearance') {
-			// eslint-disable-next-line svelte/no-navigation-without-resolve -- routeOf resolves
 			if (view !== 'appearance') await goto(routeOf('appearance'));
 		} else {
 			const owner = ownerOf(store.survey, p.place.pointer);
-			// eslint-disable-next-line svelte/no-navigation-without-resolve -- routeOf resolves
-			if (view !== 'editor') await goto(routeOf('editor'));
+			// Another page (a full load): the editor selects the item from the URL's `#select=`.
+			if (view !== 'editor') return void (await goto(routeOf('editor', `select=${owner.id}`)));
 			await tick();
 			await goTo(owner);
 		}
@@ -286,6 +279,18 @@
 	onMount(() => {
 		const offTheme = theme.init();
 		void health.check();
+		// Arrived from another page to look at one item (a publish problem): select it.
+		const m = /^#select=(.+)$/.exec(location.hash);
+		if (m && store && editing) {
+			let id = '';
+			try {
+				id = decodeURIComponent(m[1]);
+			} catch {
+				// A malformed hash selects nothing.
+			}
+			const t = id ? findNode(pages, id)?.type : undefined;
+			if (t === 'block' || t === 'page' || t === 'question') void goTo({ id, type: t, properties: [] });
+		}
 		return offTheme;
 	});
 

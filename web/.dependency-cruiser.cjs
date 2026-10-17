@@ -45,8 +45,8 @@ module.exports = {
 			severity: 'error',
 			comment: 'An import the cruiser cannot resolve could hide a boundary violation.',
 			from: {},
-			// SvelteKit virtual modules (generated at build time) and builder's own #lib package import.
-			to: { couldNotResolve: true, pathNot: '^(\\$(app|env|service-worker)|#lib)(/|$)' }
+			// builder's own #lib package import (package.json "imports").
+			to: { couldNotResolve: true, pathNot: '^#lib(/|$)' }
 		},
 		{
 			name: 'no-circular',
@@ -57,7 +57,7 @@ module.exports = {
 	],
 	options: {
 		doNotFollow: { path: 'node_modules' },
-		exclude: { path: '(^|/)(\\.svelte-kit|build|dist)/' },
+		exclude: { path: '(^|/)(build|dist)/' },
 		// Follow workspace symlinks to their real path so rules see e.g. api-client/src/index.ts.
 		preserveSymlinks: false,
 		tsPreCompilationDeps: true,

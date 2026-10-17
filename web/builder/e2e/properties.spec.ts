@@ -1,5 +1,5 @@
 import { expect, test, type Locator, type Page } from '@playwright/test';
-import { axe } from './fixtures';
+import { axe, signIn } from './fixtures';
 
 // Property panel (/dev/properties, task B4): axe in light and dark for every entity, edits
 // become set_property ops, focus and caret survive the echoed patch, keyboard-only use,
@@ -106,11 +106,7 @@ test('survey settings write to /metadata and /settings', async ({ page }) => {
 });
 
 test('in the editor against a real osp-api: the panel edits a question through the op client', async ({ page }) => {
-	await page.goto('/');
-	await expect(page).toHaveURL(/\/login\?next=/);
-	await page.getByLabel('Email').fill(process.env.OSP_E2E_EMAIL ?? 'researcher@lab.example');
-	await page.getByLabel('Password').fill(process.env.OSP_E2E_PASSWORD ?? 'plover tundra kettle 4417 orbit');
-	await page.getByRole('button', { name: 'Sign in' }).click();
+	await signIn(page);
 	await page.getByLabel('New survey title').fill(`Properties ${Date.now()}`);
 	await page.getByRole('button', { name: 'Create survey' }).click();
 	await expect(page).toHaveURL(/\/surveys\/[^/]+$/);

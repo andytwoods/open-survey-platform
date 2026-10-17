@@ -1,11 +1,22 @@
 {
-	"extends": "$app/tsconfig",
 	"compilerOptions": {
+		"target": "es2024",
+		"module": "esnext",
+		"moduleResolution": "bundler",
+		"lib": ["ESNext", "DOM", "DOM.Iterable"],
+		"types": ["node", "vite/client"],
 		"strict": true,
-		"types": [
-			"$app/types",
-			"node"
-		]
+		"verbatimModuleSyntax": true,
+		"isolatedModules": true,
+		"moduleDetection": "force",
+		"allowJs": true,
+		"checkJs": true,
+		"resolveJsonModule": true,
+		"allowImportingTsExtensions": true,
+		"forceConsistentCasingInFileNames": true,
+		"esModuleInterop": true,
+		"skipLibCheck": true,
+		"noEmit": true
 	},
-	"include": ["src", "vite.config.ts"]
+	"include": ["src", "dev-host", "vite.config.ts", "vitest.dom.config.ts"]
 }

@@ -17,7 +17,7 @@ from pathlib import Path
 from osp_api.routes.expressions import parse_expression, print_expression
 from osp_spec import validate
 
-SURVEY_FILE = Path(__file__).parents[1] / "src/routes/dev/conditions/sample-survey.json"
+SURVEY_FILE = Path(__file__).parents[1] / "src/dev/conditions/sample-survey.json"
 
 
 def main() -> None:

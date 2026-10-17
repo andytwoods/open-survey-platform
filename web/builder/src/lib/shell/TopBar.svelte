@@ -65,7 +65,8 @@
 		saving: { icon: CloudUpload, text: 'Saving…' },
 		offline: { icon: CloudOff, text: 'Offline: changes will be sent when you reconnect' },
 		conflict: { icon: CloudAlert, text: 'Conflict: changed elsewhere' },
-		error: { icon: CloudAlert, text: 'Not saved' }
+		error: { icon: CloudAlert, text: 'Not saved' },
+		'signed-out': { icon: CloudOff, text: 'Not saved: your session ended' }
 	} as const;
 	const save = $derived(SAVE[saveState]);
 </script>

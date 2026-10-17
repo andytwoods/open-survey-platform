@@ -1,12 +1,9 @@
 import { expect, test, type Page } from '@playwright/test';
-import { axe } from './fixtures';
+import { axe, signIn, writeHeaders } from './fixtures';
 
 // Outline reorder (task B3) and the property panel's specialised editors, end to end
 // against a real osp-api (e2e/api_server.py): drag, keyboard, cross-page, multi-select,
 // undo, reload, a rejected move rolled back; choices and show-if dialogs persist.
-
-const EMAIL = process.env.OSP_E2E_EMAIL ?? 'researcher@lab.example';
-const PASSWORD = process.env.OSP_E2E_PASSWORD ?? 'plover tundra kettle 4417 orbit';
 
 const tree = (page: Page) => page.getByRole('tree', { name: 'Survey outline' });
 const item = (page: Page, name: string) => tree(page).getByRole('treeitem', { name, exact: true });
@@ -29,19 +26,14 @@ const question = (id: string, label: string, extra: Record<string, unknown> = {}
 
 /** Sign in, create a survey, seed it through the ops API, and open it. */
 async function seeded(page: Page, ops: { op: string; params: Record<string, unknown> }[]) {
-	await page.goto('/');
-	await page.getByLabel('Email').fill(EMAIL);
-	await page.getByLabel('Password').fill(PASSWORD);
-	await page.getByRole('button', { name: 'Sign in' }).click();
-	await expect(page.getByRole('heading', { name: 'Your surveys' })).toBeVisible();
+	await signIn(page);
 	await page.getByLabel('New survey title').fill(`Outline ${Date.now()}`);
 	await page.getByRole('button', { name: 'Create survey' }).click();
 	await expect(page).toHaveURL(/\/surveys\/[^/]+$/);
 	const id = page.url().split('/').pop()!;
-	const csrf = (await page.context().cookies()).find((c) => c.name === '__Host-osp_csrf')!.value;
 	const detail = await (await page.request.get(`/api/surveys/${id}`)).json();
 	const res = await page.request.post(`/api/surveys/${id}/ops`, {
-		headers: { 'X-CSRF-Token': csrf },
+		headers: await writeHeaders(page),
 		data: { baseRevision: detail.revision, ops }
 	});
 	expect(res.status(), await res.text()).toBe(200);

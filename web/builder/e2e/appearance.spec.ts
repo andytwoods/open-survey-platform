@@ -6,7 +6,7 @@ import { axe, expect, test } from './fixtures';
 
 async function openAppearance(page: Page) {
 	await page.getByRole('banner').getByRole('button', { name: 'Appearance', exact: true }).click();
-	await expect(page).toHaveURL(/\/appearance$/);
+	await expect(page).toHaveURL(/\/appearance\?mock$/);
 	await expect(page.getByRole('heading', { name: 'Appearance', level: 2 })).toBeVisible();
 	await expect(page.locator('[data-frame]')).toHaveCount(3);
 }
@@ -32,7 +32,7 @@ test('opens from the top bar and the command palette, and goes back', async ({ s
 	await page.keyboard.type('Open Appearance');
 	await expect(dialog.getByRole('option', { name: /Open Appearance/ })).toBeVisible();
 	await page.keyboard.press('Enter');
-	await expect(page).toHaveURL(/\/appearance$/);
+	await expect(page).toHaveURL(/\/appearance\?mock$/);
 	await expect(page.getByRole('heading', { name: 'Appearance', level: 2 })).toBeVisible();
 });
 
