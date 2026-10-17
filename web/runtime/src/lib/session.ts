@@ -209,7 +209,7 @@ export class Session {
 	}
 	/** A save is on its way to the server (not waiting out a backoff while offline). */
 	get saving(): boolean {
-		return this.pumping && this.net !== 'offline';
+		return this.net === 'saving' || (this.pumping && this.net !== 'offline');
 	}
 	/** The end redirect a hook chose (declared template, filled and checked), if any. */
 	get redirectUrl(): string | null {
@@ -312,6 +312,9 @@ export class Session {
 	 */
 	blur() {
 		if (!this.rec.snapshot || this.rec.snapshot.revision === this.rec.syncedEngineRev) return;
+		if (this.saveMode !== 'every-page') return;
+		// Say so at once: whoever waits for "Saved" (leaving for another device) waits for it.
+		if (this.net !== 'offline') this.setNet('saving');
 		this.scheduleSave(this.env.blurDelayMs ?? 250);
 	}
 
@@ -423,8 +426,18 @@ export class Session {
 		if (!snap) return;
 		if (!this.rec.inflight && snap.revision === this.rec.syncedEngineRev) return;
 		// A save is on the wire (sent with keepalive): a duplicate would only arrive late as a
-		// stale write and clutter the server's conflict log.
-		if (this.sending) return;
+		// stale write and clutter the server's conflict log. But if the page has moved on
+		// since (a refresh right after typing), chain the newest copy on the revision that
+		// save will create, so the last keystrokes are not lost (R4-3, storage blocked).
+		if (this.sending) {
+			const wire = this.rec.inflight;
+			if (wire && wire.snapshot.revision !== snap.revision && isPrefix(wire.snapshot, snap)) {
+				this.env.api
+					.save(this.rec.sessionId, this.rec.resumeToken, wire.base + 1, snap, { keepalive: true })
+					.catch(() => undefined);
+			}
+			return;
+		}
 		if (!this.rec.inflight) {
 			this.rec.inflight = { base: this.rec.serverRevision, snapshot: snap };
 			void this.persist();
