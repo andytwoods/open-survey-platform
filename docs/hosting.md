@@ -61,6 +61,13 @@ theme), `themes` (the lab's theme library) and `preview-frame`. You choose their
    - the `js` file as `<script type="module">`.
 
    The page finds `#osp` and the config tag and mounts itself.
+4. Optionally, give each page a `<title>`, a `<meta name="description">` and the icons.
+   The icons sit in the root of `build/` (from `web/builder/static/`): `favicon.svg`,
+   `favicon-32.png`, `apple-touch-icon.png` and `site.webmanifest`, whose icon paths are
+   relative to it, so it works under any prefix. Link them with your static prefix, as in
+   section 6. To use your own, link your files instead. The dev host's titles and
+   descriptions (`TITLES`, `DESCRIPTIONS` in `web/builder/dev-host/pages.ts`) are a
+   starting point.
 
 ### The config (`OspPageConfig`)
 
@@ -249,6 +256,20 @@ Participants never sign in. They hold a bearer resume token instead.
    example `https://surveys.example.ac.uk/s/{slug}`. The builder shows this link after a
    publish. Without `{slug}` the default `/r/?s={slug}` is used.
 
+### The participant app's icon
+
+`index.html` links `/r/favicon.svg`, `/r/favicon-32.png`, `/r/apple-touch-icon.png` and
+`/r/site.webmanifest` (from `web/runtime/public/`), our neutral mark, and names the app
+"Survey". To show your institution's icon instead, either replace those files in the
+`dist/` you serve (same names and sizes; edit `name` in `site.webmanifest` too), or edit
+the `<link rel="icon">`, `apple-touch-icon` and `manifest` tags in the `index.html` you
+serve, as for `data-api-base` above. Keep them on your own origin: the page's CSP allows
+images and the manifest from `'self'` only.
+
+The browser's toolbar colour (`<meta name="theme-color">`) follows the survey's theme:
+the app sets it to the theme's page background once the survey loads, in light or dark
+mode as the participant sees it. A theme's logo (`logoAssetId`) does not change the icon.
+
 The public endpoints are:
 
 | Method | Path |
@@ -428,6 +449,10 @@ urlpatterns = [
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1">
     <title>Surveys</title>
+    <link rel="icon" href="{{ static }}favicon.svg" type="image/svg+xml">
+    <link rel="icon" href="{{ static }}favicon-32.png" sizes="32x32" type="image/png">
+    <link rel="apple-touch-icon" href="{{ static }}apple-touch-icon.png">
+    <link rel="manifest" href="{{ static }}site.webmanifest">
     {% for href in files.css %}<link rel="stylesheet" href="{{ static }}{{ href }}">{% endfor %}
     {% for href in files.preload %}<link rel="modulepreload" href="{{ static }}{{ href }}">{% endfor %}
   </head>
