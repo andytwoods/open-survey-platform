@@ -975,6 +975,13 @@ export interface components {
         /** AddQuestion */
         AddQuestionParams: {
             /**
+             * Defaults
+             * @default null
+             */
+            defaults: {
+                [key: string]: components["schemas"]["JsonValue"];
+            } | null;
+            /**
              * Id
              * @default null
              */

@@ -54,7 +54,15 @@ export interface PropertySchemasDoc {
 	families: string[];
 	groups: string[];
 	schemas: TypeSchema[];
+	/** With a lab profile applied (`GET /api/panel-profile/schemas`): heading overrides. */
+	groupLabels?: Record<string, LocalisedText>;
+	/** Per question type, the values a new question starts with (profile defaults). */
+	defaults?: Record<string, Record<string, unknown>>;
+	profileApplied?: boolean;
 }
+
+/** The prefix of a lab-defined property's key in a schema (`custom.<key>`). */
+export const CUSTOM_PREFIX = 'custom.';
 
 /** An `osp-spec` diagnostic (RFC 6901 `pointer` into the survey document). */
 export interface PanelDiagnostic {
@@ -77,6 +85,22 @@ export interface SetPropertyOp {
 	op: 'set_property';
 	params: SetPropertyParams;
 }
+
+/** `set_custom_property` params: one key of a question's lab-defined `custom` object. */
+export type SetCustomPropertyParams = {
+	target: string;
+	key: string;
+	value?: unknown;
+	unset?: boolean;
+};
+
+export interface SetCustomPropertyOp {
+	op: 'set_custom_property';
+	params: SetCustomPropertyParams;
+}
+
+/** What the panel emits: a stock property edit, or a custom one. */
+export type PanelOp = SetPropertyOp | SetCustomPropertyOp;
 
 /** Asked of the shell when a choicelist / condition / expression field's button is used. */
 export interface OpenEditorRequest {

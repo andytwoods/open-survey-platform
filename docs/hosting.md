@@ -86,6 +86,7 @@ interface OspPageConfig {
     list: string; editor: string; flow: string; settings: string;
     appearance: string; themes: string; previewFrame: string;
     results?: string;              // optional: without it the Results link is hidden
+    profile?: string;              // optional: the lab's property panel profile page
   };
   csrf?: { header: string; token?: string; cookie?: string }; // sent on POST/PUT/PATCH/DELETE
   onUnauthenticated?: { redirect: string } | 'reload';        // after a 401; default 'reload'
@@ -94,8 +95,9 @@ interface OspPageConfig {
 }
 ```
 
-- **`links`**: the first seven are required; `results` is optional (without it the editor
-  shows no Results link, so a config written before the Results page still works).
+- **`links`**: the first seven are required; `results` and `profile` are optional (without
+  them the editor shows no Results link and no way to the panel profile page, so a config
+  written before those pages still works).
   `editor`, `flow`, `settings`, `appearance` and `results` must contain `{id}`; the page
   puts the survey id there. The Results page needs the `survey.export` role (owner or
   editor); a viewer sees a "no access" message. Moving between pages is a normal full
@@ -389,6 +391,7 @@ LINKS = {
     "appearance": "/research/surveys/{id}/appearance/",
     "results": "/research/surveys/{id}/results/",
     "themes": "/research/appearance/",
+    "profile": "/research/profile/",
     "previewFrame": "/research/preview-frame/",
 }
 REQUEST_HEADERS = ("content-type", "accept", "origin", "sec-fetch-site")
@@ -462,6 +465,7 @@ urlpatterns = [
     path("research/surveys/<str:survey_id>/appearance/", views.osp_page, {"page": "appearance"}),
     path("research/surveys/<str:survey_id>/results/", views.osp_page, {"page": "results"}),
     path("research/appearance/", views.osp_page, {"page": "themes"}),
+    path("research/profile/", views.osp_page, {"page": "profile"}),
     path("research/preview-frame/", views.osp_page, {"page": "preview-frame"}),
     path("osp/api/<path:rest>", views.osp_api_proxy),
 ]

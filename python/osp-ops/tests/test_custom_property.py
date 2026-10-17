@@ -83,6 +83,21 @@ def test_too_many_keys_is_refused() -> None:
     assert res.ok
 
 
+def test_add_question_applies_profile_defaults() -> None:
+    defaults = {"required": True, "custom.weight": 2.5, "custom.prereg": False}
+    res = run("add_question", base(), {"page": "p_demo", "type": "text", "defaults": defaults})
+    assert res.ok, [d.message for d in res.diagnostics]
+    q = base()["blocks"][0]["pages"][0]["items"]  # the page's items before
+    added = [x for x in res.survey["blocks"][0]["pages"][0]["items"] if x not in q][0]
+    assert added["required"] is True and added["custom"] == {"weight": 2.5, "prereg": False}
+    for bad in ({"id": "x"}, {"type": "note"}, {"custom": {}}, {"metadata.title": "x"}):
+        res = run("add_question", base(), {"page": "p_demo", "defaults": bad})
+        assert not res.ok and "op.params" in codes(res)
+    # A default the model refuses is an invalid result, as for any other edit.
+    res = run("add_question", base(), {"page": "p_demo", "defaults": {"required": "yes"}})
+    assert not res.ok and "op.invalid_result" in codes(res)
+
+
 def test_set_property_refuses_the_custom_object() -> None:
     res = run("set_property", base(), {"target": "age", "property": "custom", "value": {"a": 1}})
     assert not res.ok and "op.not_allowed" in codes(res)
