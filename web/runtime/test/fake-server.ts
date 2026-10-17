@@ -23,6 +23,8 @@ export class FakeServer {
 	sessions = new Map<string, Sess>();
 	conflicts: Array<{ session: string; base: number; snapshot: Snapshot }> = [];
 	calls: string[] = [];
+	/** Every request the server refused, as `call:code` (e.g. `save:session.submitted`). */
+	refused: string[] = [];
 	/** No request reaches the server. */
 	offline = false;
 	/** The next N requests are applied but their replies are lost. */
@@ -46,7 +48,13 @@ export class FakeServer {
 		await Promise.resolve();
 		if (name === 'save' && this.holdSaves) await new Promise<void>((go) => this.held.push(go));
 		if (this.offline) throw new NetworkError('offline');
-		const out = fn();
+		let out: T;
+		try {
+			out = fn();
+		} catch (e) {
+			if (e instanceof HttpError) this.refused.push(`${name}:${e.code}`);
+			throw e;
+		}
 		if (this.dropReplies > 0 || (this.dropOn[name] ?? 0) > 0) {
 			if ((this.dropOn[name] ?? 0) > 0) this.dropOn[name]!--;
 			else this.dropReplies--;

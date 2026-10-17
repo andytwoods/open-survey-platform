@@ -59,6 +59,12 @@ def test_production_never_generates_or_reads_dev_keys(tmp_path):
         keyring_env(Settings.from_env(env), env)
 
 
+def test_bad_database_url_is_a_config_error(tmp_path):
+    env = _dev(tmp_path, OSP_DATABASE_URL="postgres://u@h/d?sslmode=sometimes")
+    with pytest.raises(ConfigError, match="OSP_DATABASE_URL: unsupported sslmode"):
+        build_app(Settings.from_env(env), env)
+
+
 def test_build_app_serves_health_and_builder_routes(tmp_path):
     env = _dev(tmp_path)
     c = TestClient(build_app(Settings.from_env(env), env), base_url="https://testserver")

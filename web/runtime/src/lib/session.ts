@@ -22,7 +22,9 @@
  * 5. Quota: idempotent per (session, node) on the server; retried until it answers, then
  *    `resolve`. A refresh while it is pending re-sends the same call (R6-4).
  * 6. End: the ResponseRecord is stored locally, then submitted (idempotent) until the server
- *    acknowledges. Only then does "thank you" show and the local copy go.
+ *    acknowledges. Only then does "thank you" show and the local copy go. From the end on no
+ *    snapshot PUT starts, and the submit waits for any already on the wire (H2d), so none
+ *    can reach the server after it (409 `session.submitted`).
  * 7. `end-only`: nothing but quota checks and the final submit reaches the server.
  * 8. No durable local copy (IndexedDB blocked, or `localCopy: memory`): the session id and
  *    resume token are kept in the tab (`SessionPointer`), so a refresh resumes the server's
@@ -191,6 +193,8 @@ export class Session {
 	private writes: Promise<void> = Promise.resolve();
 	private writeQueued = false;
 	private sending = false;
+	/** Snapshot PUTs on the wire; the submit waits for them to settle first (H2d). */
+	private onWire = new Set<Promise<unknown>>();
 	/** The engine revision `flushKeepalive` last chained behind the wire save (R9-1). */
 	private chained = -1;
 	/** The session pointer promises a reload a save still on its way (R9-1). */
@@ -437,7 +441,7 @@ export class Session {
 	 * body at most once per call and chains the newest copy at most once per revision.
 	 */
 	flushKeepalive() {
-		if (this.saveMode !== 'every-page' || this.closed || !this.reconciled) return;
+		if (this.saveMode !== 'every-page' || this.ending() || !this.reconciled) return;
 		if (E.awaitingConsent(this.state)) return; // §11: nothing before agreement
 		const snap = this.rec.snapshot;
 		if (!snap) return;
@@ -455,9 +459,7 @@ export class Session {
 				void this.persist();
 			}
 			const body = this.rec.inflight;
-			this.env.api
-				.save(this.rec.sessionId, this.rec.resumeToken, body.base, body.snapshot, { keepalive: true })
-				.catch(() => undefined);
+			this.send(body.base, body.snapshot).catch(() => undefined);
 		}
 		// The page has moved on since that body was taken (a refresh straight after typing, or
 		// an edit): also send the newest copy, on the revision that body will create, so the
@@ -472,9 +474,7 @@ export class Session {
 		const wire = this.rec.inflight;
 		if (wire && wire.snapshot.revision !== snap.revision && this.chained !== snap.revision) {
 			this.chained = snap.revision;
-			this.env.api
-				.save(this.rec.sessionId, this.rec.resumeToken, wire.base + 1, snap, { keepalive: true })
-				.catch(() => undefined);
+			this.send(wire.base + 1, snap).catch(() => undefined);
 		}
 	}
 
@@ -581,6 +581,27 @@ export class Session {
 		return !!this.rec.inflight || (!!s && s.revision !== this.rec.syncedEngineRev);
 	}
 
+	/**
+	 * The submit owns the session from here: no snapshot PUT may start (H2d). The submitted
+	 * record carries everything, and a real server runs requests concurrently, so a PUT sent
+	 * beside the submit could reach the store after it and earn 409 `session.submitted`.
+	 */
+	private ending(): boolean {
+		return this.closed || this.phase === 'submitting' || !!this.rec.submitting;
+	}
+
+	/** Send a snapshot PUT, tracked until it settles (see `ending`). */
+	private send(base: number, snapshot: Snapshot): ReturnType<Api['save']> {
+		const p = this.env.api.save(this.rec.sessionId, this.rec.resumeToken, base, snapshot, { keepalive: true });
+		const tracked = p.then(
+			() => undefined,
+			() => undefined
+		);
+		this.onWire.add(tracked);
+		void tracked.then(() => this.onWire.delete(tracked));
+		return p;
+	}
+
 	/** Send saves until the server holds the newest snapshot. One loop at a time. */
 	async pump(): Promise<void> {
 		if (this.saveMode !== 'every-page' || this.closed || !this.reconciled) return;
@@ -593,19 +614,19 @@ export class Session {
 		try {
 			do {
 				this.again = false;
-				while (this.dirty() && !this.closed) {
+				while (this.dirty() && !this.ending()) {
 					if (!this.rec.inflight) {
 						this.rec.inflight = { base: this.rec.serverRevision, snapshot: this.rec.snapshot! };
 						await this.persist();
+						// The end may have come while the local write ran (H2d).
+						if (this.ending()) break;
 					}
 					const body = this.rec.inflight;
 					this.setNet('saving');
 					try {
 						// keepalive: an unload does not cancel it, so flushKeepalive needn't resend it.
 						this.sending = true;
-						const ack = await this.env.api
-							.save(this.rec.sessionId, this.rec.resumeToken, body.base, body.snapshot, { keepalive: true })
-							.finally(() => (this.sending = false));
+						const ack = await this.send(body.base, body.snapshot).finally(() => (this.sending = false));
 						this.rec.serverRevision = ack.revision;
 						this.rec.syncedEngineRev = body.snapshot.revision;
 						this.rec.inflight = null;
@@ -616,7 +637,7 @@ export class Session {
 						if (!(await this.saveFailed(e, body))) return;
 					}
 				}
-			} while (this.again && !this.closed);
+			} while (this.again && !this.ending());
 			if (!this.closed) this.setNet('saved');
 			if (this.pendingNoted && !this.closed && !this.dirty()) {
 				// The page was hidden and came back, and the server has it all: a later reload
@@ -810,6 +831,8 @@ export class Session {
 			await this.persist();
 		}
 		this.emit();
+		// A PUT sent before the end must reach the server before the submit does (H2d).
+		while (this.onWire.size) await Promise.all([...this.onWire]);
 		for (;;) {
 			try {
 				await this.env.api.submit(this.rec.sessionId, this.rec.resumeToken, this.rec.submitting);

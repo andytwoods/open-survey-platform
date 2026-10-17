@@ -68,6 +68,27 @@ test('preview runs the survey hooks in the participant sandbox; the debugger sho
 	expect(csp).toMatch(/script-src 'self' 'sha256-[A-Za-z0-9+/=]+'/);
 	expect(csp).toContain('worker-src blob:');
 	expect(csp).toContain("connect-src 'none'");
+	expect(csp).not.toMatch(/unsafe-eval|script-src[^;]*unsafe-inline/);
+
+	// H2e: the frame keeps allow-same-origin (an opaque origin could not load the ES-module
+	// build; docs/hosting.md §5 item 6), so the CSP is what contains it: markup that gets
+	// into the page cannot run script.
+	await expect(page.getByTestId('preview-frame-phone')).toHaveAttribute('sandbox', 'allow-scripts allow-same-origin allow-forms');
+	const frame = page.frames().find((f) => f.url().includes('preview-frame') && f.url().includes('frame=phone'));
+	expect(frame).toBeTruthy();
+	const injected = await frame!.evaluate(async () => {
+		const w = window as unknown as { __injected?: boolean };
+		const s = document.createElement('script');
+		s.textContent = 'window.__injected = true';
+		document.body.append(s);
+		const img = document.createElement('img');
+		img.setAttribute('src', 'data:,x');
+		img.setAttribute('onerror', 'window.__injected = true');
+		document.body.append(img);
+		await new Promise((r) => setTimeout(r, 200));
+		return w.__injected === true;
+	});
+	expect(injected).toBe(false);
 
 	// The hooks run in the participant app's own sandbox: an allow-scripts-only iframe.
 	await expect(phone.locator('iframe[title="hooks"]')).toHaveAttribute('sandbox', 'allow-scripts');

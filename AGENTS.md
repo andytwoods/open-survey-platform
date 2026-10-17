@@ -17,6 +17,7 @@ Open Survey Platform: an MIT-licensed, GUI-first survey builder for academic res
 pyproject.toml   uv workspace root (members: python/*), import-linter + ruff + pytest config
 python/          uv workspace members, layers enforced by import-linter (`uv run lint-imports`)
   L0  osp-expr                          no workspace deps (future: osp-fmt-xlsform, osp-fmt-lss …)
+      osp-host-signing                  stdlib only, Python 3.9+: what a host installs to sign X-OSP-* headers
   L1  osp-spec
   L2  osp-engine, osp-ops
   L3  osp-targets, osp-qa

@@ -126,6 +126,18 @@
 						<figure class="frame" style:width={`${d.width * scale}px`} style:height={`${d.height * scale + 28}px`}>
 							<figcaption>{d.label} · {d.width} px</figcaption>
 							<div class="viewport" style:width={`${d.width * scale}px`} style:height={`${d.height * scale}px`}>
+								<!--
+									`allow-scripts allow-same-origin` together (Chrome warns: the frame could lift
+									its own sandbox) is deliberate; docs/hosting.md §5 item 6 has the full case.
+									Same origin is needed because the page is Vite's ES-module build: an opaque
+									origin fetches module scripts and their chunks in CORS mode (`Origin: null`),
+									and a host's static files carry no CORS headers, so nothing would run (checked
+									in Chromium, H2e). It also keeps both postMessage directions bound to one
+									exact origin (bridge.ts) instead of `"null"` / `*`. Nothing untrusted runs in
+									this document: the preview-frame CSP allows only our own `'self'` scripts plus
+									the hooks bootstrap by hash (no inline, no eval), and researcher hooks run one
+									level down in the participant app's own `allow-scripts`-only opaque sandbox.
+								-->
 								<iframe
 									bind:this={iframes[d.id]}
 									title={`Survey preview, ${d.label.toLowerCase()} (${d.width} px)`}

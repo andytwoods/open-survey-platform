@@ -1,0 +1,34 @@
+# Build context for deploy/Dockerfile (docker build -f deploy/Dockerfile .). Only the
+# sources the image builds from go in: no local state, caches, secrets or build output.
+**/node_modules
+**/.venv
+**/__pycache__
+**/*.pyc
+**/.pytest_cache
+**/.ruff_cache
+**/.hypothesis
+**/.import_linter_cache
+**/dist
+**/build
+**/.vite
+**/test-results
+**/playwright-report
+.build
+.data
+.git
+.github
+.claude
+.env
+.env.*
+**/.DS_Store
+spikes
+planning
+log
+brand
+fixtures
+docs
+tests
+python/*/tests
+web/*/e2e
+web/*/test
+web/*/tests

@@ -14,12 +14,22 @@ A tested version of the proxy below is `python/osp-api/tests/test_hosting_exampl
 | Builder pages | Static JS and CSS, one entry per page, plus `manifest.json` | `make web-build` writes `web/builder/build/` |
 | Participant app | One static bundle; participants never sign in | `pnpm -C web/runtime build` writes `web/runtime/dist/` |
 | `osp-api` | The HTTP API (FastAPI, run by uvicorn) | `osp-api serve` |
-| Database | Any SQLAlchemy URL | `OSP_DATABASE_URL` |
+| Database | SQLite or Postgres URL (below) | `OSP_DATABASE_URL` |
 | Encryption keys | Keyring for stored responses (`osp-cli gen-key`) | `OSP_STORE_KEYS` (optional `OSP_STORE_ACTIVE_KEY`) |
+
+All of these but the database come in one container image, `deploy/Dockerfile` (section 7).
 
 Run `osp-api` with `OSP_ENV=production`. It then refuses to start unless `OSP_DATABASE_URL`
 and `OSP_STORE_KEYS` are set. Keep the keys in your secret store: without them the stored
 responses cannot be read.
+
+`OSP_DATABASE_URL` takes the URL your PaaS gives you. Postgres always goes through the
+pg8000 driver (BSD; psycopg is LGPL and not installed), so `postgres://…` and
+`postgresql://…` (Heroku, Dokku, Render, Appliku) both mean `postgresql+pg8000://…`, which
+you can also write yourself. A libpq `?sslmode=` on the URL is honoured: `disable`,
+`allow` and `prefer` connect without TLS; `require` uses TLS without checking the
+certificate (as libpq does); `verify-ca` and `verify-full` check it against the system
+trust store. SQLite (`sqlite:///path/osp.db`) suits one machine with one osp-api process.
 
 `osp-api serve` binds `127.0.0.1` by default (`OSP_HOST`, `OSP_PORT`; port 8000). Keep it
 that way. The host must be the **only** route to the API.
@@ -137,14 +147,22 @@ osp-api's `/api`. For each request:
 3. Copy only the headers osp-api needs (`Content-Type`, `Accept`, `Origin`,
    `Sec-Fetch-Site`). This drops any `X-OSP-*` header the browser sent, along with your
    cookies.
-4. Sign with `sign_identity_headers` (`osp_api.signing`, standard library only) and add
+4. Sign with `sign_identity_headers` from the `osp-host-signing` package (below) and add
    the headers it returns.
 5. Send the body **byte for byte** as signed, to `http://127.0.0.1:8000` + the API path.
 6. Return the status, the body and the `Content-Type`, `Content-Disposition` and
    `Cache-Control` headers.
 
+Install the signer in your host. It is one module, standard library only, Python 3.9+, MIT,
+and it is the code osp-api verifies with (`osp_api.signing` re-exports it). It is not on
+PyPI; install it from the repository (pin a commit in production):
+
+```sh
+pip install "osp-host-signing @ git+https://github.com/andytwoods/open-survey-platform#subdirectory=python/osp-host-signing"
+```
+
 ```python
-from osp_api.signing import sign_identity_headers
+from osp_host_signing import sign_identity_headers
 
 headers = sign_identity_headers(
     key_id="host1",  # the kid of one OSP_IDENTITY_KEYS entry
@@ -165,7 +183,7 @@ nonce. osp-api answers 401 if the signature is missing or wrong, more than 60 se
 or reused. With `OSP_NONCE_STORE=database` (the production default) the used nonces are kept
 in the database for 120 seconds, so a reused one is refused by every osp-api worker and
 machine on that database; run as many workers as you like. The format is in
-`python/osp-api/README.md` and `osp_api/signing.py`.
+`python/osp-host-signing/README.md`.
 
 Roles come from you on every request, so your app is the single source of truth for who
 is in which lab. With `OSP_AUTO_CREATE_LABS=on` (the default) a lab exists as soon as you
@@ -342,6 +360,22 @@ Without `OSP_TRUSTED_PROXIES` all participants behind your proxy share one budge
      from the builder by `postMessage`, never the API base or a CSRF token.
    - `frame-ancestors 'self'`: the builder shows it in a sandboxed iframe on your origin.
    - Serve the page without the dev host's inline theme script (the policy blocks it).
+   - That iframe is `sandbox="allow-scripts allow-same-origin allow-forms"`, and Chrome's
+     console warns that a frame with both `allow-scripts` and `allow-same-origin` can
+     remove its own sandbox. That is expected, and the reason is the build format. The page
+     is Vite's ES-module build. A frame with an opaque origin (no `allow-same-origin`)
+     fetches module scripts and their chunks as CORS requests with `Origin: null`, and
+     your static files carry no `Access-Control-Allow-Origin`, so the browser blocks them
+     and nothing runs. Same origin also lets the builder and the frame address each other's
+     `postMessage` to one exact origin, rather than accepting `"null"` and sending with
+     `*`. So the sandbox here limits navigation and popups; it does not isolate script. The
+     CSP above does that: the page runs only your origin's own build (`script-src 'self'`)
+     plus the hooks bootstrap by hash, with no inline script, no `eval`, and
+     `connect-src 'none'`, so survey text that reaches the page cannot run as script. The
+     researchers' hook code, the only untrusted code, never runs in this document. It runs
+     one level down, in the participant app's own `allow-scripts`-only sandbox (opaque
+     origin, `default-src 'none'`), as it does for participants. Keep this policy exactly as
+     given: loosening `script-src` on this page is what would make the warning matter.
 7. Keep everything same-origin. Cross-origin is opt-in: list exact origins in
    `OSP_ALLOWED_ORIGINS` (no wildcard; credentials allowed) and in the page config's
    `allowedOrigins`.
@@ -377,7 +411,7 @@ from django.contrib.auth.decorators import login_required
 from django.http import Http404, HttpResponse, JsonResponse
 from django.middleware.csrf import get_token
 from django.shortcuts import render
-from osp_api.signing import sign_identity_headers
+from osp_host_signing import sign_identity_headers
 
 MANIFEST = json.loads((settings.OSP_BUILD_DIR / "manifest.json").read_text())["pages"]
 UPSTREAM = httpx.Client(base_url=settings.OSP_API_URL, timeout=60)
@@ -494,3 +528,73 @@ urlpatterns = [
 Add the CSP and `frame-ancestors` headers from section 5 (for example with
 `django-csp`), and the participant routes from section 4. Django answers a bad CSRF token
 with its own 403 page, which the builder shows as an access message.
+
+## 7. Running the container image
+
+`deploy/Dockerfile` builds one image with everything in section 1 except the database:
+`osp-api` and `osp-cli`, the participant app, the builder page files, the engine bundle
+(reproducibility packages) and the simulator with the Node binary that runs it (the
+preview's "run simulation"). Build it from the repository root:
+
+```sh
+docker build -f deploy/Dockerfile -t osp-api .
+```
+
+Base images are pinned by version (`python:3.14.8-slim-trixie`, `node:24.12.0-trixie-slim`,
+`ghcr.io/astral-sh/uv:0.11.23`; pnpm 12.14.0), set as build arguments at the top of the
+file. The image runs as an unprivileged user (`osp`, uid 10001), listens on `$PORT` (default
+8000), and has a `HEALTHCHECK` on `/api/health`.
+
+Run it next to a Postgres database:
+
+```sh
+docker run -d --name osp-api --network <private network> \
+  -e DATABASE_URL=postgres://osp:<password>@db:5432/osp \
+  -e OSP_STORE_KEYS=k1:<key from `docker run --rm osp-api osp-cli gen-key`> \
+  -e OSP_IDENTITY_KEYS=host1:<at least 32 random bytes> \
+  -e OSP_PUBLIC_ORIGINS=https://surveys.example.ac.uk \
+  -e OSP_TRUSTED_PROXIES=<your proxy's address> \
+  osp-api
+```
+
+| Setting | In the image |
+|---|---|
+| `OSP_ENV` | `production` (so `OSP_DATABASE_URL` and `OSP_STORE_KEYS` are required) |
+| `OSP_DATABASE_URL` | taken from `DATABASE_URL` when unset, as a PaaS links it (`postgres://…` works as it is, section 1) |
+| `PORT` / `OSP_PORT` | `PORT` wins (a PaaS sets it), else `OSP_PORT`, else 8000 |
+| `OSP_HOST` | `0.0.0.0`: inside a container the API must listen on its interface |
+| `OSP_DATA_DIR` | `/data`, a volume, owned by `osp` |
+| `OSP_PARTICIPANT_DIR` | `/app/web/runtime`: the participant app at `/r/` and `/s/{slug}` |
+| `OSP_BUILDER_DIR` | `/app/web/builder`: the builder files at `/builder/` |
+| `OSP_ENGINE_BUNDLE`, `OSP_SIM_CLI`, `OSP_NODE` | the bundled engine, simulator and Node |
+
+Everything else is as in section 1. Set `OSP_PARTICIPANT_URL_TEMPLATE` to your public
+participant link.
+
+**Migrations.** `osp-api serve` migrates the database to the latest schema before it starts
+listening, so a plain start is enough with one container. With several containers on one
+database, run the migration once as a release step, before the new containers start:
+`docker run --rm <same env> osp-api init` (Dokku: `app.json` `scripts.dokku.predeploy`;
+Heroku: a `release` process). `init` migrates and exits.
+
+**Volumes.** With Postgres the container keeps no state, and `/data` can stay empty. For a
+single machine without Postgres, use SQLite on the volume:
+`-v osp-data:/data -e OSP_DATABASE_URL=sqlite:////data/osp.db`, with one container only.
+
+**Keep the API private.** `OSP_HOST=0.0.0.0` makes it listen on the container's own
+interface, not on the internet. Section 5, item 1 still holds: put the container on a
+private network that only your host can reach, and don't publish its port to the public
+internet (`-p 127.0.0.1:8000:8000` at most, or no `-p` with a shared Docker network). On
+Dokku, give the app no domain and turn its proxy off (`dokku proxy:disable osp-api`).
+
+**What your host serves.** The image serves the participant app itself: forward
+`/r/*`, `/s/*`, `/api/s/*` and `/api/sessions/*` to it unsigned (section 4), and the
+builder API under your prefix signed (section 3). For the builder pages, your host still
+renders each page behind its sign-in (section 2), and needs the files: proxy your static
+prefix (say `/static/osp/`) to the container's `/builder/`, and read `manifest.json` from
+`http://<container>:8000/builder/manifest.json` at start-up, or copy the folder out of the
+image (`docker cp $(docker create osp-api):/app/web/builder ./osp-builder`). The `/builder/`
+files are static JavaScript, CSS and icons; they hold no data and need no sign-in.
+
+**Upgrades.** Rebuild from a newer commit and restart. The host's copy of the builder
+files must come from the same image, as the page bundles and the API move together.

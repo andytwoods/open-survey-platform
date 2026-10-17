@@ -38,6 +38,7 @@ from osp_app import AppError, AppServices, InvalidIdentity, build_services, make
 from osp_app.auth import Actor, Role
 from osp_app.identity import DEV_LAB_ID, DEV_USER_ID, check_tenant_id
 from osp_store import (
+    DatabaseUrlError,
     Keyring,
     Store,
     StoreError,
@@ -72,7 +73,10 @@ def open_services(db_url: str, environ: Mapping[str, str] | None = None) -> AppS
     if not env.get("OSP_STORE_KEYS"):
         raise CliError("OSP_STORE_KEYS is not set: run `osp-cli gen-key` and export its output")
     keyring = Keyring.from_env(env)
-    engine = create_engine(db_url)
+    try:
+        engine = create_engine(db_url)
+    except DatabaseUrlError as exc:
+        raise CliError(f"database URL: {exc}") from exc
     migrate(engine)
     return build_services(Store(engine, keyring))
 
