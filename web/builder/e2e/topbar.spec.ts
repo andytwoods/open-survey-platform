@@ -106,6 +106,7 @@ test('More actions menu: keyboard, Escape and focus return; items run their comm
 		/Undo/,
 		/Redo/,
 		/Appearance/,
+		/Panel profile/,
 		/Results/,
 		/Switch to (dark|light) theme/
 	]);
