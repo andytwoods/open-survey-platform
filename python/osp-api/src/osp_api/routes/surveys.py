@@ -14,7 +14,7 @@ from osp_spec import Diagnostic, validate
 from osp_store import Survey
 from pydantic import BaseModel, ConfigDict, Field
 
-from ..participant import plan_url
+from ..participant import participant_url, plan_url
 from .common import Auth, Services, errors
 
 XLSX = "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet"
@@ -72,6 +72,9 @@ class PublishResponse(BaseModel):
     slug: str = Field(description="The survey's public slug: participants start at /s/{slug}")
     planChecksum: str
     planUrl: str = Field(description="Where the immutable runtime plan is served")
+    participantUrl: str = Field(
+        description="The link participants open (absolute, or relative to the builder's origin)"
+    )
     saveMode: Literal["every-page", "end-only"]
 
 
@@ -186,6 +189,7 @@ def publish(
         slug=r.slug,
         planChecksum=r.plan_checksum,
         planUrl=plan_url(r.slug, r.plan_checksum),
+        participantUrl=participant_url(r.slug),
         saveMode=r.runtime_config["saveMode"],
     )
 

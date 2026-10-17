@@ -34,7 +34,8 @@ describe('publish problems', () => {
 
 describe('links', () => {
 	it('builds the participant link from the slug', () => {
-		expect(participantLink('https://osp.example/', 'ab c')).toBe('https://osp.example/s/ab%20c');
+		expect(participantLink('https://osp.example/', '/r/?s=ab%20c')).toBe('https://osp.example/r/?s=ab%20c');
+		expect(participantLink('https://osp.example', 'http://localhost:5174/r/?s=x')).toBe('http://localhost:5174/r/?s=x');
 	});
 	it('lists the XLSForm and LSS exports', () => {
 		expect(exportLinks('s1').map((x) => x.href)).toEqual([

@@ -10,8 +10,10 @@ withdrawal (semantics.md §11): ``/consent``, ``/decline``, ``/withdraw``.
 
 from __future__ import annotations
 
+import os
 from datetime import datetime
 from typing import Annotated, Any, Literal
+from urllib.parse import quote
 
 from fastapi import APIRouter, Depends, FastAPI, Request, Response
 from fastapi.responses import JSONResponse
@@ -194,6 +196,19 @@ class ResumeResponse(BaseModel):
 
 def _errors(*codes: int) -> dict[int | str, dict[str, Any]]:
     return {c: {"model": StaleBody if c == 409 else ErrorBody} for c in codes}
+
+
+PARTICIPANT_URL_ENV = "OSP_PARTICIPANT_URL_TEMPLATE"
+DEFAULT_PARTICIPANT_URL = "/r/?s={slug}"
+
+
+def participant_url(slug: str) -> str:
+    """Where participants open a survey. The deployment sets OSP_PARTICIPANT_URL_TEMPLATE
+    (with a `{slug}` placeholder) when the participant app is served elsewhere."""
+    template = os.environ.get(PARTICIPANT_URL_ENV, "").strip() or DEFAULT_PARTICIPANT_URL
+    if "{slug}" not in template:
+        template = DEFAULT_PARTICIPANT_URL
+    return template.replace("{slug}", quote(slug, safe=""))
 
 
 def plan_url(slug: str, checksum: str) -> str:

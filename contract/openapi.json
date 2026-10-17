@@ -1989,6 +1989,11 @@
             "title": "Number",
             "type": "integer"
           },
+          "participantUrl": {
+            "description": "The link participants open (absolute, or relative to the builder's origin)",
+            "title": "Participanturl",
+            "type": "string"
+          },
           "planChecksum": {
             "title": "Planchecksum",
             "type": "string"
@@ -2035,6 +2040,7 @@
           "slug",
           "planChecksum",
           "planUrl",
+          "participantUrl",
           "saveMode"
         ],
         "title": "PublishResponse",

@@ -1635,6 +1635,11 @@ export interface components {
             diagnostics: components["schemas"]["Diagnostic"][];
             /** Number */
             number: number;
+            /**
+             * Participanturl
+             * @description The link participants open (absolute, or relative to the builder's origin)
+             */
+            participantUrl: string;
             /** Planchecksum */
             planChecksum: string;
             /**

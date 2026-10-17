@@ -62,7 +62,7 @@
 				phase = {
 					kind: 'published',
 					number: data.number,
-					link: participantLink(location.origin, data.slug),
+					link: participantLink(location.origin, data.participantUrl),
 					warnings,
 					repro: reproLink(store.surveyId, data.number)
 				};

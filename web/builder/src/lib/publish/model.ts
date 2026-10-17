@@ -49,9 +49,9 @@ export function problemsOf(diagnostics: readonly PublishDiagnostic[]): {
 	};
 }
 
-/** The link participants open (served by the API host: `/s/{slug}`). */
-export function participantLink(origin: string, slug: string): string {
-	return `${origin.replace(/\/$/, '')}/s/${encodeURIComponent(slug)}`;
+/** The link participants open: the server's `participantUrl` (absolute, or relative to the builder). */
+export function participantLink(origin: string, participantUrl: string): string {
+	return new URL(participantUrl, origin.replace(/\/$/, '') + '/').toString();
 }
 
 export function exportLinks(surveyId: string): { label: string; href: string; description: string }[] {

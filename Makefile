@@ -208,7 +208,8 @@ dev: engine-bundle
 		wait 2>/dev/null || true; }; \
 	alive() { for p in $$pids; do kill -0 $$p 2>/dev/null || return 1; done; }; \
 	trap 'stop; exit 130' INT TERM; trap stop EXIT; \
-	$(DEV_ENV) $(UV_RUN) osp-api serve --port $(DEV_API_PORT) & pids="$$!"; \
+	$(DEV_ENV) OSP_PARTICIPANT_URL_TEMPLATE="http://localhost:$(DEV_RUNTIME_PORT)/r/?s={slug}" \
+		$(UV_RUN) osp-api serve --port $(DEV_API_PORT) & pids="$$!"; \
 	(cd web/builder && exec env $(DEV_PROXY) node_modules/.bin/vite dev \
 		--port $(DEV_BUILDER_PORT) --strictPort) & pids="$$pids $$!"; \
 	if [ -n "$$runtime" ]; then \
