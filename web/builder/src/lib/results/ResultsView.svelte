@@ -6,7 +6,7 @@
 	import Radio from '@lucide/svelte/icons/radio';
 	import X from '@lucide/svelte/icons/x';
 	import { Button, cssVarsToStyle, theme, themeToCssVars } from '@osp/ui-components';
-	import { onDestroy, onMount, tick } from 'svelte';
+	import { onDestroy, onMount, tick, untrack } from 'svelte';
 	import LayoutBar from './LayoutBar.svelte';
 	import { LayoutsController } from './layouts.svelte';
 	import type { Card } from './types';
@@ -130,7 +130,11 @@
 	});
 	$effect(() => {
 		// Leaving presentation mode: poll again at once (live pauses while presenting until LV4).
-		if (!presentation.active) live?.wake();
+		// Only the flag is a dependency: wake() reads and writes the poller's own state.
+		const presenting = presentation.active;
+		untrack(() => {
+			if (!presenting) live?.wake();
+		});
 	});
 
 	// -- reordering (drag the handle, or focus it and use the arrow keys) --------------------
