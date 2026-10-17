@@ -31,6 +31,14 @@
 	const missing = $derived(missingConsentLanguages(consent, languages, defaultLanguage));
 	let problem = $state<string | null>(null);
 
+	// The store applies an edit only when the server answers, so while a `set_consent` is in
+	// flight `consent` is still the old object. Each op sends the whole consent object, so the
+	// next edit must build on what was last sent, or it would undo the edit still in flight
+	// (typing the text, then the agree label, lost the text).
+	let sent: Record<string, unknown> | null = null;
+	let inFlight = 0;
+	const latest = () => (inFlight > 0 ? sent : consent);
+
 	const shown = (field: ConsentTextField) => textExact(consent?.[field], editLang, defaultLanguage);
 	const preview = (field: ConsentTextField) => {
 		const own = shown(field);
@@ -43,8 +51,14 @@
 
 	async function send(next: Record<string, unknown> | null) {
 		problem = null;
-		const out = await submit([consentOp(next)]);
-		if (out.status === 'rejected') problem = out.diagnostics[0]?.message ?? out.message;
+		sent = next;
+		inFlight++;
+		try {
+			const out = await submit([consentOp(next)]);
+			if (out.status === 'rejected') problem = out.diagnostics[0]?.message ?? out.message;
+		} finally {
+			if (--inFlight === 0) sent = null;
+		}
 	}
 
 	function enable(on: boolean) {
@@ -52,13 +66,14 @@
 	}
 
 	function commit(field: ConsentTextField, value: string) {
-		if (!consent || value === shown(field)) return;
-		const next = setText(consent[field], editLang, defaultLanguage, value);
+		const base = latest();
+		if (!base || value === textExact(base[field], editLang, defaultLanguage)) return;
+		const next = setText(base[field], editLang, defaultLanguage, value);
 		if (field === 'text' && next === undefined) {
-			void send(consentWith(consent, 'text', { [defaultLanguage]: '' }));
+			void send(consentWith(base, 'text', { [defaultLanguage]: '' }));
 			return;
 		}
-		void send(consentWith(consent, field, next));
+		void send(consentWith(base, field, next));
 	}
 </script>
 
@@ -126,7 +141,7 @@
 			<input
 				type="checkbox"
 				checked={consent.countDeclines === true}
-				onchange={(e) => void send(consentWith(consent, 'countDeclines', e.currentTarget.checked))}
+				onchange={(e) => void send(consentWith(latest(), 'countDeclines', e.currentTarget.checked))}
 			/>
 			<span>Count declines</span>
 		</label>
