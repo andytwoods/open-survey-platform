@@ -4,10 +4,10 @@
     uv run python scripts/contract.py generate   # `make contract`: write both files
     uv run python scripts/contract.py check      # `make contract-check`: exit 1 if stale
 
-The OpenAPI dump is deterministic: sorted keys, 2-space indent, trailing newline, no
-timestamps. `check` regenerates both artefacts in a temp dir from the *current* app
-and compares them byte for byte with the committed files, so changing an endpoint
-without running `make contract` fails `make check`.
+The OpenAPI dump is deterministic: sorted keys, 2-space indent, LF line endings on every
+platform, trailing newline, no timestamps. `check` regenerates both artefacts in a temp
+dir from the *current* app and compares them byte for byte with the committed files, so
+changing an endpoint without running `make contract` fails `make check`.
 
 `--app module:attr` (a FastAPI app or a factory) and `--openapi/--ts` exist for tests.
 """
@@ -18,6 +18,7 @@ import argparse
 import difflib
 import importlib
 import json
+import shutil
 import subprocess
 import sys
 import tempfile
@@ -43,7 +44,7 @@ def openapi_text(app_ref: str) -> str:
 
 def generate_ts(openapi_file: Path, out_file: Path) -> None:
     cmd = [
-        "pnpm",
+        shutil.which("pnpm") or "pnpm",  # pnpm.cmd on Windows: a bare name isn't found
         "-C",
         str(API_CLIENT_DIR),
         "exec",
@@ -74,7 +75,7 @@ def _diff(committed: Path, fresh: str, label: str) -> list[str]:
 
 def cmd_generate(args) -> int:
     args.openapi.parent.mkdir(parents=True, exist_ok=True)
-    args.openapi.write_text(openapi_text(args.app))
+    args.openapi.write_text(openapi_text(args.app), encoding="utf-8", newline="\n")
     generate_ts(args.openapi, args.ts)
     print(f"contract: wrote {args.openapi.relative_to(REPO, walk_up=True)}")
     print(f"contract: wrote {args.ts.relative_to(REPO, walk_up=True)}")
@@ -84,7 +85,7 @@ def cmd_generate(args) -> int:
 def cmd_check(args) -> int:
     with tempfile.TemporaryDirectory(prefix="osp-contract-") as tmp:
         fresh_openapi = Path(tmp) / "openapi.json"
-        fresh_openapi.write_text(openapi_text(args.app))
+        fresh_openapi.write_text(openapi_text(args.app), encoding="utf-8", newline="\n")
         fresh_ts = Path(tmp) / "schema.d.ts"
         generate_ts(fresh_openapi, fresh_ts)
         problems = {

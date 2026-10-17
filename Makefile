@@ -16,7 +16,16 @@ unexport VIRTUAL_ENV
 UV_RUN := uv run --locked
 PNPM := pnpm
 
+# Fixtures, goldens and generated files are UTF-8; Python on Windows would otherwise read
+# them in the console code page (cp1252) and fail on the first non-ASCII character.
+export PYTHONUTF8 := 1
+
 CHECKS := py-test py-layers py-lint web-check web-test web-build contract-check licence-check harness-quick engine-test hooks-test sim-test
+
+# `make check CHECK_SKIP="harness-quick"` leaves targets out: CI runs the browser suites as
+# their own jobs (.github/workflows/ci.yml), and the Windows job skips what needs a POSIX
+# shell. A finished task still needs the whole of `make check` green somewhere.
+CHECK_SKIP ?=
 
 .PHONY: install check $(CHECKS) contract
 
@@ -24,8 +33,8 @@ install:
 	uv sync --locked
 	$(PNPM) -C web install --frozen-lockfile
 
-check: $(CHECKS)
-	@echo "make check: all green"
+check: $(filter-out $(CHECK_SKIP),$(CHECKS))
+	@echo "make check: all green$(if $(CHECK_SKIP), (without $(CHECK_SKIP)))"
 
 py-test: sim-build engine-bundle
 	$(UV_RUN) pytest
@@ -105,7 +114,9 @@ test-postgres:
 # snapshots. Not part of `make check` (needs Playwright browsers: `pnpm -C web/builder exec
 # playwright install chromium`). Update snapshots: `make web-e2e E2E_ARGS=--update-snapshots`.
 .PHONY: web-e2e
-web-e2e:
+# sim-build first: the preview's "run simulation" needs the simulator CLI (osp-api runs it
+# as a node sidecar), which a fresh checkout (CI) hasn't built.
+web-e2e: sim-build
 	$(PNPM) -C web --filter @osp/builder exec playwright test $(E2E_ARGS)
 
 # Participant engine (task R1). Python compiles every fixture survey to a runtime plan and

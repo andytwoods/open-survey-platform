@@ -21,6 +21,7 @@ from __future__ import annotations
 import argparse
 import json
 import re
+import shutil
 import subprocess
 import sys
 import tomllib
@@ -302,7 +303,8 @@ def python_deps() -> list[Dep]:
 
 
 def _pnpm_licences(web: Path, prod: bool) -> dict:
-    cmd = ["pnpm", "-C", str(web), "-r", "licenses", "list", "--json"]
+    # shutil.which: on Windows pnpm is pnpm.cmd, which CreateProcess won't find by bare name.
+    cmd = [shutil.which("pnpm") or "pnpm", "-C", str(web), "-r", "licenses", "list", "--json"]
     if prod:
         cmd.append("--prod")
     result = subprocess.run(cmd, capture_output=True, text=True)

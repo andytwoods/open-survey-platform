@@ -1,5 +1,7 @@
 # Open Survey Platform
 
+[![CI](https://github.com/andytwoods/open-survey-platform/actions/workflows/ci.yml/badge.svg?branch=main)](https://github.com/andytwoods/open-survey-platform/actions/workflows/ci.yml)
+
 An open-source, GUI-first survey builder for academic research, built as a free
 alternative to commercial survey tools. Researchers design surveys in the browser,
 participants answer them on any screen size, and every response can be replayed exactly.
@@ -117,7 +119,10 @@ bundle is missing, packages go out without `replay.mjs` and say so. Point
 ## Checks
 
 `make check` runs every test, lint, layer and licence check; it must be green before a
-change lands.
+change lands. GitHub Actions ([`.github/workflows/ci.yml`](.github/workflows/ci.yml)) runs
+it on every push and pull request: the non-browser checks on Ubuntu and Windows, and the
+builder end-to-end suite and the fixture harness as their own jobs with cached Playwright
+browsers.
 
 The data export and reproducibility tests read committed engine records
 (`python/osp-targets/tests/data/records/`). After adding a fixture script or changing a
