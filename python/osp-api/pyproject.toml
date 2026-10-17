@@ -13,6 +13,7 @@ dependencies = [
     "osp-runtime",
     "osp-spec",
     "osp-store",
+    "osp-targets",
     "uvicorn>=0.35,<1",
 ]
 
@@ -26,6 +27,7 @@ osp-ops = { workspace = true }
 osp-spec = { workspace = true }
 osp-runtime = { workspace = true }
 osp-store = { workspace = true }
+osp-targets = { workspace = true }
 
 [build-system]
 requires = ["uv_build>=0.11,<0.12"]

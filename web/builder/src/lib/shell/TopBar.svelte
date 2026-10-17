@@ -16,6 +16,7 @@
 	import { Button, IconButton, theme } from '@osp/ui-components';
 	import { shortcutsOf, type CommandRegistry } from '../commands/registry';
 	import { ariaShortcut, formatShortcut } from '../commands/shortcut';
+	import type { BuilderView } from '../appearance/commands';
 	import type { HealthState } from '../health.svelte';
 	import type { SaveState } from '../sync/survey-store.svelte';
 
@@ -23,6 +24,7 @@
 		title,
 		saveState = 'saved',
 		view = 'editor',
+		viewTabs = false,
 		registry,
 		health,
 		outlineCollapsible,
@@ -32,7 +34,9 @@
 	}: {
 		title: string;
 		saveState?: SaveState;
-		view?: 'editor' | 'appearance';
+		view?: BuilderView;
+		/** Show the Questions / Flow switch (a real survey is open). */
+		viewTabs?: boolean;
 		registry: CommandRegistry;
 		health: HealthState;
 		outlineCollapsible: boolean;
@@ -77,6 +81,20 @@
 			/>
 		{/if}
 		<h1 class="title">{title}</h1>
+		{#if viewTabs && view !== 'appearance'}
+			<nav class="views" aria-label="Builder views">
+				<button
+					type="button"
+					aria-current={view === 'editor' ? 'page' : undefined}
+					onclick={() => view !== 'editor' && registry.run('view.editor')}>Questions</button
+				>
+				<button
+					type="button"
+					aria-current={view === 'flow' ? 'page' : undefined}
+					onclick={() => view !== 'flow' && registry.run('view.flow')}>Flow</button
+				>
+			</nav>
+		{/if}
 		<span class="save-state" role="status" data-state={saveState}>
 			<save.icon size={16} aria-hidden="true" />
 			<span>{save.text}</span>
@@ -150,6 +168,33 @@
 		white-space: nowrap;
 		font-size: var(--text-md);
 		font-weight: var(--weight-bold);
+	}
+	.views {
+		display: inline-flex;
+		padding: 2px;
+		border: 1px solid var(--color-border);
+		border-radius: var(--radius-md);
+		background: var(--color-surface-sunken);
+	}
+	.views button {
+		padding: var(--space-1) var(--space-3);
+		border: 0;
+		border-radius: var(--radius-sm);
+		background: transparent;
+		color: var(--color-text-muted);
+		font: inherit;
+		font-size: var(--text-sm);
+		cursor: pointer;
+	}
+	.views button[aria-current='page'] {
+		background: var(--color-surface-raised);
+		color: var(--color-text);
+		font-weight: var(--weight-bold);
+		box-shadow: var(--shadow-sm, none);
+	}
+	.views button:focus-visible {
+		outline: 2px solid var(--color-focus);
+		outline-offset: 1px;
 	}
 	.save-state,
 	.health {
