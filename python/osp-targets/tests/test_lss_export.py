@@ -503,3 +503,12 @@ def test_unmappable_quota_is_dropped_and_reported_once(when: dict) -> None:
     assert [(d.feature, d.severity) for d in under] == [("Quota.when=unmappable", "loss")]
     check = [d for d in diags if d.pointer == "/flow/1"]
     assert [(d.feature, d.severity) for d in check] == [("$quota.dropped", "loss")]
+
+
+def test_multiline_text_is_long_free_text() -> None:
+    data = _survey([_q("long", "text", multiline=True), _q("short", "text")])
+    _, _, root = _export(data)
+    assert _question(root, "long")["type"] == "T"
+    assert _question(root, "short")["type"] == "S"
+    themes = {q["title"]: q.get("question_theme_name") for q in _rows(root, "questions")}
+    assert themes == {"long": "longfreetext", "short": "shortfreetext"}

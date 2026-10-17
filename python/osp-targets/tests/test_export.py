@@ -315,3 +315,19 @@ def test_page_showif_min_max_and_if_are_lowered() -> None:
     assert rows["band"]["calculation"].startswith("if(")
     content, _ = export_xlsform(data)
     assert "if(" in _xform(content)
+
+
+def test_multiline_text_gets_multiline_appearance() -> None:
+    data = _survey(
+        [
+            {"id": "long", "type": "text", "label": "Tell us", "multiline": True},
+            {"id": "short", "type": "text", "label": "Name"},
+        ]
+    )
+    form, diags = build_xlsform(data)
+    assert form is not None, diags
+    rows = {r.get("name"): r for r in form.survey}
+    assert rows["long"]["appearance"] == "multiline"
+    assert "appearance" not in rows["short"]
+    content, _ = export_xlsform(data)
+    assert 'appearance="multiline"' in _xform(content)

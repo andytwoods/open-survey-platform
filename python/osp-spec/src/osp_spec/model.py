@@ -140,6 +140,9 @@ class DecimalQuestion(_AnswerableBase):
 
 class TextQuestion(_AnswerableBase):
     type: Literal["text"]
+    # Long text: a multi-line box that keeps line breaks (semantics.md §2 keeps internal
+    # whitespace and line breaks either way; this only changes the input shown).
+    multiline: bool = False
 
 
 class DateQuestion(_AnswerableBase):

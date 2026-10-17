@@ -30,7 +30,12 @@
 	<ul>
 		{#each errors as err (err.id)}
 			<li>
-				<a href={`#${err.domId}-label`} onclick={(e) => go(e, err.domId)}>{err.label} – {err.message}</a>
+				{#if err.domId}
+					<a href={`#${err.domId}-label`} onclick={(e) => go(e, err.domId)}>{err.label} – {err.message}</a>
+				{:else}
+					<!-- A page-level message (a hook's rejectPage without an item): nothing to link to. -->
+					{err.message}
+				{/if}
 			</li>
 		{/each}
 	</ul>

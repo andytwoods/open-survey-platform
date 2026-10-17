@@ -100,9 +100,146 @@
       "type": "object",
       "additionalProperties": { "$ref": "#/$defs/quota" }
     },
-    "flow": { "$ref": "#/$defs/nodes" }
+    "flow": { "$ref": "#/$defs/nodes" },
+    "hooks": { "$ref": "#/$defs/hooks" }
   },
   "$defs": {
+    "hooks": {
+      "description": "Optional hook manifest (runtime-design.md §7a; HookManifest in web/hooks-sandbox/src/manifest.ts). Inside the checksum; absent when the survey has no hooks.",
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["format", "source", "handlers"],
+      "properties": {
+        "format": { "const": "osp-hooks/1" },
+        "source": { "type": "string" },
+        "handlers": {
+          "type": "object",
+          "propertyNames": {
+            "enum": [
+              "onStart",
+              "onResume",
+              "onPageInit",
+              "onPageShown",
+              "onAnswer",
+              "onPageNext",
+              "onBack",
+              "onValidationError",
+              "onBeforeSubmit",
+              "onSubmitted"
+            ]
+          },
+          "additionalProperties": { "$ref": "#/$defs/hookHandler" }
+        },
+        "urlParams": { "type": "array", "items": { "type": "string", "minLength": 1 } },
+        "redirects": {
+          "type": "object",
+          "propertyNames": { "minLength": 1 },
+          "additionalProperties": { "$ref": "#/$defs/hookRedirect" }
+        },
+        "parent": {
+          "oneOf": [
+            { "type": "null" },
+            {
+              "type": "object",
+              "additionalProperties": false,
+              "required": ["origin", "messages"],
+              "properties": {
+                "origin": { "type": "string" },
+                "messages": {
+                  "type": "object",
+                  "propertyNames": { "minLength": 1 },
+                  "additionalProperties": { "$ref": "#/$defs/hookPayload" }
+                }
+              }
+            }
+          ]
+        },
+        "exportsConfirmedFor": { "type": ["string", "null"] }
+      }
+    },
+    "hookHandler": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["reads", "writes"],
+      "properties": {
+        "reads": { "type": "array", "items": { "type": "string", "minLength": 1 } },
+        "writes": { "type": "array", "items": { "type": "string", "minLength": 1 } },
+        "timeoutMs": { "type": "integer", "minimum": 1, "maximum": 5000 }
+      }
+    },
+    "hookRedirect": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["url", "params"],
+      "properties": {
+        "url": { "type": "string" },
+        "params": {
+          "type": "object",
+          "propertyNames": { "minLength": 1 },
+          "additionalProperties": {
+            "type": "object",
+            "additionalProperties": false,
+            "properties": { "pattern": { "type": "string" } }
+          }
+        }
+      }
+    },
+    "hookPayload": {
+      "description": "PayloadSchema: a closed JSON Schema subset for parent messages.",
+      "oneOf": [
+        {
+          "type": "object",
+          "additionalProperties": false,
+          "required": ["type"],
+          "properties": {
+            "type": { "const": "string" },
+            "maxLength": { "type": "integer", "minimum": 0 },
+            "pattern": { "type": "string" },
+            "enum": { "type": "array", "items": { "type": "string" } }
+          }
+        },
+        {
+          "type": "object",
+          "additionalProperties": false,
+          "required": ["type"],
+          "properties": {
+            "type": { "enum": ["number", "integer"] },
+            "minimum": { "type": "number" },
+            "maximum": { "type": "number" }
+          }
+        },
+        {
+          "type": "object",
+          "additionalProperties": false,
+          "required": ["type"],
+          "properties": { "type": { "enum": ["boolean", "null"] } }
+        },
+        {
+          "type": "object",
+          "additionalProperties": false,
+          "required": ["type", "properties"],
+          "properties": {
+            "type": { "const": "object" },
+            "properties": {
+              "type": "object",
+              "propertyNames": { "minLength": 1 },
+              "additionalProperties": { "$ref": "#/$defs/hookPayload" }
+            },
+            "required": { "type": "array", "items": { "type": "string", "minLength": 1 } }
+          }
+        },
+        {
+          "type": "object",
+          "additionalProperties": false,
+          "required": ["type", "items", "maxItems"],
+          "properties": {
+            "type": { "const": "array" },
+            "items": { "$ref": "#/$defs/hookPayload" },
+            "maxItems": { "type": "integer", "minimum": 0, "maximum": 1000 }
+          }
+        }
+      ]
+    },
     "id": { "type": "string", "pattern": "^[A-Za-z_][A-Za-z0-9_]*$" },
     "language": { "type": "string", "pattern": "^[A-Za-z]{2,3}(-[A-Za-z0-9]{1,8})*$" },
     "segment": {
@@ -278,8 +415,13 @@
         "choices": { "type": "array", "items": { "$ref": "#/$defs/choice" } },
         "choiceOrder": { "$ref": "#/$defs/order" },
         "min": { "$ref": "#/$defs/bound" },
-        "max": { "$ref": "#/$defs/bound" }
+        "max": { "$ref": "#/$defs/bound" },
+        "multiline": {
+          "const": true,
+          "description": "Long text: a multi-line input that keeps line breaks. Present only when set, and only on text items."
+        }
       },
+      "dependentSchemas": { "multiline": { "properties": { "type": { "const": "text" } } } },
       "if": { "properties": { "type": { "const": "note" } } },
       "then": {
         "not": {

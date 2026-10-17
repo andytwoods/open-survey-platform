@@ -84,6 +84,8 @@ export interface QuestionItem extends ItemBase {
 	/** Inclusive bounds for `integer` (integers) and `decimal` (integers or decimal text). */
 	min?: number | string;
 	max?: number | string;
+	/** `text` only: long text (a multi-line field that keeps line breaks, semantics §2). */
+	multiline?: boolean;
 }
 
 export type Item = NoteItem | QuestionItem;
@@ -231,6 +233,19 @@ export interface Plan {
 	variables: Record<Id, Variable>;
 	quotas: Record<Id, Quota>;
 	flow: FlowNode[];
+	/**
+	 * Researcher hooks declared at publish (runtime-design.md §7a): the `osp-hooks/1`
+	 * manifest (`web/hooks-sandbox` HookManifest). Opaque to the engine, but part of the plan
+	 * and so of its checksum. Absent when the survey runs no custom code.
+	 */
+	hooks?: PlanHooks;
+}
+
+export interface PlanHooks {
+	format: 'osp-hooks/1';
+	source: string;
+	handlers: Record<string, { reads: Id[]; writes: Id[]; timeoutMs?: number }>;
+	[key: string]: unknown;
 }
 
 export function isQuestion(item: Item): item is QuestionItem {

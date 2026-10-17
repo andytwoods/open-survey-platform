@@ -29,6 +29,7 @@ from osp_spec.model import (
     QuotaCheckNode,
     RandomiserNode,
     SingleQuestion,
+    TextQuestion,
 )
 from pydantic import BaseModel
 
@@ -600,6 +601,8 @@ class _Exporter:
                 row["parameters"] = f"randomize=true seed=${{{seed}}}"
         else:
             row["type"] = q.type
+            if isinstance(q, TextQuestion) and q.multiline:
+                row["appearance"] = "multiline"
         self._labelled(row, "label", q.label, ptr + "/label")
         self._labelled(row, "hint", q.help, ptr + "/help")
         if q.showIf is not None:

@@ -16,11 +16,16 @@
 		item: ViewItem;
 		lang: string;
 		revealed: boolean;
-		/** Text as typed (the engine stores it trimmed; the box must not jump while typing). */
+		/**
+		 * What was typed (the engine stores text trimmed and decimals canonical, `0.10` → `0.1`;
+		 * the box must not jump while typing, R6-2).
+		 */
 		draft: string | undefined;
+		/** Long text: a multi-line field that keeps line breaks (plan item `multiline`). */
+		multiline?: boolean;
 		onanswer: (id: string, value: unknown) => void;
 	};
-	let { item, lang, revealed, draft, onanswer }: Props = $props();
+	let { item, lang, revealed, draft, multiline = false, onanswer }: Props = $props();
 
 	const base = $derived({
 		id: domId(item.id),
@@ -35,11 +40,11 @@
 </script>
 
 {#if item.type === 'integer'}
-	<IntegerInput {...base} value={widgetValue(item) as string | null} onchange={set} />
+	<IntegerInput {...base} value={draft ?? (widgetValue(item) as string | null)} onchange={set} />
 {:else if item.type === 'decimal'}
-	<DecimalInput {...base} value={widgetValue(item) as string | null} onchange={set} />
+	<DecimalInput {...base} value={draft ?? (widgetValue(item) as string | null)} onchange={set} />
 {:else if item.type === 'text'}
-	<TextInput {...base} value={draft ?? (widgetValue(item) as string)} onchange={set} />
+	<TextInput {...base} {multiline} value={draft ?? (widgetValue(item) as string)} onchange={set} />
 {:else if item.type === 'single'}
 	<SingleChoice {...base} choices={choicesOf(item)} value={widgetValue(item) as string | null} onchange={set} />
 {:else if item.type === 'multi'}

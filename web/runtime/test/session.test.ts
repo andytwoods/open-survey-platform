@@ -132,7 +132,7 @@ describe('every-page saving', () => {
 		expect(server.only.revision).toBe(before + 1);
 		s.answer('age', '42');
 		s.blur();
-		await settle();
+		await settle(300); // the blur save waits a moment for a Next/Back that would replace it
 		expect(serverAnswers(server, p).age).toBeDefined();
 		expect(server.only.snapshot?.data.values.age).toBe(42);
 	});
