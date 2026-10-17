@@ -32,6 +32,8 @@ export interface AnswerFilter {
 export interface Split {
 	kind: 'question' | 'condition';
 	id: string;
+	/** Leave out responses with no group (kept from a saved layout; the bar does not set it). */
+	excludeMissing?: boolean;
 }
 
 export interface ResultsFilters {
@@ -139,8 +141,8 @@ export function toQuery(f: ResultsFilters, cards?: CardRequest[]): ResultsQuery 
 	if (f.split) {
 		q.split =
 			f.split.kind === 'question'
-				? { question: f.split.id, excludeMissing: false }
-				: { condition: f.split.id, excludeMissing: false };
+				? { question: f.split.id, excludeMissing: !!f.split.excludeMissing }
+				: { condition: f.split.id, excludeMissing: !!f.split.excludeMissing };
 	}
 	if (f.language) q.language = f.language;
 	if (cards) q.cards = cards;
@@ -263,23 +265,49 @@ export function isDateUnit(id: string | null | undefined): id is DateUnit {
 	return !!id && (DATE_UNITS as readonly string[]).includes(id);
 }
 
+/** A card's bins: a date card's period, or a numeric card's bin width or count. */
+export interface CardBins {
+	width?: number;
+	count?: number;
+	unit?: DateUnit;
+}
+
+/** The bins without empty fields and without the default period (month); null when none. */
+export function cleanBins(
+	b: { width?: number | null; count?: number | null; unit?: string | null } | null | undefined
+): CardBins | null {
+	if (!b) return null;
+	const out: CardBins = {};
+	if (typeof b.width === 'number' && Number.isFinite(b.width) && b.width > 0) out.width = b.width;
+	if (typeof b.count === 'number' && Number.isInteger(b.count) && b.count >= 1) out.count = b.count;
+	if (isDateUnit(b.unit) && b.unit !== 'month') out.unit = b.unit;
+	return Object.keys(out).length ? out : null;
+}
+
 /**
- * Per-card requests when a card's period changes what the server computes (a date card per
- * day / week / year): every card of the last response in order, with its bins. Undefined
- * when nothing differs from the defaults (the server then sends every question).
+ * Per-card requests when a card's bins change what the server computes (a date card per
+ * day / week / year; a bin width or count from a saved layout): every card of the last
+ * response in order, with its bins. Undefined when nothing differs from the defaults (the
+ * server then sends every question). A plain string is a date card's period.
  */
 export function cardRequests(
 	cards: readonly Pick<Card, 'question' | 'type'>[],
-	units: Readonly<Record<string, string>>
+	bins: Readonly<Record<string, string | CardBins>>
 ): CardRequest[] | undefined {
 	let custom = false;
 	const out = cards.map((c) => {
-		const unit = c.type === 'date' ? units[c.question] : undefined;
-		if (isDateUnit(unit) && unit !== 'month') {
-			custom = true;
-			return { question: c.question, bins: { unit } };
+		const raw = bins[c.question];
+		const b = cleanBins(typeof raw === 'string' ? { unit: raw } : raw);
+		const kept: CardBins = {};
+		if (c.type === 'date') {
+			if (b?.unit) kept.unit = b.unit;
+		} else if (c.type === 'integer' || c.type === 'decimal' || c.type === 'slider') {
+			if (b?.width) kept.width = b.width;
+			if (b?.count) kept.count = b.count;
 		}
-		return { question: c.question };
+		if (!Object.keys(kept).length) return { question: c.question };
+		custom = true;
+		return { question: c.question, bins: kept };
 	});
 	return custom ? out : undefined;
 }

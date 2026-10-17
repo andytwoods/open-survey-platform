@@ -19,7 +19,9 @@
 	let done = $state<string | null>(null);
 
 	const s = $derived(controller.exports);
-	const cards = $derived((controller.response?.cards ?? []).filter((c) => c.type !== 'note'));
+	const cards = $derived(
+		(controller.response?.cards ?? []).filter((c) => c.type !== 'note' && !controller.charts.hidden(c.question))
+	);
 	const small = $derived(open ? cards.reduce((n, c) => n + smallCells(suppressCard(c, s.k).card), 0) : 0);
 
 	async function run() {
