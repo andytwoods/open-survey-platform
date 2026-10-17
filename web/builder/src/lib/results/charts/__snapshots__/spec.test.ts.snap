@@ -97,6 +97,7 @@ exports[`every gallery chart > date-periods: compiles without warnings and match
     "values": [
       {
         "count": 4,
+        "countText": "4",
         "group": "all",
         "groupLabel": "All responses (n = 138)",
         "groupOrder": 0,
@@ -110,6 +111,7 @@ exports[`every gallery chart > date-periods: compiles without warnings and match
       },
       {
         "count": 11,
+        "countText": "11",
         "group": "all",
         "groupLabel": "All responses (n = 138)",
         "groupOrder": 0,
@@ -123,6 +125,7 @@ exports[`every gallery chart > date-periods: compiles without warnings and match
       },
       {
         "count": 19,
+        "countText": "19",
         "group": "all",
         "groupLabel": "All responses (n = 138)",
         "groupOrder": 0,
@@ -136,6 +139,7 @@ exports[`every gallery chart > date-periods: compiles without warnings and match
       },
       {
         "count": 26,
+        "countText": "26",
         "group": "all",
         "groupLabel": "All responses (n = 138)",
         "groupOrder": 0,
@@ -149,6 +153,7 @@ exports[`every gallery chart > date-periods: compiles without warnings and match
       },
       {
         "count": 22,
+        "countText": "22",
         "group": "all",
         "groupLabel": "All responses (n = 138)",
         "groupOrder": 0,
@@ -162,6 +167,7 @@ exports[`every gallery chart > date-periods: compiles without warnings and match
       },
       {
         "count": 17,
+        "countText": "17",
         "group": "all",
         "groupLabel": "All responses (n = 138)",
         "groupOrder": 0,
@@ -175,6 +181,7 @@ exports[`every gallery chart > date-periods: compiles without warnings and match
       },
       {
         "count": 30,
+        "countText": "30",
         "group": "all",
         "groupLabel": "All responses (n = 138)",
         "groupOrder": 0,
@@ -188,6 +195,7 @@ exports[`every gallery chart > date-periods: compiles without warnings and match
       },
       {
         "count": 9,
+        "countText": "9",
         "group": "all",
         "groupLabel": "All responses (n = 138)",
         "groupOrder": 0,
@@ -261,8 +269,8 @@ exports[`every gallery chart > date-periods: compiles without warnings and match
     {
       "encoding": {
         "text": {
-          "field": "count",
-          "type": "quantitative",
+          "field": "countText",
+          "type": "nominal",
         },
         "x": {
           "axis": {
@@ -900,6 +908,7 @@ exports[`every gallery chart > decimal-histogram: compiles without warnings and 
     "values": [
       {
         "count": 4,
+        "countText": "4",
         "group": "all",
         "groupLabel": "All responses (n = 108)",
         "groupOrder": 0,
@@ -913,6 +922,7 @@ exports[`every gallery chart > decimal-histogram: compiles without warnings and 
       },
       {
         "count": 19,
+        "countText": "19",
         "group": "all",
         "groupLabel": "All responses (n = 108)",
         "groupOrder": 0,
@@ -926,6 +936,7 @@ exports[`every gallery chart > decimal-histogram: compiles without warnings and 
       },
       {
         "count": 36,
+        "countText": "36",
         "group": "all",
         "groupLabel": "All responses (n = 108)",
         "groupOrder": 0,
@@ -939,6 +950,7 @@ exports[`every gallery chart > decimal-histogram: compiles without warnings and 
       },
       {
         "count": 28,
+        "countText": "28",
         "group": "all",
         "groupLabel": "All responses (n = 108)",
         "groupOrder": 0,
@@ -952,6 +964,7 @@ exports[`every gallery chart > decimal-histogram: compiles without warnings and 
       },
       {
         "count": 13,
+        "countText": "13",
         "group": "all",
         "groupLabel": "All responses (n = 108)",
         "groupOrder": 0,
@@ -965,6 +978,7 @@ exports[`every gallery chart > decimal-histogram: compiles without warnings and 
       },
       {
         "count": 6,
+        "countText": "6",
         "group": "all",
         "groupLabel": "All responses (n = 108)",
         "groupOrder": 0,
@@ -978,6 +992,7 @@ exports[`every gallery chart > decimal-histogram: compiles without warnings and 
       },
       {
         "count": 2,
+        "countText": "2",
         "group": "all",
         "groupLabel": "All responses (n = 108)",
         "groupOrder": 0,
@@ -3758,6 +3773,7 @@ exports[`every gallery chart > integer-histogram: compiles without warnings and 
     "values": [
       {
         "count": 6,
+        "countText": "6",
         "group": "all",
         "groupLabel": "All responses (n = 148)",
         "groupOrder": 0,
@@ -3771,6 +3787,7 @@ exports[`every gallery chart > integer-histogram: compiles without warnings and 
       },
       {
         "count": 22,
+        "countText": "22",
         "group": "all",
         "groupLabel": "All responses (n = 148)",
         "groupOrder": 0,
@@ -3784,6 +3801,7 @@ exports[`every gallery chart > integer-histogram: compiles without warnings and 
       },
       {
         "count": 31,
+        "countText": "31",
         "group": "all",
         "groupLabel": "All responses (n = 148)",
         "groupOrder": 0,
@@ -3797,6 +3815,7 @@ exports[`every gallery chart > integer-histogram: compiles without warnings and 
       },
       {
         "count": 27,
+        "countText": "27",
         "group": "all",
         "groupLabel": "All responses (n = 148)",
         "groupOrder": 0,
@@ -3810,6 +3829,7 @@ exports[`every gallery chart > integer-histogram: compiles without warnings and 
       },
       {
         "count": 19,
+        "countText": "19",
         "group": "all",
         "groupLabel": "All responses (n = 148)",
         "groupOrder": 0,
@@ -3823,6 +3843,7 @@ exports[`every gallery chart > integer-histogram: compiles without warnings and 
       },
       {
         "count": 14,
+        "countText": "14",
         "group": "all",
         "groupLabel": "All responses (n = 148)",
         "groupOrder": 0,
@@ -3836,6 +3857,7 @@ exports[`every gallery chart > integer-histogram: compiles without warnings and 
       },
       {
         "count": 11,
+        "countText": "11",
         "group": "all",
         "groupLabel": "All responses (n = 148)",
         "groupOrder": 0,
@@ -3849,6 +3871,7 @@ exports[`every gallery chart > integer-histogram: compiles without warnings and 
       },
       {
         "count": 8,
+        "countText": "8",
         "group": "all",
         "groupLabel": "All responses (n = 148)",
         "groupOrder": 0,
@@ -3862,6 +3885,7 @@ exports[`every gallery chart > integer-histogram: compiles without warnings and 
       },
       {
         "count": 6,
+        "countText": "6",
         "group": "all",
         "groupLabel": "All responses (n = 148)",
         "groupOrder": 0,
@@ -3875,6 +3899,7 @@ exports[`every gallery chart > integer-histogram: compiles without warnings and 
       },
       {
         "count": 3,
+        "countText": "3",
         "group": "all",
         "groupLabel": "All responses (n = 148)",
         "groupOrder": 0,
@@ -3888,6 +3913,7 @@ exports[`every gallery chart > integer-histogram: compiles without warnings and 
       },
       {
         "count": 1,
+        "countText": "1",
         "group": "all",
         "groupLabel": "All responses (n = 148)",
         "groupOrder": 0,
@@ -5469,6 +5495,7 @@ exports[`every gallery chart > integerSplit-histogram-multiples: compiles withou
     "values": [
       {
         "count": 3,
+        "countText": "3",
         "group": "1",
         "groupLabel": "Control (n = 76)",
         "groupOrder": 0,
@@ -5482,6 +5509,7 @@ exports[`every gallery chart > integerSplit-histogram-multiples: compiles withou
       },
       {
         "count": 12,
+        "countText": "12",
         "group": "1",
         "groupLabel": "Control (n = 76)",
         "groupOrder": 0,
@@ -5495,6 +5523,7 @@ exports[`every gallery chart > integerSplit-histogram-multiples: compiles withou
       },
       {
         "count": 17,
+        "countText": "17",
         "group": "1",
         "groupLabel": "Control (n = 76)",
         "groupOrder": 0,
@@ -5508,6 +5537,7 @@ exports[`every gallery chart > integerSplit-histogram-multiples: compiles withou
       },
       {
         "count": 13,
+        "countText": "13",
         "group": "1",
         "groupLabel": "Control (n = 76)",
         "groupOrder": 0,
@@ -5521,6 +5551,7 @@ exports[`every gallery chart > integerSplit-histogram-multiples: compiles withou
       },
       {
         "count": 10,
+        "countText": "10",
         "group": "1",
         "groupLabel": "Control (n = 76)",
         "groupOrder": 0,
@@ -5534,6 +5565,7 @@ exports[`every gallery chart > integerSplit-histogram-multiples: compiles withou
       },
       {
         "count": 7,
+        "countText": "7",
         "group": "1",
         "groupLabel": "Control (n = 76)",
         "groupOrder": 0,
@@ -5547,6 +5579,7 @@ exports[`every gallery chart > integerSplit-histogram-multiples: compiles withou
       },
       {
         "count": 6,
+        "countText": "6",
         "group": "1",
         "groupLabel": "Control (n = 76)",
         "groupOrder": 0,
@@ -5560,6 +5593,7 @@ exports[`every gallery chart > integerSplit-histogram-multiples: compiles withou
       },
       {
         "count": 4,
+        "countText": "4",
         "group": "1",
         "groupLabel": "Control (n = 76)",
         "groupOrder": 0,
@@ -5573,6 +5607,7 @@ exports[`every gallery chart > integerSplit-histogram-multiples: compiles withou
       },
       {
         "count": 3,
+        "countText": "3",
         "group": "1",
         "groupLabel": "Control (n = 76)",
         "groupOrder": 0,
@@ -5586,6 +5621,7 @@ exports[`every gallery chart > integerSplit-histogram-multiples: compiles withou
       },
       {
         "count": 1,
+        "countText": "1",
         "group": "1",
         "groupLabel": "Control (n = 76)",
         "groupOrder": 0,
@@ -5599,6 +5635,7 @@ exports[`every gallery chart > integerSplit-histogram-multiples: compiles withou
       },
       {
         "count": 0,
+        "countText": "0",
         "group": "1",
         "groupLabel": "Control (n = 76)",
         "groupOrder": 0,
@@ -5612,6 +5649,7 @@ exports[`every gallery chart > integerSplit-histogram-multiples: compiles withou
       },
       {
         "count": 3,
+        "countText": "3",
         "group": "2",
         "groupLabel": "Treatment (n = 72)",
         "groupOrder": 1,
@@ -5625,6 +5663,7 @@ exports[`every gallery chart > integerSplit-histogram-multiples: compiles withou
       },
       {
         "count": 10,
+        "countText": "10",
         "group": "2",
         "groupLabel": "Treatment (n = 72)",
         "groupOrder": 1,
@@ -5638,6 +5677,7 @@ exports[`every gallery chart > integerSplit-histogram-multiples: compiles withou
       },
       {
         "count": 14,
+        "countText": "14",
         "group": "2",
         "groupLabel": "Treatment (n = 72)",
         "groupOrder": 1,
@@ -5651,6 +5691,7 @@ exports[`every gallery chart > integerSplit-histogram-multiples: compiles withou
       },
       {
         "count": 14,
+        "countText": "14",
         "group": "2",
         "groupLabel": "Treatment (n = 72)",
         "groupOrder": 1,
@@ -5664,6 +5705,7 @@ exports[`every gallery chart > integerSplit-histogram-multiples: compiles withou
       },
       {
         "count": 9,
+        "countText": "9",
         "group": "2",
         "groupLabel": "Treatment (n = 72)",
         "groupOrder": 1,
@@ -5677,6 +5719,7 @@ exports[`every gallery chart > integerSplit-histogram-multiples: compiles withou
       },
       {
         "count": 7,
+        "countText": "7",
         "group": "2",
         "groupLabel": "Treatment (n = 72)",
         "groupOrder": 1,
@@ -5690,6 +5733,7 @@ exports[`every gallery chart > integerSplit-histogram-multiples: compiles withou
       },
       {
         "count": 5,
+        "countText": "5",
         "group": "2",
         "groupLabel": "Treatment (n = 72)",
         "groupOrder": 1,
@@ -5703,6 +5747,7 @@ exports[`every gallery chart > integerSplit-histogram-multiples: compiles withou
       },
       {
         "count": 4,
+        "countText": "4",
         "group": "2",
         "groupLabel": "Treatment (n = 72)",
         "groupOrder": 1,
@@ -5716,6 +5761,7 @@ exports[`every gallery chart > integerSplit-histogram-multiples: compiles withou
       },
       {
         "count": 3,
+        "countText": "3",
         "group": "2",
         "groupLabel": "Treatment (n = 72)",
         "groupOrder": 1,
@@ -5729,6 +5775,7 @@ exports[`every gallery chart > integerSplit-histogram-multiples: compiles withou
       },
       {
         "count": 2,
+        "countText": "2",
         "group": "2",
         "groupLabel": "Treatment (n = 72)",
         "groupOrder": 1,
@@ -5742,6 +5789,7 @@ exports[`every gallery chart > integerSplit-histogram-multiples: compiles withou
       },
       {
         "count": 1,
+        "countText": "1",
         "group": "2",
         "groupLabel": "Treatment (n = 72)",
         "groupOrder": 1,
@@ -20559,6 +20607,7 @@ exports[`every gallery chart > sliderBins-histogram: compiles without warnings a
     "values": [
       {
         "count": 3,
+        "countText": "3",
         "group": "all",
         "groupLabel": "All responses (n = 114)",
         "groupOrder": 0,
@@ -20572,6 +20621,7 @@ exports[`every gallery chart > sliderBins-histogram: compiles without warnings a
       },
       {
         "count": 5,
+        "countText": "5",
         "group": "all",
         "groupLabel": "All responses (n = 114)",
         "groupOrder": 0,
@@ -20585,6 +20635,7 @@ exports[`every gallery chart > sliderBins-histogram: compiles without warnings a
       },
       {
         "count": 9,
+        "countText": "9",
         "group": "all",
         "groupLabel": "All responses (n = 114)",
         "groupOrder": 0,
@@ -20598,6 +20649,7 @@ exports[`every gallery chart > sliderBins-histogram: compiles without warnings a
       },
       {
         "count": 12,
+        "countText": "12",
         "group": "all",
         "groupLabel": "All responses (n = 114)",
         "groupOrder": 0,
@@ -20611,6 +20663,7 @@ exports[`every gallery chart > sliderBins-histogram: compiles without warnings a
       },
       {
         "count": 18,
+        "countText": "18",
         "group": "all",
         "groupLabel": "All responses (n = 114)",
         "groupOrder": 0,
@@ -20624,6 +20677,7 @@ exports[`every gallery chart > sliderBins-histogram: compiles without warnings a
       },
       {
         "count": 22,
+        "countText": "22",
         "group": "all",
         "groupLabel": "All responses (n = 114)",
         "groupOrder": 0,
@@ -20637,6 +20691,7 @@ exports[`every gallery chart > sliderBins-histogram: compiles without warnings a
       },
       {
         "count": 19,
+        "countText": "19",
         "group": "all",
         "groupLabel": "All responses (n = 114)",
         "groupOrder": 0,
@@ -20650,6 +20705,7 @@ exports[`every gallery chart > sliderBins-histogram: compiles without warnings a
       },
       {
         "count": 14,
+        "countText": "14",
         "group": "all",
         "groupLabel": "All responses (n = 114)",
         "groupOrder": 0,
@@ -20663,6 +20719,7 @@ exports[`every gallery chart > sliderBins-histogram: compiles without warnings a
       },
       {
         "count": 8,
+        "countText": "8",
         "group": "all",
         "groupLabel": "All responses (n = 114)",
         "groupOrder": 0,
@@ -20676,6 +20733,7 @@ exports[`every gallery chart > sliderBins-histogram: compiles without warnings a
       },
       {
         "count": 4,
+        "countText": "4",
         "group": "all",
         "groupLabel": "All responses (n = 114)",
         "groupOrder": 0,
@@ -21384,6 +21442,7 @@ exports[`every gallery chart > sliderValues-values: compiles without warnings an
     "values": [
       {
         "count": 1,
+        "countText": "1",
         "group": "all",
         "groupLabel": "All responses (n = 123)",
         "groupOrder": 0,
@@ -21397,6 +21456,7 @@ exports[`every gallery chart > sliderValues-values: compiles without warnings an
       },
       {
         "count": 2,
+        "countText": "2",
         "group": "all",
         "groupLabel": "All responses (n = 123)",
         "groupOrder": 0,
@@ -21410,6 +21470,7 @@ exports[`every gallery chart > sliderValues-values: compiles without warnings an
       },
       {
         "count": 4,
+        "countText": "4",
         "group": "all",
         "groupLabel": "All responses (n = 123)",
         "groupOrder": 0,
@@ -21423,6 +21484,7 @@ exports[`every gallery chart > sliderValues-values: compiles without warnings an
       },
       {
         "count": 7,
+        "countText": "7",
         "group": "all",
         "groupLabel": "All responses (n = 123)",
         "groupOrder": 0,
@@ -21436,6 +21498,7 @@ exports[`every gallery chart > sliderValues-values: compiles without warnings an
       },
       {
         "count": 9,
+        "countText": "9",
         "group": "all",
         "groupLabel": "All responses (n = 123)",
         "groupOrder": 0,
@@ -21449,6 +21512,7 @@ exports[`every gallery chart > sliderValues-values: compiles without warnings an
       },
       {
         "count": 18,
+        "countText": "18",
         "group": "all",
         "groupLabel": "All responses (n = 123)",
         "groupOrder": 0,
@@ -21462,6 +21526,7 @@ exports[`every gallery chart > sliderValues-values: compiles without warnings an
       },
       {
         "count": 21,
+        "countText": "21",
         "group": "all",
         "groupLabel": "All responses (n = 123)",
         "groupOrder": 0,
@@ -21475,6 +21540,7 @@ exports[`every gallery chart > sliderValues-values: compiles without warnings an
       },
       {
         "count": 25,
+        "countText": "25",
         "group": "all",
         "groupLabel": "All responses (n = 123)",
         "groupOrder": 0,
@@ -21488,6 +21554,7 @@ exports[`every gallery chart > sliderValues-values: compiles without warnings an
       },
       {
         "count": 19,
+        "countText": "19",
         "group": "all",
         "groupLabel": "All responses (n = 123)",
         "groupOrder": 0,
@@ -21501,6 +21568,7 @@ exports[`every gallery chart > sliderValues-values: compiles without warnings an
       },
       {
         "count": 11,
+        "countText": "11",
         "group": "all",
         "groupLabel": "All responses (n = 123)",
         "groupOrder": 0,
@@ -21514,6 +21582,7 @@ exports[`every gallery chart > sliderValues-values: compiles without warnings an
       },
       {
         "count": 6,
+        "countText": "6",
         "group": "all",
         "groupLabel": "All responses (n = 123)",
         "groupOrder": 0,

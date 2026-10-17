@@ -19,7 +19,12 @@ const clone = <T,>(x: T): T => structuredClone(x);
 function stub(reply: (q: ResultsQuery) => ResultsResponse | Promise<Fetched<ResultsResponse>> = () => clone(fixture.plain) as unknown as ResultsResponse) {
 	const queries: ResultsQuery[] = [];
 	const texts: Record<string, unknown>[] = [];
+	const exports: Record<string, unknown>[] = [];
 	const source: ResultsSource = {
+		async recordExport(body) {
+			exports.push(clone(body));
+			return { ok: true, data: { recorded: true, queryHash: 'h', versions: [1], formats: body.formats } };
+		},
 		async query(body) {
 			queries.push(clone(body));
 			const r = await reply(body);
@@ -32,11 +37,11 @@ function stub(reply: (q: ResultsQuery) => ResultsResponse | Promise<Fetched<Resu
 			return { ok: true, data: page };
 		}
 	};
-	return { source, queries, texts };
+	return { source, queries, texts, exports };
 }
 
 async function setup(opts: { source?: ResultsSource; published?: number } = {}) {
-	const s = opts.source ? { source: opts.source, queries: [], texts: [] } : stub();
+	const s = opts.source ? { source: opts.source, queries: [], texts: [], exports: [] } : stub();
 	const t = render(ResultsView, {
 		surveyId: 's1',
 		survey: SURVEY,
@@ -117,7 +122,7 @@ describe('ResultsView', () => {
 		await setup();
 		const grid = cardOf('Grid');
 		expect(within(grid).getAllByRole('heading', { level: 4 }).map((h) => h.textContent)).toEqual(['Row one', 'Row two']);
-		expect((within(grid).getByRole('combobox', { name: 'Chart' }) as HTMLSelectElement).value).toBe('diverging');
+		expect((within(grid).getByRole('combobox', { name: 'Chart' }) as HTMLSelectElement).value).toBe('likert');
 		await fireEvent.click(within(grid).getByRole('button', { name: 'Table view' }));
 		const rowTable = within(grid).getByRole('table', { name: 'Grid, Row one' });
 		expect(within(rowTable).getByRole('row', { name: /n \(answered\)/ }).textContent).toContain('3');
@@ -127,19 +132,15 @@ describe('ResultsView', () => {
 		const { queries } = await setup();
 		const fruit = cardOf('Fruit?');
 		const menu = within(fruit).getByRole('combobox', { name: 'Chart' }) as HTMLSelectElement;
-		expect([...menu.options].map((o) => o.textContent)).toEqual([
-			'Horizontal bars (declared order)',
-			'Sorted bars',
-			'Donut',
-			'Table'
-		]);
+		expect([...menu.options].map((o) => o.textContent)).toEqual(['Bars', 'Sorted bars', 'Donut', 'Table']);
 		expect(fruit.querySelector('[data-chart]')?.getAttribute('data-chart')).toBe('bars');
 		await fireEvent.change(menu, { target: { value: 'donut' } });
 		expect(fruit.querySelector('[data-chart]')?.getAttribute('data-chart')).toBe('donut');
 		expect(queries).toHaveLength(1); // a choice-card chart is drawn from the same numbers
-		expect(within(cardOf('Why?')).queryByRole('combobox', { name: 'Chart' })).toBeNull();
+		const why = within(cardOf('Why?')).getByRole('combobox', { name: 'Chart' }) as HTMLSelectElement;
+		expect([...why.options].map((o) => o.textContent)).toEqual(['Response states', 'Table']);
 
-		const when = within(cardOf('When?')).getByRole('combobox', { name: 'Chart' });
+		const when = within(cardOf('When?')).getByRole('combobox', { name: 'Per' });
 		await fireEvent.change(when, { target: { value: 'week' } });
 		await waitFor(() => expect(queries).toHaveLength(2));
 		expect(queries[1].cards?.find((c) => c.question === 'when')).toEqual({ question: 'when', bins: { unit: 'week' } });

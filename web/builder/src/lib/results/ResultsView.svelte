@@ -1,8 +1,11 @@
 <script lang="ts">
 	import { Button, theme } from '@osp/ui-components';
 	import { onDestroy, onMount } from 'svelte';
+	import { readTokens } from './charts/theme';
+	import type { ThemeTokens } from './charts/types';
+	import ExportAll from './export/ExportAll.svelte';
 	import FilterBar from './FilterBar.svelte';
-	import { conditionVariables, describeFilters } from './model';
+	import { conditionVariables } from './model';
 	import ResultCard from './ResultCard.svelte';
 	import { apiSource, ResultsController, type ResultsSource } from './results.svelte';
 
@@ -30,15 +33,30 @@
 	const controller = new ResultsController(source ?? apiSource(surveyId), publishedVersions);
 	const conditions = $derived(conditionVariables(survey));
 	const response = $derived(controller.response);
-	const active = $derived(
-		describeFilters(controller.applied, {
-			choices: controller.choices,
-			versionsUsed: response?.versionsUsed,
-			splitLabel: response?.split?.label
-		})
-	);
+	const active = $derived(controller.activeFilters);
 	const slow = $derived(controller.loading && controller.elapsed >= 1);
-	const chartTheme = $derived(theme.resolved === 'dark' ? 'dark' : 'light');
+	/**
+	 * The app's design tokens, re-read when light/dark changes: chart palettes are baked into
+	 * the specs (V3), so every card rebuilds its spec from these.
+	 */
+	let tokens = $state<ThemeTokens>(readTokens());
+	$effect(() => {
+		void theme.resolved;
+		const reread = () => {
+			const next = readTokens();
+			if (JSON.stringify(next) !== JSON.stringify(tokens)) tokens = next;
+		};
+		reread();
+		// <html data-theme> or the media query can settle a frame later.
+		const mq = globalThis.matchMedia?.('(prefers-color-scheme: dark)');
+		mq?.addEventListener('change', reread);
+		const mo = new MutationObserver(reread);
+		mo.observe(document.documentElement, { attributes: true, attributeFilter: ['data-theme', 'class', 'style'] });
+		return () => {
+			mq?.removeEventListener('change', reread);
+			mo.disconnect();
+		};
+	});
 
 	let innerWidth = $state(1280);
 	const narrow = $derived(innerWidth < 720);
@@ -73,6 +91,7 @@
 				{#each active as a (a)}<li>{a}</li>{/each}
 			</ul>
 			{#if response}
+				<div class="export-all"><ExportAll {controller} /></div>
 				<p class="count" data-testid="results-count">
 					{`${response.responses} ${response.responses === 1 ? 'response' : 'responses'}`}{response.split
 						? ` · ${response.split.groups.map((g) => `${g.label}: ${g.responses}`).join(', ')}`
@@ -121,7 +140,7 @@
 				<ol class="cards" aria-label="Questions">
 					{#each response.cards as card (card.question)}
 						<li>
-							<ResultCard {card} {controller} theme={chartTheme} split={!!response.split} />
+							<ResultCard {card} {controller} {tokens} />
 						</li>
 					{/each}
 				</ol>
@@ -162,6 +181,9 @@
 		display: flex;
 		flex-direction: column;
 		gap: var(--space-1);
+	}
+	.export-all {
+		margin-top: var(--space-2);
 	}
 	.chips {
 		display: flex;

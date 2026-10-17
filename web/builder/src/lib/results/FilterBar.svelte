@@ -174,6 +174,8 @@
 			</label>
 		</fieldset>
 
+		<label class="check intervals"><input type="checkbox" bind:checked={draft.intervals} /> Show 95 % intervals</label>
+
 		{#if languages.length > 1}
 			<div class="field">
 				<label for={id('lang')}>Labels in</label>

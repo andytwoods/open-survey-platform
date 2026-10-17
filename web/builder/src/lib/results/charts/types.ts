@@ -12,6 +12,9 @@ export type StateCounts = components['schemas']['StateCounts'];
 export type Stats = components['schemas']['Stats'];
 export type CardType = Card['type'];
 
+/** A cell an export hid ("Hide counts below k"): count and share are not drawn. */
+export type HiddenCell = Cell & { hidden?: boolean };
+
 /** A chart that `buildSpec` can draw. */
 export type ChartChoice =
 	// single choice
@@ -73,6 +76,11 @@ export interface BuildOptions {
 	width?: number;
 	/** Accessible description (Vega sets it as the SVG's aria-label). */
 	description?: string;
+	/**
+	 * Label for a cell hidden by "Hide counts below k" (V-D4, export only): cells flagged
+	 * `hidden` (see `HiddenCell`) draw no count or share, only this label. Default "n<5".
+	 */
+	hiddenLabel?: string;
 }
 
 export interface ChartMenuEntry {

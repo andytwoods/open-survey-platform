@@ -5,7 +5,7 @@
 import type { TopLevelSpec } from 'vega-lite';
 import { chartsFor, isChart, splitsFor } from './menu';
 import { inkOn, likertPalette, LIGHT_TOKENS, luminance, textColors, themeConfig } from './theme';
-import type { BuildOptions, Card, Cell, ChartChoice, Group, MenuChoice, SplitLayout, StateCounts } from './types';
+import type { BuildOptions, Card, Cell, ChartChoice, Group, HiddenCell, MenuChoice, SplitLayout, StateCounts } from './types';
 
 export const VEGA_LITE_SCHEMA = 'https://vega.github.io/schema/vega-lite/v6.json';
 
@@ -32,7 +32,13 @@ function pctText(p: number | null): string {
 	return `${v > 0 && v < 1 ? '<1' : Math.round(v)}%`;
 }
 
-const share = (c: Cell): number | null => (c.pct === null || c.pct === undefined ? null : c.pct / 100);
+const share = (c: Cell): number | null => (isHidden(c) || c.pct === null || c.pct === undefined ? null : c.pct / 100);
+
+/** A cell an export hid ("Hide counts below k", V-D4): no count, no share, only a label. */
+const isHidden = (c: Cell): boolean => (c as HiddenCell).hidden === true;
+
+/** The label hidden cells draw (BuildOptions.hiddenLabel); set per buildSpec call. */
+let hiddenText = 'n<5';
 
 function denomWord(ctx: Ctx): string {
 	return ctx.opts.denominator === 'shown' ? 'shown' : 'answered';
@@ -118,20 +124,22 @@ function categoryData(card: Card, groups: Group[]): CategoryRows {
 	groups.forEach((g, gi) => {
 		for (const c of g.cells) {
 			const p = share(c);
+			const hid = isHidden(c);
 			const label = labelOf.get(c.key) ?? c.label;
 			data.push({
 				key: c.key,
 				label,
 				order: labels.indexOf(label),
-				count: c.count,
+				count: hid ? null : c.count,
 				p,
-				text: pctText(p),
-				countText: String(c.count),
+				text: hid ? hiddenText : pctText(p),
+				countText: hid ? hiddenText : String(c.count),
+				...(hid ? { hidden: true } : {}),
 				group: g.key,
 				groupLabel: groupLabel(g),
 				groupOrder: gi,
-				ciLo: c.ci ? c.ci[0] / 100 : null,
-				ciHi: c.ci ? c.ci[1] / 100 : null
+				ciLo: c.ci && !hid ? c.ci[0] / 100 : null,
+				ciHi: c.ci && !hid ? c.ci[1] / 100 : null
 			});
 		}
 	});
@@ -363,6 +371,7 @@ function matrixData(card: Card): MatrixRows {
 			if (ri === 0) groups.push(g.label);
 			for (const c of g.cells) {
 				const p = share(c);
+				const hid = isHidden(c);
 				data.push({
 					row: rowLabels[ri],
 					// Two axis lines (ROW_AXIS splits them): the statement, then its own n.
@@ -372,9 +381,10 @@ function matrixData(card: Card): MatrixRows {
 					key: c.key,
 					label: catOf.get(c.key) ?? c.label,
 					order: cats.indexOf(catOf.get(c.key) ?? c.label),
-					count: c.count,
+					count: hid ? null : c.count,
 					p,
-					text: pctText(p),
+					text: hid ? hiddenText : pctText(p),
+					...(hid ? { hidden: true } : {}),
 					group: g.key,
 					groupLabel: g.label,
 					groupOrder: gi
@@ -508,15 +518,18 @@ function numberData(card: Card, groups: Group[]): { data: Datum[]; groups: strin
 	groups.forEach((g, gi) => {
 		g.cells.forEach((c, ci) => {
 			const p = share(c);
+			const hid = isHidden(c);
 			data.push({
 				key: c.key,
 				label: c.label,
 				order: ci,
 				lo: c.lo ?? null,
 				hi: c.hi ?? null,
-				count: c.count,
+				count: hid ? null : c.count,
 				p,
-				text: pctText(p),
+				text: hid ? hiddenText : pctText(p),
+				countText: hid ? hiddenText : String(c.count),
+				...(hid ? { hidden: true } : {}),
 				group: g.key,
 				groupLabel: groupLabel(g),
 				groupOrder: gi
@@ -531,10 +544,7 @@ function histogram(ctx: Ctx): Spec {
 	const edges = ctx.card.binEdges ?? [];
 	if (!hasAnswers(groups) || edges.length < 2) return emptySpec(ctx, 'No answers to show.');
 	const { data, groups: gl } = numberData(ctx.card, groups);
-	const view: Spec = {
-		width: ctx.width,
-		height: 180,
-		data: { values: data },
+	const bars: Spec = {
 		mark: { type: 'bar', stroke: textColors(ctx.opts.theme, ctx.opts.tokens).bg, strokeWidth: 1 },
 		encoding: {
 			// Shared bin edges from V1, shown on the axis.
@@ -556,6 +566,17 @@ function histogram(ctx: Ctx): Spec {
 			]
 		}
 	};
+	const layers: Spec[] = [bars];
+	const anyHidden = data.some((d) => d.hidden);
+	if (anyHidden) {
+		// Hidden bins (export suppression) say so above the axis, unlike an empty bin.
+		layers.push({
+			transform: [{ filter: 'datum.hidden' }, { calculate: '(datum.lo + datum.hi) / 2', as: 'mid' }],
+			mark: { type: 'text', baseline: 'bottom', dy: -3, angle: 0 },
+			encoding: { x: { field: 'mid', type: 'quantitative' }, y: { datum: 0, type: 'quantitative' }, text: { field: 'text', type: 'nominal' } }
+		});
+	}
+	const view: Spec = { width: ctx.width, height: 180, data: { values: data }, ...(anyHidden ? { layer: layers } : bars) };
 	return groups.length > 1 ? multiples(data, view, gl, ctx) : view;
 }
 
@@ -601,7 +622,7 @@ function columnBars(ctx: Ctx, kind: 'values' | 'periods'): Spec {
 	if (!split && keys.length <= 24) {
 		layers.push({
 			mark: { type: 'text', baseline: 'bottom', dy: -3 },
-			encoding: { x, y: { field: measure, type: 'quantitative' }, text: { field: periods ? 'count' : 'text', type: periods ? 'quantitative' : 'nominal' } }
+			encoding: { x, y: { field: measure, type: 'quantitative' }, text: { field: periods ? 'countText' : 'text', type: 'nominal' } }
 		});
 	}
 	const view: Spec = { width: ctx.width, height: 180, data: { values: data }, layer: layers };
@@ -799,6 +820,7 @@ const FITS: Record<ChartChoice, Card['type'][]> = {
 export function buildSpec(card: Card, chartChoice: MenuChoice, opts: BuildOptions = {}): TopLevelSpec {
 	if (!isChart(chartChoice)) throw new Error(`"${chartChoice}" is not a chart`);
 	if (!FITS[chartChoice].includes(card.type)) throw new Error(`"${chartChoice}" does not fit a ${card.type} card`);
+	hiddenText = opts.hiddenLabel ?? 'n<5';
 	const resolved: Ctx['opts'] = {
 		...opts,
 		theme: opts.theme ?? 'app',
@@ -832,6 +854,7 @@ export function buildSpec(card: Card, chartChoice: MenuChoice, opts: BuildOption
 	} else {
 		body = view(ctx, chartChoice);
 	}
+	if (hasHidden(card)) showInvalidText(body);
 	const spec: Spec = {
 		$schema: VEGA_LITE_SCHEMA,
 		...(opts.description ? { description: opts.description } : {}),
@@ -840,6 +863,30 @@ export function buildSpec(card: Card, chartChoice: MenuChoice, opts: BuildOption
 		usermeta: { osp: { question: card.question, chart: chartChoice, split, theme: resolved.theme } }
 	};
 	return spec as unknown as TopLevelSpec;
+}
+
+function hasHidden(card: Card): boolean {
+	const units = [card, ...(card.facets ?? [])];
+	return units.some((u) =>
+		[...(u.groups ?? []), ...(u.rows ?? []).flatMap((r) => r.groups)].some((g) => g.cells.some(isHidden))
+	);
+}
+
+/**
+ * Hidden cells have no count or share (null): their text labels are placed as if zero
+ * (`invalid: 'show'`) so the label still appears; bars and points for them are not drawn.
+ */
+function showInvalidText(node: unknown): void {
+	if (Array.isArray(node)) {
+		node.forEach(showInvalidText);
+		return;
+	}
+	if (!node || typeof node !== 'object') return;
+	const o = node as Spec;
+	const mark = o.mark as Spec | string | undefined;
+	if (mark === 'text') o.mark = { type: 'text', invalid: 'show' };
+	else if (mark && typeof mark === 'object' && mark.type === 'text') mark.invalid = 'show';
+	for (const k of ['layer', 'spec', 'vconcat', 'hconcat', 'concat']) if (k in o) showInvalidText(o[k]);
 }
 
 /** Default chart for `card` (the first `chartsFor` entry), as a spec, or null for notes. */

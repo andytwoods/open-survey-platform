@@ -72,6 +72,8 @@ def results_export(
     scope: Any = "card",
     suppress_below: Any = None,
 ) -> dict[str, Any]:
+    # Access first (fail closed): a non-member learns nothing, not even about bad input.
+    builder._locate(actor, survey_id, Action.SURVEY_EXPORT)
     if scope not in SCOPES:
         raise InvalidRequest("scope must be card or page")
     if query is not None and not isinstance(query, Mapping):
@@ -80,7 +82,7 @@ def results_export(
     card_ids = _cards(cards)
     fmts = _formats(formats)
     k = _k(suppress_below)
-    loaded = load(builder, actor, survey_id, q.versions)  # 403 / 404 before anything else
+    loaded = load(builder, actor, survey_id, q.versions)
     numbers = [vi.number for vi in loaded.versions]
     norm = q.normalised(numbers)
     query_hash = hashlib.sha256(

@@ -22,6 +22,8 @@ export type CardRequest = S['CardRequest'];
 export type TextPage = S['TextPage'];
 export type TextItem = S['TextItem'];
 export type SplitInfo = S['SplitInfo'];
+export type ResultsExportRequest = S['ResultsExportRequest'];
+export type ResultsExportRecord = S['ResultsExportRecord'];
 
 /** What one table or chart shows: a card, one version facet of it, or one matrix row. */
 export interface ResultUnit {

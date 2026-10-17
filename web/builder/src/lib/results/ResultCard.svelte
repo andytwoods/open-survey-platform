@@ -1,37 +1,72 @@
 <script lang="ts">
-	import { cardSections, chartMenu, effectiveChart, stateRows, TYPE_NAMES } from './model';
+	import { buildSpec, CHART_LABELS, chartsFor, isChart, ResultsChart, splitsFor } from './charts';
+	import type { MenuChoice, SplitLayout, ThemeTokens } from './charts/types';
+	import ExportMenu from './export/ExportMenu.svelte';
+	import { cardSections, DATE_UNITS, stateRows, TYPE_NAMES } from './model';
 	import type { ResultsController } from './results.svelte';
-	import ResultsChartSlot from './ResultsChartSlot.svelte';
 	import ResultsTable from './ResultsTable.svelte';
-	import { chartSpec, type ResultsChartTheme } from './spec';
 	import StatsTable from './StatsTable.svelte';
 	import TextAnswers from './TextAnswers.svelte';
 	import type { Card, StateCounts } from './types';
 
 	/**
-	 * One question's results (task V2): its text and variable, warnings, response-state
-	 * counts, a chart menu that offers only charts that suit its type, the chart (or its
-	 * Table view), and statistics. Versions that do not combine show as per-version facets;
-	 * a grid shows one section per row (each row has its own n); text shows its answers.
+	 * One question's results (tasks V2, V4): its text and variable, warnings, response-state
+	 * counts, a chart menu with the charts that suit its type (`chartsFor`, the one source of
+	 * truth), split layout and date period where they apply, the Vega-Lite chart (or its
+	 * Table view), statistics and the Export menu. Versions that do not combine show as
+	 * per-version facets; a grid has one chart for all rows and one table per row.
 	 */
 	let {
 		card,
 		controller,
-		theme,
-		split
-	}: { card: Card; controller: ResultsController; theme: ResultsChartTheme; split: boolean } = $props();
+		tokens
+	}: {
+		card: Card;
+		controller: ResultsController;
+		/** The app's light/dark design tokens: palettes are baked into specs, so a change rebuilds. */
+		tokens: ThemeTokens;
+	} = $props();
+
+	const LAYOUT_LABELS: Record<SplitLayout, string> = {
+		grouped: 'Grouped bars',
+		stacked: '100 % stacked bars',
+		multiples: 'Small multiples'
+	};
+	const UNIT_LABELS: Record<string, string> = { month: 'Month', day: 'Day', week: 'Week', year: 'Year' };
 
 	const uid = $props.id();
 	const denominator = $derived(controller.response?.denominator ?? controller.applied.denominator);
-	const menu = $derived(chartMenu(card, split));
-	const chart = $derived(effectiveChart(menu, controller.charts.get(card.question)));
-	const chartLabel = $derived(menu.find((o) => o.id === chart)?.label ?? '');
+	const intervals = $derived(controller.applied.intervals);
+	const offered = $derived(chartsFor(card));
+	const menu = $derived(offered.choices);
+	const chosen = $derived(controller.charts.get(card.question));
+	const chart = $derived<MenuChoice>(chosen && menu.some((o) => o.id === chosen) ? chosen : offered.default);
+	const layouts = $derived(isChart(chart) ? splitsFor(card, chart) : []);
+	const layout = $derived.by(() => {
+		const l = controller.charts.layout(card.question);
+		return l && layouts.includes(l) ? l : layouts[0];
+	});
 	const view = $derived(controller.charts.view(card.question));
 	const facets = $derived(cardSections(card));
 	const showTable = $derived(view === 'table' || chart === 'table');
+	const title = $derived(card.label || card.name);
 	const versions = $derived(
 		`${card.versionsUsed.length === 1 ? 'Version' : 'Versions'} ${card.versionsUsed.join(', ')}`
 	);
+	const description = $derived(
+		isChart(chart)
+			? `${CHART_LABELS[chart]}${layout && layouts.length > 1 ? `, ${LAYOUT_LABELS[layout].toLowerCase()}` : ''} of ${title}. The Table view has the exact numbers.`
+			: ''
+	);
+	const spec = $derived.by(() => {
+		if (showTable || !isChart(chart) || card.type === 'note') return null;
+		try {
+			// A plain copy: Vega clones the spec, and $state proxies cannot be cloned.
+			return buildSpec($state.snapshot(card) as Card, chart, { theme: 'app', tokens, split: layout, intervals, denominator, description });
+		} catch {
+			return null;
+		}
+	});
 </script>
 
 {#snippet states(s: StateCounts, label: string)}
@@ -47,7 +82,7 @@
 
 <article class="result-card" id="result-{card.question}" aria-labelledby="{uid}-h" data-type={card.type}>
 	<header>
-		<h3 id="{uid}-h">{card.label || card.name}</h3>
+		<h3 id="{uid}-h">{title}</h3>
 		<p class="meta">
 			<code>{card.name}</code>
 			<span>{TYPE_NAMES[card.type]}</span>
@@ -67,17 +102,43 @@
 		{@render states(card.states, `Response states for ${card.label || card.name}`)}
 	{/if}
 
-	{#if menu.length}
-		<div class="controls">
+	<div class="controls">
+		{#if menu.length > 1}
 			<label class="field">
 				<span>Chart</span>
 				<select
 					value={chart}
-					onchange={(e) => controller.chooseChart(card.question, (e.currentTarget as HTMLSelectElement).value)}
+					onchange={(e) =>
+						controller.chooseChart(card.question, (e.currentTarget as HTMLSelectElement).value as MenuChoice)}
 				>
 					{#each menu as o (o.id)}<option value={o.id}>{o.label}</option>{/each}
 				</select>
 			</label>
+		{/if}
+		{#if layouts.length > 1 && !showTable}
+			<label class="field">
+				<span>Groups</span>
+				<select
+					value={layout}
+					onchange={(e) =>
+						controller.charts.setLayout(card.question, (e.currentTarget as HTMLSelectElement).value as SplitLayout)}
+				>
+					{#each layouts as l (l)}<option value={l}>{LAYOUT_LABELS[l]}</option>{/each}
+				</select>
+			</label>
+		{/if}
+		{#if offered.binUnits}
+			<label class="field">
+				<span>Per</span>
+				<select
+					value={controller.charts.unit(card.question)}
+					onchange={(e) => controller.chooseUnit(card.question, (e.currentTarget as HTMLSelectElement).value)}
+				>
+					{#each DATE_UNITS as u (u)}<option value={u}>{UNIT_LABELS[u]}</option>{/each}
+				</select>
+			</label>
+		{/if}
+		{#if card.type !== 'text' && chart !== 'table'}
 			<div class="views" role="group" aria-label="Show as">
 				<button
 					type="button"
@@ -90,6 +151,13 @@
 					onclick={() => controller.charts.setView(card.question, 'table')}>Table view</button
 				>
 			</div>
+		{/if}
+		<div class="export"><ExportMenu {card} {controller} /></div>
+	</div>
+
+	{#if spec}
+		<div class="chart" data-chart={chart} data-layout={layouts.length ? layout : undefined}>
+			<ResultsChart {spec} theme="app" {title} {description} />
 		</div>
 	{/if}
 
@@ -105,23 +173,8 @@
 					{#if s.states && (s.heading || f.facet !== null)}
 						{@render states(s.states, `Response states for ${name}`)}
 					{/if}
-					{#if card.type !== 'text'}
-						{#if showTable || !chart}
-							<ResultsTable unit={s.unit} type={card.type} {denominator} caption={name} />
-						{:else}
-							<ResultsChartSlot
-								{theme}
-								spec={chartSpec({
-									question: card.question,
-									label: name,
-									type: card.type,
-									chart,
-									chartLabel,
-									denominator,
-									unit: s.unit
-								})}
-							/>
-						{/if}
+					{#if card.type !== 'text' && (showTable || !spec)}
+						<ResultsTable unit={s.unit} type={card.type} {denominator} caption={name} />
 					{/if}
 					<StatsTable groups={s.unit.groups} categories={s.unit.categories} caption={name} />
 				</section>
@@ -257,6 +310,12 @@
 		background: var(--color-surface-raised);
 		color: var(--color-text);
 		font-weight: var(--weight-bold);
+	}
+	.export {
+		margin-inline-start: auto;
+	}
+	.chart {
+		min-width: 0;
 	}
 	select:focus-visible,
 	.views button:focus-visible {
