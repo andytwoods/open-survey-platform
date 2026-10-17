@@ -28,6 +28,7 @@ from .model import (
     EmbeddedVariable,
     Ending,
     EndNode,
+    EndRedirect,
     FlowNode,
     Hooks,
     Identifier,
@@ -48,6 +49,8 @@ from .model import (
     QuotaCheckNode,
     QuotaFull,
     RandomiserNode,
+    RedirectParam,
+    RedirectTemplate,
     Settings,
     SingleQuestion,
     SliderQuestion,
@@ -62,7 +65,14 @@ from .model import (
 )
 from .reserved import RESERVED_NAMES
 from .schema import json_schema
-from .validate import BUILTIN_PIPES, parse, publish_diagnostics, validate
+from .validate import (
+    BUILTIN_PIPES,
+    ENDING_PIPES,
+    parse,
+    publish_diagnostics,
+    redirect_templates,
+    validate,
+)
 
 __all__ = [
     "CODES",
@@ -90,6 +100,7 @@ __all__ = [
     "Diagnostic",
     "EmbeddedVariable",
     "EndNode",
+    "EndRedirect",
     "Ending",
     "Expression",
     "FlowNode",
@@ -111,6 +122,8 @@ __all__ = [
     "QuotaCheckNode",
     "QuotaFull",
     "RandomiserNode",
+    "RedirectParam",
+    "RedirectTemplate",
     "Settings",
     "SingleQuestion",
     "SliderQuestion",
@@ -126,6 +139,8 @@ __all__ = [
     "json_schema",
     "parse",
     "publish_diagnostics",
+    "redirect_templates",
     "BUILTIN_PIPES",
+    "ENDING_PIPES",
     "validate",
 ]

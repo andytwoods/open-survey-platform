@@ -1351,14 +1351,76 @@
       "title": "EndNode",
       "type": "object"
     },
+    "EndRedirect": {
+      "additionalProperties": false,
+      "description": "Where an ending sends the participant after the submit is acknowledged (end-of-survey\nplan §4.2, task EN2; lead decision 2: `auto` after 5 s with a countdown, 0 allowed).\n\n- `template`: a key of `settings.redirectTemplates` (or `hooks.redirects`).\n- `params`: one entry per placeholder: a literal or a piped `${…}` value. The filled\n  value must match the template's pattern, else no redirect is followed or shown.\n  A param that pipes a *question* sends an answer to a third party: a data export, as\n  for hooks (owner-confirmed, in the codebook, audited; `redirect.param_question`).\n- `delay`: seconds before the automatic navigation; `0` navigates as soon as the submit\n  is acknowledged, with no screen in between.\n- `mode`: `auto` (countdown, then navigate; \"Stay on this page\" cancels) or `link` (no\n  automatic navigation: the participant clicks the button).\n- `label`: the button text; None: the app's own \"Continue to {host}\".",
+      "properties": {
+        "delay": {
+          "default": 5,
+          "maximum": 60,
+          "minimum": 0,
+          "title": "Delay",
+          "type": "integer"
+        },
+        "label": {
+          "anyOf": [
+            {
+              "$ref": "#/$defs/Text"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null
+        },
+        "mode": {
+          "default": "auto",
+          "enum": [
+            "auto",
+            "link"
+          ],
+          "title": "Mode",
+          "type": "string"
+        },
+        "params": {
+          "additionalProperties": {
+            "$ref": "#/$defs/RedirectValue"
+          },
+          "propertyNames": {
+            "$ref": "#/$defs/Name"
+          },
+          "title": "Params",
+          "type": "object"
+        },
+        "template": {
+          "$ref": "#/$defs/Name"
+        }
+      },
+      "required": [
+        "template"
+      ],
+      "title": "EndRedirect",
+      "type": "object"
+    },
     "Ending": {
       "additionalProperties": false,
-      "description": "What the participant sees when the session ends with one outcome (end-of-survey plan\n§4.1, task EN1). `settings.endings` maps an outcome identifier (an end node's `outcome`,\na quota's `onFull.outcome`, the consent `declineOutcome`, the built-ins `complete` and\n`hook-failed`) to its ending, so the screen, the data and the exports agree.\n\n- `title`: the heading; None: the app's own translated \"Thank you\".\n- `body`: the text under it, with piping (`${id}`, variables, built-ins) as on pages\n  (semantics.md §8). Rendered as text, never as HTML. An end node's own `message` is\n  shown above it.\n- `status`: `auto` shows the app's own truthful line (\"Your answers have been sent.\" when\n  a response was recorded, \"Nothing was recorded.\" for a decline); `none` hides it for a\n  recorded response. Researcher text never replaces it; a decline always shows it.\n- `summary`: reserved for showing the participant's answers (task EN5); `none` today.",
+      "description": "What the participant sees when the session ends with one outcome (end-of-survey plan\n§4.1, task EN1). `settings.endings` maps an outcome identifier (an end node's `outcome`,\na quota's `onFull.outcome`, the consent `declineOutcome`, the built-ins `complete` and\n`hook-failed`) to its ending, so the screen, the data and the exports agree.\n\n- `title`: the heading; None: the app's own translated \"Thank you\".\n- `body`: the text under it, with piping (`${id}`, variables, built-ins) as on pages\n  (semantics.md §8). Rendered as text, never as HTML. An end node's own `message` is\n  shown above it.\n- `status`: `auto` shows the app's own truthful line (\"Your answers have been sent.\" when\n  a response was recorded, \"Nothing was recorded.\" for a decline); `none` hides it for a\n  recorded response. Researcher text never replaces it; a decline always shows it.\n- `summary`: reserved for showing the participant's answers (task EN5); `none` today.\n- `redirect`: where to send the participant afterwards (task EN2), or None.",
       "properties": {
         "body": {
           "anyOf": [
             {
               "$ref": "#/$defs/Text"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null
+        },
+        "redirect": {
+          "anyOf": [
+            {
+              "$ref": "#/$defs/EndRedirect"
             },
             {
               "type": "null"
@@ -1762,51 +1824,6 @@
         }
       ]
     },
-    "HookRedirect": {
-      "additionalProperties": false,
-      "description": "An end-of-survey redirect template: an https URL with ``{name}`` placeholders after\nthe origin, each declared in ``params``.",
-      "properties": {
-        "params": {
-          "additionalProperties": {
-            "$ref": "#/$defs/HookRedirectParam"
-          },
-          "propertyNames": {
-            "$ref": "#/$defs/Name"
-          },
-          "title": "Params",
-          "type": "object"
-        },
-        "url": {
-          "title": "Url",
-          "type": "string"
-        }
-      },
-      "required": [
-        "url",
-        "params"
-      ],
-      "title": "HookRedirect",
-      "type": "object"
-    },
-    "HookRedirectParam": {
-      "additionalProperties": false,
-      "properties": {
-        "pattern": {
-          "anyOf": [
-            {
-              "type": "string"
-            },
-            {
-              "type": "null"
-            }
-          ],
-          "default": null,
-          "title": "Pattern"
-        }
-      },
-      "title": "HookRedirectParam",
-      "type": "object"
-    },
     "HookStringSchema": {
       "additionalProperties": false,
       "properties": {
@@ -1908,7 +1925,7 @@
           "anyOf": [
             {
               "additionalProperties": {
-                "$ref": "#/$defs/HookRedirect"
+                "$ref": "#/$defs/RedirectTemplate"
               },
               "propertyNames": {
                 "$ref": "#/$defs/Name"
@@ -3437,6 +3454,55 @@
       "title": "RandomiserNode",
       "type": "object"
     },
+    "RedirectParam": {
+      "additionalProperties": false,
+      "properties": {
+        "pattern": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Pattern"
+        }
+      },
+      "title": "RedirectParam",
+      "type": "object"
+    },
+    "RedirectTemplate": {
+      "additionalProperties": false,
+      "description": "An end-of-survey redirect template (runtime-design.md §7a; end-of-survey plan §4.2):\nan https URL with `{name}` placeholders after the origin, each declared in `params`.\nDeclared in `settings.redirectTemplates` (task EN2) or, as before, in `hooks.redirects`;\nendings and hook code may use either. A value can never change where the URL goes:\nplaceholders are refused in the origin and every value is pattern-checked and encoded.",
+      "properties": {
+        "params": {
+          "additionalProperties": {
+            "$ref": "#/$defs/RedirectParam"
+          },
+          "propertyNames": {
+            "$ref": "#/$defs/Name"
+          },
+          "title": "Params",
+          "type": "object"
+        },
+        "url": {
+          "title": "Url",
+          "type": "string"
+        }
+      },
+      "required": [
+        "url",
+        "params"
+      ],
+      "title": "RedirectTemplate",
+      "type": "object"
+    },
+    "RedirectValue": {
+      "maxLength": 256,
+      "type": "string"
+    },
     "Ref": {
       "additionalProperties": false,
       "description": "Reference to a question (or recorded variable) by id. Not-reached or\nirrelevant questions evaluate to null (§3).",
@@ -3529,6 +3595,16 @@
           ],
           "title": "Localcopy",
           "type": "string"
+        },
+        "redirectTemplates": {
+          "additionalProperties": {
+            "$ref": "#/$defs/RedirectTemplate"
+          },
+          "propertyNames": {
+            "$ref": "#/$defs/Name"
+          },
+          "title": "Redirecttemplates",
+          "type": "object"
         },
         "resumeExpiryDays": {
           "default": 30,

@@ -30,13 +30,12 @@ from pydantic import (
     StrictFloat,
     StrictInt,
     StrictStr,
-    StringConstraints,
     field_validator,
     model_validator,
 )
 
 from .diagnostics import pointer
-from .model import Identifier, Model
+from .model import Identifier, Model, Name, RedirectParam, RedirectTemplate
 
 HOOKS_FORMAT = "osp-hooks/1"
 type HookEvent = Literal[
@@ -60,7 +59,10 @@ MAX_HOOK_SOURCE_BYTES = 256 * 1024
 MAX_PAYLOAD_DEPTH = 4
 DEFAULT_PARAM_PATTERN = "[A-Za-z0-9_-]{1,64}"
 
-type Name = Annotated[str, StringConstraints(min_length=1, max_length=256)]
+# The redirect template shape lives in model.py since EN2 (`settings.redirectTemplates`
+# declares the same templates); the old names stay for callers.
+HookRedirectParam = RedirectParam
+HookRedirect = RedirectTemplate
 
 
 # --- Model ------------------------------------------------------------------------------
@@ -73,19 +75,6 @@ class HookHandler(Model):
     reads: list[Identifier]
     writes: list[Identifier]
     timeoutMs: StrictInt | None = Field(default=None, ge=1, le=MAX_HOOK_TIMEOUT_MS)
-
-
-class HookRedirectParam(Model):
-    # The value must match it in full. Default: DEFAULT_PARAM_PATTERN.
-    pattern: StrictStr | None = None
-
-
-class HookRedirect(Model):
-    """An end-of-survey redirect template: an https URL with ``{name}`` placeholders after
-    the origin, each declared in ``params``."""
-
-    url: StrictStr
-    params: dict[Name, HookRedirectParam]
 
 
 class HookStringSchema(Model):
@@ -165,7 +154,7 @@ class Hooks(Model):
     source: StrictStr  # the script; it registers handlers with `osp.on(event, fn)`
     handlers: dict[HookEvent, HookHandler]
     urlParams: list[Name] | None = None  # URL parameters `onStart` may see
-    redirects: dict[Name, HookRedirect] | None = None
+    redirects: dict[Name, RedirectTemplate] | None = None
     parent: HookParent | None = None
     # Checksum of `source` an owner confirmed for data exports (redirects, parent messages).
     exportsConfirmedFor: StrictStr | None = None
@@ -222,7 +211,16 @@ def origin_ok(origin: str) -> bool:
     return scheme == "https" or host in _LOCAL_HOSTS
 
 
-def redirect_problem(t: HookRedirect) -> str | None:
+def template_origin(url: str) -> str | None:
+    """The origin of a (well-formed) https redirect template, ``https://host[:port]``."""
+    m = _HTTPS_URL.match(_PLACEHOLDER.sub("x", url))
+    if not m:
+        return None
+    host, port, _path = m.groups()
+    return f"https://{host.lower()}" + (f":{port}" if port and port != "443" else "")
+
+
+def redirect_problem(t: RedirectTemplate) -> str | None:
     """Why a redirect template is refused, or None. As ``checkTemplate`` in manifest.ts."""
     names = placeholders(t.url)
     if len(set(names)) != len(names):
@@ -233,11 +231,9 @@ def redirect_problem(t: HookRedirect) -> str | None:
         if not _pattern_ok(t.params[n].pattern):
             return f"bad pattern for {n}"
     filled = _PLACEHOLDER.sub("x", t.url)
-    m = _HTTPS_URL.match(filled)
-    if not m:
+    origin = template_origin(t.url)
+    if origin is None:
         return "not https" if re.match(r"^[A-Za-z][A-Za-z0-9+.-]*://", filled) else "not a URL"
-    host, port, _path = m.groups()
-    origin = f"https://{host.lower()}" + (f":{port}" if port and port != "443" else "")
     # Placeholders only after the origin: a value can never change where the URL goes.
     first = t.url.find("{")
     if 0 <= first < len(origin) + 1:
@@ -319,4 +315,5 @@ __all__ = [
     "origin_ok",
     "placeholders",
     "redirect_problem",
+    "template_origin",
 ]

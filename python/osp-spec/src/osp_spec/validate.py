@@ -40,7 +40,7 @@ from pydantic import ValidationError
 
 from . import expr as ex
 from .diagnostics import Diagnostic, make, pointer
-from .hooks import check_hooks
+from .hooks import DEFAULT_PARAM_PATTERN, _pattern_ok, check_hooks, placeholders, redirect_problem
 from .model import (
     SPEC_VERSION,
     AssignedVariable,
@@ -52,6 +52,7 @@ from .model import (
     DecimalQuestion,
     EmbeddedVariable,
     EndNode,
+    EndRedirect,
     FlowNode,
     IntegerQuestion,
     MatrixQuestion,
@@ -60,6 +61,7 @@ from .model import (
     Question,
     QuotaCheckNode,
     RandomiserNode,
+    RedirectTemplate,
     SingleQuestion,
     SliderQuestion,
     Survey,
@@ -81,6 +83,10 @@ _PIPE = re.compile(r"\$\{([^}]*)\}")
 BUILTIN_PIPES = frozenset(
     {"$trial", "$position.index", "$position.of", "$pagesDone", "$language", "$device"}
 )
+# Built-ins known only once the session has ended (end-of-survey plan §4.2, EN2): usable in
+# endings (title, body, redirect params) and by hooks, nowhere else. `$response.id` is the
+# pseudonymous response id the server assigns at submit (empty after a decline).
+ENDING_PIPES = frozenset({"$response.id", "$session.id", "$outcome"})
 
 # A path element: (kind, node id, arm). kind is "branch" | "randomiser" | "quota".
 PathElem = tuple[str, str, int]
@@ -237,6 +243,7 @@ class _Checker:
         self._quotas_static()
         self._flow()
         self._unplaced()
+        self._redirect_templates()
         self._endings()  # after the flow walk: its pipes sit after every question
         self._computed_cycles()
         self._references()
@@ -392,7 +399,14 @@ class _Checker:
 
     # -- text and piping ------------------------------------------------------------
 
-    def _text(self, text: Text, ptr: str, site: _Site | None) -> None:
+    def _text(
+        self,
+        text: Text,
+        ptr: str,
+        site: _Site | None,
+        builtins: frozenset[str] = BUILTIN_PIPES,
+    ) -> list[str]:
+        """Check a translatable text's languages and pipes; returns the ids it pipes."""
         langs = self.s.metadata.languages
         strings: list[tuple[str, str]]
         if isinstance(text, str):
@@ -409,13 +423,14 @@ class _Checker:
             missing = [lang for lang in langs if lang not in text]
             if missing:
                 self.emit("text.missing_translation", ptr, f"no text for: {', '.join(missing)}")
+        piped: list[str] = []
         for s, sp in strings:
             refs: list[str] = []
             for m in _PIPE.finditer(s):
                 inner = m.group(1).strip()
                 if _IDENT.match(inner):
                     refs.append(inner)
-                elif inner in BUILTIN_PIPES:
+                elif inner in builtins:
                     continue  # filled by the engine; always available
                 else:
                     self.emit("pipe.invalid", sp, f"'${{{m.group(1)}}}' is not a valid reference")
@@ -424,6 +439,8 @@ class _Checker:
                 self.sites.append(
                     _Site(sp, refs, base.pos, base.path, base.self_id, False, base.page)
                 )
+                piped.extend(refs)
+        return piped
 
     # -- choices --------------------------------------------------------------------
 
@@ -1079,6 +1096,8 @@ def _endings(self: _Checker) -> None:
         return
     reached = reached_outcomes(self.s)
     declined = self.s.consent.declineOutcome if self.s.consent is not None else "declined"
+    templates = redirect_templates(self.s)
+    pipes = BUILTIN_PIPES | ENDING_PIPES
     for outcome, ending in endings.items():
         ptr = pointer("settings", "endings", outcome)
         if outcome not in reached:
@@ -1088,10 +1107,15 @@ def _endings(self: _Checker) -> None:
                 f"no end node, quota or consent decline ends with '{outcome}', "
                 "so this ending is never shown",
             )
-        for key in ("title", "body"):
-            text = getattr(ending, key)
+        site = _Site(ptr, [], self.counter, ())
+        texts = [(key, getattr(ending, key)) for key in ("title", "body")]
+        if ending.redirect is not None:
+            texts.append(("redirect/label", ending.redirect.label))
+        for key, text in texts:
             if text is not None:
-                self._text(text, ptr + "/" + key, _Site(ptr, [], self.counter, ()))
+                self._text(text, ptr + "/" + key, site, pipes)
+        if ending.redirect is not None:
+            self._redirect(ending.redirect, ptr + "/redirect", templates, outcome == declined)
         if ending.summary == "answers":
             if outcome == declined:
                 self.emit(
@@ -1105,6 +1129,97 @@ def _endings(self: _Checker) -> None:
                     ptr + "/summary",
                     "showing the participant's answers is not available yet; it is ignored",
                 )
+
+
+def redirect_templates(survey: Survey) -> dict[str, RedirectTemplate]:
+    """Every redirect template an ending or a hook may name: `settings.redirectTemplates`
+    and `hooks.redirects` (end-of-survey plan §4.2: one map, two places to declare it)."""
+    out = dict(survey.hooks.redirects or {}) if survey.hooks is not None else {}
+    out.update(survey.settings.redirectTemplates)
+    return out
+
+
+def _redirect_templates(self: _Checker) -> None:
+    """`settings.redirectTemplates` follow the hook host's URL rules (`redirect_problem`, one
+    validator for both places) and may not reuse a name `hooks.redirects` declares."""
+    hook_names = set(self.s.hooks.redirects or {}) if self.s.hooks is not None else set()
+    for name, t in self.s.settings.redirectTemplates.items():
+        ptr = pointer("settings", "redirectTemplates", name)
+        if (why := redirect_problem(t)) is not None:
+            self.emit("redirect.template", ptr, f"redirect template: {why}")
+        if name in hook_names:
+            self.emit(
+                "redirect.template_clash",
+                ptr,
+                f"'{name}' is also declared in hooks.redirects; a template has one home",
+            )
+
+
+def _redirect(
+    self: _Checker,
+    r: EndRedirect,
+    ptr: str,
+    templates: dict[str, RedirectTemplate],
+    declined: bool,
+) -> None:
+    """One ending's redirect (end-of-survey plan §4.2): a declared template, exactly its
+    placeholders as params, each a literal that can pass its pattern or a piped value
+    (checked as ending text); a piped question is flagged as a data export."""
+    t = templates.get(r.template)
+    if t is None:
+        self.emit(
+            "redirect.unknown_template",
+            ptr + "/template",
+            f"no redirect template '{r.template}' in settings.redirectTemplates "
+            "(or hooks.redirects)",
+        )
+        return
+    names = placeholders(t.url)
+    if sorted(r.params) != sorted(names):
+        want = ", ".join(names) or "none"
+        self.emit(
+            "redirect.params",
+            ptr + "/params",
+            f"the template's placeholders are: {want}; give exactly those",
+        )
+    pipes = BUILTIN_PIPES | ENDING_PIPES
+    for name, value in r.params.items():
+        vptr = ptr + pointer("params", name)
+        if not _PIPE.search(value):
+            pattern = (t.params.get(name).pattern if name in t.params else None) or None
+            if pattern is None:
+                pattern = DEFAULT_PARAM_PATTERN
+            if _pattern_ok(pattern) and not re.fullmatch(f"(?:{pattern})", value):
+                self.emit(
+                    "redirect.param_literal",
+                    vptr,
+                    f"'{value[:40]}' does not match the pattern {pattern!r}, "
+                    "so the redirect would never be followed",
+                )
+            continue
+        refs = self._text(value, vptr, _Site(ptr, [], self.counter, ()), pipes)
+        if declined and "$response.id" in value:
+            self.emit(
+                "redirect.params",
+                vptr,
+                "a decline records no response, so ${$response.id} is empty here",
+            )
+        for ref in refs:
+            if ref in self.questions and ref not in self.variables:
+                self.emit(
+                    "redirect.param_question",
+                    vptr,
+                    f"'{ref}' is an answer: it is sent to the redirect's site (a data export "
+                    "the owner confirms; listed in the codebook)",
+                )
+                break
+    if r.delay == 0 and r.mode == "auto":
+        self.emit(
+            "redirect.immediate",
+            ptr + "/delay",
+            "with a delay of 0 participants never see this ending's text; a longer delay "
+            "or link mode keeps it readable (WCAG 2.2.1)",
+        )
 
 
 def _hooks(self: _Checker) -> None:
@@ -1130,6 +1245,8 @@ _Checker._slider = _slider  # type: ignore[attr-defined]
 _Checker._settings = _settings  # type: ignore[attr-defined]
 _Checker._consent = _consent  # type: ignore[attr-defined]
 _Checker._endings = _endings  # type: ignore[attr-defined]
+_Checker._redirect_templates = _redirect_templates  # type: ignore[attr-defined]
+_Checker._redirect = _redirect  # type: ignore[attr-defined]
 
 
 def publish_diagnostics(data: Any) -> list[Diagnostic]:

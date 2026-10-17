@@ -50,7 +50,7 @@ def test_every_valid_case_compiles(path: Path) -> None:
     assert plan["planVersion"] == PLAN_VERSION
     assert plan["engineVersion"] == ENGINE_VERSION
     assert plan["checksum"] == checksum(plan)
-    assert set(plan) - {"hooks", "endings"} == set(
+    assert set(plan) - {"hooks", "endings", "redirectTemplates"} == set(
         SCHEMA["required"]
     )  # only when the survey has them
     # Ids resolve: every page item is an item, every block node's pages exist.
@@ -264,3 +264,45 @@ def test_endings_are_compiled_into_the_plan_and_its_checksum() -> None:
         "hook-failed": {"status": "none", "summary": "none"},
     }
     assert plan["checksum"] == checksum(plan) != plain["checksum"]
+
+
+def test_end_redirects_are_compiled_with_their_templates() -> None:
+    """EN2 (end-of-survey plan §4.2): an ending's redirect keeps its template, params as
+    segments, delay, mode and label; the templates (settings and hooks) are one map, and
+    hook code sees the settings templates too."""
+    data = copy.deepcopy(_survey(CASES / "valid" / "v12_hooks.json"))
+    prolific = {
+        "url": "https://app.prolific.com/submissions/complete?cc={cc}&pid={pid}",
+        "params": {"cc": {"pattern": "[A-Z0-9]{4,8}"}, "pid": {}},
+    }
+    data["settings"] = {
+        "redirectTemplates": {"prolific": prolific},
+        "endings": {
+            "complete": {
+                "redirect": {
+                    "template": "prolific",
+                    "params": {"cc": "C1AB2", "pid": "${pid}-${$response.id}"},
+                    "label": {"en": "Back to Prolific"},
+                }
+            },
+            "declined": {"redirect": {"template": "done", "params": {"code": "NOPE12"}}},
+        },
+    }
+    plan, diags = compile_survey(data)
+    assert plan is not None, [d.code for d in diags]
+    assert plan["endings"]["complete"]["redirect"] == {
+        "template": "prolific",
+        "params": {"cc": ["C1AB2"], "pid": [{"pipe": "pid"}, "-", {"pipe": "$response.id"}]},
+        "delay": 5,
+        "mode": "auto",
+        "label": {"en": ["Back to Prolific"]},
+    }
+    assert "label" not in plan["endings"]["declined"]["redirect"]
+    assert set(plan["redirectTemplates"]) == {"prolific", "done"}
+    assert plan["redirectTemplates"]["prolific"] == prolific
+    assert set(plan["hooks"]["redirects"]) == {"prolific", "done"}
+    assert plan["checksum"] == checksum(plan)
+    json.dumps(plan)
+    # Without templates or redirects neither key appears (plans and checksums unchanged).
+    plain, _ = compile_survey(_survey(CASES / "valid" / "v01_worked_example.json"))
+    assert plain is not None and "redirectTemplates" not in plain

@@ -36,7 +36,8 @@ from osp_expr.ast import (
     TextLit,
 )
 from osp_expr.static import references
-from osp_spec import Survey, parse
+from osp_spec import Survey, parse, redirect_templates
+from osp_spec.hooks import DEFAULT_PARAM_PATTERN, placeholders
 from osp_spec.model import (
     AssignedVariable,
     AssignNode,
@@ -111,6 +112,31 @@ _MARKUP = re.compile(r"[&<>\n]")
 _LATCH_MAX = 1_000_000
 # LimeSurvey needs a quota message; used when the quota's screen-out block has no text.
 _QUOTA_FULL = "<p>Thank you. This survey is now closed for your group.</p>"
+# Characters `encodeURIComponent` leaves as they are; everything else is %XX per UTF-8 byte.
+_URL_SAFE = frozenset("ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789-_.!~*'()")
+
+
+def _percent_encode(value: str) -> str:
+    """`encodeURIComponent(value)`, as the participant app fills a redirect template."""
+    return "".join(
+        c if c in _URL_SAFE else "".join(f"%{b:02X}" for b in c.encode("utf-8")) for c in value
+    )
+
+
+@dataclass(frozen=True)
+class _Redirect:
+    """An end redirect as LimeSurvey holds it (EN2): the filled URL, auto-load, link text."""
+
+    url: str
+    auto: bool
+    label: dict[str, str]
+
+
+class _NoPattern:
+    pattern: str | None = None
+
+
+_NO_PATTERN = _NoPattern()
 
 QUESTION_FIELDS = (
     "qid",
@@ -797,6 +823,36 @@ class _Exporter:
         if items:
             self.groups.append(_Group(name=self._all_langs(node.id), relevance=alive, items=items))
 
+    def _redirect(self, outcome: str) -> _Redirect | None:
+        """An outcome's end redirect (EN2) as LimeSurvey can hold it: the template URL with
+        its literal params percent-encoded, whether to load it automatically, and the link
+        text per language. None when the outcome has no redirect, or when a param is piped
+        (LimeSurvey cannot re-check a value against its pattern, so the redirect is a loss)."""
+        ending = self.s.settings.endings.get(outcome)
+        if ending is None or ending.redirect is None:
+            return None
+        r = ending.redirect
+        ptr = pointer("settings", "endings", outcome, "redirect")
+        template = redirect_templates(self.s).get(r.template)
+        if template is None:
+            return None  # the validator's redirect.unknown_template already blocks publishing
+        self.note("Ending.redirect", ptr)
+        self.note("EndRedirect.template", ptr + "/template")
+        if any(_PIPE.search(v) for v in r.params.values()):
+            self.note("$redirect.piped", ptr + "/params")
+            return None
+        url = template.url
+        for name in placeholders(template.url):
+            value = r.params.get(name, "")
+            pattern = (template.params.get(name) or _NO_PATTERN).pattern or DEFAULT_PARAM_PATTERN
+            if not re.fullmatch(f"(?:{pattern})", value):
+                return None  # the validator's redirect.param_literal already blocks publishing
+            url = url.replace("{" + name + "}", _percent_encode(value))
+        if r.mode == "auto":
+            self.note("EndRedirect.delay", ptr + "/delay")
+        label = self._texts(r.label, ptr + "/label") if r.label is not None else {}
+        return _Redirect(url=url, auto=r.mode == "auto", label=label)
+
     def _ending_texts(self, outcome: str) -> Texts:
         """An outcome's ending (EN1) as one LimeSurvey text per language: the title, then the
         body, each a paragraph. Empty when the outcome has no ending text."""
@@ -1149,35 +1205,40 @@ class _Exporter:
 
         self._quota_tables(sid, quota, quota_members, quota_l10ns)
 
+        end_redirect = self._redirect("complete")  # EN2: the `complete` ending's redirect
         survey = Table("surveys", SURVEY_FIELDS)
-        survey.add(**self._survey_row(sid))
-        survey_l10ns = Table(
-            "surveys_languagesettings",
-            (
-                "surveyls_survey_id",
-                "surveyls_language",
-                "surveyls_title",
-                "surveyls_description",
-                "surveyls_welcometext",
-                "surveyls_endtext",
-                "surveyls_dateformat",
-                "surveyls_numberformat",
-            ),
+        survey.add(**self._survey_row(sid, end_redirect))
+        l10n_fields = (
+            "surveyls_survey_id",
+            "surveyls_language",
+            "surveyls_title",
+            "surveyls_description",
+            "surveyls_welcometext",
+            "surveyls_endtext",
+            "surveyls_dateformat",
+            "surveyls_numberformat",
         )
+        if end_redirect is not None:  # the URL columns only when there is one to write
+            l10n_fields += ("surveyls_url", "surveyls_urldescription")
+        survey_l10ns = Table("surveys_languagesettings", l10n_fields)
         titles = self._texts(self.s.metadata.title, "/metadata/title")
         descriptions = self._texts(self.s.metadata.description, "/metadata/description")
         end_texts = self._ending_texts("complete")  # EN1: the `complete` ending
         for lang in self.langs:
-            survey_l10ns.add(
-                surveyls_survey_id=sid,
-                surveyls_language=lang,
-                surveyls_title=titles.get(lang, ""),
-                surveyls_description=descriptions.get(lang),
-                surveyls_welcometext=None,
-                surveyls_endtext=end_texts.get(lang),
-                surveyls_dateformat=1,
-                surveyls_numberformat=0,
-            )
+            row: dict[str, Any] = {
+                "surveyls_survey_id": sid,
+                "surveyls_language": lang,
+                "surveyls_title": titles.get(lang, ""),
+                "surveyls_description": descriptions.get(lang),
+                "surveyls_welcometext": None,
+                "surveyls_endtext": end_texts.get(lang),
+                "surveyls_dateformat": 1,
+                "surveyls_numberformat": 0,
+            }
+            if end_redirect is not None:
+                row["surveyls_url"] = end_redirect.url
+                row["surveyls_urldescription"] = end_redirect.label.get(lang)
+            survey_l10ns.add(**row)
         return [
             groups,
             group_l10ns,
@@ -1229,6 +1290,7 @@ class _Exporter:
                 self.dropped_quotas.append(i)
                 continue
             quota_id = len(quota.rows) + 1
+            redirect = self._redirect(qu.onFull.outcome)  # EN2: the quota outcome's redirect
             quota.add(
                 id=quota_id,
                 sid=sid,
@@ -1236,7 +1298,7 @@ class _Exporter:
                 qlimit=qu.limit,
                 action=1,
                 active=1,
-                autoload_url=0,
+                autoload_url=1 if redirect is not None and redirect.auto else 0,
             )
             for qid, codes in found.items():
                 for code in codes:
@@ -1253,11 +1315,11 @@ class _Exporter:
                     quotals_language=lang,
                     quotals_name=qu.id,
                     quotals_message=message.get(lang) or _QUOTA_FULL,
-                    quotals_url=None,
-                    quotals_urldescrip=None,
+                    quotals_url=redirect.url if redirect is not None else None,
+                    quotals_urldescrip=redirect.label.get(lang) if redirect is not None else None,
                 )
 
-    def _survey_row(self, sid: int) -> dict[str, Any]:
+    def _survey_row(self, sid: int, end_redirect: _Redirect | None = None) -> dict[str, Any]:
         return {
             "sid": sid,
             "gsid": 1,
@@ -1274,7 +1336,7 @@ class _Exporter:
             "allowregister": "N",
             "allowsave": "N",
             "autonumber_start": 0,
-            "autoredirect": "N",
+            "autoredirect": "Y" if end_redirect is not None and end_redirect.auto else "N",
             "allowprev": "Y" if self.s.settings.backNavigation else "N",
             "printanswers": "N",
             "ipaddr": "N",

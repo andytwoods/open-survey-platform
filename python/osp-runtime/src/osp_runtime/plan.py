@@ -22,7 +22,11 @@ The plan (`contract/runtime-plan.schema.json`, TS types in `web/engine/src/plan.
 - carries the survey's endings (`endings`, end-of-survey plan §4.1): per outcome its title
   and body as segments (piping as in labels), `status` and `summary`, inside the checksum.
   Without endings the plan has no `endings` key, so existing plans and checksums are
-  unchanged;
+  unchanged. An ending's `redirect` (§4.2, EN2) keeps its template name, params as segments
+  (literal text and pipes), `delay`, `mode` and `label`; the templates endings and hooks may
+  name are `redirectTemplates` (`settings.redirectTemplates` plus `hooks.redirects`), and a
+  plan with hooks also sees the settings templates under `hooks.redirects`, so hook code can
+  use them. Both keys are absent when there is nothing to put in them;
 - records `planVersion`, `engineVersion` (the engine API major the plan targets) and a
   `checksum` (SHA-256 of the canonical JSON of the plan without `checksum`);
 - optionally carries the hook manifest (runtime-design.md §7a; `HookManifest` in
@@ -95,8 +99,12 @@ ENGINE_VERSION = "1"
 
 _PIPE = re.compile(r"\$\{([^}]*)\}")
 _IDENT = re.compile(r"^[A-Za-z_][A-Za-z0-9_]*$")
-# Built-in `$` variables (runtime-design.md §7a): `${$trial}`, `${$position.index}`.
-_BUILTIN = re.compile(r"^\$(trial|position\.index|position\.of|pagesDone|language|device)$")
+# Built-in `$` variables (runtime-design.md §7a): `${$trial}`, `${$position.index}`; the
+# ending-only ones (end-of-survey plan §4.2): `${$response.id}`, `${$session.id}`, `${$outcome}`.
+_BUILTIN = re.compile(
+    r"^\$(trial|position\.index|position\.of|pagesDone|language|device"
+    r"|response\.id|session\.id|outcome)$"
+)
 
 type Json = Any
 type Segment = str | dict[str, str]
@@ -475,12 +483,36 @@ class _Compiler:
                     ending["title"] = self.text(e.title)
                 if e.body is not None:
                     ending["body"] = self.text(e.body)
+                if e.redirect is not None:
+                    r = e.redirect
+                    redirect: dict[str, Json] = {
+                        "template": r.template,
+                        "params": {k: segments(v) for k, v in sorted(r.params.items())},
+                        "delay": r.delay,
+                        "mode": r.mode,
+                    }
+                    if r.label is not None:
+                        redirect["label"] = self.text(r.label)
+                    ending["redirect"] = redirect
                 endings[outcome] = ending
             plan["endings"] = endings  # before the checksum, so the endings are covered
         if hooks is None and s.hooks is not None:
             hooks = hooks_json(s.hooks)  # the survey's own manifest (osp-survey `hooks`)
+        settings_templates = {
+            name: t.model_dump(mode="json", exclude_none=True)
+            for name, t in sorted(s.settings.redirectTemplates.items())
+        }
         if hooks is not None:
+            if settings_templates:
+                # Hook code may name a settings template too (end-of-survey plan §4.2).
+                hooks = {
+                    **hooks,
+                    "redirects": {**settings_templates, **(hooks.get("redirects") or {})},
+                }
             plan["hooks"] = hooks  # before the checksum, so the manifest is covered by it
+        templates = {**((hooks or {}).get("redirects") or {}), **settings_templates}
+        if templates:
+            plan["redirectTemplates"] = dict(sorted(templates.items()))
         plan["checksum"] = checksum(plan)
         return plan
 

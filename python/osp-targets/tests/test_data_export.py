@@ -580,6 +580,43 @@ def test_variable_state_columns(record: dict[str, Any], want: dict[str, str]) ->
 # -- codebook ----------------------------------------------------------------------------------
 
 
+def test_codebook_lists_where_participants_are_sent() -> None:
+    """EN2 (lead decision 3): a redirect's parameters are in the study record, and a piped
+    answer is named as one, so the codebook says what left the platform."""
+    s = _survey("11-end-nodes")
+    s["variables"] = [{"kind": "embedded", "id": "pid", "param": "PROLIFIC_PID"}]
+    s["settings"]["redirectTemplates"] = {
+        "prolific": {"url": "https://app.prolific.com/submissions/complete?cc={cc}&p={p}&r={r}",
+                     "params": {"cc": {}, "p": {}, "r": {}}}
+    }  # fmt: skip
+    s["settings"]["endings"]["complete"]["redirect"] = {
+        "template": "prolific",
+        "params": {"cc": "C1AB2", "p": "${pid}", "r": "${rating}"},
+    }
+    s["settings"]["endings"]["ineligible"]["redirect"] = {
+        "template": "prolific", "mode": "link", "delay": 0,
+        "params": {"cc": "SCREEN", "p": "${pid}", "r": "${$outcome}"}}  # fmt: skip
+    book = codebook(SurveyVersion(s, number=1, checksum="sha256:t", save_mode="every-page"))
+    data = {r["outcome"]: r for r in book.data["redirects"]}
+    assert data["complete"]["host"] == "app.prolific.com"
+    assert data["complete"]["sendsAnswers"] is True
+    assert data["complete"]["params"] == [
+        {"name": "cc", "kind": "literal", "value": "C1AB2"},
+        {"name": "p", "kind": "variable", "id": "pid", "variable": "pid"},
+        {"name": "r", "kind": "answer", "id": "rating"},
+    ]
+    assert data["ineligible"]["sendsAnswers"] is False
+    assert data["ineligible"]["params"][2] == {"name": "r", "kind": "builtin", "id": "$outcome"}
+    md = book.markdown
+    assert "## Where participants are sent afterwards" in md
+    sent = "`cc` = `C1AB2`; `p` = variable `pid`; `r` = **answer `rating`**"
+    assert f"| `complete` | app.prolific.com | {sent} | automatically after 5 s |" in md
+    assert "| `ineligible` | app.prolific.com |" in md and "| link only |" in md
+    # No redirects: no section.
+    assert "redirects" not in codebook(_version("11-end-nodes")).data
+    assert "sent afterwards" not in codebook(_version("11-end-nodes")).markdown
+
+
 def test_codebook_contents() -> None:
     v = _version("20-worked-example", hooks=[Hook("h1", ["onSubmitted"], ["age"], ["redirect"])])
     book = codebook(v)

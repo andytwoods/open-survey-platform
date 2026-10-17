@@ -75,6 +75,14 @@ CODES: dict[str, Severity] = {
     "ending.unreachable": "warning",  # an ending for an outcome nothing in the survey reaches
     "ending.declined_summary": "error",  # a decline records nothing, so it has no answers to show
     "ending.summary_unsupported": "warning",  # `summary: answers` is reserved (EN5), not shown yet
+    # End redirects (end-of-survey plan §4.2, EN2)
+    "redirect.template": "error",  # a settings.redirectTemplates entry breaks the URL rules
+    "redirect.template_clash": "error",  # the same name in settings.redirectTemplates and hooks
+    "redirect.unknown_template": "error",  # an ending names a template nothing declares
+    "redirect.params": "error",  # params and the template's placeholders differ
+    "redirect.param_literal": "error",  # a literal value that can never pass its pattern
+    "redirect.param_question": "warning",  # a piped answer leaves for a third party (data export)
+    "redirect.immediate": "warning",  # delay 0: the ending's text is never seen
     # Researcher hooks (runtime-design.md §7a; osp_spec.hooks.check_hooks)
     "hooks.unknown_ref": "error",  # a handler reads an id that is not a question or variable
     "hooks.write_target": "error",  # a handler writes something that is not a hook variable

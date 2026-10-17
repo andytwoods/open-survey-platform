@@ -9,8 +9,11 @@ its data-export capabilities. Same input, same bytes: nothing here reads a clock
 from __future__ import annotations
 
 import json
+import re
 from collections.abc import Collection, Sequence
 from typing import Any
+
+from osp_spec import redirect_templates
 
 from .layout import (
     STATE_SUFFIX,
@@ -160,6 +163,60 @@ def _consent(lay: Any) -> dict[str, Any]:
     }
 
 
+_PIPE = re.compile(r"\$\{\s*([^}]*?)\s*\}")
+
+
+def _redirects(lay: Any) -> list[dict[str, Any]]:
+    """Where participants are sent after the survey (end-of-survey plan §4.2, EN2), per
+    outcome: the site, the template URL and what each parameter carries (a literal, a piped
+    answer, a piped variable or a built-in). A piped answer is a data export (lead decision
+    3): it is named here so the study record says what left the platform."""
+    survey = lay.survey
+    templates = redirect_templates(survey)
+    variables = {v.id: v for v in survey.variables}
+    questions = {q.id for q in lay.questions}
+    out: list[dict[str, Any]] = []
+    for outcome, ending in sorted(survey.settings.endings.items()):
+        r = ending.redirect
+        if r is None:
+            continue
+        template = templates.get(r.template)
+        url = template.url if template is not None else None
+        params: list[dict[str, Any]] = []
+        for name, value in sorted(r.params.items()):
+            refs = _PIPE.findall(value)
+            if not refs:
+                params.append({"name": name, "kind": "literal", "value": value})
+                continue
+            for ref in refs:
+                if ref.startswith("$"):
+                    kind = "builtin"
+                elif ref in variables:
+                    kind = "variable"
+                elif ref in questions:
+                    kind = "answer"
+                else:
+                    kind = "unknown"
+                entry: dict[str, Any] = {"name": name, "kind": kind, "id": ref}
+                if kind == "variable":
+                    entry["variable"] = variables[ref].name or ref
+                params.append(entry)
+        host = url.split("/", 3)[2] if url and url.count("/") >= 2 else None
+        out.append(
+            {
+                "outcome": outcome,
+                "template": r.template,
+                "host": host,
+                "url": url,
+                "mode": r.mode,
+                "delay": r.delay,
+                "params": params,
+                "sendsAnswers": any(p["kind"] == "answer" for p in params),
+            }
+        )
+    return out
+
+
 def _custom_keys(questions: Sequence[QuestionInfo]) -> list[dict[str, Any]]:
     """Every custom key in use, with the question types it appears on (a matrix row counts
     as its matrix). The lab's panel profile, not the survey, says what a key means."""
@@ -268,6 +325,7 @@ def codebook_data(
         variables.append({k: v for k, v in entry.items() if v is not None})
     custom_keys = _custom_keys(lay.questions)
     instruments = _instruments(lay)
+    redirects = _redirects(lay)
     return {
         "format": FORMAT,
         "survey": {
@@ -356,6 +414,7 @@ def codebook_data(
             }
             for h in version.hooks
         ],
+        **({"redirects": redirects} if redirects else {}),
     }
 
 
@@ -665,6 +724,34 @@ def _render(data: dict[str, Any], heading: str = "#") -> str:
     else:
         add("This version runs no custom code, so it has no data-export capabilities.")
     add("")
+
+    if data.get("redirects"):
+        add(f"{h2} Where participants are sent afterwards")
+        add("")
+        add(
+            "After the submit is acknowledged, these outcomes send the participant to another "
+            "site with the values below in the URL. A piped **answer** leaves the platform: "
+            "it is a data export the survey owner confirmed; a variable or built-in is not an "
+            "answer. Values are checked against the template's pattern and URL-encoded, and "
+            "can never change the site."
+        )
+        add("")
+        add("| Outcome | Site | Values sent | How |")
+        add("|---|---|---|---|")
+        for r in data["redirects"]:
+            sent = []
+            for p in r["params"]:
+                if p["kind"] == "literal":
+                    sent.append(f"`{p['name']}` = `{p['value']}`")
+                elif p["kind"] == "answer":
+                    sent.append(f"`{p['name']}` = **answer `{p['id']}`**")
+                elif p["kind"] == "variable":
+                    sent.append(f"`{p['name']}` = variable `{p['variable']}`")
+                else:
+                    sent.append(f"`{p['name']}` = `${{{p['id']}}}`")
+            how = "link only" if r["mode"] == "link" else f"automatically after {r['delay']} s"
+            add(f"| `{r['outcome']}` | {r['host'] or '?'} | {'; '.join(sent) or 'none'} | {how} |")
+        add("")
     return "\n".join(out)
 
 

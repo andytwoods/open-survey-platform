@@ -210,6 +210,100 @@ def m_ending_pipe(s: dict) -> None:
     s["settings"] = {"endings": {"complete": {"title": "${q2}", "body": "You said ${nope}"}}}
 
 
+PROLIFIC = {"url": "https://app.prolific.com/submissions/complete?cc={cc}",
+            "params": {"cc": {"pattern": "[A-Z0-9]{4,8}"}}}  # fmt: skip
+
+
+def m_redirect_ok(s: dict) -> None:
+    """A clean redirect (EN2): literal and piped params, ending built-ins, link mode."""
+    s["variables"] = [{"kind": "embedded", "id": "pid", "param": "PROLIFIC_PID"}]
+    s["settings"] = {
+        "redirectTemplates": {
+            "prolific": PROLIFIC,
+            "lab": {"url": "https://lab.example.org/done/{sid}?o={out}&p={pid}",
+                    "params": {"sid": {}, "out": {}, "pid": {}}},
+        },
+        "endings": {"complete": {
+            "body": "Your response id is ${$response.id}.",
+            "redirect": {"template": "lab", "mode": "link", "label": "Back to the lab",
+                         "params": {"sid": "${$session.id}", "out": "${$outcome}",
+                                    "pid": "${pid}"}},
+        }},
+    }  # fmt: skip
+
+
+def m_redirect_template(s: dict) -> None:
+    s["settings"] = {"redirectTemplates": {
+        "http": {"url": "http://x.org/done/{code}", "params": {"code": {}}},
+        "origin": {"url": "https://{host}/done", "params": {"host": {}}},
+        "scheme": {"url": "javascript:alert(1)//{code}", "params": {"code": {}}},
+        "bare": {"url": "https://x.org", "params": {}},
+    }}  # fmt: skip
+
+
+def m_redirect_clash(s: dict) -> None:
+    s["hooks"] = _hooks(redirects={"done": PROLIFIC})
+    s["settings"] = {"redirectTemplates": {"done": PROLIFIC}}
+
+
+def m_redirect_unknown_template(s: dict) -> None:
+    s["settings"] = {"endings": {"complete": {"redirect": {"template": "nope"}}}}
+
+
+def m_redirect_params(s: dict) -> None:
+    s["settings"] = {
+        "redirectTemplates": {"prolific": PROLIFIC},
+        "endings": {"complete": {"redirect": {"template": "prolific",
+                                              "params": {"cc": "C1AB2", "extra": "x"}}}},
+    }  # fmt: skip
+
+
+def m_redirect_param_literal(s: dict) -> None:
+    s["settings"] = {
+        "redirectTemplates": {"prolific": PROLIFIC},
+        "endings": {"complete": {"redirect": {"template": "prolific",
+                                              "params": {"cc": "../evil"}}}},
+    }  # fmt: skip
+
+
+def m_redirect_param_question(s: dict) -> None:
+    s["settings"] = {
+        "redirectTemplates": {"prolific": PROLIFIC},
+        "endings": {"complete": {"redirect": {"template": "prolific",
+                                              "params": {"cc": "${q1}"}}}},
+    }  # fmt: skip
+
+
+def m_redirect_param_unknown(s: dict) -> None:
+    s["settings"] = {
+        "redirectTemplates": {"prolific": PROLIFIC},
+        "endings": {"complete": {"redirect": {"template": "prolific",
+                                              "params": {"cc": "${nope}"}}}},
+    }  # fmt: skip
+
+
+def m_redirect_declined_response_id(s: dict) -> None:
+    s["consent"] = {"text": "Consent?"}
+    s["settings"] = {
+        "redirectTemplates": {"prolific": PROLIFIC},
+        "endings": {"declined": {"redirect": {"template": "prolific",
+                                              "params": {"cc": "${$response.id}"}}}},
+    }  # fmt: skip
+
+
+def m_redirect_immediate(s: dict) -> None:
+    s["settings"] = {
+        "redirectTemplates": {"prolific": PROLIFIC},
+        "endings": {"complete": {"body": "Unseen", "redirect": {
+            "template": "prolific", "delay": 0, "params": {"cc": "C1AB2"}}}},
+    }  # fmt: skip
+
+
+def m_redirect_builtins_elsewhere(s: dict) -> None:
+    """The ending built-ins are not available on pages."""
+    _items(s)[0]["label"] = "Id ${$response.id}"
+
+
 def _matrix(rows: list[dict] | None = None) -> dict:
     rows = rows if rows is not None else [{"id": "a", "label": "A"}, {"id": "b", "label": "B"}]
     return {"id": "m", "type": "matrix", "label": "M", "rows": rows,
@@ -329,6 +423,35 @@ TABLE: list[tuple[Callable[[dict], None], list[tuple[str, str]]]] = [
         [("ending.summary_unsupported", "/settings/endings/complete/summary")],
     ),
     (m_ending_pipe, [("ref.unknown", "/settings/endings/complete/body")]),
+    (m_redirect_ok, []),
+    (
+        m_redirect_template,
+        [
+            ("redirect.template", f"/settings/redirectTemplates/{k}")
+            for k in ("http", "origin", "scheme", "bare")
+        ],
+    ),  # fmt: skip
+    (m_redirect_clash, [("redirect.template_clash", "/settings/redirectTemplates/done")]),
+    (
+        m_redirect_unknown_template,
+        [("redirect.unknown_template", "/settings/endings/complete/redirect/template")],
+    ),
+    (m_redirect_params, [("redirect.params", "/settings/endings/complete/redirect/params")]),
+    (
+        m_redirect_param_literal,
+        [("redirect.param_literal", "/settings/endings/complete/redirect/params/cc")],
+    ),
+    (
+        m_redirect_param_question,
+        [("redirect.param_question", "/settings/endings/complete/redirect/params/cc")],
+    ),
+    (m_redirect_param_unknown, [("ref.unknown", "/settings/endings/complete/redirect/params/cc")]),
+    (
+        m_redirect_declined_response_id,
+        [("redirect.params", "/settings/endings/declined/redirect/params/cc")],
+    ),
+    (m_redirect_immediate, [("redirect.immediate", "/settings/endings/complete/redirect/delay")]),
+    (m_redirect_builtins_elsewhere, [("pipe.invalid", f"{P0}/0/label")]),
     (m_matrix_duplicate_row, [("matrix.duplicate_row", f"{P0}/1/rows/1/id")]),
     (m_matrix_row_id, [("matrix.row_id", f"{P0}/1/rows/0/id")]),
     (m_matrix_row_clash, [("id.duplicate", f"{P0}/1/rows/0/id")]),
