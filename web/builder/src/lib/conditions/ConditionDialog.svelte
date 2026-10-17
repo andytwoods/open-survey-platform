@@ -18,6 +18,7 @@
 		field,
 		surveyId = null,
 		service,
+		heading,
 		onOps
 	}: {
 		open?: boolean;
@@ -29,6 +30,8 @@
 		field?: ConditionField;
 		surveyId?: string | null;
 		service: ExpressionService;
+		/** Passed to the builder; defaults to "Show this question if…". */
+		heading?: string;
 		onOps: (ops: ConditionOp[]) => void;
 	} = $props();
 
@@ -47,6 +50,7 @@
 			{field}
 			{surveyId}
 			{service}
+			{heading}
 			onOps={apply}
 			oncancel={() => (open = false)}
 		/>
