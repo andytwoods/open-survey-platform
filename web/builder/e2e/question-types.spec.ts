@@ -1,4 +1,3 @@
-import AxeBuilder from '@axe-core/playwright';
 import { expect, test, type Page } from '@playwright/test';
 import { axe, focused, pickQuestionType, runFromPalette, signIn, writeHeaders } from './fixtures';
 
@@ -25,14 +24,6 @@ const picker = (page: Page, name = 'Add a question') => page.getByRole('dialog',
 const typeShown = (page: Page) => page.getByTestId('question-type');
 const option = (page: Page, name: string, dialog = 'Add a question') =>
 	picker(page, dialog).getByRole('option', { name: new RegExp(`^${name}\\b`) });
-
-async function axeIn(page: Page, selector: string) {
-	const r = await new AxeBuilder({ page })
-		.include(selector)
-		.withTags(['wcag2a', 'wcag2aa', 'wcag21a', 'wcag21aa', 'wcag22aa', 'best-practice'])
-		.analyze();
-	return r.violations.map((v) => ({ id: v.id, targets: v.nodes.map((n) => n.target.join(' ')) }));
-}
 
 async function createSurvey(page: Page, title: string) {
 	await signIn(page);
@@ -190,9 +181,8 @@ test('320 px: the picker fits, no horizontal scroll, 44 px targets', async ({ pa
 		expect(box.x).toBeGreaterThanOrEqual(0);
 		expect(box.x + box.width).toBeLessThanOrEqual(320);
 	}
-	// The modal only: behind its overlay, the top bar's icon buttons are squeezed to 20 px at
-	// this width, which axe flags as obscured targets (the editor alone passes; not the picker).
-	expect(await axeIn(page, '.osp-dialog')).toEqual([]);
+	// The whole page, the top bar behind the modal's overlay included (B17).
+	expect(await axe(page)).toEqual([]);
 
 	await option(page, 'Slider').click();
 	await expect(typeShown(page)).toHaveText('Slider');
