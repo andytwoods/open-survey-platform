@@ -11,6 +11,12 @@ Commands
   into the dev lab as the dev researcher (``osp_app.identity``: the identity osp-api's Dev
   provider uses, so no sign-in); remember it in ``<data-dir>/dev-seed.json`` (gitignored).
   Every run prints the builder and participant links. Refused when ``OSP_ENV=production``.
+  On the first run with ``OSP_ENV=dev`` it also fills each seeded survey with fake responses
+  (150 each; ``DEV_FAKE_RESPONSES=<n>`` changes the count, ``0`` turns it off).
+- ``fake-responses <survey id or slug>... [--n 150] [--seed 1] [--partial 0.15] [--days 21]``
+  (dev only, ``OSP_ENV=dev``; ``fake_responses.py``): invented, realistic responses made by
+  the real engine and stored through the participant session service. ``--dev-seeded``
+  takes the surveys from ``<data-dir>/dev-seed.json`` (``make dev-fake N=200``).
 
 There are no accounts or passwords (plan P): the host owns sign-in.
 
@@ -39,6 +45,8 @@ from osp_store import (
     generate_key,
     migrate,
 )
+
+from .fake_responses import FakeError, fake_responses
 
 DEFAULT_USER = "seed-researcher"  # test data only: never a real lab
 DEFAULT_LAB = "seed-lab"
@@ -124,14 +132,35 @@ def seed_fixture(
 DEV_SEED_FILE = "dev-seed.json"
 
 
+DEV_FAKE_DEFAULT = 150
+
+
+def dev_fake_count(environ: Mapping[str, str] | None = None) -> int:
+    """Fake responses per seeded survey on the first ``make dev``: ``DEV_FAKE_RESPONSES``
+    (default 150; 0 turns it off). Only with ``OSP_ENV=dev``."""
+    env = os.environ if environ is None else environ
+    if (env.get("OSP_ENV") or "").strip().lower() != "dev":
+        return 0
+    raw = (env.get("DEV_FAKE_RESPONSES") or "").strip()
+    if not raw:
+        return DEV_FAKE_DEFAULT
+    try:
+        return max(0, int(raw))
+    except ValueError as exc:
+        raise CliError(f"DEV_FAKE_RESPONSES must be a number, not {raw!r}") from exc
+
+
 def dev_seed(
     services_factory: Callable[[], AppServices],
     data_dir: Path,
     fixture_dirs: Sequence[Path],
     environ: Mapping[str, str] | None = None,
+    fake: Callable[[str], str] | None = None,
 ) -> tuple[dict[str, Any], bool]:
     """The dev lab's seeded surveys: from ``<data_dir>/dev-seed.json`` if present,
-    else created now (``services_factory()`` is only called then). Returns (state, created)."""
+    else created now (``services_factory()`` is only called then). Returns (state, created).
+    On creation, ``fake(survey_id)`` (if given) fills each survey with fake responses and
+    returns a one-line summary for the banner."""
     env = os.environ if environ is None else environ
     if (env.get("OSP_ENV") or "dev").strip().lower() == "production":
         raise CliError("dev-seed is for local development only (OSP_ENV=production)")
@@ -158,6 +187,12 @@ def dev_seed(
     fd = os.open(path, os.O_WRONLY | os.O_CREAT | os.O_EXCL, 0o600)
     with os.fdopen(fd, "w", encoding="utf-8") as fh:
         json.dump(state, fh, indent=2)
+    if fake is not None:
+        for s in surveys:
+            try:
+                s["fake"] = fake(s["surveyId"])
+            except (FakeError, CliError, AppError, StoreError) as exc:
+                s["fake"] = f"no fake responses ({exc})"
     return state, True
 
 
@@ -185,6 +220,8 @@ def dev_banner(
     for s in state.get("surveys", []):
         lines.append(f"    {s['title']}  ({s['fixture']})")
         lines.append(f"      builder      {builder_url}/surveys/{s['surveyId']}")
+        if s.get("fake"):
+            lines.append(f"      responses    {s['fake']}")
         if participant_link:
             link = participant_link.replace("{slug}", s["slug"])
             lines.append(f"      participant  {link}")
@@ -192,7 +229,12 @@ def dev_banner(
             lines.append(f"      plan (API)   {api_url}{s['planUrl']}")
     if not participant_link:
         lines.append("    participant app not built yet")
-    lines += ["", "  Ctrl+C stops everything. `make dev-reset` wipes .data/.", ""]
+    lines += [
+        "",
+        "  Ctrl+C stops everything. `make dev-fake N=200` adds fake responses;",
+        "  `make dev-reset` wipes .data/.",
+        "",
+    ]
     return "\n".join(lines)
 
 
@@ -228,7 +270,69 @@ def _parser() -> argparse.ArgumentParser:
         default="",
         help="participant link template with {slug}; empty: the app is not built",
     )
+    f = sub.add_parser(
+        "fake-responses", help="dev only: invented, realistic responses for a published survey"
+    )
+    f.add_argument("targets", nargs="*", help="survey id (in --lab) or public slug")
+    f.add_argument(
+        "--dev-seeded",
+        action="store_true",
+        help="every survey in <data-dir>/dev-seed.json (what make dev seeded)",
+    )
+    f.add_argument("--n", type=int, default=150, help="sessions per survey (default 150)")
+    f.add_argument("--seed", type=int, default=1, help="same seed, same responses (default 1)")
+    f.add_argument(
+        "--partial", type=float, default=0.15, help="share that drops out part-way (0.15)"
+    )
+    f.add_argument("--days", type=float, default=21, help="spread over this many days (21)")
+    f.add_argument("--lab", default=DEV_LAB_ID, help="lab of the survey ids")
+    f.add_argument("--db", default=os.environ.get("OSP_DATABASE_URL"), help="database URL")
+    f.add_argument("--data-dir", type=Path, default=Path(os.environ.get("OSP_DATA_DIR") or ".data"))
     return p
+
+
+def store_factory(db_url: str, environ: Mapping[str, str] | None = None) -> Callable[..., Store]:
+    """Opens the store on a given clock (fake responses carry their own times)."""
+    env = os.environ if environ is None else environ
+    if not env.get("OSP_STORE_KEYS"):
+        raise CliError("OSP_STORE_KEYS is not set: run `osp-cli gen-key` and export its output")
+    keyring = Keyring.from_env(env)
+
+    def open_store(clock: Callable[[], Any]) -> Store:
+        engine = create_engine(db_url)
+        migrate(engine)
+        return Store(engine, keyring, clock)
+
+    return open_store
+
+
+def _dev_targets(data_dir: Path) -> list[str]:
+    path = data_dir / DEV_SEED_FILE
+    try:
+        state = json.loads(path.read_text(encoding="utf-8"))
+        return [str(s["surveyId"]) for s in state["surveys"]]
+    except (OSError, ValueError, KeyError, TypeError) as exc:
+        raise CliError(f"can't read {path} ({exc}); run `make dev` first") from exc
+
+
+def run_fake(args: argparse.Namespace) -> int:
+    targets = list(args.targets) + (_dev_targets(args.data_dir) if args.dev_seeded else [])
+    if not targets:
+        raise CliError("give a survey id or slug, or --dev-seeded")
+    factory = store_factory(args.db)
+    for target in targets:
+        report = fake_responses(
+            factory,
+            target,
+            n=args.n,
+            seed=args.seed,
+            partial=args.partial,
+            days=args.days,
+            lab=args.lab,
+        )
+        print(f"fake-responses {target} (/s/{report.slug}): {report.line()}")
+        print(json.dumps(report.summary()))
+    return 0
 
 
 def main(argv: Sequence[str] | None = None) -> int:
@@ -246,9 +350,20 @@ def main(argv: Sequence[str] | None = None) -> int:
                 raise CliError(str(exc)) from exc
             print(open_services(args.db).create_lab(lab_id, args.name))
             return 0
+        if args.command == "fake-responses":
+            return run_fake(args)
         if args.command == "dev-seed":
+            count = dev_fake_count()
+            fake = None
+            if count:
+                factory = store_factory(args.db)
+
+                def fake(survey_id: str) -> str:
+                    report = fake_responses(factory, survey_id, n=count)
+                    return report.line()
+
             state, created = dev_seed(
-                lambda: open_services(args.db), args.data_dir, args.fixture_dirs
+                lambda: open_services(args.db), args.data_dir, args.fixture_dirs, fake=fake
             )
             print(
                 dev_banner(
@@ -267,7 +382,7 @@ def main(argv: Sequence[str] | None = None) -> int:
             lab=args.lab,
             save_mode=args.save_mode,
         )
-    except CliError as exc:
+    except (CliError, FakeError) as exc:
         print(f"osp-cli: {exc}", file=sys.stderr)
         return 2
     except AppError as exc:

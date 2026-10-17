@@ -19,3 +19,11 @@ export {
 } from './simulate.ts';
 export { BLANK, exhaustiveDomains, numericPoints, structure, usage, type Structure } from './structure.ts';
 export { rng, type Rng } from './prng.ts';
+export {
+	FAKE_FORMAT,
+	FakeParticipants,
+	type Ask,
+	type AskReply,
+	type ParticipantOutcome,
+	type ParticipantSpec
+} from './fake.ts';
