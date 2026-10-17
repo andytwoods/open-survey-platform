@@ -18,6 +18,7 @@ from .errors import (
     Unauthenticated,
 )
 from .identity import Identity, InvalidIdentity, make_identity
+from .panel_profile import PanelProfileView
 from .preview import preview_plan
 from .repro import ReproDownload
 from .results_layouts import LayoutSettings, ResultsLayoutsView
@@ -44,6 +45,7 @@ __all__ = [
     "LabTheme",
     "LayoutSettings",
     "NotFoundError",
+    "PanelProfileView",
     "PublishResult",
     "Rejected",
     "ReproDownload",

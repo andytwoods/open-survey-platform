@@ -42,6 +42,15 @@ describe('parseConfig', () => {
 		if (r.ok) expect((r.config as OspPageConfig).csrf?.header).toBe('X-CSRFToken');
 	});
 
+	it('takes the optional profile link (no {id}: it is a lab page)', () => {
+		const links = good().links as Record<string, string>;
+		expect(parseConfig(good({ links: { ...links, profile: '/osp/profile/' } }), ORIGIN).ok).toBe(true);
+		expect(errorsOf(good({ links: { ...links, profile: 'https://evil.example/p' } }))).toEqual([
+			'links.profile: must be same-origin (or an origin in allowedOrigins)'
+		]);
+		expect(errorsOf(good({ links: { ...links, profile: 7 } }))).toEqual(['links.profile: must be a string']);
+	});
+
 	it('takes the optional results link, checked like the others', () => {
 		const links = good().links as Record<string, string>;
 		expect(parseConfig(good({ links: { ...links, results: '/osp/surveys/{id}/results/' } }), ORIGIN).ok).toBe(true);

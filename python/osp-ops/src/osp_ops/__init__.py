@@ -13,6 +13,7 @@ from . import (  # noqa: F401
     choice_ops,
     condition_ops,
     consent_ops,
+    custom_property_ops,
     duplicate_ops,
     flow_ops,
     hooks_ops,

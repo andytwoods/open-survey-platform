@@ -222,6 +222,21 @@
       "AddQuestionParams": {
         "additionalProperties": false,
         "properties": {
+          "defaults": {
+            "anyOf": [
+              {
+                "additionalProperties": {
+                  "$ref": "#/components/schemas/JsonValue"
+                },
+                "type": "object"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "default": null,
+            "title": "Defaults"
+          },
           "id": {
             "anyOf": [
               {
@@ -2780,6 +2795,7 @@
           "set_choice",
           "set_condition",
           "set_consent",
+          "set_custom_property",
           "set_hooks",
           "set_languages",
           "set_matrix_row_required",
@@ -2825,6 +2841,71 @@
           "baseRevision"
         ],
         "title": "OpsRequest",
+        "type": "object"
+      },
+      "PanelProfileOut": {
+        "properties": {
+          "canManage": {
+            "description": "The caller may set and clear the profile (owner)",
+            "title": "Canmanage",
+            "type": "boolean"
+          },
+          "diagnostics": {
+            "description": "Parts of the profile that do not apply (warnings); the stock schema stands in for them",
+            "items": {
+              "$ref": "#/components/schemas/Diagnostic"
+            },
+            "title": "Diagnostics",
+            "type": "array"
+          },
+          "profile": {
+            "anyOf": [
+              {
+                "additionalProperties": true,
+                "type": "object"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "description": "The profile document (osp-panel-profile/0.1); null means the stock panel",
+            "title": "Profile"
+          },
+          "tenantId": {
+            "title": "Tenantid",
+            "type": "string"
+          },
+          "updatedAt": {
+            "anyOf": [
+              {
+                "format": "date-time",
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Updatedat"
+          },
+          "updatedBy": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Updatedby"
+          }
+        },
+        "required": [
+          "tenantId",
+          "profile",
+          "diagnostics",
+          "canManage"
+        ],
+        "title": "PanelProfileOut",
         "type": "object"
       },
       "ParseExpressionRequest": {
@@ -4208,6 +4289,51 @@
         "title": "SetConsent",
         "type": "object"
       },
+      "SetCustomPropertyParams": {
+        "additionalProperties": false,
+        "properties": {
+          "key": {
+            "title": "Key",
+            "type": "string"
+          },
+          "target": {
+            "title": "Target",
+            "type": "string"
+          },
+          "unset": {
+            "default": false,
+            "title": "Unset",
+            "type": "boolean"
+          },
+          "value": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "integer"
+              },
+              {
+                "type": "number"
+              },
+              {
+                "type": "boolean"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "default": null,
+            "title": "Value"
+          }
+        },
+        "required": [
+          "target",
+          "key"
+        ],
+        "title": "SetCustomProperty",
+        "type": "object"
+      },
       "SetDefaultResultsLayoutRequest": {
         "additionalProperties": false,
         "properties": {
@@ -4356,6 +4482,34 @@
           "required"
         ],
         "title": "SetMatrixRowRequired",
+        "type": "object"
+      },
+      "SetPanelProfileRequest": {
+        "additionalProperties": false,
+        "properties": {
+          "profile": {
+            "additionalProperties": true,
+            "description": "The whole profile document; replaces it",
+            "title": "Profile",
+            "type": "object"
+          },
+          "tenantId": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "description": "The lab; needed only if you belong to several labs",
+            "title": "Tenantid"
+          }
+        },
+        "required": [
+          "profile"
+        ],
+        "title": "SetPanelProfileRequest",
         "type": "object"
       },
       "SetPropertyParams": {
@@ -6616,6 +6770,353 @@
         "summary": "Theme Schema",
         "tags": [
           "meta"
+        ]
+      }
+    },
+    "/api/panel-profile": {
+      "delete": {
+        "operationId": "clearPanelProfile",
+        "parameters": [
+          {
+            "in": "query",
+            "name": "tenantId",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "title": "Tenantid"
+            }
+          }
+        ],
+        "responses": {
+          "204": {
+            "description": "Successful Response"
+          },
+          "401": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorBody"
+                }
+              }
+            },
+            "description": "Unauthorized"
+          },
+          "403": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorBody"
+                }
+              }
+            },
+            "description": "Forbidden"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/RejectedBody"
+                }
+              }
+            },
+            "description": "Unprocessable Content"
+          }
+        },
+        "summary": "Clear Profile",
+        "tags": [
+          "panel-profile"
+        ]
+      },
+      "get": {
+        "operationId": "getPanelProfile",
+        "parameters": [
+          {
+            "in": "query",
+            "name": "tenantId",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "title": "Tenantid"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/PanelProfileOut"
+                }
+              }
+            },
+            "description": "Successful Response"
+          },
+          "401": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorBody"
+                }
+              }
+            },
+            "description": "Unauthorized"
+          },
+          "403": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorBody"
+                }
+              }
+            },
+            "description": "Forbidden"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/RejectedBody"
+                }
+              }
+            },
+            "description": "Unprocessable Content"
+          }
+        },
+        "summary": "Get Profile",
+        "tags": [
+          "panel-profile"
+        ]
+      },
+      "put": {
+        "operationId": "setPanelProfile",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/SetPanelProfileRequest"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/PanelProfileOut"
+                }
+              }
+            },
+            "description": "Successful Response"
+          },
+          "401": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorBody"
+                }
+              }
+            },
+            "description": "Unauthorized"
+          },
+          "403": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorBody"
+                }
+              }
+            },
+            "description": "Forbidden"
+          },
+          "404": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorBody"
+                }
+              }
+            },
+            "description": "Not Found"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/RejectedBody"
+                }
+              }
+            },
+            "description": "Unprocessable Content"
+          }
+        },
+        "summary": "Set Profile",
+        "tags": [
+          "panel-profile"
+        ]
+      }
+    },
+    "/api/panel-profile/check/{survey_id}": {
+      "get": {
+        "description": "Warnings about a survey draft's custom values judged by its lab's profile.",
+        "operationId": "checkCustomValues",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "survey_id",
+            "required": true,
+            "schema": {
+              "title": "Survey Id",
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "items": {
+                    "$ref": "#/components/schemas/Diagnostic"
+                  },
+                  "title": "Response Checkcustomvalues",
+                  "type": "array"
+                }
+              }
+            },
+            "description": "Successful Response"
+          },
+          "401": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorBody"
+                }
+              }
+            },
+            "description": "Unauthorized"
+          },
+          "403": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorBody"
+                }
+              }
+            },
+            "description": "Forbidden"
+          },
+          "404": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorBody"
+                }
+              }
+            },
+            "description": "Not Found"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            },
+            "description": "Validation Error"
+          }
+        },
+        "summary": "Check Survey",
+        "tags": [
+          "panel-profile"
+        ]
+      }
+    },
+    "/api/panel-profile/schemas": {
+      "get": {
+        "description": "The property schemas with the lab's profile applied: the shape of\n``GET /api/meta/property-schemas`` plus ``groupLabels``, ``defaults`` (per question\ntype, for new questions), ``profileApplied`` and the profile's ``diagnostics``.",
+        "operationId": "getEffectivePropertySchemas",
+        "parameters": [
+          {
+            "in": "query",
+            "name": "tenantId",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "title": "Tenantid"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "additionalProperties": true,
+                  "title": "Response Geteffectivepropertyschemas",
+                  "type": "object"
+                }
+              }
+            },
+            "description": "Successful Response"
+          },
+          "401": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorBody"
+                }
+              }
+            },
+            "description": "Unauthorized"
+          },
+          "403": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorBody"
+                }
+              }
+            },
+            "description": "Forbidden"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/RejectedBody"
+                }
+              }
+            },
+            "description": "Unprocessable Content"
+          }
+        },
+        "summary": "Effective Schemas",
+        "tags": [
+          "panel-profile"
         ]
       }
     },

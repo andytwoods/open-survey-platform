@@ -30,6 +30,8 @@ class Action(StrEnum):
     MEMBERS_MANAGE = "members.manage"  # invite, remove, change roles
     THEMES_VIEW = "themes.view"  # the lab theme library (runtime-design §6a)
     THEMES_MANAGE = "themes.manage"  # save, change, delete themes; set the lab default
+    PROFILE_VIEW = "profile.view"  # the lab's property panel profile (property-profiles.md)
+    PROFILE_MANAGE = "profile.manage"  # set or clear it (owner only)
 
 
 class ResourceKind(StrEnum):
@@ -48,10 +50,12 @@ _ACTION_KIND: Mapping[Action, ResourceKind] = {
     Action.MEMBERS_MANAGE: ResourceKind.TENANT,
     Action.THEMES_VIEW: ResourceKind.TENANT,
     Action.THEMES_MANAGE: ResourceKind.TENANT,
+    Action.PROFILE_VIEW: ResourceKind.TENANT,
+    Action.PROFILE_MANAGE: ResourceKind.TENANT,
 }
 
 POLICY: Mapping[Role, frozenset[Action]] = {
-    Role.VIEWER: frozenset({Action.SURVEY_READ, Action.THEMES_VIEW}),
+    Role.VIEWER: frozenset({Action.SURVEY_READ, Action.THEMES_VIEW, Action.PROFILE_VIEW}),
     Role.EDITOR: frozenset(
         {
             Action.SURVEY_READ,
@@ -62,6 +66,7 @@ POLICY: Mapping[Role, frozenset[Action]] = {
             Action.MEMBERS_VIEW,
             Action.THEMES_VIEW,
             Action.THEMES_MANAGE,
+            Action.PROFILE_VIEW,
         }
     ),
     Role.OWNER: frozenset(Action),

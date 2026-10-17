@@ -46,6 +46,11 @@ EXAMPLES: dict[str, list[dict[str, Any]]] = {
         {"page": "p_demo"},
         {"page": "p_main", "type": "single", "index": 0, "id": "newq", "label": "Hi"},
         {"page": "p_extra", "question": {"type": "note", "label": "N"}},
+        {
+            "page": "p_demo",
+            "type": "single",
+            "defaults": {"required": True, "custom.weight": 1, "custom.construct": "x"},
+        },
     ],
     "delete_question": [
         {"id": "why_pear"},
@@ -75,6 +80,12 @@ EXAMPLES: dict[str, list[dict[str, Any]]] = {
         {"target": "b_intro", "property": "title", "value": "X"},
         {"target": "n_rand", "property": "pick", "value": 1},
         {"target": "spare", "property": "choices", "value": [{"value": "c", "label": "C"}]},
+    ],
+    "set_custom_property": [
+        {"target": "age", "key": "construct", "value": "demographics"},
+        {"target": "fruit", "key": "weight", "value": 2.5},
+        {"target": "info", "key": "prereg", "value": True},
+        {"target": "age", "key": "n", "value": 1},
     ],
     "add_page": [
         {"block": "b_main"},

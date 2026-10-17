@@ -16,6 +16,7 @@ no sign-in UI here: the host owns accounts, sessions and sign-out.
 | `appearance` | `src/pages/appearance.ts` | `/surveys/{id}/appearance` | The survey's theme |
 | `results` | `src/pages/results.ts` | `/surveys/{id}/results` | Results: filters, a card per question, Table view (`src/lib/results/`; the view is a lazy chunk) |
 | `themes` | `src/pages/themes.ts` | `/appearance` | The lab's theme library |
+| `profile` | `src/pages/profile.ts` | `/profile` | The lab's property panel profile (optional host link) |
 | `preview-frame` | `src/pages/preview-frame.ts` | `/preview-frame` | One preview device frame (iframe only) |
 
 Dev-only entries (`src/pages/dev/*`, not in the production build): `/?mock` (the shell over

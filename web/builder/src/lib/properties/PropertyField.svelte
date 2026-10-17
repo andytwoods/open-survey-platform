@@ -14,7 +14,7 @@
 		textValue,
 		type OpAddress
 	} from './logic';
-	import type { OpenEditorRequest, PanelDiagnostic, PropertySpec, SetPropertyOp } from './types';
+	import type { OpenEditorRequest, PanelDiagnostic, PanelOp, PropertySpec } from './types';
 
 	/**
 	 * One property: label, the field editor picked by `spec.kind`, help, translation hint
@@ -44,7 +44,7 @@
 		defaultLanguage: string;
 		survey: unknown;
 		diagnostics?: PanelDiagnostic[];
-		onOp: (op: SetPropertyOp) => void;
+		onOp: (op: PanelOp) => void;
 		onOpenEditor?: (request: OpenEditorRequest) => void;
 		onDirty?: (dirty: boolean) => void;
 	} = $props();

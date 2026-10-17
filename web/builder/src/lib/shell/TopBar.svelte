@@ -1,6 +1,7 @@
 <script lang="ts">
 	import ArrowLeft from '@lucide/svelte/icons/arrow-left';
 	import ChartColumn from '@lucide/svelte/icons/chart-column';
+	import SlidersHorizontal from '@lucide/svelte/icons/sliders-horizontal';
 	import CloudAlert from '@lucide/svelte/icons/cloud-alert';
 	import CloudCheck from '@lucide/svelte/icons/cloud-check';
 	import CloudOff from '@lucide/svelte/icons/cloud-off';
@@ -30,6 +31,7 @@
 		view = 'editor',
 		viewTabs = false,
 		results = false,
+		profile = false,
 		registry,
 		health,
 		outlineCollapsible,
@@ -44,6 +46,8 @@
 		viewTabs?: boolean;
 		/** Show the way to the Results page (the host serves it). */
 		results?: boolean;
+		/** Show the way to the lab's panel profile page (the host serves it). */
+		profile?: boolean;
 		registry: CommandRegistry;
 		health: HealthState;
 		outlineCollapsible: boolean;
@@ -82,6 +86,7 @@
 		{ id: 'edit.undo', label: 'Undo', icon: Undo2 },
 		{ id: 'edit.redo', label: 'Redo', icon: Redo2 },
 		...(view === 'appearance' ? [] : [{ id: 'view.appearance', label: 'Appearance', icon: Palette }]),
+		...(profile && view !== 'profile' ? [{ id: 'view.profile', label: 'Panel profile', icon: SlidersHorizontal }] : []),
 		...(results && !resultsInBar && view !== 'results'
 			? [{ id: 'view.results', label: 'Results', icon: ChartColumn }]
 			: []),
@@ -124,7 +129,7 @@
 {/snippet}
 
 {#snippet views()}
-	{#if viewTabs && view !== 'appearance'}
+	{#if viewTabs && view !== 'appearance' && view !== 'profile'}
 		<nav class="views" aria-label="Builder views">
 			<button
 				type="button"
@@ -160,7 +165,7 @@
 {/snippet}
 
 {#snippet back()}
-	{#if view === 'appearance'}
+	{#if view === 'appearance' || view === 'profile'}
 		<Button onclick={() => registry.run('view.editor')}>
 			<ArrowLeft size={16} aria-hidden="true" />
 			Back to editor
@@ -274,7 +279,7 @@
 				/>
 				<IconButton icon={Undo2} label="Undo" {...sc('edit.undo')} onclick={() => registry.run('edit.undo')} />
 				<IconButton icon={Redo2} label="Redo" {...sc('edit.redo')} onclick={() => registry.run('edit.redo')} />
-				{#if view === 'appearance'}
+				{#if view === 'appearance' || view === 'profile'}
 					{@render back()}
 				{:else}
 					<IconButton icon={Palette} label="Appearance" onclick={() => registry.run('view.appearance')} />

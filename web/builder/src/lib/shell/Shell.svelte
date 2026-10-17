@@ -17,6 +17,8 @@
 	import type { PublishProblem } from '../publish/model';
 	import { settingsCommands } from '../settings/commands';
 	import SettingsView from '../settings/SettingsView.svelte';
+	import { profileCommands } from '../profile/commands';
+	import ProfileView from '../profile/ProfileView.svelte';
 	import { onDestroy, onMount, tick, untrack } from 'svelte';
 	import { CommandRegistry } from '../commands/registry';
 	import { detectMac } from '../commands/shortcut';
@@ -181,7 +183,19 @@
 		if (!page) return toast('Add a page first.');
 		rememberType(type);
 		lastType = type;
-		const out = await store.submit([{ op: 'add_question', params: { page, type, ...(index !== undefined ? { index } : {}) } }]);
+		// The lab profile's defaults for this type (effective schemas) start the question off.
+		const defaults = propertySchemas.doc?.defaults?.[type];
+		const out = await store.submit([
+			{
+				op: 'add_question',
+				params: {
+					page,
+					type,
+					...(index !== undefined ? { index } : {}),
+					...(defaults && Object.keys(defaults).length ? { defaults } : {})
+				}
+			}
+		]);
 		if (out.status !== 'applied') return;
 		const id = addedQuestionId(out.result.patch);
 		if (id) {
@@ -318,6 +332,8 @@
 
 	/** Each view is its own page, at the host's URL for it (host/links.ts). */
 	const routeOf = (v: BuilderView, hash?: string) => {
+		// The lab's panel profile page is survey-less; the host may not serve it.
+		if (v === 'profile') return optionalLink('profile') ?? link('list');
 		if (store) {
 			const id = store.surveyId;
 			if (v === 'results') return optionalLink('results', { id }, { hash }) ?? link('editor', { id });
@@ -444,6 +460,15 @@
 			open: () => goto(routeOf('results'))
 		})
 	);
+	// The lab's panel profile page (B21), when the host serves it (its link is optional).
+	const hasProfile = optionalLink('profile') !== null;
+	const offProfile = registry.registerAll(
+		profileCommands({
+			inProfile: () => view === 'profile',
+			canOpen: () => hasProfile,
+			open: () => goto(routeOf('profile'))
+		})
+	);
 	// Loaded only on the Results page, so the editor's pages never fetch its code.
 	const resultsView = $derived(view === 'results' && store ? import('../results/ResultsView.svelte') : null);
 
@@ -468,6 +493,7 @@
 	}
 
 	onDestroy(() => {
+		offProfile();
 		offResults();
 		offSettings();
 		offCommands();
@@ -518,6 +544,7 @@
 		{view}
 		viewTabs={!!store}
 		results={hasResults}
+		profile={hasProfile}
 		{registry}
 		health={health.state}
 		{outlineCollapsible}
@@ -540,6 +567,10 @@
 	{:else if view === 'appearance'}
 		<main id="pane-appearance" class="appearance" aria-label="Appearance">
 			<AppearanceView {store} />
+		</main>
+	{:else if view === 'profile'}
+		<main id="pane-profile" class="flow" aria-labelledby="profile-heading">
+			<ProfileView />
 		</main>
 	{:else if view === 'results' && store}
 		<main id="pane-results" class="flow" aria-labelledby="results-heading">

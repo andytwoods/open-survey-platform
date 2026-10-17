@@ -67,6 +67,9 @@ class QuestionInfo:
     matrix_label: dict[str, str] | None = None
     # A slider (C2c-3): {"valueType", "min", "max", "step"}.
     scale: dict[str, Any] | None = None
+    # The lab's own annotations on the question (planning/property-profiles.md §5); a
+    # matrix row carries its matrix's.
+    custom: dict[str, Any] | None = None
 
 
 @dataclass(frozen=True)
@@ -235,6 +238,7 @@ def build_layout(version: SurveyVersion, split: Collection[str] = ()) -> Layout:
                                 block=block_id,
                                 matrix=q.id,
                                 matrix_label=lay.text(q.label),
+                                custom=dict(q.custom) if q.custom else None,
                             )
                         )
                     continue
@@ -283,6 +287,7 @@ def build_layout(version: SurveyVersion, split: Collection[str] = ()) -> Layout:
                             if isinstance(q, SliderQuestion)
                             else None
                         ),
+                        custom=dict(q.custom) if q.custom else None,
                     )
                 )
 

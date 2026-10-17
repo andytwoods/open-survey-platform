@@ -458,6 +458,20 @@ results_layout_defaults = Table(
     ),
 )
 
+# --- Property panel profiles (task B21, migration 0010_panel_profiles) -------------------
+# One profile per lab (planning/property-profiles.md §3): which properties researchers see,
+# their order, group headings, defaults for new questions and the lab's custom properties.
+# ``body`` is opaque here (``osp_spec.panel_profile`` validates it in osp-app). No row means
+# the stock panel. Owners only; every change is audited.
+panel_profiles = Table(
+    "panel_profiles",
+    metadata,
+    Column("tenant_id", ID, ForeignKey("tenants.id"), primary_key=True),
+    Column("body", JsonType, nullable=False),
+    Column("updated_by", String(80), nullable=False),
+    _ts("updated_at"),
+)
+
 #: (table, ciphertext column, key-id column) for every encrypted field. The AEAD field
 #: name is the ciphertext column without ``_ct``; the row id is the table's ``id``.
 ENCRYPTED_FIELDS: tuple[tuple[Table, str, str], ...] = (

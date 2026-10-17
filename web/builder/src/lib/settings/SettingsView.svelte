@@ -3,7 +3,7 @@
 	import { api } from '../api';
 	import { defaultLanguage } from '../model/outline';
 	import PropertyPanel from '../properties/PropertyPanel.svelte';
-	import { propertySchemas, schemaFor } from '../properties/schemas.svelte';
+	import { fetchPropertySchemas, propertySchemas, schemaFor } from '../properties/schemas.svelte';
 	import type { SurveyStore } from '../sync/survey-store.svelte';
 	import ConsentEditor from './ConsentEditor.svelte';
 	import { LOCAL_COPIES, SAVE_MODES, localCopyOf, saveModeOf } from './explanations';
@@ -45,7 +45,7 @@
 	let retentionError = $state<string | null>(null);
 
 	onMount(() => {
-		void propertySchemas.load(() => api.GET('/api/meta/property-schemas'));
+		void propertySchemas.load(fetchPropertySchemas);
 		void (async () => {
 			try {
 				const { data } = await api.GET('/api/meta/retention');

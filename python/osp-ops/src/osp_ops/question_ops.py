@@ -62,12 +62,33 @@ class AddQuestion(Params):
     id: str | None = None
     label: str | dict[str, str] | None = None
     question: dict[str, JsonValue] | None = None  # a full question object (used by undo)
+    # Values the new question starts with beyond the stock ones: the lab panel profile's
+    # defaults (planning/property-profiles.md §6), as `property` or `custom.<key>`.
+    defaults: dict[str, JsonValue] | None = None
+
+
+NOT_DEFAULTABLE = frozenset({"id", "type", "custom"})
+CUSTOM_PREFIX = "custom."
+
+
+def _apply_defaults(q: dict[str, Any], defaults: dict[str, JsonValue]) -> None:
+    for key, value in defaults.items():
+        if key in NOT_DEFAULTABLE or "." in key and not key.startswith(CUSTOM_PREFIX):
+            raise OpError("op.params", f"{key[:40]!r} cannot be a default for a new question")
+        if key.startswith(CUSTOM_PREFIX):
+            custom = q.setdefault("custom", {})
+            if not isinstance(custom, dict):
+                raise OpError("op.params", "`custom` must be an object")
+            custom[key[len(CUSTOM_PREFIX) :]] = copy.deepcopy(value)
+        else:
+            q[key] = copy.deepcopy(value)
 
 
 @op("add_question", AddQuestion, label="Add question", area="questions")
 def add_question(ctx: Ctx, p: AddQuestion) -> Invocation:
     """Insert a new question into a page (default: at the end). With `question`, insert
-    that object as given (an id is generated if it has none)."""
+    that object as given (an id is generated if it has none). `defaults` sets further
+    properties (`required`, or a lab property as `custom.<key>`) before validation."""
     items = _page_of(ctx, p.page)
     if p.question is not None:
         q = copy.deepcopy(dict(p.question))
@@ -76,6 +97,8 @@ def add_question(ctx: Ctx, p: AddQuestion) -> Invocation:
     else:
         qid = claim_id(ctx, p.id, "q")
         q = new_question(qid, p.type, p.label)
+    if p.defaults:
+        _apply_defaults(q, p.defaults)
     insert_at(items, p.index, q)
     ctx.touch()
     return Invocation(op="delete_question", params={"id": qid, "force": True})

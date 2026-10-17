@@ -4,15 +4,16 @@
  * Display and op-shaping only; validation is the server's job (AGENTS.md rule 8).
  */
 import { exprToText } from '../cards/logic';
-import type {
-	EnumOption,
-	Entity,
-	LocalisedText,
-	PanelDiagnostic,
-	PropertyKind,
-	PropertySpec,
-	SetPropertyOp,
-	TypeSchema
+import {
+	CUSTOM_PREFIX,
+	type EnumOption,
+	type Entity,
+	type LocalisedText,
+	type PanelDiagnostic,
+	type PanelOp,
+	type PropertyKind,
+	type PropertySpec,
+	type TypeSchema
 } from './types';
 
 /** Field editor kinds the panel implements (the completeness guard checks this list). */
@@ -36,6 +37,20 @@ export const TEXT_DEBOUNCE_MS = 600;
 
 const isObj = (v: unknown): v is Record<string, unknown> =>
 	typeof v === 'object' && v !== null && !Array.isArray(v);
+
+/** A lab-defined property (`custom.<key>` in an effective schema)? */
+export function isCustomKey(key: string): boolean {
+	return key.startsWith(CUSTOM_PREFIX) && key.length > CUSTOM_PREFIX.length;
+}
+
+/** A group heading: the profile's override for it, else its name. */
+export function groupLabel(
+	labels: Record<string, LocalisedText> | undefined,
+	name: string,
+	language: string
+): string {
+	return (labels && isObj(labels) && localised(labels[name], language)) || name;
+}
 
 /** A schema label/help in `language`, falling back to English, then any language. */
 export function localised(text: LocalisedText | undefined, language: string): string {
@@ -91,7 +106,9 @@ export interface OpAddress {
 /**
  * Where `set_property` writes a schema key. Questions, pages and blocks are addressed by
  * id; survey keys are `<object>.<field>` on the `/metadata` or `/settings` pseudo-targets.
- * Null when the key can't be addressed (the field is then shown read-only).
+ * A question's `custom.<key>` (a lab-defined property) keeps its dotted key: `setPropertyOp`
+ * turns it into `set_custom_property`. Null when the key can't be addressed (the field is
+ * then shown read-only).
  */
 export function opAddress(entity: Entity, target: unknown, key: string): OpAddress | null {
 	if (entity === 'survey') {
@@ -99,12 +116,21 @@ export function opAddress(entity: Entity, target: unknown, key: string): OpAddre
 		if (parts.length !== 2) return null;
 		return { target: `/${parts[0]}`, property: parts[1] };
 	}
-	if (!isObj(target) || typeof target.id !== 'string' || !target.id || key.includes('.')) return null;
+	if (!isObj(target) || typeof target.id !== 'string' || !target.id) return null;
+	if (key.includes('.') && !(entity === 'question' && isCustomKey(key))) return null;
 	return { target: target.id, property: key };
 }
 
-/** A `set_property` op; `undefined` means unset (back to the model default). */
-export function setPropertyOp(addr: OpAddress, value: unknown): SetPropertyOp {
+/**
+ * The op for a value: `set_property`, or `set_custom_property` for a `custom.<key>` address;
+ * `undefined` means unset (back to the model default / no value).
+ */
+export function setPropertyOp(addr: OpAddress, value: unknown): PanelOp {
+	if (isCustomKey(addr.property)) {
+		const base = { target: addr.target, key: addr.property.slice(CUSTOM_PREFIX.length) };
+		if (value === undefined) return { op: 'set_custom_property', params: { ...base, unset: true } };
+		return { op: 'set_custom_property', params: { ...base, value } };
+	}
 	if (value === undefined) return { op: 'set_property', params: { ...addr, unset: true } };
 	return { op: 'set_property', params: { ...addr, value } };
 }

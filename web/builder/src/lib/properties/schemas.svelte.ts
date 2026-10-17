@@ -2,9 +2,25 @@
  * The property schemas (`GET /api/meta/property-schemas`), fetched once per page load and
  * shared by every panel, plus `schemaFor`: which schema describes a selected object.
  */
+import { api } from '../api';
 import type { PropertySchemasDoc, TypeSchema } from './types';
 
 type Fetcher = () => Promise<{ data?: unknown; error?: unknown }>;
+
+/**
+ * The schemas the builder renders: the lab's effective ones (its panel profile applied,
+ * `GET /api/panel-profile/schemas`), falling back to the stock `GET /api/meta/property-schemas`
+ * when a host does not serve the profile routes or the call fails.
+ */
+export async function fetchPropertySchemas(): Promise<{ data?: unknown; error?: unknown }> {
+	try {
+		const r = await api.GET('/api/panel-profile/schemas');
+		if (r.data) return r;
+	} catch {
+		// fall through to the stock schemas
+	}
+	return api.GET('/api/meta/property-schemas');
+}
 
 function isDoc(v: unknown): v is PropertySchemasDoc {
 	return (

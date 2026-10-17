@@ -2,7 +2,7 @@
 	import { theme } from '@osp/ui-components';
 	import fixture from '#lib/properties/fixtures/property-schemas.json';
 	import PropertyPanel from '#lib/properties/PropertyPanel.svelte';
-	import type { OpenEditorRequest, PanelDiagnostic, PropertySchemasDoc, SetPropertyOp } from '#lib/properties/types.js';
+	import type { OpenEditorRequest, PanelDiagnostic, PropertySchemasDoc, PanelOp } from '#lib/properties/types.js';
 	import { onMount } from 'svelte';
 
 	// Developer page for the property panel (task B4): every schema from the committed
@@ -45,16 +45,20 @@
 		}
 	];
 
-	function onOp(op: SetPropertyOp) {
+	function onOp(op: PanelOp) {
 		log = [...log, JSON.stringify(op)];
-		const { target: id, property, value, unset } = op.params;
+		const { target: id, value, unset } = op.params;
+		const property = op.op === 'set_property' ? op.params.property : `custom.${op.params.key}`;
 		const key = id === '/metadata' || id === '/settings' ? 'survey' : schema.entity;
 		setTimeout(() => {
 			// The "server" echoes the edit back as a new object, like a patch would.
 			const next: Record<string, unknown> = structuredClone($state.snapshot(objects[key]));
 			const holder = (id.startsWith('/') ? (next[id.slice(1)] ??= {}) : next) as Record<string, unknown>;
-			if (unset) delete holder[property];
-			else holder[property] = value;
+			const [obj, field] = property.startsWith('custom.')
+				? [(holder.custom ??= {}) as Record<string, unknown>, property.slice('custom.'.length)]
+				: [holder, property];
+			if (unset) delete obj[field];
+			else obj[field] = value;
 			objects = { ...objects, [key]: next };
 		}, ECHO_MS);
 	}
