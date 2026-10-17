@@ -42,8 +42,9 @@ it unless `OSP_ENV=dev` and the bind is loopback.
 
 ## 2. Serving a builder page
 
-There are seven pages: `list`, `editor`, `flow`, `settings`, `appearance` (one survey's
-theme), `themes` (the lab's theme library) and `preview-frame`. You choose their URLs.
+There are eight pages: `list`, `editor`, `flow`, `settings`, `appearance` (one survey's
+theme), `results` (one survey's results, a card per question), `themes` (the lab's theme
+library) and `preview-frame`. You choose their URLs.
 
 1. Serve `web/builder/build/` as static files, for example under `/static/osp/`. Keep its
    folder layout: the files load each other by relative path.
@@ -72,11 +73,12 @@ The source of truth is `web/builder/src/lib/host/config.ts`:
 interface OspPageConfig {
   version: 1;
   apiBase: string;                 // replaces the `/api` prefix of every call, e.g. "/osp/api"
-  surveyId?: string;               // required on editor, flow, settings, appearance
+  surveyId?: string;               // required on editor, flow, settings, appearance, results
   tenantId?: string;               // which lab, if the user is in several (a selector only)
   links: {                         // URL templates; {id} is replaced (URL-encoded)
     list: string; editor: string; flow: string; settings: string;
     appearance: string; themes: string; previewFrame: string;
+    results?: string;              // optional: without it the Results link is hidden
   };
   csrf?: { header: string; token?: string; cookie?: string }; // sent on POST/PUT/PATCH/DELETE
   onUnauthenticated?: { redirect: string } | 'reload';        // after a 401; default 'reload'
@@ -85,8 +87,11 @@ interface OspPageConfig {
 }
 ```
 
-- **`links`**: all seven are required. `editor`, `flow`, `settings` and `appearance` must
-  contain `{id}`; the page puts the survey id there. Moving between pages is a normal full
+- **`links`**: the first seven are required; `results` is optional (without it the editor
+  shows no Results link, so a config written before the Results page still works).
+  `editor`, `flow`, `settings`, `appearance` and `results` must contain `{id}`; the page
+  puts the survey id there. The Results page needs the `survey.export` role (owner or
+  editor); a viewer sees a "no access" message. Moving between pages is a normal full
   page load to these URLs.
 - **`csrf`**: your own CSRF scheme, not ours. The page sends `header` on every write, with
   `token`, or with the value of the cookie named `cookie`. One of the two is required.
@@ -361,6 +366,7 @@ LINKS = {
     "flow": "/research/surveys/{id}/flow/",
     "settings": "/research/surveys/{id}/settings/",
     "appearance": "/research/surveys/{id}/appearance/",
+    "results": "/research/surveys/{id}/results/",
     "themes": "/research/appearance/",
     "previewFrame": "/research/preview-frame/",
 }
@@ -433,6 +439,7 @@ urlpatterns = [
     path("research/surveys/<str:survey_id>/flow/", views.osp_page, {"page": "flow"}),
     path("research/surveys/<str:survey_id>/settings/", views.osp_page, {"page": "settings"}),
     path("research/surveys/<str:survey_id>/appearance/", views.osp_page, {"page": "appearance"}),
+    path("research/surveys/<str:survey_id>/results/", views.osp_page, {"page": "results"}),
     path("research/appearance/", views.osp_page, {"page": "themes"}),
     path("research/preview-frame/", views.osp_page, {"page": "preview-frame"}),
     path("osp/api/<path:rest>", views.osp_api_proxy),

@@ -1,5 +1,6 @@
 <script lang="ts">
 	import ArrowLeft from '@lucide/svelte/icons/arrow-left';
+	import ChartColumn from '@lucide/svelte/icons/chart-column';
 	import CloudAlert from '@lucide/svelte/icons/cloud-alert';
 	import CloudCheck from '@lucide/svelte/icons/cloud-check';
 	import CloudOff from '@lucide/svelte/icons/cloud-off';
@@ -28,6 +29,7 @@
 		saveState = 'saved',
 		view = 'editor',
 		viewTabs = false,
+		results = false,
 		registry,
 		health,
 		outlineCollapsible,
@@ -40,6 +42,8 @@
 		view?: BuilderView;
 		/** Show the Questions / Flow switch (a real survey is open). */
 		viewTabs?: boolean;
+		/** Show the way to the Results page (the host serves it). */
+		results?: boolean;
 		registry: CommandRegistry;
 		health: HealthState;
 		outlineCollapsible: boolean;
@@ -71,11 +75,16 @@
 	const layout = $derived(innerWidth >= 1024 ? 'wide' : innerWidth >= 768 ? 'compact' : 'stacked');
 	const iconOnly = $derived(innerWidth < 480);
 
+	// Results sits next to Preview; in the two-row phone layout it moves into the menu.
+	const resultsInBar = $derived(results && layout !== 'stacked');
 	const overflow = $derived([
 		{ id: 'palette.open', label: 'Command palette', icon: Search },
 		{ id: 'edit.undo', label: 'Undo', icon: Undo2 },
 		{ id: 'edit.redo', label: 'Redo', icon: Redo2 },
 		...(view === 'appearance' ? [] : [{ id: 'view.appearance', label: 'Appearance', icon: Palette }]),
+		...(results && !resultsInBar && view !== 'results'
+			? [{ id: 'view.results', label: 'Results', icon: ChartColumn }]
+			: []),
 		{ id: 'view.toggleTheme', label: themeLabel, icon: isDark ? Sun : Moon }
 	]);
 
@@ -160,6 +169,17 @@
 {/snippet}
 
 {#snippet primary()}
+	{#if resultsInBar}
+		<Button
+			class="labelled"
+			variant="secondary"
+			aria-current={view === 'results' ? 'page' : undefined}
+			onclick={() => view !== 'results' && registry.run('view.results')}
+		>
+			<ChartColumn size={16} aria-hidden="true" />
+			<span class="label">Results</span>
+		</Button>
+	{/if}
 	<Button
 		class="labelled"
 		variant={viewTabs ? 'secondary' : 'primary'}

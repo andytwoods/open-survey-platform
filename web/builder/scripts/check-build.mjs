@@ -5,7 +5,7 @@ import { existsSync, readFileSync } from 'node:fs';
 import { dirname, join } from 'node:path';
 import { fileURLToPath } from 'node:url';
 
-const PAGES = ['list', 'editor', 'flow', 'settings', 'appearance', 'themes', 'preview-frame'];
+const PAGES = ['list', 'editor', 'flow', 'settings', 'appearance', 'results', 'themes', 'preview-frame'];
 const build = join(dirname(fileURLToPath(import.meta.url)), '..', process.argv[2] ?? 'build');
 const fail = (msg) => {
 	console.error(`check-build: ${msg}`);

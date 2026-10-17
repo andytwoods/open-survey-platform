@@ -21,7 +21,8 @@
 	import { CommandRegistry } from '../commands/registry';
 	import { detectMac } from '../commands/shortcut';
 	import { health } from '../health.svelte';
-	import { leaveTo, link } from '../host/links';
+	import { leaveTo, link, optionalLink } from '../host/links';
+	import { resultsCommands } from '../results/commands';
 	import { MOCK_SURVEY } from '../mock/survey';
 	import { addedQuestionId, allIds, outlineFromSurvey, surveyTitle, targetPage } from '../model/outline';
 	import { selection } from '../selection.svelte';
@@ -260,6 +261,7 @@
 	const routeOf = (v: BuilderView, hash?: string) => {
 		if (store) {
 			const id = store.surveyId;
+			if (v === 'results') return optionalLink('results', { id }, { hash }) ?? link('editor', { id });
 			const name = v === 'flow' || v === 'settings' || v === 'appearance' ? v : 'editor';
 			return link(name, { id }, { hash });
 		}
@@ -362,6 +364,18 @@
 		})
 	);
 
+	// The Results page (V2), when the host serves it (its link is optional).
+	const hasResults = $derived(!!store && optionalLink('results', { id: store.surveyId }) !== null);
+	const offResults = registry.registerAll(
+		resultsCommands({
+			inResults: () => view === 'results',
+			canOpen: () => hasResults,
+			open: () => goto(routeOf('results'))
+		})
+	);
+	// Loaded only on the Results page, so the editor's pages never fetch its code.
+	const resultsView = $derived(view === 'results' && store ? import('../results/ResultsView.svelte') : null);
+
 	/** A publish problem's link: the settings section, the Appearance view or the item. */
 	async function goToProblem(p: PublishProblem) {
 		if (!store) return;
@@ -383,6 +397,7 @@
 	}
 
 	onDestroy(() => {
+		offResults();
 		offSettings();
 		offCommands();
 		offAppearance();
@@ -430,6 +445,7 @@
 		saveState={store?.saveState ?? 'saved'}
 		{view}
 		viewTabs={!!store}
+		results={hasResults}
 		{registry}
 		health={health.state}
 		{outlineCollapsible}
@@ -452,6 +468,18 @@
 	{:else if view === 'appearance'}
 		<main id="pane-appearance" class="appearance" aria-label="Appearance">
 			<AppearanceView {store} />
+		</main>
+	{:else if view === 'results' && store}
+		<main id="pane-results" class="flow" aria-labelledby="results-heading">
+			{#if resultsView}
+				{#await resultsView}
+					<p class="loading-view" role="status">Loading results…</p>
+				{:then m}
+					<m.default surveyId={store.surveyId} survey={store.survey} publishedVersions={store.publishedVersions} />
+				{:catch}
+					<p class="loading-view" role="alert">The results page could not be loaded. Reload to try again.</p>
+				{/await}
+			{/if}
 		</main>
 	{:else if view === 'settings' && store}
 		<main id="pane-settings" class="flow" aria-labelledby="settings-heading">
@@ -648,6 +676,11 @@
 	.flow {
 		overflow: auto;
 		background: var(--color-bg);
+	}
+	.loading-view {
+		margin: 0;
+		padding: var(--space-5) var(--space-4);
+		color: var(--color-text-muted);
 	}
 	.panes {
 		position: relative;

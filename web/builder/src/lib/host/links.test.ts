@@ -6,6 +6,7 @@ import {
 	LEAVE_QUESTION,
 	link,
 	linkFrom,
+	optionalLink,
 	registerSaveGuard,
 	resetLeaveState,
 	setPageConfig,
@@ -37,6 +38,15 @@ describe('links', () => {
 		expect(link('settings', { id: 's1' }, { hash: 'retention' })).toBe('/osp/s/s1/settings/?tab=1#retention');
 		expect(link('editor', { id: 's1' }, { hash: 'select=q 1' })).toBe('/osp/s/s1/#select=q%201');
 		expect(link('themes', {}, { query: { x: '1 2' } })).toBe('/osp/themes/?x=1+2');
+	});
+
+	it('give no URL for an optional page the host does not serve (results)', () => {
+		setPageConfig({ version: 1, apiBase: '/osp/api', links: HOST_LINKS } satisfies OspPageConfig);
+		expect(optionalLink('results', { id: 's1' })).toBeNull();
+		setPageConfig({ version: 1, apiBase: '/osp/api', links: { ...HOST_LINKS, results: '/osp/s/{id}/results/' } });
+		expect(optionalLink('results', { id: 's1' })).toBe('/osp/s/s1/results/');
+		setPageConfig(null);
+		expect(optionalLink('results', { id: 's1' })).toBe('/surveys/s1/results');
 	});
 
 	it("default to today's URLs without a config", () => {
