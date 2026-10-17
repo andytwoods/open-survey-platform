@@ -149,9 +149,11 @@
 	function paintTheme() {
 		const root = document.documentElement;
 		const theme = currentTheme;
-		for (const [k, v] of Object.entries(themeToCssVars(theme, resolveMode(theme, !!darkQuery?.matches)))) {
-			root.style.setProperty(k, v);
-		}
+		const vars = themeToCssVars(theme, resolveMode(theme, !!darkQuery?.matches));
+		for (const [k, v] of Object.entries(vars)) root.style.setProperty(k, v);
+		// The browser's toolbar colour follows the page background.
+		const bg = vars['--color-bg'];
+		if (bg) document.querySelector('meta[name="theme-color"]')?.setAttribute('content', bg);
 		for (const [k, v] of Object.entries(themeDataAttributes(theme))) root.setAttribute(k, v);
 	}
 	function applyTheme(theme: Theme) {
