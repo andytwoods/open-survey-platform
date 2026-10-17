@@ -55,8 +55,9 @@ lists:
 | Rank order, constant sum, file upload, signature, heat maps, hot spots, drill-downs, dual-scale and text arrays, "Other" text boxes, custom validation, loop & merge, triggers, scoring | reported as not carried over |
 
 A file exported **from** this platform as `.lss` imports back with its question ids,
-types, choices, bounds, assignments and conditions (the exporter's own helper equations
-are dropped with a note).
+types, choices, bounds, assignments and conditions. The exporter's random-draw helpers are
+replaced by this platform's own randomisation (noted in the preview); its end-outcome
+helper, if any, comes back as a computed variable you can delete.
 
 ## The editor
 
