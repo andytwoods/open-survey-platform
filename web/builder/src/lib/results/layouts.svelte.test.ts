@@ -9,6 +9,8 @@ import type { ResultsSource } from './results.svelte';
 import ResultsView from './ResultsView.svelte';
 import type { LayoutSettings, ResultsLayout, ResultsQuery, ResultsResponse } from './types';
 
+const AXE_TIMEOUT = 20_000;
+
 // Saved layouts on the Results page (task V5b) in jsdom, against an in-memory layout store
 // that behaves like V5a's (unique names: 409; one default). Opening the default, the
 // unsaved-changes indicator, Save / Save as / rename / delete / default, a refused layout
@@ -328,6 +330,9 @@ describe('saved layouts on the Results page', () => {
 		expect(unsaved()).toBe(false);
 	});
 
+	// axe walks every card, chart SVG included, through jsdom's getComputedStyle: ~1.3 s on a
+	// laptop, ~6 s on a 4-core CI runner beside the other vitest workers. It is CPU-bound, with
+	// no state to wait on, so it gets a budget past vitest's 5 s default.
 	it('passes axe with the layout bar, a notice and a hidden card', async () => {
 		const { t } = await setup([{ name: 'Paper', settings: paperLayout(), isDefault: true }]);
 		await screen.findByTestId('layout-notices');
@@ -335,5 +340,5 @@ describe('saved layouts on the Results page', () => {
 			rules: { 'color-contrast': { enabled: false }, region: { enabled: false } }
 		});
 		expect(res.violations.map((v) => `${v.id}: ${v.nodes.map((n) => n.target).join(', ')}`)).toEqual([]);
-	});
+	}, AXE_TIMEOUT);
 });
