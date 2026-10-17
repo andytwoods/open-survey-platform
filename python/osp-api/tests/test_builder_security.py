@@ -12,6 +12,7 @@ SID = "{sid}"
 # Every builder route: (method, path, json body). Paths with {sid} target lab A's survey.
 ROUTES: list[tuple[str, str, dict | None]] = [
     ("GET", "/api/auth/me", None),
+    ("GET", "/api/me", None),
     ("POST", "/api/auth/logout", None),
     ("POST", "/api/auth/totp/enrol", None),
     ("POST", "/api/auth/totp/verify", {"code": "000000"}),
@@ -76,7 +77,7 @@ def test_route_list_covers_every_builder_route(benv):
         (method.upper(), path.replace("{survey_id}", SID))
         for path, item in benv.app.openapi()["paths"].items()
         for method, op in item.items()
-        if set(op.get("tags", ())) & {"auth", "surveys", "ops", "meta", "themes"}
+        if set(op.get("tags", ())) & {"auth", "me", "surveys", "ops", "meta", "themes"}
     }
     listed = {(m, p.split("?")[0]) for m, p, _ in ROUTES}
     assert {(m, p) for m, p in app_routes if p not in PUBLIC} == listed

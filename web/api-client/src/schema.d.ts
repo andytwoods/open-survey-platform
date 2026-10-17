@@ -123,6 +123,23 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
+    "/api/me": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** Get Me */
+        get: operations["getIdentity"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
     "/api/meta/expressions/parse": {
         parameters: {
             query?: never;
@@ -1296,6 +1313,15 @@ export interface components {
             /** Transactionid */
             transactionId: string;
         };
+        /** Identity */
+        Identity: {
+            /** Displayname */
+            displayName?: string | null;
+            /** Memberships */
+            memberships: components["schemas"]["LabMembership"][];
+            /** Userid */
+            userId: string;
+        };
         /** InsertFlowNode */
         InsertFlowNodeParams: {
             /** @default null */
@@ -1328,6 +1354,13 @@ export interface components {
             };
         };
         JsonValue: unknown;
+        /** LabMembership */
+        LabMembership: {
+            /** Role */
+            role: string;
+            /** Tenantid */
+            tenantId: string;
+        };
         /** LabThemeOut */
         LabThemeOut: {
             /**
@@ -2816,6 +2849,35 @@ export interface operations {
                 };
                 content: {
                     "application/json": components["schemas"]["Health"];
+                };
+            };
+        };
+    };
+    getIdentity: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["Identity"];
+                };
+            };
+            /** @description Unauthorized */
+            401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorBody"];
                 };
             };
         };

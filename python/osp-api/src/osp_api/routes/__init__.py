@@ -14,6 +14,7 @@ from . import (
     data_export,
     export_check,
     expressions,
+    me,
     meta,
     ops,
     preview,
@@ -52,6 +53,7 @@ def install(
     install_error_handlers(app)
     for module in (
         auth,
+        me,
         surveys,
         data_export,
         repro,

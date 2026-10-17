@@ -1143,6 +1143,38 @@
         "title": "HistoryItem",
         "type": "object"
       },
+      "Identity": {
+        "properties": {
+          "displayName": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Displayname"
+          },
+          "memberships": {
+            "items": {
+              "$ref": "#/components/schemas/LabMembership"
+            },
+            "title": "Memberships",
+            "type": "array"
+          },
+          "userId": {
+            "title": "Userid",
+            "type": "string"
+          }
+        },
+        "required": [
+          "userId",
+          "memberships"
+        ],
+        "title": "Identity",
+        "type": "object"
+      },
       "InsertFlowNodeParams": {
         "additionalProperties": false,
         "properties": {
@@ -1219,6 +1251,24 @@
         "type": "object"
       },
       "JsonValue": {},
+      "LabMembership": {
+        "properties": {
+          "role": {
+            "title": "Role",
+            "type": "string"
+          },
+          "tenantId": {
+            "title": "Tenantid",
+            "type": "string"
+          }
+        },
+        "required": [
+          "tenantId",
+          "role"
+        ],
+        "title": "LabMembership",
+        "type": "object"
+      },
       "LabThemeOut": {
         "properties": {
           "createdAt": {
@@ -4407,6 +4457,37 @@
         "summary": "Health",
         "tags": [
           "meta"
+        ]
+      }
+    },
+    "/api/me": {
+      "get": {
+        "operationId": "getIdentity",
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Identity"
+                }
+              }
+            },
+            "description": "Successful Response"
+          },
+          "401": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorBody"
+                }
+              }
+            },
+            "description": "Unauthorized"
+          }
+        },
+        "summary": "Get Me",
+        "tags": [
+          "me"
         ]
       }
     },
