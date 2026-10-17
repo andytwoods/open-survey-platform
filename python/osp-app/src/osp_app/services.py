@@ -1,77 +1,96 @@
-"""Wiring: one object holding the auth service and the builder, backed by osp-store."""
+"""Wiring: the builder and participant sessions over osp-store, plus admitting identities.
+
+Researchers are the host's (plan P). :meth:`AppServices.admit` runs once per builder
+request with what the host vouched for: it records the principal (display name, last
+seen) for audit display and makes sure the actor's labs exist (D6).
+"""
 
 from __future__ import annotations
 
-from dataclasses import dataclass
+import threading
+import time
+from dataclasses import dataclass, field
 
 from osp_runtime import SessionService
-from osp_store import AccountStore, Conflict, Store, SystemContext
+from osp_store import Store, SystemContext
 
-from .auth import AuthService, PasswordHasher, Role
-from .auth.model import normalise_email
-from .auth.passwords import PasswordPolicy
-from .auth.ports import Clock, RandomSource, SystemClock, SystemRandom
-from .auth.service import EmailTaken, PasswordRejected
-from .auth.sessions import SessionConfig
+from .auth import Actor
+from .auth.ports import Clock
 from .builder import Builder
+from .identity import Identity
 from .runtime_repo import StoreParticipantRepo
-from .store_repos import StoreMembershipRepo, StoreSessionRepo, StoreUserRepo
+
+SYS = SystemContext("system:identity")
+TOUCH_EVERY_S = 60.0  # refresh a principal's last-seen at most this often (same name)
 
 
 @dataclass
 class AppServices:
     store: Store
-    auth: AuthService
     builder: Builder
     sessions: SessionService  # participant sessions; publish registers plans here
+    auto_create_labs: bool = True  # OSP_AUTO_CREATE_LABS (D6)
+    _labs: set[str] = field(default_factory=set, repr=False)
+    _touched: dict[str, tuple[str | None, float]] = field(default_factory=dict, repr=False)
+    _lock: threading.Lock = field(default_factory=threading.Lock, repr=False)
 
-    def create_account(
-        self, tenant_id: str, email: str, password: str, role: Role | str = Role.VIEWER
-    ) -> str:
-        """Provision a researcher (system/bootstrap use: CLI, tests). Returns the user id.
+    def admit(self, identity: Identity) -> Actor:
+        """The actor a builder request runs as.
 
-        Same password policy as everywhere else; the default role is the least one.
+        - Upserts the ``principals`` row (throttled: once a minute unless the name changed),
+          so audit rows written by this request carry the current display name.
+        - Each lab the host names is created on first sight when ``auto_create_labs`` is on;
+          when it is off, a lab nobody created (``osp-cli lab create``) confers nothing and
+          is dropped from the actor. Roles always come from the host, never from storage.
         """
-        email = normalise_email(email) if isinstance(email, str) else ""
-        problems = self.auth.policy.problems(password, email=email)
-        if problems:
-            raise PasswordRejected(problems)
-        uid = self.auth.rng.token_bytes(16).hex()
-        try:
-            AccountStore(self.store).add_user(
-                SystemContext("system:provision"),
-                user_id=uid,
-                tenant_id=tenant_id,
-                email=email,
-                role=str(role),
-                password_hash=self.auth.hasher.hash(password),
-                created_at=self.auth.clock.now(),
-            )
-        except Conflict as exc:
-            raise EmailTaken("email already registered") from exc
-        return uid
+        actor = identity.actor
+        self._touch(actor.user_id, identity.display_name)
+        roles = {tid: role for tid, role in actor.roles.items() if self._lab_ok(tid)}
+        return actor if len(roles) == len(actor.roles) else Actor(actor.user_id, roles)
+
+    def display_name(self, user_id: str) -> str | None:
+        p = self.store.get_principal(SYS, user_id)
+        return None if p is None else p.display_name
+
+    def create_lab(self, tenant_id: str, name: str | None = None) -> str:
+        """Create a lab with the host's id (CLI / bootstrap use, or JIT). Returns the id."""
+        lab = self.store.ensure_tenant(SYS, tenant_id, name)
+        with self._lock:
+            self._labs.add(lab.id)
+        return lab.id
+
+    def _lab_ok(self, tenant_id: str) -> bool:
+        if tenant_id in self._labs:
+            return True
+        if self.auto_create_labs:
+            self.create_lab(tenant_id)
+            return True
+        if self.store.find_tenant(SYS, tenant_id) is None:
+            return False
+        with self._lock:
+            self._labs.add(tenant_id)
+        return True
+
+    def _touch(self, user_id: str, name: str | None) -> None:
+        now = time.monotonic()
+        with self._lock:
+            seen = self._touched.get(user_id)
+        if seen is not None and (name is None or seen[0] == name) and now - seen[1] < TOUCH_EVERY_S:
+            return
+        stored = self.store.touch_principal(SYS, user_id, name)
+        with self._lock:
+            self._touched[user_id] = (stored.display_name, now)
 
 
 def build_services(
-    store: Store,
-    *,
-    clock: Clock | None = None,
-    rng: RandomSource | None = None,
-    hasher: PasswordHasher | None = None,
-    session_config: SessionConfig | None = None,
-    password_policy: PasswordPolicy | None = None,
+    store: Store, *, clock: Clock | None = None, auto_create_labs: bool = True
 ) -> AppServices:
-    auth = AuthService(
-        users=StoreUserRepo(store),
-        memberships=StoreMembershipRepo(store),
-        sessions=StoreSessionRepo(store),
-        clock=clock or SystemClock(),
-        rng=rng or SystemRandom(),
-        hasher=hasher,
-        session_config=session_config,
-        policy=password_policy or PasswordPolicy.from_env(),
-    )
     sessions = SessionService(
         StoreParticipantRepo(store), **({"clock": clock.now} if clock is not None else {})
     )
-    return AppServices(store=store, auth=auth, builder=Builder(store, sessions), sessions=sessions)
+    return AppServices(
+        store=store,
+        builder=Builder(store, sessions),
+        sessions=sessions,
+        auto_create_labs=auto_create_labs,
+    )

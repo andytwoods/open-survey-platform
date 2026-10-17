@@ -44,7 +44,6 @@ def world(store: Store, tenants) -> World:
     a, b = tenants
     survey, _ = store.create_survey(a, "A's survey", {"secret": "a"})
     store.save_draft(a, survey.id, {"secret": "a2"}, 0, ops=[OpRecord("x", {}, {})])
-    store.set_totp_secret(a, a.actor, "JBSWY3DPEHPK3PXP")
     v = store.publish_version(a, survey.id, b"<xform/>")
     s = store.start_session(a, v.id, 7, {"arm": "A"})
     r = store.record_response(a, v.id, ANS, session_id=s.id)
@@ -52,8 +51,6 @@ def world(store: Store, tenants) -> World:
 
 
 READS: dict[str, Callable[[Store, World], object]] = {
-    "get_user": lambda s, w: s.get_user(w.b, w.user_a),
-    "get_totp_secret": lambda s, w: s.get_totp_secret(w.b, w.user_a),
     "get_survey": lambda s, w: s.get_survey(w.b, w.survey_a),
     "get_draft": lambda s, w: s.get_draft(w.b, w.survey_a),
     "list_ops": lambda s, w: s.list_ops(w.b, w.survey_a),
@@ -64,12 +61,8 @@ READS: dict[str, Callable[[Store, World], object]] = {
 }
 
 WRITES: dict[str, Callable[[Store, World], object]] = {
-    "set_password_hash": lambda s, w: s.set_password_hash(w.b, w.user_a, "pwned"),
-    "set_role": lambda s, w: s.set_role(w.b, w.user_a, "admin"),
-    "set_totp_secret": lambda s, w: s.set_totp_secret(w.b, w.user_a, "AAAA"),
-    "clear_totp_secret": lambda s, w: s.set_totp_secret(w.b, w.user_a, None),
-    "record_login_failure": lambda s, w: s.record_login_failure(w.b, w.user_a),
-    "reset_login_failures": lambda s, w: s.reset_login_failures(w.b, w.user_a),
+    "set_survey_title": lambda s, w: s.set_survey_title(w.b, w.survey_a, "pwned"),
+    "delete_unpublished_survey": lambda s, w: s.delete_unpublished_survey(w.b, w.survey_a),
     "save_draft": lambda s, w: s.save_draft(w.b, w.survey_a, {"x": 1}, 1),
     "set_retention": lambda s, w: s.set_retention(
         w.b, w.survey_a, RetentionPolicy.days_after_close(0)
@@ -90,8 +83,6 @@ WRITES: dict[str, Callable[[Store, World], object]] = {
 def _snapshot(store: Store, w: World) -> tuple:
     a = w.a
     return (
-        store.get_user(a, w.user_a),
-        store.get_totp_secret(a, w.user_a),
         store.get_survey(a, w.survey_a),
         store.get_draft(a, w.survey_a),
         store.list_ops(a, w.survey_a),
@@ -121,13 +112,10 @@ def test_owner_can_do_everything_the_attacker_cannot(store, world):
     owner = World(world.b, world.a, *list(vars(world).values())[2:])
     for fn in READS.values():
         fn(store, owner)
-    assert store.get_totp_secret(world.a, world.user_a) == "JBSWY3DPEHPK3PXP"
 
 
 def test_lists_only_show_own_tenant(store, world, sys_ctx):
     assert store.list_surveys(world.b) == []
-    assert [u.id for u in store.list_users(world.b)] != [world.user_a]
-    assert world.user_a not in {u.id for u in store.list_users(world.b)}
     assert all(e.tenant_id == world.b.tenant_id for e in store.list_audit(world.b))
     assert store.list_versions(world.b, world.survey_a) == []
     assert store.get_tenant(world.b).id == world.b.tenant_id
@@ -135,7 +123,7 @@ def test_lists_only_show_own_tenant(store, world, sys_ctx):
 
 def test_audit_is_tenant_scoped(store, world):
     a_actions = {e.action for e in store.list_audit(world.a)}
-    assert {"survey.create", "version.publish", "user.totp.set"} <= a_actions
+    assert {"survey.create", "version.publish"} <= a_actions
     b_targets = {e.target_id for e in store.list_audit(world.b)}
     assert world.survey_a not in b_targets
 
@@ -164,7 +152,8 @@ def test_tenant_context_cannot_run_system_jobs(store, world):
         lambda: store.run_retention(world.a),
         lambda: store.rotate_keys(world.a),
         lambda: store.create_tenant(world.a, "x"),
-        lambda: store.find_user_for_login(world.a, "r@a.example"),
+        lambda: store.touch_principal(world.a, "someone"),
+        lambda: store.ensure_tenant(world.a, "lab-x"),
         lambda: store.run_retention(SystemContext("not-system")),
     ):
         with pytest.raises(AccessDenied):
@@ -175,8 +164,6 @@ def test_unknown_tenant_cannot_create_rows(store, world):
     ghost = TenantContext("00000000-0000-0000-0000-000000000000", "u")
     with pytest.raises(NotFound):
         store.create_survey(ghost, "x", {})
-    with pytest.raises(NotFound):
-        store.create_user(ghost, "g@example.org", "researcher")
 
 
 @pytest.mark.parametrize("bad_id", [None, 1, "", "x" * 37, ["id"]])

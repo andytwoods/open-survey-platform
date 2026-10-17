@@ -1,7 +1,8 @@
 """``GET /api/me``: who the request acts as, and in which labs (planning/pages-split.md).
 
-The builder pages use it to pick a lab and show a name. It carries no session or CSRF
-details: sign-in belongs to the host.
+The builder pages use it to pick a lab and show a name. Everything comes from the host's
+identity (the provider), with the display name falling back to the last one the host sent
+(``principals``). It carries no session or CSRF details: sign-in belongs to the host.
 """
 
 from __future__ import annotations
@@ -28,10 +29,10 @@ router = APIRouter(prefix="/api", tags=["me"])
 
 @router.get("/me", operation_id="getIdentity", responses=errors(401))
 def get_me(authed: Auth, services: Services) -> Identity:
-    user = services.auth.users.get(authed.actor.user_id)
+    name = authed.display_name or services.display_name(authed.actor.user_id)
     return Identity(
         userId=authed.actor.user_id,
-        displayName=user.email if user is not None else None,
+        displayName=name,
         memberships=[
             LabMembership(tenantId=t, role=str(r)) for t, r in sorted(authed.actor.roles.items())
         ],

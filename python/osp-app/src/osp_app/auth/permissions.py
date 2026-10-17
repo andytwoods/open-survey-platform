@@ -16,7 +16,7 @@ from dataclasses import dataclass, field
 from enum import StrEnum
 from typing import Any
 
-from .model import Membership, Role
+from .model import Role
 
 
 class Action(StrEnum):
@@ -70,18 +70,11 @@ POLICY: Mapping[Role, frozenset[Action]] = {
 
 @dataclass(frozen=True)
 class Actor:
-    """Who is acting. Build it fresh per request from the repos
-    (`AuthService.actor`), so role changes apply immediately."""
+    """Who is acting. Built fresh on every request from what the host says
+    (``osp_app.identity``), so role changes apply immediately."""
 
     user_id: str
     roles: Mapping[str, Role | str] = field(default_factory=dict)  # tenant_id -> role
-
-    @classmethod
-    def from_memberships(cls, user_id: str, memberships: list[Membership]) -> Actor:
-        return cls(
-            user_id=user_id,
-            roles={m.tenant_id: m.role for m in memberships if m.user_id == user_id},
-        )
 
 
 @dataclass(frozen=True)

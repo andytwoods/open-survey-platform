@@ -17,3 +17,9 @@
 - Numbers: `make check` 19 s from a clean `git clean -xdf` + `make install` (2 s from cache), ~15 s warm; 54 pytest + 11 vitest; 309 deps licence-checked (39 Python, 270 JS), 0 violations, MPL-2.0 only in lightningcss (dev).
 - Each guard has a test that injects a violation in a temp copy: upward/sibling/I/O imports, web boundaries (incl. markup-only Svelte imports), synthetic GPL dep, stale contract, Stop hook (block, skip-when-unchanged, 3-block loop cap).
 - Open: CI never run on GitHub (no remote); `harness-quick` is a stub; 4 "Needs human" items in tasks.md (Kit 3 peer warnings, certifi MPL-2.0 at runtime, allowlist gaps, SubagentStop).
+
+## 2026-10-17 — P1: host-owned identity in osp-api (plan P back end)
+
+- Landed: `IdentityProvider` port (`osp_api/identity.py`): `TrustedHeaders` (HMAC-SHA256 over method, path, sorted query, body SHA-256, user, roles, name, timestamp, nonce; keyring `OSP_IDENTITY_KEYS`, 60 s skew, 120 s nonce LRU), `InProcess`, `Dev` (OSP_ENV=dev + loopback only); `osp_api/signing.py` (`sign_identity_headers`, one canonical form for host and server). `osp-api serve` picks `OSP_IDENTITY=trusted-headers|dev`, binds 127.0.0.1. `/api/auth/*`, cookies, CSRF token, passwords, TOTP, sessions and account creation removed; `principals` table + `audit_log.actor_name` snapshot; migration `0007_host_identity` (up/down tested on SQLite and Postgres). Labs created on first sight (`OSP_AUTO_CREATE_LABS`, `osp-cli lab create`). `dev-seed` needs no password.
+- Numbers: make check green; 2511 pytest passed (SQLite), osp-store on Postgres 326 passed; 43 provider tests, builder-security matrix re-run under signed identities.
+- Open: builder still has the login page / RequireAuth (P2); `web/builder/src/lib/auth.svelte.ts` is a stub reading `/api/me`; builder e2e specs still log in via UI; `docs/hosting.md` is P4; nonce cache is per process.

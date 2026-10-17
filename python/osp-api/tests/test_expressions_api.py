@@ -129,9 +129,9 @@ def test_auth_required_and_survey_access_enforced(benv):
     assert r.status_code in (403, 404)
 
 
-def test_csrf_required(benv):
+def test_cross_origin_refused(benv):
     c = benv.login("editor@a.example")
-    del c.headers["X-CSRF-Token"]
+    c.headers["Origin"] = "https://evil.example"
     assert c.post(PARSE, json={"text": "a"}).status_code == 403
 
 

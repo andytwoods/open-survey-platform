@@ -8,7 +8,6 @@ import pytest
 from osp_app.auth import (
     Action,
     Actor,
-    Membership,
     PermissionDenied,
     Resource,
     ResourceKind,
@@ -134,13 +133,6 @@ def test_hostile_roles_mapping_does_not_raise():
             raise RuntimeError("boom")
 
     assert can(Actor("u1", Boom()), Action.SURVEY_READ, Resource.survey(HOME, "s1")) is False
-
-
-def test_actor_from_memberships_ignores_other_users():
-    actor = Actor.from_memberships(
-        "u1", [Membership("u1", HOME, Role.EDITOR), Membership("u2", OTHER, Role.OWNER)]
-    )
-    assert actor.roles == {HOME: Role.EDITOR}
 
 
 def test_resource_kinds_cover_all_actions():

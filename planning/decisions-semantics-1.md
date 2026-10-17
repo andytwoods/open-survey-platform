@@ -13,9 +13,9 @@ These are the open questions from `semantics.md` plus the server questions S-1 t
 |---|---|
 | Retention | A retention policy is **required before publishing** (there's no silent default) |
 | Deleting surveys | Published surveys can't be deleted; owners only; viewers can't export responses |
-| Passwords | **The deployment decides** (user, 16 Oct 2026): `OSP_PASSWORD_MIN_LENGTH`, or institutional SSO later. The default is 8 plus the common-password blocklist |
+| Passwords | **Host-owned (plan P)**, 17 Oct 2026: the host (a university's web app, a reverse proxy with SSO) owns accounts, passwords, two-factor and sessions; osp-api trusts its signed identity (`planning/pages-split.md` D2-D6). Superseded: `OSP_PASSWORD_MIN_LENGTH` and the blocklist are gone |
 | Signup | No self-signup in the MVP; adding it later requires email verification |
-| Cookies and CSRF | Kept as built by C10 |
+| Cookies and CSRF | Host-owned (plan P, D4): no session cookie or CSRF token of ours; osp-api keeps the Origin / Sec-Fetch-Site check and requires `application/json` bodies |
 | Engine-computed orders | The lead checks the 385 realised `<engine>` values (permutation, stability, parity) and writes them into `expected/` after SEM1 |
 
 ## Contested (a decision changes behaviour)

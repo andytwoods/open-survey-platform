@@ -6,7 +6,7 @@ import json
 from pathlib import Path
 
 import pytest
-from osp_app.auth.service import LoginOk
+from osp_app.identity import dev_identity
 from osp_cli.main import main, open_services, researcher, seed_fixture
 from osp_store import generate_key
 
@@ -73,22 +73,42 @@ def test_dev_seed_creates_once_then_reprints(tmp_path, keys, capsys, monkeypatch
     argv = ["dev-seed", *map(str, DEV_FIXTURES), "--db", db, "--data-dir", str(tmp_path)]
     assert main(argv) == 0
     first = capsys.readouterr().out
-    assert "first run" in first and "dev@osp.example" in first
+    assert "first run" in first and "dev-researcher" in first
     assert "participant app not built yet" in first
     state = json.loads((tmp_path / "dev-seed.json").read_text())
     assert [s["fixture"] for s in state["surveys"]] == [p.name for p in DEV_FIXTURES]
-    assert state["password"] in first
+    assert "password" not in first.lower() and "password" not in state
     assert (tmp_path / "dev-seed.json").stat().st_mode & 0o077 == 0
 
-    # The login works (no second factor), and a second run reuses everything.
+    # The dev identity (what osp-api's Dev provider uses) sees them; a second run reuses all.
     services = open_services(db)
-    assert isinstance(services.auth.login(state["email"], state["password"]), LoginOk)
     assert main([*argv, "--participant-link", "http://localhost:5174/r/?s={slug}"]) == 0
     again = capsys.readouterr().out
     assert "first run" not in again
     assert f"localhost:5174/r/?s={state['surveys'][0]['slug']}" in again
-    actor = researcher(services, state["email"], state["password"], state["lab"])
+    actor = services.admit(dev_identity())
     assert len(services.builder.run("survey.list", actor)) == 3
+    assert researcher(services, state["user"], state["lab"]) == actor
+
+
+def test_old_dev_seed_file_asks_for_a_reset(tmp_path, keys, capsys, monkeypatch):
+    monkeypatch.delenv("OSP_ENV", raising=False)
+    (tmp_path / "dev-seed.json").write_text('{"email": "dev@osp.example", "surveys": []}')
+    db = f"sqlite:///{tmp_path / 'dev.db'}"
+    argv = ["dev-seed", str(DEV_FIXTURES[0]), "--db", db, "--data-dir", str(tmp_path)]
+    assert main(argv) == 2
+    assert "dev-reset" in capsys.readouterr().err
+
+
+def test_lab_create(tmp_path, keys, capsys):
+    db = f"sqlite:///{tmp_path / 'lab.db'}"
+    assert main(["lab", "create", "psych-7", "--name", "Psychology", "--db", db]) == 0
+    assert capsys.readouterr().out.strip() == "psych-7"
+    assert main(["lab", "create", "bad lab", "--db", db]) == 2
+    services = open_services(db)
+    services.auto_create_labs = False
+    actor = researcher(services, "u1", "psych-7")
+    assert dict(actor.roles) == {"psych-7": "owner"}
 
 
 def test_dev_seed_refused_in_production(tmp_path, keys, capsys, monkeypatch):

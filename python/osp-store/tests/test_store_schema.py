@@ -12,7 +12,6 @@ from sqlalchemy import LargeBinary, inspect
 
 EXPECTED_TABLES = {
     "tenants",
-    "users",
     "surveys",
     "drafts",
     "op_log",
@@ -30,9 +29,8 @@ EXPECTED_TABLES = {
     "assignment_counters",
     "session_conflicts",
     "response_records",
-    # builder accounts (C10, migration 0004_accounts)
-    "user_mfa",
-    "auth_sessions",
+    # host-owned identity (plan P, migration 0007 dropped users, user_mfa, auth_sessions)
+    "principals",
 }
 
 # Anything that would let us store where a participant connected from or with what.
@@ -84,4 +82,4 @@ def test_participant_fields_are_encrypted_columns():
         assert isinstance(table.c[ct].type, LargeBinary)
         assert kid in table.c
     assert "answers" not in t.responses.c and "instance" not in t.sessions.c
-    assert "totp_secret" not in t.users.c
+    assert "users" not in t.metadata.tables  # plan P: no passwords or TOTP secrets here

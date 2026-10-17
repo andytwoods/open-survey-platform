@@ -11,7 +11,7 @@ from osp_api.serve import ConfigError, Settings, build_app, keyring_env
 
 
 def _dev(tmp_path, **extra: str) -> dict[str, str]:
-    return {"OSP_DATA_DIR": str(tmp_path / ".data"), **extra}
+    return {"OSP_DATA_DIR": str(tmp_path / ".data"), "OSP_IDENTITY": "dev", **extra}
 
 
 def test_dev_defaults(tmp_path):
@@ -61,7 +61,8 @@ def test_build_app_serves_health_and_builder_routes(tmp_path):
     env = _dev(tmp_path)
     c = TestClient(build_app(Settings.from_env(env), env), base_url="https://testserver")
     assert c.get("/api/health").json() == {"status": "ok"}
-    assert c.get("/api/surveys").status_code == 401  # wired, not 503
+    assert c.get("/api/surveys").status_code == 200  # wired, the dev identity
+    assert c.get("/api/me").json()["memberships"] == [{"tenantId": "dev-lab", "role": "owner"}]
     assert (tmp_path / ".data" / "osp.db").exists()
 
 
@@ -81,3 +82,55 @@ def test_main_serve_and_init(tmp_path, monkeypatch, capsys):
     monkeypatch.setenv("OSP_ENV", "production")
     assert serve.main(["serve"]) == 2
     assert "OSP_DATABASE_URL" in capsys.readouterr().err
+
+
+KEYS = "host1:" + "s" * 40
+
+
+@pytest.mark.parametrize(
+    ("extra", "host", "message"),
+    [
+        ({"OSP_IDENTITY": "dev"}, "0.0.0.0", "127.0.0.1"),  # D12: loopback only
+        ({"OSP_IDENTITY": "trusted-headers"}, "127.0.0.1", "OSP_IDENTITY_KEYS"),
+        ({"OSP_IDENTITY": "trusted-headers", "OSP_IDENTITY_KEYS": "k:short"}, None, "32 bytes"),
+        ({"OSP_IDENTITY": "trusted-headers", "OSP_IDENTITY_KEYS": "bad"}, None, "kid:secret"),
+        ({"OSP_IDENTITY": "cookies"}, None, "OSP_IDENTITY must be"),
+    ],
+)
+def test_identity_settings_are_checked(tmp_path, extra, host, message):
+    env = _dev(tmp_path, **extra)
+    with pytest.raises(ConfigError, match=message):
+        build_app(Settings.from_env(env), env, host=host)
+
+
+def test_dev_identity_is_refused_outside_dev(tmp_path):
+    env = _dev(tmp_path, OSP_ENV="production", OSP_DATABASE_URL="sqlite:///x.db")
+    with pytest.raises(ConfigError, match="local development only"):
+        serve.identity_provider(Settings.from_env(env), "127.0.0.1", env)
+
+
+def test_trusted_headers_is_the_default_and_401s_unsigned(tmp_path):
+    env = _dev(tmp_path, OSP_IDENTITY="", OSP_IDENTITY_KEYS=KEYS)
+    c = TestClient(build_app(Settings.from_env(env), env), base_url="https://testserver")
+    assert c.get("/api/surveys").status_code == 401
+    assert c.get("/api/surveys", headers={"X-OSP-User": "u"}).status_code == 401
+
+
+@pytest.mark.parametrize(
+    ("value", "ok"), [("off", True), ("0", True), ("on", True), ("maybe", False)]
+)
+def test_auto_create_labs_setting(tmp_path, value, ok):
+    env = _dev(tmp_path, OSP_AUTO_CREATE_LABS=value)
+    if ok:
+        assert Settings.from_env(env).auto_create_labs is (value in ("on", "1"))
+    else:
+        with pytest.raises(ConfigError):
+            Settings.from_env(env)
+
+
+def test_allowed_origins_are_exact(tmp_path):
+    env = _dev(tmp_path, OSP_ALLOWED_ORIGINS="https://host.example, https://b.example/")
+    assert Settings.from_env(env).allowed_origins == ("https://host.example", "https://b.example")
+    for bad in ("*", "host.example", "https://host.example/path"):
+        with pytest.raises(ConfigError):
+            Settings.from_env(_dev(tmp_path, OSP_ALLOWED_ORIGINS=bad))
