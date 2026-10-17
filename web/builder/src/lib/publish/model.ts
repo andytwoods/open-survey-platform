@@ -2,6 +2,7 @@
  * Publish flow helpers (task B12): where each blocking problem is fixed, the participant
  * link and the export links. Display only: the server decides what blocks a publish.
  */
+import { apiPath } from '../host/config';
 
 export interface PublishDiagnostic {
 	severity: string;
@@ -54,15 +55,19 @@ export function participantLink(origin: string, participantUrl: string): string 
 	return new URL(participantUrl, origin.replace(/\/$/, '') + '/').toString();
 }
 
-export function exportLinks(surveyId: string): { label: string; href: string; description: string }[] {
+/** Download links, under the host's API base (`apiBase`, OspPageConfig). */
+export function exportLinks(
+	surveyId: string,
+	apiBase = '/api'
+): { label: string; href: string; description: string }[] {
 	const id = encodeURIComponent(surveyId);
 	return [
-		{ label: 'XLSForm (.xlsx)', href: `/api/surveys/${id}/export/xlsform`, description: 'For ODK / Enketo / KoboToolbox' },
-		{ label: 'LimeSurvey (.lss)', href: `/api/surveys/${id}/export/lss`, description: 'Import into LimeSurvey' }
+		{ label: 'XLSForm (.xlsx)', href: apiPath(apiBase, `/api/surveys/${id}/export/xlsform`), description: 'For ODK / Enketo / KoboToolbox' },
+		{ label: 'LimeSurvey (.lss)', href: apiPath(apiBase, `/api/surveys/${id}/export/lss`), description: 'Import into LimeSurvey' }
 	];
 }
 
 /** The reproducibility package of one published version (task M3's endpoint). */
-export function reproLink(surveyId: string, version: number): string {
-	return `/api/surveys/${encodeURIComponent(surveyId)}/versions/${version}/repro-package`;
+export function reproLink(surveyId: string, version: number, apiBase = '/api'): string {
+	return apiPath(apiBase, `/api/surveys/${encodeURIComponent(surveyId)}/versions/${version}/repro-package`);
 }

@@ -11,13 +11,15 @@
  * - Network failures keep the item queued and retry with backoff; the transaction id
  *   makes a retry of a request that did land a no-op (the server says `replayed`).
  * - Undo/redo call the API's undo/redo with transaction ids from this session's stacks.
+ * - 401 (the host session ended, planning/pages-split.md D9): the item stays queued and
+ *   sending stops until `resume()`; nothing pending is dropped.
  *
  * No survey logic lives here: the server validates and applies every op.
  */
 import { applyPatch } from './json-patch';
 import type { Diagnostic, EditResult, Invocation, Result, SurveyDoc, SurveyTransport } from './transport';
 
-export type SaveState = 'loading' | 'saved' | 'saving' | 'offline' | 'conflict' | 'error';
+export type SaveState = 'loading' | 'saved' | 'saving' | 'offline' | 'conflict' | 'error' | 'signed-out';
 
 export type Outcome =
 	| { status: 'applied'; result: EditResult }
@@ -86,6 +88,9 @@ export class SurveyStore {
 	loading = $state(false);
 	/** Queued items (ops, undo, redo) not yet answered. */
 	pending = $state(0);
+	/** A 401 stopped sending: the queue is kept until `resume()`. */
+	paused = $state(false);
+	#resume: (() => void) | null = null;
 	#dirty = $state(0);
 	#undo = $state<string[]>([]);
 	#redo = $state<string[]>([]);
@@ -127,6 +132,7 @@ export class SurveyStore {
 
 	get saveState(): SaveState {
 		if (this.loading && !this.survey) return 'loading';
+		if (this.paused) return 'signed-out';
 		if (this.conflict) return 'conflict';
 		if (this.offline) return 'offline';
 		if (this.pending > 0 || this.#dirty > 0) return 'saving';
@@ -185,6 +191,19 @@ export class SurveyStore {
 		for (const b of [...this.#buffers]) b.flush();
 	}
 
+	/** Edits queued or buffered and not yet acknowledged (the page's leave guard). */
+	get unsaved(): boolean {
+		return this.pending > 0 || this.#dirty > 0;
+	}
+
+	/** Send again after a 401 paused the queue (e.g. the host session is back). */
+	resume() {
+		const r = this.#resume;
+		this.#resume = null;
+		this.paused = false;
+		r?.();
+	}
+
 	// -- edits ------------------------------------------------------------------------
 
 	/** Send one gesture's ops as one transaction. Resolves when the server has answered. */
@@ -231,6 +250,24 @@ export class SurveyStore {
 	/** Resolves when every queued item has been answered. */
 	async settled(): Promise<void> {
 		while (this.#draining) await this.#draining;
+	}
+
+	/** Like `settled`, but also resolves while a 401 has paused the queue (no progress possible). */
+	async settledOrPaused(): Promise<void> {
+		if (this.paused || !this.#draining) return;
+		await new Promise<void>((resolve) => {
+			const tick = () => (this.paused || !this.#draining ? resolve() : setTimeout(tick, 50));
+			tick();
+		});
+	}
+
+	/** A 401 on a write: keep the item, stop sending until `resume()`. */
+	async #pause(): Promise<null> {
+		this.offline = false;
+		this.paused = true;
+		this.#onUnauth();
+		await new Promise<void>((r) => (this.#resume = r));
+		return null;
 	}
 
 	#enqueue(make: (resolve: (o: Outcome) => void) => Item): Promise<Outcome> {
@@ -341,6 +378,7 @@ export class SurveyStore {
 				this.rejection = { message: r.message, diagnostics: r.diagnostics };
 				return { status: 'rejected', message: r.message, diagnostics: r.diagnostics };
 			case 'error':
+				if (r.status === 401) return this.#pause();
 				this.offline = false;
 				this.#fail(r);
 				return { status: 'dropped', message: r.message };
@@ -377,8 +415,8 @@ export class SurveyStore {
 				this.rejection = { message: r.message, diagnostics: r.diagnostics };
 				return { status: 'rejected', message: r.message, diagnostics: r.diagnostics };
 			case 'error':
+				if (r.status === 401) return this.#pause();
 				this.offline = false;
-				if (r.status === 401) this.#fail(r);
 				return { status: 'dropped', message: r.message };
 			default:
 				return this.#retryable(item, r);

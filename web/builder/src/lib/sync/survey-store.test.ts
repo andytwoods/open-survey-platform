@@ -314,6 +314,43 @@ describe('SurveyStore: errors', () => {
 		expect(store.error).toBe('Sign in first.');
 		expect(unauth).toBe(1);
 	});
+
+	it('a 401 on a write keeps the edit queued and stops sending until resume()', async () => {
+		let unauth = 0;
+		let signedIn = false;
+		const sent: string[] = [];
+		const store = new SurveyStore({
+			transport: {
+				load: async () => ({ kind: 'ok', data: { id: 's', title: 'T', revision: 1, survey: {} } }),
+				applyOps: async (_id, body) => {
+					sent.push(body.transactionId);
+					if (!signedIn) return failure(401, { code: 'auth', message: 'Sign in first.' });
+					return { kind: 'ok', data: { revision: 2, patch: [], diagnostics: [], transactionId: 't1' } };
+				},
+				undo: async () => failure(401, {}),
+				redo: async () => failure(401, {})
+			},
+			newTransactionId: () => 'txn-1',
+			onUnauthenticated: () => unauth++
+		});
+		await store.load('s');
+		const out = store.submit([{ op: 'set_property', params: {} }]);
+		await store.settledOrPaused();
+		expect(store.paused).toBe(true);
+		expect(store.pending).toBe(1);
+		expect(store.unsaved).toBe(true);
+		expect(store.saveState).toBe('signed-out');
+		expect(unauth).toBe(1);
+		expect(sent).toEqual(['txn-1']);
+
+		signedIn = true;
+		store.resume();
+		expect((await out).status).toBe('applied');
+		// The same transaction id is retried, so a request that did land is a no-op.
+		expect(sent).toEqual(['txn-1', 'txn-1']);
+		expect(store.pending).toBe(0);
+		expect(store.saveState).toBe('saved');
+	});
 });
 
 describe('TextBuffer', () => {

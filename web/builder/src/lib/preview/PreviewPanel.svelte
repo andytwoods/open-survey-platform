@@ -7,10 +7,11 @@
 	 */
 	import ArrowLeft from '@lucide/svelte/icons/arrow-left';
 	import RotateCcw from '@lucide/svelte/icons/rotate-ccw';
-	import { resolve } from '$app/paths';
 	import { Button } from '@osp/ui-components';
 	import { onMount } from 'svelte';
 	import DebuggerPanel from '../debugger/DebuggerPanel.svelte';
+	import { link } from '../host/links';
+	import { frameUrl } from './bridge';
 	import { DEVICES, PreviewHost, randomSeed, type Device } from './host.svelte';
 
 	let { surveyId, revision, onclose }: { surveyId: string; revision: number; onclose: () => void } = $props();
@@ -28,7 +29,16 @@
 		const need = shown.reduce((s, d) => s + d.width, 0) + GAP * (shown.length - 1) + 48;
 		return Math.min(1, stageWidth / need);
 	});
-	const frameSrc = (id: string) => `${resolve('/preview-frame')}?frame=${encodeURIComponent(id)}`;
+	// The frame page is the host's previewFrame link; it gets our origin to answer to (D10).
+	const frameTemplate = link('previewFrame');
+	const frameOrigin = new URL(frameTemplate, location.href).origin;
+	const frameSrc = (id: string) => frameUrl(frameTemplate, id, location.origin);
+	const iframes: Record<string, HTMLIFrameElement | null> = {};
+	// Frames no longer shown (side by side switched off) stop receiving the run.
+	$effect(() => {
+		const ids = new Set(shown.map((d) => d.id));
+		for (const d of DEVICES) if (!ids.has(d.id)) host.detach(d.id);
+	});
 	const errors = $derived(host.diagnostics.filter((d) => d.severity === 'error'));
 	const stale = $derived(host.revision !== null && host.revision !== revision);
 
@@ -43,7 +53,7 @@
 	}
 
 	onMount(() => {
-		const off = host.install(window);
+		const off = host.install(window, frameOrigin, (id) => iframes[id]?.contentWindow ?? null);
 		void host.fetch(surveyId);
 		closeButton?.focus();
 		return off;
@@ -117,8 +127,10 @@
 							<figcaption>{d.label} · {d.width} px</figcaption>
 							<div class="viewport" style:width={`${d.width * scale}px`} style:height={`${d.height * scale}px`}>
 								<iframe
+									bind:this={iframes[d.id]}
 									title={`Survey preview, ${d.label.toLowerCase()} (${d.width} px)`}
 									src={frameSrc(d.id)}
+									sandbox="allow-scripts allow-same-origin allow-forms"
 									width={d.width}
 									height={d.height}
 									style:transform={`scale(${scale})`}

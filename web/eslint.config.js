@@ -8,7 +8,6 @@ export default defineConfig(
 	{
 		ignores: [
 			'**/node_modules/**',
-			'**/.svelte-kit/**',
 			'**/build/**',
 			'**/dist/**',
 			// Generated from /contract/openapi.json by `make contract`.
@@ -22,7 +21,10 @@ export default defineConfig(
 		languageOptions: { globals: { ...globals.browser, ...globals.node } },
 		rules: {
 			// typescript-eslint recommends turning no-undef off for TypeScript projects.
-			'no-undef': 'off'
+			'no-undef': 'off',
+			// SvelteKit-only rule: the builder pages navigate with full loads from the host's
+			// link templates (builder/src/lib/host/links.ts), not SvelteKit's resolve().
+			'svelte/no-navigation-without-resolve': 'off'
 		}
 	},
 	{

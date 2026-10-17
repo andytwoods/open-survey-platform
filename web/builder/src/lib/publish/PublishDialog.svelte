@@ -4,6 +4,7 @@
 	import ExternalLink from '@lucide/svelte/icons/external-link';
 	import { Button, Dialog, announce } from '@osp/ui-components';
 	import { api } from '../api';
+	import { pageConfig } from '../host/links';
 	import type { SurveyStore } from '../sync/survey-store.svelte';
 	import {
 		exportLinks,
@@ -24,6 +25,9 @@
 		open = $bindable(false),
 		ongo
 	}: { store: SurveyStore; open?: boolean; ongo: (p: PublishProblem) => void } = $props();
+
+	/** Download links go to the host's API base (they are plain links, not client calls). */
+	const apiBase = pageConfig()?.apiBase ?? '/api';
 
 	type Phase =
 		| { kind: 'idle' }
@@ -64,7 +68,7 @@
 					number: data.number,
 					link: participantLink(location.origin, data.participantUrl),
 					warnings,
-					repro: reproLink(store.surveyId, data.number)
+					repro: reproLink(store.surveyId, data.number, apiBase)
 				};
 				announce(`Published version ${data.number}.`);
 				return;
@@ -157,7 +161,7 @@
 			{/if}
 			<h3>Exports and records</h3>
 			<ul class="exports">
-				{#each exportLinks(store.surveyId) as x (x.href)}
+				{#each exportLinks(store.surveyId, apiBase) as x (x.href)}
 					<!-- eslint-disable-next-line svelte/no-navigation-without-resolve -- API download -->
 					<li><a href={x.href} download><Download size={14} aria-hidden="true" />{x.label}</a> <span>{x.description}</span></li>
 				{/each}

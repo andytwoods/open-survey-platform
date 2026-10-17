@@ -1,19 +1,25 @@
 <script lang="ts">
 	/**
-	 * Inside a device frame (`/preview-frame`): the participant app (`web/runtime`) in preview
-	 * mode, on the plan the host hands over. Every engine change goes back to the host.
+	 * Inside a device frame (the previewFrame page): the participant app (`web/runtime`) in
+	 * preview mode, on the plan the builder hands over by `postMessage`. Every engine change
+	 * goes back the same way. Only messages from the parent window, from the builder origin
+	 * named in `?origin=`, in our schema, are used (bridge.ts, D10).
 	 */
 	import { snapshot, type Plan, type Snapshot } from '@osp/engine';
 	import { previewEnv, RuntimeApp, type PreviewMount, type Session } from '@osp/runtime/preview';
 	import { onMount } from 'svelte';
-	import { findHost, type FrameConfig, type PreviewBridge } from './bridge';
+	import { isFrameId, parseHostMessage, PROTOCOL, type FrameConfig, type FrameMessage } from './bridge';
 
 	let mount = $state.raw<PreviewMount | null>(null);
 	let key = $state(0);
 	let missing = $state(false);
-	let host: PreviewBridge | null = null;
 	let current: Session | null = null;
 	let frameId = '';
+	let builderOrigin = '';
+
+	function send(msg: FrameMessage) {
+		window.parent.postMessage(msg, builderOrigin);
+	}
 
 	async function load(cfg: FrameConfig) {
 		current?.dispose();
@@ -37,7 +43,15 @@
 					if (snapNow.revision === last && s.phase === lastPhase) return;
 					last = snapNow.revision;
 					lastPhase = s.phase;
-					host?.changed(frameId, cfg.key, JSON.stringify(snapNow), s.phase);
+					send({
+						protocol: PROTOCOL,
+						v: 1,
+						type: 'changed',
+						frameId,
+						key: cfg.key,
+						snapshotJson: JSON.stringify(snapNow),
+						phase: s.phase
+					});
 				};
 				s.subscribe(report);
 				report();
@@ -50,17 +64,34 @@
 	onMount(() => {
 		// The builder's own light/dark choice must not leak into the participant page.
 		delete document.documentElement.dataset.theme;
-		frameId = new URLSearchParams(location.search).get('frame') ?? 'frame';
-		host = findHost(window);
-		if (!host) {
+		const q = new URLSearchParams(location.search);
+		const id = q.get('frame') ?? 'frame';
+		let origin: string;
+		try {
+			origin = new URL(q.get('origin') ?? '').origin;
+		} catch {
+			origin = '';
+		}
+		if (window.parent === window || !isFrameId(id) || !origin || origin === 'null') {
 			missing = true;
 			return;
 		}
-		const cfg = host.attach(frameId, { load: (c) => void load(c) });
-		if (cfg) void load(cfg);
+		frameId = id;
+		builderOrigin = origin;
+		const onMessage = (e: MessageEvent) => {
+			if (e.source !== window.parent || e.origin !== builderOrigin) return;
+			const msg = parseHostMessage(e.data);
+			if (msg) void load(msg.cfg);
+		};
+		const detach = () => send({ protocol: PROTOCOL, v: 1, type: 'detach', frameId });
+		window.addEventListener('message', onMessage);
+		window.addEventListener('pagehide', detach);
+		send({ protocol: PROTOCOL, v: 1, type: 'attach', frameId });
 		return () => {
+			window.removeEventListener('message', onMessage);
+			window.removeEventListener('pagehide', detach);
 			current?.dispose();
-			host?.detach(frameId);
+			detach();
 		};
 	});
 </script>

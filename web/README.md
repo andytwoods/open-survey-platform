@@ -4,7 +4,7 @@ pnpm workspace (pnpm version pinned by `packageManager` in `package.json`).
 
 | Package | Job |
 |---|---|
-| `builder` | SvelteKit app built with `adapter-static`. Thin UI: no survey logic. |
+| `builder` | Vite multi-page build: one JS entry per page plus `manifest.json` (see `builder/README.md`). Thin UI: no survey logic. |
 | `api-client` | TS client generated from `/contract/openapi.json`. Never edit `src/schema.d.ts` by hand. |
 | `ui-components` | Shared Svelte components. Must not import `api-client`. |
 
@@ -14,7 +14,7 @@ may import `api-client` and `ui-components`, `ui-components` must not import
 
 ```sh
 pnpm -C web install
-pnpm -C web build   # static files in web/builder/build
+pnpm -C web build   # page entries + manifest.json in web/builder/build
 pnpm -C web check   # svelte-check, eslint, dependency-cruiser
 pnpm -C web test    # vitest
 ```

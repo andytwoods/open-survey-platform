@@ -13,7 +13,7 @@
 import { isState, restore, snapshot, type Plan, type State } from '@osp/engine';
 import { api } from '../api';
 import { startState } from '../debugger/script';
-import { HOST_KEY, type FrameConfig, type FrameHandle, type PreviewBridge } from './bridge';
+import { listenForFrames, type FrameConfig, type FrameHandle, type PreviewBridge } from './bridge';
 
 export interface PreviewDiagnostic {
 	severity: string;
@@ -70,11 +70,14 @@ export class PreviewHost implements PreviewBridge {
 		this.seed = seed;
 	}
 
-	/** Make this host reachable from the frames (same-origin parent window). */
-	install(w: Window = window): () => void {
-		(w as unknown as Record<string, unknown>)[HOST_KEY] = this;
+	/**
+	 * Listen for the frames' messages (bridge.ts checks origin, source window and schema).
+	 * `frameWindow` gives the iframe window registered for a frame id.
+	 */
+	install(w: Window, frameOrigin: string, frameWindow: (frameId: string) => Window | null): () => void {
+		const off = listenForFrames(w, frameOrigin, frameWindow, this);
 		return () => {
-			if ((w as unknown as Record<string, unknown>)[HOST_KEY] === this) delete (w as unknown as Record<string, unknown>)[HOST_KEY];
+			off();
 			if (this.mirror) clearTimeout(this.mirror);
 		};
 	}
