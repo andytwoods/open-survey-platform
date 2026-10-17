@@ -110,9 +110,11 @@ Checks: `pnpm -C web check` (svelte-check, eslint, dependency-cruiser), `pnpm -C
 `make web-e2e` compares screenshots with `e2e/__screenshots__/<spec>/<name>-<platform>.png`,
 one file per platform (`darwin`, `linux`, `win32`): text measures and rasterises
 differently on each OS, so one shared image would fail everywhere but where it was drawn.
-When a UI change is intended, redraw every platform's set:
+When a UI change is intended, redraw every platform's set (always with `all`: the default
+`changed` mode skips snapshots still within the 2% pixel tolerance, so a colour or spacing
+tweak would leave stale images behind):
 
-- macOS: `make web-e2e E2E_ARGS=--update-snapshots` on a Mac.
+- macOS: `make web-e2e E2E_ARGS="--update-snapshots all"` on a Mac.
 - Linux and Windows: run the "Draw e2e snapshots" workflow (`gh workflow run snapshots.yml
   --ref <branch>`), download the `e2e-snapshots-<os>` artifacts and unzip them into
   `e2e/__screenshots__/`. They are drawn on the runner images CI compares against; a

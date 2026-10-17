@@ -132,7 +132,7 @@ test-postgres:
 # Builder end-to-end (Playwright): layout, keyboard, axe-core in both themes, visual
 # snapshots. Not part of `make check` (needs Playwright browsers: `pnpm -C web/builder exec
 # playwright install chromium`). Snapshots are per platform: `make web-e2e
-# E2E_ARGS=--update-snapshots` redraws this OS's set; the "Draw e2e snapshots" workflow
+# E2E_ARGS="--update-snapshots all"` redraws this OS's set; the "Draw e2e snapshots" workflow
 # draws the Linux and Windows sets on CI's runners (web/builder/README.md).
 .PHONY: web-e2e
 # sim-build first: the preview's "run simulation" needs the simulator CLI (osp-api runs it
