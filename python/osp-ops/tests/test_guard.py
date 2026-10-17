@@ -176,6 +176,26 @@ EXAMPLES: dict[str, list[dict[str, Any]]] = {
         {"theme": PRESETS["warm"].model_dump(mode="json", by_alias=True)},
         {"theme": {**PRESETS["clean"].model_dump(mode="json"), "radius": 0}},
     ],
+    "set_hooks": [
+        {
+            "hooks": {
+                "format": "osp-hooks/1",
+                "source": "osp.on('onStart', function () {});",
+                "handlers": {"onStart": {"reads": ["age", "arm"], "writes": []}},
+            }
+        },
+        {
+            "hooks": {
+                "format": "osp-hooks/1",
+                "source": "",
+                "handlers": {},
+                "urlParams": ["PID"],
+                "exportsConfirmedFor": None,
+                "redirects": {"done": {"url": "https://x.org/{c}", "params": {"c": {}}}},
+                "parent": {"origin": "https://x.org", "messages": {"p": {"type": "null"}}},
+            }
+        },
+    ],  # fmt: skip
     "replace_survey": [{"survey": MINIMAL}],
     "apply_patch": [{"patch": [{"op": "replace", "path": "/metadata/title", "value": "P"}]}],
 }

@@ -62,6 +62,7 @@ hidden:
   settings.retention: "Chosen in Survey settings (options from /api/meta/retention); publishing is refused until it is set."
   consent: "Edited in Survey settings (Consent section, the set_consent op): text per language, button labels, decline counting."
   settings.theme: "Set in the Appearance view (Use for this survey); a full copy of the theme."
+  hooks: "Edited in Survey settings (Researcher hooks section, the set_hooks op): the script, the handled events and what each reads; redirects and parent messages in the JSON view."
   specVersion: "Format version, written by the platform."
   id: "Stable survey identity, assigned at creation."
   version: "Published version number, set by publishing."

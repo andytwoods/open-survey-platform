@@ -71,6 +71,11 @@ CODES: dict[str, Severity] = {
     # Consent (semantics.md §11)
     "consent.pipe": "error",
     "consent.outcome": "error",
+    # Researcher hooks (runtime-design.md §7a; osp_spec.hooks.check_hooks)
+    "hooks.unknown_ref": "error",  # a handler reads an id that is not a question or variable
+    "hooks.write_target": "error",  # a handler writes something that is not a hook variable
+    "hooks.redirect": "error",  # a redirect template breaks the host's URL rules
+    "hooks.parent_origin": "error",  # the parent origin is not one https origin
     # Publishing only (publish_diagnostics; never from validate)
     "publish.retention_required": "error",
     "publish.consent_missing": "warning",  # participant questions but no consent page

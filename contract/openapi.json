@@ -2726,6 +2726,7 @@
           "set_choice",
           "set_condition",
           "set_consent",
+          "set_hooks",
           "set_languages",
           "set_matrix_row_required",
           "set_property",
@@ -4207,6 +4208,28 @@
           "themeId"
         ],
         "title": "SetDefaultThemeRequest",
+        "type": "object"
+      },
+      "SetHooksParams": {
+        "additionalProperties": false,
+        "properties": {
+          "hooks": {
+            "anyOf": [
+              {
+                "additionalProperties": {
+                  "$ref": "#/components/schemas/JsonValue"
+                },
+                "type": "object"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "default": null,
+            "title": "Hooks"
+          }
+        },
+        "title": "SetHooks",
         "type": "object"
       },
       "SetLanguagesParams": {

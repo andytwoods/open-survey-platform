@@ -435,10 +435,16 @@ class Survey(Model):
     blocks: list[Block] = Field(default_factory=list)
     quotas: list[Quota] = Field(default_factory=list)
     flow: list[FlowNode] = Field(default_factory=list)
+    # runtime-design §7a: the researcher's hook manifest (osp_spec.hooks.Hooks): script,
+    # handled events with their declared reads/writes, URL parameters, redirects, parent
+    # messages. Published inside the plan checksum. None: the survey runs no custom code.
+    hooks: Hooks | None = None
 
 
-# Theme lives in theme.py, which builds on this module's `Model` and `Text`, so it is
-# imported last (both are defined by now) and the models that use it are rebuilt.
+# Theme and Hooks live in theme.py / hooks.py, which build on this module's `Model`, so they
+# are imported last (everything they need is defined by now) and the models that use them
+# are rebuilt. `osp_spec/__init__` takes them from here, so this module always loads first.
+from .hooks import HOOK_EVENTS, Hooks  # noqa: E402, F401
 from .theme import Theme  # noqa: E402
 
 for _m in (BranchNode, RandomiserNode, Settings, Survey):

@@ -19,6 +19,7 @@ serves the plan and ``POST /api/s/{slug}/sessions`` starts on it.
 
 from __future__ import annotations
 
+import hashlib
 import re
 import secrets
 from collections.abc import Sequence
@@ -178,6 +179,45 @@ def _retention_policy(body: Any) -> RetentionPolicy:
 
 
 RETENTION_REQUIRED = "publish.retention_required"
+HOOKS_CHANGED = "survey.hooks_changed"
+"""Audit action for a transaction that changes the survey's hook manifest (custom code,
+runtime-design §7a "adding one is an audited op"): whatever op did it (`set_hooks`, a JSON
+patch, a whole-document replace, an undo). The detail names the code by checksum, never
+by content, and holds no participant data."""
+
+
+def _hooks_summary(hooks: Any) -> dict[str, Any] | None:
+    if not isinstance(hooks, dict):
+        return None
+    source = hooks.get("source")
+    raw = (source if isinstance(source, str) else "").encode("utf-8", "surrogatepass")
+    handlers = hooks.get("handlers")
+    redirects = hooks.get("redirects")
+    parent = hooks.get("parent")
+    return {
+        "sourceChecksum": "sha256:" + hashlib.sha256(raw).hexdigest(),
+        "sourceBytes": len(raw),
+        "events": sorted(str(k) for k in handlers) if isinstance(handlers, dict) else [],
+        "redirects": sorted(str(k) for k in redirects) if isinstance(redirects, dict) else [],
+        "parentOrigin": parent.get("origin") if isinstance(parent, dict) else None,
+    }
+
+
+def _hooks_change(
+    before: Any, after: Any, txn_id: str, ops: Sequence[Invocation]
+) -> dict[str, Any] | None:
+    """The audit detail when a transaction changed `hooks`, else None."""
+    old = before.get("hooks") if isinstance(before, dict) else None
+    new = after.get("hooks") if isinstance(after, dict) else None
+    if old == new:
+        return None
+    return {
+        "transaction": txn_id,
+        "kind": _kind(txn_id),
+        "ops": [o.op for o in ops],
+        "before": _hooks_summary(old),
+        "after": _hooks_summary(new),
+    }
 
 
 def _publish_message(diagnostics: Sequence[Diagnostic]) -> str:
@@ -381,6 +421,9 @@ class Builder:
         new_title, old_title = title_of(body), title_of(draft.body)
         if new_title and new_title != old_title:
             self.store.set_survey_title(ctx, survey_id, new_title)
+        hooks_change = _hooks_change(draft.body, body, txn_id, ops)
+        if hooks_change is not None:
+            self.store.audit(ctx, HOOKS_CHANGED, "survey", survey_id, hooks_change)
         return EditResult(saved.revision, list(res.patch), list(res.diagnostics), txn_id)
 
     def _transaction(self, ctx: TenantContext, survey_id: str, txn_id: str) -> list[OpLogEntry]:
