@@ -10,7 +10,7 @@ export default defineConfig({
 	testDir: 'e2e',
 	// One snapshot per name and per OS (`-darwin`, `-linux`, `-win32`): text measures and
 	// rasterises differently on each, well past the loose tolerance below. Draw a platform's
-	// set on that platform (`make web-e2e E2E_ARGS=--update-snapshots`); for Linux and
+	// set on that platform (`make web-e2e E2E_ARGS="--update-snapshots all"`); for Linux and
 	// Windows the "Draw e2e snapshots" workflow does it on the CI runners (web/builder/README.md).
 	snapshotPathTemplate: '{testDir}/__screenshots__/{testFilePath}/{arg}-{platform}{ext}',
 	fullyParallel: true,

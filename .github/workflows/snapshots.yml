@@ -2,7 +2,7 @@ name: Draw e2e snapshots
 
 # The builder's visual snapshots are one file per platform (task W2; see
 # web/builder/playwright.config.ts). macOS snapshots are drawn on a Mac with
-# `make web-e2e E2E_ARGS=--update-snapshots`; this workflow draws the Linux and Windows
+# `make web-e2e E2E_ARGS="--update-snapshots all"`; this workflow draws the Linux and Windows
 # sets on the same runner images CI compares against, and uploads them as artifacts.
 # Run it from the Actions tab (or `gh workflow run snapshots.yml --ref <branch> -f os=…`),
 # download `e2e-snapshots-<os>`, unzip into web/builder/e2e/__screenshots__/, review the
@@ -75,10 +75,12 @@ jobs:
         with:
           package: web/builder
 
-      # --update-snapshots rewrites every snapshot this platform draws; the run's other
-      # tests still have to pass, so a red step here means the branch itself is broken.
-      - name: make web-e2e --update-snapshots
-        run: make web-e2e E2E_ARGS=--update-snapshots
+      # `--update-snapshots all` rewrites every snapshot this platform draws (the default
+      # mode, `changed`, skips any still within the 2% pixel tolerance, so a colour or
+      # spacing tweak would leave stale images behind); the run's other tests still have to
+      # pass, so a red step here means the branch itself is broken.
+      - name: make web-e2e --update-snapshots all
+        run: make web-e2e E2E_ARGS="--update-snapshots all"
 
       - name: Upload this platform's snapshots
         if: always()

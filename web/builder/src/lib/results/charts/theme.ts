@@ -19,7 +19,7 @@ export const LIGHT_TOKENS: ThemeTokens = {
 	borderStrong: '#7b8494',
 	text: '#1d2433',
 	textMuted: '#505a6b',
-	accent: '#2456c7',
+	accent: '#5b3fd1',
 	font: "system-ui, -apple-system, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif"
 };
 
@@ -195,11 +195,14 @@ export function likertPalette(k: number, theme: ChartTheme = 'export'): string[]
 
 const isDark = (tokens: ThemeTokens) => luminance(tokens.bg) < 0.2;
 
-/** Sequential palette for heatmaps (light → strong), readable on the theme's background. */
+/**
+ * Sequential palette for heatmaps (light → strong), readable on the theme's background.
+ * The export one stays blue (a figure convention); the app one follows the violet accent.
+ */
 export function sequentialPalette(theme: ChartTheme, tokens: ThemeTokens = defaultTokens(theme)): string[] {
-	if (isDark(tokens)) return ['#1d2433', '#24406e', '#2f63b0', '#6b9be6', '#c9dbff'];
+	if (isDark(tokens)) return ['#1f1b36', '#3a2f7a', '#5d4bc0', '#9a88ee', '#d9d0ff'];
 	if (theme === 'export') return ['#f2f6fb', '#c6dbef', '#6baed6', '#2171b5', '#08306b'];
-	return ['#eef3fb', '#c4d5f2', '#7d9fe0', '#2f63c4', '#123a8a'];
+	return ['#f1edfb', '#d5c9f4', '#a48fe6', '#6a4fd2', '#3a2590'];
 }
 
 /** The single-series colour (bars without a split): the tokens' accent (Okabe-Ito blue for exports). */

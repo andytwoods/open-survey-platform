@@ -47,7 +47,7 @@ const SOCIAL = `<!doctype html><html><head><style>
 		font-family: 'Segoe UI', system-ui, -apple-system, Roboto, 'Helvetica Neue', Arial, sans-serif; }
 	h1 { font-size: 76px; line-height: 1.05; margin: 0 0 24px; font-weight: 650; }
 	p { font-size: 34px; line-height: 1.35; margin: 0; color: #505a6b; }
-	.bar { position: absolute; left: 0; right: 0; bottom: 0; height: 20px; background: #2456c7; }
+	.bar { position: absolute; left: 0; right: 0; bottom: 0; height: 20px; background: #5b3fd1; }
 </style></head><body>
 	${sized(mark, 260)}
 	<div><h1>Open Survey Platform</h1><p>A survey builder for academic research.<br />MIT-licensed; exports to other platforms.</p></div>
@@ -71,7 +71,7 @@ try {
 			name: t.name,
 			short_name: t.short_name,
 			icons: ICONS,
-			theme_color: '#2456c7',
+			theme_color: '#5b3fd1',
 			background_color: '#ffffff'
 		};
 		writeFileSync(join(t.dir, 'site.webmanifest'), JSON.stringify(manifest, null, '\t') + '\n');

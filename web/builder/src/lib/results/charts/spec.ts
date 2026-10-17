@@ -470,7 +470,7 @@ function heatmap(ctx: Ctx, data: Datum[], rowOrder: string[], cats: string[], al
 					text: { field: 'text', type: 'nominal' },
 					// Strong cells are dark in light themes and light in the dark app theme.
 					color: {
-						condition: { test: 'datum.strong', value: dark ? '#0b1220' : '#ffffff' },
+						condition: { test: 'datum.strong', value: dark ? '#140f33' : '#ffffff' },
 						value: textColors(theme, ctx.opts.tokens).text
 					}
 				}

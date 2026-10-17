@@ -209,11 +209,11 @@ describe('themes', () => {
 		expect(Math.min(...sizes)).toBeGreaterThanOrEqual(11);
 	});
 	it('app theme follows the tokens', () => {
-		const dark = { bg: '#12151b', surface: '#191d25', border: '#333a48', borderStrong: '#7c8699', text: '#e6e9ef', textMuted: '#a9b1bf', accent: '#8fb0ff', font: 'system-ui' };
+		const dark = { bg: '#12151b', surface: '#191d25', border: '#333a48', borderStrong: '#7c8699', text: '#e6e9ef', textMuted: '#a9b1bf', accent: '#b7a6ff', font: 'system-ui' };
 		const c = themeConfig('app', dark) as Json;
 		expect(c.background).toBe('transparent');
 		expect((c.axis as Json).labelColor).toBe('#a9b1bf');
-		expect(((c.range as Json).category as string[])[0]).toBe('#8fb0ff');
+		expect(((c.range as Json).category as string[])[0]).toBe('#b7a6ff');
 		expect((c.range as Json).category).not.toContain('#000000');
 	});
 	it('sequential palettes run light to strong on a light background', () => {
