@@ -6,9 +6,14 @@ name: Draw e2e snapshots
 # sets on the same runner images CI compares against, and uploads them as artifacts.
 # Run it from the Actions tab (or `gh workflow run snapshots.yml --ref <branch> -f os=…`),
 # download `e2e-snapshots-<os>`, unzip into web/builder/e2e/__screenshots__/, review the
-# diff and commit. Nothing is committed by the workflow.
+# diff and commit. Nothing is committed by the workflow. GitHub only dispatches workflows
+# it knows from the default branch, so a branch can also ask for both sets by pushing its
+# head as `snapshots/<name>` (`git push origin HEAD:snapshots/W2`); ci.yml ignores those.
 
 on:
+  push:
+    branches:
+      - "snapshots/**"
   workflow_dispatch:
     inputs:
       os:
@@ -33,7 +38,7 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
-        os: ${{ inputs.os == 'both' && fromJSON('["ubuntu-latest", "windows-latest"]') || fromJSON(format('["{0}"]', inputs.os)) }}
+        os: ${{ (inputs.os == 'both' || inputs.os == '') && fromJSON('["ubuntu-latest", "windows-latest"]') || fromJSON(format('["{0}"]', inputs.os)) }}
     runs-on: ${{ matrix.os }}
     timeout-minutes: 30
     defaults:

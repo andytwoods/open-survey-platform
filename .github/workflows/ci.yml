@@ -12,6 +12,9 @@ name: CI
 
 on:
   push:
+    # `snapshots/**` branches only draw the e2e snapshots (snapshots.yml).
+    branches-ignore:
+      - "snapshots/**"
   pull_request:
 
 permissions:
