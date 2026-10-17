@@ -63,6 +63,9 @@ def build(db_dir: Path, host: str = "127.0.0.1") -> FastAPI:
     store = Store(engine, Keyring({"k1": key}, active="k1"))
     services = build_services(store)
     app = create_app(builder=services, identity=identity_provider(host))
+    # For callers that outlive the temp dir (results/fixtures/regenerate.py): dispose the
+    # pool before removing e2e.db, or Windows refuses to delete the open file.
+    app.state.engine = engine
     results_data = _results_data()
 
     # Test-only helpers for the results page e2e (under /api so the builder's preview

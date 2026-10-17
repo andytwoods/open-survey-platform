@@ -57,19 +57,29 @@ def _stable(body: Any, survey_id: str, ids: dict[str, str]) -> Any:
 def render() -> str:
     server = _server()
     with tempfile.TemporaryDirectory(prefix="osp-results-fixture-") as tmp:
-        c = TestClient(server.build(Path(tmp)), base_url="http://127.0.0.1")
-        survey = c.get("/api/e2e/results-fixture").json()
-        created = c.post("/api/surveys", json={"title": "Results", "survey": survey}, headers=ORIGIN)
-        created.raise_for_status()
-        sid = created.json()["id"]
-        c.post(f"/api/e2e/results-seed/{sid}", headers=ORIGIN).raise_for_status()
-        url = f"/api/surveys/{sid}/results/query"
-        plain = c.post(url, json={}, headers=ORIGIN)
-        split = c.post(url, json={"split": {"condition": "arm"}, "status": "all"}, headers=ORIGIN)
-        text = c.get(f"/api/surveys/{sid}/results/text/why", params={"limit": 2})
-        for r in (plain, split, text):
-            r.raise_for_status()
-        body = {"plain": plain.json(), "split": split.json(), "text": text.json()}
+        app = server.build(Path(tmp))
+        try:
+            c = TestClient(app, base_url="http://127.0.0.1")
+            survey = c.get("/api/e2e/results-fixture").json()
+            created = c.post(
+                "/api/surveys", json={"title": "Results", "survey": survey}, headers=ORIGIN
+            )
+            created.raise_for_status()
+            sid = created.json()["id"]
+            c.post(f"/api/e2e/results-seed/{sid}", headers=ORIGIN).raise_for_status()
+            url = f"/api/surveys/{sid}/results/query"
+            plain = c.post(url, json={}, headers=ORIGIN)
+            split = c.post(
+                url, json={"split": {"condition": "arm"}, "status": "all"}, headers=ORIGIN
+            )
+            text = c.get(f"/api/surveys/{sid}/results/text/why", params={"limit": 2})
+            for r in (plain, split, text):
+                r.raise_for_status()
+            body = {"plain": plain.json(), "split": split.json(), "text": text.json()}
+        finally:
+            # Close the SQLite connections before the temp dir (and e2e.db) is removed:
+            # Windows can't delete a file another handle still has open.
+            app.state.engine.dispose()
     return json.dumps(_stable(body, sid, {}), indent=1, sort_keys=True, ensure_ascii=False) + "\n"
 
 

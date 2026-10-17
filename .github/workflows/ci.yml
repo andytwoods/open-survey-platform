@@ -6,8 +6,8 @@ name: CI
 #   web-e2e        Ubuntu and Windows: builder end-to-end (Playwright, `make web-e2e`),
 #                  each against its own platform's visual snapshots (task W2)
 #   harness-quick  Ubuntu: fixture harness in desktop Chromium (`make harness-quick`)
-#   windows        Windows: `make check` without the browser suite and without py-test
-#                  (see the job for what py-test still needs on Windows)
+#   windows        Windows: `make check` without the browser suite (py-test included
+#                  since task W3)
 # uv and pnpm stores are cached by lockfile; Playwright browsers by Playwright version.
 
 on:
@@ -199,7 +199,8 @@ jobs:
       - name: Install (from lockfiles)
         run: make install
 
-      # py-test is left out until osp-runtime's node sidecar, the dev-key file-mode checks
-      # and the stop-hook tests work on Windows (task W2's neighbour; see log/devlog.md CI1).
-      - name: make check (without browser suites and py-test)
-        run: make check CHECK_SKIP="harness-quick py-test"
+      # py-test runs here too (task W3): the stop-hook tests go through Git Bash, the
+      # POSIX file-mode checks are skipped on Windows, and .gitattributes keeps the
+      # generated contract LF under core.autocrlf=true.
+      - name: make check (without the browser suite)
+        run: make check CHECK_SKIP="harness-quick"

@@ -1,0 +1,6 @@
+# Line endings that must survive a checkout with core.autocrlf=true (Windows, task W3).
+# Generated contract files are compared byte for byte with a fresh LF dump
+# (tests/test_contract.py); shell scripts are run by bash, which chokes on CR.
+contract/openapi.json           text eol=lf
+web/api-client/src/schema.d.ts  text eol=lf
+*.sh                            text eol=lf
