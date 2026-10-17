@@ -263,7 +263,7 @@ def test_breaking_a_condition_is_rejected_unless_forced(
     assert {d.code for d in res.diagnostics} == {"op.type_conflict"}
     assert "/blocks/0/pages/1/items/0/showIf" in res.diagnostics[0].message
     assert "1 reference" in res.diagnostics[0].message
-    assert any(d.pointer.startswith("/blocks/0/pages/1/items/0/showIf") for d in res.diagnostics)
+    assert [d.pointer for d in res.diagnostics[1:]] == ["/blocks/0/pages/1/items/0/showIf"]
 
     forced = change(copy.deepcopy(before), new, force=True)
     round_trips(before, forced)

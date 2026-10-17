@@ -201,8 +201,12 @@ def change_question_type(ctx: Ctx, p: ChangeQuestionType) -> Invocation:
     if not p.force:
         broken = _breaking(validate(ctx.before), validate(ctx.doc))
         if broken:
+            # One diagnostic per condition or text (a type error points into a part of it).
             sites = _sites(ctx.doc)
-            places = sorted({_site_of(d.pointer, sites) for d in broken})
+            by_site: dict[str, list[str]] = {}
+            for d in broken:
+                by_site.setdefault(_site_of(d.pointer, sites), []).append(d.message)
+            places = sorted(by_site)
             n = len(places)
             raise OpError(
                 "op.type_conflict",
@@ -212,7 +216,7 @@ def change_question_type(ctx: Ctx, p: ChangeQuestionType) -> Invocation:
                 f"{f' (+{n - 10} more)' if n > 10 else ''}; "
                 "fix them first, or pass force: true",
                 loc.pointer,
-                *[diag("op.type_conflict", d.message, d.pointer) for d in broken],
+                *[diag("op.type_conflict", "; ".join(by_site[s]), s) for s in places],
             )
     return Invocation(
         op="change_question_type",

@@ -22,6 +22,7 @@
 	import type { OpenEditorRequest } from '../properties/types';
 	import { ChoiceListDialog, editorInputs } from '../choices';
 	import { ConditionDialog, apiExpressionService, questionsFromSurvey, type ConditionField, type ExprNode } from '../conditions';
+	import { questionTypeInfo } from '../question-types/catalogue';
 
 	/**
 	 * Shows what is selected and its schema-driven property panel (B4). Until the property
@@ -31,8 +32,15 @@
 	let {
 		roots,
 		selection,
-		store = null
-	}: { roots: OutlineNode[]; selection: SelectionStore; store?: SurveyStore | null } = $props();
+		store = null,
+		onChangeType
+	}: {
+		roots: OutlineNode[];
+		selection: SelectionStore;
+		store?: SurveyStore | null;
+		/** Present when editing is connected: the Type row offers "Change type…". */
+		onChangeType?: (id: string) => void;
+	} = $props();
 
 	// The survey itself is selected (from the diagnostics strip) as SURVEY_ID.
 	const node = $derived(
@@ -188,7 +196,26 @@
 				<dt>Id</dt>
 				<dd><code>{node.id}</code></dd>
 				<dt>Type</dt>
-				<dd>{node.type}{node.questionType ? ` (${node.questionType})` : ''}</dd>
+				{#if node.type === 'question' && onChangeType && store}
+					{@const info = questionTypeInfo(node.questionType)}
+					{@const Icon = info?.icon}
+					<dd class="type-row">
+						<span class="type-name" data-testid="question-type">
+							{#if Icon}<Icon size={16} aria-hidden="true" />{/if}
+							{info?.name ?? node.questionType}
+						</span>
+						<button
+							type="button"
+							class="change-type"
+							aria-label="Change type of {node.label}"
+							onclick={() => onChangeType(node.id)}
+						>
+							Change type…
+						</button>
+					</dd>
+				{:else}
+					<dd>{node.type}{node.questionType ? ` (${node.questionType})` : ''}</dd>
+				{/if}
 				{#if node.family}
 					<dt>Family</dt>
 					<dd>{node.family}</dd>
@@ -293,6 +320,32 @@
 		font-size: var(--text-xs);
 		padding: 0.1rem 0.3rem;
 		border-radius: var(--radius-sm);
+		background: var(--color-surface-sunken);
+	}
+	.type-row {
+		display: flex;
+		flex-wrap: wrap;
+		align-items: center;
+		gap: var(--space-2);
+	}
+	.type-name {
+		display: inline-flex;
+		align-items: center;
+		gap: var(--space-1);
+		font-weight: var(--weight-medium);
+	}
+	.change-type {
+		min-height: 2.75rem;
+		padding: 0 var(--space-3);
+		border: 1px solid var(--color-border-strong);
+		border-radius: var(--radius-md);
+		background: var(--color-surface);
+		color: var(--color-text);
+		font: inherit;
+		font-size: var(--text-sm);
+		cursor: pointer;
+	}
+	.change-type:hover {
 		background: var(--color-surface-sunken);
 	}
 	.muted {

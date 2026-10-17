@@ -1,6 +1,6 @@
 import { readFileSync } from 'node:fs';
 import { expect, test, type Page, type Request } from '@playwright/test';
-import { signIn, writeHeaders } from './fixtures';
+import { pickQuestionType, signIn, writeHeaders } from './fixtures';
 
 // The pages as a host embeds them (planning/pages-split.md F1–F3): a host page is just
 // `<div id="osp">`, the JSON config tag and the page's files from build/manifest.json. The
@@ -207,9 +207,11 @@ test('after a 401 the editor stops sending writes and keeps the edit queued', as
 		return route.fulfill({ status: 401, json: { code: 'auth', message: 'Sign in first.' } });
 	});
 	await page.getByRole('button', { name: /Add question to/ }).first().click();
+	await pickQuestionType(page);
 	await expect(page.getByTestId('session-ended')).toBeVisible();
 	await expect(page.getByRole('banner').getByRole('status').first()).toHaveText(/session ended/);
 	await page.getByRole('button', { name: /Add question to/ }).first().click();
+	await pickQuestionType(page);
 	await page.waitForTimeout(1000);
 	expect(sent).toBe(1);
 });

@@ -3,6 +3,7 @@
  * in the editor, to the theme editor in Appearance, and say so in the `?mock` shell.
  */
 import type { Command } from '../commands/registry';
+import { QUESTION_TYPES, type QuestionTypeId } from '../question-types/catalogue';
 
 export interface ShellActions {
 	togglePalette: () => void;
@@ -17,8 +18,14 @@ export interface ShellActions {
 	propertiesCollapsible: () => boolean;
 	preview: () => void;
 	clearSelection: () => void;
-	/** Add a question (the `add_question` op) to the selected or last page. */
+	/** Open the type picker to add a question to the selected or last page. */
 	addQuestion: () => void;
+	/** Add a question of this type (the `add_question` op) straight away. */
+	addQuestionOfType: (type: QuestionTypeId) => void;
+	/** Open the type picker for the selected question. */
+	changeQuestionType: () => void;
+	/** True when a question is selected in the editor. */
+	canChangeType: () => boolean;
 	/** True when a real survey is open in the editor view. */
 	canEdit: () => boolean;
 }
@@ -51,11 +58,29 @@ export function shellCommands(a: ShellActions): Command[] {
 		},
 		{
 			id: 'survey.addQuestion',
-			label: 'Add question',
+			label: 'Add question…',
 			group: 'Survey',
-			keywords: ['new', 'insert', 'item'],
+			keywords: ['new', 'insert', 'item', 'type'],
 			enabled: a.canEdit,
 			run: a.addQuestion
+		},
+		...QUESTION_TYPES.map(
+			(t): Command => ({
+				id: `survey.addQuestion.${t.id}`,
+				label: addTypeLabel(t.id, t.name),
+				group: 'Survey',
+				keywords: ['new', 'insert', ...t.keywords],
+				enabled: a.canEdit,
+				run: () => a.addQuestionOfType(t.id)
+			})
+		),
+		{
+			id: 'question.changeType',
+			label: 'Change question type…',
+			group: 'Edit',
+			keywords: ['convert', 'switch', 'turn into', 'type'],
+			enabled: a.canChangeType,
+			run: a.changeQuestionType
 		},
 		{
 			id: 'selection.clear',
@@ -115,4 +140,9 @@ export function shellCommands(a: ShellActions): Command[] {
 			run: a.preview
 		}
 	];
+}
+
+/** "Add single choice question"; a note is not a question, so "Add note". */
+export function addTypeLabel(id: QuestionTypeId, name: string): string {
+	return id === 'note' ? 'Add note' : `Add ${name.toLowerCase()} question`;
 }

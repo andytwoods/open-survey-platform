@@ -157,6 +157,15 @@ describe('SurveyStore: reject (422)', () => {
 		await store.submit([set('/a', 1)]);
 		expect(store.rejection).toBeNull();
 	});
+
+	it('a quiet code is returned to the caller but not surfaced', async () => {
+		const { store } = await setup();
+		const out = await store.submit([{ op: 'bad', params: { path: '/b' } }], { quiet: ['op.invalid'] });
+		expect(out).toMatchObject({ status: 'rejected', diagnostics: [{ code: 'op.invalid' }] });
+		expect(store.rejection).toBeNull();
+		await store.submit([{ op: 'bad', params: { path: '/b' } }], { quiet: ['op.other'] });
+		expect(store.rejection).not.toBeNull();
+	});
 });
 
 describe('SurveyStore: conflict (409)', () => {

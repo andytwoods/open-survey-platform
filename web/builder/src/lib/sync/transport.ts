@@ -29,6 +29,8 @@ export interface LoadedSurvey {
 	survey: SurveyDoc;
 	/** The validator's diagnostics for the draft as loaded (optional for scripted servers). */
 	diagnostics?: Diagnostic[];
+	/** How many versions have been published (0 or absent: never). */
+	publishedVersions?: number;
 }
 
 export type Result<T> =
@@ -115,8 +117,8 @@ export function apiTransport(api: ApiClient): SurveyTransport {
 				api.GET('/api/surveys/{survey_id}', { params: { path: { survey_id: surveyId } } })
 			);
 			if (r.kind !== 'ok') return r;
-			const { id, title, revision, survey, diagnostics } = r.data;
-			return { kind: 'ok', data: { id, title, revision, survey, diagnostics } };
+			const { id, title, revision, survey, diagnostics, publishedVersions } = r.data;
+			return { kind: 'ok', data: { id, title, revision, survey, diagnostics, publishedVersions } };
 		},
 		applyOps(surveyId, body) {
 			return call<EditResult>(() =>

@@ -39,6 +39,15 @@
 	import { cyclePane } from './panes';
 	import PropertiesPane from './PropertiesPane.svelte';
 	import PreviewPanel from '../preview/PreviewPanel.svelte';
+	import {
+		isQuestionType,
+		lastUsedType,
+		questionTypeInfo,
+		rememberType,
+		type QuestionTypeId
+	} from '../question-types/catalogue';
+	import TypeChangeDialog, { type TypeChangeRequest } from '../question-types/TypeChangeDialog.svelte';
+	import TypePickerDialog from '../question-types/TypePickerDialog.svelte';
 	import TopBar from './TopBar.svelte';
 
 	/**
@@ -54,7 +63,7 @@
 
 	const registry = new CommandRegistry({
 		isMac: detectMac(),
-		isModalOpen: () => paletteOpen || (previewOpen && !store) || moveToOpen
+		isModalOpen: () => paletteOpen || (previewOpen && !store) || moveToOpen || pickerOpen || !!typeChange
 	});
 	const mockPages = MOCK_SURVEY.children ?? [];
 	// Outline moves show at once (optimistic) and are reconciled with the server's reply.
@@ -130,17 +139,91 @@
 		document.getElementById(`card-${owner.id}`)?.focus();
 	}
 
-	async function addQuestion(pageId?: string) {
+	// -- question types: add with a type, change a type (B13) ---------------------------
+	let pickerOpen = $state(false);
+	let picker = $state<{ mode: 'add'; page: string } | { mode: 'change'; id: string; current?: QuestionTypeId }>({
+		mode: 'add',
+		page: ''
+	});
+	let lastType = $state<QuestionTypeId | null>(lastUsedType());
+
+	/** "Add question": pick a type for the given (or selected, or last) page. */
+	function addQuestion(pageId?: string) {
 		if (!store) return;
 		const page = pageId ?? targetPage(pages, selection.id);
 		if (!page) return toast('Add a page first.');
-		const out = await store.submit([{ op: 'add_question', params: { page, type: 'text' } }]);
+		picker = { mode: 'add', page };
+		pickerOpen = true;
+	}
+
+	async function addQuestionOfType(type: QuestionTypeId, pageId?: string) {
+		if (!store) return;
+		const page = pageId ?? targetPage(pages, selection.id);
+		if (!page) return toast('Add a page first.');
+		rememberType(type);
+		lastType = type;
+		const out = await store.submit([{ op: 'add_question', params: { page, type } }]);
 		if (out.status !== 'applied') return;
 		const id = addedQuestionId(out.result.patch);
 		if (id) {
-			selection.select(id);
-			announce('Question added.');
+			announce(`${questionTypeInfo(type)?.name ?? 'Question'} question added.`);
+			// Select it and put the cursor in its text, ready to type.
+			await goTo({ id, type: 'question', properties: ['label'] });
 		}
+	}
+
+	const selectedQuestion = () => {
+		const n = selection.id ? findNode(pages, selection.id) : undefined;
+		return n?.type === 'question' ? n : undefined;
+	};
+
+	function openChangeType(id?: string) {
+		if (!store) return;
+		const n = id ? findNode(pages, id) : selectedQuestion();
+		if (!n || n.type !== 'question') return toast('Select a question first.');
+		picker = { mode: 'change', id: n.id, current: isQuestionType(n.questionType) ? n.questionType : undefined };
+		pickerOpen = true;
+	}
+
+	function onTypeChosen(type: QuestionTypeId) {
+		const p = picker;
+		if (p.mode === 'add') void addQuestionOfType(type, p.page);
+		else void changeType(p.id, type);
+	}
+
+	// A type change that needs confirming (conflicting conditions, or published data).
+	let typeChange = $state<TypeChangeRequest | null>(null);
+	let resolveTypeChange: ((ok: boolean) => void) | null = null;
+	function confirmTypeChange(r: TypeChangeRequest): Promise<boolean> {
+		resolveTypeChange?.(false);
+		typeChange = r;
+		return new Promise((resolve) => (resolveTypeChange = resolve));
+	}
+	function onTypeChangeResolved(ok: boolean) {
+		const r = resolveTypeChange;
+		resolveTypeChange = null;
+		typeChange = null;
+		r?.(ok);
+	}
+
+	async function changeType(id: string, to: QuestionTypeId) {
+		if (!store) return;
+		const s = store;
+		const fromType = findNode(pages, id)?.questionType;
+		if (fromType === to) return;
+		const from = questionTypeInfo(fromType)?.name ?? fromType ?? 'question';
+		const toName = questionTypeInfo(to)?.name ?? to;
+		const published = s.publishedVersions;
+		const base = { from, to: toName, conflicts: 0, publishedVersions: published };
+		if (published > 0 && !(await confirmTypeChange(base))) return announce('Type not changed.');
+		const op = (force: boolean) => ({ op: 'change_question_type', params: { id, type: to, ...(force ? { force } : {}) } });
+		let out = await s.submit([op(false)], { quiet: ['op.type_conflict'] });
+		if (out.status === 'rejected' && out.diagnostics[0]?.code === 'op.type_conflict') {
+			const conflicts = Math.max(1, out.diagnostics.length - 1);
+			if (!(await confirmTypeChange({ ...base, conflicts }))) return announce('Type not changed.');
+			out = await s.submit([op(true)]);
+		}
+		if (out.status === 'applied') announce(`Changed to ${toName}.`);
 	}
 
 	async function undoRedo(which: 'undo' | 'redo') {
@@ -211,7 +294,10 @@
 			propertiesCollapsible: () => propertiesCollapsible,
 			preview: () => (previewOpen = true),
 			clearSelection: () => selection.clear(),
-			addQuestion: () => void addQuestion(),
+			addQuestion: () => addQuestion(),
+			addQuestionOfType: (t) => void addQuestionOfType(t),
+			changeQuestionType: () => openChangeType(),
+			canChangeType: () => editing && !!store && !!selectedQuestion(),
 			canEdit: () => editing && !!store
 		})
 	);
@@ -296,6 +382,9 @@
 
 	function closeOverlayOnEscape(e: KeyboardEvent, which: 'outline' | 'properties') {
 		if (e.key !== 'Escape') return;
+		// Escape in a dialog opened from the pane (portalled elsewhere) closes only the dialog.
+		const pane = document.getElementById(which === 'outline' ? 'pane-outline' : 'pane-properties');
+		if (!(e.target instanceof Node) || !pane?.contains(e.target)) return;
 		if (which === 'outline' && outlineCollapsible && outlineOpen) outlineOpen = false;
 		if (which === 'properties' && propertiesCollapsible && propertiesOpen) propertiesOpen = false;
 	}
@@ -383,7 +472,7 @@
 					{pages}
 					{selection}
 					mock={!store}
-					onAddQuestion={store ? (id) => void addQuestion(id) : undefined}
+					onAddQuestion={store ? (id) => addQuestion(id) : undefined}
 					exportBadges={badges}
 					onBadge={store ? (b) => void goTo(ownerOf(store.survey, b.pointer)) : undefined}
 				/>
@@ -429,7 +518,12 @@
 					/>
 				{/if}
 				<div class="pane-scroll">
-					<PropertiesPane roots={pages} {selection} {store} />
+					<PropertiesPane
+						roots={pages}
+						{selection}
+						{store}
+						onChangeType={store && editing ? (id) => openChangeType(id) : undefined}
+					/>
 				</div>
 			</aside>
 		{/if}
@@ -449,6 +543,14 @@
 
 {#if store}
 	<PublishDialog {store} bind:open={publishOpen} ongo={(p) => void goToProblem(p)} />
+	<TypePickerDialog
+		bind:open={pickerOpen}
+		mode={picker.mode}
+		current={picker.mode === 'change' ? picker.current : undefined}
+		lastUsed={lastType}
+		onchoose={onTypeChosen}
+	/>
+	<TypeChangeDialog request={typeChange} onresolve={onTypeChangeResolved} />
 	<MoveToDialog bind:open={moveToOpen} roots={pages} ids={outlineSelection.ids} onMove={(ids, t) => void moveItems(ids, t)} />
 {/if}
 

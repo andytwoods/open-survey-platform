@@ -89,3 +89,15 @@ export async function axe(page: Page) {
 export function focused(page: Page) {
 	return page.locator('*:focus');
 }
+
+/**
+ * In the "Add a question" type picker (opened by "Add question" on the canvas or in the
+ * palette): wait for its filter box to have focus, click the type named `name` and wait
+ * for the picker to close.
+ */
+export async function pickQuestionType(page: Page, name: string | RegExp = /^Text\b/, dialogName = 'Add a question') {
+	const dialog = page.getByRole('dialog', { name: dialogName });
+	await expect(dialog.getByRole('combobox', { name: 'Filter question types' })).toBeFocused();
+	await dialog.getByRole('option', { name }).click();
+	await expect(dialog).toBeHidden();
+}
