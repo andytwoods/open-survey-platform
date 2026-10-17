@@ -1,20 +1,13 @@
 import { expect, test, type Page } from '@playwright/test';
-import { axe } from './fixtures';
+import { axe, signIn, writeHeaders } from './fixtures';
 
 // JSON view (B9) and diagnostics strip + export badges (B10), against a real osp-api on
 // SQLite (e2e/api_server.py, started by the Playwright config).
 
-const EMAIL = process.env.OSP_E2E_EMAIL ?? 'researcher@lab.example';
-const PASSWORD = process.env.OSP_E2E_PASSWORD ?? 'plover tundra kettle 4417 orbit';
-
 type Survey = { blocks: { pages: { items: unknown[] }[] }[]; [k: string]: unknown };
 
 async function signInAndCreate(page: Page, title: string): Promise<string> {
-	await page.goto('/login');
-	await page.getByLabel('Email').fill(EMAIL);
-	await page.getByLabel('Password').fill(PASSWORD);
-	await page.getByRole('button', { name: 'Sign in' }).click();
-	await expect(page.getByRole('heading', { name: 'Your surveys' })).toBeVisible();
+	await signIn(page);
 	await page.getByLabel('New survey title').fill(title);
 	await page.getByRole('button', { name: 'Create survey' }).click();
 	await expect(page).toHaveURL(/\/surveys\/[^/]+$/);
@@ -108,9 +101,8 @@ test('JSON view warns when the survey changed on the server while editing', asyn
 	await replaceEditorText(page, JSON.stringify({ ...start.survey, version: 7 }, null, 2));
 
 	// Someone else edits; a later edit here makes the store pick up the new revision.
-	const csrf = (await page.context().cookies()).find((c) => c.name === '__Host-osp_csrf')!.value;
 	const other = await page.request.post(`/api/surveys/${id}/ops`, {
-		headers: { 'X-CSRF-Token': csrf },
+		headers: await writeHeaders(page),
 		data: {
 			baseRevision: 0,
 			ops: [{ op: 'set_property', params: { target: 'p1', property: 'title', value: { en: 'Elsewhere' } } }]
@@ -138,9 +130,8 @@ test('export target picker shows badges; clicking a diagnostic focuses its field
 	survey.blocks[0].pages[0].items.push(QUESTION);
 	survey.version = 2; // unsupported in LimeSurvey
 	survey.settings = { ...((survey.settings as object) ?? {}), backNavigation: false }; // unsupported in XLSForm
-	const csrf = (await page.context().cookies()).find((c) => c.name === '__Host-osp_csrf')!.value;
 	const r = await page.request.post(`/api/surveys/${id}/ops`, {
-		headers: { 'X-CSRF-Token': csrf },
+		headers: await writeHeaders(page),
 		data: { baseRevision: 0, ops: [{ op: 'replace_survey', params: { survey } }] }
 	});
 	expect(r.status()).toBe(200);

@@ -1,21 +1,10 @@
 import { expect, test, type Page } from '@playwright/test';
-import { axe } from './fixtures';
+import { axe, signIn, signInSession, writeHeaders } from './fixtures';
 
 // End to end against a real osp-api on SQLite (e2e/api_server.py, started by the
-// Playwright config): sign in, create a survey, edit through ops, undo/redo, reload.
+// Playwright config): create a survey, edit through ops, undo/redo, reload. Sign-in is the
+// host's (fixtures.ts signs in through the API); the pages have no sign-in UI.
 
-const EMAIL = process.env.OSP_E2E_EMAIL ?? 'researcher@lab.example';
-const PASSWORD = process.env.OSP_E2E_PASSWORD ?? 'plover tundra kettle 4417 orbit';
-
-async function signIn(page: Page) {
-	await page.goto('/');
-	await expect(page).toHaveURL(/\/login\?next=/);
-	await expect(page.getByRole('heading', { name: 'Sign in' })).toBeVisible();
-	await page.getByLabel('Email').fill(EMAIL);
-	await page.getByLabel('Password').fill(PASSWORD);
-	await page.getByRole('button', { name: 'Sign in' }).click();
-	await expect(page.getByRole('heading', { name: 'Your surveys' })).toBeVisible();
-}
 
 async function createSurvey(page: Page, title: string) {
 	await page.getByLabel('New survey title').fill(title);
@@ -40,10 +29,9 @@ async function addQuestionFromPalette(page: Page) {
 	await expect(dialog).toBeHidden();
 }
 
-test('sign in, create, add, rename, undo, redo, reload', async ({ page }) => {
-	await page.goto('/login');
-	expect(await axe(page)).toEqual([]);
+test('create, add, rename, undo, redo, reload', async ({ page }) => {
 	await signIn(page);
+	await expect(page.getByTestId('display-name')).toHaveText('researcher@lab.example');
 	expect(await axe(page)).toEqual([]);
 
 	const title = `E2E survey ${Date.now()}`;
@@ -100,10 +88,9 @@ test('add question button on the canvas, and a 409 is replayed onto the newer re
 	await expect(question(page, 'New question')).toHaveAttribute('aria-selected', 'true');
 
 	// Someone else edits the same draft (same account, another client).
-	const csrf = (await page.context().cookies()).find((c) => c.name === '__Host-osp_csrf')!.value;
 	const detail = await (await page.request.get(`/api/surveys/${surveyId}`)).json();
 	const other = await page.request.post(`/api/surveys/${surveyId}/ops`, {
-		headers: { 'X-CSRF-Token': csrf },
+		headers: await writeHeaders(page),
 		data: {
 			baseRevision: detail.revision,
 			ops: [{ op: 'set_property', params: { target: 'p1', property: 'title', value: { en: 'Elsewhere' } } }]
@@ -121,15 +108,22 @@ test('add question button on the canvas, and a 409 is replayed onto the newer re
 	await expect(page.getByTestId('conflict-banner')).toHaveCount(0);
 });
 
-test('signed-out users are sent to sign in, and come back afterwards', async ({ page }) => {
+test('without a host session: one reload, then the session-ended banner; signed in, the page works', async ({
+	page
+}) => {
+	let loads = 0;
+	page.on('load', () => loads++);
 	await page.goto('/surveys/does-not-exist');
-	await expect(page).toHaveURL(/\/login\?next=%2Fsurveys%2Fdoes-not-exist/);
-	await page.getByLabel('Email').fill(EMAIL);
-	await page.getByLabel('Password').fill('wrong password, definitely');
-	await page.getByRole('button', { name: 'Sign in' }).click();
-	await expect(page.getByRole('alert')).toHaveText(/Sign-in failed/);
-	await page.getByLabel('Password').fill(PASSWORD);
-	await page.getByRole('button', { name: 'Sign in' }).click();
+	// The dev config says "reload": the page reloads once (the host's login would run), then
+	// shows the banner instead of reloading again.
+	await expect(page.getByTestId('session-ended')).toBeVisible();
+	await expect(page.getByTestId('session-ended')).toContainText('Your session ended');
+	await page.waitForTimeout(1500);
+	expect(loads).toBe(2);
 	await expect(page).toHaveURL(/\/surveys\/does-not-exist$/);
+
+	await signInSession(page);
+	await page.getByRole('button', { name: 'Reload to sign in' }).click();
 	await expect(page.getByRole('heading', { name: 'Could not open this survey' })).toBeVisible();
+	await expect(page.getByTestId('session-ended')).toHaveCount(0);
 });

@@ -10,7 +10,8 @@ __pycache__/
 node_modules/
 dist/
 build/
-.svelte-kit/
+# Builder pages (Vite multi-page build: page entries, manifest.json, .vite/)
+web/builder/build/
 
 # Local dev state (`make dev`: SQLite db, dev-only keys and login). `make dev-reset` wipes it.
 .data/

@@ -1,14 +1,12 @@
 import AxeBuilder from '@axe-core/playwright';
 import { readFileSync } from 'node:fs';
 import { expect, test, type FrameLocator, type Page } from '@playwright/test';
-import { axe } from './fixtures';
+import { axe, signIn, writeHeaders } from './fixtures';
 
 // Preview + debugger (task B11) end to end against a real osp-api (e2e/api_server.py): the
 // draft is compiled by POST /preview-plan, the device frames run web/runtime in preview
 // mode, and the debugger's states are compared with the fixture's expected trace.
 
-const EMAIL = process.env.OSP_E2E_EMAIL ?? 'researcher@lab.example';
-const PASSWORD = process.env.OSP_E2E_PASSWORD ?? 'plover tundra kettle 4417 orbit';
 const FIXTURE = '05-showif-null';
 const SCRIPT = 'a3-b3';
 
@@ -22,19 +20,10 @@ const expected = () => JSON.parse(expectedText()) as { steps: Array<Record<strin
 const KEYS = ['page', 'visible', 'errors', 'nav', 'questions', 'orders', 'conditions', 'end'];
 const pick = (o: Record<string, unknown>) => Object.fromEntries(KEYS.map((k) => [k, o[k]]));
 
-async function signIn(page: Page) {
-	await page.goto('/login');
-	await page.getByLabel('Email').fill(EMAIL);
-	await page.getByLabel('Password').fill(PASSWORD);
-	await page.getByRole('button', { name: 'Sign in' }).click();
-	await expect(page.getByRole('heading', { name: 'Your surveys' })).toBeVisible();
-}
-
 async function openPreview(page: Page) {
 	await signIn(page);
-	const csrf = (await page.context().cookies()).find((c) => c.name === '__Host-osp_csrf')!.value;
 	const res = await page.request.post('/api/surveys', {
-		headers: { 'X-CSRF-Token': csrf },
+		headers: await writeHeaders(page),
 		data: { title: `Preview ${FIXTURE}`, survey: survey() }
 	});
 	expect(res.status()).toBe(201);

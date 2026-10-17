@@ -24,7 +24,7 @@ python/          uv workspace members, layers enforced by import-linter (`uv run
   L5  osp-app
   L6  osp-api, osp-cli, osp-mcp         thin shells; only L6 may import the web framework
 web/             pnpm workspace, boundaries enforced by dependency-cruiser (.dependency-cruiser.cjs)
-  builder        SvelteKit, adapter-static (may import api-client, ui-components)
+  builder        Vite multi-page build, one entry per page (may import api-client, ui-components)
   api-client     generated from contract/openapi.json (imports no workspace package)
   ui-components  shared Svelte components (must not import api-client); nothing imports builder
   tooling/       workspace-level tests (e.g. boundary rules)
@@ -65,7 +65,7 @@ uv run lint-imports               # Python layers
 uv run ruff check . && uv run ruff format --check .
 pnpm -C web check                 # svelte-check, eslint, dependency-cruiser
 pnpm -C web test                  # vitest
-vite build (builder)              # static site in web/builder/build
+vite build (builder)              # page entries + manifest.json in web/builder/build
 make contract-check               # OpenAPI + TS client regenerated in memory; fail if stale
 make licence-check                # Python + JS licences vs licence-policy.toml
 make harness-quick                # Enketo equivalence (Playwright) on touched fixtures (stub for now)

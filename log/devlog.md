@@ -17,3 +17,9 @@
 - Numbers: `make check` 19 s from a clean `git clean -xdf` + `make install` (2 s from cache), ~15 s warm; 54 pytest + 11 vitest; 309 deps licence-checked (39 Python, 270 JS), 0 violations, MPL-2.0 only in lightningcss (dev).
 - Each guard has a test that injects a violation in a temp copy: upward/sibling/I/O imports, web boundaries (incl. markup-only Svelte imports), synthetic GPL dep, stale contract, Stop hook (block, skip-when-unchanged, 3-block loop cap).
 - Open: CI never run on GitHub (no remote); `harness-quick` is a stub; 4 "Needs human" items in tasks.md (Kit 3 peer warnings, certifi MPL-2.0 at runtime, allowlist gaps, SubagentStop).
+
+## 2026-10-17 — P2: builder as separate pages, no sign-in UI (planning/pages-split.md)
+
+- Landed: Vite multi-page build replaces SvelteKit (7 page entries + 8 dev-only entries, shared chunks, `build/manifest.json`); `OspPageConfig` validated at run time (`src/lib/host/config.ts`); one links module with save-queue wait (10 s, then ask) and `beforeunload`; api client takes `apiBase` + host CSRF scheme; login/TOTP/logout, `RequireAuth`, Sign out deleted; `GET /api/me` for header name and lab; 401 banner (reload once, never a loop; writes stop, queue kept), 403 banner; preview frame talks by checked `postMessage` only.
+- Numbers: web vitest 539 (was 493); builder e2e 133 (was 126; new `host.spec.ts`); `make check` green; `scripts/check-build.mjs` gates the manifest in `make web-build`.
+- Open: e2e sign-in (`e2e/fixtures.ts` `signIn`/`writeHeaders`) and the dev config's CSRF (`X-CSRF-Token` / `__Host-osp_csrf`, `dev-host/pages.ts`) still target cookie sessions; swap when P1 lands. Until then `make dev` has no way to sign in.

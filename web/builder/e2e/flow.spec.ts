@@ -1,15 +1,12 @@
 import { readFileSync } from 'node:fs';
 import { expect, test, type Locator, type Page } from '@playwright/test';
-import { axe } from './fixtures';
+import { axe, signIn, writeHeaders } from './fixtures';
 
 // The flow editor (task B8) end to end against a real osp-api (e2e/api_server.py).
 // The survey starts as the review.md §2.3 worked example (fixtures/20-worked-example)
 // with its blocks, variables and an age quota, but an empty flow; the tests build the
 // flow in the editor. §2.3's flow has every node type except a randomiser, which the
 // keyboard test adds.
-
-const EMAIL = process.env.OSP_E2E_EMAIL ?? 'researcher@lab.example';
-const PASSWORD = process.env.OSP_E2E_PASSWORD ?? 'plover tundra kettle 4417 orbit';
 
 function seedSurvey(flow: unknown[] = []) {
 	const s = JSON.parse(readFileSync(new URL('../../../fixtures/20-worked-example/survey.json', import.meta.url), 'utf8'));
@@ -25,22 +22,10 @@ function seedSurvey(flow: unknown[] = []) {
 	return s;
 }
 
-async function signIn(page: Page) {
-	await page.goto('/login');
-	await page.getByLabel('Email').fill(EMAIL);
-	await page.getByLabel('Password').fill(PASSWORD);
-	await page.getByRole('button', { name: 'Sign in' }).click();
-	await expect(page.getByRole('heading', { name: 'Your surveys' })).toBeVisible();
-}
-
-async function csrf(page: Page) {
-	return (await page.context().cookies()).find((c) => c.name === '__Host-osp_csrf')!.value;
-}
-
 /** Create a survey through the API and open its flow view. */
 async function openFlow(page: Page, title: string, flow: unknown[] = []) {
 	const res = await page.request.post('/api/surveys', {
-		headers: { 'X-CSRF-Token': await csrf(page) },
+		headers: await writeHeaders(page),
 		data: { title, survey: seedSurvey(flow) }
 	});
 	expect(res.status()).toBe(201);

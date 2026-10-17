@@ -30,9 +30,11 @@ export default defineConfig({
 			timeout: 120_000
 		},
 		{
+			// The production pages plus the dev-only galleries (OSP_DEV_PAGES=1), served by the
+			// reference host in dev-host/ at today's URLs with the dev config.
 			command: `vite build --logLevel warn && vite preview --host 127.0.0.1 --port ${PORT} --strictPort`,
 			url: `http://127.0.0.1:${PORT}`,
-			env: { OSP_API_URL: `http://127.0.0.1:${API_PORT}` },
+			env: { OSP_API_URL: `http://127.0.0.1:${API_PORT}`, OSP_DEV_PAGES: '1' },
 			reuseExistingServer: !process.env.CI,
 			timeout: 120_000
 		}

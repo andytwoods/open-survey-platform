@@ -43,9 +43,12 @@ web-check:
 web-test:
 	$(PNPM) -C web test
 
+# Builder pages (Vite multi-page build): one JS entry per page + build/manifest.json; the
+# check fails unless exactly the production pages are listed, their files exist and each
+# entry exports mount (web/builder/scripts/check-build.mjs).
 web-build:
 	$(PNPM) -C web --filter @osp/builder exec vite build --logLevel warn
-	@test -f web/builder/build/index.html && echo "web-build: static site in web/builder/build"
+	$(PNPM) -C web --filter @osp/builder exec node scripts/check-build.mjs
 
 # FastAPI app (osp-api) -> contract/openapi.json -> web/api-client/src/schema.d.ts
 contract:
@@ -180,7 +183,8 @@ lss-import-check:
 	OSP_LSS_IMPORT=1 $(UV_RUN) pytest python/osp-targets/tests/test_lss_import.py -rs
 
 # Local dev: `make dev` runs osp-api (SQLite in .data/, port 8000) and the builder dev server
-# (5173, which proxies /api to the API, so no CORS) together; Ctrl+C stops both. The first
+# (5173, which serves each builder page at its usual URL with a dev config and proxies /api
+# to the API, so no CORS; web/builder/dev-host/) together; Ctrl+C stops both. The first
 # run makes dev-only keys, a dev login and three seeded surveys, all in .data/ (gitignored);
 # every run prints the login and the URLs. The participant app's dev server (5174, base
 # /r/, proxying /api too) starts as well; its links are /r/?s=<slug>. `make dev-reset` wipes .data/. Dev only: never point this at real data.
