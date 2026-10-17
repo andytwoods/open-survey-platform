@@ -129,6 +129,18 @@
 - Numbers: 75 vitest (55 gallery specs each compiled by Vega-Lite with zero warnings in both themes + JSON snapshot; menu, semantics, theme tests); 6 Playwright (`e2e/charts.spec.ts`: SVG/ARIA, re-embed hygiene, CSP, axe + snapshots in app light, app dark, export). Vega is one lazy chunk (`embed-*.js`, 850 kB min / 287 kB gzip); the gallery entry is 34 kB (12 kB gzip); `check-build.mjs` now fails if any page loads Vega eagerly.
 - Open: Vite prints its >500 kB chunk warning for the lazy Vega chunk; small multiples use a fixed 280 px panel (they scroll sideways, focusable, in narrow cards); V2 rebuilds specs when light/dark changes (the component re-applies the config, palettes in the spec come from `opts.tokens`).
 
+## 2026-10-17 – G1: favicon, app icons and page metadata (branch agent/G1)
+
+- Landed: one original source mark, `brand/mark.svg` (blue tile, two radio-button rows; a `prefers-color-scheme: dark` variant), replacing the Svelte logo that was our favicon. `web/builder/scripts/icons.mjs` renders it with Playwright's Chromium (no new deps) into `favicon.svg`, `favicon-32.png`, `apple-touch-icon.png` (180, square corners), `icon-192/512.png`, `icon-maskable-512.png` and `site.webmanifest` for the builder (`static/`) and the participant app (`runtime/public/`, served under `/r/`), plus `brand/social-preview.png` (1280×640). The dev host writes the icon tags, theme-color and a per-page `<meta name="description">` (`DESCRIPTIONS`); the participant app's `theme-color` follows the survey theme's page background. `docs/hosting.md` covers linking the icons and swapping the participant icon.
+- Numbers: +2 vitest in `pages.test.ts`, new `tooling/icons.test.ts` (10: sizes, manifests, favicon = mark, self-contained SVG); new e2e `icons.spec.ts` (2: every icon, manifest and manifest icon returns 200 for builder pages and `/s/{slug}`, no 4xx while loading).
+- Open: the social preview must be uploaded by hand (GitHub → Settings → Social preview); a theme's `logoAssetId` doesn't change the participant icon (assets aren't served yet); the docs site (D2) should link `brand/` icons.
+
+## 2026-10-17 – F2: LanguagesField keeps an add/remove still in flight
+
+- Landed: `LanguagesField` builds each `set_languages` list (and default) on the last-sent value while an op is in flight, as F1's ConsentEditor does, so a quick second add/remove no longer undoes the first; default-language change and the cascade button use the same base. Reject/cascade flow unchanged. The add box is only cleared if it still holds the tag that was added.
+- Numbers: new `LanguagesField.svelte.test.ts` (4 DOM tests; the two race tests fail before the fix); new e2e `languages.spec.ts` (ops held back 400 ms: two quick adds, two quick removes, reload) fails before the fix, passes after.
+- Open: a rejected op still leaves later in-flight ops built on it (same as F1); the tag list shows the server's value, not the pending one.
+
 ## 2026-10-17 – CI1: GitHub Actions green again, split into jobs (branch agent/CI1)
 
 - Cause: every run on main failed in `harness-quick` only (no Playwright browser on the runner); the `OspConfigError: config tag: not valid JSON` line in the vitest log is `autoMount`'s expected `console.error` from `mount.svelte.test.ts`, not a failure.

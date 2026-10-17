@@ -6,7 +6,7 @@ import { readFileSync, writeFileSync } from 'node:fs';
 import type { IncomingMessage, ServerResponse } from 'node:http';
 import { join, resolve } from 'node:path';
 import type { Connect, Plugin, ResolvedConfig } from 'vite';
-import { devConfig, pageManifest, renderPage, route, TITLES, type PageManifest, type PageName } from './pages.ts';
+import { DESCRIPTIONS, devConfig, pageManifest, renderPage, route, TITLES, type PageManifest, type PageName } from './pages.ts';
 
 export const MANIFEST = 'manifest.json';
 
@@ -39,6 +39,7 @@ export function ospPages(opts: { entries: Record<string, string>; devPages: bool
 				res,
 				renderPage({
 					title: TITLES[r.page],
+					description: DESCRIPTIONS[r.page],
 					config: devConfig(r),
 					files: { js: abs(files.js), css: files.css.map(abs), preload: files.preload.map(abs) },
 					themeScript: !csp
@@ -63,6 +64,7 @@ export function ospPages(opts: { entries: Record<string, string>; devPages: bool
 				try {
 					const html = renderPage({
 						title: TITLES[r.page],
+						description: DESCRIPTIONS[r.page],
 						config: devConfig(r),
 						files: { js: `/${entry}`, css: [], preload: [] }
 					});
