@@ -19,34 +19,52 @@
 	let problem = $state<string | null>(null);
 	let pendingRemoval = $state<string | null>(null);
 
+	// The store applies an edit only when the server answers, so while a `set_languages` is in
+	// flight `languages` is still the old list. Each op sends the whole list, so the next add or
+	// remove must build on what was last sent, or it would undo the one still in flight (adding
+	// de then fr quickly lost de).
+	let sent: { languages: string[]; def: string | null } | null = null;
+	let inFlight = 0;
+	const latest = () => sent ?? { languages, def: explicitDefault };
+
 	async function send(next: string[], def: string | null, cascade = false) {
 		problem = null;
-		const out = await submit([languagesOp(next, def, cascade)]);
-		if (out.status === 'rejected') {
-			const d = out.diagnostics[0];
-			if (d?.code === 'op.dangling_ref' && !cascade) {
-				pendingRemoval = languages.find((l) => !next.includes(l)) ?? null;
-				problem = d.message;
-			} else problem = d?.message ?? out.message;
-			return false;
+		sent = { languages: next, def: def && next.includes(def) ? def : null };
+		inFlight++;
+		try {
+			const out = await submit([languagesOp(next, def, cascade)]);
+			if (out.status === 'rejected') {
+				const d = out.diagnostics[0];
+				if (d?.code === 'op.dangling_ref' && !cascade) {
+					pendingRemoval = languages.find((l) => !next.includes(l)) ?? null;
+					problem = d.message;
+				} else problem = d?.message ?? out.message;
+				return false;
+			}
+			pendingRemoval = null;
+			return out.status === 'applied';
+		} finally {
+			if (--inFlight === 0) sent = null;
 		}
-		pendingRemoval = null;
-		return out.status === 'applied';
 	}
 
 	async function add() {
 		const tag = newTag.trim();
 		if (!tag) return;
-		if (languages.includes(tag)) {
+		const base = latest();
+		if (base.languages.includes(tag)) {
 			problem = `${tag} is already a survey language.`;
 			return;
 		}
-		if (await send([...languages, tag], explicitDefault)) newTag = '';
+		// Clear the box only if the researcher hasn't already typed the next tag.
+		if ((await send([...base.languages, tag], base.def)) && newTag.trim() === tag) newTag = '';
 	}
 
-	function remove(tag: string) {
-		const next = languages.filter((l) => l !== tag);
-		void send(next, explicitDefault === tag ? null : explicitDefault);
+	function remove(tag: string, cascade = false) {
+		const base = latest();
+		if (!base.languages.includes(tag)) return;
+		const next = base.languages.filter((l) => l !== tag);
+		return send(next, base.def === tag ? null : base.def, cascade);
 	}
 </script>
 
@@ -57,7 +75,7 @@
 				<span lang={l}>{l}</span>
 				{#if l === shownDefault}<span class="badge">default</span>{/if}
 				{#if languages.length > 1}
-					<button type="button" class="remove" aria-label="Remove language {l}" onclick={() => remove(l)}>
+					<button type="button" class="remove" aria-label="Remove language {l}" onclick={() => void remove(l)}>
 						<X size={14} aria-hidden="true" />
 					</button>
 				{/if}
@@ -81,7 +99,7 @@
 		<span>Default language</span>
 		<select
 			value={shownDefault}
-			onchange={(e) => void send(languages, e.currentTarget.value)}
+			onchange={(e) => void send(latest().languages, e.currentTarget.value)}
 		>
 			{#each languages as l (l)}<option value={l}>{l}</option>{/each}
 		</select>
@@ -90,14 +108,8 @@
 		<div class="problem" role="alert">
 			<p>{problem}</p>
 			{#if pendingRemoval}
-				<Button
-					size="sm"
-					onclick={() =>
-						void send(
-							languages.filter((l) => l !== pendingRemoval),
-							explicitDefault === pendingRemoval ? null : explicitDefault,
-							true
-						)}>Remove {pendingRemoval} and delete its translations</Button
+				<Button size="sm" onclick={() => pendingRemoval && void remove(pendingRemoval, true)}
+					>Remove {pendingRemoval} and delete its translations</Button
 				>
 			{/if}
 		</div>

@@ -109,3 +109,9 @@
 - Landed: `validationByOwner` (diagnostics/model.ts) groups the store's validator diagnostics by block/page/question; CanvasPane passes each rich card its own, and CardShell shows "N errors" / "N warnings" as buttons (messages as their description and tooltip) when an `ondiagnostic` handler is given (plain badges otherwise). Click goes to the first such diagnostic's property via the shell's `goTo`, like export badges; counts follow `store.diagnostics` after every edit.
 - Numbers: +7 vitest (2 model, 5 CanvasPane incl. axe); new e2e `card-diagnostics.spec.ts` (counts per card, click-to-property for an error and a warning, live update after fixing min > max in the panel, axe twice). Native Windows: Windows-safe make subset exit 0; full builder e2e 120 passed / 23 failed vs 22 failed on main (snapshot/platform; the extra one passes 3/3 alone).
 - Open: block/page heads don't show validator counts (only export badges); full `make check` / `make web-e2e` left to CI.
+
+## 2026-10-17 – F2: LanguagesField keeps an add/remove still in flight
+
+- Landed: `LanguagesField` builds each `set_languages` list (and default) on the last-sent value while an op is in flight, as F1's ConsentEditor does, so a quick second add/remove no longer undoes the first; default-language change and the cascade button use the same base. Reject/cascade flow unchanged. The add box is only cleared if it still holds the tag that was added.
+- Numbers: new `LanguagesField.svelte.test.ts` (4 DOM tests; the two race tests fail before the fix); new e2e `languages.spec.ts` (ops held back 400 ms: two quick adds, two quick removes, reload) fails before the fix, passes after.
+- Open: a rejected op still leaves later in-flight ops built on it (same as F1); the tag list shows the server's value, not the pending one.
