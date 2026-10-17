@@ -1,8 +1,54 @@
 # Open Survey Platform
 
-An MIT-licensed, GUI-first survey builder for academic research. Surveys are authored in
-our own JSON model, run in our own browser runtime, and can be exported to other
-platforms. Contributors and AI agents: start with [`AGENTS.md`](AGENTS.md).
+An open-source, GUI-first survey builder for academic research, built as a free
+alternative to commercial survey tools. Researchers design surveys in the browser,
+participants answer them on any screen size, and every response can be replayed exactly.
+
+**Status:** early development (October 2026). Usable on a laptop for building and
+running test surveys; not yet deployed in production. Expect breaking changes.
+
+## What it does
+
+- **Visual builder.** Pages, blocks and questions in an outline; a canvas that shows each
+  question as participants will see it; a properties panel; undo/redo; a command palette
+  (Ctrl/Cmd+K); keyboard-only operation.
+- **Nine question types:** text, whole number, decimal, single choice, multiple choice,
+  date, grid (matrix), slider and note. Change a question's type later without losing
+  its text or logic.
+- **Survey logic:** display conditions, branching flow, piped text, block randomisers
+  and shuffled choices, balanced assignment to conditions, quotas, validation.
+- **Research features:** consent block (nothing saved before agreement, withdrawal
+  handled), several languages per survey, save-and-resume links, per-page or end-only
+  saving, built-in trial and position counters, and researcher hooks (your own JavaScript
+  on key events, run in a sandbox).
+- **Looks and accessibility:** themes built from design tokens with a WCAG AA contrast
+  check, light and dark, tested on phone, tablet and desktop sizes, with axe checks.
+- **Data and reproducibility:** CSV/JSON response export with a codebook, versioned
+  publishing (each response is tied to the exact survey version it saw), and a
+  reproducibility package that replays any response with the engine that ran it.
+- **Interoperability:** export to XLSForm (ODK/Enketo/KoboToolbox) and LimeSurvey.
+- **Bring your own sign-in.** The platform has no accounts or passwords. Your web app
+  (a university system, Django, a single sign-on proxy) signs researchers in and forwards
+  requests with signed identity headers. See [`docs/hosting.md`](docs/hosting.md).
+- **Privacy:** answers are encrypted at rest (AES-GCM), labs are kept apart, retention
+  periods are enforced.
+
+## How it is built
+
+| Part | What | Where |
+|---|---|---|
+| Builder | Svelte 5 pages, one bundle per page, mounted by your host | `web/builder` |
+| Participant app | Svelte 5; the survey engine runs entirely in the browser | `web/runtime`, `web/engine` |
+| API | FastAPI over a layered Python core (spec, ops, store, exports) | `python/` |
+| Storage | SQLAlchemy with Alembic migrations; SQLite or Postgres | `python/osp-store` |
+| Contract | OpenAPI schema; the TypeScript client is generated from it | `contract/`, `web/api-client` |
+
+The browser decides which page comes next; the server only saves answers and counts
+across participants (quotas, balanced assignment). Behaviour is pinned down in
+[`planning/semantics.md`](planning/semantics.md) and checked by 40 fixture surveys that are
+played through real browsers on four device profiles.
+
+Contributors and AI agents: start with [`AGENTS.md`](AGENTS.md).
 
 ## Try it locally
 
@@ -76,3 +122,14 @@ change lands.
 The data export and reproducibility tests read committed engine records
 (`python/osp-targets/tests/data/records/`). After adding a fixture script or changing a
 fixture survey, run `make engine-records`; a test fails with that command if you forget.
+
+## Contributing
+
+Issues and pull requests are welcome. Please read [`AGENTS.md`](AGENTS.md) first: it covers
+the layer rules, the licence policy (permissive dependencies only) and the clean-room rule
+(never copy code from other survey tools). `make check` must pass.
+
+## Licence
+
+[MIT](LICENSE). Dependencies are limited to permissive licences, checked by
+`make licence-check` against [`licence-policy.toml`](licence-policy.toml).
