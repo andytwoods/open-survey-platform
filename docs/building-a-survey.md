@@ -12,6 +12,53 @@ the lab's surveys, newest first. Type a title under **New survey title** and pre
 **Create survey**; if you belong to more than one lab, choose the **Lab** first. The editor
 opens on the new survey, which starts with one block, one page and a note.
 
+## Import a survey
+
+Surveys built elsewhere can be brought in from the same page. Under the create form, press
+**Import from Qualtrics, LimeSurvey or SurveyJS…** and choose a file:
+
+| Platform | File | How to get it |
+|---|---|---|
+| Qualtrics | `.qsf` | Survey → Tools → Import/Export → Export Survey |
+| LimeSurvey | `.lss` | Survey → Display/Export → Survey structure (.lss) |
+| SurveyJS | `.json` | The survey JSON from the Creator's JSON editor |
+
+The file is read in your browser and sent to the server for a **preview** before anything
+is created. The preview says how the file was read, lets you change the **Title**, and
+lists:
+
+- **What will be created**: questions by type, pages and blocks, languages, conditions,
+  variables and quotas.
+- **What will not carry over**: every feature the file uses that has no counterpart here,
+  each named with the source feature (a question type, an attribute, a flow element) and
+  the reason. Nothing is dropped silently.
+- **What will behave differently**: features that were imported but run differently here,
+  for example a soft-mandatory LimeSurvey question (optional here) or a Qualtrics
+  "request response" (optional here).
+- **Notes**: things that carried over with a change of shape, such as a hidden field that
+  became a URL-parameter variable, or HTML formatting removed from labels.
+
+**Import** creates the draft and opens it in the editor; the usual diagnostics then apply
+(for example a missing translation in one language). The mapping, format by format:
+
+| From | To |
+|---|---|
+| Qualtrics blocks and page breaks; LimeSurvey groups; SurveyJS pages | blocks and pages |
+| Single and multiple choice, text, number, date, descriptive text | the matching question types |
+| Qualtrics Likert grids, LimeSurvey arrays, SurveyJS matrices | grids (rows × columns) |
+| Qualtrics sliders; SurveyJS sliders; LimeSurvey number ranges written by this platform | sliders |
+| Display logic, relevance equations, `visibleIf` | **Show if** conditions |
+| Branches, block randomisers, end-of-survey elements; LimeSurvey randomisation groups | the flow |
+| Embedded data; hidden LimeSurvey fields with a default | URL-parameter variables |
+| Equations, calculated values | computed variables, where the expression can be expressed |
+| LimeSurvey quotas on answer codes | quotas with a check after the question's page |
+| Rank order, constant sum, file upload, signature, heat maps, hot spots, drill-downs, dual-scale and text arrays, "Other" text boxes, custom validation, loop & merge, triggers, scoring | reported as not carried over |
+
+A file exported **from** this platform as `.lss` imports back with its question ids,
+types, choices, bounds, assignments and conditions. The exporter's random-draw helpers are
+replaced by this platform's own randomisation (noted in the preview); its end-outcome
+helper, if any, comes back as a computed variable you can delete.
+
 ## The editor
 
 <figure markdown="span">

@@ -16,6 +16,8 @@ ROUTES: list[tuple[str, str, dict | None]] = [
     ("GET", "/api/me", None),
     ("GET", "/api/surveys", None),
     ("POST", "/api/surveys", {"title": "x"}),
+    ("POST", "/api/surveys/import/preview", {"filename": "x.json", "content": "{}"}),
+    ("POST", "/api/surveys/import", {"filename": "x.json", "content": "{}"}),
     ("GET", f"/api/surveys/{SID}", None),
     ("DELETE", f"/api/surveys/{SID}", None),
     ("GET", f"/api/surveys/{SID}/history", None),

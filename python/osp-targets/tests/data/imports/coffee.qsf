@@ -1,0 +1,389 @@
+{
+  "SurveyEntry": {
+    "SurveyID": "SV_invented0001",
+    "SurveyName": "Coffee and sleep (invented sample)",
+    "SurveyOwnerID": "UR_invented",
+    "SurveyLanguage": "EN",
+    "SurveyStatus": "Inactive"
+  },
+  "SurveyElements": [
+    {
+      "SurveyID": "SV_invented0001",
+      "Element": "BL",
+      "PrimaryAttribute": "Survey Blocks",
+      "SecondaryAttribute": null,
+      "TertiaryAttribute": null,
+      "Payload": {
+        "1": {
+          "Type": "Default",
+          "Description": "Habits",
+          "ID": "BL_habits",
+          "BlockElements": [
+            {"Type": "Question", "QuestionID": "QID1"},
+            {"Type": "Question", "QuestionID": "QID2"},
+            {"Type": "Question", "QuestionID": "QID3"},
+            {"Type": "Page Break"},
+            {"Type": "Question", "QuestionID": "QID4"},
+            {"Type": "Question", "QuestionID": "QID5"}
+          ],
+          "Options": {"BlockLocking": "false", "RandomizeQuestions": "false", "BlockVisibility": "Collapsed"}
+        },
+        "2": {
+          "Type": "Standard",
+          "Description": "Sleep",
+          "ID": "BL_sleep",
+          "BlockElements": [
+            {"Type": "Question", "QuestionID": "QID6"},
+            {"Type": "Question", "QuestionID": "QID7"},
+            {"Type": "Question", "QuestionID": "QID8"}
+          ],
+          "Options": {"BlockLocking": "false", "RandomizeQuestions": "RandomAll", "BlockVisibility": "Collapsed"}
+        },
+        "3": {
+          "Type": "Standard",
+          "Description": "Mood A",
+          "ID": "BL_mood_a",
+          "BlockElements": [{"Type": "Question", "QuestionID": "QID9"}]
+        },
+        "4": {
+          "Type": "Standard",
+          "Description": "Mood B",
+          "ID": "BL_mood_b",
+          "BlockElements": [{"Type": "Question", "QuestionID": "QID10"}]
+        },
+        "5": {
+          "Type": "Trash",
+          "Description": "Trash / Unused Questions",
+          "ID": "BL_trash",
+          "BlockElements": [{"Type": "Question", "QuestionID": "QID11"}]
+        }
+      }
+    },
+    {
+      "SurveyID": "SV_invented0001",
+      "Element": "FL",
+      "PrimaryAttribute": "Survey Flow",
+      "SecondaryAttribute": null,
+      "TertiaryAttribute": null,
+      "Payload": {
+        "Type": "Root",
+        "FlowID": "FL_1",
+        "Flow": [
+          {
+            "Type": "EmbeddedData",
+            "FlowID": "FL_2",
+            "EmbeddedData": [
+              {"Description": "source", "Type": "Recipient", "Field": "source", "VariableType": "String", "DataVisibility": [], "AnalyzeText": false},
+              {"Description": "cohort", "Type": "Custom", "Field": "cohort", "VariableType": "String", "DataVisibility": [], "AnalyzeText": false, "Value": "2026"}
+            ]
+          },
+          {"Type": "Block", "ID": "BL_habits", "FlowID": "FL_3", "Autofill": []},
+          {
+            "Type": "Branch",
+            "FlowID": "FL_4",
+            "Description": "Coffee drinkers only",
+            "BranchLogic": {
+              "0": {
+                "0": {
+                  "LogicType": "Question",
+                  "QuestionID": "QID1",
+                  "QuestionIsInLoop": "no",
+                  "ChoiceLocator": "q://QID1/SelectableChoice/1",
+                  "Operator": "Selected",
+                  "QuestionIDFromLocator": "QID1",
+                  "LeftOperand": "q://QID1/SelectableChoice/1",
+                  "Type": "Expression",
+                  "Description": "<span class=\"ConjDesc\">If</span> Do you drink coffee? Yes Is Selected"
+                },
+                "1": {
+                  "LogicType": "EmbeddedField",
+                  "LeftOperand": "cohort",
+                  "Operator": "EqualTo",
+                  "RightOperand": "2026",
+                  "Type": "Expression",
+                  "Conjuction": "And",
+                  "Description": "cohort Is Equal to 2026"
+                },
+                "Type": "If"
+              },
+              "Type": "BooleanExpression"
+            },
+            "Flow": [{"Type": "Block", "ID": "BL_sleep", "FlowID": "FL_5", "Autofill": []}]
+          },
+          {
+            "Type": "BlockRandomizer",
+            "FlowID": "FL_6",
+            "SubSet": 1,
+            "EvenPresentation": true,
+            "Flow": [
+              {"Type": "Standard", "ID": "BL_mood_a", "FlowID": "FL_7", "Autofill": []},
+              {"Type": "Standard", "ID": "BL_mood_b", "FlowID": "FL_8", "Autofill": []}
+            ]
+          },
+          {"Type": "EndSurvey", "FlowID": "FL_9"}
+        ],
+        "Properties": {"Count": 9, "RemovedFieldsets": []}
+      }
+    },
+    {
+      "SurveyID": "SV_invented0001",
+      "Element": "SO",
+      "PrimaryAttribute": "Survey Options",
+      "SecondaryAttribute": null,
+      "TertiaryAttribute": null,
+      "Payload": {"BackButton": "true", "SaveAndContinue": "true", "ProgressBarDisplay": "None", "Header": "", "Footer": ""}
+    },
+    {
+      "SurveyID": "SV_invented0001",
+      "Element": "SQ",
+      "PrimaryAttribute": "QID1",
+      "SecondaryAttribute": "Do you drink coffee?",
+      "TertiaryAttribute": null,
+      "Payload": {
+        "QuestionText": "<p>Do you <strong>drink</strong> coffee?</p>",
+        "DataExportTag": "drinks_coffee",
+        "QuestionType": "MC",
+        "Selector": "SAVR",
+        "SubSelector": "TX",
+        "Configuration": {"QuestionDescriptionOption": "UseText"},
+        "QuestionDescription": "Do you drink coffee?",
+        "Choices": {"1": {"Display": "Yes"}, "2": {"Display": "No"}},
+        "ChoiceOrder": ["1", "2"],
+        "Validation": {"Settings": {"ForceResponse": "ON", "ForceResponseType": "ON", "Type": "None"}},
+        "Language": {"DE": {"QuestionText": "Trinken Sie Kaffee?", "Choices": {"1": {"Display": "Ja"}, "2": {"Display": "Nein"}}}},
+        "NextChoiceId": 3,
+        "NextAnswerId": 1,
+        "QuestionID": "QID1"
+      }
+    },
+    {
+      "SurveyID": "SV_invented0001",
+      "Element": "SQ",
+      "PrimaryAttribute": "QID2",
+      "SecondaryAttribute": "How many cups per day?",
+      "TertiaryAttribute": null,
+      "Payload": {
+        "QuestionText": "How many cups do you drink on a typical day?",
+        "DataExportTag": "cups",
+        "QuestionType": "TE",
+        "Selector": "SL",
+        "Configuration": {"QuestionDescriptionOption": "UseText"},
+        "QuestionDescription": "How many cups per day?",
+        "Validation": {"Settings": {"ForceResponse": "OFF", "ForceResponseType": "ON", "Type": "ContentType", "ContentType": "ValidNumber", "ValidNumber": {"Min": "0", "Max": "30", "NumDecimals": "0"}}},
+        "DisplayLogic": {
+          "0": {
+            "0": {
+              "LogicType": "Question",
+              "QuestionID": "QID1",
+              "QuestionIsInLoop": "no",
+              "ChoiceLocator": "q://QID1/SelectableChoice/1",
+              "Operator": "Selected",
+              "QuestionIDFromLocator": "QID1",
+              "LeftOperand": "q://QID1/SelectableChoice/1",
+              "Type": "Expression",
+              "Description": "If Do you drink coffee? Yes Is Selected"
+            },
+            "Type": "If"
+          },
+          "Type": "BooleanExpression",
+          "inPage": true
+        },
+        "Language": [],
+        "NextChoiceId": 4,
+        "NextAnswerId": 1,
+        "QuestionID": "QID2"
+      }
+    },
+    {
+      "SurveyID": "SV_invented0001",
+      "Element": "SQ",
+      "PrimaryAttribute": "QID3",
+      "SecondaryAttribute": "Which kinds?",
+      "TertiaryAttribute": null,
+      "Payload": {
+        "QuestionText": "Which kinds of coffee do you drink? (${q://QID2/ChoiceTextEntryValue} cups)",
+        "DataExportTag": "kinds",
+        "QuestionType": "MC",
+        "Selector": "MAVR",
+        "SubSelector": "TX",
+        "Configuration": {"QuestionDescriptionOption": "UseText"},
+        "QuestionDescription": "Which kinds?",
+        "Choices": {"1": {"Display": "Espresso"}, "2": {"Display": "Filter"}, "3": {"Display": "Instant"}, "4": {"Display": "Other", "TextEntry": "true"}},
+        "ChoiceOrder": [1, 2, 3, 4],
+        "RecodeValues": {"1": "10", "2": "20", "3": "30", "4": "99"},
+        "Randomization": {"Advanced": null, "TotalRandSubset": "", "Type": "All"},
+        "Validation": {"Settings": {"ForceResponse": "OFF", "ForceResponseType": "ON", "Type": "None"}},
+        "Language": [],
+        "NextChoiceId": 5,
+        "NextAnswerId": 1,
+        "QuestionID": "QID3"
+      }
+    },
+    {
+      "SurveyID": "SV_invented0001",
+      "Element": "SQ",
+      "PrimaryAttribute": "QID4",
+      "SecondaryAttribute": "Agreement grid",
+      "TertiaryAttribute": null,
+      "Payload": {
+        "QuestionText": "How much do you agree with each statement?",
+        "DataExportTag": "agree",
+        "QuestionType": "Matrix",
+        "Selector": "Likert",
+        "SubSelector": "SingleAnswer",
+        "Configuration": {"QuestionDescriptionOption": "UseText", "TextPosition": "inline", "ChoiceColumnWidth": 25, "RepeatHeaders": "none", "WhiteSpace": "ON", "MobileFirst": true},
+        "QuestionDescription": "Agreement grid",
+        "Choices": {"1": {"Display": "Coffee helps me focus"}, "2": {"Display": "Coffee keeps me awake at night"}},
+        "ChoiceOrder": ["1", "2"],
+        "Answers": {"1": {"Display": "Disagree"}, "2": {"Display": "Neutral"}, "3": {"Display": "Agree"}},
+        "AnswerOrder": ["1", "2", "3"],
+        "ChoiceDataExportTags": {"1": "focus", "2": "awake"},
+        "Validation": {"Settings": {"ForceResponse": "OFF", "ForceResponseType": "ON", "Type": "None"}},
+        "Language": [],
+        "NextChoiceId": 3,
+        "NextAnswerId": 4,
+        "QuestionID": "QID4"
+      }
+    },
+    {
+      "SurveyID": "SV_invented0001",
+      "Element": "SQ",
+      "PrimaryAttribute": "QID5",
+      "SecondaryAttribute": "Energy slider",
+      "TertiaryAttribute": null,
+      "Payload": {
+        "QuestionText": "How energetic do you feel right now?",
+        "DataExportTag": "energy",
+        "QuestionType": "Slider",
+        "Selector": "HSLIDER",
+        "Configuration": {"QuestionDescriptionOption": "UseText", "CSSliderMin": 0, "CSSliderMax": 10, "GridLines": 10, "SnapToGrid": true, "NumDecimals": "0", "ShowValue": true},
+        "QuestionDescription": "Energy slider",
+        "Choices": {"1": {"Display": "Energy"}},
+        "ChoiceOrder": [1],
+        "Validation": {"Settings": {"ForceResponse": "OFF", "ForceResponseType": "ON", "Type": "None"}},
+        "Language": [],
+        "NextChoiceId": 2,
+        "NextAnswerId": 1,
+        "QuestionID": "QID5"
+      }
+    },
+    {
+      "SurveyID": "SV_invented0001",
+      "Element": "SQ",
+      "PrimaryAttribute": "QID6",
+      "SecondaryAttribute": "Sleep intro",
+      "TertiaryAttribute": null,
+      "Payload": {
+        "QuestionText": "<h2>Sleep</h2><p>A few questions about last night.</p>",
+        "DataExportTag": "sleep_intro",
+        "QuestionType": "DB",
+        "Selector": "TB",
+        "Configuration": {"QuestionDescriptionOption": "UseText"},
+        "QuestionDescription": "Sleep intro",
+        "Language": [],
+        "QuestionID": "QID6"
+      }
+    },
+    {
+      "SurveyID": "SV_invented0001",
+      "Element": "SQ",
+      "PrimaryAttribute": "QID7",
+      "SecondaryAttribute": "Bed time",
+      "TertiaryAttribute": null,
+      "Payload": {
+        "QuestionText": "What date did you last sleep well?",
+        "DataExportTag": "slept_well_on",
+        "QuestionType": "TE",
+        "Selector": "SL",
+        "Configuration": {"QuestionDescriptionOption": "UseText"},
+        "QuestionDescription": "Bed time",
+        "Validation": {"Settings": {"ForceResponse": "OFF", "ForceResponseType": "ON", "Type": "ContentType", "ContentType": "ValidDate", "ValidDateType": "DateIntl"}},
+        "Language": [],
+        "QuestionID": "QID7"
+      }
+    },
+    {
+      "SurveyID": "SV_invented0001",
+      "Element": "SQ",
+      "PrimaryAttribute": "QID8",
+      "SecondaryAttribute": "Rank",
+      "TertiaryAttribute": null,
+      "Payload": {
+        "QuestionText": "Rank these in order of importance for good sleep.",
+        "DataExportTag": "rank",
+        "QuestionType": "RO",
+        "Selector": "DND",
+        "Configuration": {"QuestionDescriptionOption": "UseText"},
+        "QuestionDescription": "Rank",
+        "Choices": {"1": {"Display": "Dark room"}, "2": {"Display": "No screens"}, "3": {"Display": "No coffee"}},
+        "ChoiceOrder": [1, 2, 3],
+        "Language": [],
+        "QuestionID": "QID8"
+      }
+    },
+    {
+      "SurveyID": "SV_invented0001",
+      "Element": "SQ",
+      "PrimaryAttribute": "QID9",
+      "SecondaryAttribute": "Mood A",
+      "TertiaryAttribute": null,
+      "Payload": {
+        "QuestionText": "Describe your mood in a few words.",
+        "DataExportTag": "mood_words",
+        "QuestionType": "TE",
+        "Selector": "ML",
+        "Configuration": {"QuestionDescriptionOption": "UseText"},
+        "QuestionDescription": "Mood A",
+        "Validation": {"Settings": {"ForceResponse": "OFF", "ForceResponseType": "ON", "Type": "None"}},
+        "Language": [],
+        "QuestionID": "QID9"
+      }
+    },
+    {
+      "SurveyID": "SV_invented0001",
+      "Element": "SQ",
+      "PrimaryAttribute": "QID10",
+      "SecondaryAttribute": "Mood B",
+      "TertiaryAttribute": null,
+      "Payload": {
+        "QuestionText": "Pick the word that fits your mood best.",
+        "DataExportTag": "mood_pick",
+        "QuestionType": "MC",
+        "Selector": "DL",
+        "SubSelector": null,
+        "Configuration": {"QuestionDescriptionOption": "UseText"},
+        "QuestionDescription": "Mood B",
+        "Choices": {"1": {"Display": "Calm"}, "2": {"Display": "Tense"}, "3": {"Display": "Tired"}},
+        "ChoiceOrder": [1, 2, 3],
+        "Validation": {"Settings": {"ForceResponse": "ON", "ForceResponseType": "RequestResponse", "Type": "None"}},
+        "Language": [],
+        "QuestionID": "QID10"
+      }
+    },
+    {
+      "SurveyID": "SV_invented0001",
+      "Element": "SQ",
+      "PrimaryAttribute": "QID11",
+      "SecondaryAttribute": "Old question",
+      "TertiaryAttribute": null,
+      "Payload": {
+        "QuestionText": "An old question nobody asks any more.",
+        "DataExportTag": "old",
+        "QuestionType": "TE",
+        "Selector": "SL",
+        "Configuration": {"QuestionDescriptionOption": "UseText"},
+        "QuestionDescription": "Old question",
+        "Language": [],
+        "QuestionID": "QID11"
+      }
+    },
+    {
+      "SurveyID": "SV_invented0001",
+      "Element": "QC",
+      "PrimaryAttribute": "Survey Question Count",
+      "SecondaryAttribute": "11",
+      "TertiaryAttribute": null,
+      "Payload": null
+    }
+  ]
+}

@@ -1,0 +1,592 @@
+{
+  "diagnostics": [
+    {
+      "code": "qsf.embedded_data",
+      "feature": "EmbeddedData",
+      "format": "qsf",
+      "message": "embedded data field 'source' becomes a URL-parameter variable",
+      "pointer": "/Flow/0/EmbeddedData/0",
+      "severity": "info",
+      "target": null
+    },
+    {
+      "code": "qsf.embedded_data",
+      "feature": "EmbeddedData",
+      "format": "qsf",
+      "message": "embedded data field 'cohort' becomes a URL-parameter variable with its value as the default",
+      "pointer": "/Flow/0/EmbeddedData/1",
+      "severity": "info",
+      "target": null
+    },
+    {
+      "code": "qsf.in_page_logic",
+      "feature": "inPage",
+      "format": "qsf",
+      "message": "in-page display logic on 'cups' applies on the page like any condition",
+      "pointer": "/SurveyElements/4/Payload/DisplayLogic",
+      "severity": "info",
+      "target": null
+    },
+    {
+      "code": "qsf.text_entry_choice",
+      "feature": "TextEntry",
+      "format": "qsf",
+      "message": "the text box on choice 4 is not supported",
+      "pointer": "/SurveyElements/5/Payload/Choices/4",
+      "severity": "loss",
+      "target": null
+    },
+    {
+      "code": "qsf.date",
+      "feature": "ValidDate",
+      "format": "qsf",
+      "message": "'slept_well_on' becomes a date question (the date format is the browser's)",
+      "pointer": "/SurveyElements/9/Payload/Validation",
+      "severity": "info",
+      "target": null
+    },
+    {
+      "code": "qsf.question_type",
+      "feature": "QuestionType=RO",
+      "format": "qsf",
+      "message": "rank order questions are not supported: 'rank' left out",
+      "pointer": "/SurveyElements/10/Payload",
+      "severity": "loss",
+      "target": null
+    },
+    {
+      "code": "qsf.request_response",
+      "feature": "RequestResponse",
+      "format": "qsf",
+      "message": "'mood_pick' only requests a response in Qualtrics: optional here",
+      "pointer": "/SurveyElements/12/Payload/Validation",
+      "severity": "warning",
+      "target": null
+    },
+    {
+      "code": "qsf.trash",
+      "feature": "Trash block",
+      "format": "qsf",
+      "message": "1 question(s) in the trash were left out",
+      "pointer": "/Blocks/4",
+      "severity": "info",
+      "target": null
+    },
+    {
+      "code": "qsf.even_presentation",
+      "feature": "EvenPresentation",
+      "format": "qsf",
+      "message": "evenly presented randomisation is drawn independently per participant here",
+      "pointer": "/Flow/3",
+      "severity": "info",
+      "target": null
+    },
+    {
+      "code": "qsf.question_not_in_block",
+      "feature": "question",
+      "format": "qsf",
+      "message": "QID11 is in no block and was left out",
+      "pointer": "/SurveyElements/13/Payload",
+      "severity": "info",
+      "target": null
+    },
+    {
+      "code": "qsf.html_stripped",
+      "feature": "html",
+      "format": "qsf",
+      "message": "HTML formatting was removed from 2 text(s)",
+      "pointer": "",
+      "severity": "info",
+      "target": null
+    }
+  ],
+  "format": "qsf",
+  "ok": true,
+  "summary": {
+    "blocks": 4,
+    "byType": {
+      "date": 1,
+      "integer": 1,
+      "matrix": 1,
+      "multi": 1,
+      "note": 1,
+      "single": 2,
+      "slider": 1,
+      "text": 1
+    },
+    "choiceLists": 0,
+    "conditions": 2,
+    "flowNodes": 7,
+    "infos": 8,
+    "languages": [
+      "en",
+      "de"
+    ],
+    "losses": 2,
+    "pages": 5,
+    "questions": 9,
+    "quotas": 0,
+    "title": "Coffee and sleep (invented sample)",
+    "variables": 2,
+    "warnings": 1
+  },
+  "survey": {
+    "blocks": [
+      {
+        "id": "Habits",
+        "pages": [
+          {
+            "id": "Habits_p1",
+            "items": [
+              {
+                "choices": [
+                  {
+                    "label": {
+                      "de": "Ja",
+                      "en": "Yes"
+                    },
+                    "value": 1
+                  },
+                  {
+                    "label": {
+                      "de": "Nein",
+                      "en": "No"
+                    },
+                    "value": 2
+                  }
+                ],
+                "id": "drinks_coffee",
+                "label": {
+                  "de": "Trinken Sie Kaffee?",
+                  "en": "Do you drink coffee?"
+                },
+                "required": true,
+                "type": "single"
+              },
+              {
+                "id": "cups",
+                "label": {
+                  "en": "How many cups do you drink on a typical day?"
+                },
+                "max": 30,
+                "min": 0,
+                "showIf": {
+                  "kind": "compare",
+                  "left": {
+                    "id": "drinks_coffee",
+                    "kind": "ref"
+                  },
+                  "op": "==",
+                  "right": {
+                    "kind": "int",
+                    "value": 1
+                  }
+                },
+                "type": "integer"
+              },
+              {
+                "choiceOrder": "shuffle",
+                "choices": [
+                  {
+                    "label": {
+                      "en": "Espresso"
+                    },
+                    "value": 10
+                  },
+                  {
+                    "label": {
+                      "en": "Filter"
+                    },
+                    "value": 20
+                  },
+                  {
+                    "label": {
+                      "en": "Instant"
+                    },
+                    "value": 30
+                  },
+                  {
+                    "label": {
+                      "en": "Other"
+                    },
+                    "value": 99
+                  }
+                ],
+                "id": "kinds",
+                "label": {
+                  "en": "Which kinds of coffee do you drink? (${cups} cups)"
+                },
+                "type": "multi"
+              }
+            ]
+          },
+          {
+            "id": "Habits_p2",
+            "items": [
+              {
+                "choices": [
+                  {
+                    "label": {
+                      "en": "Disagree"
+                    },
+                    "value": 1
+                  },
+                  {
+                    "label": {
+                      "en": "Neutral"
+                    },
+                    "value": 2
+                  },
+                  {
+                    "label": {
+                      "en": "Agree"
+                    },
+                    "value": 3
+                  }
+                ],
+                "id": "agree",
+                "label": {
+                  "en": "How much do you agree with each statement?"
+                },
+                "rows": [
+                  {
+                    "id": "focus",
+                    "label": {
+                      "en": "Coffee helps me focus"
+                    }
+                  },
+                  {
+                    "id": "awake",
+                    "label": {
+                      "en": "Coffee keeps me awake at night"
+                    }
+                  }
+                ],
+                "type": "matrix"
+              },
+              {
+                "id": "energy",
+                "label": {
+                  "en": "How energetic do you feel right now?"
+                },
+                "max": 10,
+                "min": 0,
+                "step": 1,
+                "type": "slider",
+                "valueType": "integer"
+              }
+            ]
+          }
+        ],
+        "title": "Habits"
+      },
+      {
+        "id": "Sleep",
+        "pages": [
+          {
+            "id": "Sleep_p1",
+            "itemOrder": "shuffle",
+            "items": [
+              {
+                "id": "sleep_intro",
+                "label": {
+                  "en": "Sleep\n\nA few questions about last night."
+                },
+                "type": "note"
+              },
+              {
+                "id": "slept_well_on",
+                "label": {
+                  "en": "What date did you last sleep well?"
+                },
+                "type": "date"
+              }
+            ]
+          }
+        ],
+        "title": "Sleep"
+      },
+      {
+        "id": "Mood_A",
+        "pages": [
+          {
+            "id": "Mood_A_p1",
+            "items": [
+              {
+                "id": "mood_words",
+                "label": {
+                  "en": "Describe your mood in a few words."
+                },
+                "multiline": true,
+                "type": "text"
+              }
+            ]
+          }
+        ],
+        "title": "Mood A"
+      },
+      {
+        "id": "Mood_B",
+        "pages": [
+          {
+            "id": "Mood_B_p1",
+            "items": [
+              {
+                "choices": [
+                  {
+                    "label": {
+                      "en": "Calm"
+                    },
+                    "value": 1
+                  },
+                  {
+                    "label": {
+                      "en": "Tense"
+                    },
+                    "value": 2
+                  },
+                  {
+                    "label": {
+                      "en": "Tired"
+                    },
+                    "value": 3
+                  }
+                ],
+                "id": "mood_pick",
+                "label": {
+                  "en": "Pick the word that fits your mood best."
+                },
+                "type": "single"
+              }
+            ]
+          }
+        ],
+        "title": "Mood B"
+      }
+    ],
+    "choiceLists": [],
+    "flow": [
+      {
+        "block": "Habits",
+        "id": "FL_3",
+        "type": "block"
+      },
+      {
+        "id": "FL_4",
+        "if": {
+          "args": [
+            {
+              "kind": "compare",
+              "left": {
+                "id": "drinks_coffee",
+                "kind": "ref"
+              },
+              "op": "==",
+              "right": {
+                "kind": "int",
+                "value": 1
+              }
+            },
+            {
+              "kind": "compare",
+              "left": {
+                "id": "cohort",
+                "kind": "ref"
+              },
+              "op": "==",
+              "right": {
+                "kind": "text",
+                "value": "2026"
+              }
+            }
+          ],
+          "kind": "and"
+        },
+        "then": [
+          {
+            "block": "Sleep",
+            "id": "FL_5",
+            "type": "block"
+          }
+        ],
+        "type": "branch"
+      },
+      {
+        "children": [
+          {
+            "block": "Mood_A",
+            "id": "FL_7",
+            "type": "block"
+          },
+          {
+            "block": "Mood_B",
+            "id": "FL_8",
+            "type": "block"
+          }
+        ],
+        "id": "FL_6",
+        "pick": 1,
+        "type": "randomiser"
+      },
+      {
+        "id": "FL_9",
+        "type": "end"
+      }
+    ],
+    "id": "survey",
+    "metadata": {
+      "defaultLanguage": "en",
+      "languages": [
+        "en",
+        "de"
+      ],
+      "title": {
+        "en": "Coffee and sleep (invented sample)"
+      }
+    },
+    "quotas": [],
+    "settings": {},
+    "specVersion": "osp-survey/0.1",
+    "variables": [
+      {
+        "id": "source",
+        "kind": "embedded",
+        "param": "source"
+      },
+      {
+        "default": "2026",
+        "id": "cohort",
+        "kind": "embedded",
+        "param": "cohort"
+      }
+    ]
+  },
+  "validation": [
+    {
+      "code": "text.missing_translation",
+      "message": "no text for: de",
+      "pointer": "/metadata/title",
+      "severity": "warning"
+    },
+    {
+      "code": "text.missing_translation",
+      "message": "no text for: de",
+      "pointer": "/blocks/0/pages/0/items/1/label",
+      "severity": "warning"
+    },
+    {
+      "code": "text.missing_translation",
+      "message": "no text for: de",
+      "pointer": "/blocks/0/pages/0/items/2/label",
+      "severity": "warning"
+    },
+    {
+      "code": "text.missing_translation",
+      "message": "no text for: de",
+      "pointer": "/blocks/0/pages/0/items/2/choices/0/label",
+      "severity": "warning"
+    },
+    {
+      "code": "text.missing_translation",
+      "message": "no text for: de",
+      "pointer": "/blocks/0/pages/0/items/2/choices/1/label",
+      "severity": "warning"
+    },
+    {
+      "code": "text.missing_translation",
+      "message": "no text for: de",
+      "pointer": "/blocks/0/pages/0/items/2/choices/2/label",
+      "severity": "warning"
+    },
+    {
+      "code": "text.missing_translation",
+      "message": "no text for: de",
+      "pointer": "/blocks/0/pages/0/items/2/choices/3/label",
+      "severity": "warning"
+    },
+    {
+      "code": "text.missing_translation",
+      "message": "no text for: de",
+      "pointer": "/blocks/0/pages/1/items/0/rows/0/label",
+      "severity": "warning"
+    },
+    {
+      "code": "text.missing_translation",
+      "message": "no text for: de",
+      "pointer": "/blocks/0/pages/1/items/0/rows/1/label",
+      "severity": "warning"
+    },
+    {
+      "code": "text.missing_translation",
+      "message": "no text for: de",
+      "pointer": "/blocks/0/pages/1/items/0/choices/0/label",
+      "severity": "warning"
+    },
+    {
+      "code": "text.missing_translation",
+      "message": "no text for: de",
+      "pointer": "/blocks/0/pages/1/items/0/choices/1/label",
+      "severity": "warning"
+    },
+    {
+      "code": "text.missing_translation",
+      "message": "no text for: de",
+      "pointer": "/blocks/0/pages/1/items/0/choices/2/label",
+      "severity": "warning"
+    },
+    {
+      "code": "text.missing_translation",
+      "message": "no text for: de",
+      "pointer": "/blocks/0/pages/1/items/0/label",
+      "severity": "warning"
+    },
+    {
+      "code": "text.missing_translation",
+      "message": "no text for: de",
+      "pointer": "/blocks/0/pages/1/items/1/label",
+      "severity": "warning"
+    },
+    {
+      "code": "text.missing_translation",
+      "message": "no text for: de",
+      "pointer": "/blocks/1/pages/0/items/0/label",
+      "severity": "warning"
+    },
+    {
+      "code": "text.missing_translation",
+      "message": "no text for: de",
+      "pointer": "/blocks/1/pages/0/items/1/label",
+      "severity": "warning"
+    },
+    {
+      "code": "text.missing_translation",
+      "message": "no text for: de",
+      "pointer": "/blocks/2/pages/0/items/0/label",
+      "severity": "warning"
+    },
+    {
+      "code": "text.missing_translation",
+      "message": "no text for: de",
+      "pointer": "/blocks/3/pages/0/items/0/label",
+      "severity": "warning"
+    },
+    {
+      "code": "text.missing_translation",
+      "message": "no text for: de",
+      "pointer": "/blocks/3/pages/0/items/0/choices/0/label",
+      "severity": "warning"
+    },
+    {
+      "code": "text.missing_translation",
+      "message": "no text for: de",
+      "pointer": "/blocks/3/pages/0/items/0/choices/1/label",
+      "severity": "warning"
+    },
+    {
+      "code": "text.missing_translation",
+      "message": "no text for: de",
+      "pointer": "/blocks/3/pages/0/items/0/choices/2/label",
+      "severity": "warning"
+    }
+  ]
+}

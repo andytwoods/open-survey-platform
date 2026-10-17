@@ -14,6 +14,7 @@ from . import (
     data_export,
     export_check,
     expressions,
+    imports,
     me,
     meta,
     ops,
@@ -64,6 +65,7 @@ def install(
     install_error_handlers(app)
     for module in (
         me,
+        imports,  # before surveys: /api/surveys/import is not a survey id
         surveys,
         data_export,
         repro,
