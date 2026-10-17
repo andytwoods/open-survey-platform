@@ -21,6 +21,7 @@
 	import { propertySchemas, schemaFor } from '../properties/schemas.svelte';
 	import type { OpenEditorRequest } from '../properties/types';
 	import { ChoiceListDialog, editorInputs } from '../choices';
+	import { RowsDialog, rowsEditorInputs } from '../rows';
 	import { ConditionDialog, apiExpressionService, questionsFromSurvey, type ConditionField, type ExprNode } from '../conditions';
 	import { questionTypeInfo } from '../question-types/catalogue';
 
@@ -126,6 +127,8 @@
 	// editor (e.g. expressions) adds a dialog below and one entry here.
 	let choicesFor = $state<string | null>(null);
 	let choicesOpen = $state(false);
+	let rowsFor = $state<string | null>(null);
+	let rowsOpen = $state(false);
 	let conditionReq = $state<OpenEditorRequest | null>(null);
 	let conditionOpen = $state(false);
 	const CONDITION_FIELDS: readonly string[] = ['showIf', 'constraint', 'if', 'when', 'expr'];
@@ -135,6 +138,10 @@
 		choicelist: (r) => {
 			choicesFor = r.target;
 			choicesOpen = true;
+		},
+		rows: (r) => {
+			rowsFor = r.target;
+			rowsOpen = true;
 		},
 		condition: (r) => {
 			conditionReq = r;
@@ -149,6 +156,7 @@
 	}
 
 	const choiceInputs = $derived(store && choicesFor ? editorInputs(store.survey, choicesFor) : null);
+	const rowsInputs = $derived(store && rowsFor ? rowsEditorInputs(store.survey, rowsFor) : null);
 	const allDiagnostics = $derived(store ? [...store.diagnostics, ...(store.rejection?.diagnostics ?? [])] : []);
 
 	const nodeDiagnostics = $derived.by(() => {
@@ -270,6 +278,19 @@
 		defaultLanguage={choiceInputs.defaultLanguage}
 		diagnostics={allDiagnostics}
 		onOps={(ops) => void store?.submit(ops)}
+	/>
+{/if}
+
+{#if store && rowsInputs?.question}
+	<RowsDialog
+		bind:open={rowsOpen}
+		question={rowsInputs.question}
+		pointer={rowsInputs.pointer}
+		{lang}
+		defaultLanguage={rowsInputs.defaultLanguage}
+		survey={store.survey}
+		diagnostics={allDiagnostics}
+		submit={(ops, options) => store?.submit(ops, options)}
 	/>
 {/if}
 

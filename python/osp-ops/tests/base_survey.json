@@ -66,7 +66,19 @@
           "items": [
             {"id": "info", "type": "note", "label": {"en": "Thanks", "de": "Danke"}},
             {"id": "rating", "type": "decimal", "label": {"en": "Rate", "de": "Bewerten"},
-             "showIf": {"kind": "compare", "op": "==", "left": {"kind": "ref", "id": "consent"}, "right": {"kind": "int", "value": 1}}}
+             "showIf": {"kind": "compare", "op": "==", "left": {"kind": "ref", "id": "consent"}, "right": {"kind": "int", "value": 1}}},
+            {"id": "grid", "type": "matrix", "label": {"en": "Rate", "de": "Bewerten"}, "required": true,
+             "rows": [
+               {"id": "taste", "label": {"en": "Taste", "de": "Geschmack"}},
+               {"id": "price", "label": {"en": "Price", "de": "Preis"}, "required": false},
+               {"id": "look", "label": {"en": "Look", "de": "Aussehen"}}
+             ],
+             "choices": [
+               {"value": 1, "label": {"en": "Bad", "de": "Schlecht"}},
+               {"value": 2, "label": {"en": "Good", "de": "Gut"}}
+             ]},
+            {"id": "grid_why", "type": "text", "label": {"en": "Why ${grid_taste}?", "de": "Warum ${grid_taste}?"},
+             "showIf": {"kind": "answered", "ref": {"kind": "ref", "id": "grid_price"}}}
           ]
         }
       ]
