@@ -704,12 +704,14 @@ version = "0.0.0"
 source = { editable = "python/osp-cli" }
 dependencies = [
     { name = "osp-app" },
+    { name = "osp-runtime" },
     { name = "osp-store" },
 ]
 
 [package.metadata]
 requires-dist = [
     { name = "osp-app", editable = "python/osp-app" },
+    { name = "osp-runtime", editable = "python/osp-runtime" },
     { name = "osp-store", editable = "python/osp-store" },
 ]
 

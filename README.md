@@ -77,9 +77,18 @@ in dev: everyone is the dev researcher. Every run prints something like:
   Seeded surveys
     All question types  (01-all-types)
       builder      http://localhost:5173/surveys/<id>
+      responses    150 fake sessions: 125 submitted (complete 125), 25 dropped out
       participant  http://localhost:5174/r/?s=<slug>
     ...
 ```
+
+On that first run each seeded survey also gets 150 invented responses, so the Results
+page has something to show. They are made by the real engine and stored through the same
+session path as real participants (spread over the last 21 days, about 15 % dropping out
+part-way). `DEV_FAKE_RESPONSES=0 make dev` turns this off; `make dev-fake N=200` adds 200
+more to each seeded survey while the servers run. For one survey:
+`OSP_ENV=dev uv run osp-cli fake-responses <survey id or slug> --n 150 --seed 1 --partial 0.15 --days 21`
+(with `OSP_DATABASE_URL` and `OSP_STORE_KEYS` set as in `make dev`).
 
 What to click:
 

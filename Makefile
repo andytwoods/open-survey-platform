@@ -202,7 +202,10 @@ lss-import-check:
 # off loopback or outside OSP_ENV=dev). The first run makes dev-only keys and three seeded
 # surveys, all in .data/ (gitignored); every run prints the URLs. The participant app's dev server (5174, base
 # /r/, proxying /api too) starts as well; its links are /r/?s=<slug>. `make dev-reset` wipes .data/. Dev only: never point this at real data.
-# It builds the engine bundle (make engine-bundle) first, so repro packages include replay.mjs.
+# It builds the engine bundle (make engine-bundle) first, so repro packages include replay.mjs,
+# and the simulator (make sim-build): the first run fills each seeded survey with 150 fake
+# responses made by the real engine (task DS1; DEV_FAKE_RESPONSES=0 turns that off, =N sets
+# the count). `make dev-fake N=200` adds N more to each seeded survey (SEED=... repeats a run).
 DEV_DATA := .data
 DEV_API_PORT := 8000
 DEV_BUILDER_PORT := 5173
@@ -211,9 +214,10 @@ DEV_FIXTURES := fixtures/01-all-types fixtures/13-randomiser-blocks fixtures/18-
 DEV_ENV := OSP_ENV=dev OSP_IDENTITY=dev OSP_DATA_DIR=$(DEV_DATA) OSP_DATABASE_URL=sqlite:///$(DEV_DATA)/osp.db
 DEV_PROXY := OSP_API_URL=http://127.0.0.1:$(DEV_API_PORT)
 
-.PHONY: dev dev-reset
+.PHONY: dev dev-reset dev-fake
 # engine-bundle first: the reproducibility package's replay.mjs needs web/engine/dist/engine.js.
-dev: engine-bundle
+# sim-build: the fake responses run the engine through web/engine-sim/dist/fake.js.
+dev: engine-bundle sim-build
 	@$(DEV_ENV) $(UV_RUN) osp-api init >/dev/null
 	@if [ -z "$${OSP_STORE_KEYS:-}" ]; then set -a; . $(DEV_DATA)/dev-keys.env; set +a; fi; \
 	runtime=""; if [ -f web/runtime/package.json ]; then \
@@ -236,6 +240,14 @@ dev: engine-bundle
 	fi; \
 	while alive; do sleep 1; done; \
 	echo "make dev: a server stopped, so stopping the others"; exit 1
+
+# More fake responses for the seeded surveys of a dev data dir (the servers may be running).
+N ?= 150
+SEED ?=
+dev-fake: sim-build
+	@if [ -z "$${OSP_STORE_KEYS:-}" ]; then set -a; . $(DEV_DATA)/dev-keys.env; set +a; fi; \
+	$(DEV_ENV) $(UV_RUN) osp-cli fake-responses --dev-seeded --n $(N) \
+		--seed $(if $(SEED),$(SEED),$$(date +%s))
 
 dev-reset:
 	rm -rf $(DEV_DATA)
