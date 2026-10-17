@@ -50,6 +50,7 @@ from .common import (
     language_tag,
     pointer,
     rewrite_pipes,
+    row_id,
     skeleton,
     text_value,
     unique_values,
@@ -595,14 +596,14 @@ class _Importer:
             return False
         q["choices"] = columns
         rows: list[dict[str, Any]] = []
-        row_ids = Ids()
+        taken: set[str] = set()
         for i, r in enumerate(el.get("rows") or []):
             value, text = (r.get("value"), r.get("text")) if isinstance(r, dict) else (r, r)
-            rid = row_ids.claim(value, f"row{i + 1}")
+            preferred = value if value not in (None, "") else f"row{i + 1}"
+            rid = row_id(self.ids, q["id"], preferred, taken)
             label = self._localised(text, p + pointer("rows", i)) or {self.default: str(value)}
             rows.append({"id": rid, "label": text_value(label, self.langs, self.default)})
             self.names[f"{el.get('name')}.{value}"] = f"{q['id']}_{rid}"
-            self.ids.reserve(f"{q['id']}_{rid}")
             self.types[f"{q['id']}_{rid}"] = "single"
             self.values[f"{q['id']}_{rid}"] = {str(c["value"]): c["value"] for c in columns}
         if not rows:

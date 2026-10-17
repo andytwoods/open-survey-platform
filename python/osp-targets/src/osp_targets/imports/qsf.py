@@ -48,6 +48,7 @@ from .common import (
     language_tag,
     pointer,
     rewrite_pipes,
+    row_id,
     skeleton,
     text_value,
     unique_values,
@@ -111,6 +112,7 @@ class _Importer:
         self.embedded: dict[str, str] = {}  # field -> our variable id
         self.embedded_types: dict[str, str] = {}  # our variable id -> text | decimal
         self.blocks: dict[str, str] = {}  # BL id -> our block id
+        self.placed: set[str] = set()  # blocks already in the flow (a block appears once)
         self.html_count = 0
         self.survey: dict[str, Any] = {}
 
@@ -475,9 +477,7 @@ class _Importer:
                         f"flow refers to block {n.get('ID')!r}, which was not imported",
                     )
                     continue
-                if any(_mentions(x, block) for x in out) or any(
-                    _mentions(x, block) for x in self.survey["flow"]
-                ):
+                if block in self.placed:
                     self.d.loss(
                         "block_reused",
                         "Block",
@@ -485,6 +485,7 @@ class _Importer:
                         f"block {block!r} appears twice in the flow: the second use was left out",
                     )
                     continue
+                self.placed.add(block)
                 out.append({"type": "block", "id": self.ids.claim(fid), "block": block})
             elif kind == "Branch":
                 try:
@@ -718,7 +719,6 @@ class _Importer:
                 for rid in (r["id"] for r in rows):
                     self.types[f"{ours}_{rid}"] = "single"
                     self.values[f"{ours}_{rid}"] = self.values[ours]
-                    self.ids.reserve(f"{ours}_{rid}")
                 if sub == "DL":
                     self.d.info(
                         "matrix_dropdown",
@@ -933,14 +933,14 @@ class _Importer:
 
     def _matrix_rows(self, q: dict[str, Any], ptr: str, ours: str) -> list[dict[str, Any]]:
         cids = self._choice_ids(q, "Choices", "ChoiceOrder")
-        row_ids = Ids()
+        taken: set[str] = set()
         rows: list[dict[str, Any]] = []
         mapping: dict[str, str] = {}
         tags = (
             q.get("ChoiceDataExportTags") if isinstance(q.get("ChoiceDataExportTags"), dict) else {}
         )
         for c in cids:
-            rid = row_ids.claim(tags.get(c) or f"r{c}", "row")
+            rid = row_id(self.ids, ours, tags.get(c) or f"r{c}", taken)
             mapping[c] = rid
             rows.append(
                 {
@@ -1271,15 +1271,6 @@ def _join(parts: list[tuple[str, dict[str, Any]]]) -> dict[str, Any]:
             ors[-1].append(e)
     ands = [g[0] if len(g) == 1 else {"kind": "and", "args": g} for g in ors]
     return ands[0] if len(ands) == 1 else {"kind": "or", "args": ands}
-
-
-def _mentions(node: dict[str, Any], block: str) -> bool:
-    if node["type"] == "block":
-        return node["block"] == block
-    return any(
-        _mentions(c, block)
-        for c in [*node.get("then", []), *node.get("else", []), *node.get("children", [])]
-    )
 
 
 def _num_key(k: Any) -> tuple[int, Any]:

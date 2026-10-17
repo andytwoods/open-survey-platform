@@ -24,7 +24,7 @@ xlsx_bytes, diagnostics = export_xlsform(survey)  # Survey model or JSON dict; n
 ```python
 from osp_targets.imports import detect_format, import_survey
 
-result = import_survey("study.qsf", content)   # never raises
+result = import_survey("study.qsf", content)  # never raises
 result.format, result.survey, result.diagnostics, result.summary, result.validation
 ```
 

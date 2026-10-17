@@ -44,6 +44,8 @@ _OUR_PIPE = re.compile(r"\$\{([^}]*)\}")
 
 # Pointers into the imported document where a dropped condition is reported.
 _CONDITION_KEYS = frozenset({"showIf", "constraint", "if", "when"})
+_BOUND_KEYS = frozenset({"min", "max", "step"})
+_TEXT_KEYS = frozenset({"label", "help", "title", "message", "constraintMessage", "description"})
 
 
 # --- Diagnostics -------------------------------------------------------------------------
@@ -118,7 +120,7 @@ class Diagnostics:
     def __init__(self, fmt: Format) -> None:
         self.format = fmt
         self.items: list[ImportDiagnostic] = []
-        self._seen: set[tuple[str, str, str]] = set()
+        self._seen: set[tuple[str, str, str, str]] = set()
 
     def add(
         self,
@@ -129,7 +131,7 @@ class Diagnostics:
         message: str,
         target: str | None = None,
     ) -> None:
-        key = (what, feature, ptr)
+        key = (what, feature, ptr, target or "")
         if key in self._seen:
             return
         self._seen.add(key)
@@ -232,17 +234,24 @@ def harmonise_values(values: list[int | str]) -> list[int | str]:
 
 
 def unique_values(values: list[int | str]) -> tuple[list[int | str], list[int]]:
-    """Make duplicate values distinct (``<v>_2`` ...); returns the renamed indexes."""
+    """Usable, distinct values: text codes lose their whitespace (an empty code becomes
+    ``c<n>``) and duplicates get ``_2`` ...; returns the indexes that changed."""
     seen: set[str] = set()
     out: list[int | str] = []
     renamed: list[int] = []
     for i, v in enumerate(values):
+        if isinstance(v, str):
+            cleaned = "_".join(v.split()) or f"c{i + 1}"
+            if cleaned != v:
+                renamed.append(i)
+                v = cleaned
         key = str(v)
         if key not in seen:
             seen.add(key)
             out.append(v)
             continue
-        renamed.append(i)
+        if i not in renamed:
+            renamed.append(i)
         n = 2
         while f"{key}_{n}" in seen:
             n += 1
@@ -250,6 +259,21 @@ def unique_values(values: list[int | str]) -> tuple[list[int | str], list[int]]:
         seen.add(new)
         out.append(new)
     return harmonise_values(out), renamed
+
+
+def row_id(ids: Ids, matrix_id: str, preferred: object, taken: set[str]) -> str:
+    """A grid row id: unique within the grid, short enough for ``<matrix>_<row>`` to be an
+    identifier, and reserved globally (the row variable is a name like any other)."""
+    room = max(1, ID_MAX - len(matrix_id) - 1)
+    base = sanitise_identifier(preferred, "row")[:room].rstrip("_") or "row"
+    rid, n = base, 1
+    while rid.lower() in taken or not ids.is_free(f"{matrix_id}_{rid}"):
+        n += 1
+        suffix = f"_{n}"
+        rid = base[: room - len(suffix)] + suffix
+    taken.add(rid.lower())
+    ids.reserve(f"{matrix_id}_{rid}")
+    return rid
 
 
 def language_tag(raw: object, fallback: str = "en") -> str:
@@ -470,18 +494,33 @@ def resolve(doc: Any, ptr: str) -> Any:
     return doc
 
 
-def _drop_condition(survey: dict[str, Any], ptr: str) -> str | None:
-    """Remove the condition the pointer lies in (or the computed variable whose
-    expression it is); returns the pointer of what was dropped."""
+def _neutralise_pipes(text: Any) -> tuple[Any, bool]:
+    if isinstance(text, str):
+        return text.replace("${", "$ {"), "${" in text
+    if isinstance(text, dict):
+        changed = False
+        out = {}
+        for k, v in text.items():
+            out[k], c = _neutralise_pipes(v)
+            changed = changed or c
+        return out, changed
+    return text, False
+
+
+def _repair(survey: dict[str, Any], ptr: str) -> tuple[str, str] | None:
+    """Fix what the validator refused at ``ptr`` with the least loss: drop the condition
+    (or the computed variable) it lies in, reset a question's bounds, or neutralise the
+    piping in a text. Returns ``(what, pointer of the change)``, or None if nothing here
+    can be repaired."""
     parts = ptr.split("/")[1:]
     if len(parts) >= 3 and parts[0] == "variables" and parts[2] == "expr" and parts[1].isdigit():
         i = int(parts[1])
         if i < len(survey["variables"]):
             survey["variables"].pop(i)
-            return pointer("variables", i)
+            return "computed variable", pointer("variables", i)
     for depth in range(len(parts), 0, -1):
         key = parts[depth - 1].replace("~1", "/").replace("~0", "~")
-        if key not in _CONDITION_KEYS:
+        if key not in _CONDITION_KEYS | _BOUND_KEYS | _TEXT_KEYS:
             continue
         parent_ptr = "/" + "/".join(parts[: depth - 1]) if depth > 1 else ""
         try:
@@ -490,6 +529,19 @@ def _drop_condition(survey: dict[str, Any], ptr: str) -> str | None:
             return None
         if not isinstance(parent, dict) or key not in parent:
             return None
+        where = parent_ptr + "/" + parts[depth - 1]
+        if key in _TEXT_KEYS:
+            fixed, changed = _neutralise_pipes(parent[key])
+            if not changed:
+                return None
+            parent[key] = fixed
+            return "piped text", where
+        if key in _BOUND_KEYS:
+            if "type" not in parent:
+                return None
+            for k in ("min", "max", "step"):
+                parent.pop(k, None)
+            return "range", parent_ptr
         if key == "if":  # a branch needs its condition: keep it, always true
             parent["if"] = {"kind": "bool", "value": True}
         elif key == "when":  # a quota needs its condition too
@@ -498,7 +550,7 @@ def _drop_condition(survey: dict[str, Any], ptr: str) -> str | None:
             parent.pop(key, None)
             if key == "constraint":
                 parent.pop("constraintMessage", None)
-        return parent_ptr + "/" + parts[depth - 1]
+        return "condition", where
     return None
 
 
@@ -513,10 +565,10 @@ def finish(fmt: Format, survey: dict[str, Any], diags: Diagnostics) -> ImportRes
             break
         dropped = False
         for d in errors:
-            where = _drop_condition(survey, d.pointer)
-            if where is not None:
+            repaired = _repair(survey, d.pointer)
+            if repaired is not None:
                 dropped = True
-                what = "computed variable" if where.startswith("/variables") else "condition"
+                what, where = repaired
                 diags.loss(
                     "condition_dropped",
                     what,
@@ -618,6 +670,7 @@ __all__ = [
     "language_tag",
     "pointer",
     "rewrite_pipes",
+    "row_id",
     "sanitise_identifier",
     "skeleton",
     "summarise",

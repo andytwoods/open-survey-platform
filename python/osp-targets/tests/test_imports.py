@@ -367,6 +367,91 @@ def test_forward_reference_is_dropped_not_fatal() -> None:
     assert len(dropped) == 1 and dropped[0].target == "/blocks/0/pages/0/items/0/showIf"
 
 
+def test_repairs_keep_the_import_valid() -> None:
+    """Input the validator would refuse is repaired with a reported loss, not fatal."""
+    doc = {
+        "pages": [
+            {
+                "elements": [
+                    {"type": "html", "name": "intro", "html": "Hi"},
+                    {"type": "text", "name": "n", "inputType": "number", "min": 10, "max": 1},
+                    {"type": "nouislider", "name": "s", "rangeMin": 0, "rangeMax": 10, "step": 0},
+                    {"type": "checkbox", "name": "m", "choices": ["a b", " ", "c"]},
+                    {"type": "text", "name": "grid_r1", "title": "Clashes with the grid row"},
+                    {
+                        "type": "matrix",
+                        "name": "grid",
+                        "columns": [1, 2],
+                        "rows": ["r1", "x" * 80, "r1"],
+                    },
+                    {"type": "text", "name": "t", "title": "You read {intro} and {later}"},
+                ]
+            },
+            {"elements": [{"type": "text", "name": "later"}]},
+        ]
+    }
+    result = import_surveyjs(json.dumps(doc))
+    assert result.ok, [d.message for d in result.diagnostics]
+    q = _by_id(result.survey)
+    assert "min" not in q["n"] and "max" not in q["n"]
+    assert "step" not in q["s"] and q["s"]["type"] == "slider"
+    assert [c["value"] for c in q["m"]["choices"]] == ["a_b", "c2", "c"]
+    assert [r["id"] for r in q["grid"]["rows"]] == ["r1_2", "x" * 59, "r1_3"]
+    assert q["t"]["label"] == "You read $ {intro} and $ {later}"
+    repairs = [d for d in result.diagnostics if d.code == "surveyjs.condition_dropped"]
+    assert sorted(d.feature for d in repairs) == ["piped text", "range", "range"]
+
+
+def test_qsf_block_in_two_branches_is_placed_once() -> None:
+    logic = {
+        "0": {
+            "0": {
+                "LogicType": "EmbeddedField",
+                "LeftOperand": "x",
+                "Operator": "EqualTo",
+                "RightOperand": "1",
+            }
+        }
+    }
+    block = {"Type": "Block", "ID": "a"}
+    doc = {
+        "SurveyElements": [
+            {
+                "Element": "SQ",
+                "PrimaryAttribute": "QID1",
+                "Payload": {"QuestionType": "TE", "Selector": "SL", "DataExportTag": "q1"},
+            },
+            {
+                "Element": "BL",
+                "Payload": [
+                    {
+                        "Type": "Default",
+                        "ID": "a",
+                        "BlockElements": [{"Type": "Question", "QuestionID": "QID1"}],
+                    },
+                ],
+            },
+            {
+                "Element": "FL",
+                "Payload": {
+                    "Flow": [
+                        {
+                            "Type": "EmbeddedData",
+                            "EmbeddedData": [{"Field": "x", "Type": "Recipient"}],
+                        },
+                        {"Type": "Branch", "BranchLogic": logic, "Flow": [block]},
+                        {"Type": "Branch", "BranchLogic": logic, "Flow": [block]},
+                    ]
+                },
+            },
+        ]
+    }
+    result = import_qsf(json.dumps(doc))
+    assert result.ok, [d.message for d in result.diagnostics]
+    assert [n["type"] for n in result.survey["flow"]] == ["branch", "end"]
+    assert any(d.code == "qsf.block_reused" for d in result.diagnostics)
+
+
 def test_empty_survey_gets_a_page() -> None:
     result = import_surveyjs('{"pages": []}')
     assert result.ok and len(_questions(result.survey)) == 1

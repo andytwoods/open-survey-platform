@@ -54,6 +54,7 @@ from .common import (
     html_to_text,
     language_tag,
     rewrite_pipes,
+    row_id,
     skeleton,
     text_value,
     unique_values,
@@ -1172,11 +1173,11 @@ class _Importer:
 
     def _rows_of(self, subs: list[_Q], ptr: str, qid: str) -> list[dict[str, Any]]:
         rows: list[dict[str, Any]] = []
-        row_ids = Ids()
+        taken: set[str] = set()
         for s in subs:
             if s.scale not in ("0", ""):
                 continue
-            rid = row_ids.claim(s.code, "row")
+            rid = row_id(self.ids, qid, s.code, taken)
             rows.append(
                 {
                     "id": rid,
@@ -1188,7 +1189,6 @@ class _Importer:
                 }
             )
             var = f"{qid}_{rid}"
-            self.ids.reserve(var)
             self.codes[f"{self.qid_code.get(s.parent, '')}_{s.code}"] = var
             self.types[var] = "single"
             self.values[var] = self.values.get(qid, {})
