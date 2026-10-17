@@ -1405,6 +1405,58 @@
         "title": "Diagnostic",
         "type": "object"
       },
+      "DuplicateBlockParams": {
+        "additionalProperties": false,
+        "properties": {
+          "id": {
+            "title": "Id",
+            "type": "string"
+          },
+          "new_id": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "default": null,
+            "title": "New Id"
+          }
+        },
+        "required": [
+          "id"
+        ],
+        "title": "DuplicateById",
+        "type": "object"
+      },
+      "DuplicatePageParams": {
+        "additionalProperties": false,
+        "properties": {
+          "id": {
+            "title": "Id",
+            "type": "string"
+          },
+          "new_id": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "default": null,
+            "title": "New Id"
+          }
+        },
+        "required": [
+          "id"
+        ],
+        "title": "DuplicateById",
+        "type": "object"
+      },
       "DuplicateQuestionParams": {
         "additionalProperties": false,
         "properties": {
@@ -2711,6 +2763,8 @@
           "delete_page",
           "delete_question",
           "delete_variable",
+          "duplicate_block",
+          "duplicate_page",
           "duplicate_question",
           "insert_flow_node",
           "move_block",

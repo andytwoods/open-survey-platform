@@ -11,7 +11,7 @@
 	import { appearanceCommands, type BuilderView } from '../appearance/commands';
 	import { themeEditor } from '../appearance/theme-editor.svelte';
 	import { flowCommands } from '../flow/commands';
-	import { requestAddNode } from '../flow/flow-ui.svelte';
+	import { requestAddBlock, requestAddNode } from '../flow/flow-ui.svelte';
 	import FlowView from '../flow/FlowView.svelte';
 	import PublishDialog from '../publish/PublishDialog.svelte';
 	import type { PublishProblem } from '../publish/model';
@@ -24,7 +24,13 @@
 	import { leaveTo, link, optionalLink } from '../host/links';
 	import { resultsCommands } from '../results/commands';
 	import { MOCK_SURVEY } from '../mock/survey';
-	import { addedQuestionId, allIds, outlineFromSurvey, surveyTitle, targetPage } from '../model/outline';
+	import { addedQuestionId, allIds, defaultLanguage, outlineFromSurvey, surveyTitle, targetPage } from '../model/outline';
+	import { StructureActions } from '../structure/actions.svelte';
+	import AddPageButton from '../structure/AddPageButton.svelte';
+	import { structureCommands } from '../structure/commands';
+	import OutlineActions from '../structure/OutlineActions.svelte';
+	import StructureDeleteDialog from '../structure/StructureDeleteDialog.svelte';
+	import StructureMenu, { type MenuTarget } from '../structure/StructureMenu.svelte';
 	import { selection } from '../selection.svelte';
 	import MoveToDialog from '../outline/MoveToDialog.svelte';
 	import { OutlineMover } from '../outline/mover.svelte';
@@ -69,7 +75,14 @@
 	const registry = new CommandRegistry({
 		isMac: detectMac(),
 		isModalOpen: () =>
-			paletteOpen || (previewOpen && !store) || moveToOpen || pickerOpen || insertAtOpen || !!typeChange
+			paletteOpen ||
+			(previewOpen && !store) ||
+			moveToOpen ||
+			pickerOpen ||
+			insertAtOpen ||
+			!!typeChange ||
+			!!menuTarget ||
+			!!structure.deleteRequest
 	});
 	const mockPages = MOCK_SURVEY.children ?? [];
 	// Outline moves show at once (optimistic) and are reconciled with the server's reply.
@@ -270,6 +283,32 @@
 		if (out.status === 'applied') announce(`Changed to ${toName}.`);
 	}
 
+	// -- pages and blocks: add, rename, duplicate, delete (B20) ---------------------------
+	let menuTarget = $state<MenuTarget | null>(null);
+
+	/** Select an item and focus it: its outline row if shown, else its canvas card. */
+	async function focusItem(id: string) {
+		selection.select(id);
+		await tick();
+		await tick();
+		(document.getElementById(`outline-${id}`) ?? document.getElementById(`card-${id}`))?.focus();
+	}
+
+	const structure = new StructureActions({
+		store: () => store,
+		roots: () => pages,
+		edit: (id, type, properties) => goTo({ id, type, properties }),
+		focus: focusItem,
+		language: () => defaultLanguage(store?.survey)
+	});
+
+	function openMenu(id: string, anchor: HTMLElement | null, point?: { x: number; y: number }) {
+		if (!store || !editing) return;
+		const node = findNode(pages, id);
+		if (!node || node.type === 'survey') return;
+		menuTarget = { id, label: node.label, anchor, point };
+	}
+
 	async function undoRedo(which: 'undo' | 'redo') {
 		if (!store) return;
 		const out = await (which === 'undo' ? store.undo() : store.redo());
@@ -365,6 +404,18 @@
 			open: (v) => goto(routeOf(v))
 		})
 	);
+	const offStructure = registry.registerAll(
+		structureCommands({
+			canEdit: () => editing && !!store,
+			canAddBlock: () => !!store && (editing || view === 'flow'),
+			hasTarget: () => !!structure.typeOf(selection.id),
+			addPage: () => void structure.addPage(selection.id),
+			addBlock: () => (view === 'flow' ? requestAddBlock() : void structure.addBlock(selection.id)),
+			rename: () => selection.id && structure.rename(selection.id),
+			duplicate: () => selection.id && void structure.duplicate(selection.id),
+			remove: () => selection.id && void structure.remove(selection.id)
+		})
+	);
 	const offFlow = registry.registerAll(
 		flowCommands({
 			inFlow: () => view === 'flow',
@@ -423,6 +474,7 @@
 		offAppearance();
 		offFlow();
 		offOutline();
+		offStructure();
 	});
 
 	onMount(() => {
@@ -532,8 +584,17 @@
 								multi={outlineSelection}
 								onMove={store ? moveItems : undefined}
 								typeDrag={store ? typeDrag : undefined}
+								onContextMenu={store && editing ? openMenu : undefined}
 							/>
 						{/key}
+						{#if store && editing}
+							<OutlineActions
+								actions={structure}
+								selectedId={selection.id}
+								selectedLabel={(selection.id && findNode(pages, selection.id)?.label) || ''}
+								onmenu={(t) => (menuTarget = t)}
+							/>
+						{/if}
 					</div>
 					{#if store && editing}
 						<TypeToolbox
@@ -560,6 +621,9 @@
 		{/if}
 
 		<main id="pane-canvas" class="pane canvas" aria-label="Canvas" data-pane="canvas">
+			{#snippet addPageButton(page: { id: string; label: string })}
+				<AddPageButton pageLabel={page.label} onclick={() => void structure.addPage(page.id)} />
+			{/snippet}
 			{#snippet canvasView()}
 				<CanvasPane
 					{pages}
@@ -568,6 +632,8 @@
 					schemas={propertySchemas.doc}
 					mock={!store}
 					onAddQuestion={store ? (id) => addQuestion(id) : undefined}
+					afterPage={store ? addPageButton : undefined}
+					onContextMenu={store ? openMenu : undefined}
 					exportBadges={badges}
 					onBadge={store ? (b) => void goTo(ownerOf(store.survey, b.pointer)) : undefined}
 					diagnostics={store?.diagnostics ?? []}
@@ -597,6 +663,8 @@
 			{:else}
 				{@render canvasView()}
 			{/if}
+			<!-- Inside a landmark; positioned fixed beside what opened it. -->
+			{#if store}<StructureMenu bind:target={menuTarget} actions={structure} />{/if}
 		</main>
 
 		{#if showProperties}
@@ -663,6 +731,7 @@
 		oninsert={(t, target) => void addQuestionOfType(t, target.parent ?? undefined, target.slot)}
 	/>
 	<TypeChangeDialog request={typeChange} onresolve={onTypeChangeResolved} />
+	<StructureDeleteDialog request={structure.deleteRequest} onresolve={(ok) => structure.resolveDelete(ok)} />
 	<MoveToDialog bind:open={moveToOpen} roots={pages} ids={outlineSelection.ids} onMove={(ids, t) => void moveItems(ids, t)} />
 {/if}
 
