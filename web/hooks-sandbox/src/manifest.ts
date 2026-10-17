@@ -4,8 +4,8 @@
  * templates, and parent message types with typed schemas. The host refuses anything a
  * manifest does not declare.
  *
- * NOTE (R7 gap): the manifest should be part of the published runtime plan (and its
- * checksum). Until R2's compiler carries it, the runtime passes it next to the plan.
+ * The manifest is the survey's own `hooks` field (osp-survey `osp_spec.hooks.Hooks`, task
+ * R11); the plan compiler copies it into `plan.hooks`, inside the plan checksum.
  */
 
 import { sha256, toHex, utf8, type Expr, type FlowNode, type Id, type Plan } from '@osp/engine';

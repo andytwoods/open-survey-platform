@@ -7,17 +7,18 @@
 	import type { SurveyStore } from '../sync/survey-store.svelte';
 	import ConsentEditor from './ConsentEditor.svelte';
 	import { LOCAL_COPIES, SAVE_MODES, localCopyOf, saveModeOf } from './explanations';
+	import HooksEditor from './HooksEditor.svelte';
 	import LanguagesField from './LanguagesField.svelte';
 	import { retentionOp, subsetSchema, type RetentionKind } from './model';
 	import RetentionField from './RetentionField.svelte';
 
 	/**
 	 * Survey settings (task B12): saving, navigation and resume, retention, languages and
-	 * consent. Fields the property schema describes are drawn by the schema-driven property
-	 * panel (B4); retention, languages and consent need their own controls. Every change is
-	 * an op through the survey store.
+	 * consent, researcher hooks. Fields the property schema describes are drawn by the
+	 * schema-driven property panel (B4); retention, languages, consent and hooks need their
+	 * own controls. Every change is an op through the survey store.
 	 */
-	let { store }: { store: SurveyStore } = $props();
+	let { store, onpreview }: { store: SurveyStore; onpreview?: () => void } = $props();
 
 	const lang = $derived(defaultLanguage(store.survey));
 	const surveySchema = $derived(schemaFor(propertySchemas.doc, 'survey', store.survey));
@@ -71,7 +72,9 @@
 <div class="settings">
 	<header>
 		<h2 id="settings-heading">Survey settings</h2>
-		<p class="lead">How the survey saves, what participants can do, how long data is kept, and consent.</p>
+		<p class="lead">
+			How the survey saves, what participants can do, how long data is kept, consent, and researcher hooks.
+		</p>
 	</header>
 
 	<section class="card" aria-labelledby="h-saving">
@@ -135,6 +138,11 @@
 	<section class="card" aria-labelledby="h-consent" id="settings-consent" tabindex="-1">
 		<h3 id="h-consent">Consent</h3>
 		<ConsentEditor survey={store.survey} defaultLanguage={lang} submit={(ops) => store.submit(ops)} />
+	</section>
+
+	<section class="card" aria-labelledby="h-hooks" id="settings-hooks" tabindex="-1">
+		<h3 id="h-hooks">Researcher hooks</h3>
+		<HooksEditor survey={store.survey} {diagnostics} submit={(ops) => store.submit(ops)} {onpreview} />
 	</section>
 </div>
 
