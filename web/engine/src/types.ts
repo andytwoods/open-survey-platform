@@ -53,7 +53,8 @@ export type PageError =
  * is a JSON pointer into its AST.
  */
 export interface RuntimeDiagnostic {
-	code: 'type-mismatch' | 'division-by-zero' | 'embedded.malformed';
+	/** `redirect.param_rejected`: an ending's redirect value failed its pattern (EN2), so no redirect. */
+	code: 'type-mismatch' | 'division-by-zero' | 'embedded.malformed' | 'redirect.param_rejected';
 	site: string;
 	path: string;
 }
@@ -211,6 +212,11 @@ export interface Data {
 	 */
 	frozen: Record<Id, QuestionState>;
 	ended: { outcome: Id; nodeId: Id | null; at: number } | null;
+	/**
+	 * The response id the server assigned when it acknowledged the submit (`withResponseId`),
+	 * for the `$response.id` built-in of endings (EN2). Absent until then, and after a decline.
+	 */
+	responseId?: string;
 	/** Runtime diagnostics logged while applying events (de-duplicated, in order). */
 	diagnostics: RuntimeDiagnostic[];
 	events: EngineEvent[];
@@ -291,6 +297,23 @@ export interface EndView {
 	message: RenderedText | null;
 	ending: { title: RenderedText | null; body: RenderedText | null; summary: 'none' | 'answers' } | null;
 	status: 'recorded' | 'not-recorded' | null;
+	/** The ending's redirect, resolved (end-of-survey plan §4.2, EN2); null when it has none. */
+	redirect: ResolvedRedirect | null;
+}
+
+/**
+ * An ending's redirect with its values filled, checked and encoded (`redirect.ts`). `url` is
+ * null when a value was rejected (`rejected` names the placeholder): then nothing navigates
+ * and no button is shown. `host` is the template's host, for "Continue to {host}". The app
+ * follows `url` only after the server acknowledged the submit (or the decline), once.
+ */
+export interface ResolvedRedirect {
+	url: string | null;
+	rejected: string | null;
+	host: string;
+	delay: number;
+	mode: 'auto' | 'link';
+	label: RenderedText | null;
 }
 
 export interface Position {

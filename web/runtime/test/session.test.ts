@@ -1,5 +1,6 @@
 import { answers, canonicalJson, restore, isState, view, withChecksum, type Plan } from '@osp/engine';
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
+import { NetworkError } from '../src/lib/api';
 import { boot, isPrefix, type Env, type Session } from '../src/lib/session';
 import { MemoryStore, type LocalStore, type PointerRecord, type SessionPointer } from '../src/lib/storage';
 import { FakeServer } from './fake-server';
@@ -356,6 +357,101 @@ describe('effects and submit', () => {
 		await settle(100);
 		expect(b.phase).toBe('done');
 		expect(server.only.submitted?.answers.age?.value).toBe(5);
+	});
+});
+
+describe('end redirects (EN2, end-of-survey plan §4.2)', () => {
+	function redirectPlan(): Plan {
+		const p = plan();
+		return withChecksum({
+			...p,
+			redirectTemplates: { lab: { url: 'https://lab.example.org/done/{r}', params: { r: {} } } },
+			endings: {
+				complete: {
+					status: 'auto',
+					summary: 'none',
+					redirect: { template: 'lab', params: { r: [{ pipe: '$response.id' }] }, delay: 5, mode: 'auto' }
+				}
+			}
+		} as unknown as Plan);
+	}
+
+	it("is given only once this tab's submit is acknowledged, with the server's response id", async () => {
+		const p = redirectPlan();
+		const server = new FakeServer(p);
+		const s = await open(env(server));
+		expect(s.redirect).toBeNull();
+		s.answer('age', '1');
+		s.next();
+		s.next();
+		server.offline = true;
+		s.next();
+		await settle(100);
+		expect(s.phase).toBe('submitting');
+		expect(s.redirect).toBeNull(); // nothing navigates before the acknowledgement
+		server.offline = false;
+		await settle(60_000);
+		expect(s.phase).toBe('done');
+		expect(s.redirect).toEqual({
+			url: `https://lab.example.org/done/r-${server.only.id}`,
+			rejected: null,
+			host: 'lab.example.org',
+			delay: 5,
+			mode: 'auto',
+			label: null
+		});
+		// The record sent to the server was built before the id existed: no rejection logged.
+		expect(server.only.submitted?.diagnostics).toEqual([]);
+	});
+
+	it('a reload that finishes a stored submit gets it; a resume of a submitted session never replays it', async () => {
+		const p = redirectPlan();
+		const server = new FakeServer(p);
+		const store = durable();
+		// The first tab's submit never gets through (and keeps failing after it is "closed").
+		const blockedApi = { ...server.api, submit: () => Promise.reject(new NetworkError('offline')) };
+		const a = await open({ ...env(server, store), api: blockedApi });
+		a.answer('age', '2');
+		a.next();
+		a.next();
+		a.next();
+		await settle(100);
+		expect(a.phase).toBe('submitting');
+		expect(a.redirect).toBeNull();
+		a.dispose();
+		// The next load finishes the stored submit itself: that acknowledgement is its own.
+		const b = await open(env(server, store));
+		await settle(100);
+		expect(b.phase).toBe('done');
+		expect(b.redirect?.url).toBe(`https://lab.example.org/done/r-${server.only.id}`);
+		// A resume link to the submitted session shows the thank-you screen, but this tab
+		// submitted nothing: no redirect, so the participant is not sent off twice.
+		const c = await open(env(server, store), 'demo', server.only.token);
+		await settle(100);
+		expect(c.phase).toBe('done');
+		expect(c.redirect).toBeNull();
+	});
+
+	it('a value that fails its pattern leaves no URL (nothing navigates, nothing is shown)', async () => {
+		const p = redirectPlan();
+		const bad = withChecksum({
+			...p,
+			redirectTemplates: { lab: { url: 'https://lab.example.org/done/{r}', params: { r: { pattern: '[0-9]{3}' } } } },
+			endings: { complete: { ...p.endings!.complete!, redirect: { template: 'lab', params: { r: [{ pipe: 'why' }] }, delay: 0, mode: 'auto' } } }
+		} as unknown as Plan);
+		const server = new FakeServer(bad);
+		const s = await open(env(server));
+		s.answer('age', '3');
+		s.next();
+		s.answer('why', '12/../admin');
+		s.next();
+		s.next();
+		await settle(100);
+		expect(s.phase).toBe('done');
+		expect(s.redirect).toMatchObject({ url: null, rejected: 'r' });
+		expect(server.only.submitted?.diagnostics).toEqual([
+			{ code: 'redirect.param_rejected', site: 'endings.complete.redirect', path: '/params/r' }
+		]);
 	});
 });
 

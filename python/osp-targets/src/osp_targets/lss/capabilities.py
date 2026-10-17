@@ -136,6 +136,44 @@ _row(
     "Ending.summary", "unsupported", "Reserved (EN5); LimeSurvey's print-answers option is not set."
 )
 _row(
+    "Ending.redirect",
+    "approximated",
+    "End redirects (EN2): the `complete` ending's redirect is the survey's end URL "
+    "(`surveyls_url`, loaded automatically in `auto` mode), a quota outcome's redirect is "
+    "that quota's URL, and only when every param is a literal: a piped param cannot be "
+    "re-checked against its pattern there, so such a redirect is not exported. Other "
+    "outcomes have no URL of their own in LimeSurvey.",
+)
+_row("EndRedirect.template", "lowered", "The template URL with its literal params filled in.")
+_row(
+    "EndRedirect.params",
+    "approximated",
+    "Literal params are URL-encoded into the end URL; a piped param drops the redirect.",
+)
+_row(
+    "EndRedirect.delay",
+    "unsupported",
+    "LimeSurvey loads the end URL at once or shows it as a link; there is no countdown.",
+)
+_row(
+    "EndRedirect.mode",
+    "lowered",
+    "`auto` sets `autoredirect` / `autoload_url`; `link` shows a link.",
+)
+_row("EndRedirect.label", "lowered", "The URL description (the link text).")
+_row(
+    "Settings.redirectTemplates",
+    "lowered",
+    "Redirect templates (EN2) are filled into the end URLs that use them; see Ending.redirect.",
+)
+_row("RedirectTemplate.url", "lowered", "See Settings.redirectTemplates.")
+_row("RedirectTemplate.params", "lowered", "See Settings.redirectTemplates.")
+_row(
+    "RedirectParam.pattern",
+    "approximated",
+    "Checked here for literal params; LimeSurvey does not re-check values at run time.",
+)
+_row(
     "Survey.hooks",
     "unsupported",
     "Researcher hooks (custom code on key events, runtime-design.md §7a) run only in our "
@@ -146,8 +184,6 @@ for _def, _fields in (
     ("Hooks", ("format", "source", "handlers", "urlParams", "redirects", "parent",
                "exportsConfirmedFor")),
     ("HookHandler", ("reads", "writes", "timeoutMs")),
-    ("HookRedirect", ("url", "params")),
-    ("HookRedirectParam", ("pattern",)),
     ("HookParent", ("origin", "messages")),
     ("HookStringSchema", ("type", "maxLength", "pattern", "enum")),
     ("HookNumberSchema", ("type", "minimum", "maximum")),
@@ -558,6 +594,12 @@ _row(
     "$quota.dropped",
     "unsupported",
     "The quota this check names could not be exported (see Quota.when=unmappable).",
+)
+_row(
+    "$redirect.piped",
+    "unsupported",
+    "An end redirect with a piped parameter (EN2) is not exported: LimeSurvey cannot "
+    "re-check the value against the template's pattern before sending it.",
 )
 _row(
     "$missingStates",

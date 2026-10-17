@@ -124,6 +124,25 @@ _row(
 )
 _row("Ending.summary", "unsupported", "Reserved (EN5); not exported.")
 _row(
+    "Ending.redirect",
+    "unsupported",
+    "End redirects (EN2) are our runtime's: ODK Collect and Enketo have no redirect after a "
+    "submit, so the participant stays on their own thank-you screen.",
+)
+_row("EndRedirect.template", "unsupported", "See Ending.redirect.")
+_row("EndRedirect.params", "unsupported", "See Ending.redirect.")
+_row("EndRedirect.delay", "unsupported", "See Ending.redirect.")
+_row("EndRedirect.mode", "unsupported", "See Ending.redirect.")
+_row("EndRedirect.label", "unsupported", "See Ending.redirect.")
+_row(
+    "Settings.redirectTemplates",
+    "unsupported",
+    "Redirect templates (EN2) serve end redirects and hooks, neither of which XLSForm has.",
+)
+_row("RedirectTemplate.url", "unsupported", "See Settings.redirectTemplates.")
+_row("RedirectTemplate.params", "unsupported", "See Settings.redirectTemplates.")
+_row("RedirectParam.pattern", "unsupported", "See Settings.redirectTemplates.")
+_row(
     "Survey.hooks",
     "unsupported",
     "Researcher hooks (custom code on key events, runtime-design.md §7a) run only in our "
@@ -134,8 +153,6 @@ for _def, _fields in (
     ("Hooks", ("format", "source", "handlers", "urlParams", "redirects", "parent",
                "exportsConfirmedFor")),
     ("HookHandler", ("reads", "writes", "timeoutMs")),
-    ("HookRedirect", ("url", "params")),
-    ("HookRedirectParam", ("pattern",)),
     ("HookParent", ("origin", "messages")),
     ("HookStringSchema", ("type", "maxLength", "pattern", "enum")),
     ("HookNumberSchema", ("type", "minimum", "maximum")),

@@ -205,6 +205,8 @@ export class Session {
 	private hooks: HookDriver | null = null;
 	/** The session started on this load (hooks `begin`), rather than resumed (`resume`). */
 	private fresh: boolean;
+	/** This tab's own submit (or decline) was acknowledged: the one time a redirect may fire. */
+	private acked = false;
 
 	constructor(env: Env, rec: LocalRecord, plan: Plan, state: State, reconciled: boolean, fresh = false) {
 		this.env = env;
@@ -230,6 +232,19 @@ export class Session {
 	/** The end redirect a hook chose (declared template, filled and checked), if any. */
 	get redirectUrl(): string | null {
 		return this.phase === 'done' ? (this.hooks?.redirectUrl() ?? null) : null;
+	}
+	/**
+	 * Where to send the participant now that the session is over (end-of-survey plan §4.2,
+	 * EN2): a hook's `setEndRedirect` if one was made, else the ending's own redirect with
+	 * its values filled and checked by the engine. Only after *this tab's* submit or decline
+	 * was acknowledged, so a resumed or already-submitted session never replays it, and
+	 * null while the session runs. `url` is null when a value was rejected.
+	 */
+	get redirect(): E.ResolvedRedirect | null {
+		if (this.phase !== 'done' || !this.acked) return null;
+		const hook = this.hooks?.redirectUrl() ?? null;
+		if (hook) return { url: hook, rejected: null, host: hostOf(hook), delay: 5, mode: 'auto', label: null };
+		return E.endRedirect(this.state);
 	}
 
 	/** After boot: reconcile with the server (every-page resume), then run pending effects. */
@@ -835,7 +850,11 @@ export class Session {
 		while (this.onWire.size) await Promise.all([...this.onWire]);
 		for (;;) {
 			try {
-				await this.env.api.submit(this.rec.sessionId, this.rec.resumeToken, this.rec.submitting);
+				const ack = await this.env.api.submit(this.rec.sessionId, this.rec.resumeToken, this.rec.submitting);
+				// The response id is known only now: the `$response.id` built-in of endings (EN2).
+				const id = (ack as { responseId?: unknown } | null)?.responseId;
+				if (typeof id === 'string') this.state = E.withResponseId(this.state, id);
+				this.acked = true;
 				break;
 			} catch (e) {
 				if (e instanceof HttpError && e.code === 'submit.mismatch') {
@@ -945,6 +964,7 @@ export class Session {
 		);
 		this.state = E.decline(this.state);
 		this.rec.snapshot = E.snapshot(this.state); // in memory only: finish() deletes the copy
+		this.acked = true; // the decline is acknowledged (or the session was already gone)
 		await this.finish();
 	}
 
@@ -967,6 +987,15 @@ export class Session {
 		if (this.debounce !== null) this.env.clearTimer(this.debounce);
 		this.wake();
 		this.hooks?.dispose();
+	}
+}
+
+/** The host of a (declared, checked) redirect URL, for "Continue to {host}". */
+function hostOf(url: string): string {
+	try {
+		return new URL(url).host;
+	} catch {
+		return '';
 	}
 }
 

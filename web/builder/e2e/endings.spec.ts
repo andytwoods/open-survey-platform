@@ -75,3 +75,83 @@ test('the End card opens its outcome ending, which is edited in Survey settings'
 	await expect(saved(page)).toHaveText(/All changes saved/);
 	await expect.poll(async () => Object.keys(await serverEndings(page, id)).sort()).toEqual(['complete', 'ineligible']);
 });
+
+// End redirects (task EN2, end-of-survey plan §4.2): a redirect template is declared once
+// (`set_redirect_template`), an ending points at it with literal or piped values
+// (`set_ending`), the URL preview keeps pipes as tokens, a piped answer is flagged as a data
+// export, a template that could change the site is refused, and the preview never navigates.
+test('an ending redirects to a declared template; piped answers are flagged; bad templates refused', async ({ page }) => {
+	await signIn(page);
+	const res = await page.request.post('/api/surveys', {
+		headers: await writeHeaders(page),
+		data: { title: `Redirects e2e ${Date.now()}`, survey: survey() }
+	});
+	expect(res.status()).toBe(201);
+	const { id } = await res.json();
+	await page.goto(`/surveys/${id}/settings#redirect-templates`);
+	const templates = page.getByTestId('redirect-templates');
+	await expect(templates).toBeVisible();
+
+	// A template with a placeholder in the site is refused before anything is sent.
+	await templates.getByLabel('Template name').fill('evil');
+	await templates.getByLabel('Address').fill('https://{host}/done');
+	await templates.getByRole('button', { name: 'Add template' }).click();
+	await expect(templates.getByRole('alert')).toContainText('placeholder cannot be part of the site');
+	await expect(templates.locator('[data-template]')).toHaveCount(0);
+
+	// A good one: the pattern fields appear per placeholder.
+	await templates.getByLabel('Template name').fill('prolific');
+	await templates.getByLabel('Address').fill('https://app.prolific.com/submissions/complete?cc={cc}&r={r}');
+	await templates.getByLabel('Pattern for {cc} (optional)').fill('[A-Z0-9]{4,8}');
+	await templates.getByRole('button', { name: 'Add template' }).click();
+	await expect(saved(page)).toHaveText(/All changes saved/);
+	await expect(templates.locator('[data-template="prolific"]')).toContainText('app.prolific.com/submissions/complete');
+
+	// The complete ending sends participants there: a literal code and a piped answer.
+	const complete = ending(page, 'complete');
+	const afterwards = complete.getByTestId('redirect-complete');
+	await afterwards.getByLabel('Send participants to').selectOption('prolific');
+	await expect(saved(page)).toHaveText(/All changes saved/);
+	await afterwards.getByLabel('Value for {cc}').fill('C1AB2');
+	await afterwards.getByLabel('Value for {cc}').blur();
+	await expect(saved(page)).toHaveText(/All changes saved/);
+	await afterwards.getByLabel('Value for {r}').fill('${rating}');
+	await afterwards.getByLabel('Value for {r}').blur();
+	await expect(saved(page)).toHaveText(/All changes saved/);
+	await expect(page.getByTestId('redirect-url-complete')).toHaveText('https://app.prolific.com/submissions/complete?cc=C1AB2&r=${rating}');
+	// A piped answer is a data export: the server says so, inline.
+	await expect(complete.locator('[data-code="redirect.param_question"]')).toContainText("'rating' is an answer");
+	// Mode, delay and label.
+	await afterwards.getByLabel('Go there').selectOption('link');
+	await expect(saved(page)).toHaveText(/All changes saved/);
+	await expect(afterwards.getByLabel(/Countdown/)).toHaveCount(0);
+	await afterwards.getByLabel('Go there').selectOption('auto');
+	await expect(saved(page)).toHaveText(/All changes saved/);
+	await afterwards.getByLabel(/Countdown/).fill('0');
+	await afterwards.getByLabel(/Countdown/).blur();
+	await expect(saved(page)).toHaveText(/All changes saved/);
+	await expect(afterwards).toContainText('With 0 seconds this screen is never seen');
+	await expect(complete.locator('[data-code="redirect.immediate"]')).toBeVisible();
+	await afterwards.getByLabel('Button label').fill('Back to Prolific');
+	await afterwards.getByLabel('Button label').blur();
+	await expect(saved(page)).toHaveText(/All changes saved/);
+	await expect.poll(async () => (await serverEndings(page, id)).complete.redirect).toEqual({
+		template: 'prolific',
+		params: { cc: 'C1AB2', r: '${rating}' },
+		delay: 0,
+		label: { en: 'Back to Prolific' }
+	});
+	expect(await axe(page)).toEqual([]);
+
+	// A literal that can never pass its pattern is an error; removing the template leaves
+	// the ending with an "unknown template" error rather than a silent drop.
+	await afterwards.getByLabel('Value for {cc}').fill('../evil');
+	await afterwards.getByLabel('Value for {cc}').blur();
+	await expect(complete.locator('[data-code="redirect.param_literal"]')).toBeVisible();
+	await templates.getByRole('button', { name: 'Remove prolific' }).click();
+	await expect(saved(page)).toHaveText(/All changes saved/);
+	await expect(complete.locator('[data-code="redirect.unknown_template"]')).toBeVisible();
+	await afterwards.getByLabel('Send participants to').selectOption('');
+	await expect(saved(page)).toHaveText(/All changes saved/);
+	await expect.poll(async () => (await serverEndings(page, id)).complete.redirect).toBeUndefined();
+});

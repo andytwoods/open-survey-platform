@@ -47,7 +47,9 @@ def test_guard_fails_on_a_removed_field() -> None:
 def test_lss_summary_is_stable() -> None:
     """Counts per level, so a change of level is a visible, reviewed diff."""
     counts = Counter(cap.level for cap in LSS.values())
-    assert dict(counts) == {"native": 142, "lowered": 52, "approximated": 25, "unsupported": 116}
+    # EN2 moved the redirect template rows (HookRedirect* → RedirectTemplate*/RedirectParam)
+    # and added Settings.redirectTemplates, Ending.redirect and EndRedirect.*.
+    assert dict(counts) == {"native": 142, "lowered": 58, "approximated": 28, "unsupported": 115}
     assert LSS["MatrixQuestion.type"].level == "native"
     assert LSS["SliderQuestion.type"].level == "approximated"
     assert LSS["Survey.quotas"].level == "lowered"

@@ -432,6 +432,44 @@ def test_set_ending_sets_validates_and_removes() -> None:
     assert odd.ok and "ending.unreachable" in codes(odd)
 
 
+def test_set_redirect_template_and_ending_redirect() -> None:
+    """EN2: templates are set and removed as a whole; an ending's redirect names one."""
+    template = {"url": "https://app.prolific.com/submissions/complete?cc={cc}",
+                "params": {"cc": {"pattern": "[A-Z0-9]{4,8}"}}}  # fmt: skip
+    res = run("set_redirect_template", base(), {"name": "prolific", "template": template})
+    assert res.ok, res.diagnostics
+    assert res.survey["settings"]["redirectTemplates"] == {"prolific": template}
+    assert res.inverse is not None
+    assert run(res.inverse.op, res.survey, res.inverse.params).survey == base()
+    # A template that breaks the URL rules is kept with the validator's error.
+    bad = run("set_redirect_template", base(), {"name": "evil", "template": {
+        "url": "https://{host}/x", "params": {"host": {}}}})  # fmt: skip
+    assert bad.ok and "redirect.template" in codes(bad)
+    shape = run("set_redirect_template", base(), {"name": "x", "template": {"url": 3}})
+    assert not shape.ok and codes(shape)[0] == "op.invalid_result"
+    assert shape.diagnostics[0].pointer == "/settings/redirectTemplates/x/url"
+    # An ending's redirect: a literal that passes, a piped answer (a warning: data export),
+    # an unknown template (an error), and a bad delay (refused by the op).
+    good = run("set_ending", res.survey, {"outcome": "complete", "ending": {
+        "redirect": {"template": "prolific", "params": {"cc": "C1AB2"}}}})  # fmt: skip
+    assert good.ok and not any(c.startswith("redirect.") for c in codes(good))
+    assert good.survey["settings"]["endings"]["complete"]["redirect"] == {
+        "template": "prolific", "params": {"cc": "C1AB2"}}  # fmt: skip
+    piped = run("set_ending", res.survey, {"outcome": "complete", "ending": {
+        "redirect": {"template": "prolific", "params": {"cc": "${age}"}}}})  # fmt: skip
+    assert piped.ok and "redirect.param_question" in codes(piped)
+    unknown = run("set_ending", base(), {"outcome": "complete", "ending": {
+        "redirect": {"template": "prolific", "params": {"cc": "C1AB2"}}}})  # fmt: skip
+    assert unknown.ok and "redirect.unknown_template" in codes(unknown)
+    delay = run("set_ending", res.survey, {"outcome": "complete", "ending": {
+        "redirect": {"template": "prolific", "params": {"cc": "C1AB2"}, "delay": 61}}})  # fmt: skip
+    assert not delay.ok and delay.diagnostics[0].pointer.endswith("/redirect/delay")
+    # Removing a template an ending uses is allowed; the ending then has the error.
+    gone = run("set_redirect_template", good.survey, {"name": "prolific", "template": None})
+    assert gone.ok and "redirect.unknown_template" in codes(gone)
+    assert "redirectTemplates" not in gone.survey["settings"]
+
+
 # --- duplicate page / block (B20) -----------------------------------------------------
 
 

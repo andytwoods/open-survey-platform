@@ -192,6 +192,28 @@ EXAMPLES: dict[str, list[dict[str, Any]]] = {
             "ending": {"body": {"en": "Done", "de": "Fertig"}, "status": "none"},
         },
         {"outcome": "hook-failed", "ending": {}},
+        {
+            "outcome": "complete",
+            "ending": {
+                "redirect": {
+                    "template": "prolific",
+                    "params": {"cc": "${age}"},
+                    "delay": 0,
+                    "mode": "link",
+                    "label": "Go",
+                }
+            },
+        },
+    ],
+    "set_redirect_template": [
+        {
+            "name": "prolific",
+            "template": {
+                "url": "https://app.prolific.com/submissions/complete?cc={cc}",
+                "params": {"cc": {"pattern": "[A-Z0-9]{4,8}"}},
+            },
+        },
+        {"name": "lab", "template": {"url": "https://lab.example.org/done", "params": {}}},
     ],
     "set_theme": [
         {"theme": PRESETS["warm"].model_dump(mode="json", by_alias=True)},

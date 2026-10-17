@@ -212,9 +212,18 @@ def text_sites(doc: Json) -> Iterator[tuple[Path, Json]]:
     settings = doc.get("settings")
     endings = settings.get("endings") if isinstance(settings, dict) else None
     for outcome, ending in (endings or {}).items():  # EN1: endings pipe like pages do
+        if not isinstance(ending, dict):
+            continue
         for key in ("title", "body"):
-            if isinstance(ending, dict) and ending.get(key) is not None:
+            if ending.get(key) is not None:
                 yield ("settings", "endings", outcome, key), ending[key]
+        redirect = ending.get("redirect")  # EN2: the button label and the param values too
+        if isinstance(redirect, dict):
+            if redirect.get("label") is not None:
+                yield ("settings", "endings", outcome, "redirect", "label"), redirect["label"]
+            params = redirect.get("params")
+            for name, value in params.items() if isinstance(params, dict) else ():
+                yield ("settings", "endings", outcome, "redirect", "params", name), value
 
 
 def strings_of(text: Json, path: Path) -> Iterator[tuple[Path, str]]:

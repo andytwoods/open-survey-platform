@@ -51,6 +51,8 @@ type OutcomeKey = Annotated[
     ),
 ]
 type Date = Annotated[str, StringConstraints(pattern=r"^\d{4}-\d{2}-\d{2}$")]
+# A declared name (redirect template, placeholder, parent message type): hooks.py limits.
+type Name = Annotated[str, StringConstraints(min_length=1, max_length=256)]
 
 
 class Model(BaseModel):
@@ -164,6 +166,52 @@ class Retention(Model):
     until: Date | None = None
 
 
+class RedirectParam(Model):
+    # The filled value must match it in full. Default: hooks.DEFAULT_PARAM_PATTERN.
+    pattern: StrictStr | None = None
+
+
+class RedirectTemplate(Model):
+    """An end-of-survey redirect template (runtime-design.md §7a; end-of-survey plan §4.2):
+    an https URL with `{name}` placeholders after the origin, each declared in `params`.
+    Declared in `settings.redirectTemplates` (task EN2) or, as before, in `hooks.redirects`;
+    endings and hook code may use either. A value can never change where the URL goes:
+    placeholders are refused in the origin and every value is pattern-checked and encoded."""
+
+    url: StrictStr
+    params: dict[Name, RedirectParam]
+
+
+# A redirect parameter value: a literal, or text with `${…}` pipes (a question, a variable,
+# a built-in). Capped as the hook host caps `setEndRedirect` values.
+type RedirectValue = Annotated[str, StringConstraints(max_length=256)]
+REDIRECT_MAX_DELAY = 60
+REDIRECT_DEFAULT_DELAY = 5
+
+
+class EndRedirect(Model):
+    """Where an ending sends the participant after the submit is acknowledged (end-of-survey
+    plan §4.2, task EN2; lead decision 2: `auto` after 5 s with a countdown, 0 allowed).
+
+    - `template`: a key of `settings.redirectTemplates` (or `hooks.redirects`).
+    - `params`: one entry per placeholder: a literal or a piped `${…}` value. The filled
+      value must match the template's pattern, else no redirect is followed or shown.
+      A param that pipes a *question* sends an answer to a third party: a data export, as
+      for hooks (owner-confirmed, in the codebook, audited; `redirect.param_question`).
+    - `delay`: seconds before the automatic navigation; `0` navigates as soon as the submit
+      is acknowledged, with no screen in between.
+    - `mode`: `auto` (countdown, then navigate; "Stay on this page" cancels) or `link` (no
+      automatic navigation: the participant clicks the button).
+    - `label`: the button text; None: the app's own "Continue to {host}".
+    """
+
+    template: Name
+    params: dict[Name, RedirectValue] = Field(default_factory=dict)
+    delay: StrictInt = Field(default=REDIRECT_DEFAULT_DELAY, ge=0, le=REDIRECT_MAX_DELAY)
+    mode: Literal["auto", "link"] = "auto"
+    label: Text | None = None
+
+
 class Ending(Model):
     """What the participant sees when the session ends with one outcome (end-of-survey plan
     §4.1, task EN1). `settings.endings` maps an outcome identifier (an end node's `outcome`,
@@ -178,12 +226,14 @@ class Ending(Model):
       a response was recorded, "Nothing was recorded." for a decline); `none` hides it for a
       recorded response. Researcher text never replaces it; a decline always shows it.
     - `summary`: reserved for showing the participant's answers (task EN5); `none` today.
+    - `redirect`: where to send the participant afterwards (task EN2), or None.
     """
 
     title: Text | None = None
     body: Text | None = None
     status: Literal["auto", "none"] = "auto"
     summary: Literal["none", "answers"] = "none"
+    redirect: EndRedirect | None = None
 
 
 class Settings(Model):
@@ -203,6 +253,9 @@ class Settings(Model):
     # end-of-survey plan §4.1 (EN1): the ending screen per outcome. An outcome without one
     # gets the app's defaults; an ending for an outcome nothing reaches is a warning.
     endings: dict[OutcomeKey, Ending] = Field(default_factory=dict)
+    # end-of-survey plan §4.2 (EN2): redirect templates endings (and hook code) may use.
+    # `hooks.redirects` declares the same shape; a name may not be in both.
+    redirectTemplates: dict[Name, RedirectTemplate] = Field(default_factory=dict)
 
 
 class Consent(Model):

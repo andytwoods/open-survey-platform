@@ -20,7 +20,11 @@ export type BuiltinRef =
 	| '$position.of'
 	| '$pagesDone'
 	| '$language'
-	| '$device';
+	| '$device'
+	// Ending-only (end-of-survey plan §4.2, EN2): empty until the session ends.
+	| '$session.id'
+	| '$outcome'
+	| '$response.id';
 
 /** Researcher text (sanitised at save), or a pipe the engine fills (escaped at render). */
 export type Segment = string | { pipe: Id | BuiltinRef };
@@ -247,6 +251,33 @@ export interface EndingPlan {
 	body?: Text;
 	status: 'auto' | 'none';
 	summary: 'none' | 'answers';
+	/** Where the participant is sent after the submit is acknowledged (§4.2, EN2). */
+	redirect?: EndRedirectPlan;
+}
+
+/**
+ * An ending's redirect (end-of-survey plan §4.2): a template name from `redirectTemplates`,
+ * one value per placeholder as segments (literal text and pipes, filled like labels, then
+ * pattern-checked and encoded by `redirect.ts`), the delay before the automatic navigation
+ * (`0`: at once, no screen), `auto` (countdown, "Stay on this page" cancels) or `link`
+ * (the participant clicks), and the button label (absent: the app's "Continue to {host}").
+ */
+export interface EndRedirectPlan {
+	template: string;
+	params: Record<string, Segment[]>;
+	delay: number;
+	mode: 'auto' | 'link';
+	label?: Text;
+}
+
+/**
+ * A redirect template (osp-survey `settings.redirectTemplates` / `hooks.redirects`): an
+ * absolute https URL with `{name}` placeholders after the origin, each with the pattern its
+ * value must match in full (default `redirect.ts` DEFAULT_PARAM_PATTERN).
+ */
+export interface RedirectTemplatePlan {
+	url: string;
+	params: Record<string, { pattern?: string }>;
 }
 
 /** The page id the view reports while the consent page is shown (the `$` namespace is reserved). */
@@ -282,6 +313,8 @@ export interface Plan {
 	consent?: ConsentPlan;
 	/** Ending screens keyed by outcome; absent when the survey sets none (inside the checksum). */
 	endings?: Record<Id, EndingPlan>;
+	/** Redirect templates endings and hooks may name; absent when there are none (inside the checksum). */
+	redirectTemplates?: Record<string, RedirectTemplatePlan>;
 	items: Record<Id, Item>;
 	/** Answerable question ids in flow order (export column order). */
 	questions: Id[];

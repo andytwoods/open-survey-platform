@@ -241,9 +241,11 @@ def test_hooks_are_copied_into_the_plan_and_the_checksum() -> None:
     assert plan["hooks"] == HOOKS
     assert plan["hooks"] is not hooks  # a copy: later edits to the input don't leak in
     assert plan["checksum"] == checksum(plan) != without["checksum"]
-    assert {k: v for k, v in plan.items() if k not in ("hooks", "checksum")} == {
-        k: v for k, v in without.items() if k != "checksum"
-    }
+    # EN2: the manifest's redirect templates are also the plan's `redirectTemplates`.
+    assert plan["redirectTemplates"] == HOOKS["redirects"]
+    assert {
+        k: v for k, v in plan.items() if k not in ("hooks", "checksum", "redirectTemplates")
+    } == {k: v for k, v in without.items() if k != "checksum"}
     survey, _ = parse(data)
     assert survey is not None
     assert compile_plan(survey, hooks=hooks) == plan

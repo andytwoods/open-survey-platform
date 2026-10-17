@@ -81,7 +81,7 @@
       }
     },
     "endings": {
-      "description": "Optional. The ending screen per outcome (end-of-survey plan §4.1, osp-survey settings.endings): title and body as text segments (pipes filled by the engine, escaped by the renderer), the status line mode and the reserved summary flag. Absent when the survey sets no endings.",
+      "description": "Optional. The ending screen per outcome (end-of-survey plan §4.1, osp-survey settings.endings): title and body as text segments (pipes filled by the engine, escaped by the renderer), the status line mode, the reserved summary flag and, from EN2, the redirect (§4.2): a template name from redirectTemplates, params as segments (literal text and pipes, filled and pattern-checked by the engine), delay in seconds, mode and button label. Absent when the survey sets no endings.",
       "type": "object",
       "propertyNames": { "pattern": "^(?:[A-Za-z_][A-Za-z0-9_]*|hook-failed)$" },
       "additionalProperties": {
@@ -92,9 +92,31 @@
           "title": { "$ref": "#/$defs/text" },
           "body": { "$ref": "#/$defs/text" },
           "status": { "enum": ["auto", "none"] },
-          "summary": { "enum": ["none", "answers"] }
+          "summary": { "enum": ["none", "answers"] },
+          "redirect": {
+            "type": "object",
+            "additionalProperties": false,
+            "required": ["template", "params", "delay", "mode"],
+            "properties": {
+              "template": { "type": "string", "minLength": 1 },
+              "params": {
+                "type": "object",
+                "propertyNames": { "minLength": 1 },
+                "additionalProperties": { "type": "array", "items": { "$ref": "#/$defs/segment" } }
+              },
+              "delay": { "type": "integer", "minimum": 0, "maximum": 60 },
+              "mode": { "enum": ["auto", "link"] },
+              "label": { "$ref": "#/$defs/text" }
+            }
+          }
         }
       }
+    },
+    "redirectTemplates": {
+      "description": "Optional. The redirect templates endings and hook code may name (settings.redirectTemplates plus hooks.redirects): https URLs with {name} placeholders after the origin and a pattern per placeholder. Absent when there are none.",
+      "type": "object",
+      "propertyNames": { "minLength": 1 },
+      "additionalProperties": { "$ref": "#/$defs/hookRedirect" }
     },
     "theme": {
       "description": "Optional. The survey theme resolved at publish (survey theme, else the lab default, else the clean preset) and checked by the contrast guard. Full schema: web/ui-components/src/theme/generated/theme.schema.json (osp_spec.theme.Theme). runtime-design §6a.",

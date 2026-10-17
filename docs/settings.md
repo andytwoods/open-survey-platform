@@ -93,11 +93,65 @@ ending for …** to give an outcome its own screen:
   your own wording, so participants are never told something about their data that is not
   true. After a consent decline the line is always *Nothing about you has been recorded*.
 
+- **Afterwards**: where to send participants once the response is stored (see
+  [Redirects](#redirects) below). *Nowhere* keeps them on this screen.
+
 **Use the default screen** removes the ending. An ending for an outcome nothing in the
 survey reaches is kept, with a warning. Every outcome's screen can be tried in the
 **Preview**. In exports, the `complete` ending becomes the XLSForm's final note group and
 LimeSurvey's end text, and a quota's ending becomes its LimeSurvey quota message (see the
 capability report for the details).
+
+### Redirects
+
+An ending can send participants on to another site after the survey, typically back to a
+panel such as Prolific with a completion code. Nothing is sent before the server has
+acknowledged the submit (or the decline), and a redirect fires at most once: a resumed or
+reloaded page that finds the response already stored shows the ending without it.
+
+**Redirect templates** (at the bottom of the Endings card) declare the destinations once:
+a short name and an `https://` address with `{name}` placeholders after the site, such as
+`https://app.prolific.com/submissions/complete?cc={cc}`. Each placeholder has a pattern its
+value must match in full (default `[A-Za-z0-9_-]{1,64}`). Placeholders are refused in the
+site part of the address, values are URL-encoded, and the participant app checks the
+filled address against the template before it navigates, so no value can change where
+participants go. Templates declared by a hooks manifest (`hooks.redirects`) are listed too
+and can be used in the same way; a name may not be in both places.
+
+In an ending, **Send participants to** picks a template, then for each placeholder:
+
+- a fixed value, such as the completion code; or
+- a pipe: `${id}` for an answer or a variable (for example `${prolific_pid}` from an
+  embedded URL parameter), or the built-ins `${$response.id}` (the pseudonymous response
+  id the server assigned), `${$session.id}` and `${$outcome}`. These three are available
+  only in endings.
+
+A value that fails its pattern (an unanswered question pipes nothing) means **no
+redirect**: the button is not shown, nothing navigates, and the response record carries a
+`redirect.param_rejected` diagnostic. A fixed value that can never pass is an error at
+edit time.
+
+**Piping an answer into a redirect sends that answer to the other site.** It is treated as
+a data export, like a hook's exports: the editor shows a warning naming the answer, the
+codebook lists it under *Where participants are sent afterwards*, and every change to
+redirects or templates is written to the audit log (what is sent, never the values).
+
+**Go there** is *automatically, after a countdown* (the default, 5 seconds) or *only when
+the participant clicks*. With the countdown, the ending's heading, text and status line
+are on screen first; a screen reader hears one announcement ("You will be taken to
+app.prolific.com in 5 seconds. Use the button to go now, or 'Stay on this page' to
+cancel."); the visible countdown is not read out every second; **Continue to {host}** (or
+your **Button label**) goes now and **Stay on this page** cancels, leaving the button as a
+plain link. A countdown of 0 navigates as soon as the submit is acknowledged, with no
+screen in between: the editor warns, because the ending's text is then never seen (WCAG
+2.2.1 Timing Adjustable). The **Preview URL** shows the filled address with pipes left as
+tokens; the builder's Preview never navigates, it shows the resolved address on the end
+screen and in the Debugger instead.
+
+Exports: LimeSurvey gets the `complete` ending's redirect as the survey end URL (loaded
+automatically in the countdown mode) and a quota outcome's redirect as that quota's URL,
+only when every value is fixed; a piped value cannot be re-checked there, so such a
+redirect is reported as a loss. XLSForm has no redirect after a submit.
 
 ## Whole-survey properties
 

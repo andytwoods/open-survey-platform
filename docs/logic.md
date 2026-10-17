@@ -118,6 +118,11 @@ The text can pipe answers and variables with `${id}`, as labels do: a piped valu
 filled in for this participant and an unanswered question pipes nothing. Piped values are
 always shown as text, never as HTML.
 
+An ending can also send participants on afterwards, for example back to Prolific with a
+completion code, automatically after a countdown or by a button; see
+[Redirects](settings.md#redirects). Because the ending is keyed by outcome, a screened-out
+participant can get a different code (or no redirect) from a completer.
+
 ### Randomisation is reproducible
 
 Every session has a seed. Each random decision (a randomiser, a page's item order, a

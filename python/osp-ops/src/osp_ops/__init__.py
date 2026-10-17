@@ -24,6 +24,7 @@ from . import (  # noqa: F401
     property_ops,
     question_ops,
     question_type_ops,
+    redirect_ops,
     survey_ops,
     theme_ops,
     variable_ops,

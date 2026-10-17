@@ -248,6 +248,7 @@ export function buildRedirectUrl(m: HookManifest, redirect: { templateId: string
 	for (const n of names) {
 		const v = redirect.params[n];
 		if (typeof v !== 'string' || !fullMatch(t.params[n]?.pattern)!.test(v)) return null;
+		if (v === '.' || v === '..') return null; // would be collapsed as a path segment (EN2)
 	}
 	const url = t.url.replace(PLACEHOLDER, (_, n: string) => encodeURIComponent(redirect.params[n]!));
 	const origin = new URL(t.url.replace(PLACEHOLDER, 'x')).origin;

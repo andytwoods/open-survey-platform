@@ -465,6 +465,46 @@ def _eq(qid: str, value: str) -> dict:
             "right": {"kind": "text", "value": value}}  # fmt: skip
 
 
+def test_end_redirects_become_end_urls_when_every_param_is_literal() -> None:
+    """EN2: the `complete` ending's redirect is the survey end URL (auto-loaded in `auto`
+    mode), a quota outcome's redirect is the quota URL; literals are percent-encoded; a
+    piped param drops the redirect with a loss (LimeSurvey cannot re-check the pattern)."""
+    data = _quota_survey(_eq("region", "north"))
+    data["settings"] = {
+        "redirectTemplates": {
+            "prolific": {"url": "https://app.prolific.com/submissions/complete?cc={cc}",
+                         "params": {"cc": {"pattern": "[A-Z0-9 &]{4,8}"}}},
+            "lab": {"url": "https://lab.example.org/full/{why}", "params": {"why": {}}},
+        },
+        "endings": {
+            "complete": {"redirect": {"template": "prolific", "params": {"cc": "C1 &B2"},
+                                      "label": "Back to Prolific"}},
+            "screenout": {"redirect": {"template": "lab", "mode": "link",
+                                       "params": {"why": "full"}}},
+        },
+    }  # fmt: skip
+    _, diags, root = _export(data)
+    [ls] = _rows(root, "surveys_languagesettings")
+    assert ls["surveyls_url"] == "https://app.prolific.com/submissions/complete?cc=C1%20%26B2"
+    assert ls["surveyls_urldescription"] == "Back to Prolific"
+    [srv] = _rows(root, "surveys")
+    assert srv["autoredirect"] == "Y"
+    [quota] = _rows(root, "quota")
+    assert quota["autoload_url"] == "0"  # link mode
+    [ql] = _rows(root, "quota_languagesettings")
+    assert ql["quotals_url"] == "https://lab.example.org/full/full"
+    levels = {d.feature: d.severity for d in diags}
+    assert levels["Ending.redirect"] == "warning" and levels["EndRedirect.delay"] == "loss"
+    # A piped param: no URL, the redirect is reported as a loss; link mode: no autoredirect.
+    data["settings"]["endings"]["complete"]["redirect"] = {
+        "template": "prolific", "params": {"cc": "${region}"}, "mode": "link"}  # fmt: skip
+    _, diags, root = _export(data)
+    [ls] = _rows(root, "surveys_languagesettings")
+    assert "surveyls_url" not in ls
+    assert _rows(root, "surveys")[0]["autoredirect"] == "N"
+    assert any(d.feature == "$redirect.piped" and d.severity == "loss" for d in diags)
+
+
 def test_endings_fill_end_text_quota_message_and_end_groups() -> None:
     """EN1: `complete` → surveyls_endtext, a quota's outcome → its quota message, another
     outcome → a boilerplate question with the End node."""

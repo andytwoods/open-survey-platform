@@ -222,6 +222,91 @@ def _hooks_change(
     }
 
 
+REDIRECTS_CHANGED = "survey.redirects_changed"
+"""Audit action for a transaction that changes where participants are sent after the
+survey (end-of-survey plan §4.2, EN2): `settings.redirectTemplates` or any ending's
+`redirect`. Piped answers in a redirect are data exports (lead decision 3), so the detail
+names, per outcome, the template, its host and each param's kind (literal, a piped
+question, a piped variable, a built-in); it holds no participant data."""
+
+
+def _redirects_summary(body: Any) -> dict[str, Any] | None:
+    settings = body.get("settings") if isinstance(body, dict) else None
+    if not isinstance(settings, dict):
+        return None
+    templates = settings.get("redirectTemplates")
+    hooks = body.get("hooks") if isinstance(body, dict) else None
+    hook_templates = hooks.get("redirects") if isinstance(hooks, dict) else None
+    known: dict[str, Any] = {}
+    for source in (hook_templates, templates):
+        if isinstance(source, dict):
+            known.update({str(k): v for k, v in source.items()})
+    endings = settings.get("endings")
+    out: list[dict[str, Any]] = []
+    for outcome, ending in endings.items() if isinstance(endings, dict) else ():
+        r = ending.get("redirect") if isinstance(ending, dict) else None
+        if not isinstance(r, dict):
+            continue
+        t = known.get(str(r.get("template")))
+        url = t.get("url") if isinstance(t, dict) else None
+        host = url.split("/", 3)[2] if isinstance(url, str) and url.count("/") >= 2 else None
+        params = r.get("params") if isinstance(r.get("params"), dict) else {}
+        out.append(
+            {
+                "outcome": str(outcome),
+                "template": str(r.get("template")),
+                "host": host,
+                "mode": r.get("mode", "auto"),
+                "delay": r.get("delay", 5),
+                "params": {str(k): _param_kind(body, v) for k, v in params.items()},
+            }
+        )
+    if not out and not (isinstance(templates, dict) and templates):
+        return None
+    return {
+        "templates": sorted(str(k) for k in templates) if isinstance(templates, dict) else [],
+        "redirects": sorted(out, key=lambda r: r["outcome"]),
+    }
+
+
+def _param_kind(body: Any, value: Any) -> str:
+    """`literal`, `question`, `variable` or `builtin`: what a redirect param sends."""
+    if not isinstance(value, str):
+        return "literal"
+    refs = re.findall(r"\$\{\s*([^}]*?)\s*\}", value)
+    if not refs:
+        return "literal"
+    variables = (
+        {v.get("id") for v in (body.get("variables") or []) if isinstance(v, dict)}
+        if isinstance(body, dict)
+        else set()
+    )
+    kinds = {
+        "builtin" if r.startswith("$") else "variable" if r in variables else "question"
+        for r in refs
+    }
+    for kind in ("question", "variable", "builtin"):
+        if kind in kinds:
+            return kind
+    return "literal"
+
+
+def _redirects_change(
+    before: Any, after: Any, txn_id: str, ops: Sequence[Invocation]
+) -> dict[str, Any] | None:
+    """The audit detail when a transaction changed redirect templates or endings' redirects."""
+    old, new = _redirects_summary(before), _redirects_summary(after)
+    if old == new:
+        return None
+    return {
+        "transaction": txn_id,
+        "kind": _kind(txn_id),
+        "ops": [o.op for o in ops],
+        "before": old,
+        "after": new,
+    }
+
+
 def _publish_message(diagnostics: Sequence[Diagnostic]) -> str:
     """The headline for a refused publish. A missing retention policy is named, since it
     is the one error a survey that previews fine can still have."""
@@ -426,6 +511,9 @@ class Builder:
         hooks_change = _hooks_change(draft.body, body, txn_id, ops)
         if hooks_change is not None:
             self.store.audit(ctx, HOOKS_CHANGED, "survey", survey_id, hooks_change)
+        redirects_change = _redirects_change(draft.body, body, txn_id, ops)
+        if redirects_change is not None:
+            self.store.audit(ctx, REDIRECTS_CHANGED, "survey", survey_id, redirects_change)
         return EditResult(saved.revision, list(res.patch), list(res.diagnostics), txn_id)
 
     def _transaction(self, ctx: TenantContext, survey_id: str, txn_id: str) -> list[OpLogEntry]:
