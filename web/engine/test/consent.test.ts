@@ -24,9 +24,8 @@ import { clock, makePlan, q, t } from './helpers.ts';
 
 function plan(): Plan {
 	const base = makePlan({ pages: { p1: [q('a', 'integer')], p2: [q('b', 'text')] } });
-	const { checksum: _c, ...rest } = base;
 	return withChecksum({
-		...rest,
+		...base,
 		consent: {
 			version: 'sha256:' + 'a'.repeat(64),
 			text: t('Consent text'),
