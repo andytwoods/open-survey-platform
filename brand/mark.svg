@@ -1,19 +1,101 @@
-<svg xmlns="http://www.w3.org/2000/svg" width="64" height="64" viewBox="0 0 64 64">
+<svg xmlns="http://www.w3.org/2000/svg" width="64" height="64" viewBox="0 0 64 64" shape-rendering="crispEdges">
 	<title>Open Survey Platform</title>
+	<!-- 8-bit clipboard: ticked boxes, a terminal cursor and a tiny bar chart. Concept from
+	     Google Gemini (brand/concept-gemini.jpg, AI-generated), redrawn on a 32x32 grid. -->
 	<style>
-		.tile { fill: #2456c7; }
-		.ink { fill: #ffffff; }
-		.ring { fill: none; stroke: #ffffff; stroke-width: 3.5; }
+		.tile { fill: #1d1652; }
+		.cyan { fill: #19e6ff; }
+		.white { fill: #ffffff; }
+		.green { fill: #6dff7a; }
+		/* A lighter tile on dark tab bars, so the icon's edge stays visible. */
 		@media (prefers-color-scheme: dark) {
-			.tile { fill: #8fb0ff; }
-			.ink { fill: #0b1220; }
-			.ring { stroke: #0b1220; }
+			.tile { fill: #3a2f9e; }
 		}
 	</style>
 	<rect class="tile" width="64" height="64" rx="14" />
-	<circle class="ring" cx="19" cy="21" r="7" />
-	<circle class="ink" cx="19" cy="21" r="3" />
-	<rect class="ink" x="31" y="18" width="21" height="6" rx="3" />
-	<circle class="ring" cx="19" cy="43" r="7" />
-	<rect class="ink" x="31" y="40" width="14" height="6" rx="3" />
+	<rect class="cyan" x="28" y="8" width="8" height="2" />
+	<rect class="cyan" x="28" y="10" width="2" height="2" />
+	<rect class="cyan" x="34" y="10" width="2" height="2" />
+	<rect class="cyan" x="22" y="12" width="20" height="2" />
+	<rect class="cyan" x="22" y="14" width="20" height="2" />
+	<rect class="cyan" x="22" y="16" width="4" height="2" />
+	<rect class="cyan" x="38" y="16" width="4" height="2" />
+	<rect class="cyan" x="14" y="18" width="36" height="2" />
+	<rect class="cyan" x="14" y="20" width="2" height="2" />
+	<rect class="cyan" x="22" y="20" width="20" height="2" />
+	<rect class="cyan" x="48" y="20" width="2" height="2" />
+	<rect class="cyan" x="14" y="22" width="2" height="2" />
+	<rect class="cyan" x="48" y="22" width="2" height="2" />
+	<rect class="cyan" x="14" y="24" width="2" height="2" />
+	<rect class="cyan" x="48" y="24" width="2" height="2" />
+	<rect class="cyan" x="14" y="26" width="2" height="2" />
+	<rect class="cyan" x="48" y="26" width="2" height="2" />
+	<rect class="cyan" x="14" y="28" width="2" height="2" />
+	<rect class="cyan" x="48" y="28" width="2" height="2" />
+	<rect class="cyan" x="14" y="30" width="2" height="2" />
+	<rect class="cyan" x="48" y="30" width="2" height="2" />
+	<rect class="cyan" x="14" y="32" width="2" height="2" />
+	<rect class="cyan" x="48" y="32" width="2" height="2" />
+	<rect class="cyan" x="14" y="34" width="2" height="2" />
+	<rect class="cyan" x="48" y="34" width="2" height="2" />
+	<rect class="cyan" x="14" y="36" width="2" height="2" />
+	<rect class="cyan" x="48" y="36" width="2" height="2" />
+	<rect class="cyan" x="14" y="38" width="2" height="2" />
+	<rect class="cyan" x="48" y="38" width="2" height="2" />
+	<rect class="cyan" x="14" y="40" width="2" height="2" />
+	<rect class="cyan" x="48" y="40" width="2" height="2" />
+	<rect class="cyan" x="14" y="42" width="2" height="2" />
+	<rect class="cyan" x="48" y="42" width="2" height="2" />
+	<rect class="cyan" x="14" y="44" width="2" height="2" />
+	<rect class="cyan" x="48" y="44" width="2" height="2" />
+	<rect class="cyan" x="14" y="46" width="2" height="2" />
+	<rect class="cyan" x="48" y="46" width="2" height="2" />
+	<rect class="cyan" x="14" y="48" width="2" height="2" />
+	<rect class="cyan" x="48" y="48" width="2" height="2" />
+	<rect class="cyan" x="14" y="50" width="2" height="2" />
+	<rect class="cyan" x="48" y="50" width="2" height="2" />
+	<rect class="cyan" x="14" y="52" width="2" height="2" />
+	<rect class="cyan" x="48" y="52" width="2" height="2" />
+	<rect class="cyan" x="14" y="54" width="36" height="2" />
+	<rect class="white" x="26" y="16" width="12" height="2" />
+	<rect class="white" x="46" y="20" width="2" height="2" />
+	<rect class="white" x="46" y="22" width="2" height="2" />
+	<rect class="white" x="46" y="24" width="2" height="2" />
+	<rect class="white" x="18" y="26" width="8" height="2" />
+	<rect class="white" x="18" y="28" width="2" height="2" />
+	<rect class="white" x="24" y="28" width="2" height="2" />
+	<rect class="white" x="18" y="30" width="2" height="2" />
+	<rect class="white" x="32" y="30" width="14" height="2" />
+	<rect class="white" x="18" y="32" width="4" height="2" />
+	<rect class="white" x="24" y="32" width="2" height="2" />
+	<rect class="white" x="18" y="36" width="8" height="2" />
+	<rect class="white" x="18" y="38" width="2" height="2" />
+	<rect class="white" x="24" y="38" width="2" height="2" />
+	<rect class="white" x="18" y="40" width="2" height="2" />
+	<rect class="white" x="32" y="40" width="14" height="2" />
+	<rect class="white" x="18" y="42" width="4" height="2" />
+	<rect class="white" x="24" y="42" width="2" height="2" />
+	<rect class="white" x="18" y="46" width="8" height="2" />
+	<rect class="white" x="18" y="48" width="2" height="2" />
+	<rect class="white" x="24" y="48" width="2" height="2" />
+	<rect class="white" x="18" y="50" width="2" height="2" />
+	<rect class="white" x="24" y="50" width="2" height="2" />
+	<rect class="white" x="18" y="52" width="8" height="2" />
+	<rect class="green" x="42" y="22" width="2" height="2" />
+	<rect class="green" x="38" y="24" width="2" height="2" />
+	<rect class="green" x="42" y="24" width="2" height="2" />
+	<rect class="green" x="28" y="26" width="2" height="2" />
+	<rect class="green" x="26" y="28" width="2" height="2" />
+	<rect class="green" x="20" y="30" width="2" height="2" />
+	<rect class="green" x="24" y="30" width="2" height="2" />
+	<rect class="green" x="22" y="32" width="2" height="2" />
+	<rect class="green" x="28" y="36" width="2" height="2" />
+	<rect class="green" x="26" y="38" width="2" height="2" />
+	<rect class="green" x="20" y="40" width="2" height="2" />
+	<rect class="green" x="24" y="40" width="2" height="2" />
+	<rect class="green" x="22" y="42" width="2" height="2" />
+	<rect class="green" x="32" y="46" width="4" height="2" />
+	<rect class="green" x="32" y="48" width="4" height="2" />
+	<rect class="green" x="32" y="50" width="4" height="2" />
+	<rect class="green" x="32" y="52" width="4" height="2" />
 </svg>
