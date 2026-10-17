@@ -30,3 +30,4 @@
 - Numbers: web vitest 539 (was 493); builder e2e 133 (was 126; new `host.spec.ts`); `make check` green; `scripts/check-build.mjs` gates the manifest in `make web-build`.
 - Merged with P1: e2e sign-in is a no-op (Dev identity) in `e2e/fixtures.ts`; the dev config sends no CSRF (P1 has none; Origin check + JSON bodies stay). P1's `auth.svelte.ts` stub deleted.
 - Open: `docs/hosting.md` (P4) should copy the config/manifest section of `web/builder/README.md`.
+- Seen twice under the Stop hook: `harness-quick` flakes about 1 run in 5 (`apiRequestContext: Target page, context or browser has been closed`, a different fixture each time: 26 trailing-zeros, 16 assign/control; web/harness/src/player.ts `storedResponse`). Passes on rerun (3/3); not touched by P2.
