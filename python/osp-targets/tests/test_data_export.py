@@ -609,6 +609,33 @@ def test_codebook_contents() -> None:
     assert "Drop-outs and attrition are invisible" in end_only
 
 
+def test_codebook_lists_lab_custom_properties() -> None:
+    """Custom values (planning/property-profiles.md §5): per variable and as a key list;
+    a matrix row carries its matrix's; never a data column."""
+    s = _survey("38-matrix")
+    items = s["blocks"][0]["pages"][0]["items"]
+    matrix = next(q for q in items if q["type"] == "matrix")
+    matrix["custom"] = {"construct": "satisfaction", "weight": 2.5, "prereg": True}
+    plain = codebook(SurveyVersion(s))
+    assert "customProperties" not in codebook(_version("38-matrix")).data
+    assert plain.data["customProperties"] == [
+        {"key": "construct", "types": ["matrix"]},
+        {"key": "prereg", "types": ["matrix"]},
+        {"key": "weight", "types": ["matrix"]},
+    ]
+    rows = [v for v in plain.data["variables"] if v.get("matrix") == matrix["id"]]
+    assert rows and all(v["custom"] == matrix["custom"] for v in rows)
+    md = plain.markdown
+    assert "## Lab properties" in md and "| `construct` | matrix |" in md
+    assert (
+        '- Lab properties: `construct` = `"satisfaction"`; `prereg` = `true`; `weight` = `2.5`'
+        in md
+    )
+    # No column carries them, and the stock codebook is unchanged without any.
+    assert plain.data["csv"]["columns"] == codebook(_version("38-matrix")).data["csv"]["columns"]
+    assert "Lab properties" not in codebook(_version("38-matrix")).markdown
+
+
 # -- hostile input -----------------------------------------------------------------------------
 
 

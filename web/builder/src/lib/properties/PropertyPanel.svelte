@@ -3,9 +3,9 @@
 	import { setContext, tick } from 'svelte';
 	import { SvelteSet } from 'svelte/reactivity';
 	import { BUFFERS, type BufferRegistry } from './context';
-	import { diagnosticsFor, fieldId, getAt, groupProperties, localised, opAddress } from './logic';
+	import { diagnosticsFor, fieldId, getAt, groupLabel, groupProperties, localised, opAddress } from './logic';
 	import PropertyField from './PropertyField.svelte';
-	import type { OpenEditorRequest, PanelDiagnostic, SetPropertyOp, TypeSchema } from './types';
+	import type { LocalisedText, OpenEditorRequest, PanelDiagnostic, PanelOp, TypeSchema } from './types';
 
 	/**
 	 * The property panel (builder-design §2): renders any type's property schema as a form,
@@ -21,6 +21,7 @@
 		pointer = '',
 		survey,
 		groups = ['Basics', 'Choices', 'Logic', 'Validation', 'Advanced'],
+		groupLabels,
 		onOp,
 		onOpenEditor,
 		onDirty
@@ -41,7 +42,9 @@
 		survey?: unknown;
 		/** Group order (the schema document's `groups`). */
 		groups?: readonly string[];
-		onOp: (op: SetPropertyOp) => void;
+		/** Heading overrides from the lab's panel profile (the document's `groupLabels`). */
+		groupLabels?: Record<string, LocalisedText>;
+		onOp: (op: PanelOp) => void;
 		onOpenEditor?: (request: OpenEditorRequest) => void;
 		/** A text buffer started (true) or stopped (false) holding unsent text. */
 		onDirty?: (dirty: boolean) => void;
@@ -102,7 +105,7 @@
 						onclick={() => toggle(group.name)}
 					>
 						<span class="chev" class:open aria-hidden="true"><ChevronRight size={14} /></span>
-						{group.name}
+						{groupLabel(groupLabels, group.name, language)}
 					</button>
 				</h3>
 				<div class="group-body" id="{gid}-body" hidden={!open}>

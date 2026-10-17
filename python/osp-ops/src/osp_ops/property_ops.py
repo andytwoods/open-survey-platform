@@ -49,8 +49,11 @@ SINGLETONS: dict[str, tuple[tuple[str, ...], type[BaseModel]]] = {
     "/settings": (("settings",), m.Settings),
 }
 # Identity and discriminators are never edited in place; child collections have their
-# own ops (which check references).
-FORBIDDEN = frozenset({"id", "type", "kind", "items", "pages", "then", "else", "children"})
+# own ops (which check references); `custom` is edited one key at a time
+# (`set_custom_property`).
+FORBIDDEN = frozenset(
+    {"id", "type", "kind", "items", "pages", "then", "else", "children", "custom"}
+)
 
 
 def model_fields(cls: type[BaseModel]) -> list[str]:

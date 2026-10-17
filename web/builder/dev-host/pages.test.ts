@@ -25,6 +25,7 @@ describe('dev host routes', () => {
 		expect(route('/surveys/abc/results', '', false)).toEqual({ page: 'results', surveyId: 'abc' });
 		expect(route('/surveys/a%20b/appearance', '', false)).toEqual({ page: 'appearance', surveyId: 'a b' });
 		expect(route('/appearance', '', false)).toEqual({ page: 'themes', mock: undefined });
+		expect(route('/profile', '', false)).toEqual({ page: 'profile' });
 		expect(route('/preview-frame', '?frame=phone', false)).toEqual({ page: 'preview-frame' });
 		expect(route('/dev/cards', '', true)).toEqual({ page: 'dev-cards' });
 		expect(route('/dev/cards', '', false)).toBeNull();
@@ -159,7 +160,17 @@ describe('manifest', () => {
 	});
 
 	it('production pages and dev pages are disjoint', () => {
-		expect(Object.keys(PAGES)).toEqual(['list', 'editor', 'flow', 'settings', 'appearance', 'results', 'themes', 'preview-frame']);
+		expect(Object.keys(PAGES)).toEqual([
+			'list',
+			'editor',
+			'flow',
+			'settings',
+			'appearance',
+			'results',
+			'themes',
+			'profile',
+			'preview-frame'
+		]);
 		for (const k of Object.keys(DEV_PAGES)) expect(k.startsWith('dev-')).toBe(true);
 	});
 });

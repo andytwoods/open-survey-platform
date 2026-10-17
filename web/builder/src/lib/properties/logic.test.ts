@@ -69,6 +69,18 @@ describe('grouping', () => {
 describe('addressing set_property', () => {
 	it('uses the id for questions, pages and blocks', () => {
 		expect(opAddress('question', { id: 'q1' }, 'label')).toEqual({ target: 'q1', property: 'label' });
+		// A lab-defined property keeps its dotted key; only questions carry them.
+		expect(opAddress('question', { id: 'q1' }, 'custom.construct')).toEqual({ target: 'q1', property: 'custom.construct' });
+		expect(opAddress('question', { id: 'q1' }, 'custom.')).toBeNull();
+		expect(opAddress('page', { id: 'p1' }, 'custom.construct')).toBeNull();
+		expect(setPropertyOp({ target: 'q1', property: 'custom.weight' }, 2.5)).toEqual({
+			op: 'set_custom_property',
+			params: { target: 'q1', key: 'weight', value: 2.5 }
+		});
+		expect(setPropertyOp({ target: 'q1', property: 'custom.weight' }, undefined)).toEqual({
+			op: 'set_custom_property',
+			params: { target: 'q1', key: 'weight', unset: true }
+		});
 		expect(opAddress('block', { id: 'b1' }, 'title')).toEqual({ target: 'b1', property: 'title' });
 		expect(opAddress('page', {}, 'title')).toBeNull();
 		expect(opAddress('page', null, 'title')).toBeNull();

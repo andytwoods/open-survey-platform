@@ -18,7 +18,7 @@
 	import BufferedTextField from './BufferedTextField.svelte';
 	import { api } from '../api';
 	import PropertyPanel from '../properties/PropertyPanel.svelte';
-	import { propertySchemas, schemaFor } from '../properties/schemas.svelte';
+	import { fetchPropertySchemas, propertySchemas, schemaFor } from '../properties/schemas.svelte';
 	import type { OpenEditorRequest } from '../properties/types';
 	import { ChoiceListDialog, editorInputs } from '../choices';
 	import { RowsDialog, rowsEditorInputs } from '../rows';
@@ -90,7 +90,7 @@
 	// The schema-driven property panel (B4), once the schemas have loaded; until then (or
 	// for a type without a schema) the single buffered field above stands in.
 	$effect(() => {
-		if (store) void propertySchemas.load(() => api.GET('/api/meta/property-schemas'));
+		if (store) void propertySchemas.load(fetchPropertySchemas);
 	});
 	const panelTarget = $derived(store && node ? (node.type === 'survey' ? store.survey : raw) : undefined);
 	const schema = $derived(node && panelTarget ? schemaFor(propertySchemas.doc, node.type, panelTarget) : undefined);
@@ -183,6 +183,7 @@
 						pointer={panelPointer}
 						survey={store.survey}
 						groups={propertySchemas.doc.groups}
+						groupLabels={propertySchemas.doc.groupLabels}
 						onOp={(op) => store?.submit([op])}
 						onOpenEditor={openEditor}
 						onDirty={(d) => store?.markDirty(d)}

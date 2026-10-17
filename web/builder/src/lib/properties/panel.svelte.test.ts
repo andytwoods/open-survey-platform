@@ -5,7 +5,7 @@ import { afterEach, describe, expect, it, vi } from 'vitest';
 import fixture from './fixtures/property-schemas.json';
 import { EXTERNAL_KINDS, TEXT_DEBOUNCE_MS, groupProperties } from './logic';
 import PropertyPanel from './PropertyPanel.svelte';
-import type { OpenEditorRequest, PanelDiagnostic, PropertySchemasDoc, SetPropertyOp, TypeSchema } from './types';
+import type { OpenEditorRequest, PanelDiagnostic, PanelOp, PropertySchemasDoc, TypeSchema } from './types';
 
 // The property panel against the real schemas (fixtures/property-schemas.json is exactly
 // what GET /api/meta/property-schemas serves): every MVP property editable, text debounce,
@@ -24,9 +24,14 @@ function bareTarget(s: TypeSchema): Record<string, unknown> {
 function setup(
 	s: TypeSchema,
 	target: unknown = bareTarget(s),
-	extra: { language?: string; diagnostics?: PanelDiagnostic[]; pointer?: string } = {}
+	extra: {
+		language?: string;
+		diagnostics?: PanelDiagnostic[];
+		pointer?: string;
+		groupLabels?: Record<string, Record<string, string>>;
+	} = {}
 ) {
-	const ops: SetPropertyOp[] = [];
+	const ops: PanelOp[] = [];
 	const opened: OpenEditorRequest[] = [];
 	const dirty: boolean[] = [];
 	const props = {
@@ -37,7 +42,8 @@ function setup(
 		diagnostics: extra.diagnostics ?? [],
 		pointer: extra.pointer ?? '',
 		groups: doc.groups,
-		onOp: (op: SetPropertyOp) => ops.push(op),
+		groupLabels: extra.groupLabels,
+		onOp: (op: PanelOp) => ops.push(op),
 		onOpenEditor: (r: OpenEditorRequest) => opened.push(r),
 		onDirty: (d: boolean) => dirty.push(d)
 	};
@@ -199,7 +205,7 @@ describe('text buffers', () => {
 		await fireEvent.input(t.field('name'), { target: { value: 'n' } });
 		await fireEvent.input(t.field('constraintMessage'), { target: { value: 'm' } });
 		(t.component as unknown as { flush(): void }).flush();
-		expect(t.ops.map((o) => o.params.property).sort()).toEqual(['constraintMessage', 'name']);
+		expect(t.ops.map((o) => (o.op === 'set_property' ? o.params.property : o.params.key)).sort()).toEqual(['constraintMessage', 'name']);
 	});
 });
 
@@ -253,6 +259,43 @@ describe('focus is kept when patches arrive', () => {
 		await t.rerender({ ...t.props, target: { ...base, required: true } });
 		expect(document.activeElement).toBe(sw);
 		expect(sw.getAttribute('aria-checked')).toBe('true');
+	});
+});
+
+describe('lab profile (B21)', () => {
+	it('renders custom.<key> entries as fields that emit set_custom_property, under renamed headings', async () => {
+		const single = schemaOf('single');
+		const s: TypeSchema = {
+			...single,
+			properties: {
+				...single.properties,
+				'custom.construct': { kind: 'text', label: { en: 'Construct' }, group: 'Basics' },
+				'custom.weight': { kind: 'number', label: { en: 'Weight' }, group: 'Advanced', default: 1 },
+				'custom.prereg': { kind: 'bool', label: { en: 'Pre-registered' }, group: 'Logic' },
+				'custom.scale': {
+					kind: 'enum',
+					label: { en: 'Scale' },
+					group: 'Advanced',
+					options: [{ value: 'likert', label: { en: 'Likert' } }]
+				}
+			}
+		};
+		const t = setup(s, { id: 'q1', type: 'single', custom: { construct: 'affect' } }, { groupLabels: { Logic: { en: 'Conditions' } } });
+		expect([...t.container.querySelectorAll('.group-toggle')].map((b) => b.textContent?.trim())).toContain('Conditions');
+		expect((t.field('custom.construct') as HTMLTextAreaElement | HTMLInputElement).value).toBe('affect');
+		expect((t.field('custom.weight') as HTMLInputElement).value).toBe('1');
+		await fireEvent.input(t.field('custom.construct'), { target: { value: 'arousal' } });
+		await fireEvent.blur(t.field('custom.construct'));
+		await fireEvent.click(t.field('custom.prereg'));
+		await fireEvent.change(t.field('custom.scale'), { target: { value: 'likert' } });
+		await fireEvent.input(t.field('custom.weight'), { target: { value: '' } });
+		await fireEvent.blur(t.field('custom.weight'));
+		expect(t.ops).toEqual([
+			{ op: 'set_custom_property', params: { target: 'q1', key: 'construct', value: 'arousal' } },
+			{ op: 'set_custom_property', params: { target: 'q1', key: 'prereg', value: true } },
+			{ op: 'set_custom_property', params: { target: 'q1', key: 'scale', value: 'likert' } },
+			{ op: 'set_custom_property', params: { target: 'q1', key: 'weight', unset: true } }
+		]);
 	});
 });
 

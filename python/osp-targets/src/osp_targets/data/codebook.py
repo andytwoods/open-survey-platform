@@ -8,6 +8,7 @@ its data-export capabilities. Same input, same bytes: nothing here reads a clock
 
 from __future__ import annotations
 
+import json
 from collections.abc import Collection, Sequence
 from typing import Any
 
@@ -159,6 +160,22 @@ def _consent(lay: Any) -> dict[str, Any]:
     }
 
 
+def _custom_keys(questions: Sequence[QuestionInfo]) -> list[dict[str, Any]]:
+    """Every custom key in use, with the question types it appears on (a matrix row counts
+    as its matrix). The lab's panel profile, not the survey, says what a key means."""
+    types: dict[str, list[str]] = {}
+    for q in questions:
+        for key in q.custom or {}:
+            kind = "matrix" if q.matrix else q.type
+            if kind not in types.setdefault(key, []):
+                types[key].append(kind)
+    return [{"key": k, "types": v} for k, v in sorted(types.items())]
+
+
+def _custom_text(custom: dict[str, Any]) -> str:
+    return "; ".join(f"{_code(k)} = {_code(json.dumps(v))}" for k, v in sorted(custom.items()))
+
+
 def codebook_data(
     version: SurveyVersion, options: CsvOptions | None = None, split: Collection[str] = ()
 ) -> dict[str, Any]:
@@ -202,10 +219,12 @@ def codebook_data(
             "matrix": q.matrix,
             "matrixLabel": q.matrix_label,
             **(q.scale or {}),
+            "custom": q.custom,
             "csvColumns": _question_columns(q, opts),
             "missing": _encoding(q, opts),
         }
         variables.append({k: v for k, v in entry.items() if v is not None})
+    custom_keys = _custom_keys(lay.questions)
     return {
         "format": FORMAT,
         "survey": {
@@ -238,6 +257,7 @@ def codebook_data(
         },
         "metaColumns": [{"column": h, "meaning": m} for h, m in meta_columns(lay)],
         **({"consent": _consent(lay)} if lay.survey.consent is not None else {}),
+        **({"customProperties": custom_keys} if custom_keys else {}),
         "conditions": [{"name": v.name, "id": v.id, "levels": v.levels} for v in lay.assigned],
         "randomisers": [
             {
@@ -439,6 +459,21 @@ def _render(data: dict[str, Any], heading: str = "#") -> str:
         add("This version has no randomisers and no shuffled items or choices.")
     add("")
 
+    if data.get("customProperties"):
+        add(f"{h2} Lab properties")
+        add("")
+        add(
+            "Annotations the lab's property panel profile adds to questions (for example the "
+            "construct an item measures). They describe questions, never responses: no data "
+            "column carries them. Values are listed under each question."
+        )
+        add("")
+        add("| Key | Used on |")
+        add("|---|---|")
+        for c in data["customProperties"]:
+            add(f"| {_code(c['key'])} | {', '.join(c['types'])} |")
+        add("")
+
     add(f"{h2} Questions")
     add("")
     add("In survey (flow) order. Conditions refer to other variables by export name.")
@@ -468,6 +503,8 @@ def _render(data: dict[str, Any], heading: str = "#") -> str:
                 f"- Constraint: {_code(v['constraint'])}"
                 + (f" (message: {_lang_text(msg, langs)})" if msg else "")
             )
+        if v.get("custom"):
+            add(f"- Lab properties: {_custom_text(v['custom'])}")
         add(f"- CSV columns: {', '.join(_code(c) for c in v['csvColumns'])}")
         add(f"- Missing values: {v['missing']}")
         if v.get("choiceOrder") == "shuffle":

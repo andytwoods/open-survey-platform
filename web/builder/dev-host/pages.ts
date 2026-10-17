@@ -18,6 +18,7 @@ export const PAGES = {
 	appearance: 'src/pages/appearance.ts',
 	results: 'src/pages/results.ts',
 	themes: 'src/pages/themes.ts',
+	profile: 'src/pages/profile.ts',
 	'preview-frame': 'src/pages/preview-frame.ts'
 } as const;
 
@@ -45,6 +46,7 @@ export const TITLES: Record<PageName, string> = {
 	appearance: `Appearance · ${APP}`,
 	results: `Results · ${APP}`,
 	themes: `Appearance · ${APP}`,
+	profile: `Panel profile · ${APP}`,
 	'preview-frame': `Preview · ${APP}`,
 	'dev-mock': APP,
 	'dev-cards': `Question cards · ${APP}`,
@@ -65,6 +67,7 @@ export const DESCRIPTIONS: Record<PageName, string> = {
 	settings: "A survey's settings: languages, consent, data and publishing.",
 	appearance: "A survey's look: theme, colours, font and layout.",
 	themes: "Your lab's theme library.",
+	profile: "Your lab's property panel profile: which properties researchers see, and your own.",
 	'preview-frame': 'A survey preview, as participants see it.',
 	results: "A survey's results: a chart and table per question, with filters.",
 	'dev-mock': 'The builder shell over mock data (development only).',
@@ -115,6 +118,7 @@ export function route(pathname: string, search: string, devPages: boolean): Rout
 	const path = pathname.length > 1 ? pathname.replace(/\/+$/, '') : pathname;
 	if (path === '/') return mock && devPages ? { page: 'dev-mock', mock: true } : { page: 'list' };
 	if (path === '/appearance') return { page: 'themes', mock: mock || undefined };
+	if (path === '/profile') return { page: 'profile' };
 	if (path === '/preview-frame') return { page: 'preview-frame' };
 	const s = /^\/surveys\/([^/]+)(?:\/(flow|settings|appearance|results))?$/.exec(path);
 	if (s) {
