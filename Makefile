@@ -114,7 +114,9 @@ test-postgres:
 # snapshots. Not part of `make check` (needs Playwright browsers: `pnpm -C web/builder exec
 # playwright install chromium`). Update snapshots: `make web-e2e E2E_ARGS=--update-snapshots`.
 .PHONY: web-e2e
-web-e2e:
+# sim-build first: the preview's "run simulation" needs the simulator CLI (osp-api runs it
+# as a node sidecar), which a fresh checkout (CI) hasn't built.
+web-e2e: sim-build
 	$(PNPM) -C web --filter @osp/builder exec playwright test $(E2E_ARGS)
 
 # Participant engine (task R1). Python compiles every fixture survey to a runtime plan and
