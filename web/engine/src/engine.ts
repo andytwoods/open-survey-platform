@@ -692,6 +692,7 @@ function applyEvent(plan: Plan, d: Data, ev: EngineEvent): StepResult | undefine
 				delete d.invalid[ev.item];
 			}
 			delete d.errors[ev.item];
+			dropHiddenErrors(plan, d);
 			return undefined;
 		case 'next': {
 			const page = currentPage(d);
@@ -857,6 +858,20 @@ function checkHookResolution(plan: Plan, d: Data, event: string, value: unknown)
 }
 
 type NewEvent = EngineEvent extends infer E ? (E extends EngineEvent ? Omit<E, 'seq' | 'rev'> : never) : never;
+
+/**
+ * An answer can hide another question on the page (live show-if). The error a failed Next
+ * left on it goes with it: a hidden question is never demanded (semantics §4, `required`
+ * applies only while relevant). Since SEM1's two-valued logic, clearing an answer hides
+ * questions whose `showIf` compares it (`null != 0` is false), so this case is reachable.
+ * Page-level errors (a hook's rejectPage, keyed by page id) stay.
+ */
+function dropHiddenErrors(plan: Plan, d: Data) {
+	const ids = Object.keys(d.errors).filter((id) => plan.items[id] !== undefined);
+	if (!ids.length) return;
+	const env = new Env(plan, d);
+	for (const id of ids) if (!env.relevant(id)) delete d.errors[id];
+}
 
 function commit(state: State, partial: NewEvent): { state: State; result?: StepResult } {
 	const d = clone(state.data);
