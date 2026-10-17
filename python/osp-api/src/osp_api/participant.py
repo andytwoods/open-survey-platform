@@ -119,9 +119,8 @@ class SnapshotResponse(BaseModel):
 
 class QuotaResponse(BaseModel):
     nodeId: str
-    result: Literal["open", "full", "admitted"] = Field(
-        description="The engine's words: `open` (a place is held) or `full`. `admitted` is "
-        "a deprecated alias of `open` from the first contract; this server never sends it."
+    result: Literal["open", "full"] = Field(
+        description="The engine's words: `open` (a place is held) or `full`."
     )
     replay: bool
 

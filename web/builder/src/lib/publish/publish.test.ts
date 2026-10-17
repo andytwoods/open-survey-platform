@@ -42,13 +42,7 @@ describe('links', () => {
 			'/api/surveys/s1/export/lss'
 		]);
 	});
-	it('shows the repro package only when /api/meta advertises it', () => {
-		expect(reproLink(null, 's1', 2)).toBeNull();
-		expect(reproLink({ features: {} }, 's1', 2)).toBeNull();
-		expect(reproLink({ features: { reproPackage: true } }, 's1', 2)).toBe('/api/surveys/s1/versions/2/repro-package');
-		expect(reproLink({ features: { reproPackage: '/api/repro/{surveyId}?v={version}' } }, 's1', 3)).toBe(
-			'/api/repro/s1?v=3'
-		);
-		expect(reproLink({ features: { reproPackage: 'https://evil.example' } }, 's1', 3)).toBeNull();
+	it('links the reproducibility package of the version', () => {
+		expect(reproLink('s1', 2)).toBe('/api/surveys/s1/versions/2/repro-package');
 	});
 });

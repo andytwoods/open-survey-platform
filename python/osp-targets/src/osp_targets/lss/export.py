@@ -180,6 +180,7 @@ SURVEY_FIELDS = (
 _THEMES = {
     "N": "numerical",
     "S": "shortfreetext",
+    "T": "longfreetext",
     "L": "listradio",
     "M": "multiplechoice",
     "F": "arrays/array",
@@ -850,7 +851,7 @@ class _Exporter:
             case DecimalQuestion():
                 item.type = "N"
             case TextQuestion():
-                item.type = "S"
+                item.type = "T" if q.multiline else "S"
             case DateQuestion():
                 item.type = "D"
             case NoteQuestion():

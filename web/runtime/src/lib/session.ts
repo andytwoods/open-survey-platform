@@ -1,7 +1,7 @@
 /**
  * The participant session: engine state + local copy + network saves (runtime-design §5).
  * No survey logic: every decision is the engine's. This class only moves snapshots between
- * the engine, IndexedDB and the server, and runs the engine's effects (quota, end).
+ * the engine, IndexedDB and the server, and runs the engine's effects (quota, end, hooks).
  *
  * Data-safety rules, step by step:
  * 1. Start: seed, assignment and plan checksum go to the local store *before* the first
@@ -14,23 +14,60 @@
  *    exponentially with jitter. With storage blocked it saves on every answer (R-1).
  * 4. Resume and 409: the server copy and the local copy are compared by event log. If one
  *    log is a prefix of the other, the longer one is newer and nothing is lost. Otherwise it
- *    is a true conflict: the server copy wins and the local copy is kept (locally, and sent
- *    once with its stale base so the server stores it in its conflict log, R-2).
- * 5. Quota: idempotent per node on the server; retried until it answers, then `resolve`.
+ *    is a true conflict: the server copy wins, the page shows it with a notice (R6-6), and
+ *    the local copy is kept (locally, and sent once with its stale base so the server stores
+ *    it in its conflict log, R-2).
+ * 5. Quota: idempotent per (session, node) on the server; retried until it answers, then
+ *    `resolve`. A refresh while it is pending re-sends the same call (R6-4).
  * 6. End: the ResponseRecord is stored locally, then submitted (idempotent) until the server
  *    acknowledges. Only then does "thank you" show and the local copy go.
  * 7. `end-only`: nothing but quota checks and the final submit reaches the server.
- * 8. Consent (semantics.md §11, M5): while the consent page is shown nothing is saved to
+ * 8. No durable local copy (IndexedDB blocked, or `localCopy: memory`): the session id and
+ *    resume token are kept in the tab (`SessionPointer`), so a refresh resumes the server's
+ *    copy (every-page, R4-3) or restarts the same session with the same seed and conditions
+ *    and says so (end-only, R6-5).
+ * 9. Consent (semantics.md §11, M5): while the consent page is shown nothing is saved to
  *    the server in either mode; agree/decline/withdraw are at the end of this class.
  */
 import * as E from '@osp/engine';
 import type { Effect, PageView, Plan, Snapshot, State } from '@osp/engine';
+import type { FireOutcome, HookRunner, NextOutcome } from '@osp/hooks-sandbox';
 import { HttpError, retryable, type Api, type ResumeResponse, type SaveMode } from './api';
-import type { LocalRecord, LocalStore, SyncBackup } from './storage';
+import { fill, negotiateLanguage, ui } from './messages';
+import { MemoryStore, type LocalRecord, type LocalStore, type SessionPointer, type SyncBackup } from './storage';
 
-export type Phase = 'page' | 'pending' | 'submitting' | 'done' | 'fatal';
+export type Phase = 'page' | 'pending' | 'hook' | 'submitting' | 'done' | 'fatal';
 /** Quiet save indicator. `local`: end-only (kept on this device until submit). */
 export type NetStatus = 'saved' | 'saving' | 'offline' | 'local';
+/**
+ * A one-off message about the session itself (fixtures/FORMAT.md §3 `notice`): the server
+ * copy replaced this device's (R6-6), or a memory-only session restarted (R6-5). It stays
+ * until the participant moves to another page.
+ */
+export type Notice = 'conflict' | 'restarted' | null;
+/** Why there is no durable local copy: storage is blocked, or the survey chose memory. */
+export type MemoryReason = 'blocked' | 'chosen' | null;
+
+/** The part of `HookRunner` (`@osp/hooks-sandbox`) the session drives. */
+export type HookDriver = Pick<
+	HookRunner,
+	| 'begin'
+	| 'resume'
+	| 'answer'
+	| 'next'
+	| 'back'
+	| 'arrive'
+	| 'beforeSubmit'
+	| 'submitted'
+	| 'retry'
+	| 'setState'
+	| 'redirectUrl'
+	| 'unloading'
+	| 'dispose'
+	| 'awaitingRetry'
+>;
+/** Builds the hook runner for a plan that declares hooks (`hooks.ts`); null if it can't. */
+export type HookFactory = (plan: Plan, state: State, onState: (s: State) => void) => Promise<HookDriver | null>;
 
 export interface Env {
 	api: Api;
@@ -40,8 +77,16 @@ export interface Env {
 	setTimer: (fn: () => void, ms: number) => unknown;
 	clearTimer: (handle: unknown) => void;
 	debounceMs?: number;
+	/** Delay of the save after an input loses focus (default 250 ms). */
+	blurDelayMs?: number;
 	/** Synchronous copy written on pagehide (see storage.ts SyncBackup). */
 	backup?: SyncBackup;
+	/** Where the session is kept when there is no durable local copy (storage.ts): this tab. */
+	pointer?: SessionPointer;
+	/** The same, findable from another tab later: every-page sessions only (storage.ts). */
+	devicePointer?: SessionPointer | null;
+	/** Researcher hooks: only used when the plan declares them. */
+	hooks?: HookFactory;
 	log?: (msg: string, detail?: unknown) => void;
 }
 
@@ -50,6 +95,9 @@ export interface BootOptions {
 	/** From a resume link (`#resume=…`): continue that session, possibly on a new device. */
 	resumeToken?: string | null;
 	urlParams?: Record<string, string>;
+	/** The participant's languages, most preferred first (navigator.languages). */
+	languages?: readonly string[];
+	/** One preferred language (kept for callers that have only one). */
 	language?: string;
 	device?: E.Device | null;
 }
@@ -85,13 +133,25 @@ function asSnapshot(x: unknown): Snapshot | null {
 function bootError(e: unknown): BootError {
 	if (e instanceof BootError) return e;
 	if (e instanceof HttpError) {
-		if (e.status === 404) return new BootError('not-found', 'This survey link is not valid.');
-		if (e.status === 410 && e.code === 'survey.closed') return new BootError('closed', 'This survey is closed.');
-		if (e.status === 410 || e.status === 401) return new BootError('expired', 'This session has expired.');
-		if (e.status === 429) return new BootError('network', 'Too many attempts. Please try again in a minute.');
-		return new BootError('invalid', `The server refused the request (${e.code}).`);
+		if (e.status === 404) return new BootError('not-found', ui.notFound);
+		if (e.status === 410 && e.code === 'survey.closed') return new BootError('closed', ui.closed);
+		if (e.status === 410 || e.status === 401) return new BootError('expired', ui.expired);
+		if (e.status === 429) return new BootError('network', ui.tooMany);
+		return new BootError('invalid', fill(ui.refused, { code: e.code }));
 	}
-	return new BootError('network', 'Could not reach the survey server. Check your connection and try again.');
+	return new BootError('network', ui.unreachable);
+}
+
+/** The participant's language for this plan (R4-4): `de-DE` → `de`, else the default. */
+export function sessionLanguage(plan: Plan, o: Pick<BootOptions, 'languages' | 'language'>): string {
+	const prefs = o.languages?.length ? o.languages : o.language ? [o.language] : [];
+	return negotiateLanguage(prefs, plan.languages, plan.defaultLanguage);
+}
+
+/** No durable local copy for this plan: end-only with `localCopy: memory` (§5.0). */
+function memoryChosen(plan: Plan, rec: Pick<LocalRecord, 'saveMode' | 'localCopy'>): boolean {
+	// The server's word (start/resume `localCopy`) first, else the plan's setting.
+	return rec.saveMode === 'end-only' && (rec.localCopy ?? plan.settings?.localCopy) === 'memory';
 }
 
 export class Session {
@@ -103,6 +163,16 @@ export class Session {
 	fatal: string | null = null;
 	/** The engine state changed underneath the page (server copy adopted): refocus. */
 	replaced = 0;
+	notice: Notice = null;
+	memory: MemoryReason;
+	/**
+	 * Errors come only from a `next` on the page shown (fixtures/FORMAT.md §3): a page
+	 * restored by refresh, resume or another device's copy shows none until the next `next`
+	 * (R4-2), although the restored engine state still holds the last ones.
+	 */
+	errorsHidden = false;
+	/** A flow-critical hook failed: the page shows a retry prompt (runtime-design §7a). */
+	hookRetry = false;
 
 	private env: Env;
 	private listeners = new Set<() => void>();
@@ -119,14 +189,19 @@ export class Session {
 	private gone = false;
 	private closed = false;
 	private effectRunning = false;
+	private hooks: HookDriver | null = null;
+	/** The session started on this load (hooks `begin`), rather than resumed (`resume`). */
+	private fresh: boolean;
 
-	constructor(env: Env, rec: LocalRecord, plan: Plan, state: State, reconciled: boolean) {
+	constructor(env: Env, rec: LocalRecord, plan: Plan, state: State, reconciled: boolean, fresh = false) {
 		this.env = env;
 		this.rec = rec;
 		this.plan = plan;
 		this.state = state;
 		this.reconciled = reconciled;
+		this.fresh = fresh;
 		this.net = rec.saveMode === 'end-only' ? 'local' : 'saved';
+		this.memory = env.store.kind === 'memory' ? (memoryChosen(plan, rec) ? 'chosen' : 'blocked') : null;
 	}
 
 	get saveMode(): SaveMode {
@@ -135,18 +210,35 @@ export class Session {
 	get storageBlocked(): boolean {
 		return this.env.store.kind === 'memory';
 	}
+	/** A save is on its way to the server (not waiting out a backoff while offline). */
+	get saving(): boolean {
+		return this.net === 'saving' || (this.pumping && this.net !== 'offline');
+	}
+	/** The end redirect a hook chose (declared template, filled and checked), if any. */
+	get redirectUrl(): string | null {
+		return this.phase === 'done' ? (this.hooks?.redirectUrl() ?? null) : null;
+	}
+
 	/** After boot: reconcile with the server (every-page resume), then run pending effects. */
 	async run(): Promise<void> {
 		if (this.phase === 'done') return;
 		if (!this.reconciled) await this.resumeSync();
 		else {
+			await this.startHooks();
 			await this.runEffects();
 			void this.pump();
 		}
 	}
 
 	view(): PageView {
-		return E.view(this.state);
+		const v = E.view(this.state);
+		if (!this.errorsHidden) return v;
+		return {
+			...v,
+			errors: {},
+			focus: v.focus === 'error-summary' ? 'heading' : v.focus,
+			items: v.items.map((i) => (i.error ? { ...i, error: null } : i))
+		};
 	}
 	subscribe(fn: () => void): () => void {
 		this.listeners.add(fn);
@@ -192,35 +284,128 @@ export class Session {
 		return written;
 	}
 
+	/** The participant moved to another page: one-off notices are done. */
+	private moved(before: string) {
+		if (`${E.view(this.state).page}#${this.state.data.history.length}` !== before) this.notice = null;
+	}
+	private where(): string {
+		return `${E.view(this.state).page}#${this.state.data.history.length}`;
+	}
+
 	// -- participant actions ---------------------------------------------------------
 
 	answer(itemId: string, value: unknown) {
 		if (this.phase !== 'page') return;
+		if (this.hooks) {
+			// The runner applies the answer synchronously (onState commits it), then runs
+			// `onAnswer` if the hook reads this question.
+			void this.hooks.answer(itemId, value).then((o) => this.afterHook(o));
+			return;
+		}
 		const next = E.answer(this.state, itemId, value);
 		if (next === this.state) return;
 		// R-1: with no local storage, every answer goes to the server straight away.
 		this.commit(next, this.storageBlocked ? 'now' : 'debounce');
 	}
 
-	/** An input lost focus: save what was typed. */
+	/**
+	 * An input lost focus: save what was typed, after a moment. Focus usually leaves the last
+	 * field for Next or Back; their save (with the page change) then replaces this one, so the
+	 * server sees one write and a stale device learns of the conflict on that write (R6-6).
+	 */
 	blur() {
-		if (this.rec.snapshot && this.rec.snapshot.revision !== this.rec.syncedEngineRev) this.saveNow();
+		if (!this.rec.snapshot || this.rec.snapshot.revision === this.rec.syncedEngineRev) return;
+		if (this.saveMode !== 'every-page' || !this.reconciled || E.awaitingConsent(this.state)) return;
+		// Say so at once: whoever waits for "Saved" (leaving for another device) waits for it.
+		if (this.net !== 'offline') this.setNet('saving');
+		this.scheduleSave(this.env.blurDelayMs ?? 250);
 	}
 
-	next(): E.StepResult['outcome'] | null {
+	/** Submit the page. Resolves to the engine's outcome (`invalid`: focus the error summary). */
+	async next(): Promise<E.StepResult['outcome'] | null> {
 		if (this.phase !== 'page') return null;
+		const before = this.where();
+		this.errorsHidden = false;
+		if (this.hooks) return this.nextWithHooks(before);
 		const r = E.next(this.state);
 		this.commit(r.state, 'now');
+		this.moved(before);
+		this.emit();
 		if (r.effect) void this.runEffects();
 		return r.result.outcome;
 	}
 
-	back(): boolean {
+	private async nextWithHooks(before: string): Promise<E.StepResult['outcome'] | null> {
+		this.phase = 'hook';
+		this.emit();
+		let r: NextOutcome;
+		try {
+			r = await this.hooks!.next();
+		} finally {
+			if (this.phase === 'hook') this.phase = 'page';
+		}
+		this.moved(before);
+		this.saveNow();
+		this.emit();
+		switch (r.outcome) {
+			case 'invalid':
+			case 'rejected':
+				return 'invalid';
+			case 'hook':
+				this.afterHook(r.hook);
+				return null;
+			case 'effect':
+			case 'ended':
+				await this.runEffects();
+				return r.outcome === 'ended' ? 'ended' : 'effect';
+			default:
+				return 'advanced';
+		}
+	}
+
+	async back(): Promise<boolean> {
 		if (this.phase !== 'page') return false;
+		const before = this.where();
+		if (this.hooks) {
+			this.phase = 'hook';
+			this.emit();
+			let o: FireOutcome;
+			try {
+				o = await this.hooks.back();
+			} finally {
+				if (this.phase === 'hook') this.phase = 'page';
+			}
+			const moved = o.outcome !== 'refused';
+			this.moved(before);
+			this.saveNow();
+			this.afterHook(o);
+			this.emit();
+			return moved;
+		}
 		const next = E.back(this.state);
 		if (next === this.state) return false;
+		this.errorsHidden = false;
 		this.commit(next, 'now');
+		this.moved(before);
+		this.emit();
 		return true;
+	}
+
+	/** The participant pressed "Try again" after a flow-critical hook failed. */
+	async retryHook(): Promise<void> {
+		if (!this.hooks || !this.hookRetry) return;
+		this.hookRetry = false;
+		this.phase = 'hook';
+		this.emit();
+		let o: FireOutcome;
+		try {
+			o = await this.hooks.retry();
+		} finally {
+			if (this.phase === 'hook') this.phase = 'page';
+		}
+		this.afterHook(o);
+		this.saveNow();
+		await this.runEffects();
 	}
 
 	/**
@@ -232,6 +417,11 @@ export class Session {
 		this.env.backup?.write(this.rec.slug, this.rec.sessionId, this.rec.snapshot);
 	}
 
+	/** A clean unload (refresh, close): a hook in flight runs again on reload (§7a). */
+	unloading() {
+		this.hooks?.unloading();
+	}
+
 	/** The page is being hidden or unloaded: last-chance save with `keepalive`. */
 	flushKeepalive() {
 		if (this.saveMode !== 'every-page' || this.closed || !this.reconciled) return;
@@ -240,8 +430,18 @@ export class Session {
 		if (!snap) return;
 		if (!this.rec.inflight && snap.revision === this.rec.syncedEngineRev) return;
 		// A save is on the wire (sent with keepalive): a duplicate would only arrive late as a
-		// stale write and clutter the server's conflict log.
-		if (this.sending) return;
+		// stale write and clutter the server's conflict log. But if the page has moved on
+		// since (a refresh right after typing), chain the newest copy on the revision that
+		// save will create, so the last keystrokes are not lost (R4-3, storage blocked).
+		if (this.sending) {
+			const wire = this.rec.inflight;
+			if (wire && wire.snapshot.revision !== snap.revision && isPrefix(wire.snapshot, snap)) {
+				this.env.api
+					.save(this.rec.sessionId, this.rec.resumeToken, wire.base + 1, snap, { keepalive: true })
+					.catch(() => undefined);
+			}
+			return;
+		}
 		if (!this.rec.inflight) {
 			this.rec.inflight = { base: this.rec.serverRevision, snapshot: snap };
 			void this.persist();
@@ -263,15 +463,59 @@ export class Session {
 		}
 	}
 
+	// -- hooks (runtime-design §7a) ----------------------------------------------------
+
+	/** The runner changed the state (an answer, next, back or a hook result): keep it. */
+	private fromHooks(s: State) {
+		if (s === this.state) return;
+		this.commit(s, this.storageBlocked ? 'now' : 'debounce');
+	}
+
+	private async startHooks() {
+		if (!this.plan.hooks || !this.env.hooks || this.hooks || this.closed) return;
+		// No researcher code runs before the participant agrees (semantics §11).
+		if (E.awaitingConsent(this.state)) return;
+		try {
+			this.hooks = await this.env.hooks(this.plan, this.state, (s) => this.fromHooks(s));
+		} catch (e) {
+			this.log('hooks unavailable', e);
+			this.hooks = null;
+			this.fail(ui.hooksFailed);
+			return;
+		}
+		if (!this.hooks) return;
+		this.phase = 'hook';
+		this.emit();
+		let o: FireOutcome;
+		try {
+			o = this.fresh ? await this.hooks.begin() : await this.hooks.resume();
+		} finally {
+			if (this.phase === 'hook') this.phase = 'page';
+		}
+		this.afterHook(o);
+		this.saveNow();
+		this.emit();
+	}
+
+	private afterHook(o: FireOutcome) {
+		if (o.outcome === 'retry') {
+			this.hookRetry = true;
+			this.emit();
+		} else if (o.outcome === 'hook-failed') {
+			// The engine ended the session `hook-failed`: submit what there is.
+			void this.runEffects();
+		}
+	}
+
 	// -- network save (every-page) ----------------------------------------------------
 
-	private scheduleSave() {
+	private scheduleSave(ms = this.env.debounceMs ?? 3000) {
 		if (this.saveMode !== 'every-page') return;
 		if (this.debounce !== null) this.env.clearTimer(this.debounce);
 		this.debounce = this.env.setTimer(() => {
 			this.debounce = null;
 			void this.pump();
-		}, this.env.debounceMs ?? 3000);
+		}, ms);
 	}
 
 	saveNow() {
@@ -360,6 +604,8 @@ export class Session {
 			const rev = typeof e.body.revision === 'number' ? e.body.revision : this.rec.serverRevision;
 			this.reconcile(rev, asSnapshot(e.body.snapshot), body.snapshot);
 			await this.persist();
+			// Whatever the engine was waiting for in the adopted copy (a quota check, the end).
+			if (!this.effectRunning) void this.runEffects();
 			return true;
 		}
 		if (e instanceof HttpError && e.code === 'session.submitted') {
@@ -368,7 +614,7 @@ export class Session {
 			return false;
 		}
 		if (e instanceof HttpError && (e.status === 401 || e.status === 410)) {
-			this.fail('This session has expired, so your answers can no longer be saved.');
+			this.fail(ui.expiredSave);
 			return false;
 		}
 		if (!retryable(e)) {
@@ -403,14 +649,19 @@ export class Session {
 			this.rec.syncedEngineRev = -1;
 			return;
 		}
-		if (local && !isPrefix(local, server)) {
-			this.rec.conflicts.push({ at: this.env.now(), serverRevision: rev, snapshot: sent ?? local });
+		const conflict = !!local && !isPrefix(local, server);
+		if (conflict) {
+			this.rec.conflicts.push({ at: this.env.now(), serverRevision: rev, snapshot: sent ?? local! });
 			this.log('conflict: kept the server copy, local copy kept for the record');
 		}
 		this.state = restored;
+		this.hooks?.setState(restored);
 		this.rec.snapshot = server;
 		this.rec.serverRevision = rev;
 		this.rec.syncedEngineRev = server.revision;
+		this.errorsHidden = true;
+		// R6-6: this device lost; it now shows the server's page and values, and says why.
+		if (conflict) this.notice = 'conflict';
 		this.replaced++;
 		this.emit();
 	}
@@ -424,7 +675,7 @@ export class Session {
 				r = await this.env.api.resume(this.rec.resumeToken);
 			} catch (e) {
 				if (e instanceof HttpError && (e.status === 401 || e.status === 410)) {
-					this.fail('This session has expired, so your answers can no longer be saved.');
+					this.fail(ui.expiredSave);
 					return;
 				}
 				this.setNet('offline');
@@ -451,6 +702,7 @@ export class Session {
 		this.reconciled = true;
 		await this.persist();
 		this.emit();
+		await this.startHooks();
 		await this.runEffects();
 		void this.pump();
 	}
@@ -489,17 +741,26 @@ export class Session {
 	private async runQuota(effect: Effect & { kind: 'quota' }): Promise<boolean> {
 		for (;;) {
 			try {
+				// Idempotent per (session, node): a resend after a refresh or a lost reply gets
+				// the result the server recorded the first time (R6-4).
 				const r = await this.env.api.quota(this.rec.sessionId, this.rec.resumeToken, effect.nodeId);
 				this.attempt = 0;
 				if (this.saveMode === 'every-page') this.setNet(this.dirty() ? 'saving' : 'saved');
 				const value = r.result === 'full' ? 'full' : 'open';
+				const before = this.where();
 				const next = E.resolve(this.state, effect, value);
 				await this.commit(next, 'now');
+				this.moved(before);
+				if (this.hooks) {
+					this.hooks.setState(next);
+					const o = await this.hooks.arrive();
+					this.afterHook(o);
+				}
 				return true;
 			} catch (e) {
 				if (!retryable(e)) {
 					if (e instanceof HttpError && e.code === 'session.submitted') await this.finish();
-					else this.fail('Something went wrong checking your place in this survey. Please contact the research team.');
+					else this.fail(ui.quotaFailed);
 					return false;
 				}
 				this.setNet('offline');
@@ -511,6 +772,8 @@ export class Session {
 	private async submit(): Promise<void> {
 		this.phase = 'submitting';
 		if (!this.rec.submitting) {
+			// `onBeforeSubmit` first: what it records (paradata, variables) is in the record.
+			if (this.hooks) this.afterHook(await this.hooks.beforeSubmit());
 			this.rec.submitting = E.result(this.state);
 			await this.persist();
 		}
@@ -526,9 +789,8 @@ export class Session {
 					break;
 				}
 				if (!retryable(e)) {
-					if (e instanceof HttpError && (e.status === 401 || e.status === 410))
-						this.fail('This session has expired, so your answers could not be submitted.');
-					else this.fail('Your answers could not be submitted. Please keep this page open and contact the research team.');
+					if (e instanceof HttpError && (e.status === 401 || e.status === 410)) this.fail(ui.expiredSubmit);
+					else this.fail(ui.submitFailed);
 					return;
 				}
 				this.setNet('offline');
@@ -536,6 +798,8 @@ export class Session {
 			}
 		}
 		await this.finish();
+		// Side effects to external systems belong after the acknowledgement (§7a).
+		if (this.hooks) void this.hooks.submitted().catch(() => undefined);
 	}
 
 	/** The server has the response: say thank you, delete the local copy, stop saving. */
@@ -544,7 +808,10 @@ export class Session {
 		if (this.debounce !== null) this.env.clearTimer(this.debounce);
 		this.wake();
 		this.phase = 'done';
+		this.notice = null;
 		this.env.backup?.take(this.rec.slug, this.rec.sessionId);
+		this.env.pointer?.clear(this.rec.slug);
+		this.env.devicePointer?.clear(this.rec.slug);
 		this.net = 'saved';
 		this.gone = true;
 		await this.writes;
@@ -610,6 +877,7 @@ export class Session {
 		}
 		if (this.saveMode === 'every-page') this.setNet('saved');
 		await this.commit(E.agree(this.state), 'now');
+		await this.startHooks(); // hooks start with the flow, after agreement (§11)
 		return true;
 	}
 
@@ -643,6 +911,7 @@ export class Session {
 		this.closed = true;
 		if (this.debounce !== null) this.env.clearTimer(this.debounce);
 		this.wake();
+		this.hooks?.dispose();
 	}
 }
 
@@ -667,17 +936,17 @@ async function loadPlan(env: Env, url: string, checksum: string, cached: Plan | 
 	// The checksum is recomputed here, not trusted from the file (§5.1).
 	const p = plan as Plan;
 	if (!p || typeof p !== 'object' || p.checksum !== checksum || E.planChecksum(p) !== checksum) {
-		throw new BootError('plan', 'The survey could not be loaded (its checksum does not match).');
+		throw new BootError('plan', ui.planChecksum);
 	}
 	try {
 		E.checkPlan(p);
 	} catch {
-		throw new BootError('plan', 'This survey needs a newer version of the survey app.');
+		throw new BootError('plan', ui.planNewer);
 	}
 	return p;
 }
 
-function newRecord(slug: string, r: { sessionId: string; resumeToken: string; sessionSeed: number; assigned: Record<string, unknown>; planUrl: string; planChecksum: string; saveMode: SaveMode }, now: number): LocalRecord {
+function newRecord(slug: string, r: { sessionId: string; resumeToken: string; sessionSeed: number; assigned: Record<string, unknown>; planUrl: string; planChecksum: string; saveMode: SaveMode; localCopy?: 'browser' | 'memory' }, now: number): LocalRecord {
 	return {
 		slug,
 		sessionId: r.sessionId,
@@ -687,6 +956,7 @@ function newRecord(slug: string, r: { sessionId: string; resumeToken: string; se
 		planUrl: r.planUrl,
 		planChecksum: r.planChecksum,
 		saveMode: r.saveMode,
+		...(r.localCopy ? { localCopy: r.localCopy } : {}),
 		plan: null,
 		snapshot: null,
 		serverRevision: 0,
@@ -704,10 +974,52 @@ function startEngine(env: Env, plan: Plan, rec: LocalRecord, o: BootOptions): St
 		sessionSeed: rec.sessionSeed,
 		assigned: rec.assigned,
 		clock: env.now,
-		language: o.language,
+		language: sessionLanguage(plan, o),
 		device: o.device ?? null,
 		urlParams: o.urlParams ?? {},
 		sessionId: rec.sessionId
+	});
+}
+
+/**
+ * R6-5: an end-only session whose only copy was in memory, after a refresh: the engine's
+ * `restart()` of the original start (same seed, conditions, language, device, URL
+ * parameters). Without the start event (sessionStorage blocked) the same is rebuilt from
+ * the server's seed and conditions.
+ */
+function restartEngine(env: Env, plan: Plan, rec: LocalRecord, o: BootOptions, start: unknown): State {
+	const ev = start as E.EngineEvent | undefined;
+	if (ev && ev.type === 'start' && ev.sessionSeed === rec.sessionSeed && ev.sessionId === rec.sessionId) {
+		const lost = E.replay(plan, [ev], { clock: env.now });
+		if (E.isState(lost)) return E.restart(lost, { clock: env.now });
+	}
+	return E.restart(startEngine(env, plan, rec, o), { clock: env.now });
+}
+
+/**
+ * The store this session keeps its copy in: the durable one, unless the survey chose
+ * `localCopy: memory` (then nothing is kept beyond this window, §5.0).
+ */
+async function storeFor(env: Env, plan: Plan, rec: LocalRecord): Promise<Env> {
+	if (env.store.kind === 'memory' || !memoryChosen(plan, rec)) return env;
+	try {
+		await env.store.delete(rec.slug);
+	} catch {
+		/* best effort */
+	}
+	return { ...env, store: new MemoryStore() };
+}
+
+/** No durable copy: remember where the session is, so a refresh can find it (R4-3). */
+function remember(env: Env, rec: LocalRecord, state: State) {
+	if (env.store.kind !== 'memory') return;
+	const pointer = rec.saveMode === 'every-page' ? (env.devicePointer ?? env.pointer) : env.pointer;
+	if (!pointer) return;
+	const first = state.data.events[0];
+	pointer.set(rec.slug, {
+		sessionId: rec.sessionId,
+		resumeToken: rec.resumeToken,
+		...(rec.saveMode === 'end-only' && first?.type === 'start' ? { start: first } : {})
 	});
 }
 
@@ -724,33 +1036,59 @@ export async function boot(env: Env, o: BootOptions): Promise<Session> {
 	let rec = (await env.store.get(o.slug)) ?? null;
 	if (rec && o.resumeToken && rec.resumeToken !== o.resumeToken) rec = null; // the link wins
 
+	// No local copy, no link: this tab may still know its session (memory-only, R4-3/R6-5).
+	let pointerStart: unknown;
+	let fromPointer = false;
+	if (!rec && !o.resumeToken && (env.pointer || env.devicePointer)) {
+		const p = env.pointer?.get(o.slug) ?? env.devicePointer?.get(o.slug) ?? null;
+		if (p) {
+			o = { ...o, resumeToken: p.resumeToken };
+			pointerStart = p.start;
+			fromPointer = true;
+		}
+	}
+
 	// A resume link on a device without a local copy: the server copy is the truth.
 	if (!rec && o.resumeToken) {
 		let r: ResumeResponse;
 		try {
 			r = await withRetry(env, () => env.api.resume(o.resumeToken!));
 		} catch (e) {
+			if (fromPointer) {
+				env.pointer?.clear(o.slug);
+				env.devicePointer?.clear(o.slug);
+			}
 			throw bootError(e);
 		}
 		rec = newRecord(o.slug, { ...r, resumeToken: o.resumeToken }, env.now());
 		await env.store.put(rec);
 		const plan = await loadPlan(env, r.planUrl, r.planChecksum, null).catch((e) => Promise.reject(bootError(e)));
 		rec.plan = plan;
+		const senv = await storeFor(env, plan, rec);
 		const server = asSnapshot(r.snapshot);
 		let state: State;
+		let restarted = false;
 		if (server) {
 			const restored = E.restore(plan, server, { clock: env.now });
-			if (!E.isState(restored)) throw new BootError('invalid', 'The saved answers could not be restored.');
+			if (!E.isState(restored)) throw new BootError('invalid', ui.restoreFailed);
 			state = restored;
 			rec.snapshot = server;
 			rec.syncedEngineRev = server.revision;
+		} else if (fromPointer && rec.saveMode === 'end-only' && !r.submitted) {
+			// The copy was in memory and the refresh lost it (R6-5).
+			state = restartEngine(senv, plan, rec, o, pointerStart);
+			rec.snapshot = E.snapshot(state);
+			restarted = true;
 		} else {
-			state = startEngine(env, plan, rec, o);
+			state = startEngine(senv, plan, rec, o);
 			rec.snapshot = E.snapshot(state);
 		}
 		rec.serverRevision = r.revision;
-		await env.store.put(rec);
-		const s = new Session(env, rec, plan, state, true);
+		await senv.store.put(rec);
+		remember(senv, rec, state);
+		const s = new Session(senv, rec, plan, state, true, !server);
+		s.errorsHidden = !!server;
+		if (restarted) s.notice = 'restarted';
 		if (r.submitted) await s.finish();
 		return s;
 	}
@@ -767,11 +1105,12 @@ export async function boot(env: Env, o: BootOptions): Promise<Session> {
 		await env.store.put(rec); // seed + assignment + checksum, before anything renders
 		const plan = await loadPlan(env, st.planUrl, st.planChecksum, null).catch((e) => Promise.reject(bootError(e)));
 		rec.plan = plan;
-		const state = startEngine(env, plan, rec, o);
+		const senv = await storeFor(env, plan, rec);
+		const state = startEngine(senv, plan, rec, o);
 		rec.snapshot = E.snapshot(state);
-		await env.store.put(rec);
-		const s = new Session(env, rec, plan, state, true);
-		return s;
+		await senv.store.put(rec);
+		remember(senv, rec, state);
+		return new Session(senv, rec, plan, state, true, true);
 	}
 
 	// A local copy exists (refresh, tab killed, came back later).
@@ -782,12 +1121,17 @@ export async function boot(env: Env, o: BootOptions): Promise<Session> {
 		rec.snapshot = last; // the pagehide copy is newer than the last IndexedDB write
 	}
 	let state: State;
+	let restored = false;
 	const local = rec.snapshot ? E.restore(plan, rec.snapshot, { clock: env.now }) : null;
-	if (local && E.isState(local)) state = local;
-	else {
+	if (local && E.isState(local)) {
+		state = local;
+		restored = true;
+	} else {
 		state = startEngine(env, plan, rec, o);
 		rec.snapshot = E.snapshot(state);
 	}
 	await env.store.put(rec);
-	return new Session(env, rec, plan, state, rec.saveMode !== 'every-page');
+	const s = new Session(env, rec, plan, state, rec.saveMode !== 'every-page', !restored);
+	s.errorsHidden = restored;
+	return s;
 }

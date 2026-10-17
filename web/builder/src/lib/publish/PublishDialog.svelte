@@ -35,7 +35,7 @@
 				number: number;
 				link: string;
 				warnings: PublishProblem[];
-				repro: string | null;
+				repro: string;
 		  };
 
 	let phase = $state<Phase>({ kind: 'idle' });
@@ -46,15 +46,6 @@
 		if (open && !wasOpen) void publish();
 		wasOpen = open;
 	});
-
-	async function meta(): Promise<unknown> {
-		try {
-			const r = await fetch('/api/meta', { credentials: 'same-origin' });
-			return r.ok ? await r.json() : null;
-		} catch {
-			return null;
-		}
-	}
 
 	async function publish() {
 		phase = { kind: 'publishing' };
@@ -73,7 +64,7 @@
 					number: data.number,
 					link: participantLink(location.origin, data.slug),
 					warnings,
-					repro: reproLink(await meta(), store.surveyId, data.number)
+					repro: reproLink(store.surveyId, data.number)
 				};
 				announce(`Published version ${data.number}.`);
 				return;
@@ -170,12 +161,8 @@
 					<!-- eslint-disable-next-line svelte/no-navigation-without-resolve -- API download -->
 					<li><a href={x.href} download><Download size={14} aria-hidden="true" />{x.label}</a> <span>{x.description}</span></li>
 				{/each}
-				{#if s.repro}
-					<!-- eslint-disable-next-line svelte/no-navigation-without-resolve -- API download -->
-					<li><a href={s.repro} download><Download size={14} aria-hidden="true" />Reproducibility package</a> <span>Version {s.number}</span></li>
-				{:else}
-					<li class="muted">Reproducibility package: not available on this server yet.</li>
-				{/if}
+				<!-- eslint-disable-next-line svelte/no-navigation-without-resolve -- API download -->
+				<li><a href={s.repro} download><Download size={14} aria-hidden="true" />Reproducibility package</a> <span>Version {s.number}</span></li>
 			</ul>
 		</div>
 	{/if}

@@ -35,4 +35,17 @@ book = codebook(v)  # book.markdown, book.data (JSON)
 - **Versions:** `export_csv_combined` / `export_json_combined` / `codebook_combined` union the columns with `_version`; a question whose type or choice codes changed between versions is split into per-version `<var>_v<N>` columns (M2-3), and the codebook says so.
 - **Tests:** golden files in `tests/data/golden/` from engine records in `tests/data/records/` (regenerate those with `node --experimental-transform-types python/osp-targets/tests/data/dump_records.ts` after `make engine-fixtures`; goldens with `OSP_UPDATE_GOLDEN=1`).
 
+## Reproducibility package (`osp_targets.repro`, task M3)
+
+```python
+from osp_targets.repro import ReproData, ReproInputs, ReproKit, build_repro_package
+
+pkg = build_repro_package(ReproInputs(survey, survey_id, 3, checksum, plan, kit, data=None))
+pkg.content, pkg.filename, pkg.files  # deterministic zip bytes (same inputs, same bytes)
+```
+
+- **Contents:** `README.md` (versions, checksums, verify/replay steps, methods text), `LICENSE.md` (platform code MIT; survey content under `metadata.license`), `manifest.json`, `checksums.sha256` (every other file; `sha256sum -c`), `survey/{survey,plan,runtime-config}.json`, `exports/survey.{xlsx,lss}` + diagnostics JSON, and `replay/`. With `data`: `data/codebook.{md,json}`, `data/responses.{csv,json}` (JSON with event logs).
+- **Replay kit** (`repro/kit/`, copied verbatim): `replay.py` (stdlib + the vendored `osp_engine/random.py`) recomputes every recorded order and assignment from the seed and plan; `replay.mjs` replays every event log through `engine.js` (`make engine-bundle`) and compares the final state with the stored response. Both exit 1 on any mismatch.
+- Pure: the caller (`osp_app.repro`) reads the kit, the PRNG source and the bundle and passes bytes. Endpoint: `GET /api/surveys/{id}/versions/{v}/repro-package[?data=true]`.
+
 Internal package; not published.

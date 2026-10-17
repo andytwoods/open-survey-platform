@@ -39,7 +39,7 @@ from fastapi.staticfiles import StaticFiles
 from osp_api.app import create_app
 from osp_app import build_services
 from osp_app.runtime_repo import StoreParticipantRepo
-from osp_cli.main import seed_fixture
+from osp_cli.main import DEFAULT_LAB, researcher, seed_fixture
 from osp_engine.random import MAX_SEED
 from osp_runtime import TokenBucket
 from osp_store import Keyring, Store, TenantContext, create_engine, generate_key, migrate
@@ -104,6 +104,15 @@ def quota_variants(folder: Path) -> list[dict[str, str]]:
     return list(seen.values())
 
 
+def fixture_version(folder: Path) -> int:
+    """The ``version`` a fixture survey was written for (1 if none)."""
+    try:
+        v = json.loads((folder / "survey.json").read_text("utf-8")).get("version")
+    except (OSError, ValueError):
+        return 1
+    return v if isinstance(v, int) and v > 1 else 1
+
+
 def variant_key(quotas: dict[str, str]) -> str:
     return json.dumps(quotas, sort_keys=True, separators=(",", ":"))
 
@@ -148,6 +157,16 @@ def build(db: Path) -> FastAPI:
                 entry["error"] = f"{type(exc).__name__}: {exc}"
                 break
             tenant_id = seeded["tenantId"]
+            # The plan's seed version is the published number (semantics R1-1). A fixture
+            # written for version N (e.g. 20: "version": 3) is published N times, so its
+            # orders and `surveyVersion` match the engine runner, which reads the file.
+            want = fixture_version(folder)
+            if want > seeded["versionNumber"]:
+                actor = researcher(services, seeded["email"], seeded["password"], DEFAULT_LAB)
+                for _ in range(want - seeded["versionNumber"]):
+                    services.builder.run(
+                        "survey.publish", actor, survey_id=seeded["surveyId"], save_mode=mode
+                    )
             pub = s._repo.find_publication(seeded["slug"])
             qc = t.quota_counters.c
             with engine.begin() as conn:

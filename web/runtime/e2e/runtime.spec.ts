@@ -279,3 +279,45 @@ test('every pilot type renders accessibly (all-types fixture)', async ({ page })
 	const overflow = await page.evaluate(() => document.documentElement.scrollWidth - document.documentElement.clientWidth);
 	expect(overflow).toBeLessThanOrEqual(0);
 });
+
+test('researcher hooks run sandboxed: rejectPage blocks Next, onBeforeSubmit paradata is stored', async ({ page, request }) => {
+	await openSurvey(page, 'hooks');
+	const sid = await sessionId(page);
+	// The page CSP allows the frame script by hash and blob: workers only (runtime-design §7a).
+	const csp = await page.locator('meta[http-equiv="Content-Security-Policy"]').getAttribute('content');
+	expect(csp).toMatch(/script-src 'self' 'sha256-[A-Za-z0-9+/=]+'/);
+	expect(csp).toContain('worker-src blob:');
+	await flowPages[0]!(page);
+	await next(page);
+	await onPage(page, 2);
+	await page.getByLabel('How old are you?').fill('99');
+	await page.getByLabel('What should we call you?').fill('Sam');
+	await next(page);
+	await expect(page.locator('iframe[title="hooks"]')).toHaveAttribute('sandbox', 'allow-scripts');
+	const summary = page.getByTestId('error-summary');
+	await expect(summary).toBeFocused();
+	await expect(summary).toContainText('Hook says: not 99.');
+	await onPage(page, 2);
+	await flowPages[1]!(page);
+	await next(page);
+	await onPage(page, 3);
+	await flowPages[2]!(page);
+	await next(page);
+	await onPage(page, 4);
+	await flowPages[3]!(page);
+	await next(page);
+	await thanks(page);
+	const r = await request.get(`/__test/sessions/${sid}`);
+	const s = (await r.json()) as { record: { hooks?: { paradata: Array<{ key: string; value: unknown }> } } };
+	expect(s.record.hooks?.paradata).toEqual([expect.objectContaining({ key: 'hooked', value: true })]);
+});
+
+test.describe('German browser (de-DE), English-only survey', () => {
+	test.use({ locale: 'de-DE' });
+	test('falls back to the plan default language; app strings follow the session language', async ({ page }) => {
+		await openSurvey(page, 'flow');
+		await onPage(page, 1);
+		await expect(page.getByRole('button', { name: 'Next' })).toBeVisible();
+		expect(await page.locator('main').getAttribute('lang')).toBe('en');
+	});
+});

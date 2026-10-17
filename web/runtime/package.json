@@ -5,6 +5,13 @@
 	"license": "MIT",
 	"description": "Participant app: Svelte 5 + Vite, static. Runs @osp/engine in the browser; the server only saves.",
 	"type": "module",
+	"exports": {
+		"./preview": {
+			"types": "./src/preview.ts",
+			"svelte": "./src/preview.ts",
+			"default": "./src/preview.ts"
+		}
+	},
 	"scripts": {
 		"dev": "vite",
 		"build": "vite build",
@@ -14,6 +21,7 @@
 	},
 	"dependencies": {
 		"@osp/engine": "workspace:*",
+		"@osp/hooks-sandbox": "workspace:*",
 		"@osp/ui-components": "workspace:*"
 	},
 	"devDependencies": {

@@ -242,6 +242,12 @@ importers:
       '@osp/api-client':
         specifier: workspace:*
         version: link:../api-client
+      '@osp/engine':
+        specifier: workspace:*
+        version: link:../engine
+      '@osp/runtime':
+        specifier: workspace:*
+        version: link:../runtime
       '@osp/ui-components':
         specifier: workspace:*
         version: link:../ui-components
@@ -384,6 +390,9 @@ importers:
       '@osp/engine':
         specifier: workspace:*
         version: link:../engine
+      '@osp/hooks-sandbox':
+        specifier: workspace:*
+        version: link:../hooks-sandbox
       '@osp/ui-components':
         specifier: workspace:*
         version: link:../ui-components

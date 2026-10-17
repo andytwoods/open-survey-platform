@@ -34,7 +34,8 @@
             {
               "type": "text",
               "id": "t_lines",
-              "label": "Write two short lines about the sea (optional)."
+              "label": "Write two short lines about the sea (optional).",
+              "multiline": true
             }
           ]
         }

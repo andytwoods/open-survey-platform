@@ -62,17 +62,7 @@ export function exportLinks(surveyId: string): { label: string; href: string; de
 	];
 }
 
-/**
- * The reproducibility package link, if the server says it can build one. `GET /api/meta`
- * is probed (task M3 adds the package in parallel): `features.reproPackage` is `true` (the
- * expected path) or a path template with `{surveyId}` and `{version}`. Anything else: none.
- */
-export function reproLink(meta: unknown, surveyId: string, version: number): string | null {
-	const f = (meta as { features?: Record<string, unknown> } | null)?.features;
-	const v = f && typeof f === 'object' ? f.reproPackage : undefined;
-	const id = encodeURIComponent(surveyId);
-	if (v === true) return `/api/surveys/${id}/versions/${version}/repro-package`;
-	if (typeof v === 'string' && v.startsWith('/'))
-		return v.replace('{surveyId}', id).replace('{survey_id}', id).replace('{version}', String(version));
-	return null;
+/** The reproducibility package of one published version (task M3's endpoint). */
+export function reproLink(surveyId: string, version: number): string {
+	return `/api/surveys/${encodeURIComponent(surveyId)}/versions/${version}/repro-package`;
 }

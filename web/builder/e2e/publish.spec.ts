@@ -97,6 +97,9 @@ test('settings → theme → publish → the participant link shows the survey i
 	await expect(result.getByRole('button', { name: 'Copy link' })).toBeVisible();
 	await expect(result.getByRole('link', { name: 'XLSForm (.xlsx)' })).toHaveAttribute('href', /export\/xlsform$/);
 	await expect(result.getByRole('link', { name: 'LimeSurvey (.lss)' })).toHaveAttribute('href', /export\/lss$/);
+	const repro = result.getByRole('link', { name: 'Reproducibility package' });
+	await expect(repro).toHaveAttribute('href', /\/versions\/1\/repro-package$/);
+	expect((await page.request.get((await repro.getAttribute('href'))!)).status()).toBe(200);
 	expect(await axe(page)).toEqual([]);
 
 	// The participant link: consent first, in the chosen theme.

@@ -20,7 +20,10 @@ The plan (`contract/runtime-plan.schema.json`, TS types in `web/engine/src/plan.
 - carries the optional consent page (`consent`, semantics.md §11) with its version, the
   checksum of its compiled texts;
 - records `planVersion`, `engineVersion` (the engine API major the plan targets) and a
-  `checksum` (SHA-256 of the canonical JSON of the plan without `checksum`).
+  `checksum` (SHA-256 of the canonical JSON of the plan without `checksum`);
+- optionally carries the hook manifest (runtime-design.md §7a; `HookManifest` in
+  `web/hooks-sandbox/src/manifest.ts`) as top-level `hooks`, inside the checksum. Without
+  hooks the plan has no `hooks` key at all, so existing plans and checksums are unchanged.
 
 Pure: no I/O. `compile_plan` raises `PlanError` only for a survey `osp_spec` rejects;
 `compile_survey` never raises and returns diagnostics instead (AGENTS.md rule 3).
@@ -28,8 +31,10 @@ Pure: no I/O. `compile_plan` raises `PlanError` only for a survey `osp_spec` rej
 
 from __future__ import annotations
 
+import copy
 import hashlib
 import json
+import math
 import re
 from typing import Any
 
@@ -51,6 +56,7 @@ from osp_spec.model import (
     RandomiserNode,
     SingleQuestion,
     SliderQuestion,
+    TextQuestion,
     matrix_row_id,
     matrix_row_name,
     matrix_row_required,
@@ -58,6 +64,7 @@ from osp_spec.model import (
 
 __all__ = [
     "ENGINE_VERSION",
+    "HOOK_EVENTS",
     "PLAN_VERSION",
     "PlanError",
     "canonical_json",
@@ -67,6 +74,7 @@ __all__ = [
     "consent_version",
     "embed_theme",
     "expr_json",
+    "hooks_problem",
     "runtime_config",
     "seed_node",
     "seed_version",
@@ -275,6 +283,8 @@ class _Compiler:
             return out
         out["name"] = q.name or q.id
         out["required"] = q.required
+        if isinstance(q, TextQuestion) and q.multiline:
+            out["multiline"] = True  # only when set, so plans without it are unchanged
         if isinstance(q, MatrixQuestion):
             out["rows"] = [matrix_row_id(q.id, r.id) for r in q.rows]
             out["choices"] = self.choices(self.columns(q))
@@ -395,7 +405,7 @@ class _Compiler:
                 out["expr"] = self.expr(v.expr)
         return out
 
-    def run(self) -> Json:
+    def run(self, hooks: Json = None) -> Json:
         s = self.s
         flow = [self.node(n) for n in s.flow]
         quotas: dict[str, Json] = {}
@@ -451,6 +461,8 @@ class _Compiler:
                 "declineOutcome": c.declineOutcome,
                 "countDeclines": c.countDeclines,
             }
+        if hooks is not None:
+            plan["hooks"] = hooks  # before the checksum, so the manifest is covered by it
         plan["checksum"] = checksum(plan)
         return plan
 
@@ -465,21 +477,205 @@ def embed_theme(plan: Json, theme: Json) -> Json:
     return out
 
 
-def compile_plan(survey: Survey) -> Json:
-    """Compile a parsed survey. Raises `PlanError` if `osp_spec` reports errors."""
+# --- Hook manifest (runtime-design.md §7a) ---------------------------------------------
+
+HOOKS_FORMAT = "osp-hooks/1"
+HOOK_EVENTS = (
+    "onStart",
+    "onResume",
+    "onPageInit",
+    "onPageShown",
+    "onAnswer",
+    "onPageNext",
+    "onBack",
+    "onValidationError",
+    "onBeforeSubmit",
+    "onSubmitted",
+)
+# Limits mirrored from web/hooks-sandbox/src/manifest.ts.
+MAX_HOOK_TIMEOUT_MS = 5000
+MAX_HOOK_SOURCE_BYTES = 256 * 1024
+MAX_PAYLOAD_DEPTH = 4
+_MANIFEST_KEYS = frozenset(
+    {"format", "source", "handlers", "urlParams", "redirects", "parent", "exportsConfirmedFor"}
+)
+_PAYLOAD_KEYS = {
+    "string": {"type", "maxLength", "pattern", "enum"},
+    "number": {"type", "minimum", "maximum"},
+    "integer": {"type", "minimum", "maximum"},
+    "boolean": {"type"},
+    "null": {"type"},
+    "object": {"type", "properties", "required"},
+    "array": {"type", "items", "maxItems"},
+}
+
+type Problem = tuple[str, str]  # (JSON pointer, message)
+
+
+def _is_int(v: Any) -> bool:
+    return isinstance(v, int) and not isinstance(v, bool)
+
+
+def _is_num(v: Any) -> bool:
+    return _is_int(v) or (isinstance(v, float) and math.isfinite(v))
+
+
+def _str_list(v: Any) -> bool:
+    return isinstance(v, list) and all(isinstance(x, str) and x for x in v)
+
+
+def _str_map(v: Any) -> bool:
+    return isinstance(v, dict) and all(isinstance(k, str) and k for k in v)
+
+
+def _payload_problem(s: Any, depth: int) -> str | None:
+    """The closed JSON Schema subset `PayloadSchema` (manifest.ts)."""
+    if depth > MAX_PAYLOAD_DEPTH:
+        return "too deep"
+    if not isinstance(s, dict):
+        return "not an object"
+    t = s.get("type")
+    if not isinstance(t, str) or t not in _PAYLOAD_KEYS:
+        return "unknown type"
+    if set(s) - _PAYLOAD_KEYS[t]:
+        return "unknown keys"
+    if t == "string":
+        if "maxLength" in s and not (_is_int(s["maxLength"]) and s["maxLength"] >= 0):
+            return "bad maxLength"
+        if "pattern" in s and not isinstance(s["pattern"], str):
+            return "bad pattern"
+        enum = s.get("enum", [])
+        if not (isinstance(enum, list) and all(isinstance(x, str) for x in enum)):
+            return "bad enum"
+    elif t in ("number", "integer"):
+        if any(k in s and not _is_num(s[k]) for k in ("minimum", "maximum")):
+            return "bad bound"
+    elif t == "object":
+        props = s.get("properties")
+        if not _str_map(props):
+            return "object needs properties"
+        if "required" in s and not _str_list(s["required"]):
+            return "bad required"
+        for v in props.values():
+            if (e := _payload_problem(v, depth + 1)) is not None:
+                return e
+    elif t == "array":
+        if not (_is_int(s.get("maxItems")) and 0 <= s["maxItems"] <= 1000):
+            return "array needs maxItems"
+        return _payload_problem(s.get("items"), depth + 1)
+    return None
+
+
+def _redirect_ok(t: Any) -> bool:
+    return (
+        isinstance(t, dict)
+        and set(t) == {"url", "params"}
+        and isinstance(t["url"], str)
+        and _str_map(t["params"])
+        and all(
+            isinstance(p, dict) and set(p) <= {"pattern"} and isinstance(p.get("pattern", ""), str)
+            for p in t["params"].values()
+        )
+    )
+
+
+def _handler_problem(ev: Any, h: Any) -> Problem | None:
+    ptr = f"/hooks/handlers/{str(ev)[:64]}"
+    if ev not in HOOK_EVENTS:
+        return ptr, f"unknown hook event {str(ev)[:64]!r}"
+    if not isinstance(h, dict) or set(h) - {"reads", "writes", "timeoutMs"}:
+        return ptr, "a handler is {reads, writes, timeoutMs?}"
+    for key in ("reads", "writes"):
+        if not _str_list(h.get(key)):
+            return f"{ptr}/{key}", f"{key} must be a list of ids"
+    t = h.get("timeoutMs", 1)
+    if not (_is_int(t) and 1 <= t <= MAX_HOOK_TIMEOUT_MS):
+        return f"{ptr}/timeoutMs", f"timeoutMs must be an integer 1 to {MAX_HOOK_TIMEOUT_MS}"
+    return None
+
+
+def hooks_problem(hooks: Any) -> Problem | None:
+    """`(pointer, message)` for the first shape problem in a hook manifest, or None.
+
+    Shape only: references (reads of unknown ids, writes to non-hook variables), URL and
+    origin rules are the hook host's checks (`checkManifest` in manifest.ts).
+    """
+    if not isinstance(hooks, dict):
+        return "/hooks", "the hook manifest must be an object"
+    if unknown := sorted(str(k)[:64] for k in hooks if k not in _MANIFEST_KEYS):
+        return "/hooks", f"unknown hook manifest keys: {', '.join(unknown)[:200]}"
+    if hooks.get("format") != HOOKS_FORMAT:
+        return "/hooks/format", f"format must be {HOOKS_FORMAT!r}"
+    source = hooks.get("source")
+    if not isinstance(source, str):
+        return "/hooks/source", "source must be a string"
+    if len(source.encode("utf-8", "surrogatepass")) > MAX_HOOK_SOURCE_BYTES:
+        return "/hooks/source", f"source is larger than {MAX_HOOK_SOURCE_BYTES} bytes"
+    handlers = hooks.get("handlers")
+    if not isinstance(handlers, dict):
+        return "/hooks/handlers", "handlers must be an object"
+    for ev, h in handlers.items():
+        if (problem := _handler_problem(ev, h)) is not None:
+            return problem
+    if "urlParams" in hooks and not _str_list(hooks["urlParams"]):
+        return "/hooks/urlParams", "urlParams must be a list of names"
+    redirects = hooks.get("redirects", {})
+    if not _str_map(redirects):
+        return "/hooks/redirects", "redirects must be an object"
+    for rid, t in redirects.items():
+        if not _redirect_ok(t):
+            return f"/hooks/redirects/{rid[:64]}", "a redirect is {url, params: {name: {pattern?}}}"
+    parent = hooks.get("parent")
+    if parent is not None:
+        if not (
+            isinstance(parent, dict)
+            and set(parent) == {"origin", "messages"}
+            and isinstance(parent["origin"], str)
+            and _str_map(parent["messages"])
+        ):
+            return "/hooks/parent", "parent is null or {origin, messages}"
+        for name, schema in parent["messages"].items():
+            if (e := _payload_problem(schema, 0)) is not None:
+                return f"/hooks/parent/messages/{name[:64]}", f"message schema: {e}"
+    confirmed = hooks.get("exportsConfirmedFor")
+    if confirmed is not None and not isinstance(confirmed, str):
+        return "/hooks/exportsConfirmedFor", "exportsConfirmedFor must be a string or null"
+    try:
+        canonical_json(hooks)
+    except TypeError, ValueError, RecursionError:
+        return "/hooks", "the hook manifest must be plain JSON"
+    return None
+
+
+def _hooks_diagnostic(problem: Problem) -> Diagnostic:
+    # Not an osp-spec validator code (the survey model has no hooks): built directly.
+    return Diagnostic(
+        severity="error", code="plan.hooks_invalid", pointer=problem[0], message=problem[1]
+    )
+
+
+def compile_plan(survey: Survey, *, hooks: Json = None) -> Json:
+    """Compile a parsed survey, with an optional hook manifest (JSON shaped like
+    `HookManifest`). Raises `PlanError` if `osp_spec` reports errors or `hooks` is
+    malformed."""
+    if hooks is not None and (problem := hooks_problem(hooks)) is not None:
+        raise PlanError([_hooks_diagnostic(problem)])
     diagnostics = parse(survey.model_dump(mode="json", by_alias=True))[1]
     if has_errors(diagnostics):
         raise PlanError([d for d in diagnostics if d.severity == "error"])
-    return _Compiler(survey).run()
+    return _Compiler(survey).run(copy.deepcopy(hooks))
 
 
-def compile_survey(data: Any) -> tuple[Json | None, list[Diagnostic]]:
-    """Validate raw survey JSON and compile it. Never raises."""
+def compile_survey(data: Any, *, hooks: Json = None) -> tuple[Json | None, list[Diagnostic]]:
+    """Validate raw survey JSON and the optional hook manifest, and compile them.
+    Never raises."""
     survey, diagnostics = parse(data)
     if survey is None or has_errors(diagnostics):
         return None, diagnostics
     try:
-        return _Compiler(survey).run(), diagnostics
+        if hooks is not None and (problem := hooks_problem(hooks)) is not None:
+            return None, [*diagnostics, _hooks_diagnostic(problem)]
+        return _Compiler(survey).run(copy.deepcopy(hooks)), diagnostics
     except Exception as exc:  # never crash on input (AGENTS.md rule 3)
         from osp_spec.diagnostics import make
 

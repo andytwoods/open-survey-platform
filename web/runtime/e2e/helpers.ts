@@ -95,7 +95,7 @@ export const FLOW_EXPECTED = {
 	colours: { state: 'answered', value: ['red', 'other'] },
 	other_colour: { state: 'answered', value: 'Teal' },
 	when: { state: 'answered', value: '2026-10-01' },
-	cost: { state: 'answered', value: '3.40' },
+	cost: { state: 'answered', value: '3.4' }, // canonical decimal (semantics §2, R6-2)
 	comment: { state: 'answered', value: 'All good' }
 };
 
@@ -132,7 +132,8 @@ export async function expectFlowPage(page: Page, i: number) {
 		await expect(page.getByLabel('Which other colour?')).toHaveValue('Teal');
 	}
 	if (i === 3) {
-		await expect(page.getByLabel('What did your last coffee cost, in pounds?')).toHaveValue('3.40');
+		// As typed while on the page; the stored canonical form after a reload (R6-2).
+		await expect(page.getByLabel('What did your last coffee cost, in pounds?')).toHaveValue(/^3\.40?$/);
 		await expect(page.getByLabel('Any comment?')).toHaveValue('All good');
 	}
 }

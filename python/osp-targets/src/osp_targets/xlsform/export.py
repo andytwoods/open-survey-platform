@@ -31,6 +31,7 @@ from osp_spec.model import (
     RandomiserNode,
     SingleQuestion,
     SliderQuestion,
+    TextQuestion,
     matrix_row_id,
     matrix_row_name,
     matrix_row_required,
@@ -670,6 +671,8 @@ class _Exporter:
             row["parameters"] = f"start={q.min} end={q.max} step={q.step}"
         else:
             row["type"] = q.type
+            if isinstance(q, TextQuestion) and q.multiline:
+                row["appearance"] = "multiline"
         self._labelled(row, "label", q.label, ptr + "/label")
         self._labelled(row, "hint", q.help, ptr + "/help")
         if q.showIf is not None:

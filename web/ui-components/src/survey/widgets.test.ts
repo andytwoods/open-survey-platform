@@ -375,4 +375,17 @@ describe('Slider', () => {
 		await user.tab();
 		expect(screen.getByText('Enter a number from 0 to 10.')).toBeTruthy();
 	});
+
+	it('never snaps a typed off-step value: 7.25 on a 0.5 step is reported as typed (C2c-4)', async () => {
+		const user = userEvent.setup();
+		const onchange = vi.fn();
+		const { rerender } = render(Slider, { ...base, step: 0.5, onchange });
+		const box = screen.getByRole('textbox', { name: 'Or type a number' });
+		await user.type(box, '7.25');
+		expect(onchange).toHaveBeenLastCalledWith(7.25);
+		await rerender({ value: 7.25 });
+		await user.tab();
+		expect(onchange).toHaveBeenLastCalledWith(7.25);
+		expect((box as HTMLInputElement).value).toBe('7.25');
+	});
 });

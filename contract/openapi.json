@@ -1846,6 +1846,56 @@
         "title": "PathSpace",
         "type": "object"
       },
+      "PreviewPlanResponse": {
+        "properties": {
+          "conditions": {
+            "additionalProperties": {
+              "type": "string"
+            },
+            "description": "Each condition in the plan as text, by engine site (items.<id>.showIf, pages.<id>.showIf, flow.<id>.if, quotas.<id>.when, variables.<id>.expr, items.<id>.constraint)",
+            "title": "Conditions",
+            "type": "object"
+          },
+          "diagnostics": {
+            "items": {
+              "$ref": "#/components/schemas/Diagnostic"
+            },
+            "title": "Diagnostics",
+            "type": "array"
+          },
+          "plan": {
+            "anyOf": [
+              {
+                "additionalProperties": true,
+                "type": "object"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "description": "The runtime plan (osp-runtime-plan/1, seedVersion 'draft'); null when the draft has errors",
+            "title": "Plan"
+          },
+          "revision": {
+            "description": "The draft revision the plan was compiled from",
+            "title": "Revision",
+            "type": "integer"
+          },
+          "surveyId": {
+            "title": "Surveyid",
+            "type": "string"
+          }
+        },
+        "required": [
+          "surveyId",
+          "revision",
+          "plan",
+          "conditions",
+          "diagnostics"
+        ],
+        "title": "PreviewPlanResponse",
+        "type": "object"
+      },
       "PrintExpressionRequest": {
         "additionalProperties": false,
         "properties": {
@@ -2015,11 +2065,10 @@
             "type": "boolean"
           },
           "result": {
-            "description": "The engine's words: `open` (a place is held) or `full`. `admitted` is a deprecated alias of `open` from the first contract; this server never sends it.",
+            "description": "The engine's words: `open` (a place is held) or `full`.",
             "enum": [
               "open",
-              "full",
-              "admitted"
+              "full"
             ],
             "title": "Result",
             "type": "string"
@@ -6351,6 +6400,78 @@
         ]
       }
     },
+    "/api/surveys/{survey_id}/preview-plan": {
+      "post": {
+        "operationId": "previewPlan",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "survey_id",
+            "required": true,
+            "schema": {
+              "title": "Survey Id",
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/PreviewPlanResponse"
+                }
+              }
+            },
+            "description": "Successful Response"
+          },
+          "401": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorBody"
+                }
+              }
+            },
+            "description": "Unauthorized"
+          },
+          "403": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorBody"
+                }
+              }
+            },
+            "description": "Forbidden"
+          },
+          "404": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorBody"
+                }
+              }
+            },
+            "description": "Not Found"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            },
+            "description": "Validation Error"
+          }
+        },
+        "summary": "Preview Plan",
+        "tags": [
+          "surveys"
+        ]
+      }
+    },
     "/api/surveys/{survey_id}/publish": {
       "post": {
         "operationId": "publishSurvey",
@@ -6798,6 +6919,103 @@
         "summary": "Undo",
         "tags": [
           "ops"
+        ]
+      }
+    },
+    "/api/surveys/{survey_id}/versions/{version}/repro-package": {
+      "get": {
+        "operationId": "reproPackage",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "survey_id",
+            "required": true,
+            "schema": {
+              "title": "Survey Id",
+              "type": "string"
+            }
+          },
+          {
+            "description": "Published version number",
+            "in": "path",
+            "name": "version",
+            "required": true,
+            "schema": {
+              "description": "Published version number",
+              "minimum": 1,
+              "title": "Version",
+              "type": "integer"
+            }
+          },
+          {
+            "description": "Include the codebook and responses (needs export permission)",
+            "in": "query",
+            "name": "data",
+            "required": false,
+            "schema": {
+              "default": false,
+              "description": "Include the codebook and responses (needs export permission)",
+              "title": "Data",
+              "type": "boolean"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "content": {
+              "application/zip": {
+                "schema": {
+                  "format": "binary",
+                  "type": "string"
+                }
+              }
+            },
+            "description": "The reproducibility package (deterministic zip)"
+          },
+          "401": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorBody"
+                }
+              }
+            },
+            "description": "Unauthorized"
+          },
+          "403": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorBody"
+                }
+              }
+            },
+            "description": "Forbidden"
+          },
+          "404": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorBody"
+                }
+              }
+            },
+            "description": "Not Found"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/RejectedBody"
+                }
+              }
+            },
+            "description": "Unprocessable Content"
+          }
+        },
+        "summary": "Repro Package",
+        "tags": [
+          "surveys"
         ]
       }
     },

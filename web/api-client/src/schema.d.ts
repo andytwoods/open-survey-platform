@@ -583,6 +583,23 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
+    "/api/surveys/{survey_id}/preview-plan": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /** Preview Plan */
+        post: operations["previewPlan"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
     "/api/surveys/{survey_id}/publish": {
         parameters: {
             query?: never;
@@ -665,6 +682,23 @@ export interface paths {
         put?: never;
         /** Undo */
         post: operations["undo"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/surveys/{survey_id}/versions/{version}/repro-package": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** Repro Package */
+        get: operations["reproPackage"];
+        put?: never;
+        post?: never;
         delete?: never;
         options?: never;
         head?: never;
@@ -1537,6 +1571,32 @@ export interface components {
              */
             reasons: string[];
         };
+        /** PreviewPlanResponse */
+        PreviewPlanResponse: {
+            /**
+             * Conditions
+             * @description Each condition in the plan as text, by engine site (items.<id>.showIf, pages.<id>.showIf, flow.<id>.if, quotas.<id>.when, variables.<id>.expr, items.<id>.constraint)
+             */
+            conditions: {
+                [key: string]: string;
+            };
+            /** Diagnostics */
+            diagnostics: components["schemas"]["Diagnostic"][];
+            /**
+             * Plan
+             * @description The runtime plan (osp-runtime-plan/1, seedVersion 'draft'); null when the draft has errors
+             */
+            plan: {
+                [key: string]: unknown;
+            } | null;
+            /**
+             * Revision
+             * @description The draft revision the plan was compiled from
+             */
+            revision: number;
+            /** Surveyid */
+            surveyId: string;
+        };
         /** PrintExpressionRequest */
         PrintExpressionRequest: {
             /** Ast */
@@ -1612,10 +1672,10 @@ export interface components {
             replay: boolean;
             /**
              * Result
-             * @description The engine's words: `open` (a place is held) or `full`. `admitted` is a deprecated alias of `open` from the first contract; this server never sends it.
+             * @description The engine's words: `open` (a place is held) or `full`.
              * @enum {string}
              */
-            result: "open" | "full" | "admitted";
+            result: "open" | "full";
         };
         /** RejectedBody */
         RejectedBody: {
@@ -4221,6 +4281,64 @@ export interface operations {
             };
         };
     };
+    previewPlan: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                survey_id: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["PreviewPlanResponse"];
+                };
+            };
+            /** @description Unauthorized */
+            401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorBody"];
+                };
+            };
+            /** @description Forbidden */
+            403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorBody"];
+                };
+            };
+            /** @description Not Found */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorBody"];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
     publishSurvey: {
         parameters: {
             query?: never;
@@ -4549,6 +4667,69 @@ export interface operations {
                 };
                 content: {
                     "application/json": components["schemas"]["RevisionConflictBody"];
+                };
+            };
+            /** @description Unprocessable Content */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["RejectedBody"];
+                };
+            };
+        };
+    };
+    reproPackage: {
+        parameters: {
+            query?: {
+                /** @description Include the codebook and responses (needs export permission) */
+                data?: boolean;
+            };
+            header?: never;
+            path: {
+                survey_id: string;
+                /** @description Published version number */
+                version: number;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description The reproducibility package (deterministic zip) */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/zip": string;
+                };
+            };
+            /** @description Unauthorized */
+            401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorBody"];
+                };
+            };
+            /** @description Forbidden */
+            403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorBody"];
+                };
+            };
+            /** @description Not Found */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorBody"];
                 };
             };
             /** @description Unprocessable Content */

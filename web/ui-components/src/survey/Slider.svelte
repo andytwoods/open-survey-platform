@@ -41,6 +41,25 @@
 	const numberFormat = $derived(new Intl.NumberFormat(lang, { maximumFractionDigits: 6 }));
 	const valueText = $derived(shown === null ? m.notAnswered : numberFormat.format(shown));
 
+	/**
+	 * The nearest step on the track (what Bits can draw). A typed value off the step grid is
+	 * never snapped silently (semantics C2c-4): it is reported as typed, the engine refuses it
+	 * (`value.off_step`) and the participant sees the error; only the thumb is drawn at the
+	 * nearest step meanwhile.
+	 */
+	function snap(x: number): number {
+		const k = Math.round((x - min) / step);
+		const v = Math.min(max, Math.max(min, min + k * step));
+		return Number(v.toFixed(10));
+	}
+	const trackValue = $derived(shown === null ? resting : snap(shown));
+
+	function fromTrack(v: number) {
+		// Bits echoing the snapped position of a typed off-step value is not an answer.
+		if (shown !== null && v !== shown && v === snap(shown)) return;
+		emit(v);
+	}
+
 	function emit(v: number) {
 		shown = v;
 		typed = null;
@@ -87,13 +106,13 @@
 				<Slider.Root
 					type="single"
 					class="osp-slider-root"
-					value={shown ?? resting}
+					value={trackValue}
 					{min}
 					{max}
 					{step}
 					dir={dirFor(lang)}
 					{disabled}
-					onValueChange={(v) => emit(v)}
+					onValueChange={(v) => fromTrack(v)}
 					onValueCommit={(v) => {
 						if (shown === null) emit(v);
 					}}

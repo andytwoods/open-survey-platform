@@ -28,8 +28,10 @@ ROUTES: list[tuple[str, str, dict | None]] = [
     ("GET", f"/api/surveys/{SID}/export/lss", None),
     ("GET", f"/api/surveys/{SID}/export/responses", None),
     ("GET", f"/api/surveys/{SID}/export/codebook", None),
+    ("GET", f"/api/surveys/{SID}/versions/{{version}}/repro-package", None),
     ("DELETE", f"/api/surveys/{SID}/responses/{{response_id}}", None),
     ("POST", f"/api/surveys/{SID}/simulate", {"n": 1}),
+    ("POST", f"/api/surveys/{SID}/preview-plan", None),
     ("GET", f"/api/surveys/{SID}/export-check?target=lss", None),
     ("GET", "/api/themes", None),
     ("POST", "/api/themes", {"name": "x", "theme": {}}),
@@ -56,7 +58,8 @@ def _ids(routes):
 
 
 def _call(c, method, path, body, sid="0" * 36):
-    return c.request(method, path.replace(SID, sid), json=body)
+    # `{version}` is an integer path parameter: a real number, so auth is what answers.
+    return c.request(method, path.replace(SID, sid).replace("{version}", "1"), json=body)
 
 
 @pytest.fixture

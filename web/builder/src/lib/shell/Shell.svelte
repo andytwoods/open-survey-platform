@@ -39,6 +39,7 @@
 	import OutlineTree from './OutlineTree.svelte';
 	import { cyclePane } from './panes';
 	import PropertiesPane from './PropertiesPane.svelte';
+	import PreviewPanel from '../preview/PreviewPanel.svelte';
 	import TopBar from './TopBar.svelte';
 
 	/**
@@ -54,7 +55,7 @@
 
 	const registry = new CommandRegistry({
 		isMac: detectMac(),
-		isModalOpen: () => paletteOpen || previewOpen || moveToOpen
+		isModalOpen: () => paletteOpen || (previewOpen && !store) || moveToOpen
 	});
 	const mockPages = MOCK_SURVEY.children ?? [];
 	// Outline moves show at once (optimistic) and are reconciled with the server's reply.
@@ -169,6 +170,11 @@
 	let propertiesOpen = $state(false);
 	let paletteOpen = $state(false);
 	let previewOpen = $state(false);
+	// Switching view (Questions, Flow, Appearance) leaves the preview.
+	$effect(() => {
+		void view;
+		untrack(() => (previewOpen = false));
+	});
 
 	const outlineCollapsible = $derived(editing && innerWidth < OUTLINE_BREAKPOINT);
 	const propertiesCollapsible = $derived(editing && innerWidth < PROPERTIES_BREAKPOINT);
@@ -313,7 +319,11 @@
 		/>
 	{/if}
 
-	{#if view === 'appearance'}
+	{#if previewOpen && store}
+		<main id="pane-preview" class="preview-pane" aria-labelledby="preview-heading">
+			<PreviewPanel surveyId={store.surveyId} revision={store.revision} onclose={() => (previewOpen = false)} />
+		</main>
+	{:else if view === 'appearance'}
 		<main id="pane-appearance" class="appearance" aria-label="Appearance">
 			<AppearanceView {store} />
 		</main>
@@ -437,16 +447,18 @@
 	<MoveToDialog bind:open={moveToOpen} roots={pages} ids={outlineSelection.ids} onMove={(ids, t) => void moveItems(ids, t)} />
 {/if}
 
-<Dialog
-	bind:open={previewOpen}
-	title="Preview"
-	description="Preview will render this survey in Enketo, exactly as participants see it. It is not connected yet."
-	size="sm"
->
-	{#snippet footer()}
-		<Button variant="primary" onclick={() => (previewOpen = false)}>OK</Button>
-	{/snippet}
-</Dialog>
+{#if !store}
+	<Dialog
+		bind:open={previewOpen}
+		title="Preview"
+		description="Preview runs a saved survey exactly as participants see it, with a debugger. Open a survey from Your surveys to preview it."
+		size="sm"
+	>
+		{#snippet footer()}
+			<Button variant="primary" onclick={() => (previewOpen = false)}>OK</Button>
+		{/snippet}
+	</Dialog>
+{/if}
 
 <Announcer />
 
@@ -456,6 +468,12 @@
 		flex-direction: column;
 		height: 100dvh;
 		overflow: hidden;
+	}
+	.preview-pane {
+		display: flex;
+		flex: 1;
+		min-height: 0;
+		min-width: 0;
 	}
 	.appearance,
 	.flow {
