@@ -210,7 +210,7 @@ DEV_DATA := .data
 DEV_API_PORT := 8000
 DEV_BUILDER_PORT := 5173
 DEV_RUNTIME_PORT := 5174
-DEV_FIXTURES := fixtures/01-all-types fixtures/13-randomiser-blocks fixtures/18-multi-language
+DEV_FIXTURES := fixtures/01-all-types fixtures/13-randomiser-blocks fixtures/18-multi-language fixtures/38-matrix fixtures/39-slider
 DEV_ENV := OSP_ENV=dev OSP_IDENTITY=dev OSP_DATA_DIR=$(DEV_DATA) OSP_DATABASE_URL=sqlite:///$(DEV_DATA)/osp.db
 DEV_PROXY := OSP_API_URL=http://127.0.0.1:$(DEV_API_PORT)
 
