@@ -29,6 +29,7 @@ ROUTES: list[tuple[str, str, dict | None]] = [
     ("GET", f"/api/surveys/{SID}/export/codebook", None),
     ("DELETE", f"/api/surveys/{SID}/responses/{{response_id}}", None),
     ("POST", f"/api/surveys/{SID}/simulate", {"n": 1}),
+    ("POST", f"/api/surveys/{SID}/preview-plan", None),
     ("GET", f"/api/surveys/{SID}/export-check?target=lss", None),
     ("GET", "/api/meta/ops", None),
     ("GET", "/api/meta/property-schemas", None),
