@@ -5,7 +5,22 @@ description = "Open Survey Platform: osp-mcp (layer L6)"
 readme = "README.md"
 license = "MIT"
 requires-python = ">=3.14"
-dependencies = []
+dependencies = [
+    "mcp>=2.3,<3",
+    "osp-app",
+    "osp-ops",
+    "osp-spec",
+    "osp-store",
+]
+
+[project.scripts]
+osp-mcp = "osp_mcp.server:main"
+
+[tool.uv.sources]
+osp-app = { workspace = true }
+osp-ops = { workspace = true }
+osp-spec = { workspace = true }
+osp-store = { workspace = true }
 
 [build-system]
 requires = ["uv_build>=0.11,<0.12"]
