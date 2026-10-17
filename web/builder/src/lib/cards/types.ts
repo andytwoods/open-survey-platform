@@ -111,6 +111,11 @@ export type CardProps = {
 	choiceLists?: readonly SpecChoiceList[];
 	/** Click or Enter on the card. */
 	onselect?: (id: string) => void;
+	/**
+	 * The error or warning count badge was clicked (B18). When given, those badges are
+	 * buttons, so the caller can go to the property the first such diagnostic is about.
+	 */
+	ondiagnostic?: (severity: 'error' | 'warning') => void;
 	/** Slot for export-warning badges (B10): render `<li>` items. */
 	exportBadges?: Snippet;
 } & Omit<HTMLButtonAttributes, 'children' | 'onselect' | 'onclick' | 'type'>;

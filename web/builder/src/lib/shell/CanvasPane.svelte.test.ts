@@ -221,6 +221,93 @@ describe('canvas mapping: question JSON → card', () => {
 	});
 });
 
+describe('validator counts on cards (B18)', () => {
+	type D = { severity: 'error' | 'warning' | 'info'; code: string; message: string; pointer: string };
+	const at = (i: number, rest: string, severity: D['severity'], message = `${severity} ${i}`): D => ({
+		severity,
+		code: 'c',
+		message,
+		pointer: `/blocks/0/pages/0/items/${i}${rest}`
+	});
+
+	function withDiagnostics(diagnostics: D[]) {
+		const doc = survey();
+		const selection = new SelectionStore();
+		const gone: D[] = [];
+		const r = render(CanvasPane, {
+			props: {
+				pages: outlineFromSurvey(doc),
+				selection,
+				survey: doc,
+				schemas,
+				diagnostics,
+				onDiagnostic: (d: D) => gone.push(d)
+			}
+		});
+		const card = (id: string) => r.container.querySelector<HTMLElement>(`[data-question-card="${id}"]`)!;
+		return { ...r, card, gone };
+	}
+
+	it('each card shows only its own error and warning counts; info is not counted', () => {
+		const t = withDiagnostics([
+			at(1, '/min', 'error', 'min is greater than max'),
+			at(1, '/label', 'error'),
+			at(1, '/label', 'warning'),
+			at(3, '/label', 'warning', 'missing French'),
+			at(3, '', 'info'),
+			{ severity: 'error', code: 'c', message: 'survey-level', pointer: '/metadata' }
+		]);
+		const int = t.card('q_int');
+		expect(int.querySelector('[data-badge="errors"]')?.textContent).toContain('2 errors');
+		expect(int.querySelector('[data-badge="warnings"]')?.textContent).toContain('1 warning');
+		const text = t.card('q_text');
+		expect(text.querySelector('[data-badge="errors"]')).toBeNull();
+		expect(text.querySelector('[data-badge="warnings"]')?.textContent).toContain('1 warning');
+		// The messages are the count's accessible description.
+		const btn = text.querySelector<HTMLButtonElement>('[data-badge="warnings"] button')!;
+		expect(document.getElementById(btn.getAttribute('aria-describedby')!)?.textContent).toBe('missing French');
+		for (const id of ['q_note', 'q_dec', 'q_grid']) expect(t.card(id).querySelector('[data-badge]')).toBeNull();
+	});
+
+	it('clicking a count goes to the first diagnostic of that severity, without selecting', async () => {
+		const t = withDiagnostics([at(1, '/label', 'warning'), at(1, '/min', 'error'), at(1, '/max', 'error')]);
+		await fireEvent.click(t.card('q_int').querySelector('[data-badge="errors"] button')!);
+		expect(t.gone.map((d) => d.pointer)).toEqual(['/blocks/0/pages/0/items/1/min']);
+		await fireEvent.click(t.card('q_int').querySelector('[data-badge="warnings"] button')!);
+		expect(t.gone[1].pointer).toBe('/blocks/0/pages/0/items/1/label');
+	});
+
+	it('follows new diagnostics after an edit', async () => {
+		const t = withDiagnostics([at(1, '/min', 'error')]);
+		expect(t.card('q_int').querySelector('[data-badge="errors"]')).not.toBeNull();
+		await t.rerender({ diagnostics: [at(2, '/min', 'warning'), at(2, '/max', 'warning')] });
+		expect(t.card('q_int').querySelector('[data-badge="errors"]')).toBeNull();
+		expect(t.card('q_dec').querySelector('[data-badge="warnings"]')?.textContent).toContain('2 warnings');
+	});
+
+	it('without a handler the counts are plain badges', () => {
+		const doc = survey();
+		const r = render(CanvasPane, {
+			props: {
+				pages: outlineFromSurvey(doc),
+				selection: new SelectionStore(),
+				survey: doc,
+				schemas,
+				diagnostics: [at(1, '/min', 'error')]
+			}
+		});
+		const badge = r.container.querySelector('[data-question-card="q_int"] [data-badge="errors"]')!;
+		expect(badge.textContent).toContain('1 error');
+		expect(badge.querySelector('button')).toBeNull();
+	});
+
+	it('axe: no violations with counts shown', async () => {
+		const t = withDiagnostics([at(1, '/min', 'error'), at(3, '/label', 'warning')]);
+		const res = await axe.run(t.container, { rules: { region: { enabled: false } } });
+		expect(res.violations.map((v) => v.id)).toEqual([]);
+	});
+});
+
 describe('canvasQuestions / cardSchema', () => {
 	it('indexes questions by id and tolerates junk', () => {
 		expect(canvasQuestions(null).size).toBe(0);

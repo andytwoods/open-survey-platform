@@ -103,3 +103,9 @@
 - Fix: `ConsentEditor` builds each edit on the value last sent while any `set_consent` is in flight, and on the survey again once all have answered. `ConsentEditor.svelte.test.ts` (+2 DOM, the first fails before the fix). The publish e2e also used a fixed theme name "Lab warm", which 409s ("already has a theme with that name") whenever the spec runs twice against one e2e server (repeats, parallel workers); now unique per run.
 - Numbers: publish spec 3×10 repeats green (one 30-repeat invocation hits the participant start rate limiter, 429 after ~30 starts from 127.0.0.1); `make web-e2e` 166 passed twice.
 - Open: `LanguagesField` has the same whole-value pattern (two quick add/remove clicks can drop the first); one unexplained `#settings-retention` not-focused failure (2 in 10, once, before merging main), not seen again in 60 runs.
+
+## 2026-10-17 — B18: validator counts on canvas cards
+
+- Landed: `validationByOwner` (diagnostics/model.ts) groups the store's validator diagnostics by block/page/question; CanvasPane passes each rich card its own, and CardShell shows "N errors" / "N warnings" as buttons (messages as their description and tooltip) when an `ondiagnostic` handler is given (plain badges otherwise). Click goes to the first such diagnostic's property via the shell's `goTo`, like export badges; counts follow `store.diagnostics` after every edit.
+- Numbers: +7 vitest (2 model, 5 CanvasPane incl. axe); new e2e `card-diagnostics.spec.ts` (counts per card, click-to-property for an error and a warning, live update after fixing min > max in the panel, axe twice). Native Windows: Windows-safe make subset exit 0; full builder e2e 120 passed / 23 failed vs 22 failed on main (snapshot/platform; the extra one passes 3/3 alone).
+- Open: block/page heads don't show validator counts (only export badges); full `make check` / `make web-e2e` left to CI.
