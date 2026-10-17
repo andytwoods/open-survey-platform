@@ -1504,10 +1504,10 @@ export interface components {
             replay: boolean;
             /**
              * Result
-             * @description The engine's words: `open` (a place is held) or `full`. `admitted` is a deprecated alias of `open` from the first contract; this server never sends it.
+             * @description The engine's words: `open` (a place is held) or `full`.
              * @enum {string}
              */
-            result: "open" | "full" | "admitted";
+            result: "open" | "full";
         };
         /** RejectedBody */
         RejectedBody: {

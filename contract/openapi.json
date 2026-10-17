@@ -1912,11 +1912,10 @@
             "type": "boolean"
           },
           "result": {
-            "description": "The engine's words: `open` (a place is held) or `full`. `admitted` is a deprecated alias of `open` from the first contract; this server never sends it.",
+            "description": "The engine's words: `open` (a place is held) or `full`.",
             "enum": [
               "open",
-              "full",
-              "admitted"
+              "full"
             ],
             "title": "Result",
             "type": "string"
