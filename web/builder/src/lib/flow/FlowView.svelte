@@ -1,4 +1,5 @@
 <script lang="ts">
+	import LayersPlus from '@lucide/svelte/icons/layers-plus';
 	import Plus from '@lucide/svelte/icons/plus';
 	import { announce, Button, Dialog } from '@osp/ui-components';
 	import { onMount, tick, untrack } from 'svelte';
@@ -8,6 +9,7 @@
 	import type { ConditionOp, ExprNode, QuestionInfo } from '../conditions';
 	import type { SurveyStore } from '../sync/survey-store.svelte';
 	import type { Diagnostic } from '../sync/transport';
+	import { addBlockPlan } from '../structure/ops';
 	import { setFlowCtx } from './context';
 	import FlowList from './FlowList.svelte';
 	import { flowUi } from './flow-ui.svelte';
@@ -125,6 +127,21 @@
 	$effect(() => {
 		if (flowUi.addRequests === 0) return;
 		untrack(() => openAdd({ parent: null, arm: null, index: flowOf(store.survey).length }));
+	});
+
+	// --- add block (B20): a new block with one page, shown at the end of the flow --------
+	async function addBlock() {
+		const plan = addBlockPlan(store.survey, []);
+		const out = await store.submit(plan.ops);
+		if (out.status !== 'applied') return;
+		const row = walk(store.survey).find((r) => r.type === 'block' && r.node.block === plan.id);
+		announce('Block added at the end of the flow, with one page. Add its questions in the Questions view.');
+		if (row) void focusNode(row.id);
+	}
+
+	$effect(() => {
+		if (flowUi.addBlockRequests === 0) return;
+		untrack(() => void addBlock());
 	});
 
 	// --- delete ------------------------------------------------------------------------
@@ -249,10 +266,16 @@
 				handle and press Alt+Up or Alt+Down, to move it (also into and out of branches).
 			</p>
 		</div>
-		<Button variant="primary" onclick={() => openAdd({ parent: null, arm: null, index: flowOf(survey).length })}>
-			<Plus size={16} aria-hidden="true" />
-			Add node
-		</Button>
+		<div class="head-actions">
+			<Button onclick={() => void addBlock()}>
+				<LayersPlus size={16} aria-hidden="true" />
+				Add block
+			</Button>
+			<Button variant="primary" onclick={() => openAdd({ parent: null, arm: null, index: flowOf(survey).length })}>
+				<Plus size={16} aria-hidden="true" />
+				Add node
+			</Button>
+		</div>
 	</div>
 
 	{#if problems || unused.length}
@@ -392,6 +415,12 @@
 		justify-content: space-between;
 		gap: var(--space-4);
 		margin-block-end: var(--space-2);
+	}
+	.head-actions {
+		display: flex;
+		flex-wrap: wrap;
+		gap: var(--space-2);
+		justify-content: flex-end;
 	}
 	h2 {
 		margin: 0;

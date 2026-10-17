@@ -24,7 +24,8 @@
 		selection,
 		multi = new MultiSelection(untrack(() => selection)),
 		onMove,
-		typeDrag
+		typeDrag,
+		onContextMenu
 	}: {
 		roots: OutlineNode[];
 		selection: SelectionStore;
@@ -32,6 +33,8 @@
 		/** Move the items (all one type) into the gap; resolves when the server answered. */
 		onMove?: (ids: string[], target: DropTarget) => Promise<unknown> | void;
 		typeDrag?: TypeDrag;
+		/** An item asked for its context menu (right-click, the context-menu key, Shift+F10). */
+		onContextMenu?: (id: string, anchor: HTMLElement, point?: { x: number; y: number }) => void;
 	} = $props();
 
 	function allParents(nodes: OutlineNode[], out: string[] = []): string[] {
@@ -138,6 +141,12 @@
 			return;
 		}
 		if (!activeId) return;
+		if (onContextMenu && (e.key === 'ContextMenu' || (e.shiftKey && e.key === 'F10'))) {
+			e.preventDefault();
+			const el = document.getElementById(domId(activeId));
+			if (el) onContextMenu(activeId, el);
+			return;
+		}
 		if (e.altKey && !e.ctrlKey && !e.metaKey && (e.key === 'ArrowUp' || e.key === 'ArrowDown')) {
 			if (!onMove) return;
 			e.preventDefault();
@@ -299,6 +308,14 @@
 			class:moving={dragging?.has(node.id)}
 			style:padding-inline-start="calc({row.level - 1} * 1rem + 0.25rem)"
 			onclick={(e) => onItemClick(e, node.id)}
+			oncontextmenu={onContextMenu
+				? (e) => {
+						e.preventDefault();
+						if (!multi.has(node.id)) multi.single(node.id);
+						e.currentTarget.focus();
+						onContextMenu(node.id, e.currentTarget, e.button === 2 ? { x: e.clientX, y: e.clientY } : undefined);
+					}
+				: undefined}
 		>
 			{#if hasKids}
 				<!-- svelte-ignore a11y_click_events_have_key_events, a11y_no_static_element_interactions -->

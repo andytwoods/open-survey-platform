@@ -1,5 +1,6 @@
 <script lang="ts">
 	import Plus from '@lucide/svelte/icons/plus';
+	import type { Snippet } from 'svelte';
 	import QuestionCard from '../cards/QuestionCard.svelte';
 	import { choiceListsOf } from '../choices/model';
 	import ExportBadges from '../diagnostics/ExportBadges.svelte';
@@ -27,6 +28,8 @@
 		schemas = null,
 		mock = false,
 		onAddQuestion,
+		afterPage,
+		onContextMenu,
 		exportBadges,
 		onBadge,
 		diagnostics = [],
@@ -41,6 +44,10 @@
 		mock?: boolean;
 		/** Present when editing is connected: shows "Add question" under each page. */
 		onAddQuestion?: (pageId: string) => void;
+		/** Rendered under each page's cards, after "Add question" (B20: "Add page"). */
+		afterPage?: Snippet<[OutlineNode]>;
+		/** A page or block heading asked for its context menu (right-click, Shift+F10). */
+		onContextMenu?: (id: string, anchor: HTMLElement, point?: { x: number; y: number }) => void;
 		/** Export badges (B10) per block/page/question id, for the selected target. */
 		exportBadges?: ReadonlyMap<string, readonly ExportBadge[]>;
 		/** A badge was clicked: go to the property it is about. */
@@ -69,6 +76,26 @@
 		if (id) document.getElementById(cardId(id))?.scrollIntoView?.({ block: 'nearest' });
 	});
 
+	/** Right-click, the context-menu key or Shift+F10 on a page or block heading. */
+	function menuFor(id: string) {
+		if (!onContextMenu) return {};
+		const open = (el: HTMLElement, point?: { x: number; y: number }) => {
+			selection.select(id);
+			onContextMenu(id, el, point);
+		};
+		return {
+			oncontextmenu: (e: MouseEvent) => {
+				e.preventDefault();
+				open(e.currentTarget as HTMLElement, e.button === 2 ? { x: e.clientX, y: e.clientY } : undefined);
+			},
+			onkeydown: (e: KeyboardEvent) => {
+				if (e.key !== 'ContextMenu' && !(e.shiftKey && e.key === 'F10')) return;
+				e.preventDefault();
+				open(e.currentTarget as HTMLElement);
+			}
+		};
+	}
+
 	// F6 lands on the selected card, or the first one when nothing is selected.
 	const focusMark = (id: string) => ((selection.id ?? firstId) === id ? '' : undefined);
 </script>
@@ -96,6 +123,7 @@
 				aria-current={selection.id === section.id ? 'true' : undefined}
 				data-pane-focus={focusMark(section.id)}
 				onclick={() => selection.select(section.id)}
+				{...menuFor(section.id)}
 			>
 				<SectionIcon size={18} aria-hidden="true" />
 				<span>{kind(section)}: {section.label}</span>
@@ -111,6 +139,7 @@
 						aria-current={selection.id === group.id ? 'true' : undefined}
 						data-pane-focus={focusMark(group.id)}
 						onclick={() => selection.select(group.id)}
+						{...menuFor(group.id)}
 					>
 						<GroupIcon size={16} aria-hidden="true" />
 						<span>{kind(group)}: {group.label}</span>
@@ -166,6 +195,7 @@
 							<span>Add question</span>
 						</button>
 					{/if}
+					{#if afterPage && group.type === 'page'}{@render afterPage(group)}{/if}
 				</div>
 			{/each}
 		</section>
