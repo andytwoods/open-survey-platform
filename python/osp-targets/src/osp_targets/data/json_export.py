@@ -59,6 +59,9 @@ def _json_value(value: Any) -> Any:
 def response_json(view: ResponseView, opts: JsonOptions) -> dict[str, Any]:
     lay, rec = view.lay, view.rec
     out: dict[str, Any] = {key: _json_value(view.meta(col)) for col, key in _META_KEYS.items()}
+    if lay.survey.consent is not None:  # semantics.md §11
+        out["consentVersion"] = _json_value(view.meta("_consent_version"))
+        out["consentedAt"] = _json_value(view.meta("_consented_at"))
     out["conditions"] = {v.name: _json_value(view.condition(v.id)) for v in lay.assigned}
     answers: dict[str, Any] = {}
     for q in lay.questions:

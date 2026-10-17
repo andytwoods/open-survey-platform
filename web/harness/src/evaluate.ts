@@ -46,7 +46,7 @@ export function evaluate(c: Case, played: Played): Verdict {
 	let response: unknown = expected.response;
 	if (played.abortedAt === null) {
 		const exp = expected.response;
-		const act = played.response && typeof exp === 'object' ? pick(played.response, exp) : played.response;
+		const act = played.response && exp !== null && typeof exp === 'object' ? pick(played.response, exp) : played.response;
 		response = compare(exp, act, 'response', diffs, realised);
 	}
 	if (expected.network && played.abortedAt === null) {

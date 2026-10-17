@@ -27,10 +27,18 @@ EXPECTED: dict[Role, set[Action]] = {
         A.SURVEY_PUBLISH,
         A.SURVEY_EXPORT,
         A.SURVEY_DELETE,
+        A.RESPONSE_DELETE,
         A.MEMBERS_VIEW,
         A.MEMBERS_MANAGE,
     },
-    Role.EDITOR: {A.SURVEY_READ, A.SURVEY_EDIT, A.SURVEY_PUBLISH, A.SURVEY_EXPORT, A.MEMBERS_VIEW},
+    Role.EDITOR: {
+        A.SURVEY_READ,
+        A.SURVEY_EDIT,
+        A.SURVEY_PUBLISH,
+        A.SURVEY_EXPORT,
+        A.RESPONSE_DELETE,
+        A.MEMBERS_VIEW,
+    },
     Role.VIEWER: {A.SURVEY_READ},
 }
 
