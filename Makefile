@@ -20,7 +20,7 @@ PNPM := pnpm
 # them in the console code page (cp1252) and fail on the first non-ASCII character.
 export PYTHONUTF8 := 1
 
-CHECKS := py-test py-layers py-lint web-check web-test web-build contract-check licence-check harness-quick engine-test hooks-test sim-test
+CHECKS := py-test py-layers py-lint web-check web-test web-build contract-check licence-check harness-quick engine-test hooks-test sim-test docs-check
 
 # `make check CHECK_SKIP="harness-quick"` leaves targets out: CI runs the browser suites as
 # their own jobs (.github/workflows/ci.yml), and the Windows job skips what needs a POSIX
@@ -69,6 +69,25 @@ contract-check:
 
 licence-check:
 	$(UV_RUN) python scripts/licence_check.py
+
+# Docs site (task D2): MkDocs Material from docs/ (mkdocs.yml) into .build/site, with the
+# API reference generated from contract/openapi.json at build time (scripts/docs_openapi.py).
+# `docs-check` is `make docs` in strict mode (a broken link or anchor fails) and is part of
+# `make check`; GitHub Pages deploys main's build (.github/workflows/docs.yml).
+# `docs-screenshots` redraws docs/assets/screenshots/ with Playwright against a fresh stack
+# (web/builder/docs/), like the demo videos; not part of `make check`, commit the PNGs.
+.PHONY: docs docs-check docs-serve docs-screenshots
+docs:
+	$(UV_RUN) mkdocs build --strict
+
+docs-check: docs
+
+docs-serve:
+	$(UV_RUN) mkdocs serve
+
+docs-screenshots:
+	OSP_DOCS_PORT="$${OSP_DOCS_PORT:-$(HARNESS_FREE_PORT)}" OSP_DOCS_API_PORT="$${OSP_DOCS_API_PORT:-$(HARNESS_FREE_PORT)}" \
+		$(PNPM) -C web --filter @osp/builder exec playwright test -c docs/playwright.config.ts $(DOCS_ARGS)
 
 # Fixture harness (task R4, web/harness): every fixture script played through the real
 # participant app (web/runtime) in a real browser against osp-api on a fresh SQLite store

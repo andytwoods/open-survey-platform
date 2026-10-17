@@ -1,0 +1,71 @@
+name: Docs
+
+# Builds the docs site (mkdocs.yml, docs/) and publishes it to GitHub Pages from main.
+# Pull requests and other branches get the same strict build from `make check` (docs-check
+# in ci.yml), so a broken link never reaches main. The site is at
+# https://andytwoods.github.io/open-survey-platform/ once Pages is set to "GitHub Actions"
+# in the repository settings (Settings → Pages → Source).
+
+on:
+  push:
+    branches:
+      - main
+    paths:
+      - "docs/**"
+      - mkdocs.yml
+      - contract/openapi.json
+      - scripts/docs_openapi.py
+      - pyproject.toml
+      - uv.lock
+      - .github/workflows/docs.yml
+  workflow_dispatch:
+
+permissions:
+  contents: read
+  pages: write
+  id-token: write
+
+# One deploy at a time; a queued deploy of a newer commit waits rather than cancelling.
+concurrency:
+  group: pages
+  cancel-in-progress: false
+
+env:
+  UV_VERSION: "0.11.23"
+
+jobs:
+  build:
+    name: build
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: astral-sh/setup-uv@v6
+        with:
+          version: ${{ env.UV_VERSION }}
+          enable-cache: true
+          cache-dependency-glob: uv.lock
+
+      # Only the docs tooling: the site needs MkDocs, not the workspace packages.
+      - name: Install (docs group, from the lockfile)
+        run: uv sync --locked --only-group docs
+
+      - name: mkdocs build --strict
+        run: uv run --locked --no-sync mkdocs build --strict
+
+      - uses: actions/upload-pages-artifact@v3
+        with:
+          path: .build/site
+
+  deploy:
+    name: deploy
+    needs: build
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    environment:
+      name: github-pages
+      url: ${{ steps.deployment.outputs.page_url }}
+    steps:
+      - id: deployment
+        uses: actions/deploy-pages@v4

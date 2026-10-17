@@ -1,0 +1,95 @@
+# Docs site (task D2): `make docs` builds it into .build/site, `make docs-serve` previews it,
+# `make docs-check` (in `make check`) is `mkdocs build --strict`. GitHub Pages deploys it
+# from main (.github/workflows/docs.yml). The API reference page is generated from
+# contract/openapi.json at build time (scripts/docs_openapi.py); the screenshots come from
+# `make docs-screenshots` (web/builder/docs/).
+site_name: Open Survey Platform
+site_description: An open-source, GUI-first survey builder for academic research.
+site_url: https://andytwoods.github.io/open-survey-platform/
+repo_url: https://github.com/andytwoods/open-survey-platform
+repo_name: andytwoods/open-survey-platform
+edit_uri: edit/main/docs/
+copyright: MIT licence. Dependencies are permissive only.
+
+docs_dir: docs
+site_dir: .build/site
+
+theme:
+  name: material
+  language: en
+  logo: assets/mark.svg
+  favicon: assets/favicon.svg
+  palette:
+    - media: "(prefers-color-scheme)"
+      toggle:
+        icon: material/brightness-auto
+        name: Switch to light mode
+    - media: "(prefers-color-scheme: light)"
+      scheme: default
+      primary: indigo
+      accent: indigo
+      toggle:
+        icon: material/brightness-7
+        name: Switch to dark mode
+    - media: "(prefers-color-scheme: dark)"
+      scheme: slate
+      primary: indigo
+      accent: indigo
+      toggle:
+        icon: material/brightness-4
+        name: Switch to system preference
+  features:
+    - navigation.sections
+    - navigation.top
+    - navigation.footer
+    - navigation.indexes
+    - toc.follow
+    - search.suggest
+    - search.highlight
+    - content.code.copy
+    - content.tabs.link
+
+markdown_extensions:
+  - admonition
+  - attr_list
+  - md_in_html
+  - tables
+  - toc:
+      permalink: true
+  - pymdownx.details
+  - pymdownx.highlight
+  - pymdownx.superfences
+  - pymdownx.keys
+  - pymdownx.tabbed:
+      alternate_style: true
+
+plugins:
+  - search
+
+hooks:
+  - scripts/docs_openapi.py
+
+# Strict: a broken link, a page missing from the nav or a bad anchor fails the build.
+validation:
+  omitted_files: warn
+  absolute_links: warn
+  unrecognized_links: warn
+  anchors: warn
+
+nav:
+  - Home: index.md
+  - Getting started: getting-started.md
+  - Guide:
+      - Building a survey: building-a-survey.md
+      - Question types: question-types.md
+      - Logic and flow: logic.md
+      - Settings, consent and languages: settings.md
+      - Appearance: appearance.md
+      - Publishing and exports: publishing.md
+      - Results: results.md
+  - Hosting: hosting.md
+  - Demo videos: demos.md
+  - Reference:
+      - API: reference/api.md
+      - Command line: reference/cli.md
+      - Contributing: reference/contributing.md
