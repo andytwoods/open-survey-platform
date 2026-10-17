@@ -1,8 +1,12 @@
 /**
  * Regenerates the engine-produced ResponseRecords the data-export golden tests read.
  *
- *   make engine-fixtures
- *   node --experimental-transform-types python/osp-targets/tests/data/dump_records.ts
+ *   make engine-records
+ *
+ * (which is `make engine-fixtures`, then
+ * `node --experimental-transform-types python/osp-targets/tests/data/dump_records.ts`).
+ * tests/test_records.py fails when a scripted fixture has no records or a record's
+ * planChecksum is stale.
  *
  * Every fixture script (fixtures/NN/scripts/*.json) is played through web/engine with the
  * fixture runner, and `result(state)` is written to records/<fixture>/<script>.json.

@@ -53,6 +53,9 @@ GOLDEN_FIXTURES = [
     "18-multi-language",
     "20-worked-example",
     "27-unicode-text",
+    "38-matrix",
+    "39-slider",
+    "40-consent",
 ]
 ALL_FIXTURES = sorted(p.name for p in RECORDS.iterdir() if p.is_dir())
 MISSING_CODES = {"-99", "-98", "-97", "-999", "-9", ".a", ".b", ".c", "NA", "N/A"}
@@ -164,24 +167,33 @@ def _expected_answers(fixture: str, script: str) -> dict[str, Any] | None:
     return answers if isinstance(answers, dict) else None
 
 
+def _variables(survey: dict[str, Any]) -> tuple[dict[str, str], dict[str, str]]:
+    """Variable id -> export name and type, read straight from the survey (not the export).
+
+    A matrix holds no value itself: row ``r`` of matrix ``m`` is the ``single`` variable
+    ``m_r``, exported as ``<matrix name>_r`` (semantics.md §2, C2c-1).
+    """
+    names: dict[str, str] = {}
+    types: dict[str, str] = {}
+    for b in survey.get("blocks", []):
+        for p in b["pages"]:
+            for q in p["items"]:
+                if q["type"] == "note":
+                    continue
+                name = q.get("name", q["id"])
+                if q["type"] == "matrix":
+                    for row in q["rows"]:
+                        names[f"{q['id']}_{row['id']}"] = f"{name}_{row['id']}"
+                        types[f"{q['id']}_{row['id']}"] = "single"
+                else:
+                    names[q["id"]], types[q["id"]] = name, q["type"]
+    return names, types
+
+
 @pytest.mark.parametrize("fixture", ALL_FIXTURES)
 def test_states_match_engine_and_expected_traces(fixture: str) -> None:
     v = _version(fixture)
-    survey = _survey(fixture)
-    names = {
-        q["id"]: q.get("name", q["id"])
-        for b in survey.get("blocks", [])
-        for p in b["pages"]
-        for q in p["items"]
-        if q["type"] != "note"
-    }
-    types = {
-        q["id"]: q["type"]
-        for b in survey.get("blocks", [])
-        for p in b["pages"]
-        for q in p["items"]
-        if q["type"] != "note"
-    }
+    names, types = _variables(_survey(fixture))
     rows = {r["_response_id"]: r for r in _rows(export_csv(v, _responses(fixture)))}
     as_json = json.loads(export_json(v, _responses(fixture)))
     by_id = {r["responseId"]: r for r in as_json["responses"]}
@@ -677,3 +689,53 @@ def test_matrix_rows_are_columns_and_slider_is_a_number() -> None:
                        "sleep": {"state": "answered", "value": "7.5"}}}  # fmt: skip
     row = _rows(export_csv(s, [StoredResponse("r1", record=rec)]))[0]
     assert (row["pain"], row["sleep"], row["mood__state"]) == ("4", "7.5", "")
+
+
+def test_engine_records_for_matrix_slider_and_consent() -> None:
+    """Fixtures 38-40 as the engine recorded them: row columns, slider numbers, consent."""
+    rows = {
+        f: {r["_response_id"]: r for r in _rows(export_csv(_version(f), _responses(f)))}
+        for f in ("38-matrix", "39-slider", "40-consent")
+    }
+    main = rows["38-matrix"]["resp-main"]  # matrix id `taste`, export name `drink`
+    assert (main["drink_tea"], main["drink_coffee"], main["drink_cocoa__state"]) == (
+        "3",
+        "1",
+        "unanswered",
+    )
+    assert not any(k.startswith(("taste", "drink__")) or k == "drink" for k in main)
+    assert main["when_morning__state"] == main["when_evening__state"] == "irrelevant"
+    back = rows["38-matrix"]["resp-back-change-row"]
+    assert (back["drink_tea"], back["cups__state"], back["when_morning"]) == (
+        "1",
+        "irrelevant",
+        "daily",
+    )
+
+    slider = rows["39-slider"]
+    assert (slider["resp-main"]["pain"], slider["resp-main"]["sleep"]) == ("8", "7.5")
+    assert (slider["resp-off-step"]["sleep"], slider["resp-off-step"]["mood"]) == ("6", "-2")
+
+    consent = rows["40-consent"]
+    rec = json.loads((RECORDS / "40-consent/agree.json").read_text(encoding="utf-8"))
+    agree = consent["resp-agree"]
+    assert agree["_consent_version"] == rec["consentVersion"]
+    assert agree["_consent_version"].startswith("sha256:")
+    assert agree["_consented_at"] == "1970-01-01T00:00:03.000Z"  # the runner's clock
+    # the server's record wins over the browser's (semantics.md §11)
+    r = StoredResponse("srv", record=rec, consent_version="sha256:srv", consented_at=T0)
+    srv = _rows(export_csv(_version("40-consent"), [r]))[0]
+    assert (srv["_consent_version"], srv["_consented_at"]) == (
+        "sha256:srv",
+        "2026-10-16T09:30:00.000Z",
+    )
+    # a decline never agreed: no consent version, nothing reached
+    declined = consent["resp-decline"]
+    assert (declined["_end"], declined["_consent_version"], declined["_consented_at"]) == (
+        "declined",
+        "",
+        "",
+    )
+    assert "_consent_version" not in rows["39-slider"]["resp-main"]
+    book = codebook(_version("40-consent"))
+    assert book.data["consent"] and "synthetic study about sleep" in book.markdown

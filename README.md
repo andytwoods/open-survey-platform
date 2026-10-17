@@ -52,7 +52,25 @@ This setup is for a laptop only. The API alone runs with `uv run osp-api serve`;
 `OSP_ENV=production` it refuses to generate keys and needs `OSP_STORE_KEYS` and
 `OSP_DATABASE_URL` set (see `python/osp-api/src/osp_api/serve.py`).
 
+## Deploying
+
+Build the engine bundle as part of every deployment build:
+
+```sh
+make engine-bundle   # web/engine/dist/engine.js
+```
+
+The reproducibility package ships this file with `replay.mjs`, so anyone can replay a
+response with the exact engine that ran it. `web/engine/dist/` is not committed. If the
+bundle is missing, packages go out without `replay.mjs` and say so. Point
+`OSP_ENGINE_BUNDLE` at the file if it is not at the default path. `make dev` and
+`make check` build it themselves.
+
 ## Checks
 
 `make check` runs every test, lint, layer and licence check; it must be green before a
 change lands.
+
+The data export and reproducibility tests read committed engine records
+(`python/osp-targets/tests/data/records/`). After adding a fixture script or changing a
+fixture survey, run `make engine-records`; a test fails with that command if you forget.

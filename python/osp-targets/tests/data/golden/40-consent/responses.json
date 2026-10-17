@@ -1,0 +1,290 @@
+{
+  "format": "osp-response-export/1",
+  "survey": {
+    "id": "f40_consent",
+    "title": "Consent before collection",
+    "version": 1,
+    "checksum": "sha256:test-40-consent"
+  },
+  "missingValues": "Every answer is {state, value}. state is answered, unanswered (shown, left empty), irrelevant (page reached, hidden by its show-if) or not-reached (the flow never got to its page); value is null unless state is answered. state is null only if the stored record has no entry for the question. Embedded and computed variables are {state, value} too: answered when they have a value; otherwise unanswered, or (computed) irrelevant / not-reached when every question they read is.",
+  "options": {
+    "events": true
+  },
+  "responses": [
+    {
+      "responseId": "resp-agree-withdraw",
+      "sessionId": "sess-agree-withdraw",
+      "version": 1,
+      "versionChecksum": "sha256:test-40-consent",
+      "planChecksum": "sha256:a50002130ef48fd55a786039b39f4a78e7df6dfff5f50ef42e1e0f4ae88c1050",
+      "engineVersion": "1",
+      "allocationMode": "server",
+      "saveMode": "every-page",
+      "seed": 4003,
+      "startedAt": "2026-10-16T09:30:00.000Z",
+      "submittedAt": "2026-10-16T09:30:30.250Z",
+      "late": false,
+      "afterClose": null,
+      "end": "complete",
+      "language": "en",
+      "consentVersion": "sha256:409d86757dbb5865d0077df1be895ba6cc94997011db60e2a6bf4f4814a6329f",
+      "consentedAt": "1970-01-01T00:00:03.000Z",
+      "conditions": {},
+      "answers": {
+        "q_sleep": {
+          "state": "answered",
+          "value": 5
+        },
+        "q_note": {
+          "state": "unanswered",
+          "value": null
+        }
+      },
+      "variables": {},
+      "orders": {
+        "blocks": {},
+        "items": {},
+        "choices": {}
+      },
+      "quotas": {},
+      "urlParams": {},
+      "events": [
+        {
+          "type": "start",
+          "seq": 1,
+          "rev": 1,
+          "t": 2000,
+          "sessionSeed": 4003,
+          "assigned": {},
+          "language": "en",
+          "device": null,
+          "urlParams": {},
+          "sessionId": null
+        },
+        {
+          "type": "consent",
+          "t": 3000,
+          "decision": "agree",
+          "version": "sha256:409d86757dbb5865d0077df1be895ba6cc94997011db60e2a6bf4f4814a6329f",
+          "seq": 2,
+          "rev": 2,
+          "result": {
+            "outcome": "advanced",
+            "to": "p1_page"
+          }
+        },
+        {
+          "type": "answer",
+          "t": 4000,
+          "item": "q_sleep",
+          "value": 5,
+          "seq": 3,
+          "rev": 3
+        },
+        {
+          "type": "next",
+          "t": 5000,
+          "from": "p1_page",
+          "seq": 4,
+          "rev": 4,
+          "result": {
+            "outcome": "advanced",
+            "to": "p2_page"
+          }
+        },
+        {
+          "type": "next",
+          "t": 6000,
+          "from": "p2_page",
+          "seq": 5,
+          "rev": 5,
+          "result": {
+            "outcome": "ended",
+            "to": null,
+            "effect": {
+              "kind": "end",
+              "outcome": "complete",
+              "nodeId": null
+            }
+          }
+        }
+      ]
+    },
+    {
+      "responseId": "resp-agree",
+      "sessionId": "sess-agree",
+      "version": 1,
+      "versionChecksum": "sha256:test-40-consent",
+      "planChecksum": "sha256:a50002130ef48fd55a786039b39f4a78e7df6dfff5f50ef42e1e0f4ae88c1050",
+      "engineVersion": "1",
+      "allocationMode": "server",
+      "saveMode": "every-page",
+      "seed": 4001,
+      "startedAt": "2026-10-16T09:31:00.000Z",
+      "submittedAt": "2026-10-16T09:31:30.250Z",
+      "late": false,
+      "afterClose": null,
+      "end": "complete",
+      "language": "en",
+      "consentVersion": "sha256:409d86757dbb5865d0077df1be895ba6cc94997011db60e2a6bf4f4814a6329f",
+      "consentedAt": "1970-01-01T00:00:03.000Z",
+      "conditions": {},
+      "answers": {
+        "q_sleep": {
+          "state": "answered",
+          "value": 7
+        },
+        "q_note": {
+          "state": "answered",
+          "value": "slept well"
+        }
+      },
+      "variables": {},
+      "orders": {
+        "blocks": {},
+        "items": {},
+        "choices": {}
+      },
+      "quotas": {},
+      "urlParams": {},
+      "events": [
+        {
+          "type": "start",
+          "seq": 1,
+          "rev": 1,
+          "t": 2000,
+          "sessionSeed": 4001,
+          "assigned": {},
+          "language": "en",
+          "device": null,
+          "urlParams": {},
+          "sessionId": null
+        },
+        {
+          "type": "consent",
+          "t": 3000,
+          "decision": "agree",
+          "version": "sha256:409d86757dbb5865d0077df1be895ba6cc94997011db60e2a6bf4f4814a6329f",
+          "seq": 2,
+          "rev": 2,
+          "result": {
+            "outcome": "advanced",
+            "to": "p1_page"
+          }
+        },
+        {
+          "type": "answer",
+          "t": 4000,
+          "item": "q_sleep",
+          "value": 7,
+          "seq": 3,
+          "rev": 3
+        },
+        {
+          "type": "next",
+          "t": 5000,
+          "from": "p1_page",
+          "seq": 4,
+          "rev": 4,
+          "result": {
+            "outcome": "advanced",
+            "to": "p2_page"
+          }
+        },
+        {
+          "type": "answer",
+          "t": 6000,
+          "item": "q_note",
+          "value": "slept well",
+          "seq": 5,
+          "rev": 5
+        },
+        {
+          "type": "next",
+          "t": 7000,
+          "from": "p2_page",
+          "seq": 6,
+          "rev": 6,
+          "result": {
+            "outcome": "ended",
+            "to": null,
+            "effect": {
+              "kind": "end",
+              "outcome": "complete",
+              "nodeId": null
+            }
+          }
+        }
+      ]
+    },
+    {
+      "responseId": "resp-decline",
+      "sessionId": "sess-decline",
+      "version": 1,
+      "versionChecksum": "sha256:test-40-consent",
+      "planChecksum": "sha256:a50002130ef48fd55a786039b39f4a78e7df6dfff5f50ef42e1e0f4ae88c1050",
+      "engineVersion": "1",
+      "allocationMode": "server",
+      "saveMode": "every-page",
+      "seed": 4002,
+      "startedAt": "2026-10-16T09:32:00.000Z",
+      "submittedAt": "2026-10-16T09:32:30.250Z",
+      "late": false,
+      "afterClose": null,
+      "end": "declined",
+      "language": "en",
+      "consentVersion": null,
+      "consentedAt": null,
+      "conditions": {},
+      "answers": {
+        "q_sleep": {
+          "state": "not-reached",
+          "value": null
+        },
+        "q_note": {
+          "state": "not-reached",
+          "value": null
+        }
+      },
+      "variables": {},
+      "orders": {
+        "blocks": {},
+        "items": {},
+        "choices": {}
+      },
+      "quotas": {},
+      "urlParams": {},
+      "events": [
+        {
+          "type": "start",
+          "seq": 1,
+          "rev": 1,
+          "t": 2000,
+          "sessionSeed": 4002,
+          "assigned": {},
+          "language": "en",
+          "device": null,
+          "urlParams": {},
+          "sessionId": null
+        },
+        {
+          "type": "consent",
+          "t": 3000,
+          "decision": "decline",
+          "version": "sha256:409d86757dbb5865d0077df1be895ba6cc94997011db60e2a6bf4f4814a6329f",
+          "seq": 2,
+          "rev": 2,
+          "result": {
+            "outcome": "ended",
+            "to": null,
+            "effect": {
+              "kind": "end",
+              "outcome": "declined",
+              "nodeId": null
+            }
+          }
+        }
+      ]
+    }
+  ]
+}

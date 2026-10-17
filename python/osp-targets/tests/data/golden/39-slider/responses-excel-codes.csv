@@ -1,0 +1,3 @@
+﻿_response_id,_session_id,_version,_version_checksum,_plan_checksum,_engine_version,_allocation_mode,_save_mode,_seed,_started_at,_submitted_at,_late,_after_close,_end,_language,pain,pain__state,sleep,sleep__state,pain_why,pain_why__state,mood,mood__state
+resp-main,sess-main,1,sha256:test-39-slider,sha256:1438d28eea57e5de0dbb840a6575602a308813a7c85503cf6c2a25d0a351cbc9,1,server,every-page,3901,2026-10-16T09:30:00.000Z,2026-10-16T09:30:30.250Z,false,,complete,en,8,answered,7.5,answered,rest,answered,,unanswered
+resp-off-step,sess-off-step,1,sha256:test-39-slider,sha256:1438d28eea57e5de0dbb840a6575602a308813a7c85503cf6c2a25d0a351cbc9,1,server,every-page,3902,2026-10-16T09:31:00.000Z,2026-10-16T09:31:30.250Z,false,,complete,en,3,answered,6,answered,,irrelevant,-2,answered
