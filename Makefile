@@ -116,6 +116,16 @@ engine-fixtures:
 engine-test: engine-fixtures
 	$(PNPM) -C web/engine exec vitest run
 
+# Engine records (task M2/M3 inputs): every fixture script played through web/engine,
+# `result(state)` written to python/osp-targets/tests/data/records/ (committed, so py-test
+# needs no node). python/osp-targets/tests/test_records.py fails when a scripted fixture has
+# no records or a record's planChecksum is not the current plan's. Then regenerate the
+# goldens: OSP_UPDATE_GOLDEN=1 uv run pytest python/osp-targets/tests/test_data_export.py
+.PHONY: engine-records
+engine-records: engine-fixtures
+	node --experimental-transform-types --no-warnings=ExperimentalWarning \
+		python/osp-targets/tests/data/dump_records.ts
+
 # Simulator (task M1, web/engine-sim). `sim-build` bundles dist/cli.js, the Node sidecar
 # osp_runtime.sim_sidecar runs (py-test needs it); `sim-test` runs the simulator's vitest
 # suite on the fixture plans (built by engine-fixtures).
@@ -174,6 +184,7 @@ lss-import-check:
 # run makes dev-only keys, a dev login and three seeded surveys, all in .data/ (gitignored);
 # every run prints the login and the URLs. The participant app's dev server (5174, base
 # /r/, proxying /api too) starts as well; its links are /r/?s=<slug>. `make dev-reset` wipes .data/. Dev only: never point this at real data.
+# It builds the engine bundle (make engine-bundle) first, so repro packages include replay.mjs.
 DEV_DATA := .data
 DEV_API_PORT := 8000
 DEV_BUILDER_PORT := 5173
@@ -183,7 +194,8 @@ DEV_ENV := OSP_ENV=dev OSP_DATA_DIR=$(DEV_DATA) OSP_DATABASE_URL=sqlite:///$(DEV
 DEV_PROXY := OSP_API_URL=http://127.0.0.1:$(DEV_API_PORT)
 
 .PHONY: dev dev-reset
-dev:
+# engine-bundle first: the reproducibility package's replay.mjs needs web/engine/dist/engine.js.
+dev: engine-bundle
 	@$(DEV_ENV) $(UV_RUN) osp-api init >/dev/null
 	@if [ -z "$${OSP_STORE_KEYS:-}" ]; then set -a; . $(DEV_DATA)/dev-keys.env; set +a; fi; \
 	runtime=""; if [ -f web/runtime/package.json ]; then \

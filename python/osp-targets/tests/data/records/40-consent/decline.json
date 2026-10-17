@@ -1,0 +1,80 @@
+{
+ "format": "osp-response/1",
+ "surveyId": "f40_consent",
+ "surveyVersion": 1,
+ "planVersion": "osp-runtime-plan/1",
+ "planChecksum": "sha256:a50002130ef48fd55a786039b39f4a78e7df6dfff5f50ef42e1e0f4ae88c1050",
+ "engineVersion": "1",
+ "sessionSeed": 4002,
+ "sessionId": null,
+ "language": "en",
+ "device": null,
+ "end": "declined",
+ "endNode": null,
+ "allocation": "server",
+ "assigned": {},
+ "conditions": {},
+ "conditionSources": {},
+ "orders": {
+  "blocks": {},
+  "items": {},
+  "choices": {}
+ },
+ "answers": {
+  "q_sleep": {
+   "state": "not-reached",
+   "value": null
+  },
+  "q_note": {
+   "state": "not-reached",
+   "value": null
+  }
+ },
+ "csvState": {
+  "q_sleep__state": "not-reached",
+  "q_note__state": "not-reached"
+ },
+ "embedded": {},
+ "computed": {},
+ "variableStates": {},
+ "quotas": {},
+ "diagnostics": [],
+ "effects": [],
+ "urlParams": {},
+ "startedAt": 2000,
+ "endedAt": 3000,
+ "revision": 2,
+ "events": [
+  {
+   "type": "start",
+   "seq": 1,
+   "rev": 1,
+   "t": 2000,
+   "sessionSeed": 4002,
+   "assigned": {},
+   "language": "en",
+   "device": null,
+   "urlParams": {},
+   "sessionId": null
+  },
+  {
+   "type": "consent",
+   "t": 3000,
+   "decision": "decline",
+   "version": "sha256:409d86757dbb5865d0077df1be895ba6cc94997011db60e2a6bf4f4814a6329f",
+   "seq": 2,
+   "rev": 2,
+   "result": {
+    "outcome": "ended",
+    "to": null,
+    "effect": {
+     "kind": "end",
+     "outcome": "declined",
+     "nodeId": null
+    }
+   }
+  }
+ ],
+ "consentVersion": null,
+ "consentedAt": null
+}

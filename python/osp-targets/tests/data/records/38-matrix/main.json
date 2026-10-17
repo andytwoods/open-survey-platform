@@ -1,0 +1,167 @@
+{
+ "format": "osp-response/1",
+ "surveyId": "f38_matrix",
+ "surveyVersion": 1,
+ "planVersion": "osp-runtime-plan/1",
+ "planChecksum": "sha256:c109f44b1d9ea53edb1cab368de82363046efd4902a39a556143bd2d002c64b3",
+ "engineVersion": "1",
+ "sessionSeed": 3801,
+ "sessionId": null,
+ "language": "en",
+ "device": null,
+ "end": "complete",
+ "endNode": null,
+ "allocation": "server",
+ "assigned": {},
+ "conditions": {},
+ "conditionSources": {},
+ "orders": {
+  "blocks": {},
+  "items": {},
+  "choices": {}
+ },
+ "answers": {
+  "taste_tea": {
+   "state": "answered",
+   "value": 3
+  },
+  "taste_coffee": {
+   "state": "answered",
+   "value": 1
+  },
+  "taste_cocoa": {
+   "state": "unanswered",
+   "value": null
+  },
+  "cups": {
+   "state": "answered",
+   "value": 2
+  },
+  "when_morning": {
+   "state": "irrelevant",
+   "value": null
+  },
+  "when_evening": {
+   "state": "irrelevant",
+   "value": null
+  }
+ },
+ "csvState": {
+  "drink_tea__state": "answered",
+  "drink_coffee__state": "answered",
+  "drink_cocoa__state": "unanswered",
+  "cups__state": "answered",
+  "when_morning__state": "irrelevant",
+  "when_evening__state": "irrelevant"
+ },
+ "embedded": {},
+ "computed": {},
+ "variableStates": {},
+ "quotas": {},
+ "diagnostics": [],
+ "effects": [],
+ "urlParams": {},
+ "startedAt": 2000,
+ "endedAt": 9000,
+ "revision": 8,
+ "events": [
+  {
+   "type": "start",
+   "seq": 1,
+   "rev": 1,
+   "t": 2000,
+   "sessionSeed": 3801,
+   "assigned": {},
+   "language": "en",
+   "device": null,
+   "urlParams": {},
+   "sessionId": null
+  },
+  {
+   "type": "next",
+   "t": 3000,
+   "from": "p1_page",
+   "seq": 2,
+   "rev": 2,
+   "result": {
+    "outcome": "invalid",
+    "to": "p1_page",
+    "errors": {
+     "taste_tea": {
+      "kind": "required"
+     },
+     "taste_coffee": {
+      "kind": "required"
+     }
+    }
+   }
+  },
+  {
+   "type": "answer",
+   "t": 4000,
+   "item": "taste_tea",
+   "value": 3,
+   "seq": 3,
+   "rev": 3
+  },
+  {
+   "type": "answer",
+   "t": 5000,
+   "item": "taste_coffee",
+   "value": 1,
+   "seq": 4,
+   "rev": 4
+  },
+  {
+   "type": "next",
+   "t": 6000,
+   "from": "p1_page",
+   "seq": 5,
+   "rev": 5,
+   "result": {
+    "outcome": "advanced",
+    "to": "p2_page"
+   }
+  },
+  {
+   "type": "next",
+   "t": 7000,
+   "from": "p2_page",
+   "seq": 6,
+   "rev": 6,
+   "result": {
+    "outcome": "invalid",
+    "to": "p2_page",
+    "errors": {
+     "cups": {
+      "kind": "required"
+     }
+    }
+   }
+  },
+  {
+   "type": "answer",
+   "t": 8000,
+   "item": "cups",
+   "value": 2,
+   "seq": 7,
+   "rev": 7
+  },
+  {
+   "type": "next",
+   "t": 9000,
+   "from": "p2_page",
+   "seq": 8,
+   "rev": 8,
+   "result": {
+    "outcome": "ended",
+    "to": null,
+    "effect": {
+     "kind": "end",
+     "outcome": "complete",
+     "nodeId": null
+    }
+   }
+  }
+ ]
+}

@@ -1,0 +1,110 @@
+{
+ "format": "osp-response/1",
+ "surveyId": "f40_consent",
+ "surveyVersion": 1,
+ "planVersion": "osp-runtime-plan/1",
+ "planChecksum": "sha256:a50002130ef48fd55a786039b39f4a78e7df6dfff5f50ef42e1e0f4ae88c1050",
+ "engineVersion": "1",
+ "sessionSeed": 4003,
+ "sessionId": null,
+ "language": "en",
+ "device": null,
+ "end": "complete",
+ "endNode": null,
+ "allocation": "server",
+ "assigned": {},
+ "conditions": {},
+ "conditionSources": {},
+ "orders": {
+  "blocks": {},
+  "items": {},
+  "choices": {}
+ },
+ "answers": {
+  "q_sleep": {
+   "state": "answered",
+   "value": 5
+  },
+  "q_note": {
+   "state": "unanswered",
+   "value": null
+  }
+ },
+ "csvState": {
+  "q_sleep__state": "answered",
+  "q_note__state": "unanswered"
+ },
+ "embedded": {},
+ "computed": {},
+ "variableStates": {},
+ "quotas": {},
+ "diagnostics": [],
+ "effects": [],
+ "urlParams": {},
+ "startedAt": 2000,
+ "endedAt": 6000,
+ "revision": 5,
+ "events": [
+  {
+   "type": "start",
+   "seq": 1,
+   "rev": 1,
+   "t": 2000,
+   "sessionSeed": 4003,
+   "assigned": {},
+   "language": "en",
+   "device": null,
+   "urlParams": {},
+   "sessionId": null
+  },
+  {
+   "type": "consent",
+   "t": 3000,
+   "decision": "agree",
+   "version": "sha256:409d86757dbb5865d0077df1be895ba6cc94997011db60e2a6bf4f4814a6329f",
+   "seq": 2,
+   "rev": 2,
+   "result": {
+    "outcome": "advanced",
+    "to": "p1_page"
+   }
+  },
+  {
+   "type": "answer",
+   "t": 4000,
+   "item": "q_sleep",
+   "value": 5,
+   "seq": 3,
+   "rev": 3
+  },
+  {
+   "type": "next",
+   "t": 5000,
+   "from": "p1_page",
+   "seq": 4,
+   "rev": 4,
+   "result": {
+    "outcome": "advanced",
+    "to": "p2_page"
+   }
+  },
+  {
+   "type": "next",
+   "t": 6000,
+   "from": "p2_page",
+   "seq": 5,
+   "rev": 5,
+   "result": {
+    "outcome": "ended",
+    "to": null,
+    "effect": {
+     "kind": "end",
+     "outcome": "complete",
+     "nodeId": null
+    }
+   }
+  }
+ ],
+ "consentVersion": "sha256:409d86757dbb5865d0077df1be895ba6cc94997011db60e2a6bf4f4814a6329f",
+ "consentedAt": 3000
+}
