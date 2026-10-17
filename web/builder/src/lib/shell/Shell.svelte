@@ -178,11 +178,15 @@
 		return n?.type === 'question' ? n : undefined;
 	};
 
+	let pickerReturnId = $state<string | null>(null);
+
 	function openChangeType(id?: string) {
 		if (!store) return;
 		const n = id ? findNode(pages, id) : selectedQuestion();
 		if (!n || n.type !== 'question') return toast('Select a question first.');
 		picker = { mode: 'change', id: n.id, current: isQuestionType(n.questionType) ? n.questionType : undefined };
+		const active = document.activeElement;
+		pickerReturnId = active instanceof HTMLElement && active.id ? active.id : null;
 		pickerOpen = true;
 	}
 
@@ -388,6 +392,8 @@
 		// Escape in a dialog opened from the pane (portalled elsewhere) closes only the dialog.
 		const pane = document.getElementById(which === 'outline' ? 'pane-outline' : 'pane-properties');
 		if (!(e.target instanceof Node) || !pane?.contains(e.target)) return;
+		// A dialog that has just opened may not have taken focus yet: Escape is still its.
+		if (e.defaultPrevented || document.querySelector('[role="dialog"][data-state="open"]')) return;
 		if (which === 'outline' && outlineCollapsible && outlineOpen) outlineOpen = false;
 		if (which === 'properties' && propertiesCollapsible && propertiesOpen) propertiesOpen = false;
 	}
@@ -553,6 +559,7 @@
 		mode={picker.mode}
 		current={picker.mode === 'change' ? picker.current : undefined}
 		lastUsed={lastType}
+		returnFocusId={picker.mode === 'change' ? pickerReturnId : null}
 		onchoose={onTypeChosen}
 	/>
 	<TypeChangeDialog request={typeChange} onresolve={onTypeChangeResolved} />

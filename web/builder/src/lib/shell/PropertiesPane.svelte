@@ -206,6 +206,7 @@
 						</span>
 						<button
 							type="button"
+							id="change-type-{node.id}"
 							class="change-type"
 							aria-label="Change type of {node.label}"
 							onclick={() => onChangeType(node.id)}

@@ -14,12 +14,15 @@
 		mode,
 		current,
 		lastUsed = null,
+		returnFocusId = null,
 		onchoose
 	}: {
 		open?: boolean;
 		mode: 'add' | 'change';
 		current?: QuestionTypeId;
 		lastUsed?: QuestionTypeId | null;
+		/** Where focus goes when the picker is cancelled (the opener, by id). */
+		returnFocusId?: string | null;
 		onchoose: (id: QuestionTypeId) => void;
 	} = $props();
 
@@ -34,7 +37,16 @@
 	function onCloseAutoFocus(e: Event) {
 		const id = chosen;
 		chosen = null;
-		if (!id) return;
+		if (!id) {
+			// By id: the pane may redraw the opener while the picker is open, and the dialog's
+			// own focus return would then land on a detached button.
+			if (!returnFocusId) return;
+			e.preventDefault();
+			// After the focus trap has let go (focusing inside it now would be undone).
+			const target = returnFocusId;
+			setTimeout(() => document.getElementById(target)?.focus(), 0);
+			return;
+		}
 		// Adding moves focus to the new question; changing returns it to the opener.
 		if (mode === 'add') e.preventDefault();
 		setTimeout(() => onchoose(id), 0);
