@@ -1,11 +1,21 @@
 <script lang="ts">
 	import { goto } from '$app/navigation';
 	import { resolve } from '$app/paths';
-	import { announce, Announcer, Button, Dialog, PaneResizer, theme, toast } from '@osp/ui-components';
+	import { announce, Announcer, Button, Dialog, PaneResizer, Tabs, theme, toast } from '@osp/ui-components';
+	import { api } from '../api';
+	import DiagnosticsStrip from '../diagnostics/DiagnosticsStrip.svelte';
+	import { ExportCheckState, type CheckResult } from '../diagnostics/export-check.svelte';
+	import { propertyFocus } from '../diagnostics/focus.svelte';
+	import { exportBadges, ownerOf, SURVEY_ID, type ExportBadge, type Owner } from '../diagnostics/model';
+	import { JsonDraft } from '../json/json-draft.svelte';
+	import JsonView from '../json/JsonView.svelte';
 	import AppearanceView from '../appearance/AppearanceView.svelte';
 	import { appearanceCommands, type BuilderView } from '../appearance/commands';
 	import { themeEditor } from '../appearance/theme-editor.svelte';
-	import { onDestroy, onMount, untrack } from 'svelte';
+	import { flowCommands } from '../flow/commands';
+	import { requestAddNode } from '../flow/flow-ui.svelte';
+	import FlowView from '../flow/FlowView.svelte';
+	import { onDestroy, onMount, tick, untrack } from 'svelte';
 	import { CommandRegistry } from '../commands/registry';
 	import { detectMac } from '../commands/shortcut';
 	import { health } from '../health.svelte';
@@ -63,7 +73,7 @@
 
 	// Selection survives patches; it is cleared only when its object is gone (deleted, undone).
 	$effect(() => {
-		if (store && selection.id && !allIds(pages).has(selection.id)) selection.clear();
+		if (store && selection.id && selection.id !== SURVEY_ID && !allIds(pages).has(selection.id)) selection.clear();
 	});
 
 	// A rejected edit (422): say so, visibly and to screen readers.
@@ -78,6 +88,43 @@
 			})
 		);
 	});
+
+	// JSON view (B9) and diagnostics strip + export badges (B10).
+	let canvasTab = $state('canvas');
+	let diagnosticsOpen = $state(false);
+	const jsonDraft = $derived(store ? new JsonDraft(store) : null);
+	const exportCheck = new ExportCheckState(async (surveyId, target) => {
+		try {
+			const { data, error } = await api.GET('/api/surveys/{survey_id}/export-check', {
+				params: { path: { survey_id: surveyId }, query: { target } }
+			});
+			if (data) return { ok: true, data: data as CheckResult };
+			const m = (error as { message?: unknown } | undefined)?.message;
+			return { ok: false, message: typeof m === 'string' ? m : 'Request failed.' };
+		} catch (e) {
+			return { ok: false, message: (e as Error)?.message || 'Network error' };
+		}
+	});
+	onDestroy(() => exportCheck.dispose());
+	const badges = $derived(
+		store ? exportBadges(store.survey, exportCheck.diagnostics, exportCheck.target) : new Map<string, ExportBadge[]>()
+	);
+
+	/** Go to what a diagnostic or badge is about: its property if it has one, else its card. */
+	async function goTo(owner: Owner) {
+		canvasTab = 'canvas';
+		if (propertiesCollapsible) {
+			propertiesOpen = true;
+			outlineOpen = false;
+		}
+		selection.select(owner.id);
+		if (owner.properties.length || owner.id === SURVEY_ID) {
+			propertyFocus.ask(owner.id, owner.properties);
+			return;
+		}
+		await tick();
+		document.getElementById(`card-${owner.id}`)?.focus();
+	}
 
 	async function addQuestion(pageId?: string) {
 		if (!store) return;
@@ -102,6 +149,7 @@
 	const routeOf = (v: BuilderView) => {
 		if (store) {
 			const id = store.surveyId;
+			if (v === 'flow') return resolve('/surveys/[id]/flow', { id });
 			return v === 'appearance'
 				? resolve('/surveys/[id]/appearance', { id })
 				: resolve('/surveys/[id]', { id });
@@ -172,9 +220,19 @@
 			open: (v) => goto(routeOf(v))
 		})
 	);
+	const offFlow = registry.registerAll(
+		flowCommands({
+			inFlow: () => view === 'flow',
+			canOpen: () => !!store,
+			// eslint-disable-next-line svelte/no-navigation-without-resolve -- routeOf resolves
+			open: () => goto(routeOf('flow')),
+			addNode: requestAddNode
+		})
+	);
 	onDestroy(() => {
 		offCommands();
 		offAppearance();
+		offFlow();
 		offOutline();
 	});
 
@@ -198,6 +256,7 @@
 		{title}
 		saveState={store?.saveState ?? 'saved'}
 		{view}
+		viewTabs={!!store}
 		{registry}
 		health={health.state}
 		{outlineCollapsible}
@@ -216,6 +275,10 @@
 	{#if view === 'appearance'}
 		<main id="pane-appearance" class="appearance" aria-label="Appearance">
 			<AppearanceView />
+		</main>
+	{:else if view === 'flow' && store}
+		<main id="pane-flow" class="flow" aria-labelledby="flow-heading">
+			<FlowView {store} />
 		</main>
 	{:else}
 	<div class="panes">
@@ -255,12 +318,33 @@
 		{/if}
 
 		<main id="pane-canvas" class="pane canvas" aria-label="Canvas" data-pane="canvas">
-			<CanvasPane
-				{pages}
-				{selection}
-				mock={!store}
-				onAddQuestion={store ? (id) => void addQuestion(id) : undefined}
-			/>
+			{#snippet canvasView()}
+				<CanvasPane
+					{pages}
+					{selection}
+					mock={!store}
+					onAddQuestion={store ? (id) => void addQuestion(id) : undefined}
+					exportBadges={badges}
+					onBadge={store ? (b) => void goTo(ownerOf(store.survey, b.pointer)) : undefined}
+				/>
+			{/snippet}
+			{#snippet jsonView()}
+				{#if jsonDraft}<JsonView draft={jsonDraft} />{/if}
+			{/snippet}
+			{#if store}
+				<div class="canvas-tabs">
+					<Tabs
+						label="Editor view"
+						bind:value={canvasTab}
+						tabs={[
+							{ value: 'canvas', label: 'Canvas', content: canvasView },
+							{ value: 'json', label: 'JSON', content: jsonView }
+						]}
+					/>
+				</div>
+			{:else}
+				{@render canvasView()}
+			{/if}
 		</main>
 
 		{#if showProperties}
@@ -290,6 +374,14 @@
 			</aside>
 		{/if}
 	</div>
+	{#if store}
+		<DiagnosticsStrip
+			{store}
+			check={exportCheck}
+			bind:open={diagnosticsOpen}
+			ongo={(item) => void goTo(item.owner)}
+		/>
+	{/if}
 	{/if}
 </div>
 
@@ -319,10 +411,15 @@
 		height: 100dvh;
 		overflow: hidden;
 	}
-	.appearance {
+	.appearance,
+	.flow {
 		flex: 1;
 		min-height: 0;
 		overflow: hidden;
+	}
+	.flow {
+		overflow: auto;
+		background: var(--color-bg);
 	}
 	.panes {
 		position: relative;
@@ -356,6 +453,16 @@
 		flex: 1;
 		min-width: 0;
 		background: var(--color-bg);
+	}
+	.canvas-tabs :global(.osp-tabs-list) {
+		position: sticky;
+		top: 0;
+		z-index: 5;
+		padding-inline: var(--space-4);
+		background: var(--color-bg);
+	}
+	.canvas-tabs :global(.osp-tabs-content) {
+		padding-block: 0;
 	}
 	.overlay {
 		position: absolute;

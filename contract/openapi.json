@@ -355,6 +355,30 @@
         "title": "BulkPasteChoices",
         "type": "object"
       },
+      "CapabilityRow": {
+        "properties": {
+          "level": {
+            "enum": [
+              "native",
+              "lowered",
+              "approximated",
+              "unsupported"
+            ],
+            "title": "Level",
+            "type": "string"
+          },
+          "note": {
+            "title": "Note",
+            "type": "string"
+          }
+        },
+        "required": [
+          "level",
+          "note"
+        ],
+        "title": "CapabilityRow",
+        "type": "object"
+      },
       "ChoiceValue": {
         "anyOf": [
           {
@@ -742,6 +766,150 @@
           "message"
         ],
         "title": "ErrorBody",
+        "type": "object"
+      },
+      "ExportCheck": {
+        "properties": {
+          "counts": {
+            "additionalProperties": {
+              "type": "integer"
+            },
+            "description": "Diagnostics per severity",
+            "title": "Counts",
+            "type": "object"
+          },
+          "diagnostics": {
+            "items": {
+              "$ref": "#/components/schemas/ExportDiagnostic"
+            },
+            "title": "Diagnostics",
+            "type": "array"
+          },
+          "exportable": {
+            "description": "False when an error diagnostic means no file",
+            "title": "Exportable",
+            "type": "boolean"
+          },
+          "revision": {
+            "description": "The draft revision that was checked",
+            "title": "Revision",
+            "type": "integer"
+          },
+          "target": {
+            "enum": [
+              "xlsform",
+              "lss"
+            ],
+            "title": "Target",
+            "type": "string"
+          }
+        },
+        "required": [
+          "target",
+          "revision",
+          "exportable",
+          "counts",
+          "diagnostics"
+        ],
+        "title": "ExportCheck",
+        "type": "object"
+      },
+      "ExportDiagnostic": {
+        "properties": {
+          "code": {
+            "title": "Code",
+            "type": "string"
+          },
+          "feature": {
+            "title": "Feature",
+            "type": "string"
+          },
+          "level": {
+            "anyOf": [
+              {
+                "enum": [
+                  "native",
+                  "lowered",
+                  "approximated",
+                  "unsupported"
+                ],
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Level"
+          },
+          "message": {
+            "title": "Message",
+            "type": "string"
+          },
+          "pointer": {
+            "title": "Pointer",
+            "type": "string"
+          },
+          "severity": {
+            "enum": [
+              "info",
+              "warning",
+              "loss",
+              "error"
+            ],
+            "title": "Severity",
+            "type": "string"
+          },
+          "target": {
+            "title": "Target",
+            "type": "string"
+          }
+        },
+        "required": [
+          "target",
+          "severity",
+          "code",
+          "feature",
+          "level",
+          "pointer",
+          "message"
+        ],
+        "title": "ExportDiagnostic",
+        "type": "object"
+      },
+      "ExportTarget": {
+        "properties": {
+          "capabilities": {
+            "additionalProperties": {
+              "$ref": "#/components/schemas/CapabilityRow"
+            },
+            "description": "Capability table: \"<SchemaDef>.<field>[=<value>]\" or \"$<behaviour>\" -> row",
+            "title": "Capabilities",
+            "type": "object"
+          },
+          "description": {
+            "title": "Description",
+            "type": "string"
+          },
+          "id": {
+            "enum": [
+              "xlsform",
+              "lss"
+            ],
+            "title": "Id",
+            "type": "string"
+          },
+          "label": {
+            "title": "Label",
+            "type": "string"
+          }
+        },
+        "required": [
+          "id",
+          "label",
+          "description",
+          "capabilities"
+        ],
+        "title": "ExportTarget",
         "type": "object"
       },
       "ExprDiagnostic": {
@@ -3989,6 +4157,41 @@
         ]
       }
     },
+    "/api/meta/targets": {
+      "get": {
+        "operationId": "listExportTargets",
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "items": {
+                    "$ref": "#/components/schemas/ExportTarget"
+                  },
+                  "title": "Response Listexporttargets",
+                  "type": "array"
+                }
+              }
+            },
+            "description": "Successful Response"
+          },
+          "401": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorBody"
+                }
+              }
+            },
+            "description": "Unauthorized"
+          }
+        },
+        "summary": "Targets",
+        "tags": [
+          "meta"
+        ]
+      }
+    },
     "/api/meta/theme-schema": {
       "get": {
         "operationId": "getThemeSchema",
@@ -4764,6 +4967,91 @@
           }
         },
         "summary": "Get Survey",
+        "tags": [
+          "surveys"
+        ]
+      }
+    },
+    "/api/surveys/{survey_id}/export-check": {
+      "get": {
+        "operationId": "checkExport",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "survey_id",
+            "required": true,
+            "schema": {
+              "title": "Survey Id",
+              "type": "string"
+            }
+          },
+          {
+            "in": "query",
+            "name": "target",
+            "required": true,
+            "schema": {
+              "enum": [
+                "xlsform",
+                "lss"
+              ],
+              "title": "Target",
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ExportCheck"
+                }
+              }
+            },
+            "description": "Successful Response"
+          },
+          "401": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorBody"
+                }
+              }
+            },
+            "description": "Unauthorized"
+          },
+          "403": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorBody"
+                }
+              }
+            },
+            "description": "Forbidden"
+          },
+          "404": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorBody"
+                }
+              }
+            },
+            "description": "Not Found"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            },
+            "description": "Validation Error"
+          }
+        },
+        "summary": "Export Check",
         "tags": [
           "surveys"
         ]

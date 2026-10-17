@@ -1,5 +1,7 @@
 <script lang="ts">
 	import Plus from '@lucide/svelte/icons/plus';
+	import ExportBadges from '../diagnostics/ExportBadges.svelte';
+	import type { ExportBadge } from '../diagnostics/model';
 	import type { OutlineNode } from '../model/outline';
 	import type { SelectionStore } from '../selection.svelte';
 	import { iconFor } from './icons';
@@ -13,13 +15,19 @@
 		pages,
 		selection,
 		mock = false,
-		onAddQuestion
+		onAddQuestion,
+		exportBadges,
+		onBadge
 	}: {
 		pages: OutlineNode[];
 		selection: SelectionStore;
 		mock?: boolean;
 		/** Present when editing is connected: shows "Add question" under each page. */
 		onAddQuestion?: (pageId: string) => void;
+		/** Export badges (B10) per block/page/question id, for the selected target. */
+		exportBadges?: ReadonlyMap<string, readonly ExportBadge[]>;
+		/** A badge was clicked: go to the property it is about. */
+		onBadge?: (badge: ExportBadge) => void;
 	} = $props();
 
 	const cardId = (id: string) => `card-${id}`;
@@ -34,6 +42,15 @@
 	// F6 lands on the selected card, or the first one when nothing is selected.
 	const focusMark = (id: string) => ((selection.id ?? firstId) === id ? '' : undefined);
 </script>
+
+{#snippet badgeList(node: OutlineNode)}
+	{@const xb = exportBadges?.get(node.id)}
+	{#if xb?.length}
+		<ul class="xbadges" aria-label="Export issues: {node.label}" data-export-badges={node.id}>
+			<ExportBadges badges={xb} ongo={onBadge} />
+		</ul>
+	{/if}
+{/snippet}
 
 <div class="canvas">
 	{#if mock}
@@ -53,6 +70,7 @@
 				<SectionIcon size={18} aria-hidden="true" />
 				<span>{kind(section)}: {section.label}</span>
 			</button>
+			{@render badgeList(section)}
 			{#each section.children ?? [] as group (group.id)}
 				{@const GroupIcon = iconFor(group)}
 				<div class="block">
@@ -67,6 +85,7 @@
 						<GroupIcon size={16} aria-hidden="true" />
 						<span>{kind(group)}: {group.label}</span>
 					</button>
+					{@render badgeList(group)}
 					<ul class="cards">
 						{#each group.children ?? [] as question (question.id)}
 							{@const QIcon = iconFor(question)}
@@ -86,6 +105,7 @@
 									<span class="card-label">{question.label}</span>
 									<span class="card-placeholder" aria-hidden="true"></span>
 								</button>
+								{@render badgeList(question)}
 							</li>
 						{/each}
 					</ul>
@@ -107,6 +127,13 @@
 </div>
 
 <style>
+	.xbadges {
+		display: flex;
+		flex-wrap: wrap;
+		gap: var(--space-1);
+		margin: var(--space-1) 0 var(--space-2);
+		padding: 0 var(--space-2);
+	}
 	.canvas {
 		max-width: 46rem;
 		margin: 0 auto;
