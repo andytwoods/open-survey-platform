@@ -32,6 +32,9 @@ EXPECTED_TABLES = {
     # host-owned identity (plan P, migration 0007 dropped users, user_mfa, auth_sessions)
     "principals",
     "identity_nonces",  # shared replay ledger (D16, migration 0008)
+    # saved results layouts (plan V, V-D9, migration 0009)
+    "results_layouts",
+    "results_layout_defaults",
 }
 
 # Anything that would let us store where a participant connected from or with what.

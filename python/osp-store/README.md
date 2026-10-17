@@ -33,6 +33,8 @@ Every method takes a context first. `TenantContext(tenant_id, actor)` scopes eve
 | `audit_log` | actor, the actor's display name when written (`actor_name`, 0007), action, target; never participant data. Reads of responses are audited |
 | `themes` | the lab's theme library: name (unique per lab), opaque theme JSON (`osp_spec.theme` validates it). Migration `0002_themes` |
 | `lab_theme_defaults` | one row per lab: the theme new surveys start with; composite FK to the lab's own theme, cleared when that theme is deleted |
+| `results_layouts` | a survey's saved Results-page layouts, shared by the lab: name (unique per survey), opaque settings JSON (`osp_app.results_layouts` validates it; never response data). Deleted with the survey. Migration `0009_results_layouts` |
+| `results_layout_defaults` | one row per survey: its default layout; composite FK to one of that survey's own layouts, cleared when that layout is deleted |
 
 Migration `0007_host_identity` dropped `users`, `user_mfa` and `auth_sessions` (passwords, TOTP, sign-in sessions): the host owns accounts (`planning/pages-split.md` D5). Labs a host names are made with `store.ensure_tenant(sys, lab_id)` (the host's id is the tenant id, 1-36 characters).
 
