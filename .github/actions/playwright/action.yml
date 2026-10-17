@@ -1,0 +1,38 @@
+name: Playwright browsers
+description: >-
+  Install Playwright's Chromium for one web package, cached by Playwright version and
+  runner OS. The system libraries are installed every time (apt is quick, the cache only
+  holds the browser downloads).
+
+inputs:
+  package:
+    description: Workspace package that owns the Playwright dependency, e.g. web/builder
+    required: true
+
+runs:
+  using: composite
+  steps:
+    - name: Playwright version
+      id: version
+      shell: bash
+      run: |
+        v="$(pnpm -C "${{ inputs.package }}" exec playwright --version | awk '{print $2}')"
+        echo "version=$v" >> "$GITHUB_OUTPUT"
+        echo "Playwright $v"
+
+    - name: Cache browsers
+      id: cache
+      uses: actions/cache@v4
+      with:
+        path: ~/.cache/ms-playwright
+        key: playwright-${{ runner.os }}-${{ steps.version.outputs.version }}
+
+    - name: Install Chromium
+      if: steps.cache.outputs.cache-hit != 'true'
+      shell: bash
+      run: pnpm -C "${{ inputs.package }}" exec playwright install --with-deps chromium
+
+    - name: Install system libraries
+      if: steps.cache.outputs.cache-hit == 'true'
+      shell: bash
+      run: pnpm -C "${{ inputs.package }}" exec playwright install-deps chromium

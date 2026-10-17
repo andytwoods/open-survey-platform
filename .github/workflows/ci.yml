@@ -1,4 +1,13 @@
-name: ci
+name: CI
+
+# `make check` split into jobs that run side by side (task CI1), so a run finishes well
+# under 20 minutes:
+#   check          Ubuntu: `make check` without the browser suite (harness-quick)
+#   web-e2e        Ubuntu: builder end-to-end (Playwright, `make web-e2e`)
+#   harness-quick  Ubuntu: fixture harness in desktop Chromium (`make harness-quick`)
+#   windows        Windows: `make check` without the browser suite and without py-test
+#                  (see the job for what py-test still needs on Windows)
+# uv and pnpm stores are cached by lockfile; Playwright browsers by Playwright version.
 
 on:
   push:
@@ -7,8 +16,18 @@ on:
 permissions:
   contents: read
 
+# A newer push to the same branch or PR cancels the run in progress.
+concurrency:
+  group: ci-${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
+env:
+  UV_VERSION: "0.11.23"
+  NODE_VERSION: "24"
+
 jobs:
   check:
+    name: check (ubuntu)
     runs-on: ubuntu-latest
     timeout-minutes: 20
     steps:
@@ -16,7 +35,9 @@ jobs:
 
       - uses: astral-sh/setup-uv@v6
         with:
-          version: "0.11.23"
+          version: ${{ env.UV_VERSION }}
+          enable-cache: true
+          cache-dependency-glob: uv.lock
 
       - uses: pnpm/action-setup@v4
         with:
@@ -24,12 +45,142 @@ jobs:
 
       - uses: actions/setup-node@v4
         with:
-          node-version: 24
+          node-version: ${{ env.NODE_VERSION }}
           cache: pnpm
           cache-dependency-path: web/pnpm-lock.yaml
 
       - name: Install (from lockfiles)
         run: make install
 
-      - name: make check
-        run: make check
+      - name: make check (without the browser suite)
+        run: make check CHECK_SKIP="harness-quick"
+
+  web-e2e:
+    name: builder e2e (ubuntu)
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: astral-sh/setup-uv@v6
+        with:
+          version: ${{ env.UV_VERSION }}
+          enable-cache: true
+          cache-dependency-glob: uv.lock
+
+      - uses: pnpm/action-setup@v4
+        with:
+          package_json_file: web/package.json
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: ${{ env.NODE_VERSION }}
+          cache: pnpm
+          cache-dependency-path: web/pnpm-lock.yaml
+
+      - name: Install (from lockfiles)
+        run: make install
+
+      - name: Playwright browsers (Chromium)
+        uses: ./.github/actions/playwright
+        with:
+          package: web/builder
+
+      - name: make web-e2e
+        run: make web-e2e
+
+      - name: Upload traces of failed tests
+        if: failure()
+        uses: actions/upload-artifact@v4
+        with:
+          name: builder-e2e-results
+          path: web/builder/test-results
+          if-no-files-found: ignore
+          retention-days: 7
+
+  harness-quick:
+    name: fixture harness (ubuntu)
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          # The whole history: harness-quick picks the fixtures touched since the merge
+          # base with main (all of them on main itself).
+          fetch-depth: 0
+
+      - uses: astral-sh/setup-uv@v6
+        with:
+          version: ${{ env.UV_VERSION }}
+          enable-cache: true
+          cache-dependency-glob: uv.lock
+
+      - uses: pnpm/action-setup@v4
+        with:
+          package_json_file: web/package.json
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: ${{ env.NODE_VERSION }}
+          cache: pnpm
+          cache-dependency-path: web/pnpm-lock.yaml
+
+      - name: Install (from lockfiles)
+        run: make install
+
+      - name: Playwright browsers (Chromium)
+        uses: ./.github/actions/playwright
+        with:
+          package: web/harness
+
+      - name: make harness-quick
+        run: make harness-quick
+
+      - name: Upload harness report and traces
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: harness-report
+          path: |
+            .build/harness/report.md
+            .build/harness/runs/*/test-results
+          if-no-files-found: ignore
+          retention-days: 7
+
+  windows:
+    name: check (windows, no browsers)
+    runs-on: windows-latest
+    timeout-minutes: 20
+    defaults:
+      run:
+        shell: bash
+    steps:
+      - uses: actions/checkout@v4
+
+      # The Makefile needs GNU make and bash; the runner has Git Bash but no make.
+      - name: Install GNU make
+        run: choco install make --no-progress --yes
+
+      - uses: astral-sh/setup-uv@v6
+        with:
+          version: ${{ env.UV_VERSION }}
+          enable-cache: true
+          cache-dependency-glob: uv.lock
+
+      - uses: pnpm/action-setup@v4
+        with:
+          package_json_file: web/package.json
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: ${{ env.NODE_VERSION }}
+          cache: pnpm
+          cache-dependency-path: web/pnpm-lock.yaml
+
+      - name: Install (from lockfiles)
+        run: make install
+
+      # py-test is left out until osp-runtime's node sidecar, the dev-key file-mode checks
+      # and the stop-hook tests work on Windows (task W2's neighbour; see log/devlog.md CI1).
+      - name: make check (without browser suites and py-test)
+        run: make check CHECK_SKIP="harness-quick py-test"

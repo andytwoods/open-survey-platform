@@ -13,7 +13,9 @@ import { fileURLToPath } from 'node:url';
 import { afterEach, describe, expect, it } from 'vitest';
 
 const WEB = resolve(dirname(fileURLToPath(import.meta.url)), '..');
-const DEPCRUISE = join(WEB, 'node_modules', '.bin', 'depcruise');
+// The package's own entry script, run with this node: the `.bin/depcruise` shim is a shell
+// script (a .cmd on Windows), which spawnSync can't start without a shell on Windows.
+const DEPCRUISE = join(WEB, 'node_modules', 'dependency-cruiser', 'bin', 'dependency-cruiser.mjs');
 const CONFIG = join(WEB, '.dependency-cruiser.cjs');
 
 type Files = Record<string, string>;
@@ -31,9 +33,9 @@ function cruise(files: Files, cwd?: string) {
 	}
 	const args = ['builder/src', 'ui-components/src', 'api-client/src', '--config', CONFIG];
 	// Default reporter: what `pnpm depcruise` (and so `make check`) runs; sets the exit code.
-	const gate = spawnSync(DEPCRUISE, args, { cwd: root, encoding: 'utf8' });
+	const gate = spawnSync(process.execPath, [DEPCRUISE, ...args], { cwd: root, encoding: 'utf8' });
 	// JSON reporter (always exits 0): tells us which rules fired.
-	const json = spawnSync(DEPCRUISE, [...args, '--output-type', 'json'], {
+	const json = spawnSync(process.execPath, [DEPCRUISE, ...args, '--output-type', 'json'], {
 		cwd: root,
 		encoding: 'utf8'
 	});
