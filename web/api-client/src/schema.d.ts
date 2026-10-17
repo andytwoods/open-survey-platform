@@ -589,6 +589,75 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
+    "/api/surveys/{survey_id}/results/layouts": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /**
+         * List Layouts
+         * @description The survey's saved layouts and which one is the default (survey.export).
+         */
+        get: operations["listResultsLayouts"];
+        put?: never;
+        /**
+         * Create Layout
+         * @description Save a layout (survey.export; audited). A duplicate name in the survey is 409.
+         */
+        post: operations["createResultsLayout"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/surveys/{survey_id}/results/layouts/default": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        /**
+         * Set Default Layout
+         * @description Make one of the survey's layouts the default, or clear it (survey.export; audited).
+         */
+        put: operations["setDefaultResultsLayout"];
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/surveys/{survey_id}/results/layouts/{layout_id}": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** Get Layout */
+        get: operations["getResultsLayout"];
+        put?: never;
+        post?: never;
+        /**
+         * Delete Layout
+         * @description Delete a layout; if it was the default, the survey has none (survey.export; audited).
+         */
+        delete: operations["deleteResultsLayout"];
+        options?: never;
+        head?: never;
+        /**
+         * Update Layout
+         * @description Rename a layout and/or replace its settings (survey.export; audited).
+         */
+        patch: operations["updateResultsLayout"];
+        trace?: never;
+    };
     "/api/surveys/{survey_id}/results/query": {
         parameters: {
             query?: never;
@@ -1019,6 +1088,35 @@ export interface components {
             /** Warnings */
             warnings?: components["schemas"]["ResultWarning"][];
         };
+        /**
+         * CardLayout
+         * @description One question card. The list order of ``cards`` is the display order.
+         */
+        CardLayout: {
+            bins?: components["schemas"]["LayoutBins"] | null;
+            /**
+             * Caption
+             * @description Edited caption (V-D8)
+             */
+            caption?: string | null;
+            /**
+             * Chart
+             * @description Chart menu id (e.g. bars, donut, histogram, likert, table). The page falls back to the type's default when the id does not suit the question.
+             */
+            chart?: string | null;
+            /**
+             * Hidden
+             * @default false
+             */
+            hidden: boolean;
+            /**
+             * Question
+             * @description Question id
+             */
+            question: string;
+            /** Splitlayout */
+            splitLayout?: ("grouped" | "stacked" | "multiples") | null;
+        };
         /** CardRequest */
         CardRequest: {
             bins?: components["schemas"]["BinSpec"] | null;
@@ -1141,6 +1239,21 @@ export interface components {
              * @default null
              */
             index: number | null;
+        };
+        /** CreateResultsLayoutRequest */
+        CreateResultsLayoutRequest: {
+            /**
+             * Isdefault
+             * @description Also make it the survey's default
+             * @default false
+             */
+            isDefault: boolean;
+            /**
+             * Name
+             * @description Unique within the survey
+             */
+            name: string;
+            settings: components["schemas"]["LayoutSettings"];
         };
         /** CreateSurveyRequest */
         CreateSurveyRequest: {
@@ -1621,6 +1734,107 @@ export interface components {
             /** Updatedby */
             updatedBy: string;
         };
+        /** LayoutBins */
+        LayoutBins: {
+            /** Count */
+            count?: number | null;
+            /** Unit */
+            unit?: ("day" | "week" | "month" | "year") | null;
+            /** Width */
+            width?: number | null;
+        };
+        /** LayoutCondition */
+        LayoutCondition: {
+            /** In */
+            in: (number | string)[];
+            /** Variable */
+            variable: string;
+        };
+        /** LayoutFilter */
+        LayoutFilter: {
+            /** In */
+            in: (number | string)[];
+            /** Question */
+            question: string;
+        };
+        /**
+         * LayoutQuery
+         * @description The results query the layout opens with (the fields of ``ResultsQuery`` except
+         *     ``cards``, which the layout's card list supplies).
+         */
+        LayoutQuery: {
+            condition?: components["schemas"]["LayoutCondition"] | null;
+            /**
+             * Denominator
+             * @default answered
+             * @enum {string}
+             */
+            denominator: "answered" | "shown";
+            /** Filters */
+            filters?: components["schemas"]["LayoutFilter"][];
+            /**
+             * Intervals
+             * @default false
+             */
+            intervals: boolean;
+            /** Language */
+            language?: string | null;
+            split?: components["schemas"]["LayoutSplit"] | null;
+            /**
+             * Status
+             * @default complete
+             * @enum {string}
+             */
+            status: "complete" | "all";
+            /** Submittedfrom */
+            submittedFrom?: string | null;
+            /** Submittedto */
+            submittedTo?: string | null;
+            /**
+             * Versions
+             * @description Omitted: the latest published version
+             */
+            versions?: number[] | null;
+        };
+        /**
+         * LayoutSettings
+         * @description What a saved layout holds: settings only, never response data.
+         */
+        LayoutSettings: {
+            /**
+             * Cards
+             * @description Cards in display order; questions not listed follow in survey order
+             */
+            cards?: components["schemas"]["CardLayout"][];
+            query?: components["schemas"]["LayoutQuery"];
+            /**
+             * Schemaversion
+             * @default osp-results-layout/0.1
+             * @constant
+             */
+            schemaVersion: "osp-results-layout/0.1";
+            /**
+             * Shownotes
+             * @description Show note items as headings
+             * @default false
+             */
+            showNotes: boolean;
+        };
+        /**
+         * LayoutSplit
+         * @description Exactly one of ``question`` or ``condition`` (as the results query).
+         */
+        LayoutSplit: {
+            /** Condition */
+            condition?: string | null;
+            /**
+             * Excludemissing
+             * @default false
+             */
+            excludeMissing: boolean;
+            /** Question */
+            question?: string | null;
+        };
         /** MoveBlock */
         MoveBlockParams: {
             /** Id */
@@ -2029,6 +2243,47 @@ export interface components {
              */
             suppressBelow?: number | null;
         };
+        /** ResultsLayoutList */
+        ResultsLayoutList: {
+            /** Defaultlayoutid */
+            defaultLayoutId: string | null;
+            /**
+             * Layouts
+             * @description By name
+             */
+            layouts: components["schemas"]["ResultsLayoutOut"][];
+            /** Surveyid */
+            surveyId: string;
+        };
+        /** ResultsLayoutOut */
+        ResultsLayoutOut: {
+            /**
+             * Createdat
+             * Format: date-time
+             */
+            createdAt: string;
+            /** Createdby */
+            createdBy: string;
+            /** Id */
+            id: string;
+            /**
+             * Isdefault
+             * @description The survey's default layout (at most one)
+             */
+            isDefault: boolean;
+            /** Name */
+            name: string;
+            settings: components["schemas"]["LayoutSettings"];
+            /** Surveyid */
+            surveyId: string;
+            /**
+             * Updatedat
+             * Format: date-time
+             */
+            updatedAt: string;
+            /** Updatedby */
+            updatedBy: string;
+        };
         /** ResultsQuery */
         ResultsQuery: {
             /**
@@ -2259,6 +2514,14 @@ export interface components {
             consent: {
                 [key: string]: components["schemas"]["JsonValue"];
             } | null;
+        };
+        /** SetDefaultResultsLayoutRequest */
+        SetDefaultResultsLayoutRequest: {
+            /**
+             * Layoutid
+             * @description A layout of this survey, or null for no default
+             */
+            layoutId: string | null;
         };
         /** SetDefaultThemeRequest */
         SetDefaultThemeRequest: {
@@ -3011,6 +3274,13 @@ export interface components {
             tenantId: string;
             /** Themes */
             themes: components["schemas"]["LabThemeOut"][];
+        };
+        /** UpdateResultsLayoutRequest */
+        UpdateResultsLayoutRequest: {
+            /** Name */
+            name?: string | null;
+            /** @description Replaces the whole settings */
+            settings?: components["schemas"]["LayoutSettings"] | null;
         };
         /** UpdateThemeRequest */
         UpdateThemeRequest: {
@@ -4881,6 +5151,385 @@ export interface operations {
             };
             /** @description Not Found */
             404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorBody"];
+                };
+            };
+            /** @description Unprocessable Content */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["RejectedBody"];
+                };
+            };
+        };
+    };
+    listResultsLayouts: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                survey_id: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ResultsLayoutList"];
+                };
+            };
+            /** @description Unauthorized */
+            401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorBody"];
+                };
+            };
+            /** @description Forbidden */
+            403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorBody"];
+                };
+            };
+            /** @description Not Found */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorBody"];
+                };
+            };
+            /** @description Unprocessable Content */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["RejectedBody"];
+                };
+            };
+        };
+    };
+    createResultsLayout: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                survey_id: string;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["CreateResultsLayoutRequest"];
+            };
+        };
+        responses: {
+            /** @description Successful Response */
+            201: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ResultsLayoutOut"];
+                };
+            };
+            /** @description Unauthorized */
+            401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorBody"];
+                };
+            };
+            /** @description Forbidden */
+            403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorBody"];
+                };
+            };
+            /** @description Not Found */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorBody"];
+                };
+            };
+            /** @description Conflict */
+            409: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorBody"];
+                };
+            };
+            /** @description Unprocessable Content */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["RejectedBody"];
+                };
+            };
+        };
+    };
+    setDefaultResultsLayout: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                survey_id: string;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["SetDefaultResultsLayoutRequest"];
+            };
+        };
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ResultsLayoutList"];
+                };
+            };
+            /** @description Unauthorized */
+            401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorBody"];
+                };
+            };
+            /** @description Forbidden */
+            403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorBody"];
+                };
+            };
+            /** @description Not Found */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorBody"];
+                };
+            };
+            /** @description Unprocessable Content */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["RejectedBody"];
+                };
+            };
+        };
+    };
+    getResultsLayout: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                survey_id: string;
+                layout_id: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ResultsLayoutOut"];
+                };
+            };
+            /** @description Unauthorized */
+            401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorBody"];
+                };
+            };
+            /** @description Forbidden */
+            403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorBody"];
+                };
+            };
+            /** @description Not Found */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorBody"];
+                };
+            };
+            /** @description Unprocessable Content */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["RejectedBody"];
+                };
+            };
+        };
+    };
+    deleteResultsLayout: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                survey_id: string;
+                layout_id: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            204: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+            /** @description Unauthorized */
+            401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorBody"];
+                };
+            };
+            /** @description Forbidden */
+            403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorBody"];
+                };
+            };
+            /** @description Not Found */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorBody"];
+                };
+            };
+            /** @description Unprocessable Content */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["RejectedBody"];
+                };
+            };
+        };
+    };
+    updateResultsLayout: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                survey_id: string;
+                layout_id: string;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["UpdateResultsLayoutRequest"];
+            };
+        };
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ResultsLayoutOut"];
+                };
+            };
+            /** @description Unauthorized */
+            401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorBody"];
+                };
+            };
+            /** @description Forbidden */
+            403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorBody"];
+                };
+            };
+            /** @description Not Found */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorBody"];
+                };
+            };
+            /** @description Conflict */
+            409: {
                 headers: {
                     [name: string]: unknown;
                 };

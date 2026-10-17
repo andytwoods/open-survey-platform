@@ -41,6 +41,7 @@ from .records import (
     Tenant,
     Version,
 )
+from .results_layouts import StoredResultsLayout
 from .retention import RetentionPlan, RetentionPolicy, plan_retention
 from .store import Store, checksum
 from .themes import StoredTheme
@@ -75,6 +76,7 @@ __all__ = [
     "Store",
     "SubmitResult",
     "StoreError",
+    "StoredResultsLayout",
     "StoredTheme",
     "Survey",
     "SystemContext",

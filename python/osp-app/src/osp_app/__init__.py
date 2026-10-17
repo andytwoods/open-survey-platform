@@ -3,6 +3,7 @@ See README.md."""
 
 from . import results as results  # registers the results commands
 from . import results_export as results_export  # registers survey.results_export
+from . import results_layouts as results_layouts  # registers the saved-layout commands
 from .builder import Builder, EditResult, ExportResult, HistoryEntry, PublishResult, SurveyView
 from .commands import COMMANDS, AppCommand, command, dispatch
 from .data_export import DataExport
@@ -19,6 +20,7 @@ from .errors import (
 from .identity import Identity, InvalidIdentity, make_identity
 from .preview import preview_plan
 from .repro import ReproDownload
+from .results_layouts import LayoutSettings, ResultsLayoutsView
 from .runtime_repo import StoreParticipantRepo
 from .services import AppServices, build_services
 from .simulate import simulate_survey
@@ -40,10 +42,12 @@ __all__ = [
     "InvalidIdentity",
     "InvalidRequest",
     "LabTheme",
+    "LayoutSettings",
     "NotFoundError",
     "PublishResult",
     "Rejected",
     "ReproDownload",
+    "ResultsLayoutsView",
     "RevisionConflictError",
     "StoreParticipantRepo",
     "SurveyView",

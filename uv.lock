@@ -1,5 +1,5 @@
 version = 1
-revision = 3
+revision = 5
 requires-python = ">=3.14"
 
 [manifest]
@@ -683,6 +683,7 @@ dependencies = [
     { name = "osp-spec" },
     { name = "osp-store" },
     { name = "osp-targets" },
+    { name = "pydantic" },
 ]
 
 [package.metadata]
@@ -694,6 +695,7 @@ requires-dist = [
     { name = "osp-spec", editable = "python/osp-spec" },
     { name = "osp-store", editable = "python/osp-store" },
     { name = "osp-targets", editable = "python/osp-targets" },
+    { name = "pydantic", specifier = ">=2.12,<3" },
 ]
 
 [[package]]

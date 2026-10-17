@@ -699,6 +699,81 @@
         "title": "Card",
         "type": "object"
       },
+      "CardLayout": {
+        "additionalProperties": false,
+        "description": "One question card. The list order of ``cards`` is the display order.",
+        "properties": {
+          "bins": {
+            "anyOf": [
+              {
+                "$ref": "#/components/schemas/LayoutBins"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
+          "caption": {
+            "anyOf": [
+              {
+                "maxLength": 2000,
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "description": "Edited caption (V-D8)",
+            "title": "Caption"
+          },
+          "chart": {
+            "anyOf": [
+              {
+                "pattern": "^[a-z][a-z0-9-]{0,39}$",
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "description": "Chart menu id (e.g. bars, donut, histogram, likert, table). The page falls back to the type's default when the id does not suit the question.",
+            "title": "Chart"
+          },
+          "hidden": {
+            "default": false,
+            "title": "Hidden",
+            "type": "boolean"
+          },
+          "question": {
+            "description": "Question id",
+            "maxLength": 200,
+            "minLength": 1,
+            "title": "Question",
+            "type": "string"
+          },
+          "splitLayout": {
+            "anyOf": [
+              {
+                "enum": [
+                  "grouped",
+                  "stacked",
+                  "multiples"
+                ],
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Splitlayout"
+          }
+        },
+        "required": [
+          "question"
+        ],
+        "title": "CardLayout",
+        "type": "object"
+      },
       "CardRequest": {
         "additionalProperties": false,
         "properties": {
@@ -1002,6 +1077,33 @@
           }
         },
         "title": "CreateChoiceList",
+        "type": "object"
+      },
+      "CreateResultsLayoutRequest": {
+        "additionalProperties": false,
+        "properties": {
+          "isDefault": {
+            "default": false,
+            "description": "Also make it the survey's default",
+            "title": "Isdefault",
+            "type": "boolean"
+          },
+          "name": {
+            "description": "Unique within the survey",
+            "maxLength": 200,
+            "minLength": 1,
+            "title": "Name",
+            "type": "string"
+          },
+          "settings": {
+            "$ref": "#/components/schemas/LayoutSettings"
+          }
+        },
+        "required": [
+          "name",
+          "settings"
+        ],
+        "title": "CreateResultsLayoutRequest",
         "type": "object"
       },
       "CreateSurveyRequest": {
@@ -2051,6 +2153,306 @@
         "title": "LabThemeOut",
         "type": "object"
       },
+      "LayoutBins": {
+        "additionalProperties": false,
+        "properties": {
+          "count": {
+            "anyOf": [
+              {
+                "maximum": 200.0,
+                "minimum": 1.0,
+                "type": "integer"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Count"
+          },
+          "unit": {
+            "anyOf": [
+              {
+                "enum": [
+                  "day",
+                  "week",
+                  "month",
+                  "year"
+                ],
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Unit"
+          },
+          "width": {
+            "anyOf": [
+              {
+                "exclusiveMinimum": 0.0,
+                "type": "number"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Width"
+          }
+        },
+        "title": "LayoutBins",
+        "type": "object"
+      },
+      "LayoutCondition": {
+        "additionalProperties": false,
+        "properties": {
+          "in": {
+            "items": {
+              "anyOf": [
+                {
+                  "type": "integer"
+                },
+                {
+                  "type": "string"
+                }
+              ]
+            },
+            "maxItems": 500,
+            "minItems": 1,
+            "title": "In",
+            "type": "array"
+          },
+          "variable": {
+            "maxLength": 200,
+            "minLength": 1,
+            "title": "Variable",
+            "type": "string"
+          }
+        },
+        "required": [
+          "variable",
+          "in"
+        ],
+        "title": "LayoutCondition",
+        "type": "object"
+      },
+      "LayoutFilter": {
+        "additionalProperties": false,
+        "properties": {
+          "in": {
+            "items": {
+              "anyOf": [
+                {
+                  "type": "integer"
+                },
+                {
+                  "type": "string"
+                }
+              ]
+            },
+            "maxItems": 500,
+            "minItems": 1,
+            "title": "In",
+            "type": "array"
+          },
+          "question": {
+            "maxLength": 200,
+            "minLength": 1,
+            "title": "Question",
+            "type": "string"
+          }
+        },
+        "required": [
+          "question",
+          "in"
+        ],
+        "title": "LayoutFilter",
+        "type": "object"
+      },
+      "LayoutQuery": {
+        "additionalProperties": false,
+        "description": "The results query the layout opens with (the fields of ``ResultsQuery`` except\n``cards``, which the layout's card list supplies).",
+        "properties": {
+          "condition": {
+            "anyOf": [
+              {
+                "$ref": "#/components/schemas/LayoutCondition"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
+          "denominator": {
+            "default": "answered",
+            "enum": [
+              "answered",
+              "shown"
+            ],
+            "title": "Denominator",
+            "type": "string"
+          },
+          "filters": {
+            "items": {
+              "$ref": "#/components/schemas/LayoutFilter"
+            },
+            "maxItems": 20,
+            "title": "Filters",
+            "type": "array"
+          },
+          "intervals": {
+            "default": false,
+            "title": "Intervals",
+            "type": "boolean"
+          },
+          "language": {
+            "anyOf": [
+              {
+                "maxLength": 35,
+                "minLength": 1,
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Language"
+          },
+          "split": {
+            "anyOf": [
+              {
+                "$ref": "#/components/schemas/LayoutSplit"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
+          "status": {
+            "default": "complete",
+            "enum": [
+              "complete",
+              "all"
+            ],
+            "title": "Status",
+            "type": "string"
+          },
+          "submittedFrom": {
+            "anyOf": [
+              {
+                "format": "date-time",
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Submittedfrom"
+          },
+          "submittedTo": {
+            "anyOf": [
+              {
+                "format": "date-time",
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Submittedto"
+          },
+          "versions": {
+            "anyOf": [
+              {
+                "items": {
+                  "minimum": 1.0,
+                  "type": "integer"
+                },
+                "maxItems": 50,
+                "minItems": 1,
+                "type": "array"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "description": "Omitted: the latest published version",
+            "title": "Versions"
+          }
+        },
+        "title": "LayoutQuery",
+        "type": "object"
+      },
+      "LayoutSettings": {
+        "additionalProperties": false,
+        "description": "What a saved layout holds: settings only, never response data.",
+        "properties": {
+          "cards": {
+            "description": "Cards in display order; questions not listed follow in survey order",
+            "items": {
+              "$ref": "#/components/schemas/CardLayout"
+            },
+            "maxItems": 500,
+            "title": "Cards",
+            "type": "array"
+          },
+          "query": {
+            "$ref": "#/components/schemas/LayoutQuery"
+          },
+          "schemaVersion": {
+            "const": "osp-results-layout/0.1",
+            "default": "osp-results-layout/0.1",
+            "title": "Schemaversion",
+            "type": "string"
+          },
+          "showNotes": {
+            "default": false,
+            "description": "Show note items as headings",
+            "title": "Shownotes",
+            "type": "boolean"
+          }
+        },
+        "title": "LayoutSettings",
+        "type": "object"
+      },
+      "LayoutSplit": {
+        "additionalProperties": false,
+        "description": "Exactly one of ``question`` or ``condition`` (as the results query).",
+        "properties": {
+          "condition": {
+            "anyOf": [
+              {
+                "maxLength": 200,
+                "minLength": 1,
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Condition"
+          },
+          "excludeMissing": {
+            "default": false,
+            "title": "Excludemissing",
+            "type": "boolean"
+          },
+          "question": {
+            "anyOf": [
+              {
+                "maxLength": 200,
+                "minLength": 1,
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Question"
+          }
+        },
+        "title": "LayoutSplit",
+        "type": "object"
+      },
       "MoveBlockParams": {
         "additionalProperties": false,
         "properties": {
@@ -3095,6 +3497,95 @@
         "title": "ResultsExportRequest",
         "type": "object"
       },
+      "ResultsLayoutList": {
+        "properties": {
+          "defaultLayoutId": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Defaultlayoutid"
+          },
+          "layouts": {
+            "description": "By name",
+            "items": {
+              "$ref": "#/components/schemas/ResultsLayoutOut"
+            },
+            "title": "Layouts",
+            "type": "array"
+          },
+          "surveyId": {
+            "title": "Surveyid",
+            "type": "string"
+          }
+        },
+        "required": [
+          "surveyId",
+          "layouts",
+          "defaultLayoutId"
+        ],
+        "title": "ResultsLayoutList",
+        "type": "object"
+      },
+      "ResultsLayoutOut": {
+        "properties": {
+          "createdAt": {
+            "format": "date-time",
+            "title": "Createdat",
+            "type": "string"
+          },
+          "createdBy": {
+            "title": "Createdby",
+            "type": "string"
+          },
+          "id": {
+            "title": "Id",
+            "type": "string"
+          },
+          "isDefault": {
+            "description": "The survey's default layout (at most one)",
+            "title": "Isdefault",
+            "type": "boolean"
+          },
+          "name": {
+            "title": "Name",
+            "type": "string"
+          },
+          "settings": {
+            "$ref": "#/components/schemas/LayoutSettings"
+          },
+          "surveyId": {
+            "title": "Surveyid",
+            "type": "string"
+          },
+          "updatedAt": {
+            "format": "date-time",
+            "title": "Updatedat",
+            "type": "string"
+          },
+          "updatedBy": {
+            "title": "Updatedby",
+            "type": "string"
+          }
+        },
+        "required": [
+          "id",
+          "surveyId",
+          "name",
+          "settings",
+          "isDefault",
+          "createdBy",
+          "createdAt",
+          "updatedBy",
+          "updatedAt"
+        ],
+        "title": "ResultsLayoutOut",
+        "type": "object"
+      },
       "ResultsQuery": {
         "additionalProperties": false,
         "properties": {
@@ -3660,6 +4151,28 @@
           }
         },
         "title": "SetConsent",
+        "type": "object"
+      },
+      "SetDefaultResultsLayoutRequest": {
+        "additionalProperties": false,
+        "properties": {
+          "layoutId": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "description": "A layout of this survey, or null for no default",
+            "title": "Layoutid"
+          }
+        },
+        "required": [
+          "layoutId"
+        ],
+        "title": "SetDefaultResultsLayoutRequest",
         "type": "object"
       },
       "SetDefaultThemeRequest": {
@@ -5485,6 +5998,37 @@
           "canManage"
         ],
         "title": "ThemeLibrary",
+        "type": "object"
+      },
+      "UpdateResultsLayoutRequest": {
+        "additionalProperties": false,
+        "properties": {
+          "name": {
+            "anyOf": [
+              {
+                "maxLength": 200,
+                "minLength": 1,
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Name"
+          },
+          "settings": {
+            "anyOf": [
+              {
+                "$ref": "#/components/schemas/LayoutSettings"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "description": "Replaces the whole settings"
+          }
+        },
+        "title": "UpdateResultsLayoutRequest",
         "type": "object"
       },
       "UpdateThemeRequest": {
@@ -8087,6 +8631,507 @@
           }
         },
         "summary": "Record Results Export",
+        "tags": [
+          "results"
+        ]
+      }
+    },
+    "/api/surveys/{survey_id}/results/layouts": {
+      "get": {
+        "description": "The survey's saved layouts and which one is the default (survey.export).",
+        "operationId": "listResultsLayouts",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "survey_id",
+            "required": true,
+            "schema": {
+              "title": "Survey Id",
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ResultsLayoutList"
+                }
+              }
+            },
+            "description": "Successful Response"
+          },
+          "401": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorBody"
+                }
+              }
+            },
+            "description": "Unauthorized"
+          },
+          "403": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorBody"
+                }
+              }
+            },
+            "description": "Forbidden"
+          },
+          "404": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorBody"
+                }
+              }
+            },
+            "description": "Not Found"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/RejectedBody"
+                }
+              }
+            },
+            "description": "Unprocessable Content"
+          }
+        },
+        "summary": "List Layouts",
+        "tags": [
+          "results"
+        ]
+      },
+      "post": {
+        "description": "Save a layout (survey.export; audited). A duplicate name in the survey is 409.",
+        "operationId": "createResultsLayout",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "survey_id",
+            "required": true,
+            "schema": {
+              "title": "Survey Id",
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/CreateResultsLayoutRequest"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "201": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ResultsLayoutOut"
+                }
+              }
+            },
+            "description": "Successful Response"
+          },
+          "401": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorBody"
+                }
+              }
+            },
+            "description": "Unauthorized"
+          },
+          "403": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorBody"
+                }
+              }
+            },
+            "description": "Forbidden"
+          },
+          "404": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorBody"
+                }
+              }
+            },
+            "description": "Not Found"
+          },
+          "409": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorBody"
+                }
+              }
+            },
+            "description": "Conflict"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/RejectedBody"
+                }
+              }
+            },
+            "description": "Unprocessable Content"
+          }
+        },
+        "summary": "Create Layout",
+        "tags": [
+          "results"
+        ]
+      }
+    },
+    "/api/surveys/{survey_id}/results/layouts/default": {
+      "put": {
+        "description": "Make one of the survey's layouts the default, or clear it (survey.export; audited).",
+        "operationId": "setDefaultResultsLayout",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "survey_id",
+            "required": true,
+            "schema": {
+              "title": "Survey Id",
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/SetDefaultResultsLayoutRequest"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ResultsLayoutList"
+                }
+              }
+            },
+            "description": "Successful Response"
+          },
+          "401": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorBody"
+                }
+              }
+            },
+            "description": "Unauthorized"
+          },
+          "403": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorBody"
+                }
+              }
+            },
+            "description": "Forbidden"
+          },
+          "404": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorBody"
+                }
+              }
+            },
+            "description": "Not Found"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/RejectedBody"
+                }
+              }
+            },
+            "description": "Unprocessable Content"
+          }
+        },
+        "summary": "Set Default Layout",
+        "tags": [
+          "results"
+        ]
+      }
+    },
+    "/api/surveys/{survey_id}/results/layouts/{layout_id}": {
+      "delete": {
+        "description": "Delete a layout; if it was the default, the survey has none (survey.export; audited).",
+        "operationId": "deleteResultsLayout",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "survey_id",
+            "required": true,
+            "schema": {
+              "title": "Survey Id",
+              "type": "string"
+            }
+          },
+          {
+            "in": "path",
+            "name": "layout_id",
+            "required": true,
+            "schema": {
+              "title": "Layout Id",
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "204": {
+            "description": "Successful Response"
+          },
+          "401": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorBody"
+                }
+              }
+            },
+            "description": "Unauthorized"
+          },
+          "403": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorBody"
+                }
+              }
+            },
+            "description": "Forbidden"
+          },
+          "404": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorBody"
+                }
+              }
+            },
+            "description": "Not Found"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/RejectedBody"
+                }
+              }
+            },
+            "description": "Unprocessable Content"
+          }
+        },
+        "summary": "Delete Layout",
+        "tags": [
+          "results"
+        ]
+      },
+      "get": {
+        "operationId": "getResultsLayout",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "survey_id",
+            "required": true,
+            "schema": {
+              "title": "Survey Id",
+              "type": "string"
+            }
+          },
+          {
+            "in": "path",
+            "name": "layout_id",
+            "required": true,
+            "schema": {
+              "title": "Layout Id",
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ResultsLayoutOut"
+                }
+              }
+            },
+            "description": "Successful Response"
+          },
+          "401": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorBody"
+                }
+              }
+            },
+            "description": "Unauthorized"
+          },
+          "403": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorBody"
+                }
+              }
+            },
+            "description": "Forbidden"
+          },
+          "404": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorBody"
+                }
+              }
+            },
+            "description": "Not Found"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/RejectedBody"
+                }
+              }
+            },
+            "description": "Unprocessable Content"
+          }
+        },
+        "summary": "Get Layout",
+        "tags": [
+          "results"
+        ]
+      },
+      "patch": {
+        "description": "Rename a layout and/or replace its settings (survey.export; audited).",
+        "operationId": "updateResultsLayout",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "survey_id",
+            "required": true,
+            "schema": {
+              "title": "Survey Id",
+              "type": "string"
+            }
+          },
+          {
+            "in": "path",
+            "name": "layout_id",
+            "required": true,
+            "schema": {
+              "title": "Layout Id",
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/UpdateResultsLayoutRequest"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ResultsLayoutOut"
+                }
+              }
+            },
+            "description": "Successful Response"
+          },
+          "401": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorBody"
+                }
+              }
+            },
+            "description": "Unauthorized"
+          },
+          "403": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorBody"
+                }
+              }
+            },
+            "description": "Forbidden"
+          },
+          "404": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorBody"
+                }
+              }
+            },
+            "description": "Not Found"
+          },
+          "409": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorBody"
+                }
+              }
+            },
+            "description": "Conflict"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/RejectedBody"
+                }
+              }
+            },
+            "description": "Unprocessable Content"
+          }
+        },
+        "summary": "Update Layout",
         "tags": [
           "results"
         ]

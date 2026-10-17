@@ -33,6 +33,16 @@ sessions or account creation here any more (removed with migration `0007_host_id
   `osp_runtime.SessionService` (over `runtime_repo.StoreParticipantRepo`), shared by publish
   and the participant API.
 
+## Results (plan V)
+
+- `results`: V1's aggregation (`survey.results_query`, `survey.results_text`; V-D5 semantics).
+- `results_layouts`: saved Results-page layouts (V-D9). `LayoutSettings` is the closed pydantic
+  schema (query, cards in display order with chart / hidden / bins / caption, `showNotes`;
+  unknown fields refused, never response data); `validate_settings` normalises it and runs the
+  query part through `results.parse_query`. Commands `survey.results_layouts` (list),
+  `survey.results_layout_get/create/update/delete/set_default`, all `survey.export`
+  (owner, editor), per survey, shared by the lab, audited as `results.layout.*`.
+
 ## Publish (task R2b)
 
 `survey.publish(survey_id, base_revision=None, save_mode="every-page")`:

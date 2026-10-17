@@ -47,6 +47,7 @@ from .records import (
     Tenant,
     Version,
 )
+from .results_layouts import ResultsLayoutLibrary
 from .retention import (
     ParticipantRow,
     RetentionPlan,
@@ -157,7 +158,7 @@ def _answers(value: object) -> dict[str, dict[str, Any]]:
     return out
 
 
-class Store(ThemeLibrary):  # theme-library methods: themes.py
+class Store(ThemeLibrary, ResultsLayoutLibrary):  # mixins: themes.py, results_layouts.py
     def __init__(self, engine: Engine, keyring: Keyring, clock: Clock = _utcnow) -> None:
         self._engine = engine
         self._keys = keyring

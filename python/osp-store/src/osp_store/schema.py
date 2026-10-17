@@ -413,6 +413,51 @@ identity_nonces = Table(
     Index("ix_identity_nonces_expires_at", "expires_at"),
 )
 
+# --- Saved results layouts (plan V, V-D9; migration 0009_results_layouts) ----------------
+# A survey's saved results-page layouts, shared by the lab: chart choice per question,
+# filters, split, denominator, card order, hidden cards, bins and captions. ``settings`` is
+# opaque here (``osp_app.results_layouts`` validates it against the layout schema) and
+# never holds response data. Deleting the survey deletes its layouts.
+results_layouts = Table(
+    "results_layouts",
+    metadata,
+    Column("id", ID, primary_key=True),
+    Column("tenant_id", ID, nullable=False, index=True),
+    Column("survey_id", ID, nullable=False),
+    Column("name", String(200), nullable=False),
+    Column("settings", JsonType, nullable=False),
+    Column("created_by", String(80), nullable=False),
+    _ts("created_at"),
+    Column("updated_by", String(80), nullable=False),
+    _ts("updated_at"),
+    ForeignKeyConstraint(
+        ["tenant_id", "survey_id"], ["surveys.tenant_id", "surveys.id"], ondelete="CASCADE"
+    ),
+    UniqueConstraint("survey_id", "id"),
+    UniqueConstraint("survey_id", "name"),
+    CheckConstraint("name <> ''", name="name_not_empty"),
+)
+
+# At most one default layout per survey (the primary key); it must be one of that survey's
+# own layouts (composite foreign key), and deleting that layout clears the default.
+results_layout_defaults = Table(
+    "results_layout_defaults",
+    metadata,
+    Column("survey_id", ID, primary_key=True),
+    Column("tenant_id", ID, nullable=False, index=True),
+    Column("layout_id", ID, nullable=False),
+    Column("set_by", String(80), nullable=False),
+    _ts("set_at"),
+    ForeignKeyConstraint(
+        ["tenant_id", "survey_id"], ["surveys.tenant_id", "surveys.id"], ondelete="CASCADE"
+    ),
+    ForeignKeyConstraint(
+        ["survey_id", "layout_id"],
+        ["results_layouts.survey_id", "results_layouts.id"],
+        ondelete="CASCADE",
+    ),
+)
+
 #: (table, ciphertext column, key-id column) for every encrypted field. The AEAD field
 #: name is the ciphertext column without ``_ct``; the row id is the table's ``id``.
 ENCRYPTED_FIELDS: tuple[tuple[Table, str, str], ...] = (

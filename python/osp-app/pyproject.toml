@@ -13,6 +13,7 @@ dependencies = [
     "osp-spec",
     "osp-store",
     "osp-targets",
+    "pydantic>=2.12,<3",
 ]
 
 [tool.uv.sources]

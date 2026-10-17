@@ -39,6 +39,12 @@ ROUTES: list[tuple[str, str, dict | None]] = [
         f"/api/surveys/{SID}/results/export",
         {"query": {}, "cards": ["q1"], "formats": ["svg"]},
     ),
+    ("GET", f"/api/surveys/{SID}/results/layouts", None),
+    ("POST", f"/api/surveys/{SID}/results/layouts", {"name": "x", "settings": {}}),
+    ("PUT", f"/api/surveys/{SID}/results/layouts/default", {"layoutId": None}),
+    ("GET", f"/api/surveys/{SID}/results/layouts/{{layout_id}}", None),
+    ("PATCH", f"/api/surveys/{SID}/results/layouts/{{layout_id}}", {"name": "x"}),
+    ("DELETE", f"/api/surveys/{SID}/results/layouts/{{layout_id}}", None),
     ("GET", "/api/themes", None),
     ("POST", "/api/themes", {"name": "x", "theme": {}}),
     ("PUT", "/api/themes/default", {"themeId": None}),
@@ -143,6 +149,8 @@ def test_viewer_cannot_create_or_export(benv, survey_a):
     assert c.get(f"/api/surveys/{survey_a}/results/text/q1").status_code == 403
     export = {"query": {}, "cards": ["q1"], "formats": ["png"]}
     assert c.post(f"/api/surveys/{survey_a}/results/export", json=export).status_code == 403
+    assert c.get(f"/api/surveys/{survey_a}/results/layouts").status_code == 403
+    assert c.get(f"/api/surveys/{survey_a}/results/layouts/x").status_code == 403
 
 
 def test_unknown_role_fails_closed(benv, survey_a):
