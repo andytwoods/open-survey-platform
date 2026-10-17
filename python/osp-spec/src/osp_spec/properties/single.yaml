@@ -65,6 +65,7 @@ properties:
     group: Advanced
     help: { en: "The column name in data exports and codebooks. Defaults to the id." }
 hidden:
+  source: "Question-bank provenance (planning/question-bank.md §2.3): written only when a bank item is inserted, removed with clear_source; shown as the provenance line, never edited in the panel."
   id: "Stable identity used by every reference; assigned when the question is added, never edited in the panel."
   type: "The discriminator; changing type is its own op, not a property edit."
   choiceList: "Edited through the choices editor, which switches between inline choices and a shared list (exactly one is set)."

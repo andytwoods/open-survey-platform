@@ -11,5 +11,6 @@ properties:
     group: Basics
     help: { en: "A builder-only label. Never shown to participants." }
 hidden:
+  source: "Question-bank provenance (planning/question-bank.md §2.3): written only when a bank item is inserted, removed with clear_source; shown as the provenance line, never edited in the panel."
   id: "Stable identity used by flow nodes; assigned when the block is added."
   pages: "Pages are edited in the outline tree, not in the property panel."
