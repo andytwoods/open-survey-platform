@@ -12,6 +12,7 @@
 	import { localStorageBackup, localStoragePointer, MemoryStore, openIndexedDb, sessionPointer } from './lib/storage';
 	import { domId, errorText, plain } from './lib/view-map';
 	import ConsentPage from './lib/ConsentPage.svelte';
+	import EndRedirect from './lib/EndRedirect.svelte';
 	import EndScreen from './lib/EndScreen.svelte';
 	import Withdraw from './lib/Withdraw.svelte';
 	import { declinedConsent, type Device } from '@osp/engine';
@@ -271,16 +272,12 @@
 		if (title) document.title = view?.page ? `${title} – ${fill(ui.page, { n: view.trial })}` : title;
 	});
 
-	// A hook chose a declared end redirect (e.g. back to Prolific): go there after thanks.
-	// Never from the builder preview: the choice is in the event log the debugger shows.
-	let redirected = false;
-	$effect(() => {
+	// The end redirect (end-of-survey plan §4.2): the ending's own, or one a hook chose.
+	// The session gives it only after this tab's submit was acknowledged; EndRedirect runs
+	// the countdown and never navigates from the builder preview (it shows the URL instead).
+	const redirect = $derived.by(() => {
 		void version;
-		const url = phase === 'done' && !preview ? session?.redirectUrl : null;
-		if (url && !redirected) {
-			redirected = true;
-			setTimeout(() => location.assign(url), 1500);
-		}
+		return phase === 'done' ? (session?.redirect ?? null) : null;
 	});
 
 	onMount(() => {
@@ -336,12 +333,12 @@
 			<p class="muted">{ui.loading}</p>
 		</main>
 	{:else if view.status === 'consent' || declinedConsent(session.state)}
-		<ConsentPage {session} {view} />
+		<ConsentPage {session} {view} preview={!!preview} />
 	{:else if phase === 'done'}
 		<main class="page" id="main" lang={view.language}>
 			<EndScreen end={view.end} testid="thanks" bind:heading />
-			{#if session.redirectUrl}
-				<p><a href={session.redirectUrl}>{ui.redirecting}</a></p>
+			{#if redirect}
+				<EndRedirect {redirect} preview={!!preview} />
 			{/if}
 			<Withdraw {session} {version} />
 		</main>

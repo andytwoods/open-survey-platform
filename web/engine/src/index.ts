@@ -6,6 +6,7 @@
 
 export * from './plan.ts';
 export * from './types.ts';
+export * from './redirect.ts';
 export {
 	agree,
 	answer,
@@ -13,6 +14,7 @@ export {
 	awaitingConsent,
 	decline,
 	declinedConsent,
+	endRedirect,
 	tryConsent,
 	back,
 	canGoBack,
@@ -37,6 +39,7 @@ export {
 	tryResolve,
 	view,
 	withChecksum,
+	withResponseId,
 	type Rejection
 } from './engine.ts';
 export {

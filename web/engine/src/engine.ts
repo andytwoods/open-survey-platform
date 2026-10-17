@@ -57,6 +57,7 @@ import {
 	type Text
 } from './plan.ts';
 import { assign as drawCondition, checkSeed, nodeSeed, randomize, InvalidSeedError } from './random.ts';
+import { fillRedirect, templateHost } from './redirect.ts';
 import {
 	EngineError,
 	type AnswerRecord,
@@ -77,6 +78,7 @@ import {
 	type QuestionState,
 	type QuotaResult,
 	type RenderedText,
+	type ResolvedRedirect,
 	type ResponseRecord,
 	type RuntimeDiagnostic,
 	type Snapshot,
@@ -320,6 +322,13 @@ class Env {
 				return int(position(this.plan, d, this.cursor ?? currentCursor(d))?.index ?? null);
 			case '$position.of':
 				return int(position(this.plan, d, this.cursor ?? currentCursor(d))?.of ?? null);
+			// Ending-only built-ins (end-of-survey plan §4.2, EN2); empty until the session ends.
+			case '$session.id':
+				return text(d.ended ? d.sessionId : null);
+			case '$outcome':
+				return text(d.ended?.outcome ?? null);
+			case '$response.id':
+				return text(d.ended ? (d.responseId ?? null) : null);
 		}
 		return null;
 	}
@@ -1274,8 +1283,73 @@ function endView(state: State, env: Env, endNode: FlowNode | undefined): EndView
 				}
 			: null,
 		// A decline kept nothing, and the screen must say so whatever the ending sets.
-		status: declined ? 'not-recorded' : ending?.status === 'none' ? null : 'recorded'
+		status: declined ? 'not-recorded' : ending?.status === 'none' ? null : 'recorded',
+		redirect: resolveRedirect(plan, d, env, outcome)
 	};
+}
+
+/**
+ * The ending's redirect for `outcome` with its pipes filled, pattern-checked and encoded
+ * (end-of-survey plan §4.2, EN2; `redirect.ts`). Null when the ending has none or names
+ * no declared template; `url: null` with `rejected` set when a value failed its check.
+ */
+function resolveRedirect(plan: Plan, d: Data, env: Env, outcome: Id): ResolvedRedirect | null {
+	const r = plan.endings?.[outcome]?.redirect;
+	if (!r) return null;
+	const t = Object.prototype.hasOwnProperty.call(plan.redirectTemplates ?? {}, r.template)
+		? plan.redirectTemplates![r.template]
+		: undefined;
+	if (!t) return null;
+	const values: Record<string, string> = {};
+	for (const [name, segs] of Object.entries(r.params)) {
+		values[name] = segs.map((s) => (typeof s === 'string' ? s : pipeText(plan, d, env, s.pipe))).join('');
+	}
+	const filled = fillRedirect(t, values);
+	return {
+		url: filled.url,
+		rejected: filled.rejected,
+		host: templateHost(t.url),
+		delay: r.delay,
+		mode: r.mode,
+		label: r.label ? render(plan, d, env, r.label) : null
+	};
+}
+
+/**
+ * The ending's redirect for an ended session (null before the end). The app resolves it
+ * again after the server's acknowledgement, when `$response.id` is known (`withResponseId`).
+ */
+export function endRedirect(state: State): ResolvedRedirect | null {
+	const { plan, data: d } = state;
+	if (!d.ended) return null;
+	return resolveRedirect(plan, d, new Env(plan, d), d.ended.outcome);
+}
+
+/**
+ * The state after the server acknowledged the submit with `responseId` (EN2): only the
+ * `$response.id` built-in changes. No event is logged: the record was built and sent before
+ * the acknowledgement, and nothing replays past the end.
+ */
+export function withResponseId(state: State, responseId: string): State {
+	if (!state.data.ended || state.data.responseId === responseId) return state;
+	return { ...state, data: { ...state.data, responseId } };
+}
+
+/** Whether a redirect param's segments pipe `$response.id`, which is known only after the ack. */
+function needsResponseId(segs: Segment[]): boolean {
+	return segs.some((s) => typeof s !== 'string' && s.pipe === '$response.id');
+}
+
+/** `redirect.param_rejected` diagnostics for the record (none for a value that waits on the ack). */
+function redirectDiagnostics(state: State): RuntimeDiagnostic[] {
+	const { plan, data: d } = state;
+	if (!d.ended) return [];
+	const r = plan.endings?.[d.ended.outcome]?.redirect;
+	const resolved = endRedirect(state);
+	if (!r || !resolved?.rejected) return [];
+	const param = resolved.rejected;
+	if (d.responseId === undefined && param in r.params && needsResponseId(r.params[param]!)) return [];
+	return [{ code: 'redirect.param_rejected', site: `endings.${d.ended.outcome}.redirect`, path: `/params/${param}` }];
 }
 
 function errorView(plan: Plan, d: Data, env: Env, id: Id, e: PageError) {
@@ -1562,7 +1636,7 @@ export function result(state: State): ResponseRecord {
 		computed,
 		variableStates,
 		quotas: { ...d.quotas },
-		diagnostics: clone(d.diagnostics),
+		diagnostics: [...clone(d.diagnostics), ...redirectDiagnostics(state)],
 		effects: recordedEffects(plan, d),
 		urlParams: { ...d.urlParams },
 		startedAt: d.startedAt,

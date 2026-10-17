@@ -104,6 +104,14 @@
 				<dd data-testid="dbg-page">{v.status === 'ended' ? `Ended (${res?.end ?? ''})` : (blockOfPage(run.plan, v.page) ?? '–')}</dd>
 				<dt>Status</dt>
 				<dd>{v.status}{v.status === 'pending' && v.effect?.kind === 'quota' ? `: quota check ${v.effect.nodeId}` : ''}</dd>
+				{#if v.end?.redirect}
+					<!-- EN2: the preview never navigates; the resolved URL is shown here instead. -->
+					<dt>Redirect</dt>
+					<dd data-testid="dbg-redirect">
+						{v.end.redirect.url ?? `refused: ${v.end.redirect.rejected} failed its pattern`}
+						({v.end.redirect.mode === 'link' ? 'link only' : `after ${v.end.redirect.delay} s`})
+					</dd>
+				{/if}
 				<dt><code>$trial</code></dt>
 				<dd data-testid="dbg-trial">{v.trial || '–'}</dd>
 				<dt><code>$position</code></dt>

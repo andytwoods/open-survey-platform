@@ -1,0 +1,189 @@
+{
+  "specVersion": "osp-survey/0.1",
+  "id": "e2e_redirect",
+  "version": 1,
+  "metadata": {
+    "title": "Breakfast (redirects)",
+    "description": "EN2 end-to-end survey: fixture 11 plus end redirects: complete goes back automatically after a short countdown, ineligible shows a link only.",
+    "languages": [
+      "en"
+    ]
+  },
+  "settings": {
+    "backNavigation": true,
+    "endings": {
+      "complete": {
+        "title": "Thank you for your time",
+        "body": "You rated breakfast ${rating} out of 10.",
+        "redirect": {
+          "template": "prolific",
+          "params": {
+            "cc": "C1AB2",
+            "r": "${rating}"
+          },
+          "delay": 3,
+          "mode": "auto",
+          "label": "Back to Prolific"
+        }
+      },
+      "ineligible": {
+        "title": "Thank you for your interest",
+        "body": "This study needs people willing to answer two more questions, so it ends here.",
+        "status": "none",
+        "redirect": {
+          "template": "prolific",
+          "params": {
+            "cc": "SCREEN1",
+            "r": "${$outcome}"
+          },
+          "mode": "link"
+        }
+      }
+    },
+    "redirectTemplates": {
+      "prolific": {
+        "url": "https://app.prolific.com/submissions/complete?cc={cc}&r={r}",
+        "params": {
+          "cc": {
+            "pattern": "[A-Z0-9]{4,8}"
+          },
+          "r": {}
+        }
+      }
+    }
+  },
+  "choiceLists": [
+    {
+      "id": "yesno",
+      "choices": [
+        {
+          "value": "yes",
+          "label": "Yes"
+        },
+        {
+          "value": "no",
+          "label": "No"
+        }
+      ]
+    }
+  ],
+  "blocks": [
+    {
+      "id": "p1",
+      "pages": [
+        {
+          "id": "p1_page",
+          "items": [
+            {
+              "type": "single",
+              "id": "eligible",
+              "label": "Are you willing to answer two more questions?",
+              "choiceList": "yesno",
+              "required": true
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "id": "p2",
+      "pages": [
+        {
+          "id": "p2_page",
+          "items": [
+            {
+              "type": "integer",
+              "id": "rating",
+              "label": "Rate your breakfast today from 1 to 10.",
+              "required": true
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "id": "p3",
+      "pages": [
+        {
+          "id": "p3_page",
+          "items": [
+            {
+              "type": "text",
+              "id": "extra",
+              "label": "Anything else about breakfast?"
+            }
+          ]
+        }
+      ]
+    }
+  ],
+  "flow": [
+    {
+      "type": "block",
+      "id": "n_p1",
+      "block": "p1"
+    },
+    {
+      "type": "branch",
+      "id": "branch_1",
+      "if": {
+        "kind": "compare",
+        "op": "==",
+        "left": {
+          "kind": "ref",
+          "id": "eligible"
+        },
+        "right": {
+          "kind": "text",
+          "value": "no"
+        }
+      },
+      "then": [
+        {
+          "type": "end",
+          "id": "end_ineligible",
+          "outcome": "ineligible",
+          "message": "You chose not to go on."
+        }
+      ]
+    },
+    {
+      "type": "block",
+      "id": "n_p2",
+      "block": "p2"
+    },
+    {
+      "type": "branch",
+      "id": "branch_2",
+      "if": {
+        "kind": "compare",
+        "op": "<",
+        "left": {
+          "kind": "ref",
+          "id": "rating"
+        },
+        "right": {
+          "kind": "int",
+          "value": 3
+        }
+      },
+      "then": [
+        {
+          "type": "end",
+          "id": "end_early_exit",
+          "outcome": "early_exit",
+          "message": "Sorry your breakfast was not better."
+        }
+      ]
+    },
+    {
+      "type": "block",
+      "id": "n_p3",
+      "block": "p3"
+    },
+    {
+      "type": "end",
+      "id": "end_complete"
+    }
+  ]
+}

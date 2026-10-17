@@ -1196,6 +1196,13 @@ def _redirect(
                     f"'{value[:40]}' does not match the pattern {pattern!r}, "
                     "so the redirect would never be followed",
                 )
+            elif value in (".", ".."):
+                # Not encoded, collapsed as a path segment: the app refuses it (redirect.ts).
+                self.emit(
+                    "redirect.param_literal",
+                    vptr,
+                    f"'{value}' would be read as a path segment, so the redirect is refused",
+                )
             continue
         refs = self._text(value, vptr, _Site(ptr, [], self.counter, ()), pipes)
         if declined and "$response.id" in value:

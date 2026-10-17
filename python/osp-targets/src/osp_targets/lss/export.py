@@ -845,7 +845,7 @@ class _Exporter:
         for name in placeholders(template.url):
             value = r.params.get(name, "")
             pattern = (template.params.get(name) or _NO_PATTERN).pattern or DEFAULT_PARAM_PATTERN
-            if not re.fullmatch(f"(?:{pattern})", value):
+            if not re.fullmatch(f"(?:{pattern})", value) or value in (".", ".."):
                 return None  # the validator's redirect.param_literal already blocks publishing
             url = url.replace("{" + name + "}", _percent_encode(value))
         if r.mode == "auto":

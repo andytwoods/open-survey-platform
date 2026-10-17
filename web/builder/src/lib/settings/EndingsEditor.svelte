@@ -2,7 +2,25 @@
 	import PipedText from '../cards/PipedText.svelte';
 	import type { Outcome } from '../sync/survey-store.svelte';
 	import type { Invocation } from '../sync/transport';
-	import { endingAnchor, endingOp, endingsOf, endingWith, outcomesInUse, type OutcomeUse } from './endings';
+	import {
+		DEFAULT_PARAM_PATTERN,
+		DEFAULT_REDIRECT_DELAY,
+		endingAnchor,
+		endingOp,
+		endingsOf,
+		endingWith,
+		MAX_REDIRECT_DELAY,
+		newRedirect,
+		outcomesInUse,
+		placeholdersOf,
+		previewUrl,
+		redirectOf,
+		redirectParams,
+		redirectTemplateOp,
+		templateProblem,
+		templatesOf,
+		type OutcomeUse
+	} from './endings';
 	import { languagesOf, setText, textExact } from './model';
 
 	/**
@@ -11,6 +29,13 @@
 	 * language, with `${id}` piping in both; the app's own status line can be hidden for
 	 * recorded responses, never for a consent decline. An outcome without an ending shows the
 	 * app's default screen. Texts are saved when a field loses focus.
+	 *
+	 * Redirects (§4.2, task EN2): an ending may send participants on afterwards, to one of
+	 * the survey's **redirect templates** (edited at the bottom through
+	 * `set_redirect_template`): per placeholder a fixed value or a `${…}` pipe, the mode
+	 * (automatic after a countdown, or a link), the delay and the button label. The URL
+	 * preview keeps pipes as tokens; the server's `redirect.*` diagnostics are shown inline,
+	 * including the data-export warning for a piped answer.
 	 */
 	let {
 		survey,
@@ -74,6 +99,73 @@
 				d.code !== 'ending.unreachable' &&
 				(d.pointer === `/settings/endings/${o}` || d.pointer.startsWith(`/settings/endings/${o}/`))
 		);
+
+	// -- redirects (EN2) ----------------------------------------------------------------------
+	const templates = $derived(templatesOf(survey));
+	const templateDiags = $derived(diagnostics.filter((d) => d.pointer.startsWith('/settings/redirectTemplates')));
+
+	/** The ending with its redirect replaced (`null` removes it). */
+	function setRedirect(outcome: string, redirect: Obj | null) {
+		void send(outcome, endingWith(latest(outcome), 'redirect', redirect ?? undefined));
+	}
+	function chooseTemplate(outcome: string, name: string) {
+		const t = templates.find((x) => x.name === name);
+		setRedirect(outcome, t ? newRedirect(t) : null);
+	}
+	function redirectWith(outcome: string, field: string, value: unknown): Obj {
+		const r = { ...(redirectOf(latest(outcome)) ?? {}) };
+		if (value === undefined) delete r[field];
+		else r[field] = value;
+		return r;
+	}
+	function commitParam(outcome: string, name: string, value: string) {
+		const r = redirectOf(latest(outcome));
+		const params = { ...redirectParams(r), [name]: value };
+		if (params[name] === redirectParams(r)[name]) return;
+		setRedirect(outcome, redirectWith(outcome, 'params', params));
+	}
+	function commitDelay(outcome: string, raw: string) {
+		const n = Number(raw);
+		if (!Number.isInteger(n) || n < 0 || n > MAX_REDIRECT_DELAY) return;
+		setRedirect(outcome, redirectWith(outcome, 'delay', n === DEFAULT_REDIRECT_DELAY ? undefined : n));
+	}
+	function commitLabel(outcome: string, value: string) {
+		const r = redirectOf(latest(outcome));
+		if (value === textExact(r?.label, editLang, defaultLanguage)) return;
+		setRedirect(outcome, redirectWith(outcome, 'label', setText(r?.label, editLang, defaultLanguage, value)));
+	}
+	const modeOf = (r: Obj | null) => (r?.mode === 'link' ? 'link' : 'auto');
+	const delayOf = (r: Obj | null) => (typeof r?.delay === 'number' ? r.delay : DEFAULT_REDIRECT_DELAY);
+
+	// A new template: name, address, and a pattern per placeholder the address declares.
+	let newName = $state('');
+	let newUrl = $state('');
+	let newPatterns = $state<Record<string, string>>({});
+	let templateProblemText = $state<string | null>(null);
+	const newPlaceholders = $derived(placeholdersOf(newUrl));
+	const nameOk = $derived(/^[A-Za-z_][A-Za-z0-9_-]{0,63}$/.test(newName));
+
+	async function addTemplate() {
+		templateProblemText = templateProblem(newUrl);
+		if (!nameOk) templateProblemText = 'Give the template a short name: letters, digits, _ or -.';
+		if (templateProblemText) return;
+		const params = Object.fromEntries(
+			newPlaceholders.map((n) => [n, newPatterns[n]?.trim() ? { pattern: newPatterns[n]!.trim() } : {}])
+		);
+		const out = await submit([redirectTemplateOp(newName, { url: newUrl.trim(), params })]);
+		if (out.status === 'rejected') {
+			templateProblemText = out.diagnostics[0]?.message ?? out.message;
+			return;
+		}
+		newName = '';
+		newUrl = '';
+		newPatterns = {};
+	}
+	async function removeTemplate(name: string) {
+		templateProblemText = null;
+		const out = await submit([redirectTemplateOp(name, null)]);
+		if (out.status === 'rejected') templateProblemText = out.diagnostics[0]?.message ?? out.message;
+	}
 </script>
 
 <div class="endings">
@@ -152,6 +244,80 @@
 					<p class="ptitle"><PipedText text={shown(row.outcome, 'title') || 'Thank you'} /></p>
 					{#if shown(row.outcome, 'body')}<p class="pbody"><PipedText text={shown(row.outcome, 'body')} /></p>{/if}
 				</div>
+				{@const r = redirectOf(ending)}
+				{@const tpl = r ? templates.find((t) => t.name === r.template) : undefined}
+				{@const params = redirectParams(r)}
+				<fieldset class="redirect" data-testid="redirect-{row.outcome}">
+					<legend>Afterwards</legend>
+					<label class="field narrow">
+						<span>Send participants to</span>
+						<select value={r && typeof r.template === 'string' ? r.template : ''} onchange={(e) => chooseTemplate(row.outcome, e.currentTarget.value)}>
+							<option value="">Nowhere: they stay on this screen</option>
+							{#each templates as t (t.name)}<option value={t.name}>{t.name} ({t.host})</option>{/each}
+							{#if r && typeof r.template === 'string' && !tpl}<option value={r.template}>{r.template} (not declared)</option>{/if}
+						</select>
+					</label>
+					{#if templates.length === 0}
+						<p class="help">Add a redirect template below first (for example your Prolific completion URL).</p>
+					{/if}
+					{#if r && tpl}
+						{#each tpl.placeholders as name (name)}
+							<label class="field">
+								<span>Value for <code>{'{' + name + '}'}</code></span>
+								<input
+									type="text"
+									value={params[name] ?? ''}
+									placeholder={tpl.params[name]?.pattern ?? DEFAULT_PARAM_PATTERN}
+									onchange={(e) => commitParam(row.outcome, name, e.currentTarget.value)}
+								/>
+							</label>
+						{/each}
+						<p class="help">
+							A fixed value, or <code>&#36;&#123;id&#125;</code> to send an answer or a variable; also
+							<code>&#36;&#123;$response.id&#125;</code>, <code>&#36;&#123;$session.id&#125;</code> and <code>&#36;&#123;$outcome&#125;</code>.
+							Each value must match its placeholder's pattern or no redirect happens. Sending an <strong>answer</strong> is a data
+							export: it is listed in the codebook and recorded in the audit log.
+						</p>
+						<div class="row">
+							<label class="field narrow">
+								<span>Go there</span>
+								<select value={modeOf(r)} onchange={(e) => setRedirect(row.outcome, redirectWith(row.outcome, 'mode', e.currentTarget.value === 'link' ? 'link' : undefined))}>
+									<option value="auto">automatically, after a countdown</option>
+									<option value="link">only when the participant clicks</option>
+								</select>
+							</label>
+							{#if modeOf(r) === 'auto'}
+								<label class="field narrow">
+									<span>Countdown (seconds, 0–{MAX_REDIRECT_DELAY})</span>
+									<input type="number" min="0" max={MAX_REDIRECT_DELAY} step="1" value={delayOf(r)} onchange={(e) => commitDelay(row.outcome, e.currentTarget.value)} />
+								</label>
+							{/if}
+						</div>
+						{#if modeOf(r) === 'auto'}
+							<p class="help">
+								Participants hear one announcement, see the countdown, and can go now or <em>Stay on this page</em>.
+								{#if delayOf(r) === 0}
+									<strong class="warn">With 0 seconds this screen is never seen.</strong> Keep a few seconds, or choose the click-only mode (WCAG 2.2.1).
+								{/if}
+							</p>
+						{/if}
+						{#key editLang}
+							<label class="field">
+								<span>Button label</span>
+								<input
+									type="text"
+									lang={editLang}
+									value={textExact(r.label, editLang, defaultLanguage)}
+									placeholder="Continue to {tpl.host}"
+									onchange={(e) => commitLabel(row.outcome, e.currentTarget.value)}
+								/>
+							</label>
+						{/key}
+						<p class="help url">
+							Preview URL: <code data-testid="redirect-url-{row.outcome}">{previewUrl(tpl, params)}</code>
+						</p>
+					{/if}
+				</fieldset>
 				<div>
 					<button type="button" class="btn" onclick={() => void send(row.outcome, null)}>Use the default screen</button>
 				</div>
@@ -162,6 +328,63 @@
 			{#if problem[row.outcome]}<p class="problem" role="alert">{problem[row.outcome]}</p>{/if}
 		</section>
 	{/each}
+
+	<section class="ending" id="settings-redirect-templates" tabindex="-1" aria-labelledby="redirect-templates-h" data-testid="redirect-templates">
+		<h4 id="redirect-templates-h">Redirect templates</h4>
+		<p class="help">
+			Where an ending may send participants: an <code>https://</code> address with <code>&#123;name&#125;</code> placeholders after the
+			site, such as <code>https://app.prolific.com/submissions/complete?cc=&#123;cc&#125;</code>. A placeholder's value must match its
+			pattern (default <code>{DEFAULT_PARAM_PATTERN}</code>) and is URL-encoded, so a value can never change the site. Hook code may
+			use these templates too.
+		</p>
+		{#each templates as t (t.name)}
+			<div class="template" data-template={t.name}>
+				<div class="tline">
+					<code class="tname">{t.name}</code>
+					<code class="turl">{t.url}</code>
+					{#if t.source === 'hooks'}
+						<span class="help">declared by the hooks manifest</span>
+					{:else}
+						<button type="button" class="btn" onclick={() => void removeTemplate(t.name)}>Remove {t.name}</button>
+					{/if}
+				</div>
+				{#if t.placeholders.length}
+					<p class="help">
+						{#each t.placeholders as p, i (p)}{i ? ' · ' : ''}<code>{p}</code>: <code>{t.params[p]?.pattern ?? DEFAULT_PARAM_PATTERN}</code>{/each}
+					</p>
+				{/if}
+			</div>
+		{/each}
+		<form
+			class="new-template"
+			onsubmit={(e) => {
+				e.preventDefault();
+				void addTemplate();
+			}}
+		>
+			<label class="field narrow">
+				<span>Template name</span>
+				<input type="text" bind:value={newName} placeholder="prolific" />
+			</label>
+			<label class="field">
+				<span>Address</span>
+				<input type="text" inputmode="url" bind:value={newUrl} placeholder="https://app.prolific.com/submissions/complete?cc=&#123;cc&#125;" />
+			</label>
+			{#each newPlaceholders as p (p)}
+				<label class="field narrow">
+					<span>Pattern for <code>{'{' + p + '}'}</code> (optional)</span>
+					<input type="text" value={newPatterns[p] ?? ''} placeholder={DEFAULT_PARAM_PATTERN} oninput={(e) => (newPatterns = { ...newPatterns, [p]: e.currentTarget.value })} />
+				</label>
+			{/each}
+			<div>
+				<button type="submit" class="btn" disabled={!newName.trim() || !newUrl.trim()}>Add template</button>
+			</div>
+		</form>
+		{#each templateDiags as d (d.code + d.pointer + d.message)}
+			<p class={d.severity === 'error' ? 'problem' : 'warn'} data-code={d.code}>{d.message}</p>
+		{/each}
+		{#if templateProblemText}<p class="problem" role="alert">{templateProblemText}</p>{/if}
+	</section>
 </div>
 
 <style>
@@ -263,5 +486,55 @@
 	.btn:focus-visible {
 		outline: 2px solid var(--color-focus);
 		outline-offset: 2px;
+	}
+	.btn:disabled {
+		opacity: 0.6;
+		cursor: default;
+	}
+	.redirect {
+		display: flex;
+		flex-direction: column;
+		gap: var(--space-2);
+		margin: 0;
+		padding: var(--space-2) var(--space-3) var(--space-3);
+		border: 1px solid var(--color-border);
+		border-radius: var(--radius-md);
+	}
+	.redirect legend {
+		padding-inline: var(--space-1);
+		font-size: var(--text-sm);
+		font-weight: var(--weight-medium);
+	}
+	.row {
+		display: flex;
+		flex-wrap: wrap;
+		gap: var(--space-3);
+	}
+	.url {
+		overflow-wrap: anywhere;
+	}
+	.template {
+		display: flex;
+		flex-direction: column;
+		gap: var(--space-1);
+		padding-block: var(--space-1);
+		border-block-end: 1px solid var(--color-border);
+	}
+	.tline {
+		display: flex;
+		flex-wrap: wrap;
+		align-items: center;
+		gap: var(--space-2);
+	}
+	.tname {
+		font-weight: var(--weight-semibold, 600);
+	}
+	.turl {
+		overflow-wrap: anywhere;
+	}
+	.new-template {
+		display: flex;
+		flex-direction: column;
+		gap: var(--space-2);
 	}
 </style>

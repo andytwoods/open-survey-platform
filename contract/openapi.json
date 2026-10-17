@@ -3123,6 +3123,11 @@
         "title": "MoveQuestion",
         "type": "object"
       },
+      "Name": {
+        "maxLength": 256,
+        "minLength": 1,
+        "type": "string"
+      },
       "OpCatalogueEntry": {
         "properties": {
           "area": {
@@ -3221,6 +3226,7 @@
           "set_languages",
           "set_matrix_row_required",
           "set_property",
+          "set_redirect_template",
           "set_theme",
           "set_title"
         ],
@@ -5113,6 +5119,34 @@
           "property"
         ],
         "title": "SetProperty",
+        "type": "object"
+      },
+      "SetRedirectTemplateParams": {
+        "additionalProperties": false,
+        "properties": {
+          "name": {
+            "$ref": "#/components/schemas/Name"
+          },
+          "template": {
+            "anyOf": [
+              {
+                "additionalProperties": {
+                  "$ref": "#/components/schemas/JsonValue"
+                },
+                "type": "object"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "default": null,
+            "title": "Template"
+          }
+        },
+        "required": [
+          "name"
+        ],
+        "title": "SetRedirectTemplate",
         "type": "object"
       },
       "SetThemeParams": {

@@ -53,7 +53,13 @@ const en = {
 	planChecksum: 'The survey could not be loaded (its checksum does not match).',
 	planNewer: 'This survey needs a newer version of the survey app.',
 	restoreFailed: 'The saved answers could not be restored.',
-	redirecting: 'Taking you back…',
+	// End redirects (end-of-survey plan §4.2): the button, the countdown and the one announcement.
+	redirectTo: 'Continue to {host}',
+	redirectIn: 'You will be taken to {host} in {n} seconds.',
+	redirectAnnounce: 'You will be taken to {host} in {n} seconds. Use the button to go now, or “Stay on this page” to cancel.',
+	redirectStay: 'Stay on this page',
+	redirectStayed: 'You are staying on this page. Use the button when you are ready to continue to {host}.',
+	redirectPreview: 'In the published survey participants would be taken to:',
 	hooksFailed: 'This survey could not start its custom code. Please contact the research team.'
 };
 
@@ -109,7 +115,13 @@ const de: Strings = {
 	planChecksum: 'Die Umfrage konnte nicht geladen werden (ihre Prüfsumme stimmt nicht).',
 	planNewer: 'Diese Umfrage braucht eine neuere Version der Umfrage-App.',
 	restoreFailed: 'Die gespeicherten Antworten konnten nicht wiederhergestellt werden.',
-	redirecting: 'Sie werden zurückgeleitet…',
+	redirectTo: 'Weiter zu {host}',
+	redirectIn: 'Sie werden in {n} Sekunden zu {host} weitergeleitet.',
+	redirectAnnounce:
+		'Sie werden in {n} Sekunden zu {host} weitergeleitet. Nutzen Sie die Schaltfläche, um jetzt zu gehen, oder „Auf dieser Seite bleiben“, um abzubrechen.',
+	redirectStay: 'Auf dieser Seite bleiben',
+	redirectStayed: 'Sie bleiben auf dieser Seite. Nutzen Sie die Schaltfläche, wenn Sie bereit sind, zu {host} weiterzugehen.',
+	redirectPreview: 'In der veröffentlichten Umfrage würden Teilnehmende weitergeleitet zu:',
 	hooksFailed: 'Diese Umfrage konnte ihren eigenen Programmcode nicht starten. Bitte wenden Sie sich an das Forschungsteam.'
 };
 

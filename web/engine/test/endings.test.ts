@@ -59,7 +59,7 @@ describe('endings', () => {
 		const p = plan({ endings: undefined });
 		let s = answer(begin(p), 'age', 12);
 		s = next(s).state;
-		expect(view(s).end).toEqual({ outcome: 'screened_out', message: view(s).end!.message, ending: null, status: 'recorded' });
+		expect(view(s).end).toEqual({ outcome: 'screened_out', message: view(s).end!.message, ending: null, status: 'recorded', redirect: null });
 		expect(view(begin(p)).end).toBeNull();
 	});
 

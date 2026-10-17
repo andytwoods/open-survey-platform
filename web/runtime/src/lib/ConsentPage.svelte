@@ -9,13 +9,17 @@
 	import type { Session } from './session';
 	import { plain } from './view-map';
 	import { consentUi } from './consent-messages';
+	import EndRedirect from './EndRedirect.svelte';
 	import EndScreen from './EndScreen.svelte';
 
-	let { session, view }: { session: Session; view: PageView } = $props();
+	let { session, view, preview = false }: { session: Session; view: PageView; preview?: boolean } = $props();
 
 	let heading = $state<HTMLElement | null>(null);
 	let busy = $state(false);
 	const declined = $derived(view.status === 'ended');
+	// A declined ending may redirect too (end-of-survey plan §4.2); the view changes once
+	// the session has finished, which is when the session gives it.
+	const redirect = $derived(declined ? session.redirect : null);
 	const paragraphs = $derived(
 		plain(view.consent?.text)
 			.split(/\n\s*\n/)
@@ -49,6 +53,9 @@
 <main class="page" id="main" lang={view.language}>
 	{#if declined}
 		<EndScreen end={view.end} testid="declined" fallbackBody={consentUi.declined} bind:heading />
+		{#if redirect}
+			<EndRedirect {redirect} {preview} />
+		{/if}
 	{:else}
 		<h1 tabindex="-1" bind:this={heading}>{plain(view.title)}</h1>
 		<div class="items consent" data-page={view.page} data-testid="consent">
