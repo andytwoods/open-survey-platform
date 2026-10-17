@@ -5,6 +5,7 @@
 	import { api } from '../api';
 	import { leaveTo, link, pageConfig } from '../host/links';
 	import { session } from '../host/session.svelte';
+	import ImportDialog from '../import/ImportDialog.svelte';
 
 	type Summary = components['schemas']['SurveySummary'];
 
@@ -24,6 +25,7 @@
 	let title = $state('');
 	let creating = $state(false);
 	let createError = $state('');
+	let importOpen = $state(false);
 
 	const dateFmt = new Intl.DateTimeFormat(undefined, { dateStyle: 'medium' });
 
@@ -97,6 +99,13 @@
 			</Button>
 		</form>
 		{#if createError}<p class="error" role="alert">{createError}</p>{/if}
+		<p class="import-row">
+			<span class="muted">Already have a survey elsewhere?</span>
+			<Button variant="ghost" size="sm" onclick={() => (importOpen = true)} disabled={chooseLab && !lab}>
+				Import from Qualtrics, LimeSurvey or SurveyJS…
+			</Button>
+		</p>
+		<ImportDialog bind:open={importOpen} tenantId={lab || undefined} />
 
 		{#if loadError}
 			<p class="error" role="alert">{loadError}</p>
@@ -162,6 +171,13 @@
 	}
 	.create :global(.osp-field) {
 		flex: 1;
+	}
+	.import-row {
+		display: flex;
+		flex-wrap: wrap;
+		align-items: center;
+		gap: var(--space-2);
+		margin: calc(-1 * var(--space-3)) 0 var(--space-5);
 	}
 	.lab {
 		display: flex;
