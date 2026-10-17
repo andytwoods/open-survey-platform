@@ -434,6 +434,23 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
+    "/api/surveys/{survey_id}/export/lss": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** Export Lss */
+        get: operations["exportLss"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
     "/api/surveys/{survey_id}/export/responses": {
         parameters: {
             query?: never;
@@ -568,6 +585,60 @@ export interface paths {
         options?: never;
         head?: never;
         patch?: never;
+        trace?: never;
+    };
+    "/api/themes": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** List Themes */
+        get: operations["listThemes"];
+        put?: never;
+        /** Create Theme */
+        post: operations["createTheme"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/themes/default": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        /** Set Default */
+        put: operations["setDefaultTheme"];
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/themes/{theme_id}": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** Get Theme */
+        get: operations["getTheme"];
+        put?: never;
+        post?: never;
+        /** Delete Theme */
+        delete: operations["deleteTheme"];
+        options?: never;
+        head?: never;
+        /** Update Theme */
+        patch: operations["updateTheme"];
         trace?: never;
     };
     "/api/version": {
@@ -785,6 +856,20 @@ export interface components {
             tenantId?: string | null;
             /** Title */
             title: string;
+        };
+        /** CreateThemeRequest */
+        CreateThemeRequest: {
+            /** Name */
+            name: string;
+            /**
+             * Tenantid
+             * @description The lab; needed only if you belong to several labs
+             */
+            tenantId?: string | null;
+            /** Theme */
+            theme: {
+                [key: string]: unknown;
+            };
         };
         /** DeleteById */
         DeleteBlockParams: {
@@ -1104,6 +1189,46 @@ export interface components {
             };
         };
         JsonValue: unknown;
+        /** LabThemeOut */
+        LabThemeOut: {
+            /**
+             * Createdat
+             * Format: date-time
+             */
+            createdAt: string;
+            /** Createdby */
+            createdBy: string;
+            /**
+             * Diagnostics
+             * @description Contrast guard findings; errors block publishing with this theme
+             */
+            diagnostics: components["schemas"]["Diagnostic"][];
+            /** Id */
+            id: string;
+            /**
+             * Isdefault
+             * @description This is the lab default theme
+             */
+            isDefault: boolean;
+            /** Name */
+            name: string;
+            /** Tenantid */
+            tenantId: string;
+            /**
+             * Theme
+             * @description The theme document (osp-theme/0.1)
+             */
+            theme: {
+                [key: string]: unknown;
+            };
+            /**
+             * Updatedat
+             * Format: date-time
+             */
+            updatedAt: string;
+            /** Updatedby */
+            updatedBy: string;
+        };
         /** LoginRequest */
         LoginRequest: {
             /** Email */
@@ -1220,7 +1345,7 @@ export interface components {
         /** @enum {string} */
         OpErrorCode: "op.cascade_blocked" | "op.conflict" | "op.dangling_ref" | "op.duplicate_id" | "op.expr_syntax" | "op.internal" | "op.invalid_result" | "op.invalid_survey" | "op.not_allowed" | "op.not_applicable" | "op.not_found" | "op.params" | "op.patch" | "op.unknown";
         /** @enum {string} */
-        OpId: "add_block" | "add_choice" | "add_page" | "add_question" | "add_variable" | "apply_patch" | "bulk_paste_choices" | "create_choice_list" | "delete_block" | "delete_choice" | "delete_choice_list" | "delete_flow_node" | "delete_page" | "delete_question" | "delete_variable" | "duplicate_question" | "insert_flow_node" | "move_block" | "move_choice" | "move_flow_node" | "move_page" | "move_question" | "rename_block" | "rename_page" | "replace_survey" | "set_choice" | "set_condition" | "set_languages" | "set_property" | "set_title";
+        OpId: "add_block" | "add_choice" | "add_page" | "add_question" | "add_variable" | "apply_patch" | "bulk_paste_choices" | "create_choice_list" | "delete_block" | "delete_choice" | "delete_choice_list" | "delete_flow_node" | "delete_page" | "delete_question" | "delete_variable" | "duplicate_question" | "insert_flow_node" | "move_block" | "move_choice" | "move_flow_node" | "move_page" | "move_question" | "rename_block" | "rename_page" | "replace_survey" | "set_choice" | "set_condition" | "set_languages" | "set_property" | "set_theme" | "set_title";
         /** OpsRequest */
         OpsRequest: {
             /** Baserevision */
@@ -1557,6 +1682,19 @@ export interface components {
             /** Target */
             target: string;
         };
+        /** SetDefaultThemeRequest */
+        SetDefaultThemeRequest: {
+            /**
+             * Tenantid
+             * @description The lab; needed only if you belong to several labs
+             */
+            tenantId?: string | null;
+            /**
+             * Themeid
+             * @description A library theme id, or null for no lab default
+             */
+            themeId: string | null;
+        };
         /** SetLanguages */
         SetLanguagesParams: {
             /**
@@ -1590,6 +1728,16 @@ export interface components {
             unset: boolean;
             /** @default null */
             value: components["schemas"]["JsonValue"];
+        };
+        /** SetTheme */
+        SetThemeParams: {
+            /**
+             * Theme
+             * @default null
+             */
+            theme: {
+                [key: string]: components["schemas"]["JsonValue"];
+            } | null;
         };
         /** SetTitle */
         SetTitleParams: {
@@ -2086,6 +2234,23 @@ export interface components {
         Text: string | {
             [key: string]: string;
         };
+        /** ThemeLibrary */
+        ThemeLibrary: {
+            /**
+             * Canmanage
+             * @description The caller may save, change and delete themes
+             */
+            canManage: boolean;
+            /**
+             * Defaultthemeid
+             * @description The lab default: surveys without their own theme publish with it
+             */
+            defaultThemeId: string | null;
+            /** Tenantid */
+            tenantId: string;
+            /** Themes */
+            themes: components["schemas"]["LabThemeOut"][];
+        };
         /** TotpCode */
         TotpCode: {
             /** Code */
@@ -2118,6 +2283,20 @@ export interface components {
              * @default false
              */
             recovery: boolean;
+        };
+        /** UpdateThemeRequest */
+        UpdateThemeRequest: {
+            /** Name */
+            name?: string | null;
+            /**
+             * Tenantid
+             * @description The lab; needed only if you belong to several labs
+             */
+            tenantId?: string | null;
+            /** Theme */
+            theme?: {
+                [key: string]: unknown;
+            } | null;
         };
         /** ValidationError */
         ValidationError: {
@@ -3434,6 +3613,64 @@ export interface operations {
             };
         };
     };
+    exportLss: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                survey_id: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description LimeSurvey survey structure (.lss) */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/xml": string;
+                };
+            };
+            /** @description Unauthorized */
+            401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorBody"];
+                };
+            };
+            /** @description Forbidden */
+            403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorBody"];
+                };
+            };
+            /** @description Not Found */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorBody"];
+                };
+            };
+            /** @description Unprocessable Content */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["RejectedBody"];
+                };
+            };
+        };
+    };
     exportResponses: {
         parameters: {
             query?: {
@@ -3963,6 +4200,364 @@ export interface operations {
                 };
                 content: {
                     "application/json": components["schemas"]["RevisionConflictBody"];
+                };
+            };
+            /** @description Unprocessable Content */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["RejectedBody"];
+                };
+            };
+        };
+    };
+    listThemes: {
+        parameters: {
+            query?: {
+                tenantId?: string | null;
+            };
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ThemeLibrary"];
+                };
+            };
+            /** @description Unauthorized */
+            401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorBody"];
+                };
+            };
+            /** @description Forbidden */
+            403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorBody"];
+                };
+            };
+            /** @description Unprocessable Content */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["RejectedBody"];
+                };
+            };
+        };
+    };
+    createTheme: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["CreateThemeRequest"];
+            };
+        };
+        responses: {
+            /** @description Successful Response */
+            201: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["LabThemeOut"];
+                };
+            };
+            /** @description Unauthorized */
+            401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorBody"];
+                };
+            };
+            /** @description Forbidden */
+            403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorBody"];
+                };
+            };
+            /** @description Conflict */
+            409: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorBody"];
+                };
+            };
+            /** @description Unprocessable Content */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["RejectedBody"];
+                };
+            };
+        };
+    };
+    setDefaultTheme: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["SetDefaultThemeRequest"];
+            };
+        };
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ThemeLibrary"];
+                };
+            };
+            /** @description Unauthorized */
+            401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorBody"];
+                };
+            };
+            /** @description Forbidden */
+            403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorBody"];
+                };
+            };
+            /** @description Not Found */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorBody"];
+                };
+            };
+            /** @description Unprocessable Content */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["RejectedBody"];
+                };
+            };
+        };
+    };
+    getTheme: {
+        parameters: {
+            query?: {
+                tenantId?: string | null;
+            };
+            header?: never;
+            path: {
+                theme_id: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["LabThemeOut"];
+                };
+            };
+            /** @description Unauthorized */
+            401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorBody"];
+                };
+            };
+            /** @description Forbidden */
+            403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorBody"];
+                };
+            };
+            /** @description Not Found */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorBody"];
+                };
+            };
+            /** @description Unprocessable Content */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["RejectedBody"];
+                };
+            };
+        };
+    };
+    deleteTheme: {
+        parameters: {
+            query?: {
+                tenantId?: string | null;
+            };
+            header?: never;
+            path: {
+                theme_id: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            204: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+            /** @description Unauthorized */
+            401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorBody"];
+                };
+            };
+            /** @description Forbidden */
+            403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorBody"];
+                };
+            };
+            /** @description Not Found */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorBody"];
+                };
+            };
+            /** @description Unprocessable Content */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["RejectedBody"];
+                };
+            };
+        };
+    };
+    updateTheme: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                theme_id: string;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["UpdateThemeRequest"];
+            };
+        };
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["LabThemeOut"];
+                };
+            };
+            /** @description Unauthorized */
+            401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorBody"];
+                };
+            };
+            /** @description Forbidden */
+            403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorBody"];
+                };
+            };
+            /** @description Not Found */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorBody"];
+                };
+            };
+            /** @description Conflict */
+            409: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorBody"];
                 };
             };
             /** @description Unprocessable Content */

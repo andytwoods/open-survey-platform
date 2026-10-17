@@ -27,6 +27,8 @@ class Action(StrEnum):
     SURVEY_DELETE = "survey.delete"
     MEMBERS_VIEW = "members.view"
     MEMBERS_MANAGE = "members.manage"  # invite, remove, change roles
+    THEMES_VIEW = "themes.view"  # the lab theme library (runtime-design §6a)
+    THEMES_MANAGE = "themes.manage"  # save, change, delete themes; set the lab default
 
 
 class ResourceKind(StrEnum):
@@ -42,10 +44,12 @@ _ACTION_KIND: Mapping[Action, ResourceKind] = {
     Action.SURVEY_DELETE: ResourceKind.SURVEY,
     Action.MEMBERS_VIEW: ResourceKind.TENANT,
     Action.MEMBERS_MANAGE: ResourceKind.TENANT,
+    Action.THEMES_VIEW: ResourceKind.TENANT,
+    Action.THEMES_MANAGE: ResourceKind.TENANT,
 }
 
 POLICY: Mapping[Role, frozenset[Action]] = {
-    Role.VIEWER: frozenset({Action.SURVEY_READ}),
+    Role.VIEWER: frozenset({Action.SURVEY_READ, Action.THEMES_VIEW}),
     Role.EDITOR: frozenset(
         {
             Action.SURVEY_READ,
@@ -53,6 +57,8 @@ POLICY: Mapping[Role, frozenset[Action]] = {
             Action.SURVEY_PUBLISH,
             Action.SURVEY_EXPORT,
             Action.MEMBERS_VIEW,
+            Action.THEMES_VIEW,
+            Action.THEMES_MANAGE,
         }
     ),
     Role.OWNER: frozenset(Action),

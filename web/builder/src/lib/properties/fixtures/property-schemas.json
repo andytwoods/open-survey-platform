@@ -1203,7 +1203,7 @@
           "translatable": false,
           "group": "Advanced",
           "help": {
-            "en": "End-only keeps answers on the participant's device until they submit."
+            "en": "End-only keeps answers on the participant's device until they submit: drop-outs leave no data."
           },
           "options": [
             {
@@ -1274,11 +1274,12 @@
         }
       },
       "hidden": {
-        "settings.retention": "Chosen in the publish dialog; publishing is refused until it is set.",
+        "settings.retention": "Chosen in Survey settings (options from /api/meta/retention); publishing is refused until it is set.",
+        "settings.theme": "Set in the Appearance view (Use for this survey); a full copy of the theme.",
         "specVersion": "Format version, written by the platform.",
         "id": "Stable survey identity, assigned at creation.",
         "version": "Published version number, set by publishing.",
-        "metadata.languages": "Edited in the translation grid, which adds and removes language columns.",
+        "metadata.languages": "Edited in Survey settings and the translation grid (the set_languages op).",
         "metadata.ddi": "Free-form DDI study metadata; edited in the JSON view.",
         "choiceLists": "Shared lists are edited in the choice list editor.",
         "variables": "Edited in the flow editor and variables view.",

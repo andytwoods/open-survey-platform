@@ -17,6 +17,7 @@ from .runtime_repo import StoreParticipantRepo
 from .services import AppServices, build_services
 from .simulate import simulate_survey
 from .store_repos import StoreMembershipRepo, StoreSessionRepo, StoreUserRepo
+from .themes import LabTheme, ThemeLibraryView
 
 __all__ = [
     "COMMANDS",
@@ -31,6 +32,7 @@ __all__ = [
     "Forbidden",
     "HistoryEntry",
     "InvalidRequest",
+    "LabTheme",
     "NotFoundError",
     "PublishResult",
     "Rejected",
@@ -40,6 +42,7 @@ __all__ = [
     "StoreSessionRepo",
     "StoreUserRepo",
     "SurveyView",
+    "ThemeLibraryView",
     "Unauthenticated",
     "build_services",
     "simulate_survey",

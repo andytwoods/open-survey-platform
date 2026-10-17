@@ -88,6 +88,12 @@ def test_every_command_fails_closed_for_non_members(env, command_id, who):
         "survey.apply_ops": {"survey_id": sid, "ops": [], "base_revision": 0},
         "survey.undo": {"survey_id": sid, "transaction_id": "t", "base_revision": 0},
         "survey.redo": {"survey_id": sid, "transaction_id": "u:t", "base_revision": 0},
+        "theme.list": {},
+        "theme.get": {"theme_id": "t"},
+        "theme.create": {"name": "x", "theme": {}},
+        "theme.update": {"theme_id": "t", "name": "x"},
+        "theme.delete": {"theme_id": "t"},
+        "theme.set_default": {"theme_id": None},
     }.get(command_id, {"survey_id": sid})
     if who is None or isinstance(who, str):
         with pytest.raises(Unauthenticated):

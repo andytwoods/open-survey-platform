@@ -18,6 +18,7 @@ from . import (  # noqa: F401
     property_ops,
     question_ops,
     survey_ops,
+    theme_ops,
     variable_ops,
 )
 from .patch import PatchError
