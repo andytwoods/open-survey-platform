@@ -30,10 +30,17 @@
 - Numbers: web vitest 539 (was 493); builder e2e 133 (was 126; new `host.spec.ts`); `make check` green; `scripts/check-build.mjs` gates the manifest in `make web-build`.
 - Merged with P1: e2e sign-in is a no-op (Dev identity) in `e2e/fixtures.ts`; the dev config sends no CSRF (P1 has none; Origin check + JSON bodies stay). P1's `auth.svelte.ts` stub deleted.
 - Open: `docs/hosting.md` (P4) should copy the config/manifest section of `web/builder/README.md`.
-- Seen twice under the Stop hook: `harness-quick` flakes about 1 run in 5 (`apiRequestContext: Target page, context or browser has been closed`, a different fixture each time: 26 trailing-zeros, 16 assign/control; web/harness/src/player.ts `storedResponse`). Passes on rerun (3/3); not touched by P2.
+- Fixed (H1, below). Was: seen twice under the Stop hook: `harness-quick` flakes about 1 run in 5 (`apiRequestContext: Target page, context or browser has been closed`, a different fixture each time: 26 trailing-zeros, 16 assign/control; web/harness/src/player.ts `storedResponse`). Passes on rerun (3/3); not touched by P2.
 
 ## 2026-10-17 — P4: docs/hosting.md (planning/pages-split.md)
 
 - Landed: `docs/hosting.md` (pieces and env vars, serving a page from `manifest.json`, `OspPageConfig` copied from `config.ts`, safe JSON / `json_script`, signed proxy + key rotation, `InProcess`, participant routes, 10-item checklist, minimal Django views/urls/template). Linked from `README.md`, `python/osp-api/README.md`, `web/builder/README.md` (also fixed its `<` escape text). Top-level README no longer mentions a dev password.
 - Numbers: `tests/test_hosting_example.py` 6 tests: the doc's proxy over `TestClient` with real `TrustedHeaders` (create + list, forged `X-OSP-*` stripped, unsigned direct call 401, host 401/CSRF before forwarding, signed query, forwarded Origin with `OSP_ALLOWED_ORIGINS`).
 - Open: participant start/resume rate limits key on the client address and osp-api reads no forwarded address, so behind a host every participant shares one budget; the participant app hardcodes `/api` (no `apiBase`); osp-api's Origin check sees `http://127.0.0.1:8000`, so it only adds defence if the host forwards `Origin` and sets `OSP_ALLOWED_ORIGINS`.
+
+## 2026-10-17 — H1: harness-quick flake ("Target page, context or browser has been closed")
+
+- Cause: not `storedResponse`. Two harness runs in one checkout (e.g. the Stop hook's `make check` beside an agent's own) shared `.build/harness/test-results`; a starting run wiped the other's `.playwright-artifacts-N` trace dirs, so `context.close()` failed on the trace chunk (ENOENT) after it had already disposed the request context. `Player.close` swallowed that, leaving a half-closed context in the worker, and the worker's next test failed in Playwright's trace fixture (0.0 s, no stack, a random fixture). Reproduced: 3 staggered runs in one checkout, 13 failures.
+- Fix (harness only): each run gets `.build/harness/runs/<port>/` for Playwright output and its own runtime build (`server.py --dist`), so neither the traces nor the served app can be swapped out by another run; runs older than a day are pruned. `Player.close` closes every context it opened (also ones whose setup threw) and rethrows a failed close, so a close problem fails its own test.
+- Numbers: same repro after the fix 0 failures; 12/12 `make harness-quick` green (4 sequential, 8 as 4 overlapping pairs in one checkout under 8-core `yes` load); before that ~4,000 test runs with separate output dirs, 0 failures. `make harness-full` green (313 passed, 3 skipped).
+- Open: concurrent runs still both write `.build/harness/report.md`/`report.json` (last writer wins).

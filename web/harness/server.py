@@ -117,7 +117,7 @@ def variant_key(quotas: dict[str, str]) -> str:
     return json.dumps(quotas, sort_keys=True, separators=(",", ":"))
 
 
-def build(db: Path) -> FastAPI:
+def build(db: Path, dist: Path = DIST) -> FastAPI:
     engine = create_engine(f"sqlite:///{db}", connect_args={"timeout": 30})
     migrate(engine)
     store = Store(engine, Keyring({"k1": generate_key()}, active="k1"))
@@ -217,9 +217,9 @@ def build(db: Path) -> FastAPI:
 
     @app.get("/s/{slug}")
     def page(slug: str) -> FileResponse:
-        return FileResponse(DIST / "index.html", headers={"Cache-Control": "no-store"})
+        return FileResponse(dist / "index.html", headers={"Cache-Control": "no-store"})
 
-    app.mount("/r", StaticFiles(directory=DIST), name="runtime")
+    app.mount("/r", StaticFiles(directory=dist), name="runtime")
     return app
 
 
@@ -228,9 +228,12 @@ def main() -> None:
 
     ap = argparse.ArgumentParser()
     ap.add_argument("--port", type=int, default=4392)
+    # The runtime build to serve: playwright.config.ts builds one per run, so a concurrent
+    # run (or another build of web/runtime/dist) never swaps the app out mid-run.
+    ap.add_argument("--dist", type=Path, default=DIST)
     args = ap.parse_args()
     with tempfile.TemporaryDirectory(prefix="osp-r4-") as tmp:
-        app = build(Path(tmp) / "harness.db")
+        app = build(Path(tmp) / "harness.db", args.dist)
         uvicorn.run(HarnessStart(app), host="127.0.0.1", port=args.port, log_level="warning")
 
 
