@@ -30,6 +30,10 @@ OSP_PARTICIPANT_DIR   a built ``web/runtime/dist``: serve it at  none (the host 
                       ``/r/`` and ``/s/{slug}`` (static_files)   it)
 OSP_BUILDER_DIR       a built ``web/builder/build``: serve its   none
                       files at ``/builder/``
+OSP_MEDIA_ORIGINS     exact origins survey media (images, audio, none (same-origin
+                      video) may be loaded from (planning/        media only)
+                      media.md §2.3): checked at validation and
+                      publish, added to the participant page CSP
 ==================  ==========================================  =====================
 
 Identity (plan P): osp-api has no sign-in. Behind a host, ``trusted-headers`` verifies the
@@ -104,6 +108,9 @@ class Settings:
     nonce_store: str = "memory"
     participant_dir: Path | None = None
     builder_dir: Path | None = None
+    # planning/media.md §2.3: origins survey media may be loaded from, besides the page's
+    # own. Always a tuple here: a deployment that lists none allows same-origin media only.
+    media_origins: tuple[str, ...] = ()
 
     @property
     def production(self) -> bool:
@@ -158,6 +165,7 @@ class Settings:
             nonces,
             _static_dir(env, "OSP_PARTICIPANT_DIR", check_participant_dir),
             _static_dir(env, "OSP_BUILDER_DIR", check_builder_dir),
+            _origins(env, "OSP_MEDIA_ORIGINS"),
         )
 
 
@@ -289,7 +297,9 @@ def build_app(
 
     store = prepare(settings, environ)
     identity = identity_provider(settings, host or settings.host, environ, store.engine)
-    services = build_services(store, auto_create_labs=settings.auto_create_labs)
+    services = build_services(
+        store, auto_create_labs=settings.auto_create_labs, media_origins=settings.media_origins
+    )
     app = create_app(
         builder=services,
         identity=identity,
@@ -297,7 +307,12 @@ def build_app(
         public_origins=settings.public_origins,
         trusted_proxies=settings.trusted_proxies,
     )
-    mount_static(app, participant_dir=settings.participant_dir, builder_dir=settings.builder_dir)
+    mount_static(
+        app,
+        participant_dir=settings.participant_dir,
+        builder_dir=settings.builder_dir,
+        media_origins=settings.media_origins,
+    )
     return app
 
 

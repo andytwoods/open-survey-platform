@@ -279,9 +279,32 @@ def _invocations(ops: object) -> list[Invocation]:
 class Builder:
     """Survey-building commands over osp-store. Thread-safe as far as the store is."""
 
-    def __init__(self, store: Store, sessions: SessionService | None = None) -> None:
+    def __init__(
+        self,
+        store: Store,
+        sessions: SessionService | None = None,
+        *,
+        media_origins: Sequence[str] | None = None,
+    ) -> None:
         self.store = store
         self.sessions = sessions or SessionService(StoreParticipantRepo(store))
+        # planning/media.md §2.3: the deployment's allowed media origins (OSP_MEDIA_ORIGINS).
+        # None: unchecked (an in-process host that has not configured any). A tuple, even
+        # empty, means only same-origin paths and the listed origins pass.
+        self.media_origins: tuple[str, ...] | None = (
+            None if media_origins is None else tuple(media_origins)
+        )
+
+    def media_diagnostics(self, body: Any) -> list[Diagnostic]:
+        """The `media.origin_not_allowed` errors of a document for this deployment
+        (planning/media.md §2.3), so the builder shows them live after every edit."""
+        if self.media_origins is None:
+            return []
+        return [
+            d
+            for d in parse(body, media_origins=self.media_origins)[1]
+            if d.code == "media.origin_not_allowed"
+        ]
 
     def run(self, command_id: str, actor: object, **params: Any) -> Any:
         """Dispatch an app command by id (what the API, CLI and MCP call)."""
@@ -347,7 +370,7 @@ class Builder:
         elif tenant_id not in tenants:
             raise Forbidden("Not permitted.")
         body = default_survey(title) if survey is None else survey
-        model, diagnostics = parse(body)
+        model, diagnostics = parse(body, media_origins=self.media_origins)
         if model is None:
             raise Rejected("The survey is not structurally valid.", diagnostics)
         ctx = TenantContext(tenant_id, actor.user_id)
@@ -400,8 +423,9 @@ class Builder:
             raise RevisionConflictError(base_revision, draft.revision)
         if res.status != "ok":
             raise Rejected("The edit was rejected.", res.diagnostics, res.failed_index)
+        diagnostics = [*res.diagnostics, *self.media_diagnostics(res.draft.survey)]
         if not res.patch:
-            return EditResult(draft.revision, [], res.diagnostics, None)
+            return EditResult(draft.revision, [], diagnostics, None)
         n = len(ops)
         records = [
             OpRecord(
@@ -424,7 +448,7 @@ class Builder:
         hooks_change = _hooks_change(draft.body, body, txn_id, ops)
         if hooks_change is not None:
             self.store.audit(ctx, HOOKS_CHANGED, "survey", survey_id, hooks_change)
-        return EditResult(saved.revision, list(res.patch), list(res.diagnostics), txn_id)
+        return EditResult(saved.revision, list(res.patch), diagnostics, txn_id)
 
     def _transaction(self, ctx: TenantContext, survey_id: str, txn_id: str) -> list[OpLogEntry]:
         return [e for e in self.store.list_ops(ctx, survey_id) if e.txn_id == txn_id]
@@ -525,8 +549,9 @@ class Builder:
         draft = self._draft(ctx, survey_id)
         if base_revision is not None and base_revision != draft.revision:
             raise RevisionConflictError(base_revision, draft.revision)
-        # Publishing also needs a retention policy (decided 16 Oct 2026, no silent default).
-        diagnostics = publish_diagnostics(draft.body)
+        # Publishing also needs a retention policy (decided 16 Oct 2026, no silent default),
+        # and every media URL on an allowed origin (planning/media.md §2.3).
+        diagnostics = publish_diagnostics(draft.body, media_origins=self.media_origins)
         if _errors(diagnostics) or not isinstance(draft.body, dict):
             raise Rejected(_publish_message(diagnostics), diagnostics)
         retention = _retention_policy(draft.body)

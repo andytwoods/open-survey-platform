@@ -237,3 +237,39 @@ def test_matrix_rows_and_slider_track() -> None:
     assert vas["minLabel"]["de"] == ["Gar nicht"]
     score = plan["items"]["score"]
     assert (score["valueType"], score["step"]) == ("integer", 1)
+
+
+def test_media_is_compiled_per_language_and_absent_otherwise() -> None:
+    """planning/media.md §4: item and choice media carry URLs per language and texts as
+    segments; flags only when set; plans without media have no `media` keys."""
+    plan, diags = compile_survey(_survey(CASES / "valid" / "v13_media.json"))
+    assert plan is not None, diags
+    stim = plan["items"]["stim"]["media"]
+    assert stim[0]["kind"] == "image"
+    assert stim[0]["url"] == {
+        "en": "https://cdn.example.org/stimuli/scene.jpg",
+        "de": "https://cdn.example.org/stimuli/scene.jpg",
+    }
+    assert stim[0]["alt"]["en"] == ["A busy street market"]
+    assert stim[0]["width"] == 1280 and "mustPlayToEnd" not in stim[0]
+    clip = plan["items"]["clip_rating"]["media"]
+    assert clip[0]["url"] == {"en": "/media/clips/intro-en.mp3", "de": "/media/clips/intro-de.mp3"}
+    assert clip[0]["transcriptUrl"]["de"] == "/media/clips/intro-de.html"
+    assert clip[0]["mustPlayToEnd"] is True and clip[0]["durationSeconds"] == 12.5
+    assert clip[1]["captionsUrl"] == {
+        "en": "/media/clips/demo-en.vtt",
+        "de": "/media/clips/demo-de.vtt",
+    }
+    assert clip[1]["posterUrl"] == "/media/clips/demo.jpg" and clip[1]["autoplay"] is True
+    face = plan["items"]["face"]["choices"]
+    assert face[0]["media"]["kind"] == "image" and face[0]["media"]["alt"]["en"] == [
+        "A smiling face"
+    ]
+    grid = plan["items"]["grid"]
+    assert grid["choices"][1]["media"]["url"]["en"] == "/media/icons/up.svg"
+    assert (
+        plan["items"]["grid_a"]["choices"][1]["media"]["kind"] == "image"
+    )  # rows share the columns
+    assert "media" not in plan["items"]["grid_a"]
+    plain, _ = compile_survey(_survey(CASES / "valid" / "v01_worked_example.json"))
+    assert "media" not in json.dumps(plain)

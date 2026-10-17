@@ -84,6 +84,19 @@
             "$ref": "#/components/schemas/Text",
             "default": ""
           },
+          "media": {
+            "anyOf": [
+              {
+                "additionalProperties": true,
+                "type": "object"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "default": null,
+            "title": "Media"
+          },
           "owner": {
             "title": "Owner",
             "type": "string"
@@ -2611,6 +2624,54 @@
         "title": "LayoutTheme",
         "type": "object"
       },
+      "MediaCsp": {
+        "properties": {
+          "imgSrc": {
+            "description": "The `img-src` source list the participant page needs.",
+            "title": "Imgsrc",
+            "type": "string"
+          },
+          "mediaSrc": {
+            "description": "The `media-src` source list the participant page needs.",
+            "title": "Mediasrc",
+            "type": "string"
+          }
+        },
+        "required": [
+          "imgSrc",
+          "mediaSrc"
+        ],
+        "title": "MediaCsp",
+        "type": "object"
+      },
+      "MediaPolicy": {
+        "properties": {
+          "allowedOrigins": {
+            "description": "Exact origins survey media may be loaded from, besides the page's own (OSP_MEDIA_ORIGINS). Same-origin paths (`/media/…`) are always allowed.",
+            "items": {
+              "type": "string"
+            },
+            "title": "Allowedorigins",
+            "type": "array"
+          },
+          "checked": {
+            "description": "Whether this deployment checks media origins at all. False: the in-process host configured none; any https URL validates.",
+            "title": "Checked",
+            "type": "boolean"
+          },
+          "csp": {
+            "$ref": "#/components/schemas/MediaCsp",
+            "description": "What a host that serves the participant `index.html` or the preview frame itself writes into those pages' Content-Security-Policy."
+          }
+        },
+        "required": [
+          "checked",
+          "allowedOrigins",
+          "csp"
+        ],
+        "title": "MediaPolicy",
+        "type": "object"
+      },
       "MoveBlockParams": {
         "additionalProperties": false,
         "properties": {
@@ -2884,6 +2945,7 @@
           "rename_page",
           "replace_survey",
           "set_choice",
+          "set_choice_media",
           "set_condition",
           "set_consent",
           "set_custom_property",
@@ -4376,6 +4438,42 @@
           "groups"
         ],
         "title": "RowResult",
+        "type": "object"
+      },
+      "SetChoiceMediaParams": {
+        "additionalProperties": false,
+        "properties": {
+          "media": {
+            "anyOf": [
+              {
+                "additionalProperties": true,
+                "type": "object"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "default": null,
+            "title": "Media"
+          },
+          "owner": {
+            "title": "Owner",
+            "type": "string"
+          },
+          "unset": {
+            "default": false,
+            "title": "Unset",
+            "type": "boolean"
+          },
+          "value": {
+            "$ref": "#/components/schemas/ChoiceValue"
+          }
+        },
+        "required": [
+          "owner",
+          "value"
+        ],
+        "title": "SetChoiceMedia",
         "type": "object"
       },
       "SetChoiceParams": {
@@ -6766,6 +6864,38 @@
           }
         },
         "summary": "Print ",
+        "tags": [
+          "meta"
+        ]
+      }
+    },
+    "/api/meta/media-policy": {
+      "get": {
+        "description": "Where survey media may come from in this deployment, and the CSP directives that\nallow it (planning/media.md §2.3).",
+        "operationId": "getMediaPolicy",
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/MediaPolicy"
+                }
+              }
+            },
+            "description": "Successful Response"
+          },
+          "401": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorBody"
+                }
+              }
+            },
+            "description": "Unauthorized"
+          }
+        },
+        "summary": "Media Policy",
         "tags": [
           "meta"
         ]

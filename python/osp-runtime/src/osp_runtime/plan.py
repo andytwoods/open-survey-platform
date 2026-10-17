@@ -13,6 +13,9 @@ The plan (`contract/runtime-plan.schema.json`, TS types in `web/engine/src/plan.
   Rows (not the matrix) are in `questions`. A row has no `showIf`: it is relevant exactly
   when its matrix is;
 - a `slider` item carries `valueType`, `min`, `max`, `step` and its end labels;
+- an item's `media` list and a choice's `media` (planning/media.md) are carried with their
+  URLs resolved per language (`{lang: url}`) and their texts split like labels; a plan
+  without media has no `media` keys at all, so existing plans and checksums are unchanged;
 - embeds expressions as `osp-expr` AST JSON (the browser never parses text syntax);
 - splits every translatable text into segments per language: a plain string, or
   `{"pipe": id}` for `${id}` (semantics.md §8). The engine fills pipes; the renderer
@@ -40,6 +43,7 @@ from typing import Any
 from osp_spec import Diagnostic, Survey, has_errors, parse
 from osp_spec.diagnostics import pointer
 from osp_spec.hooks import HOOK_EVENTS, Hooks, hooks_json
+from osp_spec.media import Media
 from osp_spec.model import (
     AssignedVariable,
     AssignNode,
@@ -270,7 +274,45 @@ class _Compiler:
         return None if e is None else expr_json(e)
 
     def choices(self, choices: list[Choice]) -> list[Json]:
-        return [{"value": c.value, "label": self.text(c.label)} for c in choices]
+        out = []
+        for c in choices:
+            entry: dict[str, Json] = {"value": c.value, "label": self.text(c.label)}
+            if c.media is not None:
+                entry["media"] = self.media(c.media)
+            out.append(entry)
+        return out
+
+    def urls(self, url: str | dict[str, str]) -> Json:
+        """A plain or per-language URL → `{language: url}` for every survey language, with
+        the same fallback as `text` (no segments: a URL never pipes, osp_spec.media)."""
+        if isinstance(url, str):
+            return dict.fromkeys(self.languages, url)
+        fallback = url.get(self.default)
+        if fallback is None:
+            fallback = next(iter(url.values()), "")
+        return {lang: url.get(lang, fallback) for lang in self.languages}
+
+    def media(self, m: Media) -> Json:
+        """One media (planning/media.md §4): URLs per language, texts as segments, hints
+        and flags only when set, so plans without media are unchanged byte for byte."""
+        out: dict[str, Json] = {"kind": m.kind, "url": self.urls(m.url)}
+        for key in ("alt", "caption"):
+            text = getattr(m, key)
+            if text is not None:
+                out[key] = self.text(text)
+        for key in ("transcriptUrl", "captionsUrl"):
+            url = getattr(m, key)
+            if url is not None:
+                out[key] = self.urls(url)
+        for key in ("posterUrl", "width", "height", "durationSeconds", "mimeType"):
+            value = getattr(m, key)
+            if value is not None:
+                out[key] = value
+        if m.mustPlayToEnd:
+            out["mustPlayToEnd"] = True
+        if m.autoplay:
+            out["autoplay"] = True
+        return out
 
     # -- items, pages, blocks ---------------------------------------------------------
 
@@ -279,6 +321,8 @@ class _Compiler:
         out["label"] = self.text(q.label)
         if q.help is not None:
             out["help"] = self.text(q.help)
+        if q.media:
+            out["media"] = [self.media(m) for m in q.media]
         if q.showIf is not None:
             out["showIf"] = self.expr(q.showIf)
         if isinstance(q, NoteQuestion):

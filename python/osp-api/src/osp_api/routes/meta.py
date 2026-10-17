@@ -14,7 +14,8 @@ from osp_spec.property_schema import property_schemas_json
 from osp_spec.theme import theme_json_schema
 from pydantic import BaseModel, Field
 
-from .common import Auth, errors
+from ..static_files import media_sources
+from .common import Auth, Services, errors
 
 
 class OpCatalogueEntry(BaseModel):
@@ -119,3 +120,40 @@ def retention(_auth: Auth, response: Response) -> RetentionOptions:
     """The allowed `settings.retention` policies (the builder's retention control)."""
     response.headers["Cache-Control"] = _CACHE
     return _retention()
+
+
+# -- media (planning/media.md §2.3) --------------------------------------------------------
+
+
+class MediaCsp(BaseModel):
+    imgSrc: str = Field(description="The `img-src` source list the participant page needs.")
+    mediaSrc: str = Field(description="The `media-src` source list the participant page needs.")
+
+
+class MediaPolicy(BaseModel):
+    checked: bool = Field(
+        description="Whether this deployment checks media origins at all. False: the "
+        "in-process host configured none; any https URL validates."
+    )
+    allowedOrigins: list[str] = Field(
+        description="Exact origins survey media may be loaded from, besides the page's own "
+        "(OSP_MEDIA_ORIGINS). Same-origin paths (`/media/…`) are always allowed."
+    )
+    csp: MediaCsp = Field(
+        description="What a host that serves the participant `index.html` or the preview "
+        "frame itself writes into those pages' Content-Security-Policy."
+    )
+
+
+@router.get("/media-policy", operation_id="getMediaPolicy", responses=errors(401))
+def media_policy(_auth: Auth, services: Services, response: Response) -> MediaPolicy:
+    """Where survey media may come from in this deployment, and the CSP directives that
+    allow it (planning/media.md §2.3)."""
+    response.headers["Cache-Control"] = _CACHE
+    origins = services.builder.media_origins
+    sources = media_sources(origins or ())
+    return MediaPolicy(
+        checked=origins is not None,
+        allowedOrigins=list(origins or ()),
+        csp=MediaCsp(imgSrc=sources["img-src"], mediaSrc=sources["media-src"]),
+    )

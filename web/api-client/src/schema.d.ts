@@ -72,6 +72,27 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
+    "/api/meta/media-policy": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /**
+         * Media Policy
+         * @description Where survey media may come from in this deployment, and the CSP directives that
+         *     allow it (planning/media.md §2.3).
+         */
+        get: operations["getMediaPolicy"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
     "/api/meta/ops": {
         parameters: {
             query?: never;
@@ -972,6 +993,13 @@ export interface components {
             index: number | null;
             /** @default  */
             label: components["schemas"]["Text"];
+            /**
+             * Media
+             * @default null
+             */
+            media: {
+                [key: string]: unknown;
+            } | null;
             /** Owner */
             owner: string;
             /** @default null */
@@ -2025,6 +2053,34 @@ export interface components {
              */
             kind: "app" | "survey" | "preset" | "library";
         };
+        /** MediaCsp */
+        MediaCsp: {
+            /**
+             * Imgsrc
+             * @description The `img-src` source list the participant page needs.
+             */
+            imgSrc: string;
+            /**
+             * Mediasrc
+             * @description The `media-src` source list the participant page needs.
+             */
+            mediaSrc: string;
+        };
+        /** MediaPolicy */
+        MediaPolicy: {
+            /**
+             * Allowedorigins
+             * @description Exact origins survey media may be loaded from, besides the page's own (OSP_MEDIA_ORIGINS). Same-origin paths (`/media/…`) are always allowed.
+             */
+            allowedOrigins: string[];
+            /**
+             * Checked
+             * @description Whether this deployment checks media origins at all. False: the in-process host configured none; any https URL validates.
+             */
+            checked: boolean;
+            /** @description What a host that serves the participant `index.html` or the preview frame itself writes into those pages' Content-Security-Policy. */
+            csp: components["schemas"]["MediaCsp"];
+        };
         /** MoveBlock */
         MoveBlockParams: {
             /** Id */
@@ -2111,7 +2167,7 @@ export interface components {
         /** @enum {string} */
         OpErrorCode: "op.cascade_blocked" | "op.conflict" | "op.dangling_ref" | "op.duplicate_id" | "op.expr_syntax" | "op.internal" | "op.invalid_result" | "op.invalid_survey" | "op.not_allowed" | "op.not_applicable" | "op.not_found" | "op.params" | "op.patch" | "op.type_conflict" | "op.unknown";
         /** @enum {string} */
-        OpId: "add_block" | "add_choice" | "add_matrix_row" | "add_page" | "add_question" | "add_variable" | "apply_patch" | "bulk_paste_choices" | "change_question_type" | "create_choice_list" | "delete_block" | "delete_choice" | "delete_choice_list" | "delete_flow_node" | "delete_matrix_row" | "delete_page" | "delete_question" | "delete_variable" | "duplicate_block" | "duplicate_page" | "duplicate_question" | "insert_flow_node" | "move_block" | "move_choice" | "move_flow_node" | "move_matrix_row" | "move_page" | "move_question" | "rename_block" | "rename_matrix_row" | "rename_page" | "replace_survey" | "set_choice" | "set_condition" | "set_consent" | "set_custom_property" | "set_hooks" | "set_languages" | "set_matrix_row_required" | "set_property" | "set_theme" | "set_title";
+        OpId: "add_block" | "add_choice" | "add_matrix_row" | "add_page" | "add_question" | "add_variable" | "apply_patch" | "bulk_paste_choices" | "change_question_type" | "create_choice_list" | "delete_block" | "delete_choice" | "delete_choice_list" | "delete_flow_node" | "delete_matrix_row" | "delete_page" | "delete_question" | "delete_variable" | "duplicate_block" | "duplicate_page" | "duplicate_question" | "insert_flow_node" | "move_block" | "move_choice" | "move_flow_node" | "move_matrix_row" | "move_page" | "move_question" | "rename_block" | "rename_matrix_row" | "rename_page" | "replace_survey" | "set_choice" | "set_choice_media" | "set_condition" | "set_consent" | "set_custom_property" | "set_hooks" | "set_languages" | "set_matrix_row_required" | "set_property" | "set_theme" | "set_title";
         /** OpsRequest */
         OpsRequest: {
             /** Baserevision */
@@ -2739,6 +2795,24 @@ export interface components {
             /** Name */
             name: string;
             states: components["schemas"]["StateCounts"];
+        };
+        /** SetChoiceMedia */
+        SetChoiceMediaParams: {
+            /**
+             * Media
+             * @default null
+             */
+            media: {
+                [key: string]: unknown;
+            } | null;
+            /** Owner */
+            owner: string;
+            /**
+             * Unset
+             * @default false
+             */
+            unset: boolean;
+            value: components["schemas"]["ChoiceValue"];
         };
         /** SetChoice */
         SetChoiceParams: {
@@ -3785,6 +3859,35 @@ export interface operations {
                 };
                 content: {
                     "application/json": components["schemas"]["RejectedBody"];
+                };
+            };
+        };
+    };
+    getMediaPolicy: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["MediaPolicy"];
+                };
+            };
+            /** @description Unauthorized */
+            401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorBody"];
                 };
             };
         };

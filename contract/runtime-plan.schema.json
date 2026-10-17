@@ -436,13 +436,43 @@
         "value": { "$ref": "#/$defs/expr" }
       }
     },
+    "urls": {
+      "description": "A URL per language; every survey language is present (planning/media.md).",
+      "type": "object",
+      "additionalProperties": { "type": "string", "minLength": 1, "maxLength": 2048 }
+    },
+    "media": {
+      "description": "An image, audio clip or video shown with an item or a choice (planning/media.md §4). Hints and flags are present only when set.",
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["kind", "url"],
+      "properties": {
+        "kind": { "enum": ["image", "audio", "video"] },
+        "url": { "$ref": "#/$defs/urls" },
+        "alt": { "$ref": "#/$defs/text" },
+        "caption": { "$ref": "#/$defs/text" },
+        "transcriptUrl": { "$ref": "#/$defs/urls" },
+        "captionsUrl": { "$ref": "#/$defs/urls" },
+        "posterUrl": { "type": "string", "minLength": 1, "maxLength": 2048 },
+        "width": { "type": "integer", "minimum": 1, "maximum": 8192 },
+        "height": { "type": "integer", "minimum": 1, "maximum": 8192 },
+        "durationSeconds": { "type": "number", "exclusiveMinimum": 0, "maximum": 86400 },
+        "mimeType": { "type": "string", "pattern": "^(image|audio|video)/[A-Za-z0-9][A-Za-z0-9!#$&^_.+-]{0,126}$" },
+        "mustPlayToEnd": {
+          "const": true,
+          "description": "Audio/video on a question or note: Next is refused until the clip has ended (or failed to load)."
+        },
+        "autoplay": { "const": true, "description": "Video only: starts muted, never under prefers-reduced-motion." }
+      }
+    },
     "choice": {
       "type": "object",
       "additionalProperties": false,
       "required": ["value", "label"],
       "properties": {
         "value": { "$ref": "#/$defs/choiceValue" },
-        "label": { "$ref": "#/$defs/text" }
+        "label": { "$ref": "#/$defs/text" },
+        "media": { "$ref": "#/$defs/media" }
       }
     },
     "item": {
@@ -456,6 +486,7 @@
         "page": { "$ref": "#/$defs/id" },
         "label": { "$ref": "#/$defs/text" },
         "help": { "$ref": "#/$defs/text" },
+        "media": { "type": "array", "minItems": 1, "maxItems": 3, "items": { "$ref": "#/$defs/media" } },
         "showIf": { "$ref": "#/$defs/expr" },
         "name": { "$ref": "#/$defs/id" },
         "required": { "type": "boolean" },

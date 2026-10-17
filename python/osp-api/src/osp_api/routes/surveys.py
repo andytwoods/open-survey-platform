@@ -102,7 +102,7 @@ def summary(s: Survey) -> SurveySummary:
     )
 
 
-def detail(v: SurveyView) -> SurveyDetail:
+def detail(v: SurveyView, media_origins: tuple[str, ...] | None = None) -> SurveyDetail:
     s, d = v.survey, v.draft
     return SurveyDetail(
         **summary(s).model_dump(),
@@ -110,7 +110,9 @@ def detail(v: SurveyView) -> SurveyDetail:
         survey=d.body,
         updatedAt=d.updated_at,
         updatedBy=d.updated_by,
-        diagnostics=validate(d.body),
+        # planning/media.md §2.3: the deployment's media origins, so the builder shows
+        # `media.origin_not_allowed` on load as well as after edits.
+        diagnostics=validate(d.body, media_origins=media_origins),
         publishedVersions=v.published_versions,
     )
 
@@ -132,12 +134,13 @@ def create_survey(body: CreateSurveyRequest, auth: Auth, services: Services) -> 
         survey=body.survey,
         tenant_id=body.tenantId,
     )
-    return detail(view)
+    return detail(view, services.builder.media_origins)
 
 
 @router.get("/{survey_id}", operation_id="getSurvey", responses=errors(401, 403, 404))
 def get_survey(survey_id: str, auth: Auth, services: Services) -> SurveyDetail:
-    return detail(services.builder.run("survey.get", auth.actor, survey_id=survey_id))
+    view = services.builder.run("survey.get", auth.actor, survey_id=survey_id)
+    return detail(view, services.builder.media_origins)
 
 
 @router.delete(

@@ -397,11 +397,12 @@ class Drafting:
     def validate(self, survey_id: str) -> dict[str, Any]:
         view = self._view(survey_id)
         body = view.draft.body
-        diags = [_dump(d) for d in validate(body)]
+        origins = self.builder.media_origins  # planning/media.md §2.3: the deployment's
+        diags = [_dump(d) for d in validate(body, media_origins=origins)]
         seen = {(d["code"], d["pointer"], d["message"]) for d in diags}
         blockers = [
             _dump(d)
-            for d in publish_diagnostics(body)
+            for d in publish_diagnostics(body, media_origins=origins)
             if (d.code, d.pointer, d.message) not in seen
         ]
         return {

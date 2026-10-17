@@ -9,6 +9,7 @@ from __future__ import annotations
 
 import threading
 import time
+from collections.abc import Sequence
 from dataclasses import dataclass, field
 
 from osp_runtime import SessionService
@@ -86,14 +87,20 @@ class AppServices:
 
 
 def build_services(
-    store: Store, *, clock: Clock | None = None, auto_create_labs: bool = True
+    store: Store,
+    *,
+    clock: Clock | None = None,
+    auto_create_labs: bool = True,
+    media_origins: Sequence[str] | None = None,
 ) -> AppServices:
+    """``media_origins`` (planning/media.md §2.3, ``OSP_MEDIA_ORIGINS``): the origins media
+    URLs may use besides the page's own; None leaves the check off."""
     sessions = SessionService(
         StoreParticipantRepo(store), **({"clock": clock.now} if clock is not None else {})
     )
     return AppServices(
         store=store,
-        builder=Builder(store, sessions),
+        builder=Builder(store, sessions, media_origins=media_origins),
         sessions=sessions,
         auto_create_labs=auto_create_labs,
     )

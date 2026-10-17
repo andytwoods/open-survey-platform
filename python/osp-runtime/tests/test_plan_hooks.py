@@ -29,7 +29,8 @@ WORKED = VALID[0]
 _KNOWN = {
     "$schema", "$id", "$defs", "$ref", "title", "description", "type", "enum", "const",
     "properties", "additionalProperties", "required", "propertyNames", "dependentSchemas",
-    "items", "minItems", "minLength", "minimum", "maximum", "pattern",
+    "items", "minItems", "maxItems", "minLength", "maxLength", "minimum", "maximum",
+    "exclusiveMinimum", "pattern",
     "anyOf", "allOf", "oneOf", "not", "if", "then", "else",
 }  # fmt: skip
 
@@ -78,7 +79,7 @@ def valid(s: Any, v: Any, root: dict = SCHEMA) -> bool:  # noqa: C901, PLR0911, 
     if "enum" in s and not any(_eq(e, v) for e in s["enum"]):
         return False
     if isinstance(v, str):
-        if len(v) < s.get("minLength", 0):
+        if len(v) < s.get("minLength", 0) or len(v) > s.get("maxLength", len(v)):
             return False
         if "pattern" in s and not re.search(s["pattern"], v):
             return False
@@ -87,8 +88,10 @@ def valid(s: Any, v: Any, root: dict = SCHEMA) -> bool:  # noqa: C901, PLR0911, 
             return False
         if "maximum" in s and v > s["maximum"]:
             return False
+        if "exclusiveMinimum" in s and v <= s["exclusiveMinimum"]:
+            return False
     if isinstance(v, list):
-        if len(v) < s.get("minItems", 0):
+        if len(v) < s.get("minItems", 0) or len(v) > s.get("maxItems", len(v)):
             return False
         if "items" in s and not all(valid(s["items"], x, root) for x in v):
             return False
