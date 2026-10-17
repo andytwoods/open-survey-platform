@@ -22,7 +22,7 @@ exports[`every gallery chart > date-periods: compiles without warnings and match
     },
     "background": "transparent",
     "bar": {
-      "color": "#2456c7",
+      "color": "#5b3fd1",
     },
     "font": "system-ui, -apple-system, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif",
     "header": {
@@ -47,16 +47,16 @@ exports[`every gallery chart > date-periods: compiles without warnings and match
       "titleFontSize": 12,
     },
     "line": {
-      "color": "#2456c7",
+      "color": "#5b3fd1",
     },
     "padding": 8,
     "point": {
-      "color": "#2456c7",
+      "color": "#5b3fd1",
       "filled": true,
     },
     "range": {
       "category": [
-        "#2456c7",
+        "#5b3fd1",
         "#E69F00",
         "#009E73",
         "#D55E00",
@@ -66,11 +66,11 @@ exports[`every gallery chart > date-periods: compiles without warnings and match
         "#000000",
       ],
       "heatmap": [
-        "#eef3fb",
-        "#c4d5f2",
-        "#7d9fe0",
-        "#2f63c4",
-        "#123a8a",
+        "#f1edfb",
+        "#d5c9f4",
+        "#a48fe6",
+        "#6a4fd2",
+        "#3a2590",
       ],
     },
     "rule": {
@@ -337,7 +337,7 @@ exports[`every gallery chart > decimal-box: compiles without warnings and matche
     },
     "background": "transparent",
     "bar": {
-      "color": "#2456c7",
+      "color": "#5b3fd1",
     },
     "font": "system-ui, -apple-system, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif",
     "header": {
@@ -362,16 +362,16 @@ exports[`every gallery chart > decimal-box: compiles without warnings and matche
       "titleFontSize": 12,
     },
     "line": {
-      "color": "#2456c7",
+      "color": "#5b3fd1",
     },
     "padding": 8,
     "point": {
-      "color": "#2456c7",
+      "color": "#5b3fd1",
       "filled": true,
     },
     "range": {
       "category": [
-        "#2456c7",
+        "#5b3fd1",
         "#E69F00",
         "#009E73",
         "#D55E00",
@@ -381,11 +381,11 @@ exports[`every gallery chart > decimal-box: compiles without warnings and matche
         "#000000",
       ],
       "heatmap": [
-        "#eef3fb",
-        "#c4d5f2",
-        "#7d9fe0",
-        "#2f63c4",
-        "#123a8a",
+        "#f1edfb",
+        "#d5c9f4",
+        "#a48fe6",
+        "#6a4fd2",
+        "#3a2590",
       ],
     },
     "rule": {
@@ -617,7 +617,7 @@ exports[`every gallery chart > decimal-cumulative: compiles without warnings and
     },
     "background": "transparent",
     "bar": {
-      "color": "#2456c7",
+      "color": "#5b3fd1",
     },
     "font": "system-ui, -apple-system, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif",
     "header": {
@@ -642,16 +642,16 @@ exports[`every gallery chart > decimal-cumulative: compiles without warnings and
       "titleFontSize": 12,
     },
     "line": {
-      "color": "#2456c7",
+      "color": "#5b3fd1",
     },
     "padding": 8,
     "point": {
-      "color": "#2456c7",
+      "color": "#5b3fd1",
       "filled": true,
     },
     "range": {
       "category": [
-        "#2456c7",
+        "#5b3fd1",
         "#E69F00",
         "#009E73",
         "#D55E00",
@@ -661,11 +661,11 @@ exports[`every gallery chart > decimal-cumulative: compiles without warnings and
         "#000000",
       ],
       "heatmap": [
-        "#eef3fb",
-        "#c4d5f2",
-        "#7d9fe0",
-        "#2f63c4",
-        "#123a8a",
+        "#f1edfb",
+        "#d5c9f4",
+        "#a48fe6",
+        "#6a4fd2",
+        "#3a2590",
       ],
     },
     "rule": {
@@ -833,7 +833,7 @@ exports[`every gallery chart > decimal-histogram: compiles without warnings and 
     },
     "background": "transparent",
     "bar": {
-      "color": "#2456c7",
+      "color": "#5b3fd1",
     },
     "font": "system-ui, -apple-system, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif",
     "header": {
@@ -858,16 +858,16 @@ exports[`every gallery chart > decimal-histogram: compiles without warnings and 
       "titleFontSize": 12,
     },
     "line": {
-      "color": "#2456c7",
+      "color": "#5b3fd1",
     },
     "padding": 8,
     "point": {
-      "color": "#2456c7",
+      "color": "#5b3fd1",
       "filled": true,
     },
     "range": {
       "category": [
-        "#2456c7",
+        "#5b3fd1",
         "#E69F00",
         "#009E73",
         "#D55E00",
@@ -877,11 +877,11 @@ exports[`every gallery chart > decimal-histogram: compiles without warnings and 
         "#000000",
       ],
       "heatmap": [
-        "#eef3fb",
-        "#c4d5f2",
-        "#7d9fe0",
-        "#2f63c4",
-        "#123a8a",
+        "#f1edfb",
+        "#d5c9f4",
+        "#a48fe6",
+        "#6a4fd2",
+        "#3a2590",
       ],
     },
     "rule": {
@@ -1106,7 +1106,7 @@ exports[`every gallery chart > empty-bars: compiles without warnings and matches
     },
     "background": "transparent",
     "bar": {
-      "color": "#2456c7",
+      "color": "#5b3fd1",
     },
     "font": "system-ui, -apple-system, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif",
     "header": {
@@ -1131,16 +1131,16 @@ exports[`every gallery chart > empty-bars: compiles without warnings and matches
       "titleFontSize": 12,
     },
     "line": {
-      "color": "#2456c7",
+      "color": "#5b3fd1",
     },
     "padding": 8,
     "point": {
-      "color": "#2456c7",
+      "color": "#5b3fd1",
       "filled": true,
     },
     "range": {
       "category": [
-        "#2456c7",
+        "#5b3fd1",
         "#E69F00",
         "#009E73",
         "#D55E00",
@@ -1150,11 +1150,11 @@ exports[`every gallery chart > empty-bars: compiles without warnings and matches
         "#000000",
       ],
       "heatmap": [
-        "#eef3fb",
-        "#c4d5f2",
-        "#7d9fe0",
-        "#2f63c4",
-        "#123a8a",
+        "#f1edfb",
+        "#d5c9f4",
+        "#a48fe6",
+        "#6a4fd2",
+        "#3a2590",
       ],
     },
     "rule": {
@@ -1233,7 +1233,7 @@ exports[`every gallery chart > empty-bars-sorted: compiles without warnings and 
     },
     "background": "transparent",
     "bar": {
-      "color": "#2456c7",
+      "color": "#5b3fd1",
     },
     "font": "system-ui, -apple-system, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif",
     "header": {
@@ -1258,16 +1258,16 @@ exports[`every gallery chart > empty-bars-sorted: compiles without warnings and 
       "titleFontSize": 12,
     },
     "line": {
-      "color": "#2456c7",
+      "color": "#5b3fd1",
     },
     "padding": 8,
     "point": {
-      "color": "#2456c7",
+      "color": "#5b3fd1",
       "filled": true,
     },
     "range": {
       "category": [
-        "#2456c7",
+        "#5b3fd1",
         "#E69F00",
         "#009E73",
         "#D55E00",
@@ -1277,11 +1277,11 @@ exports[`every gallery chart > empty-bars-sorted: compiles without warnings and 
         "#000000",
       ],
       "heatmap": [
-        "#eef3fb",
-        "#c4d5f2",
-        "#7d9fe0",
-        "#2f63c4",
-        "#123a8a",
+        "#f1edfb",
+        "#d5c9f4",
+        "#a48fe6",
+        "#6a4fd2",
+        "#3a2590",
       ],
     },
     "rule": {
@@ -1360,7 +1360,7 @@ exports[`every gallery chart > empty-donut: compiles without warnings and matche
     },
     "background": "transparent",
     "bar": {
-      "color": "#2456c7",
+      "color": "#5b3fd1",
     },
     "font": "system-ui, -apple-system, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif",
     "header": {
@@ -1385,16 +1385,16 @@ exports[`every gallery chart > empty-donut: compiles without warnings and matche
       "titleFontSize": 12,
     },
     "line": {
-      "color": "#2456c7",
+      "color": "#5b3fd1",
     },
     "padding": 8,
     "point": {
-      "color": "#2456c7",
+      "color": "#5b3fd1",
       "filled": true,
     },
     "range": {
       "category": [
-        "#2456c7",
+        "#5b3fd1",
         "#E69F00",
         "#009E73",
         "#D55E00",
@@ -1404,11 +1404,11 @@ exports[`every gallery chart > empty-donut: compiles without warnings and matche
         "#000000",
       ],
       "heatmap": [
-        "#eef3fb",
-        "#c4d5f2",
-        "#7d9fe0",
-        "#2f63c4",
-        "#123a8a",
+        "#f1edfb",
+        "#d5c9f4",
+        "#a48fe6",
+        "#6a4fd2",
+        "#3a2590",
       ],
     },
     "rule": {
@@ -1487,7 +1487,7 @@ exports[`every gallery chart > facets-bars: compiles without warnings and matche
     },
     "background": "transparent",
     "bar": {
-      "color": "#2456c7",
+      "color": "#5b3fd1",
     },
     "font": "system-ui, -apple-system, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif",
     "header": {
@@ -1512,16 +1512,16 @@ exports[`every gallery chart > facets-bars: compiles without warnings and matche
       "titleFontSize": 12,
     },
     "line": {
-      "color": "#2456c7",
+      "color": "#5b3fd1",
     },
     "padding": 8,
     "point": {
-      "color": "#2456c7",
+      "color": "#5b3fd1",
       "filled": true,
     },
     "range": {
       "category": [
-        "#2456c7",
+        "#5b3fd1",
         "#E69F00",
         "#009E73",
         "#D55E00",
@@ -1531,11 +1531,11 @@ exports[`every gallery chart > facets-bars: compiles without warnings and matche
         "#000000",
       ],
       "heatmap": [
-        "#eef3fb",
-        "#c4d5f2",
-        "#7d9fe0",
-        "#2f63c4",
-        "#123a8a",
+        "#f1edfb",
+        "#d5c9f4",
+        "#a48fe6",
+        "#6a4fd2",
+        "#3a2590",
       ],
     },
     "rule": {
@@ -1945,7 +1945,7 @@ exports[`every gallery chart > facets-bars-sorted: compiles without warnings and
     },
     "background": "transparent",
     "bar": {
-      "color": "#2456c7",
+      "color": "#5b3fd1",
     },
     "font": "system-ui, -apple-system, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif",
     "header": {
@@ -1970,16 +1970,16 @@ exports[`every gallery chart > facets-bars-sorted: compiles without warnings and
       "titleFontSize": 12,
     },
     "line": {
-      "color": "#2456c7",
+      "color": "#5b3fd1",
     },
     "padding": 8,
     "point": {
-      "color": "#2456c7",
+      "color": "#5b3fd1",
       "filled": true,
     },
     "range": {
       "category": [
-        "#2456c7",
+        "#5b3fd1",
         "#E69F00",
         "#009E73",
         "#D55E00",
@@ -1989,11 +1989,11 @@ exports[`every gallery chart > facets-bars-sorted: compiles without warnings and
         "#000000",
       ],
       "heatmap": [
-        "#eef3fb",
-        "#c4d5f2",
-        "#7d9fe0",
-        "#2f63c4",
-        "#123a8a",
+        "#f1edfb",
+        "#d5c9f4",
+        "#a48fe6",
+        "#6a4fd2",
+        "#3a2590",
       ],
     },
     "rule": {
@@ -2403,7 +2403,7 @@ exports[`every gallery chart > facets-donut: compiles without warnings and match
     },
     "background": "transparent",
     "bar": {
-      "color": "#2456c7",
+      "color": "#5b3fd1",
     },
     "font": "system-ui, -apple-system, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif",
     "header": {
@@ -2428,16 +2428,16 @@ exports[`every gallery chart > facets-donut: compiles without warnings and match
       "titleFontSize": 12,
     },
     "line": {
-      "color": "#2456c7",
+      "color": "#5b3fd1",
     },
     "padding": 8,
     "point": {
-      "color": "#2456c7",
+      "color": "#5b3fd1",
       "filled": true,
     },
     "range": {
       "category": [
-        "#2456c7",
+        "#5b3fd1",
         "#E69F00",
         "#009E73",
         "#D55E00",
@@ -2447,11 +2447,11 @@ exports[`every gallery chart > facets-donut: compiles without warnings and match
         "#000000",
       ],
       "heatmap": [
-        "#eef3fb",
-        "#c4d5f2",
-        "#7d9fe0",
-        "#2f63c4",
-        "#123a8a",
+        "#f1edfb",
+        "#d5c9f4",
+        "#a48fe6",
+        "#6a4fd2",
+        "#3a2590",
       ],
     },
     "rule": {
@@ -2805,7 +2805,7 @@ exports[`every gallery chart > integer-box: compiles without warnings and matche
     },
     "background": "transparent",
     "bar": {
-      "color": "#2456c7",
+      "color": "#5b3fd1",
     },
     "font": "system-ui, -apple-system, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif",
     "header": {
@@ -2830,16 +2830,16 @@ exports[`every gallery chart > integer-box: compiles without warnings and matche
       "titleFontSize": 12,
     },
     "line": {
-      "color": "#2456c7",
+      "color": "#5b3fd1",
     },
     "padding": 8,
     "point": {
-      "color": "#2456c7",
+      "color": "#5b3fd1",
       "filled": true,
     },
     "range": {
       "category": [
-        "#2456c7",
+        "#5b3fd1",
         "#E69F00",
         "#009E73",
         "#D55E00",
@@ -2849,11 +2849,11 @@ exports[`every gallery chart > integer-box: compiles without warnings and matche
         "#000000",
       ],
       "heatmap": [
-        "#eef3fb",
-        "#c4d5f2",
-        "#7d9fe0",
-        "#2f63c4",
-        "#123a8a",
+        "#f1edfb",
+        "#d5c9f4",
+        "#a48fe6",
+        "#6a4fd2",
+        "#3a2590",
       ],
     },
     "rule": {
@@ -3085,7 +3085,7 @@ exports[`every gallery chart > integer-box-intervals: compiles without warnings 
     },
     "background": "transparent",
     "bar": {
-      "color": "#2456c7",
+      "color": "#5b3fd1",
     },
     "font": "system-ui, -apple-system, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif",
     "header": {
@@ -3110,16 +3110,16 @@ exports[`every gallery chart > integer-box-intervals: compiles without warnings 
       "titleFontSize": 12,
     },
     "line": {
-      "color": "#2456c7",
+      "color": "#5b3fd1",
     },
     "padding": 8,
     "point": {
-      "color": "#2456c7",
+      "color": "#5b3fd1",
       "filled": true,
     },
     "range": {
       "category": [
-        "#2456c7",
+        "#5b3fd1",
         "#E69F00",
         "#009E73",
         "#D55E00",
@@ -3129,11 +3129,11 @@ exports[`every gallery chart > integer-box-intervals: compiles without warnings 
         "#000000",
       ],
       "heatmap": [
-        "#eef3fb",
-        "#c4d5f2",
-        "#7d9fe0",
-        "#2f63c4",
-        "#123a8a",
+        "#f1edfb",
+        "#d5c9f4",
+        "#a48fe6",
+        "#6a4fd2",
+        "#3a2590",
       ],
     },
     "rule": {
@@ -3454,7 +3454,7 @@ exports[`every gallery chart > integer-cumulative: compiles without warnings and
     },
     "background": "transparent",
     "bar": {
-      "color": "#2456c7",
+      "color": "#5b3fd1",
     },
     "font": "system-ui, -apple-system, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif",
     "header": {
@@ -3479,16 +3479,16 @@ exports[`every gallery chart > integer-cumulative: compiles without warnings and
       "titleFontSize": 12,
     },
     "line": {
-      "color": "#2456c7",
+      "color": "#5b3fd1",
     },
     "padding": 8,
     "point": {
-      "color": "#2456c7",
+      "color": "#5b3fd1",
       "filled": true,
     },
     "range": {
       "category": [
-        "#2456c7",
+        "#5b3fd1",
         "#E69F00",
         "#009E73",
         "#D55E00",
@@ -3498,11 +3498,11 @@ exports[`every gallery chart > integer-cumulative: compiles without warnings and
         "#000000",
       ],
       "heatmap": [
-        "#eef3fb",
-        "#c4d5f2",
-        "#7d9fe0",
-        "#2f63c4",
-        "#123a8a",
+        "#f1edfb",
+        "#d5c9f4",
+        "#a48fe6",
+        "#6a4fd2",
+        "#3a2590",
       ],
     },
     "rule": {
@@ -3698,7 +3698,7 @@ exports[`every gallery chart > integer-histogram: compiles without warnings and 
     },
     "background": "transparent",
     "bar": {
-      "color": "#2456c7",
+      "color": "#5b3fd1",
     },
     "font": "system-ui, -apple-system, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif",
     "header": {
@@ -3723,16 +3723,16 @@ exports[`every gallery chart > integer-histogram: compiles without warnings and 
       "titleFontSize": 12,
     },
     "line": {
-      "color": "#2456c7",
+      "color": "#5b3fd1",
     },
     "padding": 8,
     "point": {
-      "color": "#2456c7",
+      "color": "#5b3fd1",
       "filled": true,
     },
     "range": {
       "category": [
-        "#2456c7",
+        "#5b3fd1",
         "#E69F00",
         "#009E73",
         "#D55E00",
@@ -3742,11 +3742,11 @@ exports[`every gallery chart > integer-histogram: compiles without warnings and 
         "#000000",
       ],
       "heatmap": [
-        "#eef3fb",
-        "#c4d5f2",
-        "#7d9fe0",
-        "#2f63c4",
-        "#123a8a",
+        "#f1edfb",
+        "#d5c9f4",
+        "#a48fe6",
+        "#6a4fd2",
+        "#3a2590",
       ],
     },
     "rule": {
@@ -4031,7 +4031,7 @@ exports[`every gallery chart > integerSplit-box-grouped: compiles without warnin
     },
     "background": "transparent",
     "bar": {
-      "color": "#2456c7",
+      "color": "#5b3fd1",
     },
     "font": "system-ui, -apple-system, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif",
     "header": {
@@ -4056,16 +4056,16 @@ exports[`every gallery chart > integerSplit-box-grouped: compiles without warnin
       "titleFontSize": 12,
     },
     "line": {
-      "color": "#2456c7",
+      "color": "#5b3fd1",
     },
     "padding": 8,
     "point": {
-      "color": "#2456c7",
+      "color": "#5b3fd1",
       "filled": true,
     },
     "range": {
       "category": [
-        "#2456c7",
+        "#5b3fd1",
         "#E69F00",
         "#009E73",
         "#D55E00",
@@ -4075,11 +4075,11 @@ exports[`every gallery chart > integerSplit-box-grouped: compiles without warnin
         "#000000",
       ],
       "heatmap": [
-        "#eef3fb",
-        "#c4d5f2",
-        "#7d9fe0",
-        "#2f63c4",
-        "#123a8a",
+        "#f1edfb",
+        "#d5c9f4",
+        "#a48fe6",
+        "#6a4fd2",
+        "#3a2590",
       ],
     },
     "rule": {
@@ -4326,7 +4326,7 @@ exports[`every gallery chart > integerSplit-box-intervals: compiles without warn
     },
     "background": "transparent",
     "bar": {
-      "color": "#2456c7",
+      "color": "#5b3fd1",
     },
     "font": "system-ui, -apple-system, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif",
     "header": {
@@ -4351,16 +4351,16 @@ exports[`every gallery chart > integerSplit-box-intervals: compiles without warn
       "titleFontSize": 12,
     },
     "line": {
-      "color": "#2456c7",
+      "color": "#5b3fd1",
     },
     "padding": 8,
     "point": {
-      "color": "#2456c7",
+      "color": "#5b3fd1",
       "filled": true,
     },
     "range": {
       "category": [
-        "#2456c7",
+        "#5b3fd1",
         "#E69F00",
         "#009E73",
         "#D55E00",
@@ -4370,11 +4370,11 @@ exports[`every gallery chart > integerSplit-box-intervals: compiles without warn
         "#000000",
       ],
       "heatmap": [
-        "#eef3fb",
-        "#c4d5f2",
-        "#7d9fe0",
-        "#2f63c4",
-        "#123a8a",
+        "#f1edfb",
+        "#d5c9f4",
+        "#a48fe6",
+        "#6a4fd2",
+        "#3a2590",
       ],
     },
     "rule": {
@@ -4712,7 +4712,7 @@ exports[`every gallery chart > integerSplit-cumulative-grouped: compiles without
     },
     "background": "transparent",
     "bar": {
-      "color": "#2456c7",
+      "color": "#5b3fd1",
     },
     "font": "system-ui, -apple-system, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif",
     "header": {
@@ -4737,16 +4737,16 @@ exports[`every gallery chart > integerSplit-cumulative-grouped: compiles without
       "titleFontSize": 12,
     },
     "line": {
-      "color": "#2456c7",
+      "color": "#5b3fd1",
     },
     "padding": 8,
     "point": {
-      "color": "#2456c7",
+      "color": "#5b3fd1",
       "filled": true,
     },
     "range": {
       "category": [
-        "#2456c7",
+        "#5b3fd1",
         "#E69F00",
         "#009E73",
         "#D55E00",
@@ -4756,11 +4756,11 @@ exports[`every gallery chart > integerSplit-cumulative-grouped: compiles without
         "#000000",
       ],
       "heatmap": [
-        "#eef3fb",
-        "#c4d5f2",
-        "#7d9fe0",
-        "#2f63c4",
-        "#123a8a",
+        "#f1edfb",
+        "#d5c9f4",
+        "#a48fe6",
+        "#6a4fd2",
+        "#3a2590",
       ],
     },
     "rule": {
@@ -5067,7 +5067,7 @@ exports[`every gallery chart > integerSplit-cumulative-multiples: compiles witho
     },
     "background": "transparent",
     "bar": {
-      "color": "#2456c7",
+      "color": "#5b3fd1",
     },
     "font": "system-ui, -apple-system, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif",
     "header": {
@@ -5092,16 +5092,16 @@ exports[`every gallery chart > integerSplit-cumulative-multiples: compiles witho
       "titleFontSize": 12,
     },
     "line": {
-      "color": "#2456c7",
+      "color": "#5b3fd1",
     },
     "padding": 8,
     "point": {
-      "color": "#2456c7",
+      "color": "#5b3fd1",
       "filled": true,
     },
     "range": {
       "category": [
-        "#2456c7",
+        "#5b3fd1",
         "#E69F00",
         "#009E73",
         "#D55E00",
@@ -5111,11 +5111,11 @@ exports[`every gallery chart > integerSplit-cumulative-multiples: compiles witho
         "#000000",
       ],
       "heatmap": [
-        "#eef3fb",
-        "#c4d5f2",
-        "#7d9fe0",
-        "#2f63c4",
-        "#123a8a",
+        "#f1edfb",
+        "#d5c9f4",
+        "#a48fe6",
+        "#6a4fd2",
+        "#3a2590",
       ],
     },
     "rule": {
@@ -5420,7 +5420,7 @@ exports[`every gallery chart > integerSplit-histogram-multiples: compiles withou
     },
     "background": "transparent",
     "bar": {
-      "color": "#2456c7",
+      "color": "#5b3fd1",
     },
     "font": "system-ui, -apple-system, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif",
     "header": {
@@ -5445,16 +5445,16 @@ exports[`every gallery chart > integerSplit-histogram-multiples: compiles withou
       "titleFontSize": 12,
     },
     "line": {
-      "color": "#2456c7",
+      "color": "#5b3fd1",
     },
     "padding": 8,
     "point": {
-      "color": "#2456c7",
+      "color": "#5b3fd1",
       "filled": true,
     },
     "range": {
       "category": [
-        "#2456c7",
+        "#5b3fd1",
         "#E69F00",
         "#009E73",
         "#D55E00",
@@ -5464,11 +5464,11 @@ exports[`every gallery chart > integerSplit-histogram-multiples: compiles withou
         "#000000",
       ],
       "heatmap": [
-        "#eef3fb",
-        "#c4d5f2",
-        "#7d9fe0",
-        "#2f63c4",
-        "#123a8a",
+        "#f1edfb",
+        "#d5c9f4",
+        "#a48fe6",
+        "#6a4fd2",
+        "#3a2590",
       ],
     },
     "rule": {
@@ -5932,7 +5932,7 @@ exports[`every gallery chart > matrixOrdered-heatmap: compiles without warnings 
     },
     "background": "transparent",
     "bar": {
-      "color": "#2456c7",
+      "color": "#5b3fd1",
     },
     "font": "system-ui, -apple-system, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif",
     "header": {
@@ -5957,16 +5957,16 @@ exports[`every gallery chart > matrixOrdered-heatmap: compiles without warnings 
       "titleFontSize": 12,
     },
     "line": {
-      "color": "#2456c7",
+      "color": "#5b3fd1",
     },
     "padding": 8,
     "point": {
-      "color": "#2456c7",
+      "color": "#5b3fd1",
       "filled": true,
     },
     "range": {
       "category": [
-        "#2456c7",
+        "#5b3fd1",
         "#E69F00",
         "#009E73",
         "#D55E00",
@@ -5976,11 +5976,11 @@ exports[`every gallery chart > matrixOrdered-heatmap: compiles without warnings 
         "#000000",
       ],
       "heatmap": [
-        "#eef3fb",
-        "#c4d5f2",
-        "#7d9fe0",
-        "#2f63c4",
-        "#123a8a",
+        "#f1edfb",
+        "#d5c9f4",
+        "#a48fe6",
+        "#6a4fd2",
+        "#3a2590",
       ],
     },
     "rule": {
@@ -6439,7 +6439,7 @@ exports[`every gallery chart > matrixOrdered-likert: compiles without warnings a
     },
     "background": "transparent",
     "bar": {
-      "color": "#2456c7",
+      "color": "#5b3fd1",
     },
     "font": "system-ui, -apple-system, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif",
     "header": {
@@ -6464,16 +6464,16 @@ exports[`every gallery chart > matrixOrdered-likert: compiles without warnings a
       "titleFontSize": 12,
     },
     "line": {
-      "color": "#2456c7",
+      "color": "#5b3fd1",
     },
     "padding": 8,
     "point": {
-      "color": "#2456c7",
+      "color": "#5b3fd1",
       "filled": true,
     },
     "range": {
       "category": [
-        "#2456c7",
+        "#5b3fd1",
         "#E69F00",
         "#009E73",
         "#D55E00",
@@ -6483,11 +6483,11 @@ exports[`every gallery chart > matrixOrdered-likert: compiles without warnings a
         "#000000",
       ],
       "heatmap": [
-        "#eef3fb",
-        "#c4d5f2",
-        "#7d9fe0",
-        "#2f63c4",
-        "#123a8a",
+        "#f1edfb",
+        "#d5c9f4",
+        "#a48fe6",
+        "#6a4fd2",
+        "#3a2590",
       ],
     },
     "rule": {
@@ -7022,7 +7022,7 @@ exports[`every gallery chart > matrixOrdered-stacked100: compiles without warnin
     },
     "background": "transparent",
     "bar": {
-      "color": "#2456c7",
+      "color": "#5b3fd1",
     },
     "font": "system-ui, -apple-system, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif",
     "header": {
@@ -7047,16 +7047,16 @@ exports[`every gallery chart > matrixOrdered-stacked100: compiles without warnin
       "titleFontSize": 12,
     },
     "line": {
-      "color": "#2456c7",
+      "color": "#5b3fd1",
     },
     "padding": 8,
     "point": {
-      "color": "#2456c7",
+      "color": "#5b3fd1",
       "filled": true,
     },
     "range": {
       "category": [
-        "#2456c7",
+        "#5b3fd1",
         "#E69F00",
         "#009E73",
         "#D55E00",
@@ -7066,11 +7066,11 @@ exports[`every gallery chart > matrixOrdered-stacked100: compiles without warnin
         "#000000",
       ],
       "heatmap": [
-        "#eef3fb",
-        "#c4d5f2",
-        "#7d9fe0",
-        "#2f63c4",
-        "#123a8a",
+        "#f1edfb",
+        "#d5c9f4",
+        "#a48fe6",
+        "#6a4fd2",
+        "#3a2590",
       ],
     },
     "rule": {
@@ -7598,7 +7598,7 @@ exports[`every gallery chart > matrixSplit-heatmap-multiples: compiles without w
     },
     "background": "transparent",
     "bar": {
-      "color": "#2456c7",
+      "color": "#5b3fd1",
     },
     "font": "system-ui, -apple-system, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif",
     "header": {
@@ -7623,16 +7623,16 @@ exports[`every gallery chart > matrixSplit-heatmap-multiples: compiles without w
       "titleFontSize": 12,
     },
     "line": {
-      "color": "#2456c7",
+      "color": "#5b3fd1",
     },
     "padding": 8,
     "point": {
-      "color": "#2456c7",
+      "color": "#5b3fd1",
       "filled": true,
     },
     "range": {
       "category": [
-        "#2456c7",
+        "#5b3fd1",
         "#E69F00",
         "#009E73",
         "#D55E00",
@@ -7642,11 +7642,11 @@ exports[`every gallery chart > matrixSplit-heatmap-multiples: compiles without w
         "#000000",
       ],
       "heatmap": [
-        "#eef3fb",
-        "#c4d5f2",
-        "#7d9fe0",
-        "#2f63c4",
-        "#123a8a",
+        "#f1edfb",
+        "#d5c9f4",
+        "#a48fe6",
+        "#6a4fd2",
+        "#3a2590",
       ],
     },
     "rule": {
@@ -8526,7 +8526,7 @@ exports[`every gallery chart > matrixSplit-likert-multiples: compiles without wa
     },
     "background": "transparent",
     "bar": {
-      "color": "#2456c7",
+      "color": "#5b3fd1",
     },
     "font": "system-ui, -apple-system, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif",
     "header": {
@@ -8551,16 +8551,16 @@ exports[`every gallery chart > matrixSplit-likert-multiples: compiles without wa
       "titleFontSize": 12,
     },
     "line": {
-      "color": "#2456c7",
+      "color": "#5b3fd1",
     },
     "padding": 8,
     "point": {
-      "color": "#2456c7",
+      "color": "#5b3fd1",
       "filled": true,
     },
     "range": {
       "category": [
-        "#2456c7",
+        "#5b3fd1",
         "#E69F00",
         "#009E73",
         "#D55E00",
@@ -8570,11 +8570,11 @@ exports[`every gallery chart > matrixSplit-likert-multiples: compiles without wa
         "#000000",
       ],
       "heatmap": [
-        "#eef3fb",
-        "#c4d5f2",
-        "#7d9fe0",
-        "#2f63c4",
-        "#123a8a",
+        "#f1edfb",
+        "#d5c9f4",
+        "#a48fe6",
+        "#6a4fd2",
+        "#3a2590",
       ],
     },
     "rule": {
@@ -9606,7 +9606,7 @@ exports[`every gallery chart > matrixSplit-stacked100-multiples: compiles withou
     },
     "background": "transparent",
     "bar": {
-      "color": "#2456c7",
+      "color": "#5b3fd1",
     },
     "font": "system-ui, -apple-system, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif",
     "header": {
@@ -9631,16 +9631,16 @@ exports[`every gallery chart > matrixSplit-stacked100-multiples: compiles withou
       "titleFontSize": 12,
     },
     "line": {
-      "color": "#2456c7",
+      "color": "#5b3fd1",
     },
     "padding": 8,
     "point": {
-      "color": "#2456c7",
+      "color": "#5b3fd1",
       "filled": true,
     },
     "range": {
       "category": [
-        "#2456c7",
+        "#5b3fd1",
         "#E69F00",
         "#009E73",
         "#D55E00",
@@ -9650,11 +9650,11 @@ exports[`every gallery chart > matrixSplit-stacked100-multiples: compiles withou
         "#000000",
       ],
       "heatmap": [
-        "#eef3fb",
-        "#c4d5f2",
-        "#7d9fe0",
-        "#2f63c4",
-        "#123a8a",
+        "#f1edfb",
+        "#d5c9f4",
+        "#a48fe6",
+        "#6a4fd2",
+        "#3a2590",
       ],
     },
     "rule": {
@@ -10672,7 +10672,7 @@ exports[`every gallery chart > matrixUnordered-grouped: compiles without warning
     },
     "background": "transparent",
     "bar": {
-      "color": "#2456c7",
+      "color": "#5b3fd1",
     },
     "font": "system-ui, -apple-system, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif",
     "header": {
@@ -10697,16 +10697,16 @@ exports[`every gallery chart > matrixUnordered-grouped: compiles without warning
       "titleFontSize": 12,
     },
     "line": {
-      "color": "#2456c7",
+      "color": "#5b3fd1",
     },
     "padding": 8,
     "point": {
-      "color": "#2456c7",
+      "color": "#5b3fd1",
       "filled": true,
     },
     "range": {
       "category": [
-        "#2456c7",
+        "#5b3fd1",
         "#E69F00",
         "#009E73",
         "#D55E00",
@@ -10716,11 +10716,11 @@ exports[`every gallery chart > matrixUnordered-grouped: compiles without warning
         "#000000",
       ],
       "heatmap": [
-        "#eef3fb",
-        "#c4d5f2",
-        "#7d9fe0",
-        "#2f63c4",
-        "#123a8a",
+        "#f1edfb",
+        "#d5c9f4",
+        "#a48fe6",
+        "#6a4fd2",
+        "#3a2590",
       ],
     },
     "rule": {
@@ -10966,7 +10966,7 @@ n = 83",
               "Mint",
             ],
             "range": [
-              "#2456c7",
+              "#5b3fd1",
               "#E69F00",
               "#009E73",
               "#D55E00",
@@ -11142,7 +11142,7 @@ exports[`every gallery chart > matrixUnordered-heatmap: compiles without warning
     },
     "background": "transparent",
     "bar": {
-      "color": "#2456c7",
+      "color": "#5b3fd1",
     },
     "font": "system-ui, -apple-system, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif",
     "header": {
@@ -11167,16 +11167,16 @@ exports[`every gallery chart > matrixUnordered-heatmap: compiles without warning
       "titleFontSize": 12,
     },
     "line": {
-      "color": "#2456c7",
+      "color": "#5b3fd1",
     },
     "padding": 8,
     "point": {
-      "color": "#2456c7",
+      "color": "#5b3fd1",
       "filled": true,
     },
     "range": {
       "category": [
-        "#2456c7",
+        "#5b3fd1",
         "#E69F00",
         "#009E73",
         "#D55E00",
@@ -11186,11 +11186,11 @@ exports[`every gallery chart > matrixUnordered-heatmap: compiles without warning
         "#000000",
       ],
       "heatmap": [
-        "#eef3fb",
-        "#c4d5f2",
-        "#7d9fe0",
-        "#2f63c4",
-        "#123a8a",
+        "#f1edfb",
+        "#d5c9f4",
+        "#a48fe6",
+        "#6a4fd2",
+        "#3a2590",
       ],
     },
     "rule": {
@@ -11596,7 +11596,7 @@ exports[`every gallery chart > multi-dot: compiles without warnings and matches 
     },
     "background": "transparent",
     "bar": {
-      "color": "#2456c7",
+      "color": "#5b3fd1",
     },
     "font": "system-ui, -apple-system, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif",
     "header": {
@@ -11621,16 +11621,16 @@ exports[`every gallery chart > multi-dot: compiles without warnings and matches 
       "titleFontSize": 12,
     },
     "line": {
-      "color": "#2456c7",
+      "color": "#5b3fd1",
     },
     "padding": 8,
     "point": {
-      "color": "#2456c7",
+      "color": "#5b3fd1",
       "filled": true,
     },
     "range": {
       "category": [
-        "#2456c7",
+        "#5b3fd1",
         "#E69F00",
         "#009E73",
         "#D55E00",
@@ -11640,11 +11640,11 @@ exports[`every gallery chart > multi-dot: compiles without warnings and matches 
         "#000000",
       ],
       "heatmap": [
-        "#eef3fb",
-        "#c4d5f2",
-        "#7d9fe0",
-        "#2f63c4",
-        "#123a8a",
+        "#f1edfb",
+        "#d5c9f4",
+        "#a48fe6",
+        "#6a4fd2",
+        "#3a2590",
       ],
     },
     "rule": {
@@ -11906,7 +11906,7 @@ exports[`every gallery chart > multi-dot-intervals: compiles without warnings an
     },
     "background": "transparent",
     "bar": {
-      "color": "#2456c7",
+      "color": "#5b3fd1",
     },
     "font": "system-ui, -apple-system, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif",
     "header": {
@@ -11931,16 +11931,16 @@ exports[`every gallery chart > multi-dot-intervals: compiles without warnings an
       "titleFontSize": 12,
     },
     "line": {
-      "color": "#2456c7",
+      "color": "#5b3fd1",
     },
     "padding": 8,
     "point": {
-      "color": "#2456c7",
+      "color": "#5b3fd1",
       "filled": true,
     },
     "range": {
       "category": [
-        "#2456c7",
+        "#5b3fd1",
         "#E69F00",
         "#009E73",
         "#D55E00",
@@ -11950,11 +11950,11 @@ exports[`every gallery chart > multi-dot-intervals: compiles without warnings an
         "#000000",
       ],
       "heatmap": [
-        "#eef3fb",
-        "#c4d5f2",
-        "#7d9fe0",
-        "#2f63c4",
-        "#123a8a",
+        "#f1edfb",
+        "#d5c9f4",
+        "#a48fe6",
+        "#6a4fd2",
+        "#3a2590",
       ],
     },
     "rule": {
@@ -12248,7 +12248,7 @@ exports[`every gallery chart > multi-multi-counts: compiles without warnings and
     },
     "background": "transparent",
     "bar": {
-      "color": "#2456c7",
+      "color": "#5b3fd1",
     },
     "font": "system-ui, -apple-system, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif",
     "header": {
@@ -12273,16 +12273,16 @@ exports[`every gallery chart > multi-multi-counts: compiles without warnings and
       "titleFontSize": 12,
     },
     "line": {
-      "color": "#2456c7",
+      "color": "#5b3fd1",
     },
     "padding": 8,
     "point": {
-      "color": "#2456c7",
+      "color": "#5b3fd1",
       "filled": true,
     },
     "range": {
       "category": [
-        "#2456c7",
+        "#5b3fd1",
         "#E69F00",
         "#009E73",
         "#D55E00",
@@ -12292,11 +12292,11 @@ exports[`every gallery chart > multi-multi-counts: compiles without warnings and
         "#000000",
       ],
       "heatmap": [
-        "#eef3fb",
-        "#c4d5f2",
-        "#7d9fe0",
-        "#2f63c4",
-        "#123a8a",
+        "#f1edfb",
+        "#d5c9f4",
+        "#a48fe6",
+        "#6a4fd2",
+        "#3a2590",
       ],
     },
     "rule": {
@@ -12548,7 +12548,7 @@ exports[`every gallery chart > multi-multi-pct: compiles without warnings and ma
     },
     "background": "transparent",
     "bar": {
-      "color": "#2456c7",
+      "color": "#5b3fd1",
     },
     "font": "system-ui, -apple-system, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif",
     "header": {
@@ -12573,16 +12573,16 @@ exports[`every gallery chart > multi-multi-pct: compiles without warnings and ma
       "titleFontSize": 12,
     },
     "line": {
-      "color": "#2456c7",
+      "color": "#5b3fd1",
     },
     "padding": 8,
     "point": {
-      "color": "#2456c7",
+      "color": "#5b3fd1",
       "filled": true,
     },
     "range": {
       "category": [
-        "#2456c7",
+        "#5b3fd1",
         "#E69F00",
         "#009E73",
         "#D55E00",
@@ -12592,11 +12592,11 @@ exports[`every gallery chart > multi-multi-pct: compiles without warnings and ma
         "#000000",
       ],
       "heatmap": [
-        "#eef3fb",
-        "#c4d5f2",
-        "#7d9fe0",
-        "#2f63c4",
-        "#123a8a",
+        "#f1edfb",
+        "#d5c9f4",
+        "#a48fe6",
+        "#6a4fd2",
+        "#3a2590",
       ],
     },
     "rule": {
@@ -12856,7 +12856,7 @@ exports[`every gallery chart > multiSplit-dot-grouped: compiles without warnings
     },
     "background": "transparent",
     "bar": {
-      "color": "#2456c7",
+      "color": "#5b3fd1",
     },
     "font": "system-ui, -apple-system, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif",
     "header": {
@@ -12881,16 +12881,16 @@ exports[`every gallery chart > multiSplit-dot-grouped: compiles without warnings
       "titleFontSize": 12,
     },
     "line": {
-      "color": "#2456c7",
+      "color": "#5b3fd1",
     },
     "padding": 8,
     "point": {
-      "color": "#2456c7",
+      "color": "#5b3fd1",
       "filled": true,
     },
     "range": {
       "category": [
-        "#2456c7",
+        "#5b3fd1",
         "#E69F00",
         "#009E73",
         "#D55E00",
@@ -12900,11 +12900,11 @@ exports[`every gallery chart > multiSplit-dot-grouped: compiles without warnings
         "#000000",
       ],
       "heatmap": [
-        "#eef3fb",
-        "#c4d5f2",
-        "#7d9fe0",
-        "#2f63c4",
-        "#123a8a",
+        "#f1edfb",
+        "#d5c9f4",
+        "#a48fe6",
+        "#6a4fd2",
+        "#3a2590",
       ],
     },
     "rule": {
@@ -13292,7 +13292,7 @@ exports[`every gallery chart > multiSplit-dot-multiples: compiles without warnin
     },
     "background": "transparent",
     "bar": {
-      "color": "#2456c7",
+      "color": "#5b3fd1",
     },
     "font": "system-ui, -apple-system, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif",
     "header": {
@@ -13317,16 +13317,16 @@ exports[`every gallery chart > multiSplit-dot-multiples: compiles without warnin
       "titleFontSize": 12,
     },
     "line": {
-      "color": "#2456c7",
+      "color": "#5b3fd1",
     },
     "padding": 8,
     "point": {
-      "color": "#2456c7",
+      "color": "#5b3fd1",
       "filled": true,
     },
     "range": {
       "category": [
-        "#2456c7",
+        "#5b3fd1",
         "#E69F00",
         "#009E73",
         "#D55E00",
@@ -13336,11 +13336,11 @@ exports[`every gallery chart > multiSplit-dot-multiples: compiles without warnin
         "#000000",
       ],
       "heatmap": [
-        "#eef3fb",
-        "#c4d5f2",
-        "#7d9fe0",
-        "#2f63c4",
-        "#123a8a",
+        "#f1edfb",
+        "#d5c9f4",
+        "#a48fe6",
+        "#6a4fd2",
+        "#3a2590",
       ],
     },
     "rule": {
@@ -13723,7 +13723,7 @@ exports[`every gallery chart > multiSplit-multi-counts-grouped: compiles without
     },
     "background": "transparent",
     "bar": {
-      "color": "#2456c7",
+      "color": "#5b3fd1",
     },
     "font": "system-ui, -apple-system, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif",
     "header": {
@@ -13748,16 +13748,16 @@ exports[`every gallery chart > multiSplit-multi-counts-grouped: compiles without
       "titleFontSize": 12,
     },
     "line": {
-      "color": "#2456c7",
+      "color": "#5b3fd1",
     },
     "padding": 8,
     "point": {
-      "color": "#2456c7",
+      "color": "#5b3fd1",
       "filled": true,
     },
     "range": {
       "category": [
-        "#2456c7",
+        "#5b3fd1",
         "#E69F00",
         "#009E73",
         "#D55E00",
@@ -13767,11 +13767,11 @@ exports[`every gallery chart > multiSplit-multi-counts-grouped: compiles without
         "#000000",
       ],
       "heatmap": [
-        "#eef3fb",
-        "#c4d5f2",
-        "#7d9fe0",
-        "#2f63c4",
-        "#123a8a",
+        "#f1edfb",
+        "#d5c9f4",
+        "#a48fe6",
+        "#6a4fd2",
+        "#3a2590",
       ],
     },
     "rule": {
@@ -14149,7 +14149,7 @@ exports[`every gallery chart > multiSplit-multi-counts-multiples: compiles witho
     },
     "background": "transparent",
     "bar": {
-      "color": "#2456c7",
+      "color": "#5b3fd1",
     },
     "font": "system-ui, -apple-system, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif",
     "header": {
@@ -14174,16 +14174,16 @@ exports[`every gallery chart > multiSplit-multi-counts-multiples: compiles witho
       "titleFontSize": 12,
     },
     "line": {
-      "color": "#2456c7",
+      "color": "#5b3fd1",
     },
     "padding": 8,
     "point": {
-      "color": "#2456c7",
+      "color": "#5b3fd1",
       "filled": true,
     },
     "range": {
       "category": [
-        "#2456c7",
+        "#5b3fd1",
         "#E69F00",
         "#009E73",
         "#D55E00",
@@ -14193,11 +14193,11 @@ exports[`every gallery chart > multiSplit-multi-counts-multiples: compiles witho
         "#000000",
       ],
       "heatmap": [
-        "#eef3fb",
-        "#c4d5f2",
-        "#7d9fe0",
-        "#2f63c4",
-        "#123a8a",
+        "#f1edfb",
+        "#d5c9f4",
+        "#a48fe6",
+        "#6a4fd2",
+        "#3a2590",
       ],
     },
     "rule": {
@@ -14570,7 +14570,7 @@ exports[`every gallery chart > multiSplit-multi-pct-grouped: compiles without wa
     },
     "background": "transparent",
     "bar": {
-      "color": "#2456c7",
+      "color": "#5b3fd1",
     },
     "font": "system-ui, -apple-system, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif",
     "header": {
@@ -14595,16 +14595,16 @@ exports[`every gallery chart > multiSplit-multi-pct-grouped: compiles without wa
       "titleFontSize": 12,
     },
     "line": {
-      "color": "#2456c7",
+      "color": "#5b3fd1",
     },
     "padding": 8,
     "point": {
-      "color": "#2456c7",
+      "color": "#5b3fd1",
       "filled": true,
     },
     "range": {
       "category": [
-        "#2456c7",
+        "#5b3fd1",
         "#E69F00",
         "#009E73",
         "#D55E00",
@@ -14614,11 +14614,11 @@ exports[`every gallery chart > multiSplit-multi-pct-grouped: compiles without wa
         "#000000",
       ],
       "heatmap": [
-        "#eef3fb",
-        "#c4d5f2",
-        "#7d9fe0",
-        "#2f63c4",
-        "#123a8a",
+        "#f1edfb",
+        "#d5c9f4",
+        "#a48fe6",
+        "#6a4fd2",
+        "#3a2590",
       ],
     },
     "rule": {
@@ -15004,7 +15004,7 @@ exports[`every gallery chart > multiSplit-multi-pct-multiples: compiles without 
     },
     "background": "transparent",
     "bar": {
-      "color": "#2456c7",
+      "color": "#5b3fd1",
     },
     "font": "system-ui, -apple-system, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif",
     "header": {
@@ -15029,16 +15029,16 @@ exports[`every gallery chart > multiSplit-multi-pct-multiples: compiles without 
       "titleFontSize": 12,
     },
     "line": {
-      "color": "#2456c7",
+      "color": "#5b3fd1",
     },
     "padding": 8,
     "point": {
-      "color": "#2456c7",
+      "color": "#5b3fd1",
       "filled": true,
     },
     "range": {
       "category": [
-        "#2456c7",
+        "#5b3fd1",
         "#E69F00",
         "#009E73",
         "#D55E00",
@@ -15048,11 +15048,11 @@ exports[`every gallery chart > multiSplit-multi-pct-multiples: compiles without 
         "#000000",
       ],
       "heatmap": [
-        "#eef3fb",
-        "#c4d5f2",
-        "#7d9fe0",
-        "#2f63c4",
-        "#123a8a",
+        "#f1edfb",
+        "#d5c9f4",
+        "#a48fe6",
+        "#6a4fd2",
+        "#3a2590",
       ],
     },
     "rule": {
@@ -15433,7 +15433,7 @@ exports[`every gallery chart > single-bars: compiles without warnings and matche
     },
     "background": "transparent",
     "bar": {
-      "color": "#2456c7",
+      "color": "#5b3fd1",
     },
     "font": "system-ui, -apple-system, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif",
     "header": {
@@ -15458,16 +15458,16 @@ exports[`every gallery chart > single-bars: compiles without warnings and matche
       "titleFontSize": 12,
     },
     "line": {
-      "color": "#2456c7",
+      "color": "#5b3fd1",
     },
     "padding": 8,
     "point": {
-      "color": "#2456c7",
+      "color": "#5b3fd1",
       "filled": true,
     },
     "range": {
       "category": [
-        "#2456c7",
+        "#5b3fd1",
         "#E69F00",
         "#009E73",
         "#D55E00",
@@ -15477,11 +15477,11 @@ exports[`every gallery chart > single-bars: compiles without warnings and matche
         "#000000",
       ],
       "heatmap": [
-        "#eef3fb",
-        "#c4d5f2",
-        "#7d9fe0",
-        "#2f63c4",
-        "#123a8a",
+        "#f1edfb",
+        "#d5c9f4",
+        "#a48fe6",
+        "#6a4fd2",
+        "#3a2590",
       ],
     },
     "rule": {
@@ -15723,7 +15723,7 @@ exports[`every gallery chart > single-bars-intervals: compiles without warnings 
     },
     "background": "transparent",
     "bar": {
-      "color": "#2456c7",
+      "color": "#5b3fd1",
     },
     "font": "system-ui, -apple-system, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif",
     "header": {
@@ -15748,16 +15748,16 @@ exports[`every gallery chart > single-bars-intervals: compiles without warnings 
       "titleFontSize": 12,
     },
     "line": {
-      "color": "#2456c7",
+      "color": "#5b3fd1",
     },
     "padding": 8,
     "point": {
-      "color": "#2456c7",
+      "color": "#5b3fd1",
       "filled": true,
     },
     "range": {
       "category": [
-        "#2456c7",
+        "#5b3fd1",
         "#E69F00",
         "#009E73",
         "#D55E00",
@@ -15767,11 +15767,11 @@ exports[`every gallery chart > single-bars-intervals: compiles without warnings 
         "#000000",
       ],
       "heatmap": [
-        "#eef3fb",
-        "#c4d5f2",
-        "#7d9fe0",
-        "#2f63c4",
-        "#123a8a",
+        "#f1edfb",
+        "#d5c9f4",
+        "#a48fe6",
+        "#6a4fd2",
+        "#3a2590",
       ],
     },
     "rule": {
@@ -16044,7 +16044,7 @@ exports[`every gallery chart > single-bars-sorted: compiles without warnings and
     },
     "background": "transparent",
     "bar": {
-      "color": "#2456c7",
+      "color": "#5b3fd1",
     },
     "font": "system-ui, -apple-system, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif",
     "header": {
@@ -16069,16 +16069,16 @@ exports[`every gallery chart > single-bars-sorted: compiles without warnings and
       "titleFontSize": 12,
     },
     "line": {
-      "color": "#2456c7",
+      "color": "#5b3fd1",
     },
     "padding": 8,
     "point": {
-      "color": "#2456c7",
+      "color": "#5b3fd1",
       "filled": true,
     },
     "range": {
       "category": [
-        "#2456c7",
+        "#5b3fd1",
         "#E69F00",
         "#009E73",
         "#D55E00",
@@ -16088,11 +16088,11 @@ exports[`every gallery chart > single-bars-sorted: compiles without warnings and
         "#000000",
       ],
       "heatmap": [
-        "#eef3fb",
-        "#c4d5f2",
-        "#7d9fe0",
-        "#2f63c4",
-        "#123a8a",
+        "#f1edfb",
+        "#d5c9f4",
+        "#a48fe6",
+        "#6a4fd2",
+        "#3a2590",
       ],
     },
     "rule": {
@@ -16334,7 +16334,7 @@ exports[`every gallery chart > single-donut: compiles without warnings and match
     },
     "background": "transparent",
     "bar": {
-      "color": "#2456c7",
+      "color": "#5b3fd1",
     },
     "font": "system-ui, -apple-system, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif",
     "header": {
@@ -16359,16 +16359,16 @@ exports[`every gallery chart > single-donut: compiles without warnings and match
       "titleFontSize": 12,
     },
     "line": {
-      "color": "#2456c7",
+      "color": "#5b3fd1",
     },
     "padding": 8,
     "point": {
-      "color": "#2456c7",
+      "color": "#5b3fd1",
       "filled": true,
     },
     "range": {
       "category": [
-        "#2456c7",
+        "#5b3fd1",
         "#E69F00",
         "#009E73",
         "#D55E00",
@@ -16378,11 +16378,11 @@ exports[`every gallery chart > single-donut: compiles without warnings and match
         "#000000",
       ],
       "heatmap": [
-        "#eef3fb",
-        "#c4d5f2",
-        "#7d9fe0",
-        "#2f63c4",
-        "#123a8a",
+        "#f1edfb",
+        "#d5c9f4",
+        "#a48fe6",
+        "#6a4fd2",
+        "#3a2590",
       ],
     },
     "rule": {
@@ -16594,7 +16594,7 @@ exports[`every gallery chart > singleSplit-bars-grouped: compiles without warnin
     },
     "background": "transparent",
     "bar": {
-      "color": "#2456c7",
+      "color": "#5b3fd1",
     },
     "font": "system-ui, -apple-system, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif",
     "header": {
@@ -16619,16 +16619,16 @@ exports[`every gallery chart > singleSplit-bars-grouped: compiles without warnin
       "titleFontSize": 12,
     },
     "line": {
-      "color": "#2456c7",
+      "color": "#5b3fd1",
     },
     "padding": 8,
     "point": {
-      "color": "#2456c7",
+      "color": "#5b3fd1",
       "filled": true,
     },
     "range": {
       "category": [
-        "#2456c7",
+        "#5b3fd1",
         "#E69F00",
         "#009E73",
         "#D55E00",
@@ -16638,11 +16638,11 @@ exports[`every gallery chart > singleSplit-bars-grouped: compiles without warnin
         "#000000",
       ],
       "heatmap": [
-        "#eef3fb",
-        "#c4d5f2",
-        "#7d9fe0",
-        "#2f63c4",
-        "#123a8a",
+        "#f1edfb",
+        "#d5c9f4",
+        "#a48fe6",
+        "#6a4fd2",
+        "#3a2590",
       ],
     },
     "rule": {
@@ -17077,7 +17077,7 @@ exports[`every gallery chart > singleSplit-bars-multiples: compiles without warn
     },
     "background": "transparent",
     "bar": {
-      "color": "#2456c7",
+      "color": "#5b3fd1",
     },
     "font": "system-ui, -apple-system, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif",
     "header": {
@@ -17102,16 +17102,16 @@ exports[`every gallery chart > singleSplit-bars-multiples: compiles without warn
       "titleFontSize": 12,
     },
     "line": {
-      "color": "#2456c7",
+      "color": "#5b3fd1",
     },
     "padding": 8,
     "point": {
-      "color": "#2456c7",
+      "color": "#5b3fd1",
       "filled": true,
     },
     "range": {
       "category": [
-        "#2456c7",
+        "#5b3fd1",
         "#E69F00",
         "#009E73",
         "#D55E00",
@@ -17121,11 +17121,11 @@ exports[`every gallery chart > singleSplit-bars-multiples: compiles without warn
         "#000000",
       ],
       "heatmap": [
-        "#eef3fb",
-        "#c4d5f2",
-        "#7d9fe0",
-        "#2f63c4",
-        "#123a8a",
+        "#f1edfb",
+        "#d5c9f4",
+        "#a48fe6",
+        "#6a4fd2",
+        "#3a2590",
       ],
     },
     "rule": {
@@ -17553,7 +17553,7 @@ exports[`every gallery chart > singleSplit-bars-sorted-grouped: compiles without
     },
     "background": "transparent",
     "bar": {
-      "color": "#2456c7",
+      "color": "#5b3fd1",
     },
     "font": "system-ui, -apple-system, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif",
     "header": {
@@ -17578,16 +17578,16 @@ exports[`every gallery chart > singleSplit-bars-sorted-grouped: compiles without
       "titleFontSize": 12,
     },
     "line": {
-      "color": "#2456c7",
+      "color": "#5b3fd1",
     },
     "padding": 8,
     "point": {
-      "color": "#2456c7",
+      "color": "#5b3fd1",
       "filled": true,
     },
     "range": {
       "category": [
-        "#2456c7",
+        "#5b3fd1",
         "#E69F00",
         "#009E73",
         "#D55E00",
@@ -17597,11 +17597,11 @@ exports[`every gallery chart > singleSplit-bars-sorted-grouped: compiles without
         "#000000",
       ],
       "heatmap": [
-        "#eef3fb",
-        "#c4d5f2",
-        "#7d9fe0",
-        "#2f63c4",
-        "#123a8a",
+        "#f1edfb",
+        "#d5c9f4",
+        "#a48fe6",
+        "#6a4fd2",
+        "#3a2590",
       ],
     },
     "rule": {
@@ -18036,7 +18036,7 @@ exports[`every gallery chart > singleSplit-bars-sorted-multiples: compiles witho
     },
     "background": "transparent",
     "bar": {
-      "color": "#2456c7",
+      "color": "#5b3fd1",
     },
     "font": "system-ui, -apple-system, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif",
     "header": {
@@ -18061,16 +18061,16 @@ exports[`every gallery chart > singleSplit-bars-sorted-multiples: compiles witho
       "titleFontSize": 12,
     },
     "line": {
-      "color": "#2456c7",
+      "color": "#5b3fd1",
     },
     "padding": 8,
     "point": {
-      "color": "#2456c7",
+      "color": "#5b3fd1",
       "filled": true,
     },
     "range": {
       "category": [
-        "#2456c7",
+        "#5b3fd1",
         "#E69F00",
         "#009E73",
         "#D55E00",
@@ -18080,11 +18080,11 @@ exports[`every gallery chart > singleSplit-bars-sorted-multiples: compiles witho
         "#000000",
       ],
       "heatmap": [
-        "#eef3fb",
-        "#c4d5f2",
-        "#7d9fe0",
-        "#2f63c4",
-        "#123a8a",
+        "#f1edfb",
+        "#d5c9f4",
+        "#a48fe6",
+        "#6a4fd2",
+        "#3a2590",
       ],
     },
     "rule": {
@@ -18512,7 +18512,7 @@ exports[`every gallery chart > singleSplit-bars-sorted-stacked: compiles without
     },
     "background": "transparent",
     "bar": {
-      "color": "#2456c7",
+      "color": "#5b3fd1",
     },
     "font": "system-ui, -apple-system, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif",
     "header": {
@@ -18537,16 +18537,16 @@ exports[`every gallery chart > singleSplit-bars-sorted-stacked: compiles without
       "titleFontSize": 12,
     },
     "line": {
-      "color": "#2456c7",
+      "color": "#5b3fd1",
     },
     "padding": 8,
     "point": {
-      "color": "#2456c7",
+      "color": "#5b3fd1",
       "filled": true,
     },
     "range": {
       "category": [
-        "#2456c7",
+        "#5b3fd1",
         "#E69F00",
         "#009E73",
         "#D55E00",
@@ -18556,11 +18556,11 @@ exports[`every gallery chart > singleSplit-bars-sorted-stacked: compiles without
         "#000000",
       ],
       "heatmap": [
-        "#eef3fb",
-        "#c4d5f2",
-        "#7d9fe0",
-        "#2f63c4",
-        "#123a8a",
+        "#f1edfb",
+        "#d5c9f4",
+        "#a48fe6",
+        "#6a4fd2",
+        "#3a2590",
       ],
     },
     "rule": {
@@ -18888,7 +18888,7 @@ exports[`every gallery chart > singleSplit-bars-sorted-stacked: compiles without
               "On foot",
             ],
             "range": [
-              "#2456c7",
+              "#5b3fd1",
               "#E69F00",
               "#009E73",
               "#D55E00",
@@ -19048,7 +19048,7 @@ exports[`every gallery chart > singleSplit-bars-stacked: compiles without warnin
     },
     "background": "transparent",
     "bar": {
-      "color": "#2456c7",
+      "color": "#5b3fd1",
     },
     "font": "system-ui, -apple-system, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif",
     "header": {
@@ -19073,16 +19073,16 @@ exports[`every gallery chart > singleSplit-bars-stacked: compiles without warnin
       "titleFontSize": 12,
     },
     "line": {
-      "color": "#2456c7",
+      "color": "#5b3fd1",
     },
     "padding": 8,
     "point": {
-      "color": "#2456c7",
+      "color": "#5b3fd1",
       "filled": true,
     },
     "range": {
       "category": [
-        "#2456c7",
+        "#5b3fd1",
         "#E69F00",
         "#009E73",
         "#D55E00",
@@ -19092,11 +19092,11 @@ exports[`every gallery chart > singleSplit-bars-stacked: compiles without warnin
         "#000000",
       ],
       "heatmap": [
-        "#eef3fb",
-        "#c4d5f2",
-        "#7d9fe0",
-        "#2f63c4",
-        "#123a8a",
+        "#f1edfb",
+        "#d5c9f4",
+        "#a48fe6",
+        "#6a4fd2",
+        "#3a2590",
       ],
     },
     "rule": {
@@ -19424,7 +19424,7 @@ exports[`every gallery chart > singleSplit-bars-stacked: compiles without warnin
               "On foot",
             ],
             "range": [
-              "#2456c7",
+              "#5b3fd1",
               "#E69F00",
               "#009E73",
               "#D55E00",
@@ -19584,7 +19584,7 @@ exports[`every gallery chart > singleSplit-donut-multiples: compiles without war
     },
     "background": "transparent",
     "bar": {
-      "color": "#2456c7",
+      "color": "#5b3fd1",
     },
     "font": "system-ui, -apple-system, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif",
     "header": {
@@ -19609,16 +19609,16 @@ exports[`every gallery chart > singleSplit-donut-multiples: compiles without war
       "titleFontSize": 12,
     },
     "line": {
-      "color": "#2456c7",
+      "color": "#5b3fd1",
     },
     "padding": 8,
     "point": {
-      "color": "#2456c7",
+      "color": "#5b3fd1",
       "filled": true,
     },
     "range": {
       "category": [
-        "#2456c7",
+        "#5b3fd1",
         "#E69F00",
         "#009E73",
         "#D55E00",
@@ -19628,11 +19628,11 @@ exports[`every gallery chart > singleSplit-donut-multiples: compiles without war
         "#000000",
       ],
       "heatmap": [
-        "#eef3fb",
-        "#c4d5f2",
-        "#7d9fe0",
-        "#2f63c4",
-        "#123a8a",
+        "#f1edfb",
+        "#d5c9f4",
+        "#a48fe6",
+        "#6a4fd2",
+        "#3a2590",
       ],
     },
     "rule": {
@@ -20015,7 +20015,7 @@ exports[`every gallery chart > sliderBins-box: compiles without warnings and mat
     },
     "background": "transparent",
     "bar": {
-      "color": "#2456c7",
+      "color": "#5b3fd1",
     },
     "font": "system-ui, -apple-system, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif",
     "header": {
@@ -20040,16 +20040,16 @@ exports[`every gallery chart > sliderBins-box: compiles without warnings and mat
       "titleFontSize": 12,
     },
     "line": {
-      "color": "#2456c7",
+      "color": "#5b3fd1",
     },
     "padding": 8,
     "point": {
-      "color": "#2456c7",
+      "color": "#5b3fd1",
       "filled": true,
     },
     "range": {
       "category": [
-        "#2456c7",
+        "#5b3fd1",
         "#E69F00",
         "#009E73",
         "#D55E00",
@@ -20059,11 +20059,11 @@ exports[`every gallery chart > sliderBins-box: compiles without warnings and mat
         "#000000",
       ],
       "heatmap": [
-        "#eef3fb",
-        "#c4d5f2",
-        "#7d9fe0",
-        "#2f63c4",
-        "#123a8a",
+        "#f1edfb",
+        "#d5c9f4",
+        "#a48fe6",
+        "#6a4fd2",
+        "#3a2590",
       ],
     },
     "rule": {
@@ -20295,7 +20295,7 @@ exports[`every gallery chart > sliderBins-cumulative: compiles without warnings 
     },
     "background": "transparent",
     "bar": {
-      "color": "#2456c7",
+      "color": "#5b3fd1",
     },
     "font": "system-ui, -apple-system, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif",
     "header": {
@@ -20320,16 +20320,16 @@ exports[`every gallery chart > sliderBins-cumulative: compiles without warnings 
       "titleFontSize": 12,
     },
     "line": {
-      "color": "#2456c7",
+      "color": "#5b3fd1",
     },
     "padding": 8,
     "point": {
-      "color": "#2456c7",
+      "color": "#5b3fd1",
       "filled": true,
     },
     "range": {
       "category": [
-        "#2456c7",
+        "#5b3fd1",
         "#E69F00",
         "#009E73",
         "#D55E00",
@@ -20339,11 +20339,11 @@ exports[`every gallery chart > sliderBins-cumulative: compiles without warnings 
         "#000000",
       ],
       "heatmap": [
-        "#eef3fb",
-        "#c4d5f2",
-        "#7d9fe0",
-        "#2f63c4",
-        "#123a8a",
+        "#f1edfb",
+        "#d5c9f4",
+        "#a48fe6",
+        "#6a4fd2",
+        "#3a2590",
       ],
     },
     "rule": {
@@ -20532,7 +20532,7 @@ exports[`every gallery chart > sliderBins-histogram: compiles without warnings a
     },
     "background": "transparent",
     "bar": {
-      "color": "#2456c7",
+      "color": "#5b3fd1",
     },
     "font": "system-ui, -apple-system, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif",
     "header": {
@@ -20557,16 +20557,16 @@ exports[`every gallery chart > sliderBins-histogram: compiles without warnings a
       "titleFontSize": 12,
     },
     "line": {
-      "color": "#2456c7",
+      "color": "#5b3fd1",
     },
     "padding": 8,
     "point": {
-      "color": "#2456c7",
+      "color": "#5b3fd1",
       "filled": true,
     },
     "range": {
       "category": [
-        "#2456c7",
+        "#5b3fd1",
         "#E69F00",
         "#009E73",
         "#D55E00",
@@ -20576,11 +20576,11 @@ exports[`every gallery chart > sliderBins-histogram: compiles without warnings a
         "#000000",
       ],
       "heatmap": [
-        "#eef3fb",
-        "#c4d5f2",
-        "#7d9fe0",
-        "#2f63c4",
-        "#123a8a",
+        "#f1edfb",
+        "#d5c9f4",
+        "#a48fe6",
+        "#6a4fd2",
+        "#3a2590",
       ],
     },
     "rule": {
@@ -20850,7 +20850,7 @@ exports[`every gallery chart > sliderValues-box: compiles without warnings and m
     },
     "background": "transparent",
     "bar": {
-      "color": "#2456c7",
+      "color": "#5b3fd1",
     },
     "font": "system-ui, -apple-system, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif",
     "header": {
@@ -20875,16 +20875,16 @@ exports[`every gallery chart > sliderValues-box: compiles without warnings and m
       "titleFontSize": 12,
     },
     "line": {
-      "color": "#2456c7",
+      "color": "#5b3fd1",
     },
     "padding": 8,
     "point": {
-      "color": "#2456c7",
+      "color": "#5b3fd1",
       "filled": true,
     },
     "range": {
       "category": [
-        "#2456c7",
+        "#5b3fd1",
         "#E69F00",
         "#009E73",
         "#D55E00",
@@ -20894,11 +20894,11 @@ exports[`every gallery chart > sliderValues-box: compiles without warnings and m
         "#000000",
       ],
       "heatmap": [
-        "#eef3fb",
-        "#c4d5f2",
-        "#7d9fe0",
-        "#2f63c4",
-        "#123a8a",
+        "#f1edfb",
+        "#d5c9f4",
+        "#a48fe6",
+        "#6a4fd2",
+        "#3a2590",
       ],
     },
     "rule": {
@@ -21130,7 +21130,7 @@ exports[`every gallery chart > sliderValues-cumulative: compiles without warning
     },
     "background": "transparent",
     "bar": {
-      "color": "#2456c7",
+      "color": "#5b3fd1",
     },
     "font": "system-ui, -apple-system, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif",
     "header": {
@@ -21155,16 +21155,16 @@ exports[`every gallery chart > sliderValues-cumulative: compiles without warning
       "titleFontSize": 12,
     },
     "line": {
-      "color": "#2456c7",
+      "color": "#5b3fd1",
     },
     "padding": 8,
     "point": {
-      "color": "#2456c7",
+      "color": "#5b3fd1",
       "filled": true,
     },
     "range": {
       "category": [
-        "#2456c7",
+        "#5b3fd1",
         "#E69F00",
         "#009E73",
         "#D55E00",
@@ -21174,11 +21174,11 @@ exports[`every gallery chart > sliderValues-cumulative: compiles without warning
         "#000000",
       ],
       "heatmap": [
-        "#eef3fb",
-        "#c4d5f2",
-        "#7d9fe0",
-        "#2f63c4",
-        "#123a8a",
+        "#f1edfb",
+        "#d5c9f4",
+        "#a48fe6",
+        "#6a4fd2",
+        "#3a2590",
       ],
     },
     "rule": {
@@ -21367,7 +21367,7 @@ exports[`every gallery chart > sliderValues-values: compiles without warnings an
     },
     "background": "transparent",
     "bar": {
-      "color": "#2456c7",
+      "color": "#5b3fd1",
     },
     "font": "system-ui, -apple-system, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif",
     "header": {
@@ -21392,16 +21392,16 @@ exports[`every gallery chart > sliderValues-values: compiles without warnings an
       "titleFontSize": 12,
     },
     "line": {
-      "color": "#2456c7",
+      "color": "#5b3fd1",
     },
     "padding": 8,
     "point": {
-      "color": "#2456c7",
+      "color": "#5b3fd1",
       "filled": true,
     },
     "range": {
       "category": [
-        "#2456c7",
+        "#5b3fd1",
         "#E69F00",
         "#009E73",
         "#D55E00",
@@ -21411,11 +21411,11 @@ exports[`every gallery chart > sliderValues-values: compiles without warnings an
         "#000000",
       ],
       "heatmap": [
-        "#eef3fb",
-        "#c4d5f2",
-        "#7d9fe0",
-        "#2f63c4",
-        "#123a8a",
+        "#f1edfb",
+        "#d5c9f4",
+        "#a48fe6",
+        "#6a4fd2",
+        "#3a2590",
       ],
     },
     "rule": {
@@ -21731,7 +21731,7 @@ exports[`every gallery chart > text-states: compiles without warnings and matche
     },
     "background": "transparent",
     "bar": {
-      "color": "#2456c7",
+      "color": "#5b3fd1",
     },
     "font": "system-ui, -apple-system, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif",
     "header": {
@@ -21756,16 +21756,16 @@ exports[`every gallery chart > text-states: compiles without warnings and matche
       "titleFontSize": 12,
     },
     "line": {
-      "color": "#2456c7",
+      "color": "#5b3fd1",
     },
     "padding": 8,
     "point": {
-      "color": "#2456c7",
+      "color": "#5b3fd1",
       "filled": true,
     },
     "range": {
       "category": [
-        "#2456c7",
+        "#5b3fd1",
         "#E69F00",
         "#009E73",
         "#D55E00",
@@ -21775,11 +21775,11 @@ exports[`every gallery chart > text-states: compiles without warnings and matche
         "#000000",
       ],
       "heatmap": [
-        "#eef3fb",
-        "#c4d5f2",
-        "#7d9fe0",
-        "#2f63c4",
-        "#123a8a",
+        "#f1edfb",
+        "#d5c9f4",
+        "#a48fe6",
+        "#6a4fd2",
+        "#3a2590",
       ],
     },
     "rule": {
