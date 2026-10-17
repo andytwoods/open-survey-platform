@@ -46,6 +46,7 @@ Other settings (all in `python/osp-api/src/osp_api/serve.py`):
 | `OSP_TRUSTED_PROXIES` | IPs or CIDRs of your proxy, whose `X-Forwarded-For` gives the participant's address (section 4) | none |
 | `OSP_NONCE_STORE` | where replayed signatures are caught: `database` (every worker) or `memory` (one process) | `database` in production, `memory` in dev |
 | `OSP_PARTICIPANT_URL_TEMPLATE` | where participants open a survey (`{slug}`) | `/r/?s={slug}` |
+| `OSP_LIVE_POLL_MS` | how often a live results page may ask whether responses changed (milliseconds, 1000–3600000); every poll is one signed request through your proxy, so raise it under load | `10000` |
 
 Never use `OSP_IDENTITY=dev` on a server. It makes everyone the lab owner, so osp-api refuses
 it unless `OSP_ENV=dev` and the bind is loopback.
