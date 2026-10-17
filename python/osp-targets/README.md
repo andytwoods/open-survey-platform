@@ -19,6 +19,20 @@ xlsx_bytes, diagnostics = export_xlsform(survey)  # Survey model or JSON dict; n
 - **Not exportable:** quotas, quota checks, turning Back off, question and block order shuffles (approximated: document order), survey description, licence and DDI metadata.
 - Output is deterministic (fixed zip and document timestamps). Tests convert every fixture and the valid spec cases with `pyxform` (BSD-2, test-only).
 
+## Importers (`osp_targets.imports`, task IM1)
+
+```python
+from osp_targets.imports import detect_format, import_survey
+
+result = import_survey("study.qsf", content)   # never raises
+result.format, result.survey, result.diagnostics, result.summary, result.validation
+```
+
+- **Formats:** Qualtrics `.qsf` (`qsf.py`), LimeSurvey `.lss` (`lss.py`, with a small Expression Manager parser in `em_expr.py`) and SurveyJS JSON (`surveyjs.py`, `visibleIf` parser in `sjs_expr.py`). Clean-room: written from the public formats and our own invented samples (`tests/data/imports`), never from their code.
+- **Diagnostics:** `ImportDiagnostic {format, severity, code, feature, pointer, message, target}`; `info` carried over with a note, `warning` carried over but behaves differently, `loss` not carried over, `error` nothing imported. Every unsupported feature is one; nothing is dropped silently.
+- **Safety net:** `common.finish()` validates the built document and drops any condition or computed variable the validator refuses (forward references, type mismatches) as a reported loss, so a file that parses always yields a draft. Bad input never raises (`guarded`).
+- **Round trip:** every fixture exported with `export_lss` imports back with its question names, types, labels, required flags, choice values, bounds, sliders, assignments and conditions (`tests/test_imports.py`).
+
 ## Response data (`osp_targets.data`, task M2)
 
 ```python

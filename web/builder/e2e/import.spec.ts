@@ -79,7 +79,6 @@ test('a Qualtrics file and a SurveyJS file import; the flow carries branches and
 
 test('an unreadable file is refused with the reason and nothing is created', async ({ page }) => {
 	await openDialog(page);
-	const before = ((await (await page.request.get('/api/surveys')).json()) as unknown[]).length;
 	await dialog(page)
 		.getByLabel('Survey file')
 		.setInputFiles({ name: 'broken.lss', mimeType: 'text/xml', buffer: Buffer.from('<document><LimeSurveyDocType>Nope</LimeSurveyDocType></document>') });
@@ -90,5 +89,7 @@ test('an unreadable file is refused with the reason and nothing is created', asy
 	expect(await axe(page)).toEqual([]);
 	await dialog(page).getByRole('button', { name: 'Cancel' }).click();
 	await expect(dialog(page)).toBeHidden();
-	expect(((await (await page.request.get('/api/surveys')).json()) as unknown[]).length).toBe(before);
+	// Other tests create surveys in parallel: check that none came from this file.
+	const titles = ((await (await page.request.get('/api/surveys')).json()) as { title: string }[]).map((s) => s.title);
+	expect(titles.filter((t) => t === 'broken.lss' || t === 'Imported survey')).toEqual([]);
 });

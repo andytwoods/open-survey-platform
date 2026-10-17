@@ -395,11 +395,8 @@ class _Importer:
                         page_cond,
                     )
                 continue
-            block_id = self.ids.claim(
-                "g" + (g.names.get(self.default) or g.gid)
-                if not g.names.get(self.default)
-                else g.names.get(self.default, g.gid)
-            )
+            group_name = g.names.get(self.default)
+            block_id = self.ids.claim(group_name if group_name else "g" + g.gid)
             block: dict[str, Any] = {"id": block_id, "pages": []}
             title = self._texts_by_lang(g.names, gptr)
             if any(title.values()):
@@ -784,12 +781,10 @@ class _Importer:
             if q.type == "N":
                 var["valueType"] = "decimal"
             dv = defaults.get(q.qid)
-            if dv is not None:
-                var["default"] = (
-                    dv if q.type != "N" or not _DECIMAL.match(dv) or "." in dv else int(dv)
-                )
-                if q.type == "N" and not _DECIMAL.match(dv):
-                    var.pop("default")
+            if dv is not None and q.type != "N":
+                var["default"] = dv
+            elif dv is not None and _DECIMAL.match(dv):
+                var["default"] = dv if "." in dv else int(dv)
             self.survey["variables"].append(var)
             self.types[qid] = "embedded"
             self.d.info(
