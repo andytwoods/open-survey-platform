@@ -29,6 +29,9 @@ from osp_api.app import create_app
 from osp_app import build_services
 from osp_store import Keyring, Store, SystemContext, create_engine, migrate
 
+# This server serves the participant app at /s/{slug}, so publish should link there.
+os.environ.setdefault("OSP_PARTICIPANT_URL_TEMPLATE", "/s/{slug}")
+
 EMAIL = os.environ.get("OSP_E2E_EMAIL", "researcher@lab.example")
 PASSWORD = os.environ.get("OSP_E2E_PASSWORD", "plover tundra kettle 4417 orbit")
 RUNTIME_DIST = Path(__file__).resolve().parents[2] / "runtime" / "dist"
