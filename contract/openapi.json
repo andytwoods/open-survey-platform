@@ -1644,6 +1644,64 @@
         "title": "ParseExpressionResponse",
         "type": "object"
       },
+      "PathSpace": {
+        "properties": {
+          "assignmentCombinations": {
+            "title": "Assignmentcombinations",
+            "type": "integer"
+          },
+          "combinations": {
+            "anyOf": [
+              {
+                "type": "integer"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "description": "Answer combinations enumerated",
+            "title": "Combinations"
+          },
+          "exhaustive": {
+            "title": "Exhaustive",
+            "type": "boolean"
+          },
+          "paths": {
+            "anyOf": [
+              {
+                "type": "integer"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "description": "Distinct paths, when enumerated",
+            "title": "Paths"
+          },
+          "randomiserOrders": {
+            "title": "Randomiserorders",
+            "type": "integer"
+          },
+          "reasons": {
+            "description": "Why coverage is only sampled",
+            "items": {
+              "type": "string"
+            },
+            "title": "Reasons",
+            "type": "array"
+          }
+        },
+        "required": [
+          "exhaustive",
+          "paths",
+          "combinations",
+          "randomiserOrders",
+          "assignmentCombinations",
+          "reasons"
+        ],
+        "title": "PathSpace",
+        "type": "object"
+      },
       "PrintExpressionRequest": {
         "additionalProperties": false,
         "properties": {
@@ -2341,6 +2399,800 @@
           "title"
         ],
         "title": "SetTitle",
+        "type": "object"
+      },
+      "SimAssignment": {
+        "properties": {
+          "balanced": {
+            "anyOf": [
+              {
+                "type": "boolean"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "description": "pValue >= 0.001",
+            "title": "Balanced"
+          },
+          "chiSquare": {
+            "anyOf": [
+              {
+                "type": "number"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Chisquare"
+          },
+          "df": {
+            "anyOf": [
+              {
+                "type": "integer"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Df"
+          },
+          "expected": {
+            "additionalProperties": {
+              "type": "number"
+            },
+            "title": "Expected",
+            "type": "object"
+          },
+          "maxDeviation": {
+            "anyOf": [
+              {
+                "type": "number"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "description": "max |observed - expected| / expected",
+            "title": "Maxdeviation"
+          },
+          "observed": {
+            "additionalProperties": {
+              "type": "integer"
+            },
+            "title": "Observed",
+            "type": "object"
+          },
+          "pValue": {
+            "anyOf": [
+              {
+                "type": "number"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Pvalue"
+          },
+          "reached": {
+            "title": "Reached",
+            "type": "integer"
+          },
+          "test": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "description": "levels | orders | first-position; null when too few to test",
+            "title": "Test"
+          },
+          "variable": {
+            "title": "Variable",
+            "type": "string"
+          }
+        },
+        "required": [
+          "test",
+          "chiSquare",
+          "df",
+          "pValue",
+          "maxDeviation",
+          "balanced",
+          "variable",
+          "reached",
+          "observed",
+          "expected"
+        ],
+        "title": "SimAssignment",
+        "type": "object"
+      },
+      "SimBranch": {
+        "properties": {
+          "else": {
+            "title": "Else",
+            "type": "integer"
+          },
+          "elseCovered": {
+            "title": "Elsecovered",
+            "type": "boolean"
+          },
+          "id": {
+            "title": "Id",
+            "type": "string"
+          },
+          "reached": {
+            "title": "Reached",
+            "type": "integer"
+          },
+          "then": {
+            "title": "Then",
+            "type": "integer"
+          },
+          "thenCovered": {
+            "title": "Thencovered",
+            "type": "boolean"
+          },
+          "undetermined": {
+            "title": "Undetermined",
+            "type": "integer"
+          }
+        },
+        "required": [
+          "id",
+          "reached",
+          "then",
+          "else",
+          "undetermined",
+          "thenCovered",
+          "elseCovered"
+        ],
+        "title": "SimBranch",
+        "type": "object"
+      },
+      "SimEnd": {
+        "properties": {
+          "covered": {
+            "title": "Covered",
+            "type": "boolean"
+          },
+          "id": {
+            "title": "Id",
+            "type": "string"
+          },
+          "outcome": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Outcome"
+          },
+          "reached": {
+            "title": "Reached",
+            "type": "integer"
+          }
+        },
+        "required": [
+          "id",
+          "outcome",
+          "reached",
+          "covered"
+        ],
+        "title": "SimEnd",
+        "type": "object"
+      },
+      "SimNode": {
+        "properties": {
+          "covered": {
+            "description": "Reached at least once (by the coverage source)",
+            "title": "Covered",
+            "type": "boolean"
+          },
+          "id": {
+            "title": "Id",
+            "type": "string"
+          },
+          "reached": {
+            "description": "Simulated participants who reached it",
+            "title": "Reached",
+            "type": "integer"
+          },
+          "type": {
+            "title": "Type",
+            "type": "string"
+          }
+        },
+        "required": [
+          "id",
+          "type",
+          "reached",
+          "covered"
+        ],
+        "title": "SimNode",
+        "type": "object"
+      },
+      "SimPage": {
+        "properties": {
+          "covered": {
+            "title": "Covered",
+            "type": "boolean"
+          },
+          "id": {
+            "title": "Id",
+            "type": "string"
+          },
+          "reached": {
+            "title": "Reached",
+            "type": "integer"
+          },
+          "shown": {
+            "title": "Shown",
+            "type": "integer"
+          }
+        },
+        "required": [
+          "id",
+          "reached",
+          "shown",
+          "covered"
+        ],
+        "title": "SimPage",
+        "type": "object"
+      },
+      "SimPath": {
+        "properties": {
+          "count": {
+            "title": "Count",
+            "type": "integer"
+          },
+          "end": {
+            "description": "<outcome>@<end node> or stuck@<page>",
+            "title": "End",
+            "type": "string"
+          },
+          "pages": {
+            "items": {
+              "type": "string"
+            },
+            "title": "Pages",
+            "type": "array"
+          }
+        },
+        "required": [
+          "pages",
+          "end",
+          "count"
+        ],
+        "title": "SimPath",
+        "type": "object"
+      },
+      "SimQuestion": {
+        "properties": {
+          "id": {
+            "title": "Id",
+            "type": "string"
+          },
+          "required": {
+            "title": "Required",
+            "type": "boolean"
+          },
+          "shownCovered": {
+            "title": "Showncovered",
+            "type": "boolean"
+          },
+          "states": {
+            "additionalProperties": {
+              "type": "integer"
+            },
+            "description": "answered, unanswered, irrelevant, not-reached",
+            "title": "States",
+            "type": "object"
+          }
+        },
+        "required": [
+          "id",
+          "required",
+          "states",
+          "shownCovered"
+        ],
+        "title": "SimQuestion",
+        "type": "object"
+      },
+      "SimQuota": {
+        "properties": {
+          "full": {
+            "title": "Full",
+            "type": "integer"
+          },
+          "node": {
+            "title": "Node",
+            "type": "string"
+          },
+          "open": {
+            "title": "Open",
+            "type": "integer"
+          },
+          "quota": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Quota"
+          }
+        },
+        "required": [
+          "node",
+          "quota",
+          "open",
+          "full"
+        ],
+        "title": "SimQuota",
+        "type": "object"
+      },
+      "SimRandomiser": {
+        "properties": {
+          "balanced": {
+            "anyOf": [
+              {
+                "type": "boolean"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "description": "pValue >= 0.001",
+            "title": "Balanced"
+          },
+          "chiSquare": {
+            "anyOf": [
+              {
+                "type": "number"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Chisquare"
+          },
+          "children": {
+            "items": {
+              "type": "string"
+            },
+            "title": "Children",
+            "type": "array"
+          },
+          "df": {
+            "anyOf": [
+              {
+                "type": "integer"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Df"
+          },
+          "expected": {
+            "anyOf": [
+              {
+                "type": "number"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "description": "Expected count per category",
+            "title": "Expected"
+          },
+          "id": {
+            "title": "Id",
+            "type": "string"
+          },
+          "maxDeviation": {
+            "anyOf": [
+              {
+                "type": "number"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "description": "max |observed - expected| / expected",
+            "title": "Maxdeviation"
+          },
+          "observedOrders": {
+            "title": "Observedorders",
+            "type": "integer"
+          },
+          "orders": {
+            "additionalProperties": {
+              "type": "integer"
+            },
+            "description": "child ids joined by ',' -> count",
+            "title": "Orders",
+            "type": "object"
+          },
+          "pValue": {
+            "anyOf": [
+              {
+                "type": "number"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Pvalue"
+          },
+          "pick": {
+            "anyOf": [
+              {
+                "type": "integer"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Pick"
+          },
+          "possibleOrders": {
+            "title": "Possibleorders",
+            "type": "integer"
+          },
+          "reached": {
+            "title": "Reached",
+            "type": "integer"
+          },
+          "test": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "description": "levels | orders | first-position; null when too few to test",
+            "title": "Test"
+          }
+        },
+        "required": [
+          "test",
+          "chiSquare",
+          "df",
+          "pValue",
+          "maxDeviation",
+          "balanced",
+          "id",
+          "reached",
+          "children",
+          "pick",
+          "possibleOrders",
+          "observedOrders",
+          "orders",
+          "expected"
+        ],
+        "title": "SimRandomiser",
+        "type": "object"
+      },
+      "SimWarning": {
+        "properties": {
+          "certain": {
+            "description": "True when it comes from exhaustive enumeration",
+            "title": "Certain",
+            "type": "boolean"
+          },
+          "code": {
+            "description": "node.unreachable | end.never_reached | branch.arm_never_taken | branch.always_same_arm | question.required_never_shown | participants.stuck | assignment.imbalanced | randomiser.imbalanced | runtime.diagnostic | coverage.sampled",
+            "title": "Code",
+            "type": "string"
+          },
+          "message": {
+            "title": "Message",
+            "type": "string"
+          },
+          "severity": {
+            "enum": [
+              "error",
+              "warning",
+              "info"
+            ],
+            "title": "Severity",
+            "type": "string"
+          },
+          "target": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "description": "Node, page, question or variable id",
+            "title": "Target"
+          }
+        },
+        "required": [
+          "code",
+          "severity",
+          "target",
+          "message",
+          "certain"
+        ],
+        "title": "SimWarning",
+        "type": "object"
+      },
+      "SimulateRequest": {
+        "additionalProperties": false,
+        "properties": {
+          "answerStrategy": {
+            "default": "uniform",
+            "description": "uniform: random valid answers (blank is one option for optional questions); skip-optional; first-choice; weights: per-question answer weights",
+            "enum": [
+              "uniform",
+              "skip-optional",
+              "first-choice",
+              "weights"
+            ],
+            "title": "Answerstrategy",
+            "type": "string"
+          },
+          "exhaustive": {
+            "default": true,
+            "description": "Also enumerate every path when the path space is small enough",
+            "title": "Exhaustive",
+            "type": "boolean"
+          },
+          "n": {
+            "default": 1000,
+            "description": "Simulated participants",
+            "maximum": 10000.0,
+            "minimum": 1.0,
+            "title": "N",
+            "type": "integer"
+          },
+          "quotaFull": {
+            "default": 0.1,
+            "description": "Probability a quota check comes back full",
+            "maximum": 1.0,
+            "minimum": 0.0,
+            "title": "Quotafull",
+            "type": "number"
+          },
+          "seed": {
+            "default": 1,
+            "description": "Seed of the simulation (same seed, same report)",
+            "maximum": 9007199254740991.0,
+            "minimum": 0.0,
+            "title": "Seed",
+            "type": "integer"
+          },
+          "weights": {
+            "anyOf": [
+              {
+                "additionalProperties": {
+                  "additionalProperties": {
+                    "type": "number"
+                  },
+                  "type": "object"
+                },
+                "type": "object"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "description": "answerStrategy 'weights': question id -> answer -> weight. Answer is the choice code, a number or text; '' is blank; a multi answer is codes joined by ','",
+            "title": "Weights"
+          }
+        },
+        "title": "SimulateRequest",
+        "type": "object"
+      },
+      "SimulationReport": {
+        "properties": {
+          "answerStrategy": {
+            "title": "Answerstrategy"
+          },
+          "assignments": {
+            "items": {
+              "$ref": "#/components/schemas/SimAssignment"
+            },
+            "title": "Assignments",
+            "type": "array"
+          },
+          "branches": {
+            "items": {
+              "$ref": "#/components/schemas/SimBranch"
+            },
+            "title": "Branches",
+            "type": "array"
+          },
+          "coverage": {
+            "enum": [
+              "exhaustive",
+              "sampled"
+            ],
+            "title": "Coverage",
+            "type": "string"
+          },
+          "diagnostics": {
+            "additionalProperties": {
+              "type": "integer"
+            },
+            "description": "'<code> <site>' -> participants",
+            "title": "Diagnostics",
+            "type": "object"
+          },
+          "ends": {
+            "items": {
+              "$ref": "#/components/schemas/SimEnd"
+            },
+            "title": "Ends",
+            "type": "array"
+          },
+          "format": {
+            "const": "osp-sim-report/1",
+            "title": "Format",
+            "type": "string"
+          },
+          "nodes": {
+            "items": {
+              "$ref": "#/components/schemas/SimNode"
+            },
+            "title": "Nodes",
+            "type": "array"
+          },
+          "outcomes": {
+            "additionalProperties": {
+              "type": "integer"
+            },
+            "description": "End outcome (or 'stuck') -> participants",
+            "title": "Outcomes",
+            "type": "object"
+          },
+          "pages": {
+            "items": {
+              "$ref": "#/components/schemas/SimPage"
+            },
+            "title": "Pages",
+            "type": "array"
+          },
+          "participants": {
+            "title": "Participants",
+            "type": "integer"
+          },
+          "pathSpace": {
+            "$ref": "#/components/schemas/PathSpace"
+          },
+          "pathsSeen": {
+            "description": "Distinct paths in the sample",
+            "title": "Pathsseen",
+            "type": "integer"
+          },
+          "planChecksum": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Planchecksum"
+          },
+          "questions": {
+            "items": {
+              "$ref": "#/components/schemas/SimQuestion"
+            },
+            "title": "Questions",
+            "type": "array"
+          },
+          "quotaFull": {
+            "anyOf": [
+              {
+                "type": "number"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Quotafull"
+          },
+          "quotas": {
+            "items": {
+              "$ref": "#/components/schemas/SimQuota"
+            },
+            "title": "Quotas",
+            "type": "array"
+          },
+          "randomisers": {
+            "items": {
+              "$ref": "#/components/schemas/SimRandomiser"
+            },
+            "title": "Randomisers",
+            "type": "array"
+          },
+          "revision": {
+            "title": "Revision",
+            "type": "integer"
+          },
+          "seed": {
+            "anyOf": [
+              {
+                "type": "integer"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Seed"
+          },
+          "stuck": {
+            "additionalProperties": {
+              "type": "integer"
+            },
+            "description": "Page -> participants who could not pass it",
+            "title": "Stuck",
+            "type": "object"
+          },
+          "surveyId": {
+            "title": "Surveyid",
+            "type": "string"
+          },
+          "topPaths": {
+            "items": {
+              "$ref": "#/components/schemas/SimPath"
+            },
+            "title": "Toppaths",
+            "type": "array"
+          },
+          "warnings": {
+            "items": {
+              "$ref": "#/components/schemas/SimWarning"
+            },
+            "title": "Warnings",
+            "type": "array"
+          }
+        },
+        "required": [
+          "format",
+          "surveyId",
+          "revision",
+          "planChecksum",
+          "participants",
+          "seed",
+          "answerStrategy",
+          "quotaFull",
+          "coverage",
+          "pathSpace",
+          "pathsSeen",
+          "topPaths",
+          "outcomes",
+          "stuck",
+          "nodes",
+          "branches",
+          "ends",
+          "pages",
+          "questions",
+          "assignments",
+          "randomisers",
+          "quotas",
+          "diagnostics",
+          "warnings"
+        ],
+        "title": "SimulationReport",
         "type": "object"
       },
       "SnapshotRequest": {
@@ -5060,6 +5912,98 @@
         "summary": "Redo",
         "tags": [
           "ops"
+        ]
+      }
+    },
+    "/api/surveys/{survey_id}/simulate": {
+      "post": {
+        "operationId": "simulateSurvey",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "survey_id",
+            "required": true,
+            "schema": {
+              "title": "Survey Id",
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/SimulateRequest"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/SimulationReport"
+                }
+              }
+            },
+            "description": "Successful Response"
+          },
+          "401": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorBody"
+                }
+              }
+            },
+            "description": "Unauthorized"
+          },
+          "403": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorBody"
+                }
+              }
+            },
+            "description": "Forbidden"
+          },
+          "404": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorBody"
+                }
+              }
+            },
+            "description": "Not Found"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/RejectedBody"
+                }
+              }
+            },
+            "description": "Unprocessable Content"
+          },
+          "503": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorBody"
+                }
+              }
+            },
+            "description": "Service Unavailable"
+          }
+        },
+        "summary": "Simulate",
+        "tags": [
+          "surveys"
         ]
       }
     },

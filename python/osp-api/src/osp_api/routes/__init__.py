@@ -9,7 +9,7 @@ from fastapi import FastAPI
 from osp_app import AppServices
 from osp_ops import openapi_components
 
-from . import auth, data_export, export_check, expressions, meta, ops, surveys
+from . import auth, data_export, export_check, expressions, meta, ops, simulate, surveys
 from .common import install_error_handlers
 
 
@@ -38,6 +38,6 @@ def install(
     app.state.builder_services = services
     app.state.allowed_origins = tuple(allowed_origins)
     install_error_handlers(app)
-    for module in (auth, surveys, data_export, export_check, ops, meta, expressions):
+    for module in (auth, surveys, data_export, export_check, simulate, ops, meta, expressions):
         app.include_router(module.router)
     _with_op_schemas(app)

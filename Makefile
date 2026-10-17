@@ -16,7 +16,7 @@ unexport VIRTUAL_ENV
 UV_RUN := uv run --locked
 PNPM := pnpm
 
-CHECKS := py-test py-layers py-lint web-check web-test web-build contract-check licence-check harness-quick engine-test hooks-test
+CHECKS := py-test py-layers py-lint web-check web-test web-build contract-check licence-check harness-quick engine-test hooks-test sim-test
 
 .PHONY: install check $(CHECKS) contract
 
@@ -27,7 +27,7 @@ install:
 check: $(CHECKS)
 	@echo "make check: all green"
 
-py-test:
+py-test: sim-build
 	$(UV_RUN) pytest
 
 py-layers:
@@ -115,6 +115,16 @@ engine-fixtures:
 
 engine-test: engine-fixtures
 	$(PNPM) -C web/engine exec vitest run
+
+# Simulator (task M1, web/engine-sim). `sim-build` bundles dist/cli.js, the Node sidecar
+# osp_runtime.sim_sidecar runs (py-test needs it); `sim-test` runs the simulator's vitest
+# suite on the fixture plans (built by engine-fixtures).
+.PHONY: sim-build sim-test
+sim-build:
+	$(PNPM) -C web/engine-sim exec vite build --logLevel warn
+
+sim-test: engine-fixtures
+	$(PNPM) -C web/engine-sim exec vitest run
 
 # Engine bundle size (minified + gzip), informational: the budget is a target, not a gate.
 engine-size:
