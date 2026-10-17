@@ -23,7 +23,8 @@ export default defineConfig({
 	webServer: [
 		{
 			// Throwaway osp-api on SQLite (e2e/api_server.py) for the end-to-end editing tests.
-			command: `uv run --locked --with uvicorn python e2e/api_server.py --port ${API_PORT}`,
+			// The participant app is built first so a published link can be opened (B12).
+			command: `pnpm -C ../runtime exec vite build --logLevel warn && uv run --locked --with uvicorn python e2e/api_server.py --port ${API_PORT}`,
 			url: `http://127.0.0.1:${API_PORT}/api/health`,
 			reuseExistingServer: !process.env.CI,
 			timeout: 120_000

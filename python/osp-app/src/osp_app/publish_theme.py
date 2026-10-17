@@ -1,9 +1,9 @@
 """The theme a publish embeds in the runtime plan (runtime-design §6a).
 
-Resolution order: the survey's own theme (``settings.theme``, once the survey model carries
-one), else the lab default from the theme library, else the "clean" preset. The chosen theme
-runs through the contrast guard (``osp_spec.theme.validate_theme``); any error blocks the
-publish with diagnostics whose pointers say where the theme came from.
+Resolution order: the survey's own theme (``settings.theme``, an inline copy set by the
+``set_theme`` op), else the lab default from the theme library, else the "clean" preset.
+The chosen theme runs through the contrast guard (``osp_spec.theme.validate_theme``); any
+error blocks the publish with diagnostics whose pointers say where the theme came from.
 """
 
 from __future__ import annotations

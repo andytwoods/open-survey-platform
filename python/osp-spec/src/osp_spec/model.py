@@ -89,6 +89,11 @@ class Settings(Model):
     # semantics.md §5 (S-1): a resume link stops working after this many idle days.
     resumeExpiryDays: StrictInt = Field(default=30, ge=1, le=3650)
     retention: Retention | None = None  # required at publish (osp_spec.publish_diagnostics)
+    # runtime-design §6a: the survey's own theme, as a full inline copy (osp_spec.theme.Theme),
+    # not a reference into the lab library. A survey document then says exactly how it looks
+    # wherever it goes (exports, repro packages, another lab), and editing or deleting a
+    # library theme never changes a survey silently. None: the lab default, else "clean".
+    theme: Theme | None = None
 
 
 class Consent(Model):
@@ -432,5 +437,9 @@ class Survey(Model):
     flow: list[FlowNode] = Field(default_factory=list)
 
 
-for _m in (BranchNode, RandomiserNode, Survey):
+# Theme lives in theme.py, which builds on this module's `Model` and `Text`, so it is
+# imported last (both are defined by now) and the models that use it are rebuilt.
+from .theme import Theme  # noqa: E402
+
+for _m in (BranchNode, RandomiserNode, Settings, Survey):
     _m.model_rebuild()

@@ -20,6 +20,7 @@ from . import (
     repro,
     simulate,
     surveys,
+    themes,
 )
 from .common import install_error_handlers
 
@@ -60,6 +61,7 @@ def install(
         ops,
         meta,
         expressions,
+        themes,
     ):
         app.include_router(module.router)
     _with_op_schemas(app)

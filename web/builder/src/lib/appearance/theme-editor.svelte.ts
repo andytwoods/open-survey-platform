@@ -39,6 +39,21 @@ export function normalise(t: Theme): Required<Theme> {
 	} as Required<Theme>;
 }
 
+function canonical(v: unknown): string {
+	if (Array.isArray(v)) return `[${v.map(canonical).join(',')}]`;
+	if (v && typeof v === 'object')
+		return `{${Object.keys(v)
+			.sort()
+			.map((k) => `${JSON.stringify(k)}:${canonical((v as Record<string, unknown>)[k])}`)
+			.join(',')}}`;
+	return JSON.stringify(v);
+}
+
+/** Whether two themes are the same once defaults are filled in (key order ignored). */
+export function sameTheme(a: Theme, b: Theme): boolean {
+	return canonical(normalise(a)) === canonical(normalise(b));
+}
+
 export function presetTheme(id: PresetId): Required<Theme> {
 	const p = THEME_PRESETS.find((x) => x.id === id) ?? THEME_PRESETS[0];
 	return normalise(p.theme);
@@ -199,6 +214,29 @@ export class ThemeEditor {
 		const { theme } = parseThemeJson(text);
 		if (!theme) return false;
 		this.theme = normalise(theme);
+		this.#past = [];
+		this.#future = [];
+		return true;
+	}
+
+	#source: string | null = null;
+
+	/**
+	 * Start editing a theme that came from somewhere (a survey's own theme, a library theme).
+	 * `source` names where it came from: opening the same source again keeps the edits in
+	 * progress. Not undoable (it is the starting point); undoable when `undoable` is set.
+	 */
+	loadTheme(theme: Theme, source: string, { undoable = false } = {}): boolean {
+		if (!undoable && source === this.#source) return false;
+		this.#source = source;
+		this.#draftChecked = true;
+		const { theme: parsed } = parseThemeJson(JSON.stringify(theme));
+		if (!parsed) return false;
+		if (undoable) {
+			this.update((t) => Object.assign(t, normalise(parsed)));
+			return true;
+		}
+		this.theme = normalise(parsed);
 		this.#past = [];
 		this.#future = [];
 		return true;

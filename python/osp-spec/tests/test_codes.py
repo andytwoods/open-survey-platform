@@ -286,6 +286,7 @@ def test_every_code_is_exercised() -> None:
     for path in CASES.glob("*/*.json"):
         covered |= {e["code"] for e in json.loads(path.read_text(encoding="utf-8"))["expect"]}
     covered.add("publish.retention_required")  # test_publish_needs_a_retention_policy
+    covered.add("publish.consent_missing")  # test_publish_warns_without_consent
     assert covered <= set(CODES)
     assert set(CODES) - covered == UNTESTABLE
 
@@ -309,11 +310,12 @@ def test_case_collision_is_an_error() -> None:
 
 def test_publish_needs_a_retention_policy() -> None:
     s = base()
-    assert [d.code for d in publish_diagnostics(s)] == ["publish.retention_required"]
+    errors = [d for d in publish_diagnostics(s) if d.severity == "error"]
+    assert [d.code for d in errors] == ["publish.retention_required"]
     s["settings"] = {"retention": {"kind": "days-after-close", "days": 365}}
-    assert publish_diagnostics(s) == []
+    assert [d for d in publish_diagnostics(s) if d.severity == "error"] == []
     s["settings"] = {"retention": {"kind": "indefinite"}}
-    assert publish_diagnostics(s) == [] == validate(s)
+    assert [d for d in publish_diagnostics(s) if d.severity == "error"] == [] == validate(s)
 
 
 def test_reserved_names_include_the_obvious_ones() -> None:
@@ -325,3 +327,14 @@ def test_validator_does_not_mutate_input() -> None:
     before = copy.deepcopy(s)
     validate(s)
     assert s == before
+
+
+def test_publish_warns_without_consent() -> None:
+    s = base()
+    s["settings"] = {"retention": {"kind": "indefinite"}}
+    got = publish_diagnostics(s)
+    assert [(d.code, d.severity, d.pointer) for d in got] == [
+        ("publish.consent_missing", "warning", "/consent")
+    ]
+    s["consent"] = {"text": "Do you agree?"}
+    assert publish_diagnostics(s) == []

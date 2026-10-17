@@ -20,6 +20,7 @@ from hypothesis import strategies as st
 from osp_ops import REGISTRY, OpResult, run
 from osp_ops import patch as jp
 from osp_spec import Diagnostic, parse
+from osp_spec.theme import PRESETS
 
 BASE: dict[str, Any] = json.loads((Path(__file__).parent / "base_survey.json").read_text("utf-8"))
 
@@ -136,6 +137,14 @@ EXAMPLES: dict[str, list[dict[str, Any]]] = {
         {"languages": ["en", "de", "fr"], "default_language": "en"},
         {"languages": ["en"], "cascade": True},
         {"languages": ["de", "en"]},
+    ],
+    "set_consent": [
+        {"consent": {"text": {"en": "Do you agree?"}, "countDeclines": True}},
+        {"consent": {"text": "Agree?", "agreeLabel": "Yes", "declineLabel": "No"}},
+    ],
+    "set_theme": [
+        {"theme": PRESETS["warm"].model_dump(mode="json", by_alias=True)},
+        {"theme": {**PRESETS["clean"].model_dump(mode="json"), "radius": 0}},
     ],
     "replace_survey": [{"survey": MINIMAL}],
     "apply_patch": [{"patch": [{"op": "replace", "path": "/metadata/title", "value": "P"}]}],

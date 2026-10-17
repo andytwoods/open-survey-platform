@@ -18,19 +18,26 @@
 		type ThemeMode
 	} from '@osp/ui-components';
 	import { onMount, tick } from 'svelte';
+	import type { SurveyStore } from '../sync/survey-store.svelte';
+	import { ThemeLibrary } from './library.svelte';
 	import ChoiceGroup from './ChoiceGroup.svelte';
 	import ColourField from './ColourField.svelte';
 	import { MIN_INPUT_FONT_PX, byPointer, type ThemeDiagnostic } from './guard';
 	import PreviewFrames from './PreviewFrames.svelte';
 	import RangeField from './RangeField.svelte';
-	import { themeEditor as ed } from './theme-editor.svelte';
+	import { sameTheme, themeEditor as ed } from './theme-editor.svelte';
 	import type { ImportProblem } from './validate';
 
 	/**
 	 * Appearance: edit the survey theme (runtime-design §6a). Controls on the left, a live
 	 * preview at three widths on the right. Every change goes through the theme editor store
 	 * (undo/redo via the shell's commands); the guard runs on every change.
+	 *
+	 * With a survey open (`store`), the theme is saved for real (task B12): to the lab
+	 * library, to this survey (the `set_theme` op), or as the lab default. Without one
+	 * (`/appearance`, `?mock`) it stays a local draft, as before.
 	 */
+	let { store = null }: { store?: SurveyStore | null } = $props();
 
 	const MAIN_COLOURS: { field: PaletteField; label: string }[] = [
 		{ field: 'accent', label: 'Accent' },
@@ -83,7 +90,87 @@
 		if (MORE_COLOURS.some((c) => problems.has(`/colours/${shownMode}/${c.field}`))) moreOpen = true;
 	});
 
-	onMount(() => ed.openOnce());
+	const library = new ThemeLibrary();
+	let themeName = $state('');
+	let busy = $state(false);
+	let saveMessage = $state<{ kind: 'ok' | 'error'; text: string } | null>(null);
+	const surveyTheme = $derived(
+		(store?.survey as { settings?: { theme?: unknown } } | null)?.settings?.theme as
+			| Parameters<typeof ed.loadTheme>[0]
+			| undefined
+	);
+	const usesOwn = $derived(!!surveyTheme && sameTheme(surveyTheme, t));
+	const labDefault = $derived(library.themes.find((x) => x.id === library.defaultId));
+	const nameTaken = $derived(!!library.byName(themeName));
+
+	onMount(() => {
+		if (!store) return ed.openOnce();
+		// A survey's own theme is where editing starts; otherwise the lab default, else the draft.
+		void library.load().then(() => {
+			if (surveyTheme) ed.loadTheme(surveyTheme, `survey:${store.surveyId}`);
+			else if (labDefault) {
+				ed.loadTheme(labDefault.theme, `survey:${store.surveyId}`);
+				themeName = labDefault.name;
+			} else ed.openOnce();
+		});
+	});
+
+	function done(kind: 'ok' | 'error', text: string) {
+		saveMessage = { kind, text };
+	}
+
+	async function saveToLibrary(): Promise<string | null> {
+		if (!themeName.trim()) {
+			done('error', 'Give the theme a name first.');
+			document.getElementById('theme-name')?.focus();
+			return null;
+		}
+		const r = await library.save(themeName, ed.theme);
+		if (!r.ok) {
+			done('error', r.message);
+			return null;
+		}
+		done('ok', `Saved "${themeName.trim()}" to the lab library.`);
+		return r.theme?.id ?? null;
+	}
+
+	async function run(fn: () => Promise<void>) {
+		busy = true;
+		try {
+			await fn();
+		} finally {
+			busy = false;
+		}
+	}
+
+	async function useForSurvey() {
+		if (!store) return;
+		const out = await store.submit([{ op: 'set_theme', params: { theme: ed.theme } }]);
+		if (out.status === 'applied') done('ok', 'This survey now uses this theme.');
+		else done('error', out.status === 'rejected' ? (out.diagnostics[0]?.message ?? out.message) : out.message);
+	}
+
+	async function useLabDefault() {
+		if (!store) return;
+		const out = await store.submit([{ op: 'set_theme', params: { theme: null } }]);
+		if (out.status === 'applied') done('ok', 'This survey now follows the lab default theme.');
+	}
+
+	async function makeLabDefault() {
+		const id = await saveToLibrary();
+		if (!id) return;
+		const r = await library.makeDefault(id);
+		if (r.ok) done('ok', `"${themeName.trim()}" is now the lab default theme.`);
+		else done('error', r.message);
+	}
+
+	function loadFromLibrary(id: string) {
+		const lt = library.themes.find((x) => x.id === id);
+		if (!lt) return;
+		ed.loadTheme(lt.theme, `library:${id}`, { undoable: true });
+		themeName = lt.name;
+		done('ok', `Loaded "${lt.name}" from the lab library.`);
+	}
 
 	const problemsFor = (mode: Mode, field: PaletteField) =>
 		problems.get(`/colours/${mode}/${field}`) ?? [];
@@ -354,7 +441,79 @@
 
 		<section class="group" aria-labelledby="h-file">
 			<h3 id="h-file">Save and share</h3>
-			<p class="note">Your changes are kept as a draft in this browser. Saving to the lab theme library comes later.</p>
+			{#if store}
+				<p class="note" data-testid="survey-theme-status">
+					{#if usesOwn}
+						This survey uses this theme.
+					{:else if surveyTheme}
+						This survey has its own theme, different from what you are editing.
+					{:else if labDefault}
+						This survey follows the lab default, "{labDefault.name}".
+					{:else}
+						This survey uses the Clean preset (the lab has no default theme).
+					{/if}
+				</p>
+				<div class="field">
+					<label for="theme-name">Theme name</label>
+					<input
+						id="theme-name"
+						class="text"
+						type="text"
+						bind:value={themeName}
+						placeholder="e.g. Lab blue"
+						aria-describedby="theme-name-note"
+					/>
+					<p class="note" id="theme-name-note">
+						{nameTaken ? 'Saving replaces the library theme with this name.' : 'Saved as a new library theme.'}
+					</p>
+				</div>
+				<div class="actions">
+					<Button size="sm" variant="primary" disabled={busy} onclick={() => run(useForSurvey)}>Use for this survey</Button>
+					<Button size="sm" disabled={busy || !library.canManage} onclick={() => run(async () => void (await saveToLibrary()))}
+						>Save to lab library</Button
+					>
+					<Button
+						size="sm"
+						disabled={busy || !library.canManage || !ed.canPublish}
+						aria-describedby="default-note"
+						onclick={() => run(makeLabDefault)}>Make lab default</Button
+					>
+					{#if surveyTheme}
+						<Button size="sm" variant="ghost" disabled={busy} onclick={() => run(useLabDefault)}>Follow lab default</Button>
+					{/if}
+				</div>
+				<p class="note" id="default-note">
+					{#if !library.canManage && library.loaded}
+						Only owners and editors can change the lab library.
+					{:else if !ed.canPublish}
+						A theme with contrast problems can't be the lab default.
+					{:else}
+						The lab default applies to every survey without its own theme.
+					{/if}
+				</p>
+				{#if saveMessage}
+					<p class="save-message" data-kind={saveMessage.kind} role={saveMessage.kind === 'error' ? 'alert' : 'status'}>
+						{saveMessage.text}
+					</p>
+				{/if}
+				{#if library.themes.length}
+					<div class="field">
+						<label for="library-pick">Lab library</label>
+						<div class="actions">
+							<select id="library-pick" class="text" onchange={(e) => loadFromLibrary(e.currentTarget.value)}>
+								<option value="">Load a saved theme…</option>
+								{#each library.themes as lt (lt.id)}
+									<option value={lt.id}>{lt.name}{lt.isDefault ? ' (lab default)' : ''}</option>
+								{/each}
+							</select>
+						</div>
+					</div>
+				{/if}
+				{#if library.error}<p class="note" role="alert">{library.error}</p>{/if}
+				<p class="note">JSON files move themes between labs.</p>
+			{:else}
+				<p class="note">Your changes are kept as a draft in this browser. Saving to the lab theme library comes later.</p>
+			{/if}
 			<div class="actions">
 				<Button size="sm" onclick={exportJson}><Download size={14} aria-hidden="true" />Export JSON</Button>
 				<Button size="sm" onclick={() => fileInput?.click()}><Upload size={14} aria-hidden="true" />Import JSON</Button>
@@ -590,6 +749,13 @@
 	.import-problems ul {
 		margin: 0;
 		padding-inline-start: var(--space-4);
+	}
+	.save-message {
+		margin: 0;
+		font-size: var(--text-sm);
+	}
+	.save-message[data-kind='error'] {
+		color: var(--color-danger);
 	}
 	.actions {
 		display: flex;

@@ -51,7 +51,7 @@ from osp_store import (
     Survey,
     TenantContext,
 )
-from osp_targets import ExportDiagnostic, export_xlsform
+from osp_targets import ExportDiagnostic, export_lss, export_xlsform
 
 from .auth.permissions import Action, Actor, Resource, ResourceKind, can
 from .commands import command, dispatch
@@ -554,3 +554,12 @@ class Builder:
         if not content:
             raise Rejected("The survey can't be exported to XLSForm.", diagnostics)
         return ExportResult(content, f"survey-{survey_id[:8]}-r{draft.revision}.xlsx", diagnostics)
+
+    @command("survey.export_lss", label="Export LimeSurvey (.lss)", action=Action.SURVEY_EXPORT)
+    def export_lss(self, actor: Actor, *, survey_id: str) -> ExportResult:
+        ctx = self._locate(actor, survey_id, Action.SURVEY_EXPORT)
+        draft = self._draft(ctx, survey_id)
+        content, diagnostics = export_lss(draft.body)
+        if not content:
+            raise Rejected("The survey can't be exported to LimeSurvey.", diagnostics)
+        return ExportResult(content, f"survey-{survey_id[:8]}-r{draft.revision}.lss", diagnostics)

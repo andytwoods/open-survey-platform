@@ -37,7 +37,7 @@ properties:
       - { value: end-only, label: { en: "Send nothing until the end" } }
     default: every-page
     group: Advanced
-    help: { en: "End-only keeps answers on the participant's device until they submit." }
+    help: { en: "End-only keeps answers on the participant's device until they submit: drop-outs leave no data." }
   settings.localCopy:
     kind: enum
     label: { en: "Copy kept on the device (end-only)" }
@@ -59,12 +59,13 @@ properties:
     group: Advanced
     help: { en: "Licence of the questionnaire itself, e.g. CC-BY-4.0." }
 hidden:
-  settings.retention: "Chosen in the publish dialog; publishing is refused until it is set."
-  consent: "The consent page (text, button labels, decline outcome, decline count); edited in the JSON view until the builder has a consent editor."
+  settings.retention: "Chosen in Survey settings (options from /api/meta/retention); publishing is refused until it is set."
+  consent: "Edited in Survey settings (Consent section, the set_consent op): text per language, button labels, decline counting."
+  settings.theme: "Set in the Appearance view (Use for this survey); a full copy of the theme."
   specVersion: "Format version, written by the platform."
   id: "Stable survey identity, assigned at creation."
   version: "Published version number, set by publishing."
-  metadata.languages: "Edited in the translation grid, which adds and removes language columns."
+  metadata.languages: "Edited in Survey settings and the translation grid (the set_languages op)."
   metadata.ddi: "Free-form DDI study metadata; edited in the JSON view."
   choiceLists: "Shared lists are edited in the choice list editor."
   variables: "Edited in the flow editor and variables view."

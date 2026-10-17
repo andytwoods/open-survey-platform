@@ -25,6 +25,7 @@ ROUTES: list[tuple[str, str, dict | None]] = [
     ("POST", f"/api/surveys/{SID}/redo", {"transactionId": "u:t", "baseRevision": 0}),
     ("POST", f"/api/surveys/{SID}/publish", {}),
     ("GET", f"/api/surveys/{SID}/export/xlsform", None),
+    ("GET", f"/api/surveys/{SID}/export/lss", None),
     ("GET", f"/api/surveys/{SID}/export/responses", None),
     ("GET", f"/api/surveys/{SID}/export/codebook", None),
     ("GET", f"/api/surveys/{SID}/versions/{{version}}/repro-package", None),
@@ -32,6 +33,12 @@ ROUTES: list[tuple[str, str, dict | None]] = [
     ("POST", f"/api/surveys/{SID}/simulate", {"n": 1}),
     ("POST", f"/api/surveys/{SID}/preview-plan", None),
     ("GET", f"/api/surveys/{SID}/export-check?target=lss", None),
+    ("GET", "/api/themes", None),
+    ("POST", "/api/themes", {"name": "x", "theme": {}}),
+    ("PUT", "/api/themes/default", {"themeId": None}),
+    ("GET", "/api/themes/{theme_id}", None),
+    ("PATCH", "/api/themes/{theme_id}", {"name": "x"}),
+    ("DELETE", "/api/themes/{theme_id}", None),
     ("GET", "/api/meta/ops", None),
     ("GET", "/api/meta/property-schemas", None),
     ("GET", "/api/meta/survey-schema", None),
@@ -69,7 +76,7 @@ def test_route_list_covers_every_builder_route(benv):
         (method.upper(), path.replace("{survey_id}", SID))
         for path, item in benv.app.openapi()["paths"].items()
         for method, op in item.items()
-        if set(op.get("tags", ())) & {"auth", "surveys", "ops", "meta"}
+        if set(op.get("tags", ())) & {"auth", "surveys", "ops", "meta", "themes"}
     }
     listed = {(m, p.split("?")[0]) for m, p, _ in ROUTES}
     assert {(m, p) for m, p in app_routes if p not in PUBLIC} == listed

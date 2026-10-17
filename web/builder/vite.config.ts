@@ -7,7 +7,13 @@ import { sveltekit } from '@sveltejs/kit/vite';
 // `make dev`'s `osp-api serve` on 8000; `make web-e2e` points OSP_API_URL at its own on 4318.
 // changeOrigin stays false: the API's origin check compares Origin with the Host it sees.
 const apiTarget = process.env.OSP_API_URL ?? 'http://127.0.0.1:8000';
-const proxy = { '/api': { target: apiTarget, changeOrigin: false } };
+// The participant app (`/s/{slug}` and its files under `/r/`) is served by the API host too,
+// so a published survey's link opens from the builder's origin (B12; `make web-e2e`).
+const proxy = {
+	'/api': { target: apiTarget, changeOrigin: false },
+	'^/s/': { target: apiTarget, changeOrigin: false },
+	'^/r/': { target: apiTarget, changeOrigin: false }
+};
 
 export default defineConfig({
 	server: { proxy },

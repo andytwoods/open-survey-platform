@@ -12,12 +12,14 @@ from . import (  # noqa: F401
     choice_list_ops,
     choice_ops,
     condition_ops,
+    consent_ops,
     flow_ops,
     metadata_ops,
     page_ops,
     property_ops,
     question_ops,
     survey_ops,
+    theme_ops,
     variable_ops,
 )
 from .patch import PatchError

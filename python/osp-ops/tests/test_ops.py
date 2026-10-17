@@ -380,3 +380,31 @@ def test_patch_diff_and_apply() -> None:
         with pytest.raises(jp.PatchError):
             jp.apply(a, bad)
     assert parse(jp.apply(BASE, jp.diff(BASE, base())))[0] is not None
+
+
+def test_set_theme_stores_a_full_copy_and_unsets_cleanly() -> None:
+    from osp_spec.theme import PRESETS
+
+    warm = PRESETS["warm"].model_dump(mode="json", by_alias=True)
+    res = run("set_theme", base(), {"theme": {"colours": warm["colours"]}})
+    assert res.ok, res.diagnostics
+    stored = res.survey["settings"]["theme"]
+    assert stored["colours"] == warm["colours"] and stored["themeVersion"] == "osp-theme/0.1"
+    back = run("set_theme", res.survey, {"theme": None})
+    assert back.ok and back.survey == base()
+
+
+def test_set_theme_rejects_a_bad_theme_with_a_pointer() -> None:
+    res = run("set_theme", base(), {"theme": {"colours": {"light": {}}}})
+    assert not res.ok
+    assert res.diagnostics[0].code == "op.invalid_result"
+    assert res.diagnostics[0].pointer.startswith("/settings/theme/colours")
+
+
+def test_set_consent_validates_and_removes() -> None:
+    res = run("set_consent", base(), {"consent": {"text": "Agree?", "countDeclines": True}})
+    assert res.ok, res.diagnostics
+    assert res.survey["consent"]["countDeclines"] is True
+    bad = run("set_consent", base(), {"consent": {"agreeLabel": "Yes"}})  # no text
+    assert not bad.ok and codes(bad) == ["op.invalid_result", "schema.missing"]
+    assert run("set_consent", res.survey, {"consent": None}).survey == base()

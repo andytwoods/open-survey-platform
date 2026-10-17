@@ -18,6 +18,7 @@ from ..participant import plan_url
 from .common import Auth, Services, errors
 
 XLSX = "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet"
+LSS = "application/xml"
 
 
 class SurveySummary(BaseModel):
@@ -206,6 +207,30 @@ def export_xlsform(survey_id: str, auth: Auth, services: Services) -> Response:
     return Response(
         r.content,
         media_type=XLSX,
+        headers={
+            "Content-Disposition": f'attachment; filename="{r.filename}"',
+            "Cache-Control": "no-store",
+        },
+    )
+
+
+@router.get(
+    "/{survey_id}/export/lss",
+    operation_id="exportLss",
+    response_class=Response,
+    responses={
+        200: {
+            "content": {LSS: {"schema": {"type": "string", "format": "binary"}}},
+            "description": "LimeSurvey survey structure (.lss)",
+        },
+        **errors(401, 403, 404, 422),
+    },
+)
+def export_lss(survey_id: str, auth: Auth, services: Services) -> Response:
+    r = services.builder.run("survey.export_lss", auth.actor, survey_id=survey_id)
+    return Response(
+        r.content,
+        media_type=LSS,
         headers={
             "Content-Disposition": f'attachment; filename="{r.filename}"',
             "Cache-Control": "no-store",

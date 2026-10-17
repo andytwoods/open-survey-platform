@@ -73,6 +73,7 @@ CODES: dict[str, Severity] = {
     "consent.outcome": "error",
     # Publishing only (publish_diagnostics; never from validate)
     "publish.retention_required": "error",
+    "publish.consent_missing": "warning",  # participant questions but no consent page
     # Variables
     "variable.cycle": "error",
     "variable.never_assigned": "warning",

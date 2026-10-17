@@ -268,6 +268,10 @@
       "title": "Arith",
       "type": "object"
     },
+    "AssetId": {
+      "pattern": "^[A-Za-z0-9_-]{1,64}$",
+      "type": "string"
+    },
     "AssignNode": {
       "additionalProperties": false,
       "description": "Assigns each listed `assigned` variable one of its levels (semantics.md §7).",
@@ -504,6 +508,23 @@
           "type": "string"
         }
       ]
+    },
+    "Colours": {
+      "additionalProperties": false,
+      "properties": {
+        "dark": {
+          "$ref": "#/$defs/Palette"
+        },
+        "light": {
+          "$ref": "#/$defs/Palette"
+        }
+      },
+      "required": [
+        "light",
+        "dark"
+      ],
+      "title": "Colours",
+      "type": "object"
     },
     "Compare": {
       "additionalProperties": false,
@@ -1317,6 +1338,10 @@
           "$ref": "#/$defs/EndNode"
         }
       ]
+    },
+    "HexColour": {
+      "pattern": "^#[0-9a-fA-F]{6}$",
+      "type": "string"
     },
     "Identifier": {
       "maxLength": 64,
@@ -2273,6 +2298,44 @@
       "title": "Page",
       "type": "object"
     },
+    "Palette": {
+      "additionalProperties": false,
+      "description": "The colours of one mode. Everything else on the page is derived from these.",
+      "properties": {
+        "accent": {
+          "$ref": "#/$defs/HexColour"
+        },
+        "background": {
+          "$ref": "#/$defs/HexColour"
+        },
+        "error": {
+          "$ref": "#/$defs/HexColour"
+        },
+        "focus": {
+          "$ref": "#/$defs/HexColour"
+        },
+        "muted": {
+          "$ref": "#/$defs/HexColour"
+        },
+        "surface": {
+          "$ref": "#/$defs/HexColour"
+        },
+        "text": {
+          "$ref": "#/$defs/HexColour"
+        }
+      },
+      "required": [
+        "accent",
+        "background",
+        "surface",
+        "text",
+        "muted",
+        "error",
+        "focus"
+      ],
+      "title": "Palette",
+      "type": "object"
+    },
     "Question": {
       "discriminator": {
         "mapping": {
@@ -2550,6 +2613,17 @@
           ],
           "title": "Savemode",
           "type": "string"
+        },
+        "theme": {
+          "anyOf": [
+            {
+              "$ref": "#/$defs/Theme"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null
         }
       },
       "title": "Settings",
@@ -2943,6 +3017,136 @@
         "type"
       ],
       "title": "TextQuestion",
+      "type": "object"
+    },
+    "Theme": {
+      "additionalProperties": false,
+      "description": "A survey theme. Fields are design tokens; there is no free-form CSS here.",
+      "properties": {
+        "baseSize": {
+          "default": 16,
+          "maximum": 32,
+          "minimum": 12,
+          "title": "Basesize",
+          "type": "integer"
+        },
+        "buttonStyle": {
+          "default": "filled",
+          "enum": [
+            "filled",
+            "outline"
+          ],
+          "title": "Buttonstyle",
+          "type": "string"
+        },
+        "choiceStyle": {
+          "default": "list",
+          "enum": [
+            "list",
+            "cards",
+            "buttons"
+          ],
+          "title": "Choicestyle",
+          "type": "string"
+        },
+        "colours": {
+          "$ref": "#/$defs/Colours"
+        },
+        "density": {
+          "default": "comfortable",
+          "enum": [
+            "comfortable",
+            "compact"
+          ],
+          "title": "Density",
+          "type": "string"
+        },
+        "font": {
+          "default": "system-sans",
+          "enum": [
+            "system-sans",
+            "system-serif",
+            "system-rounded"
+          ],
+          "title": "Font",
+          "type": "string"
+        },
+        "headerText": {
+          "anyOf": [
+            {
+              "$ref": "#/$defs/Text"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null
+        },
+        "lineSpacing": {
+          "default": 1.5,
+          "maximum": 2.5,
+          "minimum": 1.0,
+          "title": "Linespacing",
+          "type": "number"
+        },
+        "logoAssetId": {
+          "anyOf": [
+            {
+              "$ref": "#/$defs/AssetId"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null
+        },
+        "mode": {
+          "default": "auto",
+          "enum": [
+            "light",
+            "dark",
+            "auto"
+          ],
+          "title": "Mode",
+          "type": "string"
+        },
+        "preset": {
+          "anyOf": [
+            {
+              "enum": [
+                "clean",
+                "warm",
+                "high-contrast",
+                "dark",
+                "compact"
+              ],
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Preset"
+        },
+        "radius": {
+          "default": 6,
+          "maximum": 32,
+          "minimum": 0,
+          "title": "Radius",
+          "type": "integer"
+        },
+        "themeVersion": {
+          "const": "osp-theme/0.1",
+          "default": "osp-theme/0.1",
+          "title": "Themeversion",
+          "type": "string"
+        }
+      },
+      "required": [
+        "colours"
+      ],
+      "title": "Theme",
       "type": "object"
     },
     "Variable": {

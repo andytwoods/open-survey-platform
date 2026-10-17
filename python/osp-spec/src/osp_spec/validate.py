@@ -1050,7 +1050,9 @@ _Checker._consent = _consent  # type: ignore[attr-defined]
 def publish_diagnostics(data: Any) -> list[Diagnostic]:
     """Diagnostics that block **publishing** but not editing or previewing: everything
     `validate` reports, plus `publish.retention_required` when no retention policy is set
-    (decided 16 Oct 2026: required before publishing, no silent default). Never raises."""
+    (decided 16 Oct 2026: required before publishing, no silent default), plus the warning
+    `publish.consent_missing` when participants answer questions but there is no consent
+    page (a warning: some studies take consent elsewhere). Never raises."""
     survey, diagnostics = parse(data)
     if survey is not None and survey.settings.retention is None:
         diagnostics = [
@@ -1061,7 +1063,21 @@ def publish_diagnostics(data: Any) -> list[Diagnostic]:
                 "choose how long participant data is kept before publishing",
             ),
         ]
+    if survey is not None and survey.consent is None and _asks_questions(survey):
+        diagnostics = [
+            *diagnostics,
+            make(
+                "publish.consent_missing",
+                "/consent",
+                "the survey asks participants questions but has no consent page",
+            ),
+        ]
     return diagnostics
+
+
+def _asks_questions(survey: Survey) -> bool:
+    """Any item that records an answer (everything but a note)."""
+    return any(q.type != "note" for b in survey.blocks for p in b.pages for q in p.items)
 
 
 def _default_fits(value_type: str, default: str | int) -> bool:
