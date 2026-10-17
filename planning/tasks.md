@@ -205,4 +205,9 @@ Plan V: `planning/results-viewer.md` (decisions V-D1–V-D10). V1 publishes the 
 | LV3 | Live results page (poller, Live toggle, new-responses badge, layouts) | LV2 | §8 LV3 | todo |
 | LV4 | Presentation mode live (batched, suppressed by default) | LV3, V6 | §8 LV4 + lead decision 1 | todo |
 | F4 | Flaky: toolbox.spec "keyboard: arrows through the types, Shift+Enter chooses the page and position" (expected decimal, got text; ~1 in 24) | B16, B19 | Root-cause (likely Shift+Enter acting before the arrow-key selection settles, or the last-used type winning), fix in app or test without retries, 30 repeats green | todo |
+| RT2 | Rich text: model end to end (spec, validation on write, rendering, traces unchanged) | RT1 | `planning/rich-text.md` RT2 + lead decisions | todo |
+| RT3 | Rich text: the editor (Tiptap/ProseMirror, toolbar, pipe chips, paste) | RT2 | RT3 | todo |
+| RT4 | Rich text: exports (XLSForm Markdown with escaping, LSS HTML) | RT2 | RT4 | todo |
+| RT5 | Rich text: choice and row editors | RT3 | RT5 | todo |
+| RT6 | Rich text: translations pane | RT3 | RT6 | todo |
 

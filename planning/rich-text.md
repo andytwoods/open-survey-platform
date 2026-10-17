@@ -405,3 +405,15 @@ Decisions proposed (to be confirmed by the owner):
    export name) or becomes inline rich?
 7. **Build order:** RT2 → RT3 → (RT4 ∥ RT5) → RT6 as proposed, or exports (RT4) straight
    after RT2 so the model's losses are visible before the editor lands?
+
+## Lead decisions (17 Oct 2026)
+
+1. **Underline: dropped.** On the web it reads as a link, and accessibility guidance advises against it. Emphasis is bold or italic.
+2. **Headings: not in answerable question stems** (a stem is a label). Headings 1–3 only in notes, consent, endings and closed/not-open messages.
+3. **Links open in a new tab** (`target="_blank" rel="noopener noreferrer"`), with a visually hidden "(opens in a new tab)" so participants never lose their place in the survey.
+4. **Length limits:** 20,000 characters for notes, consent, endings and messages; 2,000 for question stems and help; 500 for choice labels and matrix row/column labels.
+5. **XLSForm escaping of literal `*`, `_`, `#` in existing plain text: yes** (it makes the export correct). Record it as a behaviour change in the devlog and the export capability notes.
+6. **`metadata.title` stays plain text.**
+7. **Build order as proposed:** RT2 (model end to end) → RT3 (editor) → RT4 (exports) in parallel with RT5 (choice/row editors) → RT6 (translations).
+Also: the "sanitised at save" promise in existing code comments must become true in RT2 (server-side validation of the rich tree on every write), or the comments removed.
+
