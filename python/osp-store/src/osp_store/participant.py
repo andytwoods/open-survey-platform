@@ -116,9 +116,14 @@ class ConsentRecord:
     consented_at: datetime | None
 
 
+# How often a stale write is read and judged again when a concurrent write beat its
+# fast-forward (R9-1). Each attempt means another save landed meanwhile.
+_JUDGE_ATTEMPTS = 3
+
+
 @dataclass(frozen=True, slots=True)
 class SnapshotWrite:
-    status: Literal["ok", "replay", "stale", "submitted", "end-only"]
+    status: Literal["ok", "replay", "superseded", "stale", "submitted", "end-only"]
     revision: int
     snapshot: Any = None  # the server copy, for "stale"
     conflict_id: str | None = None
@@ -636,13 +641,21 @@ class ParticipantStore:
         return n == 1
 
     def write_snapshot(
-        self, ctx: TenantContext, session_id: str, base_revision: int, snapshot: object
+        self,
+        ctx: TenantContext,
+        session_id: str,
+        base_revision: int,
+        snapshot: object,
+        judge: Callable[[object, int], str | None] | None = None,
     ) -> SnapshotWrite:
         """Conditional write: accepted only if ``base_revision`` is the current revision.
 
         A retry of the last accepted write (same content, base = current - 1) is a
-        ``replay``. Any other stale write keeps the server copy and stores the losing
-        snapshot in ``session_conflicts`` (decision R-2).
+        ``replay``. Otherwise ``judge(server_snapshot, server_revision)``, if given, may
+        settle a stale write inside this transaction: ``"superseded"`` (nothing written,
+        not a conflict) or ``"fast-forward"`` (written on the current revision; the caller
+        vouches that it overwrites nothing, decision R9-1). Any other stale write keeps
+        the server copy and stores the losing snapshot in ``session_conflicts`` (R-2).
         """
         ctx = require_ctx(ctx)
         sid = _id(session_id)
@@ -651,34 +664,52 @@ class ParticipantStore:
         body = _json(snapshot, "snapshot")
         ps = t.participant_sessions.c
         now = self._s._now()
-        with self._s._tx() as conn:
+
+        def write_on(conn: Connection, revision: int) -> bool:
+            """Write ``body`` if the session is still at ``revision``."""
             n = conn.execute(
                 update(t.participant_sessions)
                 .where(
                     self._open(ctx, sid)
                     & (ps.save_mode == "every-page")
-                    & (ps.revision == base_revision)
+                    & (ps.revision == revision)
                 )
                 .values(revision=ps.revision + 1, last_active_at=now)
             ).rowcount
-            if n == 1:
-                self._reacquire(conn, ctx, sid)
-                blob, kid = self._s._enc(body, "sessions", "instance", sid)
-                conn.execute(
-                    update(t.sessions)
-                    .where(self._s._session_where(ctx, sid))
-                    .values(instance_ct=blob, instance_key_id=kid, updated_at=now)
-                )
+            if n != 1:
+                return False
+            self._reacquire(conn, ctx, sid)
+            blob, kid = self._s._enc(body, "sessions", "instance", sid)
+            conn.execute(
+                update(t.sessions)
+                .where(self._s._session_where(ctx, sid))
+                .values(instance_ct=blob, instance_key_id=kid, updated_at=now)
+            )
+            return True
+
+        with self._s._tx() as conn:
+            if write_on(conn, base_revision):
                 return SnapshotWrite("ok", base_revision + 1)
-            cur = self._get(conn, ctx, sid)  # NotFound for another tenant's session
-            if cur.submitted_at is not None:
-                return SnapshotWrite("submitted", cur.revision)
-            if cur.save_mode != "every-page":
-                return SnapshotWrite("end-only", cur.revision)
-            if base_revision == cur.revision - 1 and canonical_json(body) == canonical_json(
-                cur.snapshot
-            ):
-                return SnapshotWrite("replay", cur.revision)
+            # A fast-forward writes on the revision just read. A concurrent writer can move
+            # it on in between (no row lock on Postgres' read committed): read and judge
+            # again rather than call a safe save a conflict.
+            for _ in range(_JUDGE_ATTEMPTS):
+                cur = self._get(conn, ctx, sid)  # NotFound for another tenant's session
+                if cur.submitted_at is not None:
+                    return SnapshotWrite("submitted", cur.revision)
+                if cur.save_mode != "every-page":
+                    return SnapshotWrite("end-only", cur.revision)
+                if base_revision == cur.revision - 1 and canonical_json(body) == canonical_json(
+                    cur.snapshot
+                ):
+                    return SnapshotWrite("replay", cur.revision)
+                verdict = judge(cur.snapshot, cur.revision) if judge is not None else None
+                if verdict == "superseded":
+                    return SnapshotWrite("superseded", cur.revision)
+                if verdict != "fast-forward":
+                    break
+                if write_on(conn, cur.revision):
+                    return SnapshotWrite("ok", cur.revision + 1)
             cid = str(uuid.uuid4())
             blob, kid = self._s._enc(body, "session_conflicts", "snapshot", cid)
             conn.execute(
