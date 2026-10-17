@@ -24,8 +24,9 @@ KEY_ID, SECRET = OSP_IDENTITY_KEYS.split(":", 1)
 
 PREFIX = "/osp/api/"  # where the host mounts the API; osp-api itself serves /api/
 SAFE = {"GET", "HEAD", "OPTIONS"}
-# An allowlist: X-OSP-*, cookies, Authorization and Origin never reach osp-api.
-REQUEST_HEADERS = ("content-type", "accept")
+# An allowlist: X-OSP-*, cookies and Authorization never reach osp-api. Origin and
+# Sec-Fetch-Site are forwarded unchanged, so osp-api's own Origin check (D4, D14) runs too.
+REQUEST_HEADERS = ("content-type", "accept", "origin", "sec-fetch-site")
 RESPONSE_HEADERS = ("content-type", "content-disposition", "cache-control")
 
 
@@ -75,12 +76,15 @@ def proxy(
 # -- osp-api, as `osp-api serve` builds it ----------------------------------------------------
 
 
-def _osp_api(tmp_path, allowed_origins: tuple[str, ...] = ()) -> TestClient:
+PUBLIC = "https://uni.example"  # the host's public origin: OSP_PUBLIC_ORIGINS
+
+
+def _osp_api(tmp_path, public_origins: tuple[str, ...] = (PUBLIC,)) -> TestClient:
     engine = create_engine(f"sqlite:///{tmp_path / 'host.db'}")
     migrate(engine)
     services = build_services(Store(engine, Keyring({"k1": STORE_KEY}, active="k1")))
     identity = TrustedHeaders(parse_keyring(OSP_IDENTITY_KEYS))  # real clock, real nonces
-    app = create_app(builder=services, identity=identity, allowed_origins=allowed_origins)
+    app = create_app(builder=services, identity=identity, public_origins=public_origins)
     return TestClient(app, base_url="http://127.0.0.1:8000")
 
 
@@ -90,7 +94,8 @@ def upstream(tmp_path) -> TestClient:
 
 
 ADA = HostUser("u-17", "Ada Lovelace", {"psych-lab": "editor"})
-JSON = {"content-type": "application/json"}
+# What a browser on the host's page sends with a write.
+JSON = {"content-type": "application/json", "Origin": PUBLIC, "Sec-Fetch-Site": "same-origin"}
 
 
 def _json(resp: tuple[int, dict[str, str], bytes]):
@@ -150,16 +155,25 @@ def test_a_query_string_is_signed_and_forwarded(upstream):
     assert status == 200, content
 
 
-def test_forwarding_origin_keeps_osp_apis_check_with_allowed_origins(tmp_path):
-    """docs/hosting.md: forward Origin too and list the public origin in OSP_ALLOWED_ORIGINS."""
-    upstream = _osp_api(tmp_path, ("https://uni.example",))
-    forward = (*REQUEST_HEADERS, "origin")
+def test_osp_apis_origin_check_runs_behind_the_host(upstream):
+    """docs/hosting.md: the proxy forwards Origin and OSP_PUBLIC_ORIGINS names the host's
+    public origin. A cross-site write that got past the host's CSRF check is still refused."""
     body = b'{"title":"O"}'
-    ok = HostRequest(
-        "POST", "/osp/api/surveys", body, {**JSON, "Origin": "https://uni.example"}, ADA
-    )
-    assert proxy(upstream, ok, forward)[0] == 201
-    evil = HostRequest(
-        "POST", "/osp/api/surveys", body, {**JSON, "Origin": "https://x.example"}, ADA
-    )
-    assert proxy(upstream, evil, forward)[0] == 403
+    ok = HostRequest("POST", "/osp/api/surveys", body, JSON, ADA)
+    assert proxy(upstream, ok)[0] == 201
+    for evil in (
+        {**JSON, "Origin": "https://x.example"},
+        {**JSON, "Sec-Fetch-Site": "cross-site"},
+    ):
+        req = HostRequest("POST", "/osp/api/surveys", body, evil, ADA)
+        status, _, content = proxy(upstream, req)
+        assert status == 403, content
+    listed = _json(proxy(upstream, HostRequest("GET", "/osp/api/surveys", user=ADA)))
+    assert [s["title"] for s in listed] == ["O"]
+
+
+def test_without_public_origins_the_forwarded_origin_is_refused(tmp_path):
+    """osp-api sees its own address as http://127.0.0.1:8000, not the public origin."""
+    upstream = _osp_api(tmp_path, public_origins=())
+    body = b'{"title":"O"}'
+    assert proxy(upstream, HostRequest("POST", "/osp/api/surveys", body, JSON, ADA))[0] == 403

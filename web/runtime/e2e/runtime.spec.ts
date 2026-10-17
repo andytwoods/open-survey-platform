@@ -321,3 +321,25 @@ test.describe('German browser (de-DE), English-only survey', () => {
 		expect(await page.locator('main').getAttribute('lang')).toBe('en');
 	});
 });
+
+test('behind a host prefix: data-api-base sends every call under it (D15)', async ({ page, request }) => {
+	const outside: string[] = [];
+	page.on('request', (r) => {
+		const path = new URL(r.url()).pathname;
+		if (path.startsWith('/api/')) outside.push(path);
+	});
+	await page.goto(`/hosted/?s=${encodeURIComponent(await slugOf(page, 'flow'))}`);
+	await onPage(page, 1);
+	const sid = await sessionId(page);
+	for (let i = 0; i < flowPages.length; i++) {
+		await onPage(page, i + 1);
+		await flowPages[i]!(page);
+		await next(page);
+	}
+	await thanks(page);
+	await expectStoredResponse(request, sid, FLOW_EXPECTED);
+	expect(outside).toEqual([]);
+	const mine = await requestsFor(request, sid);
+	expect(mine.length).toBeGreaterThan(0);
+	expect(mine.every((x) => x.path.startsWith('/osp/api/'))).toBe(true);
+});

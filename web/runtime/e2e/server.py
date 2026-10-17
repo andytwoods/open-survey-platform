@@ -17,6 +17,10 @@ It serves ``osp_api.app.create_app`` (the real participant API under ``/api``), 
 app (``web/runtime/dist``) at ``/s/{slug}`` and ``/r/*``, and test-only routes under
 ``/__test``: the name → slug map, what the server stored for a session (decrypted), and
 which participant requests it received.
+
+``/hosted/?s={slug}`` is the same page as a host would serve it with the API under another
+prefix (D15): ``data-api-base="/osp/api"`` on the mount, and ``/osp/api/*`` forwarded to
+osp-api's ``/api/*`` (a path rewrite standing in for the host's proxy).
 """
 
 from __future__ import annotations
@@ -28,7 +32,7 @@ from pathlib import Path
 from typing import Any
 
 from fastapi import FastAPI, Request
-from fastapi.responses import FileResponse
+from fastapi.responses import FileResponse, HTMLResponse
 from fastapi.staticfiles import StaticFiles
 from osp_api.app import create_app
 from osp_app import build_services
@@ -124,8 +128,9 @@ def build(db: Path) -> FastAPI:
 
     @app.middleware("http")
     async def log_requests(request: Request, call_next: Any) -> Any:
+        path = request.scope.get("osp_public_path", request.url.path)
         if request.url.path.startswith("/api/"):
-            requests.append({"method": request.method, "path": request.url.path})
+            requests.append({"method": request.method, "path": path})
         return await call_next(request)
 
     def tctx(sid: str) -> TenantContext:
@@ -170,8 +175,32 @@ def build(db: Path) -> FastAPI:
     def page(slug: str) -> FileResponse:
         return FileResponse(DIST / "index.html", headers={"Cache-Control": "no-store"})
 
+    @app.get("/hosted/")
+    def hosted_page() -> HTMLResponse:
+        html = (DIST / "index.html").read_text(encoding="utf-8")
+        html = html.replace('<div id="app">', '<div id="app" data-api-base="/osp/api">', 1)
+        return HTMLResponse(html, headers={"Cache-Control": "no-store"})
+
     app.mount("/r", StaticFiles(directory=DIST), name="runtime")
     return app
+
+
+class HostPrefix:
+    """The host's proxy, in miniature: ``/osp/api/*`` reaches osp-api as ``/api/*``."""
+
+    def __init__(self, app: Any) -> None:
+        self.app = app
+
+    async def __call__(self, scope: Any, receive: Any, send: Any) -> None:
+        if scope["type"] == "http" and scope["path"].startswith("/osp/api/"):
+            path = "/api/" + scope["path"].removeprefix("/osp/api/")
+            scope = {
+                **scope,
+                "path": path,
+                "raw_path": path.encode(),
+                "osp_public_path": scope["path"],
+            }
+        await self.app(scope, receive, send)
 
 
 def main() -> None:
@@ -181,7 +210,7 @@ def main() -> None:
     ap.add_argument("--port", type=int, default=4391)
     args = ap.parse_args()
     with tempfile.TemporaryDirectory(prefix="osp-r3-") as tmp:
-        app = build(Path(tmp) / "e2e.db")
+        app = HostPrefix(build(Path(tmp) / "e2e.db"))
         uvicorn.run(app, host="127.0.0.1", port=args.port, log_level="warning")
 
 

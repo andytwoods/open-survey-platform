@@ -7,8 +7,9 @@ and every route checks the resource's lab against the actor's roles as before.
 
 CSRF (D4) is the host's job before it signs or calls in. As defence in depth, every unsafe
 request (POST/PUT/PATCH/DELETE) must not be cross-origin (``Origin`` /
-``Sec-Fetch-Site``; ``OSP_ALLOWED_ORIGINS`` adds exact origins), and one with a body must
-be ``application/json``.
+``Sec-Fetch-Site``; ``OSP_PUBLIC_ORIGINS`` names the host's public origins, which count as
+same-site without enabling CORS, and ``OSP_ALLOWED_ORIGINS`` the cross-origin CORS opt-in;
+D14), and one with a body must be ``application/json``.
 
 Participant routes (``participant.py``) use bearer tokens and are not affected.
 """
@@ -133,14 +134,22 @@ Services = Annotated[AppServices, Depends(get_services)]
 
 
 def _same_origin(request: Request) -> bool:
-    if request.headers.get("sec-fetch-site", "").lower() == "cross-site":
-        return False
+    """D4/D14. ``OSP_ALLOWED_ORIGINS`` (the CORS opt-in) are accepted as they are, even
+    cross-site. Otherwise the ``Origin`` must be this server's own address (as the request
+    says it: scheme + ``Host``) or one of ``OSP_PUBLIC_ORIGINS`` (the host's public
+    origins, so a proxy may forward ``Origin`` unchanged), and ``Sec-Fetch-Site`` must not
+    say ``cross-site``. No ``Origin`` (a non-browser client, or a proxy that drops it):
+    only ``Sec-Fetch-Site`` is checked."""
+    site = request.headers.get("sec-fetch-site", "").lower()
     origin = request.headers.get("origin")
-    if origin is None:
-        return True  # non-browser client, or a same-origin GET-style request
-    allowed: set[str] = set(getattr(request.app.state, "allowed_origins", ()) or ())
-    allowed.add(f"{request.url.scheme}://{request.headers.get('host', request.url.netloc)}")
-    return origin in allowed
+    if origin is not None:
+        if origin in (getattr(request.app.state, "allowed_origins", ()) or ()):
+            return True
+        same: set[str] = set(getattr(request.app.state, "public_origins", ()) or ())
+        same.add(f"{request.url.scheme}://{request.headers.get('host', request.url.netloc)}")
+        if origin not in same:
+            return False
+    return site != "cross-site"
 
 
 def check_origin(request: Request) -> None:

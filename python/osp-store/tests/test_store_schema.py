@@ -31,6 +31,7 @@ EXPECTED_TABLES = {
     "response_records",
     # host-owned identity (plan P, migration 0007 dropped users, user_mfa, auth_sessions)
     "principals",
+    "identity_nonces",  # shared replay ledger (D16, migration 0008)
 }
 
 # Anything that would let us store where a participant connected from or with what.

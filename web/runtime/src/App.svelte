@@ -2,6 +2,7 @@
 	import { announcer, resolveMode, themeDataAttributes, themeToCssVars, THEME_PRESETS, type Theme } from '@osp/ui-components';
 	import { onMount, tick } from 'svelte';
 	import { httpApi } from './lib/api';
+	import { resolveApiBase } from './lib/api-base';
 	import ErrorSummary from './lib/ErrorSummary.svelte';
 	import { browserHooks } from './lib/hooks';
 	import { keyboard } from './lib/keyboard.svelte';
@@ -183,6 +184,11 @@
 		return { resumeToken, urlParams: Object.fromEntries(params.filter(([k]) => k !== 's')) };
 	}
 
+	/** The host's API prefix (D15), from `<div id="app" data-api-base="…">`. */
+	function apiBaseAttr(): string | null {
+		return document.getElementById('app')?.getAttribute('data-api-base') ?? null;
+	}
+
 	function device(): Device {
 		if (window.matchMedia?.('(max-width: 599px)').matches) return 'phone';
 		if (window.matchMedia?.('(max-width: 1023px)').matches) return 'tablet';
@@ -197,10 +203,16 @@
 			bootError = new BootError('not-found', 'This survey link is not valid.');
 			return;
 		}
+		const apiBase = preview ? { base: '' } : resolveApiBase(apiBaseAttr(), location.origin);
+		if ('error' in apiBase) {
+			console.warn(`[osp-runtime] ${apiBase.error}`);
+			bootError = new BootError('invalid', 'This survey page is set up wrongly.');
+			return;
+		}
 		const store = preview ? null : ((await openIndexedDb()) ?? new MemoryStore());
 		const log = (msg: string, detail?: unknown) => console.warn(`[osp-runtime] ${msg}`, detail ?? '');
 		const env: Env = preview?.env ?? {
-			api: httpApi(''),
+			api: httpApi(apiBase.base),
 			store: store!,
 			backup: localStorageBackup(),
 			pointer: sessionPointer(),

@@ -5,6 +5,7 @@
  */
 import type { components } from '@osp/api-client';
 import type { ResponseRecord, Snapshot } from '@osp/engine';
+import { apiUrl, DEFAULT_API_BASE } from './api-base';
 
 type S = components['schemas'];
 export type StartResponse = S['StartResponse'];
@@ -57,7 +58,11 @@ export interface Api {
 const KEEPALIVE_LIMIT = 60_000;
 const TIMEOUT_MS = 20_000;
 
-export function httpApi(base = '', fetchImpl: typeof fetch = (...a) => fetch(...a)): Api {
+/**
+ * `base` is the API prefix that replaces `/api` (D15: `data-api-base`, default `/api`).
+ * Server-given URLs under `/api/` (the plan URL) are mapped onto it too.
+ */
+export function httpApi(base = DEFAULT_API_BASE, fetchImpl: typeof fetch = (...a) => fetch(...a)): Api {
 	async function call<T>(
 		method: string,
 		path: string,
@@ -73,7 +78,7 @@ export function httpApi(base = '', fetchImpl: typeof fetch = (...a) => fetch(...
 		const keepalive = !!opts.keepalive && (body?.length ?? 0) < KEEPALIVE_LIMIT;
 		let res: Response;
 		try {
-			res = await fetchImpl(base + path, {
+			res = await fetchImpl(apiUrl(base, path), {
 				method,
 				headers,
 				body,

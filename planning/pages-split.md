@@ -166,6 +166,53 @@ All three reviewers: Vite MPA, one package, remove our accounts. Folded in:
 - **D12 Dev.** The Dev provider only starts with `OSP_ENV=dev` and a 127.0.0.1 bind;
   otherwise osp-api refuses to start.
 
+## Decisions (deployment, P5, 17 Oct 2026)
+
+Four gaps found while writing `docs/hosting.md` (P4). These override D2's "in-memory, one
+process" nonce cache and refine D4.
+
+- **D13 Participant address behind a proxy.** `OSP_TRUSTED_PROXIES` (comma-separated IPs
+  or CIDRs, default empty). Only when the direct peer is in that list does osp-api read
+  `X-Forwarded-For` (all header lines, in order), walking from the right past trusted hops
+  and taking the first untrusted one; the client-written left part is never used, and a
+  malformed hop stops the walk at the last address a trusted proxy vouched for (fail to
+  the shared, not the spoofed, key). Chains are cut at 32 hops. IPv4-mapped IPv6 is treated
+  as IPv4. The rate-limit key is the IPv4 address or the IPv6 **/64** (a host picks any
+  address in its /64, so per-address keys limit nothing). Still memory-only, never stored
+  or logged; uvicorn's `proxy_headers` stays off, so nothing else reads forwarded headers.
+  Code: `osp_api/client_address.py`.
+- **D14 Origin check behind a proxy.** Two settings, two meanings. `OSP_PUBLIC_ORIGINS`:
+  the host's public origin(s), accepted by the unsafe-request Origin check as same-site;
+  **no CORS**. `OSP_ALLOWED_ORIGINS`: the cross-origin CORS opt-in (D11), also accepted, and
+  the only origins that pass with `Sec-Fetch-Site: cross-site` (before, a CORS-allowed
+  origin on another site was refused by the Sec-Fetch-Site check). Otherwise the `Origin`
+  must be osp-api's own scheme+Host or a public origin, and `Sec-Fetch-Site` not
+  `cross-site`; `Origin: null` is refused; no `Origin` checks `Sec-Fetch-Site` only. Unset:
+  as before. The documented proxy forwards `Origin` and `Sec-Fetch-Site`, so the check is
+  live behind a host. In-process mounts behind TLS termination pass `public_origins=` to
+  `create_app` instead of trusting a forwarded scheme. Both lists are exact origins (no
+  wildcard, no path), checked at start-up and in `create_app`.
+- **D15 Participant API prefix.** The participant app reads `data-api-base` on its mount
+  (`<div id="app" data-api-base="/osp/api">`), default `/api`. A data attribute rather than
+  a config tag: the host serves one static `index.html` for every `/s/{slug}` and needs one
+  attribute edit, with no JSON to escape. Same-origin only (a path, or a URL on the page's
+  origin; no query, fragment or credentials; max 512 chars); there is no cross-origin
+  allowlist because the participant CSP is `connect-src 'self'` and participants never need
+  one. A bad value is a visible boot error, never a silent fallback. Server-returned URLs
+  under `/api/` (`planUrl`) are mapped onto the prefix by the client, so the server needs
+  no knowledge of the host's prefix. `make dev` and the harness keep the default.
+- **D16 Shared nonce store.** `OSP_NONCE_STORE=memory|database`. `database` keeps each
+  nonce in `identity_nonces` (migration 0008: nonce PK, `expires_at` indexed) for 120 s:
+  one transaction deletes an expired row for the same nonce, then `INSERT ... ON CONFLICT
+  DO NOTHING` (SQLite and Postgres), so exactly one of concurrent claims wins; expired rows
+  are purged at most once a minute per worker. A database error refuses the request (fail
+  closed). Default: **`database` with `OSP_ENV=production`, `memory` in dev**. Production
+  always has a real database (it is required) and may run several workers, and a builder
+  request costs one extra small write, which is negligible for researcher traffic; dev is
+  one process on SQLite, and tests construct `TrustedHeaders` directly with an in-memory
+  cache. `memory` stays available for single-process deployments. Code:
+  `osp_store/nonces.py` (`NonceLedger`), `osp_api/identity.py` (`DatabaseNonces`).
+
 ## Review log
 - GPT: approve with changes (canonical signing, replay, key rotation; audit identity;
   config injection; preview isolation; 401 loops; migration care).
