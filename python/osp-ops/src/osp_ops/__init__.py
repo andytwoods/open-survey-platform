@@ -15,6 +15,7 @@ from . import (  # noqa: F401
     consent_ops,
     custom_property_ops,
     duplicate_ops,
+    ending_ops,
     flow_ops,
     hooks_ops,
     matrix_row_ops,

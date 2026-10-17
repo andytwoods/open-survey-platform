@@ -19,6 +19,10 @@ The plan (`contract/runtime-plan.schema.json`, TS types in `web/engine/src/plan.
   HTML-escapes the filled values;
 - carries the optional consent page (`consent`, semantics.md §11) with its version, the
   checksum of its compiled texts;
+- carries the survey's endings (`endings`, end-of-survey plan §4.1): per outcome its title
+  and body as segments (piping as in labels), `status` and `summary`, inside the checksum.
+  Without endings the plan has no `endings` key, so existing plans and checksums are
+  unchanged;
 - records `planVersion`, `engineVersion` (the engine API major the plan targets) and a
   `checksum` (SHA-256 of the canonical JSON of the plan without `checksum`);
 - optionally carries the hook manifest (runtime-design.md §7a; `HookManifest` in
@@ -463,6 +467,16 @@ class _Compiler:
                 "declineOutcome": c.declineOutcome,
                 "countDeclines": c.countDeclines,
             }
+        if s.settings.endings:
+            endings: dict[str, Json] = {}
+            for outcome, e in sorted(s.settings.endings.items()):
+                ending: dict[str, Json] = {"status": e.status, "summary": e.summary}
+                if e.title is not None:
+                    ending["title"] = self.text(e.title)
+                if e.body is not None:
+                    ending["body"] = self.text(e.body)
+                endings[outcome] = ending
+            plan["endings"] = endings  # before the checksum, so the endings are covered
         if hooks is None and s.hooks is not None:
             hooks = hooks_json(s.hooks)  # the survey's own manifest (osp-survey `hooks`)
         if hooks is not None:

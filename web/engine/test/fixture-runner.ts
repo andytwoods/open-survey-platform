@@ -19,6 +19,7 @@ import {
 	snapshot,
 	start,
 	toHtml,
+	toPlain,
 	tryAnswer,
 	view,
 	isState,
@@ -142,7 +143,24 @@ export function trace(state: State, index: number, device = 'A', notice: string 
 		effect: v.status === 'pending' && v.effect?.kind === 'quota' ? { kind: 'quota', nodeId: v.effect.nodeId } : null,
 		device,
 		builtins: v.status === 'ended' ? null : { trial: v.trial, position: v.position },
+		ending: endingOf(v.end),
 		notice
+	};
+}
+
+/**
+ * The ending screen (FORMAT.md §3 `ending`, end-of-survey plan §4.1) as plain text: title and
+ * body from the outcome's ending (null: the app's default), the end node's own message, and
+ * the status line. Null while the session runs.
+ */
+export function endingOf(end: ReturnType<typeof view>['end']) {
+	if (!end) return null;
+	const text = (t: Parameters<typeof toPlain>[0]) => (t ? toPlain(t) : null);
+	return {
+		title: text(end.ending?.title ?? null),
+		message: text(end.message),
+		body: text(end.ending?.body ?? null),
+		status: end.status
 	};
 }
 

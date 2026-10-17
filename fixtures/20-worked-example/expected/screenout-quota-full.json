@@ -170,7 +170,13 @@
         "framing": "gain",
         "incentive": "£5 voucher"
       },
-      "end": "quota_full"
+      "end": "quota_full",
+      "ending": {
+        "title": "Thank you for your interest",
+        "message": null,
+        "body": "The group for people aged 40+ is already full, so nothing more is needed from you.",
+        "status": "recorded"
+      }
     }
   ],
   "invariants": [],

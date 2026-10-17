@@ -2,6 +2,12 @@ info	Survey.id	/id
 loss	Survey.version	/version
 loss	Metadata.license	/metadata/license
 loss	Metadata.ddi	/metadata/ddi
+warning	Settings.endings	/settings/endings
+info	Ending.title	/settings/endings/complete/title
+info	Ending.body	/settings/endings/complete/body
+info	Ending.title	/settings/endings/quota_full/title
+info	Ending.body	/settings/endings/quota_full/body
+info	Ending.body	/settings/endings/declined/body
 info	Survey.choiceLists	/choiceLists
 info	EmbeddedVariable.kind	/variables/0
 warning	EmbeddedVariable.param	/variables/0/param

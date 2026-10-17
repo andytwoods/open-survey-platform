@@ -50,7 +50,9 @@ def test_every_valid_case_compiles(path: Path) -> None:
     assert plan["planVersion"] == PLAN_VERSION
     assert plan["engineVersion"] == ENGINE_VERSION
     assert plan["checksum"] == checksum(plan)
-    assert set(plan) - {"hooks"} == set(SCHEMA["required"])  # `hooks` only when the survey has them
+    assert set(plan) - {"hooks", "endings"} == set(
+        SCHEMA["required"]
+    )  # only when the survey has them
     # Ids resolve: every page item is an item, every block node's pages exist.
     for page in plan["pages"].values():
         for item in page["items"]:
@@ -237,3 +239,28 @@ def test_matrix_rows_and_slider_track() -> None:
     assert vas["minLabel"]["de"] == ["Gar nicht"]
     score = plan["items"]["score"]
     assert (score["valueType"], score["step"]) == ("integer", 1)
+
+
+def test_endings_are_compiled_into_the_plan_and_its_checksum() -> None:
+    """EN1 (end-of-survey plan §4.1): endings per outcome, texts as segments in every
+    language, inside the checksum; no `endings` key without them."""
+    data = _survey(CASES / "valid" / "v01_worked_example.json")
+    plain, _ = compile_survey(data)
+    assert plain is not None and "endings" not in plain
+    data = copy.deepcopy(data)
+    data.setdefault("settings", {})["endings"] = {
+        "complete": {"title": {"en": "Thanks", "de": "Danke"}, "body": "You are ${age}."},
+        "hook-failed": {"status": "none"},
+    }
+    plan, diags = compile_survey(data)
+    assert plan is not None, [d.code for d in diags]
+    assert plan["endings"] == {
+        "complete": {
+            "status": "auto",
+            "summary": "none",
+            "title": {"en": ["Thanks"], "de": ["Danke"]},
+            "body": {lang: ["You are ", {"pipe": "age"}, "."] for lang in plan["languages"]},
+        },
+        "hook-failed": {"status": "none", "summary": "none"},
+    }
+    assert plan["checksum"] == checksum(plan) != plain["checksum"]

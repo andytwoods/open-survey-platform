@@ -94,7 +94,13 @@
         "choices": {}
       },
       "conditions": {},
-      "end": "early_exit"
+      "end": "early_exit",
+      "ending": {
+        "title": null,
+        "message": "Sorry your breakfast was not better.",
+        "body": null,
+        "status": "recorded"
+      }
     }
   ],
   "invariants": [],

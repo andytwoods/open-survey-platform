@@ -1,8 +1,8 @@
 /** Participant-facing strings for consent and withdrawal (M5). English only, like messages.ts. */
 export const consentUi = {
 	nothingSaved: 'Nothing you enter is saved until you agree.',
-	declinedTitle: 'Thank you',
-	declined: 'You chose not to take part. Nothing about you has been recorded. You can close this page.',
+	/** Above the status line ("Nothing about you has been recorded…") when the decline's ending sets no body. */
+	declined: 'You chose not to take part.',
 	withdraw: 'Withdraw my answers',
 	withdrawHelp: 'If you no longer want to take part, your answers will be deleted. This cannot be undone.',
 	withdrawConfirm: 'Yes, delete my answers',

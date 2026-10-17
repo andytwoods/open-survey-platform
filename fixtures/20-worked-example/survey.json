@@ -16,7 +16,35 @@
     }
   },
   "settings": {
-    "backNavigation": true
+    "backNavigation": true,
+    "endings": {
+      "complete": {
+        "title": {
+          "en": "Thank you",
+          "de": "Vielen Dank"
+        },
+        "body": {
+          "en": "You told us you are ${age}. Your ${incentive} is on its way.",
+          "de": "Sie sind ${age} Jahre alt. Ihre Belohnung (${incentive}) ist unterwegs."
+        }
+      },
+      "quota_full": {
+        "title": {
+          "en": "Thank you for your interest",
+          "de": "Danke für Ihr Interesse"
+        },
+        "body": {
+          "en": "The group for people aged ${age_band} is already full, so nothing more is needed from you.",
+          "de": "Die Gruppe für Personen ab ${age_band} ist bereits voll. Mehr brauchen wir nicht von Ihnen."
+        }
+      },
+      "declined": {
+        "body": {
+          "en": "You chose not to take part in the study.",
+          "de": "Sie haben sich gegen die Teilnahme entschieden."
+        }
+      }
+    }
   },
   "choiceLists": [
     {

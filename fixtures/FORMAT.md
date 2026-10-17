@@ -136,6 +136,7 @@ So `steps` has one more entry than `actions`.
 | `orders` | `{ "blocks": {randomiserId: [...]}, "items": {blockId: [...]}, "choices": {questionId: [...]} }`; only shuffled nodes, only once reached |
 | `conditions` | Assigned conditions (from the server at session start, §7) |
 | `end` | End code, or `null` while running |
+| `ending` | Optional (EN1, fixtures 11 and 20). The ending screen once the session has ended, as plain text (pipes filled): `{ "title", "message", "body", "status" }`. `title` and `body` come from the outcome's `settings.endings` entry (`null`: the app's default, or none), `message` is the end node's own text (shown above the body), `status` is the status line the screen shows: `"recorded"`, `"not-recorded"` (a consent decline) or `null` (hidden by `status: "none"`) |
 | `labels` | Optional. Rendered label (session language, pipes filled, piped text HTML-escaped) per visible item |
 | `choiceLabels` | Optional. `[[value, label], …]` in display order |
 | `effect` | Optional (R6, fixture 24). The pending effect, `{ "kind": "quota", "nodeId": … }`, or `null` when none is waiting |

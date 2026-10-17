@@ -117,6 +117,25 @@ _row("Consent.declineLabel", "unsupported", "See Survey.consent.")
 _row("Consent.declineOutcome", "unsupported", "See Survey.consent.")
 _row("Consent.countDeclines", "unsupported", "See Survey.consent.")
 _row(
+    "Settings.endings",
+    "approximated",
+    "Endings per outcome (EN1): the `complete` ending is `surveyls_endtext`, which LimeSurvey "
+    "shows to everyone who finishes (it has no early end, so a screened-out participant sees "
+    "it too); a quota's outcome ending is that quota's message; any other outcome's ending is "
+    "a boilerplate (X) question at each End node with that outcome. The consent decline's "
+    "ending is not exported (nor is the consent page).",
+)
+_row("Ending.title", "lowered", "The first paragraph of the end text, quota message or question.")
+_row("Ending.body", "lowered", "The paragraph after the title; pipes become Expression Manager.")
+_row(
+    "Ending.status",
+    "approximated",
+    "LimeSurvey shows only the end text; our status line is not written.",
+)
+_row(
+    "Ending.summary", "unsupported", "Reserved (EN5); LimeSurvey's print-answers option is not set."
+)
+_row(
     "Survey.hooks",
     "unsupported",
     "Researcher hooks (custom code on key events, runtime-design.md §7a) run only in our "

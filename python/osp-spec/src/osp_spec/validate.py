@@ -237,6 +237,7 @@ class _Checker:
         self._quotas_static()
         self._flow()
         self._unplaced()
+        self._endings()  # after the flow walk: its pipes sit after every question
         self._computed_cycles()
         self._references()
         self._same_page_cycles()
@@ -1041,6 +1042,71 @@ def _consent(self: _Checker) -> None:
         self.emit("consent.outcome", "/consent/declineOutcome", "a decline cannot end 'complete'")
 
 
+# Outcomes the runtime itself ends with: running off the flow, and a failed hook (§7a).
+BUILTIN_OUTCOMES = frozenset({"complete", "hook-failed"})
+
+
+def reached_outcomes(survey: Survey) -> set[str]:
+    """Every outcome a session of `survey` can end with: end nodes, the `onFull` outcome of
+    each checked quota, the consent decline, and the built-ins (end-of-survey plan §4.1)."""
+    out = set(BUILTIN_OUTCOMES)
+    checked: set[str] = set()
+
+    def walk(nodes: list[FlowNode]) -> None:
+        for n in nodes:
+            if isinstance(n, EndNode):
+                out.add(n.outcome)
+            elif isinstance(n, QuotaCheckNode):
+                checked.add(n.quota)
+            elif isinstance(n, BranchNode):
+                walk(n.then)
+                walk(n.else_)
+            elif isinstance(n, RandomiserNode):
+                walk(n.children)
+
+    walk(survey.flow)
+    out.update(q.onFull.outcome for q in survey.quotas if q.id in checked)
+    if survey.consent is not None:
+        out.add(survey.consent.declineOutcome)
+    return out
+
+
+def _endings(self: _Checker) -> None:
+    """end-of-survey plan §4.1: `settings.endings` keyed by outcome. Piping is checked as at
+    the end of the flow (every question comes earlier; unreached ones pipe empty)."""
+    endings = self.s.settings.endings
+    if not endings:
+        return
+    reached = reached_outcomes(self.s)
+    declined = self.s.consent.declineOutcome if self.s.consent is not None else "declined"
+    for outcome, ending in endings.items():
+        ptr = pointer("settings", "endings", outcome)
+        if outcome not in reached:
+            self.emit(
+                "ending.unreachable",
+                ptr,
+                f"no end node, quota or consent decline ends with '{outcome}', "
+                "so this ending is never shown",
+            )
+        for key in ("title", "body"):
+            text = getattr(ending, key)
+            if text is not None:
+                self._text(text, ptr + "/" + key, _Site(ptr, [], self.counter, ()))
+        if ending.summary == "answers":
+            if outcome == declined:
+                self.emit(
+                    "ending.declined_summary",
+                    ptr + "/summary",
+                    "a decline records no response, so there are no answers to show",
+                )
+            else:
+                self.emit(
+                    "ending.summary_unsupported",
+                    ptr + "/summary",
+                    "showing the participant's answers is not available yet; it is ignored",
+                )
+
+
 def _hooks(self: _Checker) -> None:
     """runtime-design.md §7a: a handler reads only things that hold a value (answerable
     questions, matrix rows, variables; a matrix or note has none) and writes only hook
@@ -1063,6 +1129,7 @@ _Checker._bounds = _bounds  # type: ignore[attr-defined]
 _Checker._slider = _slider  # type: ignore[attr-defined]
 _Checker._settings = _settings  # type: ignore[attr-defined]
 _Checker._consent = _consent  # type: ignore[attr-defined]
+_Checker._endings = _endings  # type: ignore[attr-defined]
 
 
 def publish_diagnostics(data: Any) -> list[Diagnostic]:

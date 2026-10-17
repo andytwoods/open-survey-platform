@@ -104,6 +104,20 @@ Outcomes are plain identifiers such as `complete`, `declined` (the consent page'
 or `quota_full`. The export records each response's outcome in the `_end` column, so a
 "screened out" outcome is simply an End node with that name.
 
+### Endings
+
+What participants see when the session ends is set **per outcome**, in
+[Survey settings → Endings](settings.md#endings): a title and a text, so a screened-out or
+quota-full participant can get a different screen (and a different tone) from a completer.
+Every End node with the same outcome shares that ending; an End node's own **message** is
+shown above it. The End card says which ending its outcome uses and has **Edit ending…** to
+open it. An outcome without an ending shows the default screen: *Thank you* and the status
+line.
+
+The text can pipe answers and variables with `${id}`, as labels do: a piped value is
+filled in for this participant and an unanswered question pipes nothing. Piped values are
+always shown as text, never as HTML.
+
 ### Randomisation is reproducible
 
 Every session has a seed. Each random decision (a randomiser, a page's item order, a

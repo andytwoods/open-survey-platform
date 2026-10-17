@@ -62,7 +62,13 @@
         "choices": {}
       },
       "conditions": {},
-      "end": "ineligible"
+      "end": "ineligible",
+      "ending": {
+        "title": "Thank you for your interest",
+        "message": "You chose not to go on.",
+        "body": "This study needs people willing to answer two more questions, so it ends here.",
+        "status": null
+      }
     }
   ],
   "invariants": [],

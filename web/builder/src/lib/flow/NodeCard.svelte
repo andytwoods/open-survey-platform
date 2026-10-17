@@ -13,6 +13,8 @@
 	import { Button, IconButton, Tooltip } from '@osp/ui-components';
 	import type { Snippet } from 'svelte';
 	import { withTranslation } from '../properties/logic';
+	import { textFor } from '../cards/logic';
+	import { endingOf } from '../settings/endings';
 	import BufferedTextField from '../shell/BufferedTextField.svelte';
 	import { flowCtx } from './context';
 	import {
@@ -48,6 +50,11 @@
 	const level = $derived(Math.min(6, 3 + depth));
 	const ICONS = { block: Layers, branch: GitBranch, randomiser: Shuffle, assign: Users, quotaCheck: Gauge, end: CircleStop };
 	const Icon = $derived(ICONS[type]);
+
+	// EN1: every End node with this outcome shares the outcome's ending (Survey settings).
+	const outcome = $derived(typeof node.outcome === 'string' ? node.outcome : 'complete');
+	const ending = $derived(type === 'end' ? endingOf(ctx.survey, outcome) : null);
+	const endingTitle = $derived(ending ? textFor(ending.title, ctx.language) : '');
 
 	const send = (ops: Invocation[]) => ctx.store.submit(ops);
 	const set = (property: string, value: unknown) => send([setProp(id, property, value)]);
@@ -242,6 +249,14 @@
 					commit={(t) => set('message', withTranslation(node.message, ctx.language, ctx.language, t))}
 				/>
 			</div>
+			<p class="muted hint ending" data-testid="ending-line">
+				<span>
+					Ending for outcome <code>{outcome}</code>:
+					{#if ending}{endingTitle ? `“${endingTitle}”` : 'custom text'}{:else}the default screen{/if}.
+					The message above is shown before it.
+				</span>
+				<Button size="sm" onclick={() => ctx.openEnding(outcome)}>Edit ending…</Button>
+			</p>
 		{/if}
 	</div>
 
@@ -427,6 +442,12 @@
 	}
 	.muted {
 		color: var(--color-text-muted);
+	}
+	.ending {
+		display: flex;
+		flex-wrap: wrap;
+		align-items: center;
+		gap: var(--space-2);
 	}
 	.hint {
 		flex-basis: 100%;

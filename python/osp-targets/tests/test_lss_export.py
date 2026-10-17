@@ -465,6 +465,31 @@ def _eq(qid: str, value: str) -> dict:
             "right": {"kind": "text", "value": value}}  # fmt: skip
 
 
+def test_endings_fill_end_text_quota_message_and_end_groups() -> None:
+    """EN1: `complete` → surveyls_endtext, a quota's outcome → its quota message, another
+    outcome → a boilerplate question with the End node."""
+    data = _quota_survey(_eq("region", "north"))
+    data["flow"].append({"type": "branch", "id": "br", "if": _eq("region", "south"),
+                         "then": [{"type": "end", "id": "e_out", "outcome": "out"}]})  # fmt: skip
+    data["settings"] = {"endings": {
+        "complete": {"title": "Thanks", "body": "Region ${region}."},
+        "screenout": {"body": "Group full"},
+        "out": {"title": "Not for you"},
+    }}  # fmt: skip
+    _, diags, root = _export(data)
+    [ls] = _rows(root, "surveys_languagesettings")
+    assert ls["surveyls_endtext"] == "<p>Thanks</p><p>Region {region.shown}.</p>"
+    assert [m["quotals_message"] for m in _rows(root, "quota_languagesettings")] == [
+        "<p>Group full</p>"
+    ]
+    ending = _question(root, "ospendingeout")
+    assert ending["type"] == "X"
+    texts = {q["qid"]: q["question"] for q in _rows(root, "question_l10ns")}
+    assert texts[ending["qid"]] == "<p>Not for you</p>"
+    levels = {d.feature: d.severity for d in diags}
+    assert levels["Settings.endings"] == "warning" and levels["Ending.body"] == "info"
+
+
 def test_quota_maps_to_members() -> None:
     when = {"kind": "and", "args": [
         {"kind": "or", "args": [_eq("region", "north"), _eq("region", "south")]},

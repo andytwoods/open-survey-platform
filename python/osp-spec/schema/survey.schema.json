@@ -1351,6 +1351,54 @@
       "title": "EndNode",
       "type": "object"
     },
+    "Ending": {
+      "additionalProperties": false,
+      "description": "What the participant sees when the session ends with one outcome (end-of-survey plan\n§4.1, task EN1). `settings.endings` maps an outcome identifier (an end node's `outcome`,\na quota's `onFull.outcome`, the consent `declineOutcome`, the built-ins `complete` and\n`hook-failed`) to its ending, so the screen, the data and the exports agree.\n\n- `title`: the heading; None: the app's own translated \"Thank you\".\n- `body`: the text under it, with piping (`${id}`, variables, built-ins) as on pages\n  (semantics.md §8). Rendered as text, never as HTML. An end node's own `message` is\n  shown above it.\n- `status`: `auto` shows the app's own truthful line (\"Your answers have been sent.\" when\n  a response was recorded, \"Nothing was recorded.\" for a decline); `none` hides it for a\n  recorded response. Researcher text never replaces it; a decline always shows it.\n- `summary`: reserved for showing the participant's answers (task EN5); `none` today.",
+      "properties": {
+        "body": {
+          "anyOf": [
+            {
+              "$ref": "#/$defs/Text"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null
+        },
+        "status": {
+          "default": "auto",
+          "enum": [
+            "auto",
+            "none"
+          ],
+          "title": "Status",
+          "type": "string"
+        },
+        "summary": {
+          "default": "none",
+          "enum": [
+            "none",
+            "answers"
+          ],
+          "title": "Summary",
+          "type": "string"
+        },
+        "title": {
+          "anyOf": [
+            {
+              "$ref": "#/$defs/Text"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null
+        }
+      },
+      "title": "Ending",
+      "type": "object"
+    },
     "Expression": {
       "discriminator": {
         "mapping": {
@@ -3117,6 +3165,12 @@
       ],
       "type": "string"
     },
+    "OutcomeKey": {
+      "maxLength": 64,
+      "minLength": 1,
+      "pattern": "^(?:[A-Za-z_][A-Za-z0-9_]*|hook-failed)$",
+      "type": "string"
+    },
     "Page": {
       "additionalProperties": false,
       "description": "One screen. Validation runs on page submit (semantics.md §4).",
@@ -3456,6 +3510,16 @@
           "default": true,
           "title": "Backnavigation",
           "type": "boolean"
+        },
+        "endings": {
+          "additionalProperties": {
+            "$ref": "#/$defs/Ending"
+          },
+          "propertyNames": {
+            "$ref": "#/$defs/OutcomeKey"
+          },
+          "title": "Endings",
+          "type": "object"
         },
         "localCopy": {
           "default": "browser",

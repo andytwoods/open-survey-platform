@@ -24,6 +24,8 @@ export interface FlowCtx {
 	/** Drop the dragged node on the gap under the pointer, if any. */
 	drop(): void;
 	openCondition(id: string): void;
+	/** Open the ending of an outcome in Survey settings → Endings (EN1). */
+	openEnding(outcome: string): void;
 }
 
 const KEY = Symbol('osp-flow');

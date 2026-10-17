@@ -410,6 +410,28 @@ def test_set_consent_validates_and_removes() -> None:
     assert run("set_consent", res.survey, {"consent": None}).survey == base()
 
 
+def test_set_ending_sets_validates_and_removes() -> None:
+    res = run("set_ending", base(), {"outcome": "quota_full", "ending": {"body": "Full, ${age}"}})
+    assert res.ok, res.diagnostics
+    assert res.survey["settings"]["endings"] == {"quota_full": {"body": "Full, ${age}"}}
+    assert res.inverse is not None
+    assert run(res.inverse.op, res.survey, res.inverse.params).survey == base()
+    # Removing the last ending drops the map; removing a missing one changes nothing.
+    gone = run("set_ending", res.survey, {"outcome": "quota_full", "ending": None})
+    assert gone.ok and gone.survey == base()
+    assert run("set_ending", base(), {"outcome": "nope", "ending": None}).survey == base()
+    bad = run("set_ending", base(), {"outcome": "complete", "ending": {"status": "loud"}})
+    assert not bad.ok and codes(bad)[0] == "op.invalid_result"
+    assert bad.diagnostics[0].pointer == "/settings/endings/complete/status"
+    assert not run("set_ending", base(), {"outcome": "not ok", "ending": {}}).ok
+    # A pipe to an unknown id is kept, with the validator's error (blocks publishing).
+    dangling = run("set_ending", base(), {"outcome": "complete", "ending": {"body": "${zz}"}})
+    assert "ref.unknown" in codes(dangling)
+    # An outcome nothing reaches is allowed, with the validator's warning.
+    odd = run("set_ending", base(), {"outcome": "nowhere", "ending": {"body": "x"}})
+    assert odd.ok and "ending.unreachable" in codes(odd)
+
+
 # --- duplicate page / block (B20) -----------------------------------------------------
 
 

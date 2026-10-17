@@ -6,6 +6,7 @@
 	import { fetchPropertySchemas, propertySchemas, schemaFor } from '../properties/schemas.svelte';
 	import type { SurveyStore } from '../sync/survey-store.svelte';
 	import ConsentEditor from './ConsentEditor.svelte';
+	import EndingsEditor from './EndingsEditor.svelte';
 	import { LOCAL_COPIES, SAVE_MODES, localCopyOf, saveModeOf } from './explanations';
 	import HooksEditor from './HooksEditor.svelte';
 	import LanguagesField from './LanguagesField.svelte';
@@ -14,9 +15,9 @@
 
 	/**
 	 * Survey settings (task B12): saving, navigation and resume, retention, languages and
-	 * consent, researcher hooks. Fields the property schema describes are drawn by the
-	 * schema-driven property panel (B4); retention, languages, consent and hooks need their
-	 * own controls. Every change is an op through the survey store.
+	 * consent, endings per outcome (EN1), researcher hooks. Fields the property schema
+	 * describes are drawn by the schema-driven property panel (B4); retention, languages,
+	 * consent, endings and hooks need their own controls. Every change is an op through the survey store.
 	 */
 	let { store, onpreview }: { store: SurveyStore; onpreview?: () => void } = $props();
 
@@ -55,7 +56,8 @@
 				retentionError = 'Retention options could not be loaded.';
 			}
 		})();
-		// A publish problem links here with #retention (or #consent, #languages).
+		// A publish problem links here with #retention (or #consent, #languages, #endings); the
+		// flow's End card with #ending-<outcome>.
 		const target = location.hash.slice(1);
 		if (target)
 			void tick().then(() => {
@@ -73,7 +75,8 @@
 	<header>
 		<h2 id="settings-heading">Survey settings</h2>
 		<p class="lead">
-			How the survey saves, what participants can do, how long data is kept, consent, and researcher hooks.
+			How the survey saves, what participants can do, how long data is kept, consent, how it ends, and researcher
+			hooks.
 		</p>
 	</header>
 
@@ -138,6 +141,11 @@
 	<section class="card" aria-labelledby="h-consent" id="settings-consent" tabindex="-1">
 		<h3 id="h-consent">Consent</h3>
 		<ConsentEditor survey={store.survey} defaultLanguage={lang} submit={(ops) => store.submit(ops)} />
+	</section>
+
+	<section class="card" aria-labelledby="h-endings" id="settings-endings" tabindex="-1">
+		<h3 id="h-endings">Endings</h3>
+		<EndingsEditor survey={store.survey} defaultLanguage={lang} {diagnostics} submit={(ops) => store.submit(ops)} />
 	</section>
 
 	<section class="card" aria-labelledby="h-hooks" id="settings-hooks" tabindex="-1">

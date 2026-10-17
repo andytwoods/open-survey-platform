@@ -157,6 +157,9 @@ Deferred to `osp-survey/0.2` (decided, not modelled yet): dedicated `scores` (nu
 
 None open.
 
+### Endings per outcome (decided 17 Oct 2026, end-of-survey plan §4.1; built in EN1)
+`settings.endings` maps an outcome to the screen shown when a session ends with it (title, body with piping as in §8, status line mode). Every end node with that outcome shares it; an end node's own `message` is shown above the body. An outcome without an ending shows the app's defaults. The status line is the app's own and truthful: "sent" once a response is stored, "nothing recorded" after a consent decline (§11), and it can be hidden but never reworded; a decline always shows it. An ending for an outcome nothing reaches is a warning (`ending.unreachable`).
+
 ### Quota places and non-complete outcomes (decided 17 Oct 2026, end-of-survey plan §4.5)
 Quota places count completes only. A session that passed a `quotaCheck` and then ends with any non-complete outcome releases its place when it ends. A submitted complete response that is later withdrawn keeps its place (C-1).
 

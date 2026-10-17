@@ -13,6 +13,7 @@
 	import { flowCommands } from '../flow/commands';
 	import { requestAddBlock, requestAddNode } from '../flow/flow-ui.svelte';
 	import FlowView from '../flow/FlowView.svelte';
+	import { endingAnchor } from '../settings/endings';
 	import PublishDialog from '../publish/PublishDialog.svelte';
 	import type { PublishProblem } from '../publish/model';
 	import { settingsCommands } from '../settings/commands';
@@ -596,7 +597,7 @@
 		</main>
 	{:else if view === 'flow' && store}
 		<main id="pane-flow" class="flow" aria-labelledby="flow-heading">
-			<FlowView {store} />
+			<FlowView {store} onOpenEnding={(o) => void goto(routeOf('settings', endingAnchor(o)))} />
 		</main>
 	{:else}
 	<div class="panes">

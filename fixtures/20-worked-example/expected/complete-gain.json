@@ -280,7 +280,13 @@
         "framing": "gain",
         "incentive": "£5 voucher"
       },
-      "end": "complete"
+      "end": "complete",
+      "ending": {
+        "title": "Thank you",
+        "message": null,
+        "body": "You told us you are 30. Your £5 voucher is on its way.",
+        "status": "recorded"
+      }
     }
   ],
   "invariants": [

@@ -209,6 +209,12 @@ def text_sites(doc: Json) -> Iterator[tuple[Path, Json]]:
     for path, n in flow_nodes(doc.get("flow", []), ("flow",)):
         if n.get("type") == "end" and n.get("message") is not None:
             yield (*path, "message"), n["message"]
+    settings = doc.get("settings")
+    endings = settings.get("endings") if isinstance(settings, dict) else None
+    for outcome, ending in (endings or {}).items():  # EN1: endings pipe like pages do
+        for key in ("title", "body"):
+            if isinstance(ending, dict) and ending.get(key) is not None:
+                yield ("settings", "endings", outcome, key), ending[key]
 
 
 def strings_of(text: Json, path: Path) -> Iterator[tuple[Path, str]]:

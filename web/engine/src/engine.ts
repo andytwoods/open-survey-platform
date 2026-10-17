@@ -64,6 +64,7 @@ import {
 	type Ctx,
 	type Data,
 	type Effect,
+	type EndView,
 	type EngineEvent,
 	type HookAction,
 	type HookData,
@@ -1253,6 +1254,30 @@ export function toPlain(text: RenderedText | null): string {
 	return text ? text.map((p) => p.text).join('') : '';
 }
 
+/**
+ * The ending screen for an ended session (end-of-survey plan §4.1): the end node's message,
+ * the outcome's ending with its pipes filled (semantics.md §8), and the truthful status line.
+ */
+function endView(state: State, env: Env, endNode: FlowNode | undefined): EndView {
+	const { plan, data: d } = state;
+	const outcome = d.ended!.outcome;
+	const ending = plan.endings?.[outcome];
+	const declined = declinedConsent(state);
+	return {
+		outcome,
+		message: endNode?.type === 'end' && endNode.message ? render(plan, d, env, endNode.message) : null,
+		ending: ending
+			? {
+					title: ending.title ? render(plan, d, env, ending.title) : null,
+					body: ending.body ? render(plan, d, env, ending.body) : null,
+					summary: ending.summary
+				}
+			: null,
+		// A decline kept nothing, and the screen must say so whatever the ending sets.
+		status: declined ? 'not-recorded' : ending?.status === 'none' ? null : 'recorded'
+	};
+}
+
 function errorView(plan: Plan, d: Data, env: Env, id: Id, e: PageError) {
 	const item = plan.items[id];
 	if (e.kind === 'hook') return { ...e, message: [{ kind: 'value' as const, text: e.text }] }; // untrusted: escaped
@@ -1379,12 +1404,7 @@ export function view(state: State): PageView {
 		nav: d.ended ? null : { back: canGoBack(state), next: !d.pending },
 		focus: d.ended ? null : Object.keys(d.errors).length ? 'error-summary' : 'heading',
 		effect: d.pending?.effect ?? endEffect(d),
-		end: d.ended
-			? {
-					outcome: d.ended.outcome,
-					message: endNode?.type === 'end' && endNode.message ? render(plan, d, env, endNode.message) : null
-				}
-			: null,
+		end: d.ended ? endView(state, env, endNode) : null,
 		trial: d.history.length,
 		position: page ? position(plan, d, currentCursor(d)) : null
 	};

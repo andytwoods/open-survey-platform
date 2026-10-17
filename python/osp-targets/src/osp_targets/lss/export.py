@@ -296,6 +296,10 @@ def feature_uses(obj: object, ptr: str = "") -> Iterator[tuple[str, str, object]
     elif isinstance(obj, (list, tuple)):
         for i, item in enumerate(obj):
             yield from feature_uses(item, ptr + pointer(i))
+    elif isinstance(obj, dict):  # a map of models (`settings.endings`)
+        for k, item in obj.items():
+            if isinstance(item, BaseModel):
+                yield from feature_uses(item, ptr + pointer(str(k)))
 
 
 def _level(key: str) -> str | None:
@@ -776,11 +780,35 @@ class _Exporter:
 
     def _end(self, node: EndNode, alive: str, ptr: str) -> None:
         self.ends.append((alive, node.outcome))
-        if node.message is None or alive == FALSE:
+        if alive == FALSE:
             return
-        code = self._helper(f"ospend{node.id}", f"end message ({node.id})")
-        item = _Item(code=code, type="X", text=self._texts(node.message, ptr + "/message"))
-        self.groups.append(_Group(name=self._all_langs(node.id), relevance=alive, items=[item]))
+        items: list[_Item] = []
+        if node.message is not None:
+            code = self._helper(f"ospend{node.id}", f"end message ({node.id})")
+            items.append(
+                _Item(code=code, type="X", text=self._texts(node.message, ptr + "/message"))
+            )
+        # EN1: another outcome's ending goes with each End node that has it (LimeSurvey has
+        # one end text, which the `complete` ending fills).
+        ending = {} if node.outcome == "complete" else self._ending_texts(node.outcome)
+        if ending:
+            code = self._helper(f"ospending{node.id}", f"ending ({node.outcome})")
+            items.append(_Item(code=code, type="X", text=ending))
+        if items:
+            self.groups.append(_Group(name=self._all_langs(node.id), relevance=alive, items=items))
+
+    def _ending_texts(self, outcome: str) -> Texts:
+        """An outcome's ending (EN1) as one LimeSurvey text per language: the title, then the
+        body, each a paragraph. Empty when the outcome has no ending text."""
+        ending = self.s.settings.endings.get(outcome)
+        if ending is None:
+            return {}
+        parts: dict[str, list[str]] = {lang: [] for lang in self.langs}
+        for key in ("title", "body"):
+            ptr = pointer("settings", "endings", outcome, key)
+            for lang, t in self._texts(getattr(ending, key), ptr).items():
+                parts[lang].append(f"<p>{t}</p>")
+        return {lang: "".join(ps) for lang, ps in parts.items() if ps}
 
     def _outcome(self) -> None:
         if not any(o != "complete" for _c, o in self.ends):
@@ -1138,6 +1166,7 @@ class _Exporter:
         )
         titles = self._texts(self.s.metadata.title, "/metadata/title")
         descriptions = self._texts(self.s.metadata.description, "/metadata/description")
+        end_texts = self._ending_texts("complete")  # EN1: the `complete` ending
         for lang in self.langs:
             survey_l10ns.add(
                 surveyls_survey_id=sid,
@@ -1145,7 +1174,7 @@ class _Exporter:
                 surveyls_title=titles.get(lang, ""),
                 surveyls_description=descriptions.get(lang),
                 surveyls_welcometext=None,
-                surveyls_endtext=None,
+                surveyls_endtext=end_texts.get(lang),
                 surveyls_dateformat=1,
                 surveyls_numberformat=0,
             )
@@ -1215,7 +1244,8 @@ class _Exporter:
                     members.add(
                         id=member_id, sid=sid, qid=self.items[qid].qid, quota_id=quota_id, code=code
                     )
-            message = self._quota_message(qu.onFull.block)
+            # EN1: the quota outcome's ending is the quota message; else the onFull block.
+            message = self._ending_texts(qu.onFull.outcome) or self._quota_message(qu.onFull.block)
             for lang in self.langs:
                 l10ns.add(
                     quotals_id=len(l10ns.rows) + 1,

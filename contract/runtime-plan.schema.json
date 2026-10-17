@@ -80,6 +80,22 @@
         "countDeclines": { "type": "boolean" }
       }
     },
+    "endings": {
+      "description": "Optional. The ending screen per outcome (end-of-survey plan §4.1, osp-survey settings.endings): title and body as text segments (pipes filled by the engine, escaped by the renderer), the status line mode and the reserved summary flag. Absent when the survey sets no endings.",
+      "type": "object",
+      "propertyNames": { "pattern": "^(?:[A-Za-z_][A-Za-z0-9_]*|hook-failed)$" },
+      "additionalProperties": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": ["status", "summary"],
+        "properties": {
+          "title": { "$ref": "#/$defs/text" },
+          "body": { "$ref": "#/$defs/text" },
+          "status": { "enum": ["auto", "none"] },
+          "summary": { "enum": ["none", "answers"] }
+        }
+      }
+    },
     "theme": {
       "description": "Optional. The survey theme resolved at publish (survey theme, else the lab default, else the clean preset) and checked by the contrast guard. Full schema: web/ui-components/src/theme/generated/theme.schema.json (osp_spec.theme.Theme). runtime-design §6a.",
       "$ref": "#/$defs/theme"

@@ -9,6 +9,7 @@
 	import type { Session } from './session';
 	import { plain } from './view-map';
 	import { consentUi } from './consent-messages';
+	import EndScreen from './EndScreen.svelte';
 
 	let { session, view }: { session: Session; view: PageView } = $props();
 
@@ -47,8 +48,7 @@
 
 <main class="page" id="main" lang={view.language}>
 	{#if declined}
-		<h1 tabindex="-1" bind:this={heading} data-testid="declined">{consentUi.declinedTitle}</h1>
-		<p>{consentUi.declined}</p>
+		<EndScreen end={view.end} testid="declined" fallbackBody={consentUi.declined} bind:heading />
 	{:else}
 		<h1 tabindex="-1" bind:this={heading}>{plain(view.title)}</h1>
 		<div class="items consent" data-page={view.page} data-testid="consent">
