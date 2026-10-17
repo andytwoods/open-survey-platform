@@ -18,10 +18,36 @@ const AXE_TIMEOUT = 20_000;
 const SURVEY = { variables: [{ kind: 'assigned', id: 'arm', levels: ['a', 'b'] }] };
 const clone = <T,>(x: T): T => structuredClone(x);
 
+/**
+ * The stub's "server": its responses and watermark (task LV3). `arrive()` is one more
+ * response: the watermark moves, the count grows and Fruit? gains an Apple, so a refresh
+ * shows a changed card. Until it is called, every reply is the fixture as it is.
+ */
+function server() {
+	const s = { watermark: fixture.plain.watermark as string, responses: fixture.plain.responses as number, polls: 0, pollAfterMs: 1000 };
+	return {
+		...s,
+		arrive() {
+			this.responses += 1;
+			this.watermark = `wm${this.responses}`;
+		},
+		stamp(r: ResultsResponse): ResultsResponse {
+			r.watermark = this.watermark;
+			if (this.responses === fixture.plain.responses) return r;
+			r.responses = this.responses;
+			const fruit = r.cards.find((c) => c.question === 'fruit')!;
+			const apple = fruit.groups![0].cells.find((c) => c.key === 'apple')!;
+			apple.count += this.responses - fixture.plain.responses;
+			return r;
+		}
+	};
+}
+
 function stub(reply: (q: ResultsQuery) => ResultsResponse | Promise<Fetched<ResultsResponse>> = () => clone(fixture.plain) as unknown as ResultsResponse) {
 	const queries: ResultsQuery[] = [];
 	const texts: Record<string, unknown>[] = [];
 	const exports: Record<string, unknown>[] = [];
+	const srv = server();
 	const source: ResultsSource = {
 		async recordExport(body) {
 			exports.push(clone(body));
@@ -30,25 +56,31 @@ function stub(reply: (q: ResultsQuery) => ResultsResponse | Promise<Fetched<Resu
 		async query(body) {
 			queries.push(clone(body));
 			const r = await reply(body);
-			return 'ok' in r ? r : { ok: true, data: r };
+			return 'ok' in r ? r : { ok: true, data: srv.stamp(r) };
 		},
 		async text(_q, params) {
 			texts.push(clone(params));
 			const page = clone(fixture.text) as unknown as TextPage;
+			page.watermark = srv.watermark;
 			if (params.cursor) return { ok: true, data: { ...page, items: [{ ...page.items[0], responseId: 'r3', value: 'ok' }], nextCursor: null } };
 			return { ok: true, data: page };
+		},
+		async watermark() {
+			srv.polls++;
+			return { ok: true, data: { watermark: srv.watermark, responses: srv.responses, versionsUsed: [1], pollAfterMs: srv.pollAfterMs } };
 		}
 	};
-	return { source, queries, texts, exports };
+	return { source, queries, texts, exports, server: srv };
 }
 
-async function setup(opts: { source?: ResultsSource; published?: number } = {}) {
-	const s = opts.source ? { source: opts.source, queries: [], texts: [], exports: [] } : stub();
+async function setup(opts: { source?: ResultsSource; published?: number; minRefreshMs?: number } = {}) {
+	const s = opts.source ? { source: opts.source, queries: [], texts: [], exports: [], server: server() } : stub();
 	const t = render(ResultsView, {
 		surveyId: 's1',
 		survey: SURVEY,
 		publishedVersions: opts.published ?? 1,
-		source: s.source
+		source: s.source,
+		minRefreshMs: opts.minRefreshMs
 	});
 	if ((opts.published ?? 1) > 0 && !opts.source) await screen.findByRole('list', { name: 'Questions' });
 	return { t, ...s };
@@ -374,6 +406,107 @@ describe('ResultsView', () => {
 		expect(list.getAttribute('style')).toContain('color-scheme: dark');
 		await fireEvent.change(picker, { target: { value: 'app' } });
 		expect(list.getAttribute('style')).toBeNull();
+	});
+
+	it('Live (LV3): polls the watermark, refreshes by itself when idle as a live query, announces once, pulses the changed card, carries ?live=1', async () => {
+		history.replaceState(null, '', '/surveys/s1/results');
+		const s = stub();
+		await setup({ source: s.source, minRefreshMs: 0 });
+		await screen.findByRole('list', { name: 'Questions' });
+		vi.useFakeTimers({ toFake: ['setTimeout', 'clearTimeout', 'Date'] });
+		const toggle = screen.getByTestId('live-toggle');
+		expect(toggle.getAttribute('role')).toBe('switch');
+		expect(toggle.getAttribute('aria-checked')).toBe('false');
+		expect(screen.queryByTestId('live-status')).toBeNull();
+		await fireEvent.click(toggle);
+		expect(toggle.getAttribute('aria-checked')).toBe('true');
+		await tick();
+		expect(location.search).toBe('?live=1');
+		await vi.advanceTimersByTimeAsync(0);
+		expect(s.server.polls).toBe(1);
+		expect(screen.getByTestId('live-status').textContent).toBe('Checking every 1 s');
+		expect(s.queries).toHaveLength(1);
+
+		s.server.arrive();
+		await vi.advanceTimersByTimeAsync(1000);
+		await tick();
+		expect(s.server.polls).toBe(2);
+		expect(s.queries).toHaveLength(2);
+		expect(s.queries[1].live).toBe(true);
+		expect(screen.getByTestId('results-count').textContent).toContain('6 responses');
+		expect(screen.getByTestId('live-announce').textContent).toBe('Results updated: 6 responses.');
+		expect(screen.queryByTestId('live-badge')).toBeNull();
+		expect(cardOf('Fruit?').getAttribute('data-pulse')).toBe('true');
+		expect(cardOf('Age?').getAttribute('data-pulse')).toBeNull();
+		expect(screen.getByTestId('live-status').textContent).toMatch(/^Checking every 1 s · updated \d\d:\d\d$/);
+		await vi.advanceTimersByTimeAsync(2000);
+		expect(cardOf('Fruit?').getAttribute('data-pulse')).toBeNull();
+		expect(s.queries).toHaveLength(2); // nothing changed: nothing re-asked
+
+		await fireEvent.click(screen.getByTestId('live-toggle'));
+		await tick();
+		expect(location.search).toBe('');
+		await vi.advanceTimersByTimeAsync(5000);
+		expect(s.server.polls).toBe(4);
+		history.replaceState(null, '', '/');
+	});
+
+	it('Live (LV3): busy means "N new responses · Refresh" (a manual query); a text page never refreshes by itself', async () => {
+		const s = stub();
+		await setup({ source: s.source, minRefreshMs: 0 });
+		await screen.findByRole('list', { name: 'Questions' });
+		const why = cardOf('Why?');
+		await fireEvent.click(within(why).getByRole('button', { name: 'Show answers' }));
+		await within(why).findByText('Answers 1–2 of 3');
+		vi.useFakeTimers({ toFake: ['setTimeout', 'clearTimeout', 'Date'] });
+		await fireEvent.click(screen.getByTestId('live-toggle'));
+		await vi.advanceTimersByTimeAsync(0);
+		// Unapplied filter changes mean the researcher is working: badge, don't yank.
+		await fireEvent.change(screen.getByLabelText('Responses'), { target: { value: 'all' } });
+		s.server.arrive();
+		await vi.advanceTimersByTimeAsync(1000);
+		await tick();
+		expect(screen.getByTestId('live-badge').textContent).toBe('1 new response');
+		expect(screen.getByTestId('results-count').textContent).toContain('5 responses');
+		expect(s.queries).toHaveLength(1);
+		await vi.advanceTimersByTimeAsync(3000);
+		expect(s.queries).toHaveLength(1); // still working: still only the badge
+		expect(within(why).queryByTestId('text-stale')).toBeNull();
+
+		await fireEvent.click(screen.getByRole('button', { name: 'Refresh' }));
+		await vi.advanceTimersByTimeAsync(0);
+		await tick();
+		expect(s.queries).toHaveLength(2);
+		expect(s.queries[1].live).toBeUndefined(); // a click is a manual read (results.read)
+		expect(s.queries[1].status).toBe('complete'); // the unapplied draft stays a draft
+		expect(screen.getByTestId('results-count').textContent).toContain('6 responses');
+		expect(screen.queryByTestId('live-badge')).toBeNull();
+		expect(screen.getByText('Changes not applied yet.')).toBeTruthy();
+		// LV-D8: the text page kept its answers and offers a reload.
+		expect(within(why).getByText('Answers 1–2 of 3')).toBeTruthy();
+		expect(within(why).getByTestId('text-stale').textContent).toContain('New answers have arrived');
+		expect(s.texts).toHaveLength(1);
+		await fireEvent.click(within(why).getByRole('button', { name: 'Reload answers' }));
+		await vi.advanceTimersByTimeAsync(0);
+		await tick();
+		expect(s.texts).toHaveLength(2);
+		expect(within(why).queryByTestId('text-stale')).toBeNull();
+	});
+
+	it('Live (LV3): opens on from ?live=1; without a watermark source there is no toggle', async () => {
+		history.replaceState(null, '', '/surveys/s1/results?live=1');
+		const s = stub();
+		await setup({ source: s.source });
+		await screen.findByRole('list', { name: 'Questions' });
+		await waitFor(() => expect(screen.getByTestId('live-toggle').getAttribute('aria-checked')).toBe('true'));
+		await waitFor(() => expect(s.server.polls).toBe(1));
+		history.replaceState(null, '', '/');
+
+		const bare = stub();
+		delete bare.source.watermark;
+		render(ResultsView, { surveyId: 's2', survey: SURVEY, publishedVersions: 1, source: bare.source });
+		await waitFor(() => expect(screen.getAllByRole('list', { name: 'Questions' })).toHaveLength(2));
+		expect(screen.getAllByTestId('live-toggle')).toHaveLength(1);
 	});
 
 	// axe walks every card, chart SVG included, through jsdom's getComputedStyle: ~1.3 s on a

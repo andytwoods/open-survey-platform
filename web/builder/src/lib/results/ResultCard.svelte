@@ -24,7 +24,8 @@
 		controller,
 		tokens,
 		tools,
-		presenting = false
+		presenting = false,
+		pulse = false
 	}: {
 		card: Card;
 		controller: ResultsController;
@@ -34,6 +35,8 @@
 		tools?: Snippet;
 		/** Presentation mode: no controls, meta, states or statistics; the figure's caption under it. */
 		presenting?: boolean;
+		/** The card's numbers just changed in a live refresh (task LV3): a short outline pulse. */
+		pulse?: boolean;
 	} = $props();
 
 	const LAYOUT_LABELS: Record<SplitLayout, string> = {
@@ -91,7 +94,7 @@
 	</dl>
 {/snippet}
 
-<article class="result-card" class:presenting id="result-{card.question}" aria-labelledby="{uid}-h" data-type={card.type}>
+<article class="result-card" class:presenting class:pulse id="result-{card.question}" aria-labelledby="{uid}-h" data-type={card.type} data-pulse={pulse || undefined}>
 	<header>
 		<div class="title-row">
 			<!-- Presenting, the page heading is the h1, so cards are h2 (heading order). -->
@@ -220,6 +223,7 @@
 			label={card.label || card.name}
 			source={controller.source}
 			filters={controller.applied}
+			current={controller.response?.watermark ?? null}
 		/>
 	{/if}
 	{/if}
@@ -389,5 +393,24 @@
 	}
 	.result-card.presenting {
 		break-inside: avoid;
+	}
+	/* A live refresh changed this card's numbers (LV3): a short outline pulse, none under reduced motion. */
+	.result-card.pulse {
+		animation: live-pulse 1.2s ease-out 1;
+	}
+	@keyframes live-pulse {
+		0% {
+			outline: 2px solid var(--color-accent);
+			outline-offset: 2px;
+		}
+		100% {
+			outline: 2px solid transparent;
+			outline-offset: 2px;
+		}
+	}
+	@media (prefers-reduced-motion: reduce) {
+		.result-card.pulse {
+			animation: none;
+		}
 	}
 </style>

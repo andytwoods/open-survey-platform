@@ -15,9 +15,20 @@
 		label,
 		source,
 		filters,
-		pageSize = 20
-	}: { question: string; label: string; source: ResultsSource; filters: ResultsFilters; pageSize?: number } =
-		$props();
+		pageSize = 20,
+		current = null
+	}: {
+		question: string;
+		label: string;
+		source: ResultsSource;
+		filters: ResultsFilters;
+		pageSize?: number;
+		/**
+		 * The watermark of the results on screen (task LV3). Answers are never refreshed by
+		 * themselves (LV-D8): when it differs from the page's, "New answers · Reload" shows.
+		 */
+		current?: string | null;
+	} = $props();
 
 	let open = $state(false);
 	let page = $state<TextPage | null>(null);
@@ -78,7 +89,14 @@
 		void fetchPage(c);
 	}
 
+	/** Start again from the first page (new answers arrived: LV-D8's manual reload). */
+	function reload() {
+		back = [];
+		void fetchPage(undefined);
+	}
+
 	const first = $derived(back.length * pageSize + 1);
+	const stale = $derived(!!page && current !== null && page.watermark !== current);
 	const fmt = (iso: string | null) => (iso ? iso.slice(0, 16).replace('T', ' ') : '–');
 
 	onDestroy(() => abort?.abort());
@@ -101,6 +119,12 @@
 					Answers {first}–{first + page.items.length - 1} of {page.total}
 				{/if}
 			</p>
+			{#if stale}
+				<p class="stale" data-testid="text-stale">
+					<span>New answers have arrived. Answers are never refreshed by themselves.</span>
+					<Button disabled={loading} onclick={reload}>Reload answers</Button>
+				</p>
+			{/if}
 			{#if page.items.length}
 				<!-- A scrolling region takes keyboard focus, so it can be scrolled without a mouse. -->
 				<!-- svelte-ignore a11y_no_noninteractive_tabindex -->
@@ -187,5 +211,18 @@
 	.pager {
 		display: flex;
 		gap: var(--space-2);
+	}
+	.stale {
+		display: flex;
+		flex-wrap: wrap;
+		align-items: center;
+		gap: var(--space-2) var(--space-3);
+		margin: 0;
+		padding: var(--space-2) var(--space-3);
+		border: 1px solid var(--color-border-strong);
+		border-inline-start: 4px solid var(--color-accent);
+		border-radius: var(--radius-md);
+		background: var(--color-surface-raised);
+		font-size: var(--text-sm);
 	}
 </style>

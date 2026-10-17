@@ -3,6 +3,7 @@
 	import EyeOff from '@lucide/svelte/icons/eye-off';
 	import GripVertical from '@lucide/svelte/icons/grip-vertical';
 	import Presentation from '@lucide/svelte/icons/presentation';
+	import Radio from '@lucide/svelte/icons/radio';
 	import X from '@lucide/svelte/icons/x';
 	import { Button, cssVarsToStyle, theme, themeToCssVars } from '@osp/ui-components';
 	import { onDestroy, onMount, tick } from 'svelte';
@@ -13,6 +14,7 @@
 	import type { ThemeTokens } from './charts/types';
 	import ExportAll from './export/ExportAll.svelte';
 	import FilterBar from './FilterBar.svelte';
+	import { IDLE_AFTER_MS, liveIn, pendingText, statusText, withLive } from './live';
 	import { conditionVariables } from './model';
 	import { layoutIn, presentIn, withPresent } from './presentation';
 	import { presentation } from './presentation.svelte';
@@ -26,13 +28,16 @@
 	 * filters in words, and one card per question in survey order. Every number is the
 	 * server's (V1); this page only asks and draws. Lazily loaded by the shell. Task V6
 	 * adds the page's own theme (the cards and every export are drawn in it) and a
-	 * presentation mode that shows only the cards (`?present=1`, Escape to leave).
+	 * presentation mode that shows only the cards (`?present=1`, Escape to leave). Task LV3
+	 * adds Live: the page polls the watermark and refreshes as responses arrive (by itself
+	 * when idle; a "N new responses · Refresh" badge while the researcher is busy).
 	 */
 	let {
 		surveyId,
 		survey,
 		publishedVersions,
-		source
+		source,
+		minRefreshMs
 	}: {
 		surveyId: string;
 		/** The survey draft: its assigned variables give the condition filter's options, its theme the "survey's theme" option. */
@@ -40,11 +45,40 @@
 		publishedVersions: number;
 		/** Where results come from (default: the API). */
 		source?: ResultsSource;
+		/** Live: the least time between automatic refreshes (tests shorten it). */
+		minRefreshMs?: number;
 	} = $props();
 
 	// The source and version count are fixed for the page's life (a new publish reloads).
 	// svelte-ignore state_referenced_locally
-	const controller = new ResultsController(source ?? apiSource(surveyId), publishedVersions);
+	const controller = new ResultsController(source ?? apiSource(surveyId), publishedVersions, { minRefreshMs });
+	const live = controller.live;
+
+	// -- live (LV3): busy means badge, not yank ----------------------------------------------
+	/** When the researcher last touched the page (plain: read at poll time, never rendered). */
+	let lastActivity = 0;
+	const touch = () => (lastActivity = Date.now());
+	controller.busyCheck = () =>
+		Date.now() - lastActivity < IDLE_AFTER_MS ||
+		!!document.querySelector('[role="dialog"][data-state="open"], [role="menu"], [role="listbox"][data-state="open"]');
+	const liveStatus = $derived(
+		live
+			? statusText({
+					status: live.status,
+					intervalMs: live.intervalMs,
+					retryMs: live.retryMs,
+					error: live.error,
+					pausedBy: live.pausedBy,
+					lastRefreshAt: live.lastRefreshAt
+				})
+			: ''
+	);
+	/** One polite line per automatic refresh, never per card. */
+	const announce = $derived.by(() => {
+		const u = controller.liveUpdate;
+		if (!u) return '';
+		return `Results updated: ${u.responses} ${u.responses === 1 ? 'response' : 'responses'}.`;
+	});
 	/** Saved layouts (V5b), when the source offers them. */
 	const layouts = controller.source.layouts ? new LayoutsController(controller.source.layouts, controller) : null;
 	const conditions = $derived(conditionVariables(survey));
@@ -80,12 +114,24 @@
 		(on ? exitButton : presentButton)?.focus();
 	}
 	function onWindowKey(e: KeyboardEvent) {
+		touch();
 		if (!presenting || e.key !== 'Escape' || e.defaultPrevented) return;
 		// Escape inside an open dialog closes only the dialog.
 		if (document.querySelector('[role="dialog"][data-state="open"]')) return;
 		e.preventDefault();
 		void present(false);
 	}
+	$effect(() => {
+		// Mirror the live flag into the URL once the page has read its initial state (LV3).
+		const on = live?.on ?? false;
+		if (!urlSynced || typeof history === 'undefined') return;
+		const next = withLive(location.href, on);
+		if (next !== location.href) history.replaceState(history.state, '', next);
+	});
+	$effect(() => {
+		// Leaving presentation mode: poll again at once (live pauses while presenting until LV4).
+		if (!presentation.active) live?.wake();
+	});
 
 	// -- reordering (drag the handle, or focus it and use the arrow keys) --------------------
 	const uid = $props.id();
@@ -169,12 +215,16 @@
 		// A shared or printed link: `?present=1` opens in presentation mode, `?layout=` a layout.
 		const search = typeof location === 'undefined' ? '' : location.search;
 		presentation.active = presentIn(search);
+		// `?live=` in a shared link wins over the layout's setting; absent, the layout decides.
+		const urlLive = liveIn(search);
 		urlSynced = true;
 		if (publishedVersions === 0) return;
 		void controller.theme.load(controller.source.themes?.bind(controller.source));
 		// The survey's default layout opens first; without one (or if the list fails), the defaults.
-		if (layouts) void layouts.init(layoutIn(search)).then((opened) => (opened ? undefined : controller.load()));
-		else void controller.load();
+		const first = layouts ? layouts.init(layoutIn(search)).then((opened) => (opened ? true : controller.load())) : controller.load();
+		void first.then(() => {
+			if (urlLive !== null) live?.set(urlLive);
+		});
 	});
 	onDestroy(() => {
 		controller.dispose();
@@ -182,7 +232,7 @@
 	});
 </script>
 
-<svelte:window bind:innerWidth onkeydown={onWindowKey} />
+<svelte:window bind:innerWidth onkeydown={onWindowKey} onpointerdown={touch} onpointermove={touch} onwheel={touch} />
 
 <div class="results" class:presenting aria-busy={controller.loading} style={presenting ? themeStyle : undefined} data-presenting={presenting || undefined}>
 	<header class="page-head" class:visually-hidden={presenting}>
@@ -226,7 +276,32 @@
 							: ''}
 					</p>
 				{/if}
+				{#if live}
+					<div class="live-bar" data-testid="live-bar">
+						<button
+							type="button"
+							class="switch"
+							role="switch"
+							aria-checked={live.on}
+							data-testid="live-toggle"
+							title={live.on ? 'Stop checking for new responses' : 'Refresh as responses arrive'}
+							onclick={() => live.set(!live.on)}
+						>
+							<Radio size={16} aria-hidden="true" />
+							<span>Live</span>
+							<span class="switch-state" aria-hidden="true">{live.on ? 'on' : 'off'}</span>
+						</button>
+						{#if liveStatus}
+							<span class="live-status" data-testid="live-status">{liveStatus}</span>
+						{/if}
+						{#if live.on && live.changed}
+							<span class="new-badge" data-testid="live-badge">{pendingText(live.pending)}</span>
+							<Button size="sm" disabled={controller.loading} onclick={() => void live.refreshNow()}>Refresh</Button>
+						{/if}
+					</div>
+				{/if}
 			</section>
+			<div class="visually-hidden" role="status" aria-live="polite" data-testid="live-announce">{announce}</div>
 		{:else}
 			<button
 				bind:this={exitButton}
@@ -242,7 +317,7 @@
 		{/if}
 
 		<div class="live" role="status" aria-live="polite">
-			{#if controller.loading}
+			{#if controller.loading && (!controller.quiet || slow)}
 				<span class="waiting" data-testid="results-waiting">
 					<span class="spinner" aria-hidden="true"></span>
 					{#if slow}
@@ -293,10 +368,11 @@
 					{#each cards as card, i (card.question)}
 						{@const name = nameOf(card)}
 						{@const hidden = controller.charts.hidden(card.question)}
+						{@const pulse = controller.pulsing.includes(card.question)}
 						{#if presenting}
 							{#if !hidden}
 								<li data-question={card.question}>
-									<ResultCard {card} {controller} tokens={chartTokens} presenting />
+									<ResultCard {card} {controller} tokens={chartTokens} presenting {pulse} />
 								</li>
 							{/if}
 						{:else}
@@ -352,7 +428,7 @@
 									</button>
 								</div>
 							{:else}
-								<ResultCard {card} {controller} tokens={chartTokens}>
+								<ResultCard {card} {controller} tokens={chartTokens} {pulse}>
 									{#snippet tools()}
 										{@render handle()}
 										<button
@@ -419,6 +495,58 @@
 	}
 	.look {
 		margin-top: var(--space-2);
+	}
+	/* Live (LV3): the switch, its status in words, and the "N new responses · Refresh" badge. */
+	.live-bar {
+		display: flex;
+		flex-wrap: wrap;
+		align-items: center;
+		gap: var(--space-2) var(--space-3);
+		margin-top: var(--space-2);
+		font-size: var(--text-sm);
+	}
+	.switch {
+		display: inline-flex;
+		align-items: center;
+		gap: var(--space-2);
+		min-height: 2.75rem;
+		padding: 0 var(--space-3);
+		border: 1px solid var(--color-border-strong);
+		border-radius: var(--radius-full);
+		background: var(--color-surface-raised);
+		color: var(--color-text);
+		font: inherit;
+		font-size: var(--text-sm);
+		font-weight: var(--weight-medium);
+		cursor: pointer;
+	}
+	.switch[aria-checked='true'] {
+		border-color: var(--color-accent);
+		background: var(--color-selected);
+	}
+	.switch:focus-visible {
+		outline: 2px solid var(--color-focus);
+		outline-offset: 2px;
+	}
+	.switch-state {
+		padding: 1px var(--space-2);
+		border-radius: var(--radius-full);
+		background: var(--color-surface-sunken);
+		color: var(--color-text-muted);
+		font-weight: var(--weight-normal);
+	}
+	.switch[aria-checked='true'] .switch-state {
+		background: var(--color-accent);
+		color: var(--color-on-accent, #fff);
+	}
+	.live-status {
+		color: var(--color-text-muted);
+	}
+	.new-badge {
+		padding: 2px var(--space-2);
+		border: 1px solid var(--color-accent);
+		border-radius: var(--radius-full);
+		font-weight: var(--weight-medium);
 	}
 	/* Presentation mode (V6): only the cards, on the theme's background, with a way out. */
 	.results.presenting {

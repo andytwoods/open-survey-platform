@@ -104,6 +104,9 @@ function results(layouts: LayoutSource) {
 		async recordExport() {
 			return { ok: false, status: 403, message: 'no' };
 		},
+		async watermark() {
+			return { ok: true, data: { watermark: fixture.plain.watermark, responses: 5, versionsUsed: [1], pollAfterMs: 10_000 } };
+		},
 		layouts
 	};
 	return { source, queries };
@@ -178,6 +181,32 @@ describe('saved layouts on the Results page', () => {
 		expect(rows()[0].isDefault).toBe(true);
 		expect(picker().selectedOptions[0].textContent).toBe('Paper (opens by default)');
 		expect(screen.getByTestId('layout-status').textContent).toBe('Saved as “Paper”, the default layout.');
+		expect(unsaved()).toBe(false);
+	});
+
+	it('Live (LV3) is kept in a layout: turning it on is unsaved, Save as writes it, a layout without it turns it off', async () => {
+		const lab = { ...toSettings(emptyState(1), 1), live: true };
+		const { calls } = await setup([{ name: 'Lab screen', settings: lab }]);
+		const toggle = () => screen.getByTestId('live-toggle');
+		expect(toggle().getAttribute('aria-checked')).toBe('false');
+		expect(unsaved()).toBe(false);
+		await fireEvent.click(toggle());
+		expect(toggle().getAttribute('aria-checked')).toBe('true');
+		expect(unsaved()).toBe(true);
+		await fireEvent.click(screen.getByRole('button', { name: 'Save as…' }));
+		const dialog = await screen.findByRole('dialog', { name: 'Save layout as' });
+		await fireEvent.input(within(dialog).getByLabelText('Name'), { target: { value: 'Watch' } });
+		await fireEvent.click(within(dialog).getByRole('button', { name: 'Save' }));
+		await waitFor(() => expect(screen.queryByRole('dialog')).toBeNull());
+		const created = calls.find((c) => c.op === 'create')!.body as { settings: LayoutSettings };
+		expect(created.settings.live).toBe(true);
+		expect(unsaved()).toBe(false);
+		// Opening a layout saved with Live off turns it off; one saved with it on turns it on.
+		await fireEvent.change(picker(), { target: { value: '' } });
+		await waitFor(() => expect(toggle().getAttribute('aria-checked')).toBe('false'));
+		await fireEvent.change(picker(), { target: { value: picker().options[1].value } });
+		expect(picker().selectedOptions[0].textContent).toBe('Lab screen');
+		await waitFor(() => expect(toggle().getAttribute('aria-checked')).toBe('true'));
 		expect(unsaved()).toBe(false);
 	});
 

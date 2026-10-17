@@ -32,7 +32,7 @@ from osp_api.identity import Dev, IdentityProvider
 from osp_app import build_services
 from osp_app.identity import DEV_LAB_ID
 from osp_runtime import TokenBucket
-from osp_store import Keyring, Store, TenantContext, create_engine, migrate
+from osp_store import Keyring, ParticipantStore, Store, TenantContext, create_engine, migrate
 
 # This server serves the participant app at /s/{slug}, so publish should link there.
 os.environ.setdefault("OSP_PARTICIPANT_URL_TEMPLATE", "/s/{slug}")
@@ -100,7 +100,7 @@ def build(db_dir: Path, host: str = "127.0.0.1") -> FastAPI:
         version = versions[-1]
         assigned, answers = results_data.RESPONSES[0]
         results_data.add_response(store, ctx, version.id, answers, assigned=assigned)
-        count, _newest = store.participants.response_watermark(ctx, version.id)
+        count, _newest = ParticipantStore(store).response_watermark(ctx, version.id)
         return {"version": version.number, "responses": count}
 
     if (RUNTIME_DIST / "index.html").is_file():
