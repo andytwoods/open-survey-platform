@@ -122,4 +122,28 @@ describe('TypeDrag', () => {
 		d.move(0, 25);
 		expect(d.end()).toBeNull(); // no outline attached
 	});
+
+	it('several drop zones (outline, canvas): the first that answers wins; refresh re-asks', () => {
+		const d = new TypeDrag();
+		let canvasSlot = 'c1';
+		const offOutline = d.attach((x) => (x < 100 ? { hit: hit('o', 'before'), description: 'outline' } : null));
+		d.attach((x) => (x >= 300 ? { hit: hit(canvasSlot, 'before'), description: 'canvas' } : null));
+		d.start('text');
+		d.move(50, 0);
+		expect(d.hit?.description).toBe('outline');
+		d.move(400, 0);
+		expect(d.hit?.description).toBe('canvas');
+		expect([d.x, d.y]).toEqual([400, 0]);
+		d.move(200, 0); // between the panes
+		expect(d.hit).toBeNull();
+		d.move(400, 0);
+		// The canvas scrolled under a still pointer: a new gap.
+		canvasSlot = 'c2';
+		expect(d.refresh()).toBe(true);
+		expect(d.hit?.hit.rowId).toBe('c2');
+		offOutline();
+		d.move(50, 0);
+		expect(d.hit).toBeNull();
+		d.end();
+	});
 });

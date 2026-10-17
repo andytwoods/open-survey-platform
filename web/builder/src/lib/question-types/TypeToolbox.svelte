@@ -18,11 +18,14 @@
 		collapsed = $bindable(false),
 		onadd,
 		oninsert,
-		onchoosewhere
+		onchoosewhere,
+		tapToPlace = false
 	}: {
 		drag: TypeDrag;
 		collapsed?: boolean;
-		/** Add to the selected (or last) page. */
+		/** Narrow screens (B19): a tap picks the type up and the canvas asks where it goes. */
+		tapToPlace?: boolean;
+		/** Add to the selected (or last) page; with `tapToPlace`, start placing it. */
 		onadd: (type: QuestionTypeId) => void;
 		/** Insert at a gap in a page (a drop). */
 		oninsert: (type: QuestionTypeId, target: DropTarget) => void;
@@ -163,7 +166,10 @@
 		</button>
 	</h2>
 	<div id={listId} class="body" hidden={collapsed}>
-		<p id={hintId} class="hint">Click to add, or drag onto the outline. Shift+Enter: choose where.</p>
+		<p id={hintId} class="hint">
+			{#if tapToPlace}Tap a type, then tap where it goes on the canvas.{:else}Click to add, or drag onto the outline or
+				the canvas.{/if} Shift+Enter: choose where.
+		</p>
 		<div
 			class="types"
 			role="toolbar"

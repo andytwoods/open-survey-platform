@@ -64,9 +64,12 @@ export function dropTargetAt(
 	roots: readonly OutlineNode[],
 	ids: readonly string[]
 ): DragHit | null {
-	const hit = gapAt(boxes, y, type, roots);
-	if (!hit || !moveOps(roots, ids, hit.target).length) return null;
-	return hit;
+	return movesSomething(gapAt(boxes, y, type, roots), roots, ids);
+}
+
+/** The hit, if moving `ids` there changes anything (else null: no indicator, no op). */
+function movesSomething(hit: DragHit | null, roots: readonly OutlineNode[], ids: readonly string[]): DragHit | null {
+	return hit && moveOps(roots, ids, hit.target).length ? hit : null;
 }
 
 /**
@@ -124,4 +127,102 @@ function gapAt(boxes: readonly RowBox[], y: number, type: MovableType, roots: re
 		}
 	}
 	return hit;
+}
+
+// -- the canvas (task B19) ---------------------------------------------------------------
+//
+// The canvas lays a page out as a header and its question cards one under another, so the
+// gap is found per page rather than per row: the page the pointer is over (or the nearest
+// one, so headings and the space between pages still drop somewhere), then how many of its
+// cards have their middle above the pointer. The result is the same `DragHit` as the
+// outline's, so a drop runs the same `add_question` / `moveOps` and both panes can draw it.
+
+export interface CanvasCardBox {
+	id: string;
+	top: number;
+	bottom: number;
+}
+
+export interface CanvasPageBox {
+	id: string;
+	top: number;
+	bottom: number;
+	cards: CanvasCardBox[];
+}
+
+/** The gap at pointer `y`: before a card, after the last one, or into an empty page. */
+export function canvasGapAt(pages: readonly CanvasPageBox[], y: number): DragHit | null {
+	if (!pages.length || !Number.isFinite(y)) return null;
+	let page = pages.find((p) => y >= p.top && y < p.bottom);
+	if (!page) {
+		const dist = (p: CanvasPageBox) => (y < p.top ? p.top - y : y - p.bottom);
+		page = pages.reduce((a, b) => (dist(b) < dist(a) ? b : a));
+	}
+	const { cards } = page;
+	const slot = cards.filter((c) => (c.top + c.bottom) / 2 <= y).length;
+	const target = { parent: page.id, slot };
+	if (!cards.length) return { target, rowId: page.id, edge: 'into', lineRowId: page.id };
+	if (slot < cards.length) return { target, rowId: cards[slot].id, edge: 'before', lineRowId: cards[slot].id };
+	const last = cards[cards.length - 1].id;
+	return { target, rowId: last, edge: 'after', lineRowId: last };
+}
+
+/** Where dragged cards `ids` dropped on the canvas at `y` go; null if nothing would move. */
+export function canvasDropAt(
+	pages: readonly CanvasPageBox[],
+	y: number,
+	roots: readonly OutlineNode[],
+	ids: readonly string[]
+): DragHit | null {
+	return movesSomething(canvasGapAt(pages, y), roots, ids);
+}
+
+/** Page and card boxes from the canvas DOM (`data-canvas-page` / `data-canvas-question`). */
+export function measureCanvas(root: HTMLElement): CanvasPageBox[] {
+	return [...root.querySelectorAll<HTMLElement>('[data-canvas-page]')].map((el) => {
+		const r = el.getBoundingClientRect();
+		return {
+			id: el.dataset.canvasPage ?? '',
+			top: r.top,
+			bottom: r.bottom,
+			cards: [...el.querySelectorAll<HTMLElement>('[data-canvas-question]')].map((c) => {
+				const b = c.getBoundingClientRect();
+				return { id: c.dataset.canvasQuestion ?? '', top: b.top, bottom: b.bottom };
+			})
+		};
+	});
+}
+
+/**
+ * Where a gap is, by its neighbours (leaving out the items being moved), for screen readers:
+ * "Drop between Age and Gender on Page 1", "Drop at the start of Page 1, before Age",
+ * "Drop at the end of Page 1, after Gender", "Drop on Page 2, which is empty".
+ */
+export function describeGap(
+	roots: readonly OutlineNode[],
+	target: DropTarget,
+	moving: readonly string[] = [],
+	verb = 'Drop'
+): string {
+	const find = (ns: readonly OutlineNode[]): OutlineNode | undefined => {
+		for (const n of ns) {
+			if (n.id === target.parent) return n;
+			const hit = n.children && find(n.children);
+			if (hit) return hit;
+		}
+		return undefined;
+	};
+	const parent = target.parent === null ? undefined : find(roots);
+	const where = parent?.label ?? target.parent ?? 'the survey';
+	const skip = new Set(moving);
+	const kids = parent?.children ?? [];
+	const prev = kids
+		.slice(0, target.slot)
+		.filter((n) => !skip.has(n.id))
+		.at(-1);
+	const next = kids.slice(target.slot).find((n) => !skip.has(n.id));
+	if (prev && next) return `${verb} between ${prev.label} and ${next.label} on ${where}`;
+	if (next) return `${verb} at the start of ${where}, before ${next.label}`;
+	if (prev) return `${verb} at the end of ${where}, after ${prev.label}`;
+	return `${verb} on ${where}, which is empty`;
 }

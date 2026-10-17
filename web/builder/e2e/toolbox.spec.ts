@@ -116,8 +116,9 @@ test('dragging a type onto the outline inserts it there; Escape cancels', async 
 	await page.keyboard.press('Escape');
 	await expect(tree(page).locator('[data-drop]')).toHaveCount(0);
 	await page.mouse.up();
-	// Let go away from the outline: nothing either.
-	await dragType(page, 'Text', { x: 700, y: 400 });
+	// Let go away from the outline and the canvas (over the properties pane): nothing either.
+	const props = (await page.locator('#pane-properties').boundingBox())!;
+	await dragType(page, 'Text', { x: props.x + props.width / 2, y: props.y + props.height / 2 });
 	await page.mouse.up();
 	await expect(saved(page)).toHaveText(/All changes saved/);
 	expect(await pagesOf(page)).toEqual(pages);
@@ -183,7 +184,9 @@ test('320 px: the toolbox starts folded in the outline overlay, unfolds, fits', 
 		expect(box.height, await b.getAttribute('aria-label') ?? '').toBeGreaterThanOrEqual(44);
 		expect(box.x + box.width).toBeLessThanOrEqual(320);
 	}
+	// Here a tap picks the type up and the canvas asks where (B19's tap-to-place).
 	await toolType(page, 'Single choice').click();
+	await page.getByRole('button', { name: 'Place here at the end of p_two, after Charlie', exact: true }).click();
 	await expect(page.getByTestId('question-type')).toHaveText('Single choice');
 	await expect(saved(page)).toHaveText(/All changes saved/);
 	expect((await pagesOf(page))[1].at(-1)).toBe('single');
