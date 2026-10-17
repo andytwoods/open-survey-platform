@@ -50,6 +50,9 @@ across participants (quotas, balanced assignment). Behaviour is pinned down in
 [`planning/semantics.md`](planning/semantics.md) and checked by 40 fixture surveys that are
 played through real browsers on four device profiles.
 
+**Documentation:** <https://andytwoods.github.io/open-survey-platform/> (built from
+[`docs/`](docs/) by `make docs`; the API reference is generated from the contract).
+
 Contributors and AI agents: start with [`AGENTS.md`](AGENTS.md).
 
 ## Try it locally

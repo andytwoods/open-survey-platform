@@ -26,6 +26,15 @@ dev = [
     "import-linter>=2.15,<3",
     "httpx2>=2.13,<3",  # starlette TestClient
 ]
+# The docs site (mkdocs.yml, docs/): `make docs` builds it, `make docs-check` is in `make check`.
+docs = [
+    "mkdocs-material>=9.6,<10",
+]
+
+[tool.uv]
+# `uv sync` installs both, so `make install` is enough to build the docs and the licence
+# check (scripts/licence_check.py) judges the docs tooling too.
+default-groups = ["dev", "docs"]
 
 [tool.uv.sources]
 osp-expr = { workspace = true }
