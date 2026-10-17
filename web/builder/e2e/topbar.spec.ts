@@ -106,6 +106,7 @@ test('More actions menu: keyboard, Escape and focus return; items run their comm
 		/Undo/,
 		/Redo/,
 		/Appearance/,
+		/Results/,
 		/Switch to (dark|light) theme/
 	]);
 	for (const item of await items.all()) {

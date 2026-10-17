@@ -5,7 +5,15 @@
  * the save queue to be acknowledged (at most 10 s, then asks); `beforeunload` warns while
  * edits are unsaved. Undo history is per page and resets on navigation.
  */
-import { DEFAULT_LINKS, fillTemplate, type LinkName, type OspPageConfig } from './config';
+import {
+	DEFAULT_LINKS,
+	fillTemplate,
+	type LinkName,
+	type Links,
+	type OptionalLinkName,
+	type OspPageConfig,
+	type RequiredLinkName
+} from './config';
 
 export { DEFAULT_LINKS };
 
@@ -27,18 +35,28 @@ export interface LinkExtra {
 }
 
 /** The URL of a page, from the host's template for it. */
-export function link(name: LinkName, params: { id?: string } = {}, extra: LinkExtra = {}): string {
+export function link(name: RequiredLinkName, params: { id?: string } = {}, extra: LinkExtra = {}): string {
 	return linkFrom(config?.links ?? DEFAULT_LINKS, name, params, extra);
+}
+
+/** The URL of a page the host may leave out (`results`): null when it has no link for it. */
+export function optionalLink(
+	name: OptionalLinkName,
+	params: { id?: string } = {},
+	extra: LinkExtra = {}
+): string | null {
+	const links = config?.links ?? DEFAULT_LINKS;
+	return links[name] === undefined ? null : linkFrom(links, name, params, extra);
 }
 
 /** Pure version of `link` (unit-tested). Query and hash keep the template's own. */
 export function linkFrom(
-	links: Readonly<Record<LinkName, string>>,
+	links: Readonly<Links>,
 	name: LinkName,
 	params: { id?: string } = {},
 	extra: LinkExtra = {}
 ): string {
-	let url = fillTemplate(links[name], params);
+	let url = fillTemplate(links[name] ?? '', params);
 	const q = Object.entries(extra.query ?? {});
 	if (q.length) {
 		const hashAt = url.indexOf('#');
@@ -111,7 +129,7 @@ export async function leaveTo(url: string, deps: Partial<LeaveDeps> = {}): Promi
 }
 
 /** Navigate to a page by name (see `link`). */
-export function go(name: LinkName, params: { id?: string } = {}, extra: LinkExtra = {}): Promise<boolean> {
+export function go(name: RequiredLinkName, params: { id?: string } = {}, extra: LinkExtra = {}): Promise<boolean> {
 	return leaveTo(link(name, params, extra));
 }
 

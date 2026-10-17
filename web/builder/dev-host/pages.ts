@@ -14,6 +14,7 @@ export const PAGES = {
 	flow: 'src/pages/flow.ts',
 	settings: 'src/pages/settings.ts',
 	appearance: 'src/pages/appearance.ts',
+	results: 'src/pages/results.ts',
 	themes: 'src/pages/themes.ts',
 	'preview-frame': 'src/pages/preview-frame.ts'
 } as const;
@@ -39,6 +40,7 @@ export const TITLES: Record<PageName, string> = {
 	flow: `Flow · ${APP}`,
 	settings: `Settings · ${APP}`,
 	appearance: `Appearance · ${APP}`,
+	results: `Results · ${APP}`,
 	themes: `Appearance · ${APP}`,
 	'preview-frame': `Preview · ${APP}`,
 	'dev-mock': APP,
@@ -58,7 +60,13 @@ export interface Route {
 	mock?: boolean;
 }
 
-const SURVEY_VIEWS: Record<string, PageName> = { '': 'editor', flow: 'flow', settings: 'settings', appearance: 'appearance' };
+const SURVEY_VIEWS: Record<string, PageName> = {
+	'': 'editor',
+	flow: 'flow',
+	settings: 'settings',
+	appearance: 'appearance',
+	results: 'results'
+};
 
 /** Today's URLs → page (the dev host's routing). Null: not a page. */
 export function route(pathname: string, search: string, devPages: boolean): Route | null {
@@ -67,7 +75,7 @@ export function route(pathname: string, search: string, devPages: boolean): Rout
 	if (path === '/') return mock && devPages ? { page: 'dev-mock', mock: true } : { page: 'list' };
 	if (path === '/appearance') return { page: 'themes', mock: mock || undefined };
 	if (path === '/preview-frame') return { page: 'preview-frame' };
-	const s = /^\/surveys\/([^/]+)(?:\/(flow|settings|appearance))?$/.exec(path);
+	const s = /^\/surveys\/([^/]+)(?:\/(flow|settings|appearance|results))?$/.exec(path);
 	if (s) {
 		let id: string;
 		try {

@@ -1,0 +1,5426 @@
+{
+ "plain": {
+  "cached": false,
+  "cards": [
+   {
+    "binEdges": null,
+    "binUnit": null,
+    "binning": "categories",
+    "categories": [
+     {
+      "code": "apple",
+      "key": "apple",
+      "label": "Apple"
+     },
+     {
+      "code": "banana",
+      "key": "banana",
+      "label": "Banana"
+     },
+     {
+      "code": "cherry",
+      "key": "cherry",
+      "label": "Cherry"
+     }
+    ],
+    "facets": null,
+    "groups": [
+     {
+      "cells": [
+       {
+        "ci": null,
+        "count": 2,
+        "hi": null,
+        "key": "apple",
+        "label": "Apple",
+        "lo": null,
+        "pct": 66.66666666666667
+       },
+       {
+        "ci": null,
+        "count": 1,
+        "hi": null,
+        "key": "banana",
+        "label": "Banana",
+        "lo": null,
+        "pct": 33.333333333333336
+       },
+       {
+        "ci": null,
+        "count": 0,
+        "hi": null,
+        "key": "cherry",
+        "label": "Cherry",
+        "lo": null,
+        "pct": 0.0
+       }
+      ],
+      "key": "all",
+      "label": "All responses",
+      "missing": false,
+      "n": 3,
+      "responses": 5,
+      "states": {
+       "answered": 3,
+       "invalid": 1,
+       "irrelevant": 0,
+       "notInVersion": 0,
+       "notReached": 0,
+       "unanswered": 1,
+       "unrecorded": 0
+      },
+      "stats": {
+       "bottom2": null,
+       "earliest": null,
+       "latest": null,
+       "max": null,
+       "mean": null,
+       "meanCi": null,
+       "meanLength": null,
+       "meanOptions": null,
+       "median": null,
+       "min": null,
+       "mode": [
+        "apple"
+       ],
+       "n": 3,
+       "notAvailable": [],
+       "q1": null,
+       "q3": null,
+       "sd": null,
+       "top2": null
+      }
+     }
+    ],
+    "label": "Fruit?",
+    "name": "fruit",
+    "ordered": false,
+    "question": "fruit",
+    "rows": null,
+    "states": {
+     "answered": 3,
+     "invalid": 1,
+     "irrelevant": 0,
+     "notInVersion": 0,
+     "notReached": 0,
+     "unanswered": 1,
+     "unrecorded": 0
+    },
+    "type": "single",
+    "versionsUsed": [
+     1
+    ],
+    "warnings": []
+   },
+   {
+    "binEdges": null,
+    "binUnit": null,
+    "binning": "categories",
+    "categories": [
+     {
+      "code": 1,
+      "key": "1",
+      "label": "L1"
+     },
+     {
+      "code": 2,
+      "key": "2",
+      "label": "L2"
+     },
+     {
+      "code": 3,
+      "key": "3",
+      "label": "L3"
+     },
+     {
+      "code": 4,
+      "key": "4",
+      "label": "L4"
+     },
+     {
+      "code": 5,
+      "key": "5",
+      "label": "L5"
+     }
+    ],
+    "facets": null,
+    "groups": [
+     {
+      "cells": [
+       {
+        "ci": null,
+        "count": 1,
+        "hi": null,
+        "key": "1",
+        "label": "L1",
+        "lo": null,
+        "pct": 25.0
+       },
+       {
+        "ci": null,
+        "count": 1,
+        "hi": null,
+        "key": "2",
+        "label": "L2",
+        "lo": null,
+        "pct": 25.0
+       },
+       {
+        "ci": null,
+        "count": 0,
+        "hi": null,
+        "key": "3",
+        "label": "L3",
+        "lo": null,
+        "pct": 0.0
+       },
+       {
+        "ci": null,
+        "count": 1,
+        "hi": null,
+        "key": "4",
+        "label": "L4",
+        "lo": null,
+        "pct": 25.0
+       },
+       {
+        "ci": null,
+        "count": 1,
+        "hi": null,
+        "key": "5",
+        "label": "L5",
+        "lo": null,
+        "pct": 25.0
+       }
+      ],
+      "key": "all",
+      "label": "All responses",
+      "missing": false,
+      "n": 4,
+      "responses": 5,
+      "states": {
+       "answered": 4,
+       "invalid": 0,
+       "irrelevant": 0,
+       "notInVersion": 0,
+       "notReached": 0,
+       "unanswered": 1,
+       "unrecorded": 0
+      },
+      "stats": {
+       "bottom2": 50.0,
+       "earliest": null,
+       "latest": null,
+       "max": null,
+       "mean": null,
+       "meanCi": null,
+       "meanLength": null,
+       "meanOptions": null,
+       "median": "2",
+       "min": null,
+       "mode": [
+        "1",
+        "2",
+        "4",
+        "5"
+       ],
+       "n": 4,
+       "notAvailable": [],
+       "q1": null,
+       "q3": null,
+       "sd": null,
+       "top2": 50.0
+      }
+     }
+    ],
+    "label": "Satisfied?",
+    "name": "sat",
+    "ordered": true,
+    "question": "sat",
+    "rows": null,
+    "states": {
+     "answered": 4,
+     "invalid": 0,
+     "irrelevant": 0,
+     "notInVersion": 0,
+     "notReached": 0,
+     "unanswered": 1,
+     "unrecorded": 0
+    },
+    "type": "single",
+    "versionsUsed": [
+     1
+    ],
+    "warnings": []
+   },
+   {
+    "binEdges": null,
+    "binUnit": null,
+    "binning": "categories",
+    "categories": [
+     {
+      "code": "red",
+      "key": "red",
+      "label": "Red"
+     },
+     {
+      "code": "green",
+      "key": "green",
+      "label": "Green"
+     },
+     {
+      "code": "blue",
+      "key": "blue",
+      "label": "Blue"
+     }
+    ],
+    "facets": null,
+    "groups": [
+     {
+      "cells": [
+       {
+        "ci": null,
+        "count": 2,
+        "hi": null,
+        "key": "red",
+        "label": "Red",
+        "lo": null,
+        "pct": 50.0
+       },
+       {
+        "ci": null,
+        "count": 2,
+        "hi": null,
+        "key": "green",
+        "label": "Green",
+        "lo": null,
+        "pct": 50.0
+       },
+       {
+        "ci": null,
+        "count": 1,
+        "hi": null,
+        "key": "blue",
+        "label": "Blue",
+        "lo": null,
+        "pct": 25.0
+       }
+      ],
+      "key": "all",
+      "label": "All responses",
+      "missing": false,
+      "n": 4,
+      "responses": 5,
+      "states": {
+       "answered": 4,
+       "invalid": 0,
+       "irrelevant": 0,
+       "notInVersion": 0,
+       "notReached": 0,
+       "unanswered": 1,
+       "unrecorded": 0
+      },
+      "stats": {
+       "bottom2": null,
+       "earliest": null,
+       "latest": null,
+       "max": null,
+       "mean": null,
+       "meanCi": null,
+       "meanLength": null,
+       "meanOptions": 1.25,
+       "median": null,
+       "min": null,
+       "mode": null,
+       "n": 4,
+       "notAvailable": [],
+       "q1": null,
+       "q3": null,
+       "sd": null,
+       "top2": null
+      }
+     }
+    ],
+    "label": "Colours?",
+    "name": "col",
+    "ordered": null,
+    "question": "col",
+    "rows": null,
+    "states": {
+     "answered": 4,
+     "invalid": 0,
+     "irrelevant": 0,
+     "notInVersion": 0,
+     "notReached": 0,
+     "unanswered": 1,
+     "unrecorded": 0
+    },
+    "type": "multi",
+    "versionsUsed": [
+     1
+    ],
+    "warnings": []
+   },
+   {
+    "binEdges": [
+     20.0,
+     21.0,
+     22.0,
+     23.0,
+     24.0,
+     25.0,
+     26.0,
+     27.0,
+     28.0,
+     29.0,
+     30.0,
+     31.0,
+     32.0,
+     33.0,
+     34.0,
+     35.0,
+     36.0,
+     37.0,
+     38.0,
+     39.0,
+     40.0,
+     41.0
+    ],
+    "binUnit": null,
+    "binning": "bins",
+    "categories": null,
+    "facets": null,
+    "groups": [
+     {
+      "cells": [
+       {
+        "ci": null,
+        "count": 1,
+        "hi": 21.0,
+        "key": "0",
+        "label": "20",
+        "lo": 20.0,
+        "pct": 25.0
+       },
+       {
+        "ci": null,
+        "count": 0,
+        "hi": 22.0,
+        "key": "1",
+        "label": "21",
+        "lo": 21.0,
+        "pct": 0.0
+       },
+       {
+        "ci": null,
+        "count": 0,
+        "hi": 23.0,
+        "key": "2",
+        "label": "22",
+        "lo": 22.0,
+        "pct": 0.0
+       },
+       {
+        "ci": null,
+        "count": 0,
+        "hi": 24.0,
+        "key": "3",
+        "label": "23",
+        "lo": 23.0,
+        "pct": 0.0
+       },
+       {
+        "ci": null,
+        "count": 0,
+        "hi": 25.0,
+        "key": "4",
+        "label": "24",
+        "lo": 24.0,
+        "pct": 0.0
+       },
+       {
+        "ci": null,
+        "count": 1,
+        "hi": 26.0,
+        "key": "5",
+        "label": "25",
+        "lo": 25.0,
+        "pct": 25.0
+       },
+       {
+        "ci": null,
+        "count": 0,
+        "hi": 27.0,
+        "key": "6",
+        "label": "26",
+        "lo": 26.0,
+        "pct": 0.0
+       },
+       {
+        "ci": null,
+        "count": 0,
+        "hi": 28.0,
+        "key": "7",
+        "label": "27",
+        "lo": 27.0,
+        "pct": 0.0
+       },
+       {
+        "ci": null,
+        "count": 0,
+        "hi": 29.0,
+        "key": "8",
+        "label": "28",
+        "lo": 28.0,
+        "pct": 0.0
+       },
+       {
+        "ci": null,
+        "count": 0,
+        "hi": 30.0,
+        "key": "9",
+        "label": "29",
+        "lo": 29.0,
+        "pct": 0.0
+       },
+       {
+        "ci": null,
+        "count": 1,
+        "hi": 31.0,
+        "key": "10",
+        "label": "30",
+        "lo": 30.0,
+        "pct": 25.0
+       },
+       {
+        "ci": null,
+        "count": 0,
+        "hi": 32.0,
+        "key": "11",
+        "label": "31",
+        "lo": 31.0,
+        "pct": 0.0
+       },
+       {
+        "ci": null,
+        "count": 0,
+        "hi": 33.0,
+        "key": "12",
+        "label": "32",
+        "lo": 32.0,
+        "pct": 0.0
+       },
+       {
+        "ci": null,
+        "count": 0,
+        "hi": 34.0,
+        "key": "13",
+        "label": "33",
+        "lo": 33.0,
+        "pct": 0.0
+       },
+       {
+        "ci": null,
+        "count": 0,
+        "hi": 35.0,
+        "key": "14",
+        "label": "34",
+        "lo": 34.0,
+        "pct": 0.0
+       },
+       {
+        "ci": null,
+        "count": 0,
+        "hi": 36.0,
+        "key": "15",
+        "label": "35",
+        "lo": 35.0,
+        "pct": 0.0
+       },
+       {
+        "ci": null,
+        "count": 0,
+        "hi": 37.0,
+        "key": "16",
+        "label": "36",
+        "lo": 36.0,
+        "pct": 0.0
+       },
+       {
+        "ci": null,
+        "count": 0,
+        "hi": 38.0,
+        "key": "17",
+        "label": "37",
+        "lo": 37.0,
+        "pct": 0.0
+       },
+       {
+        "ci": null,
+        "count": 0,
+        "hi": 39.0,
+        "key": "18",
+        "label": "38",
+        "lo": 38.0,
+        "pct": 0.0
+       },
+       {
+        "ci": null,
+        "count": 0,
+        "hi": 40.0,
+        "key": "19",
+        "label": "39",
+        "lo": 39.0,
+        "pct": 0.0
+       },
+       {
+        "ci": null,
+        "count": 1,
+        "hi": 41.0,
+        "key": "20",
+        "label": "40",
+        "lo": 40.0,
+        "pct": 25.0
+       }
+      ],
+      "key": "all",
+      "label": "All responses",
+      "missing": false,
+      "n": 4,
+      "responses": 5,
+      "states": {
+       "answered": 4,
+       "invalid": 0,
+       "irrelevant": 1,
+       "notInVersion": 0,
+       "notReached": 0,
+       "unanswered": 0,
+       "unrecorded": 0
+      },
+      "stats": {
+       "bottom2": null,
+       "earliest": null,
+       "latest": null,
+       "max": 40.0,
+       "mean": 28.75,
+       "meanCi": null,
+       "meanLength": null,
+       "meanOptions": null,
+       "median": 27.5,
+       "min": 20.0,
+       "mode": null,
+       "n": 4,
+       "notAvailable": [],
+       "q1": 23.75,
+       "q3": 32.5,
+       "sd": 8.539125638299666,
+       "top2": null
+      }
+     }
+    ],
+    "label": "Age?",
+    "name": "age",
+    "ordered": null,
+    "question": "age",
+    "rows": null,
+    "states": {
+     "answered": 4,
+     "invalid": 0,
+     "irrelevant": 1,
+     "notInVersion": 0,
+     "notReached": 0,
+     "unanswered": 0,
+     "unrecorded": 0
+    },
+    "type": "integer",
+    "versionsUsed": [
+     1
+    ],
+    "warnings": []
+   },
+   {
+    "binEdges": [
+     2.5,
+     2.55,
+     2.6,
+     2.65,
+     2.7,
+     2.75,
+     2.8,
+     2.85,
+     2.9,
+     2.95,
+     3.0,
+     3.05
+    ],
+    "binUnit": null,
+    "binning": "bins",
+    "categories": null,
+    "facets": null,
+    "groups": [
+     {
+      "cells": [
+       {
+        "ci": null,
+        "count": 1,
+        "hi": 2.55,
+        "key": "0",
+        "label": "2.5–2.55",
+        "lo": 2.5,
+        "pct": 50.0
+       },
+       {
+        "ci": null,
+        "count": 0,
+        "hi": 2.6,
+        "key": "1",
+        "label": "2.55–2.6",
+        "lo": 2.55,
+        "pct": 0.0
+       },
+       {
+        "ci": null,
+        "count": 0,
+        "hi": 2.65,
+        "key": "2",
+        "label": "2.6–2.65",
+        "lo": 2.6,
+        "pct": 0.0
+       },
+       {
+        "ci": null,
+        "count": 0,
+        "hi": 2.7,
+        "key": "3",
+        "label": "2.65–2.7",
+        "lo": 2.65,
+        "pct": 0.0
+       },
+       {
+        "ci": null,
+        "count": 0,
+        "hi": 2.75,
+        "key": "4",
+        "label": "2.7–2.75",
+        "lo": 2.7,
+        "pct": 0.0
+       },
+       {
+        "ci": null,
+        "count": 0,
+        "hi": 2.8,
+        "key": "5",
+        "label": "2.75–2.8",
+        "lo": 2.75,
+        "pct": 0.0
+       },
+       {
+        "ci": null,
+        "count": 0,
+        "hi": 2.85,
+        "key": "6",
+        "label": "2.8–2.85",
+        "lo": 2.8,
+        "pct": 0.0
+       },
+       {
+        "ci": null,
+        "count": 0,
+        "hi": 2.9,
+        "key": "7",
+        "label": "2.85–2.9",
+        "lo": 2.85,
+        "pct": 0.0
+       },
+       {
+        "ci": null,
+        "count": 0,
+        "hi": 2.95,
+        "key": "8",
+        "label": "2.9–2.95",
+        "lo": 2.9,
+        "pct": 0.0
+       },
+       {
+        "ci": null,
+        "count": 0,
+        "hi": 3.0,
+        "key": "9",
+        "label": "2.95–3",
+        "lo": 2.95,
+        "pct": 0.0
+       },
+       {
+        "ci": null,
+        "count": 1,
+        "hi": 3.05,
+        "key": "10",
+        "label": "3–3.05",
+        "lo": 3.0,
+        "pct": 50.0
+       }
+      ],
+      "key": "all",
+      "label": "All responses",
+      "missing": false,
+      "n": 2,
+      "responses": 5,
+      "states": {
+       "answered": 2,
+       "invalid": 1,
+       "irrelevant": 1,
+       "notInVersion": 0,
+       "notReached": 0,
+       "unanswered": 1,
+       "unrecorded": 0
+      },
+      "stats": {
+       "bottom2": null,
+       "earliest": null,
+       "latest": null,
+       "max": 3.0,
+       "mean": 2.75,
+       "meanCi": null,
+       "meanLength": null,
+       "meanOptions": null,
+       "median": 2.75,
+       "min": 2.5,
+       "mode": null,
+       "n": 2,
+       "notAvailable": [],
+       "q1": 2.625,
+       "q3": 2.875,
+       "sd": 0.3535533905932738,
+       "top2": null
+      }
+     }
+    ],
+    "label": "Price?",
+    "name": "price",
+    "ordered": null,
+    "question": "price",
+    "rows": null,
+    "states": {
+     "answered": 2,
+     "invalid": 1,
+     "irrelevant": 1,
+     "notInVersion": 0,
+     "notReached": 0,
+     "unanswered": 1,
+     "unrecorded": 0
+    },
+    "type": "decimal",
+    "versionsUsed": [
+     1
+    ],
+    "warnings": []
+   },
+   {
+    "binEdges": null,
+    "binUnit": null,
+    "binning": "values",
+    "categories": null,
+    "facets": null,
+    "groups": [
+     {
+      "cells": [
+       {
+        "ci": null,
+        "count": 0,
+        "hi": 0.0,
+        "key": "0",
+        "label": "0",
+        "lo": 0.0,
+        "pct": 0.0
+       },
+       {
+        "ci": null,
+        "count": 0,
+        "hi": 1.0,
+        "key": "1",
+        "label": "1",
+        "lo": 1.0,
+        "pct": 0.0
+       },
+       {
+        "ci": null,
+        "count": 0,
+        "hi": 2.0,
+        "key": "2",
+        "label": "2",
+        "lo": 2.0,
+        "pct": 0.0
+       },
+       {
+        "ci": null,
+        "count": 2,
+        "hi": 3.0,
+        "key": "3",
+        "label": "3",
+        "lo": 3.0,
+        "pct": 66.66666666666667
+       },
+       {
+        "ci": null,
+        "count": 0,
+        "hi": 4.0,
+        "key": "4",
+        "label": "4",
+        "lo": 4.0,
+        "pct": 0.0
+       },
+       {
+        "ci": null,
+        "count": 0,
+        "hi": 5.0,
+        "key": "5",
+        "label": "5",
+        "lo": 5.0,
+        "pct": 0.0
+       },
+       {
+        "ci": null,
+        "count": 0,
+        "hi": 6.0,
+        "key": "6",
+        "label": "6",
+        "lo": 6.0,
+        "pct": 0.0
+       },
+       {
+        "ci": null,
+        "count": 1,
+        "hi": 7.0,
+        "key": "7",
+        "label": "7",
+        "lo": 7.0,
+        "pct": 33.333333333333336
+       },
+       {
+        "ci": null,
+        "count": 0,
+        "hi": 8.0,
+        "key": "8",
+        "label": "8",
+        "lo": 8.0,
+        "pct": 0.0
+       },
+       {
+        "ci": null,
+        "count": 0,
+        "hi": 9.0,
+        "key": "9",
+        "label": "9",
+        "lo": 9.0,
+        "pct": 0.0
+       },
+       {
+        "ci": null,
+        "count": 0,
+        "hi": 10.0,
+        "key": "10",
+        "label": "10",
+        "lo": 10.0,
+        "pct": 0.0
+       }
+      ],
+      "key": "all",
+      "label": "All responses",
+      "missing": false,
+      "n": 3,
+      "responses": 5,
+      "states": {
+       "answered": 3,
+       "invalid": 1,
+       "irrelevant": 0,
+       "notInVersion": 0,
+       "notReached": 1,
+       "unanswered": 0,
+       "unrecorded": 0
+      },
+      "stats": {
+       "bottom2": null,
+       "earliest": null,
+       "latest": null,
+       "max": 7.0,
+       "mean": 4.333333333333333,
+       "meanCi": null,
+       "meanLength": null,
+       "meanOptions": null,
+       "median": 3.0,
+       "min": 3.0,
+       "mode": null,
+       "n": 3,
+       "notAvailable": [],
+       "q1": 3.0,
+       "q3": 5.0,
+       "sd": 2.309401076758503,
+       "top2": null
+      }
+     }
+    ],
+    "label": "Slide",
+    "name": "sl",
+    "ordered": null,
+    "question": "sl",
+    "rows": null,
+    "states": {
+     "answered": 3,
+     "invalid": 1,
+     "irrelevant": 0,
+     "notInVersion": 0,
+     "notReached": 1,
+     "unanswered": 0,
+     "unrecorded": 0
+    },
+    "type": "slider",
+    "versionsUsed": [
+     1
+    ],
+    "warnings": []
+   },
+   {
+    "binEdges": [
+     10.0,
+     20.0,
+     30.0,
+     40.0,
+     50.0,
+     60.0,
+     70.0,
+     80.0,
+     90.0,
+     100.0
+    ],
+    "binUnit": null,
+    "binning": "bins",
+    "categories": null,
+    "facets": null,
+    "groups": [
+     {
+      "cells": [
+       {
+        "ci": null,
+        "count": 1,
+        "hi": 20.0,
+        "key": "0",
+        "label": "10–20",
+        "lo": 10.0,
+        "pct": 33.333333333333336
+       },
+       {
+        "ci": null,
+        "count": 0,
+        "hi": 30.0,
+        "key": "1",
+        "label": "20–30",
+        "lo": 20.0,
+        "pct": 0.0
+       },
+       {
+        "ci": null,
+        "count": 0,
+        "hi": 40.0,
+        "key": "2",
+        "label": "30–40",
+        "lo": 30.0,
+        "pct": 0.0
+       },
+       {
+        "ci": null,
+        "count": 0,
+        "hi": 50.0,
+        "key": "3",
+        "label": "40–50",
+        "lo": 40.0,
+        "pct": 0.0
+       },
+       {
+        "ci": null,
+        "count": 1,
+        "hi": 60.0,
+        "key": "4",
+        "label": "50–60",
+        "lo": 50.0,
+        "pct": 33.333333333333336
+       },
+       {
+        "ci": null,
+        "count": 0,
+        "hi": 70.0,
+        "key": "5",
+        "label": "60–70",
+        "lo": 60.0,
+        "pct": 0.0
+       },
+       {
+        "ci": null,
+        "count": 0,
+        "hi": 80.0,
+        "key": "6",
+        "label": "70–80",
+        "lo": 70.0,
+        "pct": 0.0
+       },
+       {
+        "ci": null,
+        "count": 0,
+        "hi": 90.0,
+        "key": "7",
+        "label": "80–90",
+        "lo": 80.0,
+        "pct": 0.0
+       },
+       {
+        "ci": null,
+        "count": 1,
+        "hi": 100.0,
+        "key": "8",
+        "label": "90–100",
+        "lo": 90.0,
+        "pct": 33.333333333333336
+       }
+      ],
+      "key": "all",
+      "label": "All responses",
+      "missing": false,
+      "n": 3,
+      "responses": 5,
+      "states": {
+       "answered": 3,
+       "invalid": 0,
+       "irrelevant": 0,
+       "notInVersion": 0,
+       "notReached": 1,
+       "unanswered": 1,
+       "unrecorded": 0
+      },
+      "stats": {
+       "bottom2": null,
+       "earliest": null,
+       "latest": null,
+       "max": 99.0,
+       "mean": 54.666666666666664,
+       "meanCi": null,
+       "meanLength": null,
+       "meanOptions": null,
+       "median": 55.0,
+       "min": 10.0,
+       "mode": null,
+       "n": 3,
+       "notAvailable": [],
+       "q1": 32.5,
+       "q3": 77.0,
+       "sd": 44.50093631973751,
+       "top2": null
+      }
+     }
+    ],
+    "label": "Big slide",
+    "name": "big",
+    "ordered": null,
+    "question": "big",
+    "rows": null,
+    "states": {
+     "answered": 3,
+     "invalid": 0,
+     "irrelevant": 0,
+     "notInVersion": 0,
+     "notReached": 1,
+     "unanswered": 1,
+     "unrecorded": 0
+    },
+    "type": "slider",
+    "versionsUsed": [
+     1
+    ],
+    "warnings": []
+   },
+   {
+    "binEdges": null,
+    "binUnit": "month",
+    "binning": "periods",
+    "categories": null,
+    "facets": null,
+    "groups": [
+     {
+      "cells": [
+       {
+        "ci": null,
+        "count": 2,
+        "hi": null,
+        "key": "2026-01",
+        "label": "2026-01",
+        "lo": null,
+        "pct": 66.66666666666667
+       },
+       {
+        "ci": null,
+        "count": 0,
+        "hi": null,
+        "key": "2026-02",
+        "label": "2026-02",
+        "lo": null,
+        "pct": 0.0
+       },
+       {
+        "ci": null,
+        "count": 1,
+        "hi": null,
+        "key": "2026-03",
+        "label": "2026-03",
+        "lo": null,
+        "pct": 33.333333333333336
+       }
+      ],
+      "key": "all",
+      "label": "All responses",
+      "missing": false,
+      "n": 3,
+      "responses": 5,
+      "states": {
+       "answered": 3,
+       "invalid": 1,
+       "irrelevant": 0,
+       "notInVersion": 0,
+       "notReached": 1,
+       "unanswered": 0,
+       "unrecorded": 0
+      },
+      "stats": {
+       "bottom2": null,
+       "earliest": "2026-01-15",
+       "latest": "2026-03-01",
+       "max": null,
+       "mean": null,
+       "meanCi": null,
+       "meanLength": null,
+       "meanOptions": null,
+       "median": null,
+       "min": null,
+       "mode": null,
+       "n": 3,
+       "notAvailable": [],
+       "q1": null,
+       "q3": null,
+       "sd": null,
+       "top2": null
+      }
+     }
+    ],
+    "label": "When?",
+    "name": "when",
+    "ordered": null,
+    "question": "when",
+    "rows": null,
+    "states": {
+     "answered": 3,
+     "invalid": 1,
+     "irrelevant": 0,
+     "notInVersion": 0,
+     "notReached": 1,
+     "unanswered": 0,
+     "unrecorded": 0
+    },
+    "type": "date",
+    "versionsUsed": [
+     1
+    ],
+    "warnings": []
+   },
+   {
+    "binEdges": null,
+    "binUnit": null,
+    "binning": null,
+    "categories": null,
+    "facets": null,
+    "groups": [
+     {
+      "cells": [],
+      "key": "all",
+      "label": "All responses",
+      "missing": false,
+      "n": 3,
+      "responses": 5,
+      "states": {
+       "answered": 3,
+       "invalid": 0,
+       "irrelevant": 0,
+       "notInVersion": 0,
+       "notReached": 1,
+       "unanswered": 1,
+       "unrecorded": 0
+      },
+      "stats": {
+       "bottom2": null,
+       "earliest": null,
+       "latest": null,
+       "max": null,
+       "mean": null,
+       "meanCi": null,
+       "meanLength": 4.0,
+       "meanOptions": null,
+       "median": null,
+       "min": null,
+       "mode": null,
+       "n": 3,
+       "notAvailable": [],
+       "q1": null,
+       "q3": null,
+       "sd": null,
+       "top2": null
+      }
+     }
+    ],
+    "label": "Why?",
+    "name": "why",
+    "ordered": null,
+    "question": "why",
+    "rows": null,
+    "states": {
+     "answered": 3,
+     "invalid": 0,
+     "irrelevant": 0,
+     "notInVersion": 0,
+     "notReached": 1,
+     "unanswered": 1,
+     "unrecorded": 0
+    },
+    "type": "text",
+    "versionsUsed": [
+     1
+    ],
+    "warnings": []
+   },
+   {
+    "binEdges": null,
+    "binUnit": null,
+    "binning": "categories",
+    "categories": [
+     {
+      "code": 1,
+      "key": "1",
+      "label": "L1"
+     },
+     {
+      "code": 2,
+      "key": "2",
+      "label": "L2"
+     },
+     {
+      "code": 3,
+      "key": "3",
+      "label": "L3"
+     },
+     {
+      "code": 4,
+      "key": "4",
+      "label": "L4"
+     },
+     {
+      "code": 5,
+      "key": "5",
+      "label": "L5"
+     }
+    ],
+    "facets": null,
+    "groups": [],
+    "label": "Grid",
+    "name": "grid",
+    "ordered": true,
+    "question": "grid",
+    "rows": [
+     {
+      "groups": [
+       {
+        "cells": [
+         {
+          "ci": null,
+          "count": 1,
+          "hi": null,
+          "key": "1",
+          "label": "L1",
+          "lo": null,
+          "pct": 33.333333333333336
+         },
+         {
+          "ci": null,
+          "count": 1,
+          "hi": null,
+          "key": "2",
+          "label": "L2",
+          "lo": null,
+          "pct": 33.333333333333336
+         },
+         {
+          "ci": null,
+          "count": 0,
+          "hi": null,
+          "key": "3",
+          "label": "L3",
+          "lo": null,
+          "pct": 0.0
+         },
+         {
+          "ci": null,
+          "count": 0,
+          "hi": null,
+          "key": "4",
+          "label": "L4",
+          "lo": null,
+          "pct": 0.0
+         },
+         {
+          "ci": null,
+          "count": 1,
+          "hi": null,
+          "key": "5",
+          "label": "L5",
+          "lo": null,
+          "pct": 33.333333333333336
+         }
+        ],
+        "key": "all",
+        "label": "All responses",
+        "missing": false,
+        "n": 3,
+        "responses": 5,
+        "states": {
+         "answered": 3,
+         "invalid": 0,
+         "irrelevant": 0,
+         "notInVersion": 0,
+         "notReached": 1,
+         "unanswered": 0,
+         "unrecorded": 1
+        },
+        "stats": {
+         "bottom2": 66.66666666666667,
+         "earliest": null,
+         "latest": null,
+         "max": null,
+         "mean": null,
+         "meanCi": null,
+         "meanLength": null,
+         "meanOptions": null,
+         "median": "2",
+         "min": null,
+         "mode": [
+          "1",
+          "2",
+          "5"
+         ],
+         "n": 3,
+         "notAvailable": [],
+         "q1": null,
+         "q3": null,
+         "sd": null,
+         "top2": 33.333333333333336
+        }
+       }
+      ],
+      "id": "grid_r1",
+      "label": "Row one",
+      "name": "grid_r1",
+      "states": {
+       "answered": 3,
+       "invalid": 0,
+       "irrelevant": 0,
+       "notInVersion": 0,
+       "notReached": 1,
+       "unanswered": 0,
+       "unrecorded": 1
+      }
+     },
+     {
+      "groups": [
+       {
+        "cells": [
+         {
+          "ci": null,
+          "count": 0,
+          "hi": null,
+          "key": "1",
+          "label": "L1",
+          "lo": null,
+          "pct": 0.0
+         },
+         {
+          "ci": null,
+          "count": 1,
+          "hi": null,
+          "key": "2",
+          "label": "L2",
+          "lo": null,
+          "pct": 50.0
+         },
+         {
+          "ci": null,
+          "count": 0,
+          "hi": null,
+          "key": "3",
+          "label": "L3",
+          "lo": null,
+          "pct": 0.0
+         },
+         {
+          "ci": null,
+          "count": 0,
+          "hi": null,
+          "key": "4",
+          "label": "L4",
+          "lo": null,
+          "pct": 0.0
+         },
+         {
+          "ci": null,
+          "count": 1,
+          "hi": null,
+          "key": "5",
+          "label": "L5",
+          "lo": null,
+          "pct": 50.0
+         }
+        ],
+        "key": "all",
+        "label": "All responses",
+        "missing": false,
+        "n": 2,
+        "responses": 5,
+        "states": {
+         "answered": 2,
+         "invalid": 0,
+         "irrelevant": 0,
+         "notInVersion": 0,
+         "notReached": 1,
+         "unanswered": 1,
+         "unrecorded": 1
+        },
+        "stats": {
+         "bottom2": 50.0,
+         "earliest": null,
+         "latest": null,
+         "max": null,
+         "mean": null,
+         "meanCi": null,
+         "meanLength": null,
+         "meanOptions": null,
+         "median": "2",
+         "min": null,
+         "mode": [
+          "2",
+          "5"
+         ],
+         "n": 2,
+         "notAvailable": [],
+         "q1": null,
+         "q3": null,
+         "sd": null,
+         "top2": 50.0
+        }
+       }
+      ],
+      "id": "grid_r2",
+      "label": "Row two",
+      "name": "grid_r2",
+      "states": {
+       "answered": 2,
+       "invalid": 0,
+       "irrelevant": 0,
+       "notInVersion": 0,
+       "notReached": 1,
+       "unanswered": 1,
+       "unrecorded": 1
+      }
+     }
+    ],
+    "states": null,
+    "type": "matrix",
+    "versionsUsed": [
+     1
+    ],
+    "warnings": []
+   }
+  ],
+  "denominator": "answered",
+  "generatedAt": "2026-10-17T12:00:00Z",
+  "language": "en",
+  "languages": [
+   "en",
+   "cy"
+  ],
+  "queryHash": "aba46e5344bb917f",
+  "responses": 5,
+  "split": null,
+  "surveyId": "fixture-survey",
+  "versionsUsed": [
+   1
+  ],
+  "warnings": [],
+  "watermark": "fixture-watermark"
+ },
+ "split": {
+  "cached": false,
+  "cards": [
+   {
+    "binEdges": null,
+    "binUnit": null,
+    "binning": "categories",
+    "categories": [
+     {
+      "code": "apple",
+      "key": "apple",
+      "label": "Apple"
+     },
+     {
+      "code": "banana",
+      "key": "banana",
+      "label": "Banana"
+     },
+     {
+      "code": "cherry",
+      "key": "cherry",
+      "label": "Cherry"
+     }
+    ],
+    "facets": null,
+    "groups": [
+     {
+      "cells": [
+       {
+        "ci": null,
+        "count": 1,
+        "hi": null,
+        "key": "apple",
+        "label": "Apple",
+        "lo": null,
+        "pct": 50.0
+       },
+       {
+        "ci": null,
+        "count": 1,
+        "hi": null,
+        "key": "banana",
+        "label": "Banana",
+        "lo": null,
+        "pct": 50.0
+       },
+       {
+        "ci": null,
+        "count": 0,
+        "hi": null,
+        "key": "cherry",
+        "label": "Cherry",
+        "lo": null,
+        "pct": 0.0
+       }
+      ],
+      "key": "a",
+      "label": "a",
+      "missing": false,
+      "n": 2,
+      "responses": 2,
+      "states": {
+       "answered": 2,
+       "invalid": 0,
+       "irrelevant": 0,
+       "notInVersion": 0,
+       "notReached": 0,
+       "unanswered": 0,
+       "unrecorded": 0
+      },
+      "stats": {
+       "bottom2": null,
+       "earliest": null,
+       "latest": null,
+       "max": null,
+       "mean": null,
+       "meanCi": null,
+       "meanLength": null,
+       "meanOptions": null,
+       "median": null,
+       "min": null,
+       "mode": [
+        "apple",
+        "banana"
+       ],
+       "n": 2,
+       "notAvailable": [],
+       "q1": null,
+       "q3": null,
+       "sd": null,
+       "top2": null
+      }
+     },
+     {
+      "cells": [
+       {
+        "ci": null,
+        "count": 1,
+        "hi": null,
+        "key": "apple",
+        "label": "Apple",
+        "lo": null,
+        "pct": 100.0
+       },
+       {
+        "ci": null,
+        "count": 0,
+        "hi": null,
+        "key": "banana",
+        "label": "Banana",
+        "lo": null,
+        "pct": 0.0
+       },
+       {
+        "ci": null,
+        "count": 0,
+        "hi": null,
+        "key": "cherry",
+        "label": "Cherry",
+        "lo": null,
+        "pct": 0.0
+       }
+      ],
+      "key": "b",
+      "label": "b",
+      "missing": false,
+      "n": 1,
+      "responses": 2,
+      "states": {
+       "answered": 1,
+       "invalid": 0,
+       "irrelevant": 0,
+       "notInVersion": 0,
+       "notReached": 0,
+       "unanswered": 1,
+       "unrecorded": 0
+      },
+      "stats": {
+       "bottom2": null,
+       "earliest": null,
+       "latest": null,
+       "max": null,
+       "mean": null,
+       "meanCi": null,
+       "meanLength": null,
+       "meanOptions": null,
+       "median": null,
+       "min": null,
+       "mode": [
+        "apple"
+       ],
+       "n": 1,
+       "notAvailable": [],
+       "q1": null,
+       "q3": null,
+       "sd": null,
+       "top2": null
+      }
+     },
+     {
+      "cells": [
+       {
+        "ci": null,
+        "count": 0,
+        "hi": null,
+        "key": "apple",
+        "label": "Apple",
+        "lo": null,
+        "pct": null
+       },
+       {
+        "ci": null,
+        "count": 0,
+        "hi": null,
+        "key": "banana",
+        "label": "Banana",
+        "lo": null,
+        "pct": null
+       },
+       {
+        "ci": null,
+        "count": 0,
+        "hi": null,
+        "key": "cherry",
+        "label": "Cherry",
+        "lo": null,
+        "pct": null
+       }
+      ],
+      "key": "_missing",
+      "label": "No condition",
+      "missing": true,
+      "n": 0,
+      "responses": 1,
+      "states": {
+       "answered": 0,
+       "invalid": 1,
+       "irrelevant": 0,
+       "notInVersion": 0,
+       "notReached": 0,
+       "unanswered": 0,
+       "unrecorded": 0
+      },
+      "stats": {
+       "bottom2": null,
+       "earliest": null,
+       "latest": null,
+       "max": null,
+       "mean": null,
+       "meanCi": null,
+       "meanLength": null,
+       "meanOptions": null,
+       "median": null,
+       "min": null,
+       "mode": null,
+       "n": 0,
+       "notAvailable": [
+        "mode"
+       ],
+       "q1": null,
+       "q3": null,
+       "sd": null,
+       "top2": null
+      }
+     }
+    ],
+    "label": "Fruit?",
+    "name": "fruit",
+    "ordered": false,
+    "question": "fruit",
+    "rows": null,
+    "states": {
+     "answered": 3,
+     "invalid": 1,
+     "irrelevant": 0,
+     "notInVersion": 0,
+     "notReached": 0,
+     "unanswered": 1,
+     "unrecorded": 0
+    },
+    "type": "single",
+    "versionsUsed": [
+     1
+    ],
+    "warnings": []
+   },
+   {
+    "binEdges": null,
+    "binUnit": null,
+    "binning": "categories",
+    "categories": [
+     {
+      "code": 1,
+      "key": "1",
+      "label": "L1"
+     },
+     {
+      "code": 2,
+      "key": "2",
+      "label": "L2"
+     },
+     {
+      "code": 3,
+      "key": "3",
+      "label": "L3"
+     },
+     {
+      "code": 4,
+      "key": "4",
+      "label": "L4"
+     },
+     {
+      "code": 5,
+      "key": "5",
+      "label": "L5"
+     }
+    ],
+    "facets": null,
+    "groups": [
+     {
+      "cells": [
+       {
+        "ci": null,
+        "count": 0,
+        "hi": null,
+        "key": "1",
+        "label": "L1",
+        "lo": null,
+        "pct": 0.0
+       },
+       {
+        "ci": null,
+        "count": 0,
+        "hi": null,
+        "key": "2",
+        "label": "L2",
+        "lo": null,
+        "pct": 0.0
+       },
+       {
+        "ci": null,
+        "count": 0,
+        "hi": null,
+        "key": "3",
+        "label": "L3",
+        "lo": null,
+        "pct": 0.0
+       },
+       {
+        "ci": null,
+        "count": 1,
+        "hi": null,
+        "key": "4",
+        "label": "L4",
+        "lo": null,
+        "pct": 50.0
+       },
+       {
+        "ci": null,
+        "count": 1,
+        "hi": null,
+        "key": "5",
+        "label": "L5",
+        "lo": null,
+        "pct": 50.0
+       }
+      ],
+      "key": "a",
+      "label": "a",
+      "missing": false,
+      "n": 2,
+      "responses": 2,
+      "states": {
+       "answered": 2,
+       "invalid": 0,
+       "irrelevant": 0,
+       "notInVersion": 0,
+       "notReached": 0,
+       "unanswered": 0,
+       "unrecorded": 0
+      },
+      "stats": {
+       "bottom2": 0.0,
+       "earliest": null,
+       "latest": null,
+       "max": null,
+       "mean": null,
+       "meanCi": null,
+       "meanLength": null,
+       "meanOptions": null,
+       "median": "4",
+       "min": null,
+       "mode": [
+        "4",
+        "5"
+       ],
+       "n": 2,
+       "notAvailable": [],
+       "q1": null,
+       "q3": null,
+       "sd": null,
+       "top2": 100.0
+      }
+     },
+     {
+      "cells": [
+       {
+        "ci": null,
+        "count": 1,
+        "hi": null,
+        "key": "1",
+        "label": "L1",
+        "lo": null,
+        "pct": 100.0
+       },
+       {
+        "ci": null,
+        "count": 0,
+        "hi": null,
+        "key": "2",
+        "label": "L2",
+        "lo": null,
+        "pct": 0.0
+       },
+       {
+        "ci": null,
+        "count": 0,
+        "hi": null,
+        "key": "3",
+        "label": "L3",
+        "lo": null,
+        "pct": 0.0
+       },
+       {
+        "ci": null,
+        "count": 0,
+        "hi": null,
+        "key": "4",
+        "label": "L4",
+        "lo": null,
+        "pct": 0.0
+       },
+       {
+        "ci": null,
+        "count": 0,
+        "hi": null,
+        "key": "5",
+        "label": "L5",
+        "lo": null,
+        "pct": 0.0
+       }
+      ],
+      "key": "b",
+      "label": "b",
+      "missing": false,
+      "n": 1,
+      "responses": 2,
+      "states": {
+       "answered": 1,
+       "invalid": 0,
+       "irrelevant": 0,
+       "notInVersion": 0,
+       "notReached": 0,
+       "unanswered": 1,
+       "unrecorded": 0
+      },
+      "stats": {
+       "bottom2": 100.0,
+       "earliest": null,
+       "latest": null,
+       "max": null,
+       "mean": null,
+       "meanCi": null,
+       "meanLength": null,
+       "meanOptions": null,
+       "median": "1",
+       "min": null,
+       "mode": [
+        "1"
+       ],
+       "n": 1,
+       "notAvailable": [],
+       "q1": null,
+       "q3": null,
+       "sd": null,
+       "top2": 0.0
+      }
+     },
+     {
+      "cells": [
+       {
+        "ci": null,
+        "count": 0,
+        "hi": null,
+        "key": "1",
+        "label": "L1",
+        "lo": null,
+        "pct": 0.0
+       },
+       {
+        "ci": null,
+        "count": 1,
+        "hi": null,
+        "key": "2",
+        "label": "L2",
+        "lo": null,
+        "pct": 100.0
+       },
+       {
+        "ci": null,
+        "count": 0,
+        "hi": null,
+        "key": "3",
+        "label": "L3",
+        "lo": null,
+        "pct": 0.0
+       },
+       {
+        "ci": null,
+        "count": 0,
+        "hi": null,
+        "key": "4",
+        "label": "L4",
+        "lo": null,
+        "pct": 0.0
+       },
+       {
+        "ci": null,
+        "count": 0,
+        "hi": null,
+        "key": "5",
+        "label": "L5",
+        "lo": null,
+        "pct": 0.0
+       }
+      ],
+      "key": "_missing",
+      "label": "No condition",
+      "missing": true,
+      "n": 1,
+      "responses": 1,
+      "states": {
+       "answered": 1,
+       "invalid": 0,
+       "irrelevant": 0,
+       "notInVersion": 0,
+       "notReached": 0,
+       "unanswered": 0,
+       "unrecorded": 0
+      },
+      "stats": {
+       "bottom2": 100.0,
+       "earliest": null,
+       "latest": null,
+       "max": null,
+       "mean": null,
+       "meanCi": null,
+       "meanLength": null,
+       "meanOptions": null,
+       "median": "2",
+       "min": null,
+       "mode": [
+        "2"
+       ],
+       "n": 1,
+       "notAvailable": [],
+       "q1": null,
+       "q3": null,
+       "sd": null,
+       "top2": 0.0
+      }
+     }
+    ],
+    "label": "Satisfied?",
+    "name": "sat",
+    "ordered": true,
+    "question": "sat",
+    "rows": null,
+    "states": {
+     "answered": 4,
+     "invalid": 0,
+     "irrelevant": 0,
+     "notInVersion": 0,
+     "notReached": 0,
+     "unanswered": 1,
+     "unrecorded": 0
+    },
+    "type": "single",
+    "versionsUsed": [
+     1
+    ],
+    "warnings": []
+   },
+   {
+    "binEdges": null,
+    "binUnit": null,
+    "binning": "categories",
+    "categories": [
+     {
+      "code": "red",
+      "key": "red",
+      "label": "Red"
+     },
+     {
+      "code": "green",
+      "key": "green",
+      "label": "Green"
+     },
+     {
+      "code": "blue",
+      "key": "blue",
+      "label": "Blue"
+     }
+    ],
+    "facets": null,
+    "groups": [
+     {
+      "cells": [
+       {
+        "ci": null,
+        "count": 2,
+        "hi": null,
+        "key": "red",
+        "label": "Red",
+        "lo": null,
+        "pct": 100.0
+       },
+       {
+        "ci": null,
+        "count": 1,
+        "hi": null,
+        "key": "green",
+        "label": "Green",
+        "lo": null,
+        "pct": 50.0
+       },
+       {
+        "ci": null,
+        "count": 0,
+        "hi": null,
+        "key": "blue",
+        "label": "Blue",
+        "lo": null,
+        "pct": 0.0
+       }
+      ],
+      "key": "a",
+      "label": "a",
+      "missing": false,
+      "n": 2,
+      "responses": 2,
+      "states": {
+       "answered": 2,
+       "invalid": 0,
+       "irrelevant": 0,
+       "notInVersion": 0,
+       "notReached": 0,
+       "unanswered": 0,
+       "unrecorded": 0
+      },
+      "stats": {
+       "bottom2": null,
+       "earliest": null,
+       "latest": null,
+       "max": null,
+       "mean": null,
+       "meanCi": null,
+       "meanLength": null,
+       "meanOptions": 1.5,
+       "median": null,
+       "min": null,
+       "mode": null,
+       "n": 2,
+       "notAvailable": [],
+       "q1": null,
+       "q3": null,
+       "sd": null,
+       "top2": null
+      }
+     },
+     {
+      "cells": [
+       {
+        "ci": null,
+        "count": 0,
+        "hi": null,
+        "key": "red",
+        "label": "Red",
+        "lo": null,
+        "pct": 0.0
+       },
+       {
+        "ci": null,
+        "count": 0,
+        "hi": null,
+        "key": "green",
+        "label": "Green",
+        "lo": null,
+        "pct": 0.0
+       },
+       {
+        "ci": null,
+        "count": 0,
+        "hi": null,
+        "key": "blue",
+        "label": "Blue",
+        "lo": null,
+        "pct": 0.0
+       }
+      ],
+      "key": "b",
+      "label": "b",
+      "missing": false,
+      "n": 1,
+      "responses": 2,
+      "states": {
+       "answered": 1,
+       "invalid": 0,
+       "irrelevant": 0,
+       "notInVersion": 0,
+       "notReached": 0,
+       "unanswered": 1,
+       "unrecorded": 0
+      },
+      "stats": {
+       "bottom2": null,
+       "earliest": null,
+       "latest": null,
+       "max": null,
+       "mean": null,
+       "meanCi": null,
+       "meanLength": null,
+       "meanOptions": 0.0,
+       "median": null,
+       "min": null,
+       "mode": null,
+       "n": 1,
+       "notAvailable": [],
+       "q1": null,
+       "q3": null,
+       "sd": null,
+       "top2": null
+      }
+     },
+     {
+      "cells": [
+       {
+        "ci": null,
+        "count": 0,
+        "hi": null,
+        "key": "red",
+        "label": "Red",
+        "lo": null,
+        "pct": 0.0
+       },
+       {
+        "ci": null,
+        "count": 1,
+        "hi": null,
+        "key": "green",
+        "label": "Green",
+        "lo": null,
+        "pct": 100.0
+       },
+       {
+        "ci": null,
+        "count": 1,
+        "hi": null,
+        "key": "blue",
+        "label": "Blue",
+        "lo": null,
+        "pct": 100.0
+       }
+      ],
+      "key": "_missing",
+      "label": "No condition",
+      "missing": true,
+      "n": 1,
+      "responses": 1,
+      "states": {
+       "answered": 1,
+       "invalid": 0,
+       "irrelevant": 0,
+       "notInVersion": 0,
+       "notReached": 0,
+       "unanswered": 0,
+       "unrecorded": 0
+      },
+      "stats": {
+       "bottom2": null,
+       "earliest": null,
+       "latest": null,
+       "max": null,
+       "mean": null,
+       "meanCi": null,
+       "meanLength": null,
+       "meanOptions": 2.0,
+       "median": null,
+       "min": null,
+       "mode": null,
+       "n": 1,
+       "notAvailable": [],
+       "q1": null,
+       "q3": null,
+       "sd": null,
+       "top2": null
+      }
+     }
+    ],
+    "label": "Colours?",
+    "name": "col",
+    "ordered": null,
+    "question": "col",
+    "rows": null,
+    "states": {
+     "answered": 4,
+     "invalid": 0,
+     "irrelevant": 0,
+     "notInVersion": 0,
+     "notReached": 0,
+     "unanswered": 1,
+     "unrecorded": 0
+    },
+    "type": "multi",
+    "versionsUsed": [
+     1
+    ],
+    "warnings": []
+   },
+   {
+    "binEdges": [
+     20.0,
+     21.0,
+     22.0,
+     23.0,
+     24.0,
+     25.0,
+     26.0,
+     27.0,
+     28.0,
+     29.0,
+     30.0,
+     31.0,
+     32.0,
+     33.0,
+     34.0,
+     35.0,
+     36.0,
+     37.0,
+     38.0,
+     39.0,
+     40.0,
+     41.0
+    ],
+    "binUnit": null,
+    "binning": "bins",
+    "categories": null,
+    "facets": null,
+    "groups": [
+     {
+      "cells": [
+       {
+        "ci": null,
+        "count": 1,
+        "hi": 21.0,
+        "key": "0",
+        "label": "20",
+        "lo": 20.0,
+        "pct": 50.0
+       },
+       {
+        "ci": null,
+        "count": 0,
+        "hi": 22.0,
+        "key": "1",
+        "label": "21",
+        "lo": 21.0,
+        "pct": 0.0
+       },
+       {
+        "ci": null,
+        "count": 0,
+        "hi": 23.0,
+        "key": "2",
+        "label": "22",
+        "lo": 22.0,
+        "pct": 0.0
+       },
+       {
+        "ci": null,
+        "count": 0,
+        "hi": 24.0,
+        "key": "3",
+        "label": "23",
+        "lo": 23.0,
+        "pct": 0.0
+       },
+       {
+        "ci": null,
+        "count": 0,
+        "hi": 25.0,
+        "key": "4",
+        "label": "24",
+        "lo": 24.0,
+        "pct": 0.0
+       },
+       {
+        "ci": null,
+        "count": 0,
+        "hi": 26.0,
+        "key": "5",
+        "label": "25",
+        "lo": 25.0,
+        "pct": 0.0
+       },
+       {
+        "ci": null,
+        "count": 0,
+        "hi": 27.0,
+        "key": "6",
+        "label": "26",
+        "lo": 26.0,
+        "pct": 0.0
+       },
+       {
+        "ci": null,
+        "count": 0,
+        "hi": 28.0,
+        "key": "7",
+        "label": "27",
+        "lo": 27.0,
+        "pct": 0.0
+       },
+       {
+        "ci": null,
+        "count": 0,
+        "hi": 29.0,
+        "key": "8",
+        "label": "28",
+        "lo": 28.0,
+        "pct": 0.0
+       },
+       {
+        "ci": null,
+        "count": 0,
+        "hi": 30.0,
+        "key": "9",
+        "label": "29",
+        "lo": 29.0,
+        "pct": 0.0
+       },
+       {
+        "ci": null,
+        "count": 1,
+        "hi": 31.0,
+        "key": "10",
+        "label": "30",
+        "lo": 30.0,
+        "pct": 50.0
+       },
+       {
+        "ci": null,
+        "count": 0,
+        "hi": 32.0,
+        "key": "11",
+        "label": "31",
+        "lo": 31.0,
+        "pct": 0.0
+       },
+       {
+        "ci": null,
+        "count": 0,
+        "hi": 33.0,
+        "key": "12",
+        "label": "32",
+        "lo": 32.0,
+        "pct": 0.0
+       },
+       {
+        "ci": null,
+        "count": 0,
+        "hi": 34.0,
+        "key": "13",
+        "label": "33",
+        "lo": 33.0,
+        "pct": 0.0
+       },
+       {
+        "ci": null,
+        "count": 0,
+        "hi": 35.0,
+        "key": "14",
+        "label": "34",
+        "lo": 34.0,
+        "pct": 0.0
+       },
+       {
+        "ci": null,
+        "count": 0,
+        "hi": 36.0,
+        "key": "15",
+        "label": "35",
+        "lo": 35.0,
+        "pct": 0.0
+       },
+       {
+        "ci": null,
+        "count": 0,
+        "hi": 37.0,
+        "key": "16",
+        "label": "36",
+        "lo": 36.0,
+        "pct": 0.0
+       },
+       {
+        "ci": null,
+        "count": 0,
+        "hi": 38.0,
+        "key": "17",
+        "label": "37",
+        "lo": 37.0,
+        "pct": 0.0
+       },
+       {
+        "ci": null,
+        "count": 0,
+        "hi": 39.0,
+        "key": "18",
+        "label": "38",
+        "lo": 38.0,
+        "pct": 0.0
+       },
+       {
+        "ci": null,
+        "count": 0,
+        "hi": 40.0,
+        "key": "19",
+        "label": "39",
+        "lo": 39.0,
+        "pct": 0.0
+       },
+       {
+        "ci": null,
+        "count": 0,
+        "hi": 41.0,
+        "key": "20",
+        "label": "40",
+        "lo": 40.0,
+        "pct": 0.0
+       }
+      ],
+      "key": "a",
+      "label": "a",
+      "missing": false,
+      "n": 2,
+      "responses": 2,
+      "states": {
+       "answered": 2,
+       "invalid": 0,
+       "irrelevant": 0,
+       "notInVersion": 0,
+       "notReached": 0,
+       "unanswered": 0,
+       "unrecorded": 0
+      },
+      "stats": {
+       "bottom2": null,
+       "earliest": null,
+       "latest": null,
+       "max": 30.0,
+       "mean": 25.0,
+       "meanCi": null,
+       "meanLength": null,
+       "meanOptions": null,
+       "median": 25.0,
+       "min": 20.0,
+       "mode": null,
+       "n": 2,
+       "notAvailable": [],
+       "q1": 22.5,
+       "q3": 27.5,
+       "sd": 7.0710678118654755,
+       "top2": null
+      }
+     },
+     {
+      "cells": [
+       {
+        "ci": null,
+        "count": 0,
+        "hi": 21.0,
+        "key": "0",
+        "label": "20",
+        "lo": 20.0,
+        "pct": 0.0
+       },
+       {
+        "ci": null,
+        "count": 0,
+        "hi": 22.0,
+        "key": "1",
+        "label": "21",
+        "lo": 21.0,
+        "pct": 0.0
+       },
+       {
+        "ci": null,
+        "count": 0,
+        "hi": 23.0,
+        "key": "2",
+        "label": "22",
+        "lo": 22.0,
+        "pct": 0.0
+       },
+       {
+        "ci": null,
+        "count": 0,
+        "hi": 24.0,
+        "key": "3",
+        "label": "23",
+        "lo": 23.0,
+        "pct": 0.0
+       },
+       {
+        "ci": null,
+        "count": 0,
+        "hi": 25.0,
+        "key": "4",
+        "label": "24",
+        "lo": 24.0,
+        "pct": 0.0
+       },
+       {
+        "ci": null,
+        "count": 1,
+        "hi": 26.0,
+        "key": "5",
+        "label": "25",
+        "lo": 25.0,
+        "pct": 100.0
+       },
+       {
+        "ci": null,
+        "count": 0,
+        "hi": 27.0,
+        "key": "6",
+        "label": "26",
+        "lo": 26.0,
+        "pct": 0.0
+       },
+       {
+        "ci": null,
+        "count": 0,
+        "hi": 28.0,
+        "key": "7",
+        "label": "27",
+        "lo": 27.0,
+        "pct": 0.0
+       },
+       {
+        "ci": null,
+        "count": 0,
+        "hi": 29.0,
+        "key": "8",
+        "label": "28",
+        "lo": 28.0,
+        "pct": 0.0
+       },
+       {
+        "ci": null,
+        "count": 0,
+        "hi": 30.0,
+        "key": "9",
+        "label": "29",
+        "lo": 29.0,
+        "pct": 0.0
+       },
+       {
+        "ci": null,
+        "count": 0,
+        "hi": 31.0,
+        "key": "10",
+        "label": "30",
+        "lo": 30.0,
+        "pct": 0.0
+       },
+       {
+        "ci": null,
+        "count": 0,
+        "hi": 32.0,
+        "key": "11",
+        "label": "31",
+        "lo": 31.0,
+        "pct": 0.0
+       },
+       {
+        "ci": null,
+        "count": 0,
+        "hi": 33.0,
+        "key": "12",
+        "label": "32",
+        "lo": 32.0,
+        "pct": 0.0
+       },
+       {
+        "ci": null,
+        "count": 0,
+        "hi": 34.0,
+        "key": "13",
+        "label": "33",
+        "lo": 33.0,
+        "pct": 0.0
+       },
+       {
+        "ci": null,
+        "count": 0,
+        "hi": 35.0,
+        "key": "14",
+        "label": "34",
+        "lo": 34.0,
+        "pct": 0.0
+       },
+       {
+        "ci": null,
+        "count": 0,
+        "hi": 36.0,
+        "key": "15",
+        "label": "35",
+        "lo": 35.0,
+        "pct": 0.0
+       },
+       {
+        "ci": null,
+        "count": 0,
+        "hi": 37.0,
+        "key": "16",
+        "label": "36",
+        "lo": 36.0,
+        "pct": 0.0
+       },
+       {
+        "ci": null,
+        "count": 0,
+        "hi": 38.0,
+        "key": "17",
+        "label": "37",
+        "lo": 37.0,
+        "pct": 0.0
+       },
+       {
+        "ci": null,
+        "count": 0,
+        "hi": 39.0,
+        "key": "18",
+        "label": "38",
+        "lo": 38.0,
+        "pct": 0.0
+       },
+       {
+        "ci": null,
+        "count": 0,
+        "hi": 40.0,
+        "key": "19",
+        "label": "39",
+        "lo": 39.0,
+        "pct": 0.0
+       },
+       {
+        "ci": null,
+        "count": 0,
+        "hi": 41.0,
+        "key": "20",
+        "label": "40",
+        "lo": 40.0,
+        "pct": 0.0
+       }
+      ],
+      "key": "b",
+      "label": "b",
+      "missing": false,
+      "n": 1,
+      "responses": 2,
+      "states": {
+       "answered": 1,
+       "invalid": 0,
+       "irrelevant": 1,
+       "notInVersion": 0,
+       "notReached": 0,
+       "unanswered": 0,
+       "unrecorded": 0
+      },
+      "stats": {
+       "bottom2": null,
+       "earliest": null,
+       "latest": null,
+       "max": 25.0,
+       "mean": 25.0,
+       "meanCi": null,
+       "meanLength": null,
+       "meanOptions": null,
+       "median": 25.0,
+       "min": 25.0,
+       "mode": null,
+       "n": 1,
+       "notAvailable": [
+        "sd"
+       ],
+       "q1": 25.0,
+       "q3": 25.0,
+       "sd": null,
+       "top2": null
+      }
+     },
+     {
+      "cells": [
+       {
+        "ci": null,
+        "count": 0,
+        "hi": 21.0,
+        "key": "0",
+        "label": "20",
+        "lo": 20.0,
+        "pct": 0.0
+       },
+       {
+        "ci": null,
+        "count": 0,
+        "hi": 22.0,
+        "key": "1",
+        "label": "21",
+        "lo": 21.0,
+        "pct": 0.0
+       },
+       {
+        "ci": null,
+        "count": 0,
+        "hi": 23.0,
+        "key": "2",
+        "label": "22",
+        "lo": 22.0,
+        "pct": 0.0
+       },
+       {
+        "ci": null,
+        "count": 0,
+        "hi": 24.0,
+        "key": "3",
+        "label": "23",
+        "lo": 23.0,
+        "pct": 0.0
+       },
+       {
+        "ci": null,
+        "count": 0,
+        "hi": 25.0,
+        "key": "4",
+        "label": "24",
+        "lo": 24.0,
+        "pct": 0.0
+       },
+       {
+        "ci": null,
+        "count": 0,
+        "hi": 26.0,
+        "key": "5",
+        "label": "25",
+        "lo": 25.0,
+        "pct": 0.0
+       },
+       {
+        "ci": null,
+        "count": 0,
+        "hi": 27.0,
+        "key": "6",
+        "label": "26",
+        "lo": 26.0,
+        "pct": 0.0
+       },
+       {
+        "ci": null,
+        "count": 0,
+        "hi": 28.0,
+        "key": "7",
+        "label": "27",
+        "lo": 27.0,
+        "pct": 0.0
+       },
+       {
+        "ci": null,
+        "count": 0,
+        "hi": 29.0,
+        "key": "8",
+        "label": "28",
+        "lo": 28.0,
+        "pct": 0.0
+       },
+       {
+        "ci": null,
+        "count": 0,
+        "hi": 30.0,
+        "key": "9",
+        "label": "29",
+        "lo": 29.0,
+        "pct": 0.0
+       },
+       {
+        "ci": null,
+        "count": 0,
+        "hi": 31.0,
+        "key": "10",
+        "label": "30",
+        "lo": 30.0,
+        "pct": 0.0
+       },
+       {
+        "ci": null,
+        "count": 0,
+        "hi": 32.0,
+        "key": "11",
+        "label": "31",
+        "lo": 31.0,
+        "pct": 0.0
+       },
+       {
+        "ci": null,
+        "count": 0,
+        "hi": 33.0,
+        "key": "12",
+        "label": "32",
+        "lo": 32.0,
+        "pct": 0.0
+       },
+       {
+        "ci": null,
+        "count": 0,
+        "hi": 34.0,
+        "key": "13",
+        "label": "33",
+        "lo": 33.0,
+        "pct": 0.0
+       },
+       {
+        "ci": null,
+        "count": 0,
+        "hi": 35.0,
+        "key": "14",
+        "label": "34",
+        "lo": 34.0,
+        "pct": 0.0
+       },
+       {
+        "ci": null,
+        "count": 0,
+        "hi": 36.0,
+        "key": "15",
+        "label": "35",
+        "lo": 35.0,
+        "pct": 0.0
+       },
+       {
+        "ci": null,
+        "count": 0,
+        "hi": 37.0,
+        "key": "16",
+        "label": "36",
+        "lo": 36.0,
+        "pct": 0.0
+       },
+       {
+        "ci": null,
+        "count": 0,
+        "hi": 38.0,
+        "key": "17",
+        "label": "37",
+        "lo": 37.0,
+        "pct": 0.0
+       },
+       {
+        "ci": null,
+        "count": 0,
+        "hi": 39.0,
+        "key": "18",
+        "label": "38",
+        "lo": 38.0,
+        "pct": 0.0
+       },
+       {
+        "ci": null,
+        "count": 0,
+        "hi": 40.0,
+        "key": "19",
+        "label": "39",
+        "lo": 39.0,
+        "pct": 0.0
+       },
+       {
+        "ci": null,
+        "count": 1,
+        "hi": 41.0,
+        "key": "20",
+        "label": "40",
+        "lo": 40.0,
+        "pct": 100.0
+       }
+      ],
+      "key": "_missing",
+      "label": "No condition",
+      "missing": true,
+      "n": 1,
+      "responses": 1,
+      "states": {
+       "answered": 1,
+       "invalid": 0,
+       "irrelevant": 0,
+       "notInVersion": 0,
+       "notReached": 0,
+       "unanswered": 0,
+       "unrecorded": 0
+      },
+      "stats": {
+       "bottom2": null,
+       "earliest": null,
+       "latest": null,
+       "max": 40.0,
+       "mean": 40.0,
+       "meanCi": null,
+       "meanLength": null,
+       "meanOptions": null,
+       "median": 40.0,
+       "min": 40.0,
+       "mode": null,
+       "n": 1,
+       "notAvailable": [
+        "sd"
+       ],
+       "q1": 40.0,
+       "q3": 40.0,
+       "sd": null,
+       "top2": null
+      }
+     }
+    ],
+    "label": "Age?",
+    "name": "age",
+    "ordered": null,
+    "question": "age",
+    "rows": null,
+    "states": {
+     "answered": 4,
+     "invalid": 0,
+     "irrelevant": 1,
+     "notInVersion": 0,
+     "notReached": 0,
+     "unanswered": 0,
+     "unrecorded": 0
+    },
+    "type": "integer",
+    "versionsUsed": [
+     1
+    ],
+    "warnings": []
+   },
+   {
+    "binEdges": [
+     2.5,
+     2.55,
+     2.6,
+     2.65,
+     2.7,
+     2.75,
+     2.8,
+     2.85,
+     2.9,
+     2.95,
+     3.0,
+     3.05
+    ],
+    "binUnit": null,
+    "binning": "bins",
+    "categories": null,
+    "facets": null,
+    "groups": [
+     {
+      "cells": [
+       {
+        "ci": null,
+        "count": 1,
+        "hi": 2.55,
+        "key": "0",
+        "label": "2.5–2.55",
+        "lo": 2.5,
+        "pct": 50.0
+       },
+       {
+        "ci": null,
+        "count": 0,
+        "hi": 2.6,
+        "key": "1",
+        "label": "2.55–2.6",
+        "lo": 2.55,
+        "pct": 0.0
+       },
+       {
+        "ci": null,
+        "count": 0,
+        "hi": 2.65,
+        "key": "2",
+        "label": "2.6–2.65",
+        "lo": 2.6,
+        "pct": 0.0
+       },
+       {
+        "ci": null,
+        "count": 0,
+        "hi": 2.7,
+        "key": "3",
+        "label": "2.65–2.7",
+        "lo": 2.65,
+        "pct": 0.0
+       },
+       {
+        "ci": null,
+        "count": 0,
+        "hi": 2.75,
+        "key": "4",
+        "label": "2.7–2.75",
+        "lo": 2.7,
+        "pct": 0.0
+       },
+       {
+        "ci": null,
+        "count": 0,
+        "hi": 2.8,
+        "key": "5",
+        "label": "2.75–2.8",
+        "lo": 2.75,
+        "pct": 0.0
+       },
+       {
+        "ci": null,
+        "count": 0,
+        "hi": 2.85,
+        "key": "6",
+        "label": "2.8–2.85",
+        "lo": 2.8,
+        "pct": 0.0
+       },
+       {
+        "ci": null,
+        "count": 0,
+        "hi": 2.9,
+        "key": "7",
+        "label": "2.85–2.9",
+        "lo": 2.85,
+        "pct": 0.0
+       },
+       {
+        "ci": null,
+        "count": 0,
+        "hi": 2.95,
+        "key": "8",
+        "label": "2.9–2.95",
+        "lo": 2.9,
+        "pct": 0.0
+       },
+       {
+        "ci": null,
+        "count": 0,
+        "hi": 3.0,
+        "key": "9",
+        "label": "2.95–3",
+        "lo": 2.95,
+        "pct": 0.0
+       },
+       {
+        "ci": null,
+        "count": 1,
+        "hi": 3.05,
+        "key": "10",
+        "label": "3–3.05",
+        "lo": 3.0,
+        "pct": 50.0
+       }
+      ],
+      "key": "a",
+      "label": "a",
+      "missing": false,
+      "n": 2,
+      "responses": 2,
+      "states": {
+       "answered": 2,
+       "invalid": 0,
+       "irrelevant": 0,
+       "notInVersion": 0,
+       "notReached": 0,
+       "unanswered": 0,
+       "unrecorded": 0
+      },
+      "stats": {
+       "bottom2": null,
+       "earliest": null,
+       "latest": null,
+       "max": 3.0,
+       "mean": 2.75,
+       "meanCi": null,
+       "meanLength": null,
+       "meanOptions": null,
+       "median": 2.75,
+       "min": 2.5,
+       "mode": null,
+       "n": 2,
+       "notAvailable": [],
+       "q1": 2.625,
+       "q3": 2.875,
+       "sd": 0.3535533905932738,
+       "top2": null
+      }
+     },
+     {
+      "cells": [
+       {
+        "ci": null,
+        "count": 0,
+        "hi": 2.55,
+        "key": "0",
+        "label": "2.5–2.55",
+        "lo": 2.5,
+        "pct": null
+       },
+       {
+        "ci": null,
+        "count": 0,
+        "hi": 2.6,
+        "key": "1",
+        "label": "2.55–2.6",
+        "lo": 2.55,
+        "pct": null
+       },
+       {
+        "ci": null,
+        "count": 0,
+        "hi": 2.65,
+        "key": "2",
+        "label": "2.6–2.65",
+        "lo": 2.6,
+        "pct": null
+       },
+       {
+        "ci": null,
+        "count": 0,
+        "hi": 2.7,
+        "key": "3",
+        "label": "2.65–2.7",
+        "lo": 2.65,
+        "pct": null
+       },
+       {
+        "ci": null,
+        "count": 0,
+        "hi": 2.75,
+        "key": "4",
+        "label": "2.7–2.75",
+        "lo": 2.7,
+        "pct": null
+       },
+       {
+        "ci": null,
+        "count": 0,
+        "hi": 2.8,
+        "key": "5",
+        "label": "2.75–2.8",
+        "lo": 2.75,
+        "pct": null
+       },
+       {
+        "ci": null,
+        "count": 0,
+        "hi": 2.85,
+        "key": "6",
+        "label": "2.8–2.85",
+        "lo": 2.8,
+        "pct": null
+       },
+       {
+        "ci": null,
+        "count": 0,
+        "hi": 2.9,
+        "key": "7",
+        "label": "2.85–2.9",
+        "lo": 2.85,
+        "pct": null
+       },
+       {
+        "ci": null,
+        "count": 0,
+        "hi": 2.95,
+        "key": "8",
+        "label": "2.9–2.95",
+        "lo": 2.9,
+        "pct": null
+       },
+       {
+        "ci": null,
+        "count": 0,
+        "hi": 3.0,
+        "key": "9",
+        "label": "2.95–3",
+        "lo": 2.95,
+        "pct": null
+       },
+       {
+        "ci": null,
+        "count": 0,
+        "hi": 3.05,
+        "key": "10",
+        "label": "3–3.05",
+        "lo": 3.0,
+        "pct": null
+       }
+      ],
+      "key": "b",
+      "label": "b",
+      "missing": false,
+      "n": 0,
+      "responses": 2,
+      "states": {
+       "answered": 0,
+       "invalid": 0,
+       "irrelevant": 1,
+       "notInVersion": 0,
+       "notReached": 0,
+       "unanswered": 1,
+       "unrecorded": 0
+      },
+      "stats": {
+       "bottom2": null,
+       "earliest": null,
+       "latest": null,
+       "max": null,
+       "mean": null,
+       "meanCi": null,
+       "meanLength": null,
+       "meanOptions": null,
+       "median": null,
+       "min": null,
+       "mode": null,
+       "n": 0,
+       "notAvailable": [
+        "mean",
+        "median",
+        "q1",
+        "q3",
+        "min",
+        "max",
+        "sd"
+       ],
+       "q1": null,
+       "q3": null,
+       "sd": null,
+       "top2": null
+      }
+     },
+     {
+      "cells": [
+       {
+        "ci": null,
+        "count": 0,
+        "hi": 2.55,
+        "key": "0",
+        "label": "2.5–2.55",
+        "lo": 2.5,
+        "pct": null
+       },
+       {
+        "ci": null,
+        "count": 0,
+        "hi": 2.6,
+        "key": "1",
+        "label": "2.55–2.6",
+        "lo": 2.55,
+        "pct": null
+       },
+       {
+        "ci": null,
+        "count": 0,
+        "hi": 2.65,
+        "key": "2",
+        "label": "2.6–2.65",
+        "lo": 2.6,
+        "pct": null
+       },
+       {
+        "ci": null,
+        "count": 0,
+        "hi": 2.7,
+        "key": "3",
+        "label": "2.65–2.7",
+        "lo": 2.65,
+        "pct": null
+       },
+       {
+        "ci": null,
+        "count": 0,
+        "hi": 2.75,
+        "key": "4",
+        "label": "2.7–2.75",
+        "lo": 2.7,
+        "pct": null
+       },
+       {
+        "ci": null,
+        "count": 0,
+        "hi": 2.8,
+        "key": "5",
+        "label": "2.75–2.8",
+        "lo": 2.75,
+        "pct": null
+       },
+       {
+        "ci": null,
+        "count": 0,
+        "hi": 2.85,
+        "key": "6",
+        "label": "2.8–2.85",
+        "lo": 2.8,
+        "pct": null
+       },
+       {
+        "ci": null,
+        "count": 0,
+        "hi": 2.9,
+        "key": "7",
+        "label": "2.85–2.9",
+        "lo": 2.85,
+        "pct": null
+       },
+       {
+        "ci": null,
+        "count": 0,
+        "hi": 2.95,
+        "key": "8",
+        "label": "2.9–2.95",
+        "lo": 2.9,
+        "pct": null
+       },
+       {
+        "ci": null,
+        "count": 0,
+        "hi": 3.0,
+        "key": "9",
+        "label": "2.95–3",
+        "lo": 2.95,
+        "pct": null
+       },
+       {
+        "ci": null,
+        "count": 0,
+        "hi": 3.05,
+        "key": "10",
+        "label": "3–3.05",
+        "lo": 3.0,
+        "pct": null
+       }
+      ],
+      "key": "_missing",
+      "label": "No condition",
+      "missing": true,
+      "n": 0,
+      "responses": 1,
+      "states": {
+       "answered": 0,
+       "invalid": 1,
+       "irrelevant": 0,
+       "notInVersion": 0,
+       "notReached": 0,
+       "unanswered": 0,
+       "unrecorded": 0
+      },
+      "stats": {
+       "bottom2": null,
+       "earliest": null,
+       "latest": null,
+       "max": null,
+       "mean": null,
+       "meanCi": null,
+       "meanLength": null,
+       "meanOptions": null,
+       "median": null,
+       "min": null,
+       "mode": null,
+       "n": 0,
+       "notAvailable": [
+        "mean",
+        "median",
+        "q1",
+        "q3",
+        "min",
+        "max",
+        "sd"
+       ],
+       "q1": null,
+       "q3": null,
+       "sd": null,
+       "top2": null
+      }
+     }
+    ],
+    "label": "Price?",
+    "name": "price",
+    "ordered": null,
+    "question": "price",
+    "rows": null,
+    "states": {
+     "answered": 2,
+     "invalid": 1,
+     "irrelevant": 1,
+     "notInVersion": 0,
+     "notReached": 0,
+     "unanswered": 1,
+     "unrecorded": 0
+    },
+    "type": "decimal",
+    "versionsUsed": [
+     1
+    ],
+    "warnings": []
+   },
+   {
+    "binEdges": null,
+    "binUnit": null,
+    "binning": "values",
+    "categories": null,
+    "facets": null,
+    "groups": [
+     {
+      "cells": [
+       {
+        "ci": null,
+        "count": 0,
+        "hi": 0.0,
+        "key": "0",
+        "label": "0",
+        "lo": 0.0,
+        "pct": 0.0
+       },
+       {
+        "ci": null,
+        "count": 0,
+        "hi": 1.0,
+        "key": "1",
+        "label": "1",
+        "lo": 1.0,
+        "pct": 0.0
+       },
+       {
+        "ci": null,
+        "count": 0,
+        "hi": 2.0,
+        "key": "2",
+        "label": "2",
+        "lo": 2.0,
+        "pct": 0.0
+       },
+       {
+        "ci": null,
+        "count": 2,
+        "hi": 3.0,
+        "key": "3",
+        "label": "3",
+        "lo": 3.0,
+        "pct": 100.0
+       },
+       {
+        "ci": null,
+        "count": 0,
+        "hi": 4.0,
+        "key": "4",
+        "label": "4",
+        "lo": 4.0,
+        "pct": 0.0
+       },
+       {
+        "ci": null,
+        "count": 0,
+        "hi": 5.0,
+        "key": "5",
+        "label": "5",
+        "lo": 5.0,
+        "pct": 0.0
+       },
+       {
+        "ci": null,
+        "count": 0,
+        "hi": 6.0,
+        "key": "6",
+        "label": "6",
+        "lo": 6.0,
+        "pct": 0.0
+       },
+       {
+        "ci": null,
+        "count": 0,
+        "hi": 7.0,
+        "key": "7",
+        "label": "7",
+        "lo": 7.0,
+        "pct": 0.0
+       },
+       {
+        "ci": null,
+        "count": 0,
+        "hi": 8.0,
+        "key": "8",
+        "label": "8",
+        "lo": 8.0,
+        "pct": 0.0
+       },
+       {
+        "ci": null,
+        "count": 0,
+        "hi": 9.0,
+        "key": "9",
+        "label": "9",
+        "lo": 9.0,
+        "pct": 0.0
+       },
+       {
+        "ci": null,
+        "count": 0,
+        "hi": 10.0,
+        "key": "10",
+        "label": "10",
+        "lo": 10.0,
+        "pct": 0.0
+       }
+      ],
+      "key": "a",
+      "label": "a",
+      "missing": false,
+      "n": 2,
+      "responses": 2,
+      "states": {
+       "answered": 2,
+       "invalid": 0,
+       "irrelevant": 0,
+       "notInVersion": 0,
+       "notReached": 0,
+       "unanswered": 0,
+       "unrecorded": 0
+      },
+      "stats": {
+       "bottom2": null,
+       "earliest": null,
+       "latest": null,
+       "max": 3.0,
+       "mean": 3.0,
+       "meanCi": null,
+       "meanLength": null,
+       "meanOptions": null,
+       "median": 3.0,
+       "min": 3.0,
+       "mode": null,
+       "n": 2,
+       "notAvailable": [],
+       "q1": 3.0,
+       "q3": 3.0,
+       "sd": 0.0,
+       "top2": null
+      }
+     },
+     {
+      "cells": [
+       {
+        "ci": null,
+        "count": 0,
+        "hi": 0.0,
+        "key": "0",
+        "label": "0",
+        "lo": 0.0,
+        "pct": 0.0
+       },
+       {
+        "ci": null,
+        "count": 0,
+        "hi": 1.0,
+        "key": "1",
+        "label": "1",
+        "lo": 1.0,
+        "pct": 0.0
+       },
+       {
+        "ci": null,
+        "count": 0,
+        "hi": 2.0,
+        "key": "2",
+        "label": "2",
+        "lo": 2.0,
+        "pct": 0.0
+       },
+       {
+        "ci": null,
+        "count": 0,
+        "hi": 3.0,
+        "key": "3",
+        "label": "3",
+        "lo": 3.0,
+        "pct": 0.0
+       },
+       {
+        "ci": null,
+        "count": 0,
+        "hi": 4.0,
+        "key": "4",
+        "label": "4",
+        "lo": 4.0,
+        "pct": 0.0
+       },
+       {
+        "ci": null,
+        "count": 0,
+        "hi": 5.0,
+        "key": "5",
+        "label": "5",
+        "lo": 5.0,
+        "pct": 0.0
+       },
+       {
+        "ci": null,
+        "count": 0,
+        "hi": 6.0,
+        "key": "6",
+        "label": "6",
+        "lo": 6.0,
+        "pct": 0.0
+       },
+       {
+        "ci": null,
+        "count": 1,
+        "hi": 7.0,
+        "key": "7",
+        "label": "7",
+        "lo": 7.0,
+        "pct": 100.0
+       },
+       {
+        "ci": null,
+        "count": 0,
+        "hi": 8.0,
+        "key": "8",
+        "label": "8",
+        "lo": 8.0,
+        "pct": 0.0
+       },
+       {
+        "ci": null,
+        "count": 0,
+        "hi": 9.0,
+        "key": "9",
+        "label": "9",
+        "lo": 9.0,
+        "pct": 0.0
+       },
+       {
+        "ci": null,
+        "count": 0,
+        "hi": 10.0,
+        "key": "10",
+        "label": "10",
+        "lo": 10.0,
+        "pct": 0.0
+       }
+      ],
+      "key": "b",
+      "label": "b",
+      "missing": false,
+      "n": 1,
+      "responses": 2,
+      "states": {
+       "answered": 1,
+       "invalid": 0,
+       "irrelevant": 0,
+       "notInVersion": 0,
+       "notReached": 1,
+       "unanswered": 0,
+       "unrecorded": 0
+      },
+      "stats": {
+       "bottom2": null,
+       "earliest": null,
+       "latest": null,
+       "max": 7.0,
+       "mean": 7.0,
+       "meanCi": null,
+       "meanLength": null,
+       "meanOptions": null,
+       "median": 7.0,
+       "min": 7.0,
+       "mode": null,
+       "n": 1,
+       "notAvailable": [
+        "sd"
+       ],
+       "q1": 7.0,
+       "q3": 7.0,
+       "sd": null,
+       "top2": null
+      }
+     },
+     {
+      "cells": [
+       {
+        "ci": null,
+        "count": 0,
+        "hi": 0.0,
+        "key": "0",
+        "label": "0",
+        "lo": 0.0,
+        "pct": null
+       },
+       {
+        "ci": null,
+        "count": 0,
+        "hi": 1.0,
+        "key": "1",
+        "label": "1",
+        "lo": 1.0,
+        "pct": null
+       },
+       {
+        "ci": null,
+        "count": 0,
+        "hi": 2.0,
+        "key": "2",
+        "label": "2",
+        "lo": 2.0,
+        "pct": null
+       },
+       {
+        "ci": null,
+        "count": 0,
+        "hi": 3.0,
+        "key": "3",
+        "label": "3",
+        "lo": 3.0,
+        "pct": null
+       },
+       {
+        "ci": null,
+        "count": 0,
+        "hi": 4.0,
+        "key": "4",
+        "label": "4",
+        "lo": 4.0,
+        "pct": null
+       },
+       {
+        "ci": null,
+        "count": 0,
+        "hi": 5.0,
+        "key": "5",
+        "label": "5",
+        "lo": 5.0,
+        "pct": null
+       },
+       {
+        "ci": null,
+        "count": 0,
+        "hi": 6.0,
+        "key": "6",
+        "label": "6",
+        "lo": 6.0,
+        "pct": null
+       },
+       {
+        "ci": null,
+        "count": 0,
+        "hi": 7.0,
+        "key": "7",
+        "label": "7",
+        "lo": 7.0,
+        "pct": null
+       },
+       {
+        "ci": null,
+        "count": 0,
+        "hi": 8.0,
+        "key": "8",
+        "label": "8",
+        "lo": 8.0,
+        "pct": null
+       },
+       {
+        "ci": null,
+        "count": 0,
+        "hi": 9.0,
+        "key": "9",
+        "label": "9",
+        "lo": 9.0,
+        "pct": null
+       },
+       {
+        "ci": null,
+        "count": 0,
+        "hi": 10.0,
+        "key": "10",
+        "label": "10",
+        "lo": 10.0,
+        "pct": null
+       }
+      ],
+      "key": "_missing",
+      "label": "No condition",
+      "missing": true,
+      "n": 0,
+      "responses": 1,
+      "states": {
+       "answered": 0,
+       "invalid": 1,
+       "irrelevant": 0,
+       "notInVersion": 0,
+       "notReached": 0,
+       "unanswered": 0,
+       "unrecorded": 0
+      },
+      "stats": {
+       "bottom2": null,
+       "earliest": null,
+       "latest": null,
+       "max": null,
+       "mean": null,
+       "meanCi": null,
+       "meanLength": null,
+       "meanOptions": null,
+       "median": null,
+       "min": null,
+       "mode": null,
+       "n": 0,
+       "notAvailable": [
+        "mean",
+        "median",
+        "q1",
+        "q3",
+        "min",
+        "max",
+        "sd"
+       ],
+       "q1": null,
+       "q3": null,
+       "sd": null,
+       "top2": null
+      }
+     }
+    ],
+    "label": "Slide",
+    "name": "sl",
+    "ordered": null,
+    "question": "sl",
+    "rows": null,
+    "states": {
+     "answered": 3,
+     "invalid": 1,
+     "irrelevant": 0,
+     "notInVersion": 0,
+     "notReached": 1,
+     "unanswered": 0,
+     "unrecorded": 0
+    },
+    "type": "slider",
+    "versionsUsed": [
+     1
+    ],
+    "warnings": []
+   },
+   {
+    "binEdges": [
+     10.0,
+     20.0,
+     30.0,
+     40.0,
+     50.0,
+     60.0,
+     70.0,
+     80.0,
+     90.0,
+     100.0
+    ],
+    "binUnit": null,
+    "binning": "bins",
+    "categories": null,
+    "facets": null,
+    "groups": [
+     {
+      "cells": [
+       {
+        "ci": null,
+        "count": 1,
+        "hi": 20.0,
+        "key": "0",
+        "label": "10–20",
+        "lo": 10.0,
+        "pct": 50.0
+       },
+       {
+        "ci": null,
+        "count": 0,
+        "hi": 30.0,
+        "key": "1",
+        "label": "20–30",
+        "lo": 20.0,
+        "pct": 0.0
+       },
+       {
+        "ci": null,
+        "count": 0,
+        "hi": 40.0,
+        "key": "2",
+        "label": "30–40",
+        "lo": 30.0,
+        "pct": 0.0
+       },
+       {
+        "ci": null,
+        "count": 0,
+        "hi": 50.0,
+        "key": "3",
+        "label": "40–50",
+        "lo": 40.0,
+        "pct": 0.0
+       },
+       {
+        "ci": null,
+        "count": 1,
+        "hi": 60.0,
+        "key": "4",
+        "label": "50–60",
+        "lo": 50.0,
+        "pct": 50.0
+       },
+       {
+        "ci": null,
+        "count": 0,
+        "hi": 70.0,
+        "key": "5",
+        "label": "60–70",
+        "lo": 60.0,
+        "pct": 0.0
+       },
+       {
+        "ci": null,
+        "count": 0,
+        "hi": 80.0,
+        "key": "6",
+        "label": "70–80",
+        "lo": 70.0,
+        "pct": 0.0
+       },
+       {
+        "ci": null,
+        "count": 0,
+        "hi": 90.0,
+        "key": "7",
+        "label": "80–90",
+        "lo": 80.0,
+        "pct": 0.0
+       },
+       {
+        "ci": null,
+        "count": 0,
+        "hi": 100.0,
+        "key": "8",
+        "label": "90–100",
+        "lo": 90.0,
+        "pct": 0.0
+       }
+      ],
+      "key": "a",
+      "label": "a",
+      "missing": false,
+      "n": 2,
+      "responses": 2,
+      "states": {
+       "answered": 2,
+       "invalid": 0,
+       "irrelevant": 0,
+       "notInVersion": 0,
+       "notReached": 0,
+       "unanswered": 0,
+       "unrecorded": 0
+      },
+      "stats": {
+       "bottom2": null,
+       "earliest": null,
+       "latest": null,
+       "max": 55.0,
+       "mean": 32.5,
+       "meanCi": null,
+       "meanLength": null,
+       "meanOptions": null,
+       "median": 32.5,
+       "min": 10.0,
+       "mode": null,
+       "n": 2,
+       "notAvailable": [],
+       "q1": 21.25,
+       "q3": 43.75,
+       "sd": 31.81980515339464,
+       "top2": null
+      }
+     },
+     {
+      "cells": [
+       {
+        "ci": null,
+        "count": 0,
+        "hi": 20.0,
+        "key": "0",
+        "label": "10–20",
+        "lo": 10.0,
+        "pct": 0.0
+       },
+       {
+        "ci": null,
+        "count": 0,
+        "hi": 30.0,
+        "key": "1",
+        "label": "20–30",
+        "lo": 20.0,
+        "pct": 0.0
+       },
+       {
+        "ci": null,
+        "count": 0,
+        "hi": 40.0,
+        "key": "2",
+        "label": "30–40",
+        "lo": 30.0,
+        "pct": 0.0
+       },
+       {
+        "ci": null,
+        "count": 0,
+        "hi": 50.0,
+        "key": "3",
+        "label": "40–50",
+        "lo": 40.0,
+        "pct": 0.0
+       },
+       {
+        "ci": null,
+        "count": 0,
+        "hi": 60.0,
+        "key": "4",
+        "label": "50–60",
+        "lo": 50.0,
+        "pct": 0.0
+       },
+       {
+        "ci": null,
+        "count": 0,
+        "hi": 70.0,
+        "key": "5",
+        "label": "60–70",
+        "lo": 60.0,
+        "pct": 0.0
+       },
+       {
+        "ci": null,
+        "count": 0,
+        "hi": 80.0,
+        "key": "6",
+        "label": "70–80",
+        "lo": 70.0,
+        "pct": 0.0
+       },
+       {
+        "ci": null,
+        "count": 0,
+        "hi": 90.0,
+        "key": "7",
+        "label": "80–90",
+        "lo": 80.0,
+        "pct": 0.0
+       },
+       {
+        "ci": null,
+        "count": 1,
+        "hi": 100.0,
+        "key": "8",
+        "label": "90–100",
+        "lo": 90.0,
+        "pct": 100.0
+       }
+      ],
+      "key": "b",
+      "label": "b",
+      "missing": false,
+      "n": 1,
+      "responses": 2,
+      "states": {
+       "answered": 1,
+       "invalid": 0,
+       "irrelevant": 0,
+       "notInVersion": 0,
+       "notReached": 1,
+       "unanswered": 0,
+       "unrecorded": 0
+      },
+      "stats": {
+       "bottom2": null,
+       "earliest": null,
+       "latest": null,
+       "max": 99.0,
+       "mean": 99.0,
+       "meanCi": null,
+       "meanLength": null,
+       "meanOptions": null,
+       "median": 99.0,
+       "min": 99.0,
+       "mode": null,
+       "n": 1,
+       "notAvailable": [
+        "sd"
+       ],
+       "q1": 99.0,
+       "q3": 99.0,
+       "sd": null,
+       "top2": null
+      }
+     },
+     {
+      "cells": [
+       {
+        "ci": null,
+        "count": 0,
+        "hi": 20.0,
+        "key": "0",
+        "label": "10–20",
+        "lo": 10.0,
+        "pct": null
+       },
+       {
+        "ci": null,
+        "count": 0,
+        "hi": 30.0,
+        "key": "1",
+        "label": "20–30",
+        "lo": 20.0,
+        "pct": null
+       },
+       {
+        "ci": null,
+        "count": 0,
+        "hi": 40.0,
+        "key": "2",
+        "label": "30–40",
+        "lo": 30.0,
+        "pct": null
+       },
+       {
+        "ci": null,
+        "count": 0,
+        "hi": 50.0,
+        "key": "3",
+        "label": "40–50",
+        "lo": 40.0,
+        "pct": null
+       },
+       {
+        "ci": null,
+        "count": 0,
+        "hi": 60.0,
+        "key": "4",
+        "label": "50–60",
+        "lo": 50.0,
+        "pct": null
+       },
+       {
+        "ci": null,
+        "count": 0,
+        "hi": 70.0,
+        "key": "5",
+        "label": "60–70",
+        "lo": 60.0,
+        "pct": null
+       },
+       {
+        "ci": null,
+        "count": 0,
+        "hi": 80.0,
+        "key": "6",
+        "label": "70–80",
+        "lo": 70.0,
+        "pct": null
+       },
+       {
+        "ci": null,
+        "count": 0,
+        "hi": 90.0,
+        "key": "7",
+        "label": "80–90",
+        "lo": 80.0,
+        "pct": null
+       },
+       {
+        "ci": null,
+        "count": 0,
+        "hi": 100.0,
+        "key": "8",
+        "label": "90–100",
+        "lo": 90.0,
+        "pct": null
+       }
+      ],
+      "key": "_missing",
+      "label": "No condition",
+      "missing": true,
+      "n": 0,
+      "responses": 1,
+      "states": {
+       "answered": 0,
+       "invalid": 0,
+       "irrelevant": 0,
+       "notInVersion": 0,
+       "notReached": 0,
+       "unanswered": 1,
+       "unrecorded": 0
+      },
+      "stats": {
+       "bottom2": null,
+       "earliest": null,
+       "latest": null,
+       "max": null,
+       "mean": null,
+       "meanCi": null,
+       "meanLength": null,
+       "meanOptions": null,
+       "median": null,
+       "min": null,
+       "mode": null,
+       "n": 0,
+       "notAvailable": [
+        "mean",
+        "median",
+        "q1",
+        "q3",
+        "min",
+        "max",
+        "sd"
+       ],
+       "q1": null,
+       "q3": null,
+       "sd": null,
+       "top2": null
+      }
+     }
+    ],
+    "label": "Big slide",
+    "name": "big",
+    "ordered": null,
+    "question": "big",
+    "rows": null,
+    "states": {
+     "answered": 3,
+     "invalid": 0,
+     "irrelevant": 0,
+     "notInVersion": 0,
+     "notReached": 1,
+     "unanswered": 1,
+     "unrecorded": 0
+    },
+    "type": "slider",
+    "versionsUsed": [
+     1
+    ],
+    "warnings": []
+   },
+   {
+    "binEdges": null,
+    "binUnit": "month",
+    "binning": "periods",
+    "categories": null,
+    "facets": null,
+    "groups": [
+     {
+      "cells": [
+       {
+        "ci": null,
+        "count": 2,
+        "hi": null,
+        "key": "2026-01",
+        "label": "2026-01",
+        "lo": null,
+        "pct": 100.0
+       },
+       {
+        "ci": null,
+        "count": 0,
+        "hi": null,
+        "key": "2026-02",
+        "label": "2026-02",
+        "lo": null,
+        "pct": 0.0
+       },
+       {
+        "ci": null,
+        "count": 0,
+        "hi": null,
+        "key": "2026-03",
+        "label": "2026-03",
+        "lo": null,
+        "pct": 0.0
+       }
+      ],
+      "key": "a",
+      "label": "a",
+      "missing": false,
+      "n": 2,
+      "responses": 2,
+      "states": {
+       "answered": 2,
+       "invalid": 0,
+       "irrelevant": 0,
+       "notInVersion": 0,
+       "notReached": 0,
+       "unanswered": 0,
+       "unrecorded": 0
+      },
+      "stats": {
+       "bottom2": null,
+       "earliest": "2026-01-15",
+       "latest": "2026-01-20",
+       "max": null,
+       "mean": null,
+       "meanCi": null,
+       "meanLength": null,
+       "meanOptions": null,
+       "median": null,
+       "min": null,
+       "mode": null,
+       "n": 2,
+       "notAvailable": [],
+       "q1": null,
+       "q3": null,
+       "sd": null,
+       "top2": null
+      }
+     },
+     {
+      "cells": [
+       {
+        "ci": null,
+        "count": 0,
+        "hi": null,
+        "key": "2026-01",
+        "label": "2026-01",
+        "lo": null,
+        "pct": 0.0
+       },
+       {
+        "ci": null,
+        "count": 0,
+        "hi": null,
+        "key": "2026-02",
+        "label": "2026-02",
+        "lo": null,
+        "pct": 0.0
+       },
+       {
+        "ci": null,
+        "count": 1,
+        "hi": null,
+        "key": "2026-03",
+        "label": "2026-03",
+        "lo": null,
+        "pct": 100.0
+       }
+      ],
+      "key": "b",
+      "label": "b",
+      "missing": false,
+      "n": 1,
+      "responses": 2,
+      "states": {
+       "answered": 1,
+       "invalid": 0,
+       "irrelevant": 0,
+       "notInVersion": 0,
+       "notReached": 1,
+       "unanswered": 0,
+       "unrecorded": 0
+      },
+      "stats": {
+       "bottom2": null,
+       "earliest": "2026-03-01",
+       "latest": "2026-03-01",
+       "max": null,
+       "mean": null,
+       "meanCi": null,
+       "meanLength": null,
+       "meanOptions": null,
+       "median": null,
+       "min": null,
+       "mode": null,
+       "n": 1,
+       "notAvailable": [],
+       "q1": null,
+       "q3": null,
+       "sd": null,
+       "top2": null
+      }
+     },
+     {
+      "cells": [
+       {
+        "ci": null,
+        "count": 0,
+        "hi": null,
+        "key": "2026-01",
+        "label": "2026-01",
+        "lo": null,
+        "pct": null
+       },
+       {
+        "ci": null,
+        "count": 0,
+        "hi": null,
+        "key": "2026-02",
+        "label": "2026-02",
+        "lo": null,
+        "pct": null
+       },
+       {
+        "ci": null,
+        "count": 0,
+        "hi": null,
+        "key": "2026-03",
+        "label": "2026-03",
+        "lo": null,
+        "pct": null
+       }
+      ],
+      "key": "_missing",
+      "label": "No condition",
+      "missing": true,
+      "n": 0,
+      "responses": 1,
+      "states": {
+       "answered": 0,
+       "invalid": 1,
+       "irrelevant": 0,
+       "notInVersion": 0,
+       "notReached": 0,
+       "unanswered": 0,
+       "unrecorded": 0
+      },
+      "stats": {
+       "bottom2": null,
+       "earliest": null,
+       "latest": null,
+       "max": null,
+       "mean": null,
+       "meanCi": null,
+       "meanLength": null,
+       "meanOptions": null,
+       "median": null,
+       "min": null,
+       "mode": null,
+       "n": 0,
+       "notAvailable": [
+        "earliest",
+        "latest"
+       ],
+       "q1": null,
+       "q3": null,
+       "sd": null,
+       "top2": null
+      }
+     }
+    ],
+    "label": "When?",
+    "name": "when",
+    "ordered": null,
+    "question": "when",
+    "rows": null,
+    "states": {
+     "answered": 3,
+     "invalid": 1,
+     "irrelevant": 0,
+     "notInVersion": 0,
+     "notReached": 1,
+     "unanswered": 0,
+     "unrecorded": 0
+    },
+    "type": "date",
+    "versionsUsed": [
+     1
+    ],
+    "warnings": []
+   },
+   {
+    "binEdges": null,
+    "binUnit": null,
+    "binning": null,
+    "categories": null,
+    "facets": null,
+    "groups": [
+     {
+      "cells": [],
+      "key": "a",
+      "label": "a",
+      "missing": false,
+      "n": 2,
+      "responses": 2,
+      "states": {
+       "answered": 2,
+       "invalid": 0,
+       "irrelevant": 0,
+       "notInVersion": 0,
+       "notReached": 0,
+       "unanswered": 0,
+       "unrecorded": 0
+      },
+      "stats": {
+       "bottom2": null,
+       "earliest": null,
+       "latest": null,
+       "max": null,
+       "mean": null,
+       "meanCi": null,
+       "meanLength": 5.0,
+       "meanOptions": null,
+       "median": null,
+       "min": null,
+       "mode": null,
+       "n": 2,
+       "notAvailable": [],
+       "q1": null,
+       "q3": null,
+       "sd": null,
+       "top2": null
+      }
+     },
+     {
+      "cells": [],
+      "key": "b",
+      "label": "b",
+      "missing": false,
+      "n": 0,
+      "responses": 2,
+      "states": {
+       "answered": 0,
+       "invalid": 0,
+       "irrelevant": 0,
+       "notInVersion": 0,
+       "notReached": 1,
+       "unanswered": 1,
+       "unrecorded": 0
+      },
+      "stats": {
+       "bottom2": null,
+       "earliest": null,
+       "latest": null,
+       "max": null,
+       "mean": null,
+       "meanCi": null,
+       "meanLength": null,
+       "meanOptions": null,
+       "median": null,
+       "min": null,
+       "mode": null,
+       "n": 0,
+       "notAvailable": [
+        "meanLength"
+       ],
+       "q1": null,
+       "q3": null,
+       "sd": null,
+       "top2": null
+      }
+     },
+     {
+      "cells": [],
+      "key": "_missing",
+      "label": "No condition",
+      "missing": true,
+      "n": 1,
+      "responses": 1,
+      "states": {
+       "answered": 1,
+       "invalid": 0,
+       "irrelevant": 0,
+       "notInVersion": 0,
+       "notReached": 0,
+       "unanswered": 0,
+       "unrecorded": 0
+      },
+      "stats": {
+       "bottom2": null,
+       "earliest": null,
+       "latest": null,
+       "max": null,
+       "mean": null,
+       "meanCi": null,
+       "meanLength": 2.0,
+       "meanOptions": null,
+       "median": null,
+       "min": null,
+       "mode": null,
+       "n": 1,
+       "notAvailable": [],
+       "q1": null,
+       "q3": null,
+       "sd": null,
+       "top2": null
+      }
+     }
+    ],
+    "label": "Why?",
+    "name": "why",
+    "ordered": null,
+    "question": "why",
+    "rows": null,
+    "states": {
+     "answered": 3,
+     "invalid": 0,
+     "irrelevant": 0,
+     "notInVersion": 0,
+     "notReached": 1,
+     "unanswered": 1,
+     "unrecorded": 0
+    },
+    "type": "text",
+    "versionsUsed": [
+     1
+    ],
+    "warnings": []
+   },
+   {
+    "binEdges": null,
+    "binUnit": null,
+    "binning": "categories",
+    "categories": [
+     {
+      "code": 1,
+      "key": "1",
+      "label": "L1"
+     },
+     {
+      "code": 2,
+      "key": "2",
+      "label": "L2"
+     },
+     {
+      "code": 3,
+      "key": "3",
+      "label": "L3"
+     },
+     {
+      "code": 4,
+      "key": "4",
+      "label": "L4"
+     },
+     {
+      "code": 5,
+      "key": "5",
+      "label": "L5"
+     }
+    ],
+    "facets": null,
+    "groups": [],
+    "label": "Grid",
+    "name": "grid",
+    "ordered": true,
+    "question": "grid",
+    "rows": [
+     {
+      "groups": [
+       {
+        "cells": [
+         {
+          "ci": null,
+          "count": 1,
+          "hi": null,
+          "key": "1",
+          "label": "L1",
+          "lo": null,
+          "pct": 50.0
+         },
+         {
+          "ci": null,
+          "count": 1,
+          "hi": null,
+          "key": "2",
+          "label": "L2",
+          "lo": null,
+          "pct": 50.0
+         },
+         {
+          "ci": null,
+          "count": 0,
+          "hi": null,
+          "key": "3",
+          "label": "L3",
+          "lo": null,
+          "pct": 0.0
+         },
+         {
+          "ci": null,
+          "count": 0,
+          "hi": null,
+          "key": "4",
+          "label": "L4",
+          "lo": null,
+          "pct": 0.0
+         },
+         {
+          "ci": null,
+          "count": 0,
+          "hi": null,
+          "key": "5",
+          "label": "L5",
+          "lo": null,
+          "pct": 0.0
+         }
+        ],
+        "key": "a",
+        "label": "a",
+        "missing": false,
+        "n": 2,
+        "responses": 2,
+        "states": {
+         "answered": 2,
+         "invalid": 0,
+         "irrelevant": 0,
+         "notInVersion": 0,
+         "notReached": 0,
+         "unanswered": 0,
+         "unrecorded": 0
+        },
+        "stats": {
+         "bottom2": 100.0,
+         "earliest": null,
+         "latest": null,
+         "max": null,
+         "mean": null,
+         "meanCi": null,
+         "meanLength": null,
+         "meanOptions": null,
+         "median": "1",
+         "min": null,
+         "mode": [
+          "1",
+          "2"
+         ],
+         "n": 2,
+         "notAvailable": [],
+         "q1": null,
+         "q3": null,
+         "sd": null,
+         "top2": 0.0
+        }
+       },
+       {
+        "cells": [
+         {
+          "ci": null,
+          "count": 0,
+          "hi": null,
+          "key": "1",
+          "label": "L1",
+          "lo": null,
+          "pct": 0.0
+         },
+         {
+          "ci": null,
+          "count": 0,
+          "hi": null,
+          "key": "2",
+          "label": "L2",
+          "lo": null,
+          "pct": 0.0
+         },
+         {
+          "ci": null,
+          "count": 0,
+          "hi": null,
+          "key": "3",
+          "label": "L3",
+          "lo": null,
+          "pct": 0.0
+         },
+         {
+          "ci": null,
+          "count": 0,
+          "hi": null,
+          "key": "4",
+          "label": "L4",
+          "lo": null,
+          "pct": 0.0
+         },
+         {
+          "ci": null,
+          "count": 1,
+          "hi": null,
+          "key": "5",
+          "label": "L5",
+          "lo": null,
+          "pct": 100.0
+         }
+        ],
+        "key": "b",
+        "label": "b",
+        "missing": false,
+        "n": 1,
+        "responses": 2,
+        "states": {
+         "answered": 1,
+         "invalid": 0,
+         "irrelevant": 0,
+         "notInVersion": 0,
+         "notReached": 1,
+         "unanswered": 0,
+         "unrecorded": 0
+        },
+        "stats": {
+         "bottom2": 0.0,
+         "earliest": null,
+         "latest": null,
+         "max": null,
+         "mean": null,
+         "meanCi": null,
+         "meanLength": null,
+         "meanOptions": null,
+         "median": "5",
+         "min": null,
+         "mode": [
+          "5"
+         ],
+         "n": 1,
+         "notAvailable": [],
+         "q1": null,
+         "q3": null,
+         "sd": null,
+         "top2": 100.0
+        }
+       },
+       {
+        "cells": [
+         {
+          "ci": null,
+          "count": 0,
+          "hi": null,
+          "key": "1",
+          "label": "L1",
+          "lo": null,
+          "pct": null
+         },
+         {
+          "ci": null,
+          "count": 0,
+          "hi": null,
+          "key": "2",
+          "label": "L2",
+          "lo": null,
+          "pct": null
+         },
+         {
+          "ci": null,
+          "count": 0,
+          "hi": null,
+          "key": "3",
+          "label": "L3",
+          "lo": null,
+          "pct": null
+         },
+         {
+          "ci": null,
+          "count": 0,
+          "hi": null,
+          "key": "4",
+          "label": "L4",
+          "lo": null,
+          "pct": null
+         },
+         {
+          "ci": null,
+          "count": 0,
+          "hi": null,
+          "key": "5",
+          "label": "L5",
+          "lo": null,
+          "pct": null
+         }
+        ],
+        "key": "_missing",
+        "label": "No condition",
+        "missing": true,
+        "n": 0,
+        "responses": 1,
+        "states": {
+         "answered": 0,
+         "invalid": 0,
+         "irrelevant": 0,
+         "notInVersion": 0,
+         "notReached": 0,
+         "unanswered": 0,
+         "unrecorded": 1
+        },
+        "stats": {
+         "bottom2": null,
+         "earliest": null,
+         "latest": null,
+         "max": null,
+         "mean": null,
+         "meanCi": null,
+         "meanLength": null,
+         "meanOptions": null,
+         "median": null,
+         "min": null,
+         "mode": null,
+         "n": 0,
+         "notAvailable": [
+          "mode",
+          "median",
+          "top2",
+          "bottom2"
+         ],
+         "q1": null,
+         "q3": null,
+         "sd": null,
+         "top2": null
+        }
+       }
+      ],
+      "id": "grid_r1",
+      "label": "Row one",
+      "name": "grid_r1",
+      "states": {
+       "answered": 3,
+       "invalid": 0,
+       "irrelevant": 0,
+       "notInVersion": 0,
+       "notReached": 1,
+       "unanswered": 0,
+       "unrecorded": 1
+      }
+     },
+     {
+      "groups": [
+       {
+        "cells": [
+         {
+          "ci": null,
+          "count": 0,
+          "hi": null,
+          "key": "1",
+          "label": "L1",
+          "lo": null,
+          "pct": 0.0
+         },
+         {
+          "ci": null,
+          "count": 1,
+          "hi": null,
+          "key": "2",
+          "label": "L2",
+          "lo": null,
+          "pct": 100.0
+         },
+         {
+          "ci": null,
+          "count": 0,
+          "hi": null,
+          "key": "3",
+          "label": "L3",
+          "lo": null,
+          "pct": 0.0
+         },
+         {
+          "ci": null,
+          "count": 0,
+          "hi": null,
+          "key": "4",
+          "label": "L4",
+          "lo": null,
+          "pct": 0.0
+         },
+         {
+          "ci": null,
+          "count": 0,
+          "hi": null,
+          "key": "5",
+          "label": "L5",
+          "lo": null,
+          "pct": 0.0
+         }
+        ],
+        "key": "a",
+        "label": "a",
+        "missing": false,
+        "n": 1,
+        "responses": 2,
+        "states": {
+         "answered": 1,
+         "invalid": 0,
+         "irrelevant": 0,
+         "notInVersion": 0,
+         "notReached": 0,
+         "unanswered": 1,
+         "unrecorded": 0
+        },
+        "stats": {
+         "bottom2": 100.0,
+         "earliest": null,
+         "latest": null,
+         "max": null,
+         "mean": null,
+         "meanCi": null,
+         "meanLength": null,
+         "meanOptions": null,
+         "median": "2",
+         "min": null,
+         "mode": [
+          "2"
+         ],
+         "n": 1,
+         "notAvailable": [],
+         "q1": null,
+         "q3": null,
+         "sd": null,
+         "top2": 0.0
+        }
+       },
+       {
+        "cells": [
+         {
+          "ci": null,
+          "count": 0,
+          "hi": null,
+          "key": "1",
+          "label": "L1",
+          "lo": null,
+          "pct": 0.0
+         },
+         {
+          "ci": null,
+          "count": 0,
+          "hi": null,
+          "key": "2",
+          "label": "L2",
+          "lo": null,
+          "pct": 0.0
+         },
+         {
+          "ci": null,
+          "count": 0,
+          "hi": null,
+          "key": "3",
+          "label": "L3",
+          "lo": null,
+          "pct": 0.0
+         },
+         {
+          "ci": null,
+          "count": 0,
+          "hi": null,
+          "key": "4",
+          "label": "L4",
+          "lo": null,
+          "pct": 0.0
+         },
+         {
+          "ci": null,
+          "count": 1,
+          "hi": null,
+          "key": "5",
+          "label": "L5",
+          "lo": null,
+          "pct": 100.0
+         }
+        ],
+        "key": "b",
+        "label": "b",
+        "missing": false,
+        "n": 1,
+        "responses": 2,
+        "states": {
+         "answered": 1,
+         "invalid": 0,
+         "irrelevant": 0,
+         "notInVersion": 0,
+         "notReached": 1,
+         "unanswered": 0,
+         "unrecorded": 0
+        },
+        "stats": {
+         "bottom2": 0.0,
+         "earliest": null,
+         "latest": null,
+         "max": null,
+         "mean": null,
+         "meanCi": null,
+         "meanLength": null,
+         "meanOptions": null,
+         "median": "5",
+         "min": null,
+         "mode": [
+          "5"
+         ],
+         "n": 1,
+         "notAvailable": [],
+         "q1": null,
+         "q3": null,
+         "sd": null,
+         "top2": 100.0
+        }
+       },
+       {
+        "cells": [
+         {
+          "ci": null,
+          "count": 0,
+          "hi": null,
+          "key": "1",
+          "label": "L1",
+          "lo": null,
+          "pct": null
+         },
+         {
+          "ci": null,
+          "count": 0,
+          "hi": null,
+          "key": "2",
+          "label": "L2",
+          "lo": null,
+          "pct": null
+         },
+         {
+          "ci": null,
+          "count": 0,
+          "hi": null,
+          "key": "3",
+          "label": "L3",
+          "lo": null,
+          "pct": null
+         },
+         {
+          "ci": null,
+          "count": 0,
+          "hi": null,
+          "key": "4",
+          "label": "L4",
+          "lo": null,
+          "pct": null
+         },
+         {
+          "ci": null,
+          "count": 0,
+          "hi": null,
+          "key": "5",
+          "label": "L5",
+          "lo": null,
+          "pct": null
+         }
+        ],
+        "key": "_missing",
+        "label": "No condition",
+        "missing": true,
+        "n": 0,
+        "responses": 1,
+        "states": {
+         "answered": 0,
+         "invalid": 0,
+         "irrelevant": 0,
+         "notInVersion": 0,
+         "notReached": 0,
+         "unanswered": 0,
+         "unrecorded": 1
+        },
+        "stats": {
+         "bottom2": null,
+         "earliest": null,
+         "latest": null,
+         "max": null,
+         "mean": null,
+         "meanCi": null,
+         "meanLength": null,
+         "meanOptions": null,
+         "median": null,
+         "min": null,
+         "mode": null,
+         "n": 0,
+         "notAvailable": [
+          "mode",
+          "median",
+          "top2",
+          "bottom2"
+         ],
+         "q1": null,
+         "q3": null,
+         "sd": null,
+         "top2": null
+        }
+       }
+      ],
+      "id": "grid_r2",
+      "label": "Row two",
+      "name": "grid_r2",
+      "states": {
+       "answered": 2,
+       "invalid": 0,
+       "irrelevant": 0,
+       "notInVersion": 0,
+       "notReached": 1,
+       "unanswered": 1,
+       "unrecorded": 1
+      }
+     }
+    ],
+    "states": null,
+    "type": "matrix",
+    "versionsUsed": [
+     1
+    ],
+    "warnings": []
+   }
+  ],
+  "denominator": "answered",
+  "generatedAt": "2026-10-17T12:00:00Z",
+  "language": "en",
+  "languages": [
+   "en",
+   "cy"
+  ],
+  "queryHash": "0f4061dec46fb402",
+  "responses": 5,
+  "split": {
+   "condition": "arm",
+   "groups": [
+    {
+     "key": "a",
+     "label": "a",
+     "missing": false,
+     "responses": 2
+    },
+    {
+     "key": "b",
+     "label": "b",
+     "missing": false,
+     "responses": 2
+    },
+    {
+     "key": "_missing",
+     "label": "No condition",
+     "missing": true,
+     "responses": 1
+    }
+   ],
+   "label": "arm",
+   "question": null
+  },
+  "surveyId": "fixture-survey",
+  "versionsUsed": [
+   1
+  ],
+  "warnings": [],
+  "watermark": "fixture-watermark"
+ },
+ "text": {
+  "items": [
+   {
+    "language": null,
+    "responseId": "response-1",
+    "submittedAt": "2026-01-01T12:00:00Z",
+    "value": "sunny",
+    "version": 1
+   },
+   {
+    "language": null,
+    "responseId": "response-2",
+    "submittedAt": "2026-01-02T12:00:00Z",
+    "value": "rain!",
+    "version": 1
+   }
+  ],
+  "label": "Why?",
+  "name": "why",
+  "nextCursor": "bzoy",
+  "question": "why",
+  "states": {
+   "answered": 3,
+   "invalid": 0,
+   "irrelevant": 0,
+   "notInVersion": 0,
+   "notReached": 1,
+   "unanswered": 1,
+   "unrecorded": 0
+  },
+  "total": 3,
+  "versionsUsed": [
+   1
+  ],
+  "watermark": "fixture-watermark"
+ }
+}

@@ -11,8 +11,18 @@
 export const CONFIG_VERSION = 1;
 
 /** Link names, one per page (`{id}` in a template is replaced by the survey id). */
-export const LINK_NAMES = ['list', 'editor', 'flow', 'settings', 'appearance', 'themes', 'previewFrame'] as const;
+export const REQUIRED_LINK_NAMES = ['list', 'editor', 'flow', 'settings', 'appearance', 'themes', 'previewFrame'] as const;
+/**
+ * Links a host may leave out (pages added after the first host contract): without one,
+ * the builder hides its way to that page. `results`: the Results page (task V2).
+ */
+export const OPTIONAL_LINK_NAMES = ['results'] as const;
+export const LINK_NAMES = [...REQUIRED_LINK_NAMES, ...OPTIONAL_LINK_NAMES] as const;
+export type RequiredLinkName = (typeof REQUIRED_LINK_NAMES)[number];
+export type OptionalLinkName = (typeof OPTIONAL_LINK_NAMES)[number];
 export type LinkName = (typeof LINK_NAMES)[number];
+/** The host's link templates: every required one, and any optional ones it serves. */
+export type Links = Record<RequiredLinkName, string> & Partial<Record<OptionalLinkName, string>>;
 /** Today's URLs: used by the dev host, and when no config was set (unit tests). */
 export const DEFAULT_LINKS: Readonly<Record<LinkName, string>> = {
 	list: '/',
@@ -20,21 +30,22 @@ export const DEFAULT_LINKS: Readonly<Record<LinkName, string>> = {
 	flow: '/surveys/{id}/flow',
 	settings: '/surveys/{id}/settings',
 	appearance: '/surveys/{id}/appearance',
+	results: '/surveys/{id}/results',
 	themes: '/appearance',
 	previewFrame: '/preview-frame'
 };
 /** Links that point at one survey: their template must contain `{id}`. */
-export const SURVEY_LINKS: readonly LinkName[] = ['editor', 'flow', 'settings', 'appearance'];
+export const SURVEY_LINKS: readonly LinkName[] = ['editor', 'flow', 'settings', 'appearance', 'results'];
 
 export interface OspPageConfig {
 	version: 1;
 	/** Where the osp API lives, e.g. "/osp/api": replaces the `/api` prefix of every call. */
 	apiBase: string;
-	/** Survey-scoped pages (editor, flow, settings, appearance). */
+	/** Survey-scoped pages (editor, flow, settings, appearance, results). */
 	surveyId?: string;
 	/** Which lab, if the user is in several. A selector only: the API still checks roles. */
 	tenantId?: string;
-	links: Record<LinkName, string>;
+	links: Links;
 	/** The host's CSRF scheme: `header` carries `token`, or the value of cookie `cookie`. */
 	csrf?: { header: string; token?: string; cookie?: string };
 	/** After a 401. Default: reload once, so the host's own login runs. */
@@ -184,6 +195,7 @@ export function parseConfig(
 		for (const name of LINK_NAMES) {
 			const v = links[name];
 			const where = `links.${name}`;
+			if (v === undefined && (OPTIONAL_LINK_NAMES as readonly string[]).includes(name)) continue;
 			if (!str(v, where, MAX_URL, errors)) continue;
 			if (SURVEY_LINKS.includes(name) && !v.includes('{id}')) {
 				errors.push(`${where}: must contain {id}`);
