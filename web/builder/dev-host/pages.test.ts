@@ -1,8 +1,19 @@
 import { describe, expect, it } from 'vitest';
 import { parseConfig, parseFrameConfig } from '../src/lib/host/config';
 import { FRAME_SCRIPT_HASH } from '../../hooks-sandbox/src/sandbox-source.ts';
-import { DEV_PAGES, devConfig, pageManifest, PAGES, PREVIEW_FRAME_CSP, renderPage, route, scriptJson } from './pages';
-
+import {
+	DESCRIPTIONS,
+	DEV_PAGES,
+	devConfig,
+	iconTags,
+	pageManifest,
+	PAGES,
+	PREVIEW_FRAME_CSP,
+	renderPage,
+	route,
+	scriptJson,
+	TITLES
+} from './pages';
 describe('dev host routes', () => {
 	it("serves the pages at today's URLs", () => {
 		expect(route('/', '', true)).toEqual({ page: 'list' });
@@ -55,9 +66,12 @@ describe('host page rendering', () => {
 	it('writes the root, the config tag and the page files', () => {
 		const html = renderPage({
 			title: 'T <x>',
+			description: 'D "y"',
 			config: { version: 1 },
 			files: { js: '/assets/list.js', css: ['/assets/a.css'], preload: ['/assets/c.js'] }
 		});
+		expect(html).toContain('<meta name="description" content="D &quot;y&quot;" />');
+		for (const tag of iconTags('/')) expect(html).toContain(tag);
 		expect(html).toContain('<div id="osp"></div>');
 		expect(html).toContain('<script type="application/json" id="osp-config">{"version":1}</script>');
 		expect(html).toContain('<script type="module" src="/assets/list.js"></script>');
@@ -66,9 +80,25 @@ describe('host page rendering', () => {
 		expect(html).toContain('<title>T &lt;x&gt;</title>');
 	});
 
+	it('every page has its own title and description', () => {
+		const names = Object.keys({ ...PAGES, ...DEV_PAGES }) as (keyof typeof TITLES)[];
+		for (const n of names) {
+			expect(TITLES[n], n).toBeTruthy();
+			expect(DESCRIPTIONS[n], n).toBeTruthy();
+		}
+		expect(new Set(names.map((n) => DESCRIPTIONS[n])).size).toBe(names.length);
+	});
+
+	it('icon tags follow the base a host serves the build under', () => {
+		const tags = iconTags('/static/osp/').join('\n');
+		for (const f of ['favicon.svg', 'favicon-32.png', 'apple-touch-icon.png', 'site.webmanifest']) {
+			expect(tags).toContain(`href="/static/osp/${f}"`);
+		}
+	});
+
 	it('leaves the inline theme script out of pages served with a strict CSP', () => {
 		const page = (themeScript?: boolean) =>
-			renderPage({ title: 'T', config: { version: 1 }, files: { js: '/a.js', css: [], preload: [] }, themeScript });
+			renderPage({ title: 'T', description: 'D', config: { version: 1 }, files: { js: '/a.js', css: [], preload: [] }, themeScript });
 		expect(page()).toContain('osp-theme');
 		const strict = page(false);
 		expect(strict).not.toContain('osp-theme');
