@@ -1,6 +1,6 @@
 import { readFileSync } from 'node:fs';
 import { expect, test, type Locator, type Page } from '@playwright/test';
-import { axe, signIn, writeHeaders } from './fixtures';
+import { axe, runFromPalette, signIn, writeHeaders } from './fixtures';
 
 // The flow editor (task B8) end to end against a real osp-api (e2e/api_server.py).
 // The survey starts as the review.md §2.3 worked example (fixtures/20-worked-example)
@@ -171,12 +171,7 @@ test('build part of the flow with the keyboard only; move across levels; undo; r
 	const id = await openFlow(page, `Flow keys ${Date.now()}`);
 
 	const addFromPalette = async (type: string, fill: () => Promise<void>) => {
-		await page.keyboard.press('ControlOrMeta+k');
-		const palette = page.getByRole('dialog', { name: 'Command palette' });
-		await expect(palette).toBeVisible();
-		await page.keyboard.type('add flow node');
-		await expect(palette.getByRole('option', { name: /Add flow node/ })).toBeVisible();
-		await page.keyboard.press('Enter');
+		await runFromPalette(page, 'add flow node', /Add flow node/);
 		const dialog = page.getByRole('dialog', { name: 'Add flow node' });
 		await expect(dialog).toBeVisible();
 		await expect(dialog.getByLabel('Node type')).toBeFocused();

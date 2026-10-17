@@ -1,5 +1,5 @@
 import { expect, test, type Page } from '@playwright/test';
-import { axe, signIn, writeHeaders } from './fixtures';
+import { axe, runFromPalette, signIn, writeHeaders } from './fixtures';
 
 // Outline reorder (task B3) and the property panel's specialised editors, end to end
 // against a real osp-api (e2e/api_server.py): drag, keyboard, cross-page, multi-select,
@@ -116,9 +116,7 @@ test('"Move to…" from the palette moves the selection', async ({ page }) => {
 	await item(page, 'Alpha').click();
 	await item(page, 'Gamma').click({ modifiers: ['Shift'] });
 	await expect(tree(page).locator('[aria-selected="true"]')).toHaveCount(3);
-	await page.keyboard.press('ControlOrMeta+k');
-	await page.keyboard.type('move to');
-	await page.keyboard.press('Enter');
+	await runFromPalette(page, 'move to', /Move to/);
 	const dialog = page.getByRole('dialog', { name: 'Move to…' });
 	await expect(dialog).toBeVisible();
 	expect(await axe(page)).toEqual([]);

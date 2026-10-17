@@ -1,5 +1,5 @@
 import type { Page } from '@playwright/test';
-import { axe, expect, test } from './fixtures';
+import { axe, expect, runFromPalette, test } from './fixtures';
 
 // Appearance view (theme editor, runtime-design §6a): reachable from the top bar and the
 // palette, live preview, contrast guard with one-click fixes, undo/redo, JSON import.
@@ -25,13 +25,11 @@ const nextButtonBg = (page: Page, frame: string) =>
 test('opens from the top bar and the command palette, and goes back', async ({ shell: page }) => {
 	await openAppearance(page);
 	await page.getByRole('button', { name: 'Back to editor' }).click();
+	// A full page load: wait for it, or the palette opens on the page being left.
+	await page.waitForURL(/\/\?mock$/, { waitUntil: 'load' });
 	await expect(page.getByRole('tree', { name: 'Survey outline' })).toBeVisible();
 
-	await page.keyboard.press('ControlOrMeta+k');
-	const dialog = page.getByRole('dialog', { name: 'Command palette' });
-	await page.keyboard.type('Open Appearance');
-	await expect(dialog.getByRole('option', { name: /Open Appearance/ })).toBeVisible();
-	await page.keyboard.press('Enter');
+	await runFromPalette(page, 'Open Appearance', /Open Appearance/);
 	await expect(page).toHaveURL(/\/appearance\?mock$/);
 	await expect(page.getByRole('heading', { name: 'Appearance', level: 2 })).toBeVisible();
 });

@@ -9,19 +9,45 @@ import { test as base, expect, type Page } from '@playwright/test';
 export const test = base.extend<{ shell: Page }>({
 	shell: async ({ page }, use) => {
 		await page.route('**/api/**', async (route) => {
-			const res = await route.fetch();
-			if (res.status() !== 401) return route.fulfill({ response: res });
-			return route.fulfill({ status: 404, json: { code: 'not_found', message: 'No backend session in the mock.' } });
+			// Pages change by full loads, so a request can be cut off mid-flight by the next
+			// page; Playwright then disposes it and fetch/fulfill throw. Nothing is waiting.
+			try {
+				const res = await route.fetch();
+				if (res.status() !== 401) return await route.fulfill({ response: res });
+				return await route.fulfill({
+					status: 404,
+					json: { code: 'not_found', message: 'No backend session in the mock.' }
+				});
+			} catch {
+				return;
+			}
 		});
 		await page.route('**/api/health', (route) => route.fulfill({ json: { status: 'ok' } }));
 		await page.goto('/?mock');
 		await expect(page.getByRole('tree', { name: 'Survey outline' })).toBeVisible();
 		await expect(page.getByText('API connected')).toBeVisible();
 		await use(page);
+		await page.unrouteAll({ behavior: 'ignoreErrors' });
 	}
 });
 
 export { expect };
+
+/**
+ * Run a command from the palette by typing `query` and pressing Enter on `option`. Waits
+ * for the input to have focus (keys typed before that are lost) and for `option` to be the
+ * highlighted one (Enter runs whichever is highlighted).
+ */
+export async function runFromPalette(page: Page, query: string, option: RegExp) {
+	await page.keyboard.press('ControlOrMeta+k');
+	const dialog = page.getByRole('dialog', { name: 'Command palette' });
+	await expect(dialog.getByRole('combobox', { name: 'Commands' })).toBeFocused();
+	await page.keyboard.type(query);
+	const item = dialog.getByRole('option', { name: option });
+	await expect(item).toHaveAttribute('aria-selected', 'true');
+	await page.keyboard.press('Enter');
+	await expect(dialog).toBeHidden();
+}
 
 // -- sign-in glue ---------------------------------------------------------------------
 //

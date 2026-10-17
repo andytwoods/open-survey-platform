@@ -1,5 +1,5 @@
 import { expect, test, type Page } from '@playwright/test';
-import { axe, signIn, writeHeaders } from './fixtures';
+import { axe, runFromPalette, signIn, writeHeaders } from './fixtures';
 
 // End to end against a real osp-api on SQLite (e2e/api_server.py, started by the
 // Playwright config): create a survey, edit through ops, undo/redo, reload. Sign-in is the
@@ -20,13 +20,7 @@ const question = (page: Page, name: string) => tree(page).getByRole('treeitem', 
 
 async function addQuestionFromPalette(page: Page) {
 	await page.getByRole('main', { name: 'Canvas' }).click({ position: { x: 5, y: 5 } });
-	await page.keyboard.press('ControlOrMeta+k');
-	const dialog = page.getByRole('dialog', { name: 'Command palette' });
-	await expect(dialog).toBeVisible();
-	await page.keyboard.type('add question');
-	await expect(dialog.getByRole('option', { name: /Add question/ })).toBeVisible();
-	await page.keyboard.press('Enter');
-	await expect(dialog).toBeHidden();
+	await runFromPalette(page, 'add question', /Add question/);
 }
 
 test('create, add, rename, undo, redo, reload', async ({ page }) => {
