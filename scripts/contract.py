@@ -73,12 +73,20 @@ def _diff(committed: Path, fresh: str, label: str) -> list[str]:
     return lines[:60] + (["... (diff truncated)\n"] if len(lines) > 60 else [])
 
 
+def _shown(path: Path) -> Path:
+    """The path relative to the repo when it can be (not across Windows drives)."""
+    try:
+        return path.relative_to(REPO, walk_up=True)
+    except ValueError:
+        return path
+
+
 def cmd_generate(args) -> int:
     args.openapi.parent.mkdir(parents=True, exist_ok=True)
     args.openapi.write_text(openapi_text(args.app), encoding="utf-8", newline="\n")
     generate_ts(args.openapi, args.ts)
-    print(f"contract: wrote {args.openapi.relative_to(REPO, walk_up=True)}")
-    print(f"contract: wrote {args.ts.relative_to(REPO, walk_up=True)}")
+    print(f"contract: wrote {_shown(args.openapi)}")
+    print(f"contract: wrote {_shown(args.ts)}")
     return 0
 
 

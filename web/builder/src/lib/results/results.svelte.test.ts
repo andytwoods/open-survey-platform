@@ -8,6 +8,8 @@ import type { Fetched, ResultsSource } from './results.svelte';
 import ResultsView from './ResultsView.svelte';
 import type { Card, ResultsQuery, ResultsResponse, TextPage } from './types';
 
+const AXE_TIMEOUT = 20_000;
+
 // The Results page from a stubbed source (task V2): cards from a real ResultsResponse
 // (fixtures/results.json, regenerated from the API), the Table view, the filter bar's
 // mapping to the query, chart choices, facets, "not available", text answers, waiting,
@@ -291,6 +293,9 @@ describe('ResultsView', () => {
 		expect(s.queries).toEqual([]);
 	});
 
+	// axe walks every card, chart SVG included, through jsdom's getComputedStyle: ~1.3 s on a
+	// laptop, ~6 s on a 4-core CI runner beside the other vitest workers. It is CPU-bound, with
+	// no state to wait on, so it gets a budget past vitest's 5 s default.
 	it('passes axe with cards, tables and a filter row', async () => {
 		const { t } = await setup();
 		await fireEvent.click(within(cardOf('Fruit?')).getByRole('button', { name: 'Table view' }));
@@ -299,5 +304,5 @@ describe('ResultsView', () => {
 			rules: { 'color-contrast': { enabled: false }, region: { enabled: false } }
 		});
 		expect(res.violations.map((v) => `${v.id}: ${v.nodes.map((n) => n.target).join(', ')}`)).toEqual([]);
-	});
+	}, AXE_TIMEOUT);
 });

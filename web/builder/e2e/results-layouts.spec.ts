@@ -1,4 +1,4 @@
-import { expect, test, type Page } from '@playwright/test';
+import { expect, test, type Locator, type Page } from '@playwright/test';
 import { axe, signIn, writeHeaders } from './fixtures';
 
 // Saved results layouts (task V5b), end to end against a real osp-api on SQLite (V5a's
@@ -10,6 +10,24 @@ const card = (page: Page, name: string) => page.getByRole('article', { name });
 const picker = (page: Page) => page.getByLabel('Layout', { exact: true });
 const unsaved = (page: Page) => page.getByTestId('layout-unsaved');
 const titles = (page: Page) => page.getByRole('list', { name: 'Questions' }).getByRole('heading', { level: 3 }).allTextContents();
+
+/**
+ * A native (HTML5) drag of a card's handle onto another card, with real mouse steps. The
+ * page must not scroll mid-drag (Chromium drops the drag when it does, which a plain
+ * `dragTo` causes whenever the two cards don't fit one viewport, as with Linux's taller
+ * fonts), so the handle is centred first and the drop lands near the bottom of the target
+ * card, just above it. The mouse is released only once the target shows the drop state.
+ */
+async function dragCardOnto(page: Page, handle: Locator, target: Locator) {
+	await handle.evaluate((el) => el.scrollIntoView({ block: 'center' }));
+	const from = (await handle.boundingBox())!;
+	const to = (await target.boundingBox())!;
+	await page.mouse.move(from.x + from.width / 2, from.y + from.height / 2);
+	await page.mouse.down();
+	await page.mouse.move(to.x + to.width / 2, to.y + to.height - 12, { steps: 10 });
+	await expect(target.locator('xpath=ancestor::li[1]')).toHaveClass(/\bover\b/);
+	await page.mouse.up();
+}
 
 async function seededSurvey(page: Page): Promise<string> {
 	await signIn(page);
@@ -117,7 +135,7 @@ test('drag a card by its handle to reorder; Save keeps the order', async ({ page
 	await openResults(page, id);
 	await saveAs(page, 'Order');
 	await expect(unsaved(page)).toBeHidden();
-	await page.getByRole('button', { name: 'Move Satisfied?' }).dragTo(card(page, 'Fruit?'));
+	await dragCardOnto(page, page.getByRole('button', { name: 'Move Satisfied?' }), card(page, 'Fruit?'));
 	await expect.poll(async () => (await titles(page))[0]).toBe('Satisfied?');
 	await expect(unsaved(page)).toBeVisible();
 	await page.getByRole('button', { name: 'Save layout' }).click();

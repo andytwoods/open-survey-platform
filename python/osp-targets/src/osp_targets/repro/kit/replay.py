@@ -187,6 +187,11 @@ def load(path: Path, what: str) -> object:
 
 
 def main(argv: list[str] | None = None) -> int:
+    # The report is UTF-8 on every platform: Windows would otherwise write the locale's
+    # code page (cp1252), which breaks a JSON consumer on any non-ASCII label.
+    for stream in (sys.stdout, sys.stderr):
+        if hasattr(stream, "reconfigure"):
+            stream.reconfigure(encoding="utf-8")
     root = HERE.parent
     ap = argparse.ArgumentParser(description=__doc__.split("\n\n")[0])
     ap.add_argument("--plan", type=Path, default=root / "survey" / "plan.json")

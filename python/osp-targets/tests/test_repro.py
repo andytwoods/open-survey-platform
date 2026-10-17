@@ -117,8 +117,11 @@ def _extract(content: bytes, dest: Path) -> Path:
 
 
 def _run(cmd: list[str], cwd: Path) -> tuple[int, dict[str, Any]]:
-    proc = subprocess.run(cmd, cwd=cwd, capture_output=True, text=True, timeout=120)
+    proc = subprocess.run(
+        cmd, cwd=cwd, capture_output=True, text=True, encoding="utf-8", timeout=120
+    )
     assert proc.returncode in (0, 1), proc.stderr
+    assert proc.stdout, f"no report (exit {proc.returncode}): {proc.stderr}"
     return proc.returncode, json.loads(proc.stdout)
 
 
@@ -292,7 +295,11 @@ def test_tampered_order_is_a_mismatch(tmp_path: Path) -> None:
     assert r["status"] == "mismatch"
     assert [m["what"] for m in r["mismatches"]] == ["orders.blocks.r_blocks"]
     text = subprocess.run(
-        [sys.executable, "-I", "replay/replay.py"], cwd=root, capture_output=True, text=True
+        [sys.executable, "-I", "replay/replay.py"],
+        cwd=root,
+        capture_output=True,
+        text=True,
+        encoding="utf-8",
     ).stdout
     assert "MISMATCH" in text and "orders.blocks.r_blocks" in text
 
@@ -333,7 +340,11 @@ def test_replay_py_bad_seed_and_unknown_order(tmp_path: Path) -> None:
     assert by["ghost"]["mismatches"][0]["what"] == "orders.blocks.nope"
     path.write_text("not json")
     proc = subprocess.run(
-        [sys.executable, "-I", "replay/replay.py"], cwd=root, capture_output=True, text=True
+        [sys.executable, "-I", "replay/replay.py"],
+        cwd=root,
+        capture_output=True,
+        text=True,
+        encoding="utf-8",
     )
     assert proc.returncode == 2 and "can't read" in proc.stderr
 
