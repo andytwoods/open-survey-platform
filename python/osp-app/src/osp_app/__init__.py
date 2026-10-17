@@ -13,6 +13,7 @@ from .errors import (
     RevisionConflictError,
     Unauthenticated,
 )
+from .repro import ReproDownload
 from .runtime_repo import StoreParticipantRepo
 from .services import AppServices, build_services
 from .simulate import simulate_survey
@@ -34,6 +35,7 @@ __all__ = [
     "NotFoundError",
     "PublishResult",
     "Rejected",
+    "ReproDownload",
     "RevisionConflictError",
     "StoreMembershipRepo",
     "StoreParticipantRepo",

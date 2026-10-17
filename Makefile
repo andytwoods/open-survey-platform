@@ -27,7 +27,7 @@ install:
 check: $(CHECKS)
 	@echo "make check: all green"
 
-py-test: sim-build
+py-test: sim-build engine-bundle
 	$(UV_RUN) pytest
 
 py-layers:
@@ -119,12 +119,18 @@ engine-test: engine-fixtures
 # Simulator (task M1, web/engine-sim). `sim-build` bundles dist/cli.js, the Node sidecar
 # osp_runtime.sim_sidecar runs (py-test needs it); `sim-test` runs the simulator's vitest
 # suite on the fixture plans (built by engine-fixtures).
-.PHONY: sim-build sim-test
+.PHONY: sim-build sim-test engine-bundle
 sim-build:
 	$(PNPM) -C web/engine-sim exec vite build --logLevel warn
 
 sim-test: engine-fixtures
 	$(PNPM) -C web/engine-sim exec vitest run
+
+# Engine bundle (task M3): web/engine/dist/engine.js, the whole engine (with big.js) as one
+# ES module. The reproducibility package ships it with replay.mjs (osp_app.repro reads it;
+# OSP_ENGINE_BUNDLE overrides the path); py-test needs it for the replay.mjs tests.
+engine-bundle:
+	$(PNPM) -C web/engine exec vite build --config bundle.config.ts --logLevel warn
 
 # Engine bundle size (minified + gzip), informational: the budget is a target, not a gate.
 engine-size:

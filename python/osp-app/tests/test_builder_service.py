@@ -89,6 +89,7 @@ def test_every_command_fails_closed_for_non_members(env, command_id, who):
         "survey.undo": {"survey_id": sid, "transaction_id": "t", "base_revision": 0},
         "survey.redo": {"survey_id": sid, "transaction_id": "u:t", "base_revision": 0},
         "survey.delete_response": {"survey_id": sid, "response_id": "r1"},
+        "survey.repro_package": {"survey_id": sid, "version": 1, "data": True},
     }.get(command_id, {"survey_id": sid})
     if who is None or isinstance(who, str):
         with pytest.raises(Unauthenticated):
