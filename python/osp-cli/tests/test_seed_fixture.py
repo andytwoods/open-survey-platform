@@ -3,6 +3,7 @@
 from __future__ import annotations
 
 import json
+import os
 from pathlib import Path
 
 import pytest
@@ -78,7 +79,8 @@ def test_dev_seed_creates_once_then_reprints(tmp_path, keys, capsys, monkeypatch
     state = json.loads((tmp_path / "dev-seed.json").read_text())
     assert [s["fixture"] for s in state["surveys"]] == [p.name for p in DEV_FIXTURES]
     assert "password" not in first.lower() and "password" not in state
-    assert (tmp_path / "dev-seed.json").stat().st_mode & 0o077 == 0
+    if os.name != "nt":  # Windows has no POSIX mode bits: os.open's 0o600 reads back as 0o666
+        assert (tmp_path / "dev-seed.json").stat().st_mode & 0o077 == 0
 
     # The dev identity (what osp-api's Dev provider uses) sees them; a second run reuses all.
     services = open_services(db)

@@ -6,12 +6,20 @@ Runs scripts/stop-hook.sh against a throwaway git repo with a fake check command
 
 import json
 import os
+import shutil
 import subprocess
 from pathlib import Path
 
 import pytest
 
 HOOK = Path(__file__).resolve().parents[1] / "scripts" / "stop-hook.sh"
+# Windows can't exec a shell script directly (WinError 193): run it through Git Bash,
+# which Claude Code's hooks use there too. Skipped when no bash is on PATH.
+BASH = shutil.which("bash")
+HOOK_CMD = [str(HOOK)] if os.name != "nt" else [BASH or "bash", str(HOOK)]
+pytestmark = pytest.mark.skipif(
+    os.name == "nt" and not BASH, reason="stop-hook.sh needs bash (Git Bash on Windows)"
+)
 
 
 @pytest.fixture
@@ -51,7 +59,7 @@ class Hook:
         env.pop("CLAUDE_PROJECT_DIR", None)
         payload = {"session_id": "x", "cwd": str(self.repo), "stop_hook_active": active}
         return subprocess.run(
-            [str(HOOK), *([mode] if mode else [])],
+            [*HOOK_CMD, *([mode] if mode else [])],
             input=json.dumps(payload),
             capture_output=True,
             text=True,
@@ -129,7 +137,7 @@ def test_outside_a_git_repo_does_nothing(tmp_path):
     env = {**os.environ, "OSP_STOP_HOOK_CMD": "exit 1"}
     env.pop("CLAUDE_PROJECT_DIR", None)
     result = subprocess.run(
-        [str(HOOK)], input=payload, capture_output=True, text=True, env=env, cwd=tmp_path
+        HOOK_CMD, input=payload, capture_output=True, text=True, env=env, cwd=tmp_path
     )
     assert result.returncode == 0
 

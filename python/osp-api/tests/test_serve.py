@@ -2,6 +2,7 @@
 
 from __future__ import annotations
 
+import os
 import stat
 
 import pytest
@@ -36,7 +37,8 @@ def test_dev_keys_generated_once_private_and_reused(tmp_path):
     first = keyring_env(s, env)
     path = tmp_path / ".data" / "dev-keys.env"
     assert first["OSP_STORE_KEYS"].startswith("k1:")
-    assert stat.S_IMODE(path.stat().st_mode) == 0o600
+    if os.name != "nt":  # Windows has no POSIX mode bits: os.open's 0o600 reads back as 0o666
+        assert stat.S_IMODE(path.stat().st_mode) == 0o600
     assert keyring_env(s, env) == first
 
 

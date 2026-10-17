@@ -19,15 +19,27 @@ set -uo pipefail
 mode="${1:-stop}"
 input="$(cat 2>/dev/null || true)"
 
+# The first Python that really runs. On Windows `python3` may be the Microsoft Store's
+# "install Python" stub, which prints an advert and fails: skip it.
+python=""
+for candidate in python3 python py; do
+	if "$candidate" -c 'import sys' >/dev/null 2>&1; then
+		python="$candidate"
+		break
+	fi
+done
+
 json_field() { # json_field <key>: print a top-level field of the hook's stdin JSON
-	if command -v python3 >/dev/null 2>&1; then
-		printf '%s' "$input" | python3 -c '
+	if [ -n "$python" ]; then
+		# end="" (not print's newline): Python on Windows would write CRLF, and $(...)
+		# strips only the LF, leaving a CR on the path.
+		printf '%s' "$input" | "$python" -c '
 import json, sys
 try:
     v = json.load(sys.stdin).get(sys.argv[1], "")
 except Exception:
     v = ""
-print(str(v).lower() if isinstance(v, bool) else v)' "$1"
+print(str(v).lower() if isinstance(v, bool) else v, end="")' "$1"
 	else
 		printf '%s' "$input" | sed -n "s/.*\"$1\"[[:space:]]*:[[:space:]]*\"\{0,1\}\([^\",}]*\).*/\1/p" | head -n1
 	fi
