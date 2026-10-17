@@ -423,7 +423,7 @@ describe('ResultsView', () => {
 		expect((within(again).getByTestId('present-hide') as HTMLInputElement).checked).toBe(true);
 		await fireEvent.click(within(again).getByRole('button', { name: 'Cancel' }));
 		history.replaceState(null, '', '/');
-	});
+	}, AXE_TIMEOUT);
 
 	it('presenting live (LV4): batched by default, refreshed in one go at k new responses, footer with count and time, never the delta; "every" is in the URL', async () => {
 		history.replaceState(null, '', '/surveys/s1/results');
@@ -481,7 +481,8 @@ describe('ResultsView', () => {
 		await fireEvent.click(screen.getByTestId('exit-presentation'));
 		await waitFor(() => expect(screen.getByRole('button', { name: 'Present' })).toBeTruthy());
 		history.replaceState(null, '', '/');
-	});
+		// Two presentations with every chart re-embedded each way: ~2.5 s on a laptop, longer on a CI runner.
+	}, AXE_TIMEOUT);
 
 	it('?live=every in a shared link sets the cadence; ?present=1 alone never shows exact counts (LV4)', async () => {
 		history.replaceState(null, '', '/surveys/s1/results?present=1&live=every');
