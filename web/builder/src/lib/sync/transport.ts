@@ -27,6 +27,8 @@ export interface LoadedSurvey {
 	title: string;
 	revision: number;
 	survey: SurveyDoc;
+	/** The validator's diagnostics for the draft as loaded (optional for scripted servers). */
+	diagnostics?: Diagnostic[];
 }
 
 export type Result<T> =
@@ -109,12 +111,12 @@ async function call<T>(fn: () => Promise<{ data?: unknown; error?: unknown; resp
 export function apiTransport(api: ApiClient): SurveyTransport {
 	return {
 		async load(surveyId) {
-			const r = await call<{ id: string; title: string; revision: number; survey: SurveyDoc }>(() =>
+			const r = await call<LoadedSurvey>(() =>
 				api.GET('/api/surveys/{survey_id}', { params: { path: { survey_id: surveyId } } })
 			);
 			if (r.kind !== 'ok') return r;
-			const { id, title, revision, survey } = r.data;
-			return { kind: 'ok', data: { id, title, revision, survey } };
+			const { id, title, revision, survey, diagnostics } = r.data;
+			return { kind: 'ok', data: { id, title, revision, survey, diagnostics } };
 		},
 		applyOps(surveyId, body) {
 			return call<EditResult>(() =>

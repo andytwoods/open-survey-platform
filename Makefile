@@ -75,16 +75,21 @@ HARNESS_TOUCHED = $(shell { $(if $(HARNESS_BASE),git diff --name-only $(HARNESS_
 	| sed -n 's|^fixtures/\([0-9][0-9]-[^/]*\)/.*|\1|p' | sort -u | paste -sd, -)
 
 .PHONY: harness-full
+# A free port per run unless OSP_HARNESS_PORT is set, so parallel worktrees never collide.
+HARNESS_FREE_PORT = $$(python3 -c 'import socket; s=socket.socket(); s.bind(("127.0.0.1", 0)); print(s.getsockname()[1])')
+
 harness-quick:
 	@fx="$${OSP_HARNESS_FIXTURES-$(HARNESS_TOUCHED)}"; \
 	echo "harness-quick: fixtures: $${fx:-all}"; \
-	OSP_HARNESS_FIXTURES="$$fx" $(PNPM) -C web/harness exec playwright test --project=desktop-chromium
+	OSP_HARNESS_PORT="$${OSP_HARNESS_PORT:-$(HARNESS_FREE_PORT)}" OSP_HARNESS_FIXTURES="$$fx" \
+		$(PNPM) -C web/harness exec playwright test --project=desktop-chromium
 
 # Every fixture × every device project (iPhone SE/WebKit, Pixel 7/Chromium, desktop Firefox,
 # desktop Chromium). engine-test first, so the report can tell runtime divergences (engine
 # passes, app fails) from fixture or engine failures.
 harness-full: engine-test
-	OSP_HARNESS_FIXTURES= $(PNPM) -C web/harness exec playwright test $(HARNESS_ARGS)
+	OSP_HARNESS_PORT="$${OSP_HARNESS_PORT:-$(HARNESS_FREE_PORT)}" OSP_HARNESS_FIXTURES= \
+		$(PNPM) -C web/harness exec playwright test $(HARNESS_ARGS)
 
 # osp-store tests against a throwaway Postgres container (task C9). Needs Docker
 # (Colima); skips with a message if Docker isn't running. `make check` runs the

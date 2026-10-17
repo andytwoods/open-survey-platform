@@ -39,7 +39,12 @@
         {
           "id": "p_more",
           "items": [
-            { "type": "text", "id": "q_target", "label": "Tell us more" },
+            { "type": "text", "id": "q_target", "label": "Tell us more" }
+          ]
+        },
+        {
+          "id": "p_later",
+          "items": [
             { "type": "integer", "id": "later", "label": "How many hours a week?" }
           ]
         }
