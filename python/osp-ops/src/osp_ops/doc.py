@@ -119,10 +119,19 @@ def taken_names(doc: Json) -> set[str]:
             for q in page["items"]:
                 if isinstance(q.get("name"), str):
                     names.add(q["name"])
+                names.update(row_variables(q))
     for v in doc.get("variables", []):
         if isinstance(v.get("name"), str):
             names.add(v["name"])
     return names
+
+
+def row_variables(q: Json) -> set[str]:
+    """A matrix's row variable ids `<id>_<row>` and export names `<name>_<row>` (C2c-1)."""
+    if q.get("type") != "matrix":
+        return set()
+    prefixes = {q["id"], q.get("name") or q["id"]}
+    return {f"{p}_{r['id']}" for p in prefixes for r in q.get("rows") or []}
 
 
 def fresh_id(
@@ -194,6 +203,9 @@ def text_sites(doc: Json) -> Iterator[tuple[Path, Json]]:
                         yield (*qp, key), q[key]
                 for m, c in enumerate(q.get("choices") or []):
                     yield (*qp, "choices", m, "label"), c["label"]
+                if q.get("type") == "matrix":
+                    for m, r in enumerate(q.get("rows") or []):
+                        yield (*qp, "rows", m, "label"), r["label"]
     for path, n in flow_nodes(doc.get("flow", []), ("flow",)):
         if n.get("type") == "end" and n.get("message") is not None:
             yield (*path, "message"), n["message"]
@@ -447,6 +459,8 @@ def subtree_ids(obj: Json) -> set[str]:
         if isinstance(cur, dict):
             if isinstance(cur.get("id"), str) and cur.get("kind") != "ref":
                 out.add(cur["id"])
+                if cur.get("type") == "matrix":  # its rows are variables of their own
+                    out.update(f"{cur['id']}_{r['id']}" for r in cur.get("rows") or [])
             stack.extend(v for k, v in cur.items() if k in ("pages", "items"))
         elif isinstance(cur, list):
             stack.extend(cur)

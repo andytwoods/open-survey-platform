@@ -47,6 +47,7 @@ Why this policy: silently clearing a condition changes who sees a question. That
 | pages / blocks | `add_page`, `delete_page`, `rename_page`, `move_page`, `add_block`, `delete_block`, `rename_block`, `move_block` |
 | choices | `add_choice`, `delete_choice`, `move_choice`, `set_choice`, `bulk_paste_choices` |
 | choice lists | `create_choice_list`, `delete_choice_list` |
+| rows (grid) | `add_matrix_row`, `rename_matrix_row` (label, with translations), `move_matrix_row`, `set_matrix_row_required` (true, false, or null = follow the grid), `delete_matrix_row` (row `r` of grid `m` is the variable `m_r`: deleting it follows the dangling-reference policy; row ids never change) |
 | conditions | `set_condition` (AST or text, parsed with osp-expr) |
 | flow | `insert_flow_node`, `delete_flow_node`, `move_flow_node` |
 | variables | `add_variable`, `delete_variable` |

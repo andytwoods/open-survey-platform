@@ -106,6 +106,61 @@
         "title": "AddChoice",
         "type": "object"
       },
+      "AddMatrixRowParams": {
+        "additionalProperties": false,
+        "properties": {
+          "id": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "default": null,
+            "title": "Id"
+          },
+          "index": {
+            "anyOf": [
+              {
+                "minimum": 0,
+                "type": "integer"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "default": null,
+            "title": "Index"
+          },
+          "label": {
+            "$ref": "#/components/schemas/Text",
+            "default": ""
+          },
+          "question": {
+            "title": "Question",
+            "type": "string"
+          },
+          "required": {
+            "anyOf": [
+              {
+                "type": "boolean"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "default": null,
+            "title": "Required"
+          }
+        },
+        "required": [
+          "question"
+        ],
+        "title": "AddMatrixRow",
+        "type": "object"
+      },
       "AddPageParams": {
         "additionalProperties": false,
         "properties": {
@@ -681,6 +736,35 @@
           "id"
         ],
         "title": "DeleteFlowNode",
+        "type": "object"
+      },
+      "DeleteMatrixRowParams": {
+        "additionalProperties": false,
+        "properties": {
+          "cascade": {
+            "default": false,
+            "title": "Cascade",
+            "type": "boolean"
+          },
+          "force": {
+            "default": false,
+            "title": "Force",
+            "type": "boolean"
+          },
+          "question": {
+            "title": "Question",
+            "type": "string"
+          },
+          "row": {
+            "title": "Row",
+            "type": "string"
+          }
+        },
+        "required": [
+          "question",
+          "row"
+        ],
+        "title": "DeleteMatrixRow",
         "type": "object"
       },
       "DeletePageParams": {
@@ -1468,6 +1552,31 @@
         "title": "MoveFlowNode",
         "type": "object"
       },
+      "MoveMatrixRowParams": {
+        "additionalProperties": false,
+        "properties": {
+          "index": {
+            "minimum": 0,
+            "title": "Index",
+            "type": "integer"
+          },
+          "question": {
+            "title": "Question",
+            "type": "string"
+          },
+          "row": {
+            "title": "Row",
+            "type": "string"
+          }
+        },
+        "required": [
+          "question",
+          "row",
+          "index"
+        ],
+        "title": "MoveMatrixRow",
+        "type": "object"
+      },
       "MovePageParams": {
         "additionalProperties": false,
         "properties": {
@@ -1591,6 +1700,7 @@
         "enum": [
           "add_block",
           "add_choice",
+          "add_matrix_row",
           "add_page",
           "add_question",
           "add_variable",
@@ -1602,6 +1712,7 @@
           "delete_choice",
           "delete_choice_list",
           "delete_flow_node",
+          "delete_matrix_row",
           "delete_page",
           "delete_question",
           "delete_variable",
@@ -1610,15 +1721,18 @@
           "move_block",
           "move_choice",
           "move_flow_node",
+          "move_matrix_row",
           "move_page",
           "move_question",
           "rename_block",
+          "rename_matrix_row",
           "rename_page",
           "replace_survey",
           "set_choice",
           "set_condition",
           "set_consent",
           "set_languages",
+          "set_matrix_row_required",
           "set_property",
           "set_theme",
           "set_title"
@@ -2139,6 +2253,29 @@
         "title": "RenameBlock",
         "type": "object"
       },
+      "RenameMatrixRowParams": {
+        "additionalProperties": false,
+        "properties": {
+          "label": {
+            "$ref": "#/components/schemas/Text"
+          },
+          "question": {
+            "title": "Question",
+            "type": "string"
+          },
+          "row": {
+            "title": "Row",
+            "type": "string"
+          }
+        },
+        "required": [
+          "question",
+          "row",
+          "label"
+        ],
+        "title": "RenameMatrixRow",
+        "type": "object"
+      },
       "RenamePageParams": {
         "additionalProperties": false,
         "properties": {
@@ -2602,6 +2739,37 @@
           "languages"
         ],
         "title": "SetLanguages",
+        "type": "object"
+      },
+      "SetMatrixRowRequiredParams": {
+        "additionalProperties": false,
+        "properties": {
+          "question": {
+            "title": "Question",
+            "type": "string"
+          },
+          "required": {
+            "anyOf": [
+              {
+                "type": "boolean"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Required"
+          },
+          "row": {
+            "title": "Row",
+            "type": "string"
+          }
+        },
+        "required": [
+          "question",
+          "row",
+          "required"
+        ],
+        "title": "SetMatrixRowRequired",
         "type": "object"
       },
       "SetPropertyParams": {
