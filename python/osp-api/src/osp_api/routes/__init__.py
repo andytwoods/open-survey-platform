@@ -9,7 +9,18 @@ from fastapi import FastAPI
 from osp_app import AppServices
 from osp_ops import openapi_components
 
-from . import auth, data_export, export_check, expressions, meta, ops, repro, simulate, surveys
+from . import (
+    auth,
+    data_export,
+    export_check,
+    expressions,
+    meta,
+    ops,
+    preview,
+    repro,
+    simulate,
+    surveys,
+)
 from .common import install_error_handlers
 
 
@@ -45,6 +56,7 @@ def install(
         repro,
         export_check,
         simulate,
+        preview,
         ops,
         meta,
         expressions,

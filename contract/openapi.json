@@ -1743,6 +1743,56 @@
         "title": "PathSpace",
         "type": "object"
       },
+      "PreviewPlanResponse": {
+        "properties": {
+          "conditions": {
+            "additionalProperties": {
+              "type": "string"
+            },
+            "description": "Each condition in the plan as text, by engine site (items.<id>.showIf, pages.<id>.showIf, flow.<id>.if, quotas.<id>.when, variables.<id>.expr, items.<id>.constraint)",
+            "title": "Conditions",
+            "type": "object"
+          },
+          "diagnostics": {
+            "items": {
+              "$ref": "#/components/schemas/Diagnostic"
+            },
+            "title": "Diagnostics",
+            "type": "array"
+          },
+          "plan": {
+            "anyOf": [
+              {
+                "additionalProperties": true,
+                "type": "object"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "description": "The runtime plan (osp-runtime-plan/1, seedVersion 'draft'); null when the draft has errors",
+            "title": "Plan"
+          },
+          "revision": {
+            "description": "The draft revision the plan was compiled from",
+            "title": "Revision",
+            "type": "integer"
+          },
+          "surveyId": {
+            "title": "Surveyid",
+            "type": "string"
+          }
+        },
+        "required": [
+          "surveyId",
+          "revision",
+          "plan",
+          "conditions",
+          "diagnostics"
+        ],
+        "title": "PreviewPlanResponse",
+        "type": "object"
+      },
       "PrintExpressionRequest": {
         "additionalProperties": false,
         "properties": {
@@ -6009,6 +6059,78 @@
         "summary": "Apply Ops",
         "tags": [
           "ops"
+        ]
+      }
+    },
+    "/api/surveys/{survey_id}/preview-plan": {
+      "post": {
+        "operationId": "previewPlan",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "survey_id",
+            "required": true,
+            "schema": {
+              "title": "Survey Id",
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/PreviewPlanResponse"
+                }
+              }
+            },
+            "description": "Successful Response"
+          },
+          "401": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorBody"
+                }
+              }
+            },
+            "description": "Unauthorized"
+          },
+          "403": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorBody"
+                }
+              }
+            },
+            "description": "Forbidden"
+          },
+          "404": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorBody"
+                }
+              }
+            },
+            "description": "Not Found"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            },
+            "description": "Validation Error"
+          }
+        },
+        "summary": "Preview Plan",
+        "tags": [
+          "surveys"
         ]
       }
     },

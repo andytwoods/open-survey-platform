@@ -13,6 +13,10 @@
 	import ConsentPage from './lib/ConsentPage.svelte';
 	import Withdraw from './lib/Withdraw.svelte';
 	import { declinedConsent, type Device } from '@osp/engine';
+	import type { PreviewMount } from './lib/preview-mount';
+
+	/** Preview mode (B11): run on a given plan with no server and memory-only storage. */
+	let { preview }: { preview?: PreviewMount } = $props();
 
 	let session = $state.raw<Session | null>(null);
 	let bootError = $state.raw<BootError | null>(null);
@@ -187,16 +191,17 @@
 
 	async function start() {
 		bootError = null;
-		const { resumeToken, urlParams } = readUrl();
+		const { resumeToken, urlParams } = preview ? { resumeToken: null, urlParams: {} } : readUrl();
+		if (preview) slug = preview.slug;
 		if (!slug) {
 			bootError = new BootError('not-found', 'This survey link is not valid.');
 			return;
 		}
-		const store = (await openIndexedDb()) ?? new MemoryStore();
+		const store = preview ? null : ((await openIndexedDb()) ?? new MemoryStore());
 		const log = (msg: string, detail?: unknown) => console.warn(`[osp-runtime] ${msg}`, detail ?? '');
-		const env: Env = {
+		const env: Env = preview?.env ?? {
 			api: httpApi(''),
-			store,
+			store: store!,
 			backup: localStorageBackup(),
 			pointer: sessionPointer(),
 			devicePointer: localStoragePointer(),
@@ -209,7 +214,14 @@
 		};
 		const languages = navigator.languages?.length ? navigator.languages : [navigator.language];
 		try {
-			const s = await boot(env, { slug, resumeToken, urlParams, languages, device: device() });
+			const s = await boot(env, {
+				slug,
+				resumeToken,
+				urlParams,
+				languages: preview?.language ? [preview.language] : languages,
+				device: device()
+			});
+			preview?.onSession?.(s);
 			useLanguage(s.view().language);
 			const planTheme = (s.plan as unknown as { theme?: Theme }).theme;
 			if (planTheme && typeof planTheme === 'object') applyTheme(planTheme);

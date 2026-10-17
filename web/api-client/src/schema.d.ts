@@ -566,6 +566,23 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
+    "/api/surveys/{survey_id}/preview-plan": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /** Preview Plan */
+        post: operations["previewPlan"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
     "/api/surveys/{survey_id}/publish": {
         parameters: {
             query?: never;
@@ -1428,6 +1445,32 @@ export interface components {
              * @description Why coverage is only sampled
              */
             reasons: string[];
+        };
+        /** PreviewPlanResponse */
+        PreviewPlanResponse: {
+            /**
+             * Conditions
+             * @description Each condition in the plan as text, by engine site (items.<id>.showIf, pages.<id>.showIf, flow.<id>.if, quotas.<id>.when, variables.<id>.expr, items.<id>.constraint)
+             */
+            conditions: {
+                [key: string]: string;
+            };
+            /** Diagnostics */
+            diagnostics: components["schemas"]["Diagnostic"][];
+            /**
+             * Plan
+             * @description The runtime plan (osp-runtime-plan/1, seedVersion 'draft'); null when the draft has errors
+             */
+            plan: {
+                [key: string]: unknown;
+            } | null;
+            /**
+             * Revision
+             * @description The draft revision the plan was compiled from
+             */
+            revision: number;
+            /** Surveyid */
+            surveyId: string;
         };
         /** PrintExpressionRequest */
         PrintExpressionRequest: {
@@ -3987,6 +4030,64 @@ export interface operations {
                 };
                 content: {
                     "application/json": components["schemas"]["RejectedBody"];
+                };
+            };
+        };
+    };
+    previewPlan: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                survey_id: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["PreviewPlanResponse"];
+                };
+            };
+            /** @description Unauthorized */
+            401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorBody"];
+                };
+            };
+            /** @description Forbidden */
+            403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorBody"];
+                };
+            };
+            /** @description Not Found */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorBody"];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
                 };
             };
         };
