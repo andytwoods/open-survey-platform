@@ -34,6 +34,11 @@ ROUTES: list[tuple[str, str, dict | None]] = [
     ("GET", f"/api/surveys/{SID}/export-check?target=lss", None),
     ("POST", f"/api/surveys/{SID}/results/query", {"cards": [{"question": "q1"}]}),
     ("GET", f"/api/surveys/{SID}/results/text/{{question}}", None),
+    (
+        "POST",
+        f"/api/surveys/{SID}/results/export",
+        {"query": {}, "cards": ["q1"], "formats": ["svg"]},
+    ),
     ("GET", "/api/themes", None),
     ("POST", "/api/themes", {"name": "x", "theme": {}}),
     ("PUT", "/api/themes/default", {"themeId": None}),
@@ -136,6 +141,8 @@ def test_viewer_cannot_create_or_export(benv, survey_a):
     assert c.get(f"/api/surveys/{survey_a}/export/codebook").status_code == 403
     assert c.post(f"/api/surveys/{survey_a}/results/query", json={}).status_code == 403
     assert c.get(f"/api/surveys/{survey_a}/results/text/q1").status_code == 403
+    export = {"query": {}, "cards": ["q1"], "formats": ["png"]}
+    assert c.post(f"/api/surveys/{survey_a}/results/export", json=export).status_code == 403
 
 
 def test_unknown_role_fails_closed(benv, survey_a):

@@ -364,3 +364,52 @@ def results_text(
         cursor=cursor,
         limit=limit,
     )
+
+
+# -- figure export audit (task V4) ------------------------------------------------------
+
+
+class ResultsExportRequest(_In):
+    """What a figure export contained. The files are drawn in the browser from the query's
+    aggregates; the server only checks access and writes a ``results.export`` audit row."""
+
+    query: ResultsQuery = Field(description="The results query the figures were drawn from")
+    cards: list[Annotated[str, Field(min_length=1, max_length=200)]] = Field(
+        min_length=1, max_length=500, description="Question ids of the exported cards"
+    )
+    formats: list[Literal["svg", "png", "csv", "vega-lite", "manifest", "zip"]] = Field(
+        min_length=1, max_length=6
+    )
+    scope: Literal["card", "page"] = Field("card", description="One card, or Export all")
+    suppressBelow: int | None = Field(
+        None, ge=1, le=1000, description="'Hide counts below k' threshold; null: off"
+    )
+
+
+class ResultsExportRecord(BaseModel):
+    recorded: bool
+    queryHash: str = Field(description="Same hash as the results query's for this query")
+    versions: list[int]
+    formats: list[str]
+
+
+@router.post(
+    "/{survey_id}/results/export",
+    operation_id="recordResultsExport",
+    response_model=ResultsExportRecord,
+    responses=errors(401, 403, 404, 422),
+)
+def record_results_export(
+    survey_id: str, body: ResultsExportRequest, auth: Auth, services: Services
+) -> dict[str, Any]:
+    """Record a figure export (survey.export; audited as results.export, no values)."""
+    return services.builder.run(
+        "survey.results_export",
+        auth.actor,
+        survey_id=survey_id,
+        query=body.query.model_dump(mode="json", by_alias=True),
+        cards=body.cards,
+        formats=body.formats,
+        scope=body.scope,
+        suppress_below=body.suppressBelow,
+    )

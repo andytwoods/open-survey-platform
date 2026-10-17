@@ -6,6 +6,7 @@ from __future__ import annotations
 
 import copy
 import importlib.util
+import json
 from pathlib import Path
 
 from osp_store import TenantContext
@@ -92,3 +93,45 @@ def test_errors(benv):
     assert v.get(f"/api/surveys/{sid}/results/text/why").status_code == 403
     actions = [a.action for a in benv.store.list_audit(TenantContext(benv.tenants["A"], "x"))]
     assert "results.read" not in actions  # refused calls read nothing
+
+
+def test_export_is_recorded_without_values(benv):
+    c, sid, ctx = _setup(benv)
+    query = {"split": {"condition": "arm"}, "denominator": "shown"}
+    shown = c.post(f"/api/surveys/{sid}/results/query", json=query).json()
+    body = {
+        "query": query,
+        "cards": ["fruit", "why"],
+        "formats": ["png", "svg", "png"],
+        "scope": "page",
+        "suppressBelow": 5,
+    }
+    r = c.post(f"/api/surveys/{sid}/results/export", json=body)
+    assert r.status_code == 200, r.text
+    assert r.json() == {
+        "recorded": True,
+        "queryHash": shown["queryHash"],
+        "versions": [1],
+        "formats": ["svg", "png"],
+    }
+    rows = [a for a in benv.store.list_audit(ctx) if a.action == "results.export"]
+    assert len(rows) == 1
+    detail = rows[0].detail
+    assert detail["cards"] == ["fruit", "why"] and detail["scope"] == "page"
+    assert detail["suppressBelow"] == 5 and detail["query"]["denominator"] == "shown"
+    assert "sunny" not in json.dumps(detail) and "count" not in json.dumps(detail)
+
+
+def test_export_errors(benv):
+    c, sid, ctx = _setup(benv)
+    ok = {"query": {}, "cards": ["fruit"], "formats": ["csv"]}
+    url = f"/api/surveys/{sid}/results/export"
+    assert c.post(url, json={**ok, "formats": ["pdf"]}).status_code == 422
+    assert c.post(url, json={**ok, "formats": []}).status_code == 422
+    assert c.post(url, json={**ok, "cards": []}).status_code == 422
+    assert c.post(url, json={**ok, "suppressBelow": 0}).status_code == 422
+    assert c.post(url, json={**ok, "query": {"versions": [9]}}).status_code == 404
+    assert benv.login("viewer@a.example").post(url, json=ok).status_code == 403
+    assert benv.login("owner@b.example").post(url, json=ok).status_code == 404
+    actions = [a.action for a in benv.store.list_audit(ctx)]
+    assert "results.export" not in actions
