@@ -75,6 +75,8 @@ Changed an endpoint? Run `make contract` and commit `contract/openapi.json` and 
 
 A Claude Code **Stop hook** (`.claude/settings.json` → `scripts/stop-hook.sh`) runs `make check` when you try to finish with uncommitted changes or new commits, and blocks with the failing output. After 3 consecutive blocks it lets the session end: then mark the task `blocked`.
 
+GitHub Actions (`.github/workflows/ci.yml`) runs the same checks on every push and pull request, split into parallel jobs: `make check CHECK_SKIP="harness-quick"` on Ubuntu, `make web-e2e` and `make harness-quick` as their own jobs with cached Playwright browsers, and the non-browser checks (without `py-test`, for now) on Windows. A pushed branch must be green there too.
+
 A task is done when `make check` is green **and** the task's acceptance criteria in `planning/tasks.md` are met with tests. Then append a 3–5 line entry to `log/devlog.md` (what landed, numbers, what's still open) and mark the task `review`.
 
 ## 5. Parallel agents
