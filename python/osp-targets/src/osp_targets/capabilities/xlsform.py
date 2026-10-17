@@ -159,6 +159,40 @@ _rows(
     "`relevant`. ODK/Enketo keep a value that becomes non-relevant until final submit, "
     "not until page submit (§3, Enketo E8), so logic and piping can still see it.",
 )
+
+# --- Media (planning/media.md §7) --------------------------------------------------------
+_MEDIA_NOTE = (
+    "The first item's URL is written to `media::image` / `media::audio` / `media::video` "
+    "(per language). XLSForm media columns name files attached to the form, so download the "
+    "files and attach them under those names (or keep the URLs where the client fetches them)."
+)
+_rows((*QUESTIONS, "MatrixQuestion"), "media", "approximated", _MEDIA_NOTE)
+_row(
+    "Choice.media",
+    "approximated",
+    "The URL is written to `media::image` / `media::audio` on the choices row; attach the "
+    "file under that name, as for question media.",
+)
+_row(
+    "$media.extra", "unsupported", "XLSForm takes one media per question; later items are dropped."
+)
+_row("Media.kind", "native", "Picks the `media::<kind>` column.")
+_row("Media.url", "approximated", "Written where XLSForm expects an attached file's name.")
+_row("Media.alt", "unsupported", "XLSForm has no alt text for media; dropped.")
+_row("Media.caption", "lowered", "Appended to the `hint` (per language).")
+_row("Media.transcriptUrl", "unsupported", "No transcript link in XLSForm; dropped.")
+_row("Media.captionsUrl", "unsupported", "No captions track in XLSForm; dropped.")
+_row("Media.posterUrl", "unsupported", "No video poster in XLSForm; dropped.")
+_row("Media.width", "unsupported", "No size hints in XLSForm; the client scales media itself.")
+_row("Media.height", "unsupported", "See Media.width.")
+_row("Media.durationSeconds", "unsupported", "A hint for our player; dropped.")
+_row("Media.mimeType", "unsupported", "A hint for our player; dropped.")
+_row("Media.mustPlayToEnd", "unsupported", "ODK/Enketo cannot require a clip to be played.")
+_row("Media.mustPlayToEnd=false", "native", "Off: nothing to export.")
+_row("Media.mustPlayToEnd=true", "unsupported", "ODK/Enketo cannot require a clip to be played.")
+_row("Media.autoplay", "unsupported", "No autoplay in XLSForm; the participant presses play.")
+_row("Media.autoplay=false", "native", "Off: nothing to export.")
+_row("Media.autoplay=true", "unsupported", "No autoplay in XLSForm; the participant presses play.")
 _rows(ANSWERABLE, "name", "native", "`name`.")
 _rows(ANSWERABLE, "required", "native", "`required`; XForms applies it only while relevant (§4).")
 _rows(ANSWERABLE, "constraint", "native", "`constraint`; checked only on non-empty values (§4).")
@@ -213,6 +247,7 @@ _row(
 )
 _row("MatrixQuestion.help", "native", "`hint::<language>` of the header row.")
 _row("MatrixQuestion.custom", "unsupported", "Lab annotations; see the other question types.")
+# MatrixQuestion.media: see the media rows above (written on the header row).
 _row(
     "MatrixQuestion.showIf",
     "approximated",

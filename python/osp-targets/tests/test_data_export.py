@@ -636,6 +636,58 @@ def test_codebook_lists_lab_custom_properties() -> None:
     assert "Lab properties" not in codebook(_version("38-matrix")).markdown
 
 
+def test_codebook_lists_media() -> None:
+    """Media (planning/media.md §7): per variable and per choice, with the paradata note
+    when a clip is present; never a data column; absent without media."""
+    s = _survey("38-matrix")
+    items = s["blocks"][0]["pages"][0]["items"]
+    matrix = next(q for q in items if q["type"] == "matrix")
+    matrix["media"] = [
+        {"kind": "image", "url": "/media/grid.png", "alt": "A grid", "caption": "Fig. 1"},
+        {
+            "kind": "audio",
+            "url": {"en": "/media/en.mp3"},
+            "transcriptUrl": "/t.html",
+            "mustPlayToEnd": True,
+        },
+    ]
+    matrix["choices"][0]["media"] = {"kind": "image", "url": "/media/no.svg", "alt": "No"}
+    plain = codebook(SurveyVersion(s))
+    rows = [v for v in plain.data["variables"] if v.get("matrix") == matrix["id"]]
+    assert rows and rows[0]["media"] == [
+        {
+            "kind": "image",
+            "url": {"en": "/media/grid.png"},
+            "alt": {"en": "A grid"},
+            "caption": {"en": "Fig. 1"},
+        },
+        {
+            "kind": "audio",
+            "url": {"en": "/media/en.mp3"},
+            "transcriptUrl": {"en": "/t.html"},
+            "mustPlayToEnd": True,
+        },
+    ]
+    assert rows[0]["choices"][0]["media"] == {
+        "kind": "image",
+        "url": {"en": "/media/no.svg"},
+        "alt": {"en": "No"},
+    }
+    assert "media" not in rows[0]["choices"][1]
+    assert "paradata" in plain.data["media"]
+    md = plain.markdown
+    assert "## Media" in md and "one `media` event per clip" in md
+    assert "- Media: image /media/grid.png (alt: A grid; caption: Fig. 1)" in md
+    assert "- Media: audio /media/en.mp3 (must play to the end)" in md
+    assert "| Media |" in md and "| image /media/no.svg (alt: No) |" in md
+    assert plain.data["csv"]["columns"] == codebook(_version("38-matrix")).data["csv"]["columns"]
+    stock = codebook(_version("38-matrix"))
+    assert "media" not in stock.data and "## Media" not in stock.markdown
+    # An image-only survey gets the note but no paradata paragraph.
+    matrix["media"] = matrix["media"][:1]
+    assert "paradata" not in codebook(SurveyVersion(s)).data["media"]
+
+
 # -- hostile input -----------------------------------------------------------------------------
 
 

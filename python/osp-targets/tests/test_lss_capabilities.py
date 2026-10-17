@@ -47,7 +47,7 @@ def test_guard_fails_on_a_removed_field() -> None:
 def test_lss_summary_is_stable() -> None:
     """Counts per level, so a change of level is a visible, reviewed diff."""
     counts = Counter(cap.level for cap in LSS.values())
-    assert dict(counts) == {"native": 142, "lowered": 50, "approximated": 23, "unsupported": 84}
+    assert dict(counts) == {"native": 147, "lowered": 54, "approximated": 37, "unsupported": 88}
     assert LSS["MatrixQuestion.type"].level == "native"
     assert LSS["SliderQuestion.type"].level == "approximated"
     assert LSS["Survey.quotas"].level == "lowered"
@@ -56,3 +56,5 @@ def test_lss_summary_is_stable() -> None:
     assert LSS["Page.itemOrder=shuffle"].level == "approximated"
     assert LSS["$pipe.choiceLabel"].level == "native"
     assert LSS["$names.reserved"].level == "lowered"
+    assert LSS["NoteQuestion.media"].level == "approximated"  # planning/media.md §7
+    assert LSS["Media.mustPlayToEnd=true"].level == "unsupported"

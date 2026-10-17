@@ -535,3 +535,75 @@ def test_matrix_is_an_array_and_slider_a_number() -> None:
     assert re.search(r"fmod\(sleep\.NAOK - \(0\), 0\.5\) == 0", out.xml.decode())
     levels = {d.feature: d.level for d in diags}
     assert levels["SliderQuestion.type"] == "approximated"
+
+
+# --- Media (planning/media.md §7) -----------------------------------------------------------
+
+
+def test_media_becomes_html_in_texts() -> None:
+    data = _survey(
+        [
+            _q(
+                "stim",
+                "note",
+                media=[
+                    {
+                        "kind": "image",
+                        "url": "/media/s.jpg",
+                        "alt": 'A "street"',
+                        "width": 640,
+                        "height": 480,
+                    },
+                    {
+                        "kind": "audio",
+                        "url": "/media/a.mp3",
+                        "transcriptUrl": "/a.html",
+                        "caption": "Clip & co",
+                    },
+                ],
+            ),
+            _q(
+                "face",
+                "single",
+                choices=[
+                    {
+                        "value": "h",
+                        "label": "Happy",
+                        "media": {"kind": "image", "url": "/h.png", "alt": "Smile"},
+                    },
+                    {"value": "s", "label": "Sad"},
+                ],
+            ),
+            _q(
+                "clip",
+                media=[
+                    {
+                        "kind": "video",
+                        "url": "https://cdn.example.org/c.mp4",
+                        "captionsUrl": "/c.vtt",
+                        "posterUrl": "/c.jpg",
+                        "autoplay": True,
+                    }
+                ],
+            ),
+        ]
+    )
+    _result, diags, root = _export(data)
+    texts = {t["qid"]: t["question"] for t in _rows(root, "question_l10ns")}
+    stim = texts[_question(root, "stim")["qid"]]
+    img = '<img src="/media/s.jpg" alt="A &quot;street&quot;" width="640" height="480">'
+    assert stim.startswith("Label stim" + img)
+    audio = '<audio controls src="/media/a.mp3"></audio><p>Clip &amp; co</p>'
+    assert audio + '<p><a href="/a.html">Transcript</a></p>' in stim
+    clip = texts[_question(root, "clip")["qid"]]
+    video = '<video controls autoplay muted poster="/c.jpg"><source src="https://cdn.example.org/c.mp4">'
+    assert video + '<track kind="captions" src="/c.vtt" srclang="en"></video>' in clip
+    answers = {a["answer"] for a in _rows(root, "answer_l10ns")}
+    assert 'Happy<img src="/h.png" alt="Smile">' in answers and "Sad" in answers
+    items = "/blocks/0/pages/0/items"
+    by = {(d.feature, d.pointer): d.severity for d in diags}
+    assert by[("NoteQuestion.media", f"{items}/0/media")] == "warning"
+    assert by[("Choice.media", f"{items}/1/choices/0/media")] == "warning"
+    assert by[("Media.caption", f"{items}/0/media/1/caption")] == "info"
+    assert by[("Media.autoplay=true", f"{items}/2/media/0/autoplay")] == "warning"
+    assert ("Media.alt", f"{items}/0/media/0/alt") not in by  # native in HTML

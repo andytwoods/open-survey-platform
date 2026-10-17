@@ -14,6 +14,7 @@ from collections.abc import Iterator, Mapping
 from typing import Any
 
 from osp_spec import Survey, parse
+from osp_spec.media import Media
 from osp_spec.model import (
     AssignedVariable,
     AssignNode,
@@ -417,6 +418,42 @@ class _Exporter:
         for lang_col, value in self._texts(text, ptr).items():
             row[f"{col}::{lang_col}"] = value
 
+    # -- media (planning/media.md §7) ---------------------------------------------------
+
+    def _urls(self, url: object) -> dict[str, str]:
+        """A plain or per-language URL → ``{language column: url}`` (no pipe rewriting:
+        a URL never pipes answers, osp_spec.media)."""
+        if isinstance(url, str):
+            return {language_column(lang): url for lang in self.langs}
+        assert isinstance(url, dict)
+        fallback = url.get(self.default_lang) or next(iter(url.values()), "")
+        return {language_column(lang): url.get(lang, fallback) for lang in self.langs}
+
+    def _media(self, row: dict[str, str], media: Media | None, ptr: str) -> dict[str, str]:
+        """Write one media's URL into ``media::<kind>::<language>`` on ``row``; return its
+        caption per language column (joined into the hint by the caller)."""
+        if media is None:
+            return {}
+        for lang_col, url in self._urls(media.url).items():
+            row[f"media::{media.kind}::{lang_col}"] = url
+        return self._texts(media.caption, ptr + "/caption") if media.caption is not None else {}
+
+    def _hint_with_caption(
+        self, row: dict[str, str], help_text: object, ptr: str, caption: dict[str, str]
+    ) -> None:
+        hint = self._texts(help_text, ptr + "/help")
+        for lang_col in {*hint, *caption}:
+            parts = [p for p in (hint.get(lang_col), caption.get(lang_col)) if p]
+            row[f"hint::{lang_col}"] = " ".join(parts)
+
+    def _question_media(self, row: dict[str, str], q: Any, ptr: str) -> None:
+        """The first media goes on the row; the rest are dropped ($media.extra)."""
+        media = q.media or []
+        caption = self._media(row, media[0] if media else None, ptr + "/media/0")
+        self._hint_with_caption(row, q.help, ptr, caption)
+        for i in range(1, len(media)):
+            self.note("$media.extra", ptr + pointer("media", i), f"{media[i].kind} dropped")
+
     # -- run -----------------------------------------------------------------------------
 
     def run(self) -> tuple[XLSForm, list[ExportDiagnostic]]:
@@ -451,6 +488,7 @@ class _Exporter:
         for i, c in enumerate(choices):
             row = {"list_name": list_name, "name": str(c.value)}
             self._labelled(row, "label", c.label, ptr + pointer(i, "label"))
+            self._media(row, c.media, ptr + pointer(i, "media"))  # choices have no hint
             self.choices.append(row)
 
     def _choice_lists(self) -> None:
@@ -619,7 +657,7 @@ class _Exporter:
         }
         # The header row carries the matrix text above the column labels.
         self._labelled(header, "label", q.label, ptr + "/label")
-        self._labelled(header, "hint", q.help, ptr + "/help")
+        self._question_media(header, q, ptr)
         self.rows.append(header)
         for k, mrow in enumerate(q.rows):
             rid = matrix_row_id(q.id, mrow.id)
@@ -674,7 +712,7 @@ class _Exporter:
             if isinstance(q, TextQuestion) and q.multiline:
                 row["appearance"] = "multiline"
         self._labelled(row, "label", q.label, ptr + "/label")
-        self._labelled(row, "hint", q.help, ptr + "/help")
+        self._question_media(row, q, ptr)
         if q.showIf is not None:
             row["relevant"] = self._xpath().condition(q.showIf)
         if not isinstance(q, NoteQuestion):

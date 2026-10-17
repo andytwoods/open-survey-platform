@@ -37,6 +37,7 @@ from osp_expr.ast import (
 )
 from osp_expr.static import references
 from osp_spec import Survey, parse
+from osp_spec.media import Media
 from osp_spec.model import (
     AssignedVariable,
     AssignNode,
@@ -111,6 +112,14 @@ _MARKUP = re.compile(r"[&<>\n]")
 _LATCH_MAX = 1_000_000
 # LimeSurvey needs a quota message; used when the quota's screen-out block has no text.
 _QUOTA_FULL = "<p>Thank you. This survey is now closed for your group.</p>"
+# The transcript link's text (planning/media.md §7), by language; English otherwise.
+_TRANSCRIPT = {"en": "Transcript", "de": "Transkript", "fr": "Transcription", "es": "Transcripción"}
+
+
+def _attr(value: str | None) -> str:
+    """A string as a quoted HTML attribute value."""
+    return html.escape(value or "", quote=True)
+
 
 QUESTION_FIELDS = (
     "qid",
@@ -583,6 +592,70 @@ class _Exporter:
     def _all_langs(self, s: str) -> Texts:
         return {lang: s for lang in self.langs}
 
+    # -- media (planning/media.md §7): HTML tags appended to the text ---------------------
+
+    def _url_texts(self, url: object) -> Texts:
+        """A plain or per-language URL → ``{language: url}`` (no rendering: a URL never
+        pipes answers, osp_spec.media)."""
+        if isinstance(url, str):
+            return self._all_langs(url)
+        assert isinstance(url, dict)
+        fallback = url.get(self.base_lang) or next(iter(url.values()), "")
+        return {lang: url.get(lang, fallback) for lang in self.langs}
+
+    def _media_html(self, m: Media, ptr: str) -> Texts:
+        """One media as an HTML fragment per language: the tag, then the caption and the
+        transcript link as paragraphs. Attribute values are escaped for a quoted attribute."""
+        urls = self._url_texts(m.url)
+        alt = self._texts(m.alt, ptr + "/alt") if m.alt is not None else {}
+        caption = self._texts(m.caption, ptr + "/caption") if m.caption is not None else {}
+        transcript = self._url_texts(m.transcriptUrl) if m.transcriptUrl is not None else {}
+        captions = self._url_texts(m.captionsUrl) if m.captionsUrl is not None else {}
+        size = ""
+        if m.width is not None and m.height is not None:
+            size = f' width="{m.width}" height="{m.height}"'
+        out: Texts = {}
+        for lang in self.langs:
+            src = _attr(urls[lang])
+            if m.kind == "image":
+                tag = f'<img src="{src}" alt="{_attr(alt.get(lang, ""))}"{size}>'
+            elif m.kind == "audio":
+                tag = f'<audio controls src="{src}"></audio>'
+            else:
+                extra = " autoplay muted" if m.autoplay else ""
+                poster = f' poster="{_attr(m.posterUrl)}"' if m.posterUrl else ""
+                track = ""
+                if captions:
+                    track = "".join(
+                        f'<track kind="captions" src="{_attr(url)}" srclang="{_attr(tl)}">'
+                        for tl, url in captions.items()
+                    )
+                tag = f'<video controls{extra}{poster}{size}><source src="{src}">{track}</video>'
+            if lang in caption:
+                tag += f"<p>{caption[lang]}</p>"
+            if lang in transcript:
+                word = _TRANSCRIPT.get(lang.split("-")[0].lower(), _TRANSCRIPT["en"])
+                tag += f'<p><a href="{_attr(transcript[lang])}">{word}</a></p>'
+            out[lang] = tag
+        return out
+
+    def _with_media(self, texts: Texts, media: list[Media] | Media | None, ptr: str) -> Texts:
+        """``texts`` with the HTML of ``media`` appended per language (a list: in order)."""
+        if media is None:
+            return texts
+        items = media if isinstance(media, list) else [media]
+        out = dict(texts) or self._all_langs("")
+        for i, m in enumerate(items):
+            frag = self._media_html(m, ptr + pointer(i) if isinstance(media, list) else ptr)
+            for lang in self.langs:
+                out[lang] = out.get(lang, "") + frag[lang]
+        return out
+
+    def _choice_text(self, q: Any, ptr: str, i: int, c: Choice) -> Texts:
+        label_ptr = self._choice_ptr(q, ptr, i)
+        base = label_ptr.rsplit("/", 1)[0]
+        return self._with_media(self._texts(c.label, label_ptr), c.media, base + "/media")
+
     # -- run -----------------------------------------------------------------------------
 
     def run(self) -> tuple[LssExport, list[ExportDiagnostic]]:
@@ -843,6 +916,7 @@ class _Exporter:
     def _question(self, q: Any, ptr: str) -> _Item:
         code = self.codes[q.id]
         item = _Item(code=code, type="", text=self._texts(q.label, ptr + "/label"))
+        item.text = self._with_media(item.text, q.media, ptr + "/media")
         item.help = self._texts(q.help, ptr + "/help")
         match q:
             case IntegerQuestion():
@@ -865,7 +939,7 @@ class _Exporter:
             case MatrixQuestion():
                 item.type = "F"
                 item.answers = [
-                    (c_code, self._texts(c.label, self._choice_ptr(q, ptr, i)))
+                    (c_code, self._choice_text(q, ptr, i, c))
                     for i, (c_code, c) in enumerate(self._choice_codes(q, ptr))
                 ]
                 labels = {r.id: r.label for r in q.rows}
@@ -876,7 +950,7 @@ class _Exporter:
             case SingleQuestion() | MultiQuestion():
                 item.type = "L" if isinstance(q, SingleQuestion) else "M"
                 rows = [
-                    (c_code, self._texts(c.label, self._choice_ptr(q, ptr, i)))
+                    (c_code, self._choice_text(q, ptr, i, c))
                     for i, (c_code, c) in enumerate(self._choice_codes(q, ptr))
                 ]
                 if isinstance(q, SingleQuestion):

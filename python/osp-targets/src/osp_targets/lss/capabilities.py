@@ -174,6 +174,47 @@ _rows(
     "Question `relevance` equation. LimeSurvey clears an irrelevant answer to NULL as soon as "
     "the page is submitted (spike-1 Q6), as our §3 does.",
 )
+
+# --- Media (planning/media.md §7) --------------------------------------------------------
+_MEDIA_NOTE = (
+    "An `<img>`, `<audio controls>` or `<video controls>` tag is appended to the question "
+    "text (HTML). LimeSurvey's XSS filter strips media tags unless the administrator allows "
+    "them, and the files stay where the URL points (not uploaded into the survey)."
+)
+_rows((*QUESTIONS, "MatrixQuestion"), "media", "approximated", _MEDIA_NOTE)
+_row(
+    "Choice.media",
+    "approximated",
+    "The tag is appended to the answer option or subquestion text; same XSS caveat as "
+    "question media.",
+)
+_row("Media.kind", "native", "Picks the tag.")
+_row("Media.url", "native", "The tag's `src`.")
+_row("Media.alt", "native", "The `<img>` tag's `alt`.")
+_row("Media.caption", "lowered", "A `<p>` after the tag.")
+_row("Media.transcriptUrl", "lowered", "A `<p><a>` transcript link after the tag.")
+_row(
+    "Media.captionsUrl",
+    "approximated",
+    'A `<track kind="captions">` per language inside the video tag; the XSS filter may strip it.',
+)
+_row("Media.posterUrl", "approximated", "The video tag's `poster`; the XSS filter may strip it.")
+_row("Media.width", "lowered", "`width` attribute on the tag.")
+_row("Media.height", "lowered", "`height` attribute on the tag.")
+_row("Media.durationSeconds", "unsupported", "A hint for our player; dropped.")
+_row("Media.mimeType", "unsupported", "A hint for our player; dropped.")
+_row("Media.mustPlayToEnd", "unsupported", "LimeSurvey cannot require a clip to be played.")
+_row("Media.mustPlayToEnd=false", "native", "Off: nothing to export.")
+_row("Media.mustPlayToEnd=true", "unsupported", "LimeSurvey cannot require a clip to be played.")
+_row(
+    "Media.autoplay", "approximated", "`autoplay muted` attributes; the XSS filter may strip them."
+)
+_row("Media.autoplay=false", "native", "Off: nothing to export.")
+_row(
+    "Media.autoplay=true",
+    "approximated",
+    "`autoplay muted` attributes; the XSS filter may strip them.",
+)
 _rows(ANSWERABLE, "name", "native", "The question code (`title`); see $names.* for renames.")
 _rows(ANSWERABLE, "required", "native", "`mandatory` = Y; only enforced while relevant (§4).")
 _rows(

@@ -176,6 +176,39 @@ def _custom_text(custom: dict[str, Any]) -> str:
     return "; ".join(f"{_code(k)} = {_code(json.dumps(v))}" for k, v in sorted(custom.items()))
 
 
+MEDIA_NOTE = (
+    "Media (images, audio, video) are part of the question, not of the data: no CSV column "
+    "carries them. URLs are as published; the files live where they point."
+)
+MEDIA_PARADATA_NOTE = (
+    "How each participant played a clip is recorded as paradata: one `media` event per clip "
+    "and page visit in the response's event log (JSON export with events, and the "
+    "reproducibility package), summarised per response under `media` in the JSON export as "
+    "{item id: [{index, plays, pauses, seeks, firstPlayMs, playedMs, maxPositionS, ended, "
+    "failed}]}. `firstPlayMs` counts from the page being shown; `ended` is true once the clip "
+    "played to its end; `failed` means the file did not load (a `mustPlayToEnd` clip that "
+    "failed does not hold the participant back). Nothing is recorded for images."
+)
+
+
+def _media_section(has_clips: bool) -> dict[str, Any]:
+    return {"note": MEDIA_NOTE, **({"paradata": MEDIA_PARADATA_NOTE} if has_clips else {})}
+
+
+def _media_text(media: dict[str, Any], langs: Sequence[str]) -> str:
+    """One media as a codebook line fragment: kind, URL(s), alt / caption, flags."""
+    parts = [media["kind"], _lang_text(media["url"], langs)]
+    if media.get("alt"):
+        parts.append(f"alt: {_lang_text(media['alt'], langs)}")
+    if media.get("caption"):
+        parts.append(f"caption: {_lang_text(media['caption'], langs)}")
+    if media.get("mustPlayToEnd"):
+        parts.append("must play to the end")
+    if media.get("autoplay"):
+        parts.append("autoplays muted")
+    return " ".join(parts[:2]) + (f" ({'; '.join(parts[2:])})" if len(parts) > 2 else "")
+
+
 def codebook_data(
     version: SurveyVersion, options: CsvOptions | None = None, split: Collection[str] = ()
 ) -> dict[str, Any]:
@@ -211,6 +244,7 @@ def codebook_data(
                             if q.type == "multi" and opts.multi == "columns"
                             else {}
                         ),
+                        **({"media": c.media} if c.media else {}),
                     }
                     for c in q.choices
                 ]
@@ -220,11 +254,18 @@ def codebook_data(
             "matrixLabel": q.matrix_label,
             **(q.scale or {}),
             "custom": q.custom,
+            "media": q.media,
             "csvColumns": _question_columns(q, opts),
             "missing": _encoding(q, opts),
         }
         variables.append({k: v for k, v in entry.items() if v is not None})
     custom_keys = _custom_keys(lay.questions)
+    has_media = any(q.media for q in lay.questions) or any(
+        c.media for q in lay.questions for c in q.choices or []
+    )
+    has_clips = any(m["kind"] != "image" for q in lay.questions for m in q.media or []) or any(
+        c.media and c.media["kind"] != "image" for q in lay.questions for c in q.choices or []
+    )
     return {
         "format": FORMAT,
         "survey": {
@@ -258,6 +299,7 @@ def codebook_data(
         "metaColumns": [{"column": h, "meaning": m} for h, m in meta_columns(lay)],
         **({"consent": _consent(lay)} if lay.survey.consent is not None else {}),
         **({"customProperties": custom_keys} if custom_keys else {}),
+        **({"media": _media_section(has_clips)} if has_media else {}),
         "conditions": [{"name": v.name, "id": v.id, "levels": v.levels} for v in lay.assigned],
         "randomisers": [
             {
@@ -474,6 +516,15 @@ def _render(data: dict[str, Any], heading: str = "#") -> str:
             add(f"| {_code(c['key'])} | {', '.join(c['types'])} |")
         add("")
 
+    if data.get("media"):
+        add(f"{h2} Media")
+        add("")
+        add(_md(data["media"]["note"]))
+        if data["media"].get("paradata"):
+            add("")
+            add(_md(data["media"]["paradata"]))
+        add("")
+
     add(f"{h2} Questions")
     add("")
     add("In survey (flow) order. Conditions refer to other variables by export name.")
@@ -505,6 +556,8 @@ def _render(data: dict[str, Any], heading: str = "#") -> str:
             )
         if v.get("custom"):
             add(f"- Lab properties: {_custom_text(v['custom'])}")
+        for m in v.get("media") or []:
+            add(f"- Media: {_media_text(m, langs)}")
         add(f"- CSV columns: {', '.join(_code(c) for c in v['csvColumns'])}")
         add(f"- Missing values: {v['missing']}")
         if v.get("choiceOrder") == "shuffle":
@@ -516,12 +569,25 @@ def _render(data: dict[str, Any], heading: str = "#") -> str:
             add("")
             lang_heads = " | ".join(f"Label ({lang})" for lang in langs)
             has_col = any("column" in c for c in v["choices"])
-            add(f"| Code | {lang_heads} |" + (" Column |" if has_col else ""))
-            add("|---|" + "---|" * len(langs) + ("---|" if has_col else ""))
+            has_media = any("media" in c for c in v["choices"])
+            add(
+                f"| Code | {lang_heads} |"
+                + (" Column |" if has_col else "")
+                + (" Media |" if has_media else "")
+            )
+            add(
+                "|---|"
+                + "---|" * len(langs)
+                + ("---|" if has_col else "")
+                + ("---|" if has_media else "")
+            )
             for c in v["choices"]:
                 labels = " | ".join(_md(c["label"].get(lang, "")) for lang in langs)
                 col = f" `{c['column']}` |" if has_col else ""
-                add(f"| {_code(c['code'])} | {labels} |{col}")
+                media = ""
+                if has_media:
+                    media = f" {_media_text(c['media'], langs)} |" if "media" in c else " |"
+                add(f"| {_code(c['code'])} | {labels} |{col}{media}")
         add("")
 
     others = data["otherVariables"]

@@ -44,6 +44,8 @@ STATE_SUFFIX = "__state"
 class ChoiceInfo:
     code: Any
     label: dict[str, str]
+    # planning/media.md: the option's image or audio clip, as `media_info` returns it.
+    media: dict[str, Any] | None = None
 
 
 @dataclass(frozen=True)
@@ -70,6 +72,40 @@ class QuestionInfo:
     # The lab's own annotations on the question (planning/property-profiles.md §5); a
     # matrix row carries its matrix's.
     custom: dict[str, Any] | None = None
+    # The question's media (planning/media.md), as `media_info` returns them; a matrix
+    # row carries its matrix's.
+    media: list[dict[str, Any]] | None = None
+
+
+def media_info(lay: Layout, m: Any) -> dict[str, Any]:
+    """One `osp_spec.media.Media` for the codebook: texts and URLs per language, the flags
+    only when set. Hints (size, duration, mime type) stay out: they describe the file, not
+    the study."""
+    out: dict[str, Any] = {"kind": m.kind, "url": lay.text(m.url)}
+    for key in ("alt", "caption", "transcriptUrl", "captionsUrl"):
+        value = getattr(m, key)
+        if value is not None:
+            out[key] = lay.text(value)
+    if m.posterUrl is not None:
+        out["posterUrl"] = m.posterUrl
+    if m.mustPlayToEnd:
+        out["mustPlayToEnd"] = True
+    if m.autoplay:
+        out["autoplay"] = True
+    return out
+
+
+def _choice_infos(lay: Layout, choices: Any) -> list[ChoiceInfo]:
+    return [
+        ChoiceInfo(
+            c.value, lay.text(c.label), media_info(lay, c.media) if c.media is not None else None
+        )
+        for c in choices or []
+    ]
+
+
+def _media_infos(lay: Layout, q: Any) -> list[dict[str, Any]] | None:
+    return [media_info(lay, m) for m in q.media] if q.media else None
 
 
 @dataclass(frozen=True)
@@ -218,7 +254,7 @@ def build_layout(version: SurveyVersion, split: Collection[str] = ()) -> Layout:
                     continue
                 if isinstance(q, MatrixQuestion):
                     source = q.choices if q.choices is not None else lists.get(q.choiceList or "")
-                    columns = [ChoiceInfo(c.value, lay.text(c.label)) for c in source or []]
+                    columns = _choice_infos(lay, source)
                     for row in q.rows:
                         rid = matrix_row_id(q.id, row.id)
                         lay.questions.append(
@@ -239,6 +275,7 @@ def build_layout(version: SurveyVersion, split: Collection[str] = ()) -> Layout:
                                 matrix=q.id,
                                 matrix_label=lay.text(q.label),
                                 custom=dict(q.custom) if q.custom else None,
+                                media=_media_infos(lay, q),
                             )
                         )
                     continue
@@ -246,7 +283,7 @@ def build_layout(version: SurveyVersion, split: Collection[str] = ()) -> Layout:
                 order = None
                 if isinstance(q, SingleQuestion | MultiQuestion):
                     source = q.choices if q.choices is not None else lists.get(q.choiceList or "")
-                    choices = [ChoiceInfo(c.value, lay.text(c.label)) for c in source or []]
+                    choices = _choice_infos(lay, source)
                     order = q.choiceOrder
                     if order == "shuffle":
                         name = lay.names[q.id]
@@ -288,6 +325,7 @@ def build_layout(version: SurveyVersion, split: Collection[str] = ()) -> Layout:
                             else None
                         ),
                         custom=dict(q.custom) if q.custom else None,
+                        media=_media_infos(lay, q),
                     )
                 )
 

@@ -357,3 +357,81 @@ def test_matrix_is_a_table_list_and_slider_a_range() -> None:
     assert rows["sleep"]["parameters"] == "start=0 end=12 step=0.5"
     assert "constraint" not in rows["pain"]  # range enforces min, max and step
     assert {d.feature for d in diags} >= {"SliderQuestion.minLabel", "SliderQuestion.maxLabel"}
+
+
+# --- Media (planning/media.md §7) -----------------------------------------------------------
+
+
+def _media_survey() -> dict:
+    return _survey(
+        [
+            {
+                "id": "stim",
+                "type": "note",
+                "label": "Look",
+                "help": "Take your time.",
+                "media": [
+                    {
+                        "kind": "image",
+                        "url": "/media/scene.jpg",
+                        "alt": "A street",
+                        "caption": "Figure 1",
+                    },
+                    {"kind": "audio", "url": "/media/a.mp3", "transcriptUrl": "/media/a.html"},
+                ],
+            },
+            {
+                "id": "face",
+                "type": "single",
+                "label": "Which?",
+                "choices": [
+                    {
+                        "value": "h",
+                        "label": "Happy",
+                        "media": {"kind": "image", "url": "/f/h.png", "alt": "Smile"},
+                    },
+                    {"value": "s", "label": "Sad"},
+                ],
+            },
+            {
+                "id": "clip",
+                "type": "integer",
+                "label": "Rate",
+                "media": [
+                    {
+                        "kind": "video",
+                        "url": {"en": "https://cdn.example.org/c-en.mp4"},
+                        "captionsUrl": "/c.vtt",
+                        "transcriptUrl": "/c.html",
+                        "mustPlayToEnd": True,
+                    }
+                ],
+            },
+        ]
+    )
+
+
+def test_media_columns_and_diagnostics() -> None:
+    xlsx, diags = export_xlsform(_media_survey())
+    wb = load_workbook(io.BytesIO(xlsx))
+    survey = {r[1]: r for r in wb["survey"].iter_rows(values_only=True)}
+    head = [c.value for c in wb["survey"][1]]
+    img, vid = (head.index(f"media::{k}::English (en)") for k in ("image", "video"))
+    assert "media::audio::English (en)" not in head  # the note's second media is dropped
+    hint = head.index("hint::English (en)")
+    assert survey["stim"][img] == "/media/scene.jpg"
+    assert survey["stim"][hint] == "Take your time. Figure 1"  # caption joins the hint
+    assert survey["clip"][vid] == "https://cdn.example.org/c-en.mp4" and survey["clip"][img] is None
+    choices = {r[1]: r for r in wb["choices"].iter_rows(values_only=True)}
+    chead = [c.value for c in wb["choices"][1]]
+    assert choices["h"][chead.index("media::image::English (en)")] == "/f/h.png"
+    assert choices["s"][chead.index("media::image::English (en)")] is None
+    by = {(d.feature, d.pointer): d for d in diags}
+    items = "/blocks/0/pages/0/items"
+    assert by[("$media.extra", f"{items}/0/media/1")].severity == "loss"
+    assert by[("NoteQuestion.media", f"{items}/0/media")].severity == "warning"
+    assert by[("Choice.media", f"{items}/1/choices/0/media")].severity == "warning"
+    assert by[("Media.alt", f"{items}/0/media/0/alt")].severity == "loss"
+    assert by[("Media.mustPlayToEnd=true", f"{items}/2/media/0/mustPlayToEnd")].severity == "loss"
+    assert ("Media.kind", f"{items}/0/media/0") not in by  # native
+    _xform(xlsx)  # pyxform accepts the media columns
