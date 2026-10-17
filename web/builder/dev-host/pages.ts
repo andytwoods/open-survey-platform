@@ -22,6 +22,7 @@ export const PAGES = {
 export const DEV_PAGES = {
 	'dev-mock': 'src/pages/dev/mock.ts',
 	'dev-cards': 'src/pages/dev/cards.ts',
+	'dev-charts': 'src/pages/dev/charts.ts',
 	'dev-choices': 'src/pages/dev/choices.ts',
 	'dev-components': 'src/pages/dev/components.ts',
 	'dev-conditions': 'src/pages/dev/conditions.ts',
@@ -43,6 +44,7 @@ export const TITLES: Record<PageName, string> = {
 	'preview-frame': `Preview · ${APP}`,
 	'dev-mock': APP,
 	'dev-cards': `Question cards · ${APP}`,
+	'dev-charts': `Results charts · ${APP}`,
 	'dev-choices': `Choice list editor · ${APP}`,
 	'dev-components': `Components · ${APP}`,
 	'dev-conditions': `Condition builder · ${APP}`,

@@ -1,6 +1,7 @@
 // Checks the production build (`make web-build`): build/manifest.json lists exactly one
 // entry per page (no dev-only pages), every listed file exists, each entry module exports
-// `mount`, and pages share chunks rather than each carrying its own copy.
+// `mount`, pages share chunks rather than each carrying its own copy, and no page loads the
+// chart library (Vega) eagerly.
 import { existsSync, readFileSync } from 'node:fs';
 import { dirname, join } from 'node:path';
 import { fileURLToPath } from 'node:url';
@@ -31,6 +32,10 @@ for (const name of PAGES) {
 		fail(`${name}: ${p.js} does not export mount`);
 	}
 	for (const c of p.preload) shared.set(c, (shared.get(c) ?? 0) + 1);
+	// The chart library (Vega, task V3) is a lazy chunk: never in a page's eager files.
+	for (const f of [p.js, ...p.preload]) {
+		if (readFileSync(join(build, f), 'utf8').includes('vega-embed')) fail(`${name}: ${f} loads Vega eagerly`);
+	}
 }
 if (![...shared.values()].some((n) => n === PAGES.length)) fail('no chunk is shared by every page');
 console.log(`check-build: ${PAGES.length} pages, ${shared.size} shared chunks, manifest ok`);

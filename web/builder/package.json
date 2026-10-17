@@ -25,7 +25,10 @@
 		"@osp/engine": "workspace:*",
 		"@osp/runtime": "workspace:*",
 		"@osp/ui-components": "workspace:*",
-		"bits-ui": "^2.19.5"
+		"bits-ui": "^2.19.5",
+		"vega": "6.4.0",
+		"vega-embed": "7.3.0",
+		"vega-lite": "6.4.3"
 	},
 	"devDependencies": {
 		"@axe-core/playwright": "^4.14.0",
