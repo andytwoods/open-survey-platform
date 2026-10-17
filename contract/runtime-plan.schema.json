@@ -66,6 +66,10 @@
         "resumeExpiryDays": { "type": "integer", "minimum": 1 }
       }
     },
+    "theme": {
+      "description": "Optional. The survey theme resolved at publish (survey theme, else the lab default, else the clean preset) and checked by the contrast guard. Full schema: web/ui-components/src/theme/generated/theme.schema.json (osp_spec.theme.Theme). runtime-design §6a.",
+      "$ref": "#/$defs/theme"
+    },
     "items": {
       "description": "Every item (questions and notes) by id.",
       "type": "object",
@@ -240,6 +244,36 @@
         }
       ]
     },
+    "hexColour": { "type": "string", "pattern": "^#[0-9a-fA-F]{6}$" },
+    "palette": {
+      "type": "object",
+      "required": ["accent", "background", "surface", "text", "muted", "error", "focus"],
+      "properties": {
+        "accent": { "$ref": "#/$defs/hexColour" },
+        "background": { "$ref": "#/$defs/hexColour" },
+        "surface": { "$ref": "#/$defs/hexColour" },
+        "text": { "$ref": "#/$defs/hexColour" },
+        "muted": { "$ref": "#/$defs/hexColour" },
+        "error": { "$ref": "#/$defs/hexColour" },
+        "focus": { "$ref": "#/$defs/hexColour" }
+      }
+    },
+    "theme": {
+      "type": "object",
+      "required": ["themeVersion", "colours"],
+      "properties": {
+        "themeVersion": { "const": "osp-theme/0.1" },
+        "colours": {
+          "type": "object",
+          "required": ["light", "dark"],
+          "properties": {
+            "light": { "$ref": "#/$defs/palette" },
+            "dark": { "$ref": "#/$defs/palette" }
+          }
+        },
+        "mode": { "enum": ["light", "dark", "auto"] }
+      }
+    },
     "id": { "type": "string", "pattern": "^[A-Za-z_][A-Za-z0-9_]*$" },
     "language": { "type": "string", "pattern": "^[A-Za-z]{2,3}(-[A-Za-z0-9]{1,8})*$" },
     "segment": {
@@ -398,12 +432,13 @@
       }
     },
     "item": {
+      "description": "A question, note, matrix or matrix row. A matrix (C2c-1) stores nothing: its rows are `single` items with `matrix` set, listed in `rows` and in the plan's `questions`.",
       "type": "object",
       "additionalProperties": false,
       "required": ["id", "type", "page", "label"],
       "properties": {
         "id": { "$ref": "#/$defs/id" },
-        "type": { "enum": ["integer", "decimal", "text", "single", "multi", "date", "note"] },
+        "type": { "enum": ["integer", "decimal", "text", "single", "multi", "date", "slider", "matrix", "note"] },
         "page": { "$ref": "#/$defs/id" },
         "label": { "$ref": "#/$defs/text" },
         "help": { "$ref": "#/$defs/text" },
@@ -419,26 +454,69 @@
         "multiline": {
           "const": true,
           "description": "Long text: a multi-line input that keeps line breaks. Present only when set, and only on text items."
-        }
+        },
+        "rows": { "type": "array", "minItems": 1, "items": { "$ref": "#/$defs/id" } },
+        "matrix": { "$ref": "#/$defs/id" },
+        "valueType": { "enum": ["integer", "decimal"] },
+        "step": { "$ref": "#/$defs/bound" },
+        "minLabel": { "$ref": "#/$defs/text" },
+        "maxLabel": { "$ref": "#/$defs/text" }
       },
       "dependentSchemas": { "multiline": { "properties": { "type": { "const": "text" } } } },
-      "if": { "properties": { "type": { "const": "note" } } },
-      "then": {
-        "not": {
-          "anyOf": [
-            { "required": ["name"] },
-            { "required": ["required"] },
-            { "required": ["constraint"] },
-            { "required": ["choices"] }
-          ]
+      "allOf": [
+        {
+          "if": { "properties": { "type": { "const": "note" } } },
+          "then": {
+            "not": {
+              "anyOf": [
+                { "required": ["name"] },
+                { "required": ["required"] },
+                { "required": ["constraint"] },
+                { "required": ["choices"] }
+              ]
+            }
+          },
+          "else": { "required": ["name", "required"] }
+        },
+        {
+          "if": { "properties": { "type": { "enum": ["single", "multi"] } } },
+          "then": { "required": ["choices", "choiceOrder"] },
+          "else": { "not": { "required": ["choiceOrder"] } }
+        },
+        {
+          "if": { "properties": { "type": { "const": "matrix" } } },
+          "then": {
+            "required": ["rows", "choices"],
+            "not": { "anyOf": [{ "required": ["constraint"] }, { "required": ["constraintMessage"] }] }
+          },
+          "else": { "not": { "required": ["rows"] } }
+        },
+        {
+          "if": { "properties": { "type": { "enum": ["single", "multi", "matrix"] } } },
+          "else": { "not": { "required": ["choices"] } }
+        },
+        {
+          "if": { "required": ["matrix"] },
+          "then": {
+            "properties": { "type": { "const": "single" } },
+            "not": { "anyOf": [{ "required": ["showIf"] }, { "required": ["constraint"] }] }
+          }
+        },
+        {
+          "if": { "properties": { "type": { "const": "slider" } } },
+          "then": { "required": ["valueType", "min", "max", "step"] },
+          "else": {
+            "not": {
+              "anyOf": [
+                { "required": ["valueType"] },
+                { "required": ["step"] },
+                { "required": ["minLabel"] },
+                { "required": ["maxLabel"] }
+              ]
+            }
+          }
         }
-      },
-      "else": {
-        "required": ["name", "required"],
-        "if": { "properties": { "type": { "enum": ["single", "multi"] } } },
-        "then": { "required": ["choices", "choiceOrder"] },
-        "else": { "not": { "anyOf": [{ "required": ["choices"] }, { "required": ["choiceOrder"] }] } }
-      }
+      ]
     },
     "page": {
       "type": "object",
@@ -453,7 +531,7 @@
       }
     },
     "bound": {
-      "description": "Inclusive numeric bound: an integer, or decimal text (integer/decimal questions).",
+      "description": "Inclusive numeric bound or slider step: an integer, or decimal text (integer/decimal/slider questions).",
       "oneOf": [{ "type": "integer" }, { "type": "string", "pattern": "^-?[0-9]+(\\.[0-9]+)?$" }]
     },
     "variable": {

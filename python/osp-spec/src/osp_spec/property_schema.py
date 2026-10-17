@@ -53,23 +53,35 @@ from .model import (
     DateQuestion,
     DecimalQuestion,
     IntegerQuestion,
+    MatrixQuestion,
     MultiQuestion,
     NoteQuestion,
     Page,
     Question,
     SingleQuestion,
+    SliderQuestion,
     Survey,
     Text,
     TextQuestion,
 )
 
-KINDS = ("text", "richtext", "number", "bool", "enum", "choicelist", "condition", "expression")
+KINDS = (
+    "text",
+    "richtext",
+    "number",
+    "bool",
+    "enum",
+    "choicelist",
+    "rows",
+    "condition",
+    "expression",
+)
 FAMILIES = ("choice", "text", "number", "matrix", "scale", "note")
 GROUPS = ("Basics", "Choices", "Logic", "Validation", "Advanced")
 ENTITIES = ("question", "page", "block", "survey")
 
 type Kind = Literal[
-    "text", "richtext", "number", "bool", "enum", "choicelist", "condition", "expression"
+    "text", "richtext", "number", "bool", "enum", "choicelist", "rows", "condition", "expression"
 ]
 type Family = Literal["choice", "text", "number", "matrix", "scale", "note"]
 type Group = Literal["Basics", "Choices", "Logic", "Validation", "Advanced"]
@@ -101,6 +113,8 @@ QUESTION_MODELS: dict[str, type[BaseModel]] = {
     "single": SingleQuestion,
     "multi": MultiQuestion,
     "date": DateQuestion,
+    "matrix": MatrixQuestion,
+    "slider": SliderQuestion,
     "note": NoteQuestion,
 }
 OTHER_MODELS: dict[str, type[BaseModel]] = {"page": Page, "block": Block, "survey": Survey}
@@ -143,7 +157,7 @@ class PropertySpec(_Spec):
             values = [o.value for o in self.options]
             if len(set(values)) != len(values):
                 raise ValueError("enum option values must be unique")
-        if self.translatable and self.kind not in ("text", "richtext", "choicelist"):
+        if self.translatable and self.kind not in ("text", "richtext", "choicelist", "rows"):
             raise ValueError(f"a {self.kind} property cannot be translatable")
         return self
 
@@ -294,7 +308,9 @@ def _skeleton(schema: TypeSchema) -> dict[str, Any]:
     page = {"id": "p0", "items": [note]}
     match schema.entity:
         case "question":
-            return {"id": "q0", "type": schema.type, "label": "x"}
+            # A matrix needs at least one row to validate (model.MatrixQuestion).
+            extra = {"rows": [{"id": "r0", "label": "x"}]} if schema.type == "matrix" else {}
+            return {"id": "q0", "type": schema.type, "label": "x", **extra}
         case "page":
             return page
         case "block":
@@ -338,6 +354,8 @@ def _samples(spec: PropertySpec, translated: bool) -> list[Any]:
             return [o.value for o in spec.options] if spec.options else ["en"]
         case "choicelist":
             return [[{"value": 1, "label": text}]]
+        case "rows":
+            return [[{"id": "r1", "label": text}]]
         case _:  # condition, expression
             return [_EXPR]
 
@@ -381,7 +399,7 @@ def _check_against_model(schema: TypeSchema, filename: str) -> list[Diagnostic]:
         mismatch = []
         if not all(_accepts(model, schema, key, v) for v in _samples(spec, spec.translatable)):
             mismatch.append(f"the field does not take {spec.kind} values")
-        if not spec.translatable and spec.kind in ("text", "richtext", "choicelist"):
+        if not spec.translatable and spec.kind in ("text", "richtext", "choicelist", "rows"):
             if _accepts(model, schema, key, _samples(spec, True)[0]):
                 mismatch.append("the field accepts translations but translatable is false")
         if spec.options is not None:
@@ -447,7 +465,7 @@ def property_schemas_json() -> dict[str, Any]:
 def _localise(value: Any, language: str) -> Any:
     if isinstance(value, str):
         return {language: value}
-    if isinstance(value, list):  # choicelist: translate each label
+    if isinstance(value, list):  # choicelist / rows: translate each label
         return [
             {**c, "label": _localise(c["label"], language)} if isinstance(c, dict) else c
             for c in value

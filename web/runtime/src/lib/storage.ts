@@ -15,6 +15,8 @@ export interface LocalRecord {
 	planUrl: string;
 	planChecksum: string;
 	saveMode: SaveMode;
+	/** Where an end-only session keeps its copy, as the server said at start/resume. */
+	localCopy?: 'browser' | 'memory';
 	/** The plan itself, so a refresh while offline still renders. */
 	plan: Plan | null;
 	/** The newest local engine snapshot (null only before the engine has started). */

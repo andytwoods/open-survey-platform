@@ -191,6 +191,26 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
+    "/api/meta/retention": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /**
+         * Retention
+         * @description The allowed `settings.retention` policies (the builder's retention control).
+         */
+        get: operations["getRetentionOptions"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
     "/api/meta/survey-schema": {
         parameters: {
             query?: never;
@@ -510,6 +530,23 @@ export interface paths {
         put?: never;
         /** Redo */
         post: operations["redo"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/surveys/{survey_id}/simulate": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /** Simulate */
+        post: operations["simulateSurvey"];
         delete?: never;
         options?: never;
         head?: never;
@@ -1246,6 +1283,30 @@ export interface components {
              */
             text?: string | null;
         };
+        /** PathSpace */
+        PathSpace: {
+            /** Assignmentcombinations */
+            assignmentCombinations: number;
+            /**
+             * Combinations
+             * @description Answer combinations enumerated
+             */
+            combinations: number | null;
+            /** Exhaustive */
+            exhaustive: boolean;
+            /**
+             * Paths
+             * @description Distinct paths, when enumerated
+             */
+            paths: number | null;
+            /** Randomiserorders */
+            randomiserOrders: number;
+            /**
+             * Reasons
+             * @description Why coverage is only sampled
+             */
+            reasons: string[];
+        };
         /** PrintExpressionRequest */
         PrintExpressionRequest: {
             /** Ast */
@@ -1312,7 +1373,7 @@ export interface components {
             versionId: string;
         };
         /** @enum {string} */
-        QuestionType: "integer" | "decimal" | "text" | "single" | "multi" | "date" | "note";
+        QuestionType: "integer" | "decimal" | "text" | "single" | "multi" | "date" | "matrix" | "slider" | "note";
         /** QuotaResponse */
         QuotaResponse: {
             /** Nodeid */
@@ -1321,9 +1382,10 @@ export interface components {
             replay: boolean;
             /**
              * Result
+             * @description The engine's words: `open` (a place is held) or `full`. `admitted` is a deprecated alias of `open` from the first contract; this server never sends it.
              * @enum {string}
              */
-            result: "admitted" | "full";
+            result: "open" | "full" | "admitted";
         };
         /** RejectedBody */
         RejectedBody: {
@@ -1393,6 +1455,12 @@ export interface components {
             assigned: {
                 [key: string]: unknown;
             };
+            /**
+             * Localcopy
+             * @description Plan settings.localCopy. Always sent by this server; absent means `browser`.
+             * @enum {string}
+             */
+            localCopy?: "browser" | "memory";
             /** Planchecksum */
             planChecksum: string;
             /** Planurl */
@@ -1414,6 +1482,35 @@ export interface components {
             } | null;
             /** Submitted */
             submitted: boolean;
+        };
+        /** RetentionKind */
+        RetentionKind: {
+            /** Description */
+            description: string;
+            /**
+             * Field
+             * @description The extra field this kind needs: `days` (integer >= 0), `until` (date) or none.
+             */
+            field: ("days" | "until") | null;
+            /** Kind */
+            kind: string;
+            /** Label */
+            label: string;
+        };
+        /** RetentionOptions */
+        RetentionOptions: {
+            /** Kinds */
+            kinds: components["schemas"]["RetentionKind"][];
+            /**
+             * Pointer
+             * @description Where the policy lives in the survey document.
+             */
+            pointer: string;
+            /**
+             * Required
+             * @description Publishing is refused without settings.retention.
+             */
+            required: boolean;
         };
         /** ReverseRequest */
         ReverseRequest: {
@@ -1498,6 +1595,327 @@ export interface components {
         SetTitleParams: {
             title: components["schemas"]["Text"];
         };
+        /** SimAssignment */
+        SimAssignment: {
+            /**
+             * Balanced
+             * @description pValue >= 0.001
+             */
+            balanced: boolean | null;
+            /** Chisquare */
+            chiSquare: number | null;
+            /** Df */
+            df: number | null;
+            /** Expected */
+            expected: {
+                [key: string]: number;
+            };
+            /**
+             * Maxdeviation
+             * @description max |observed - expected| / expected
+             */
+            maxDeviation: number | null;
+            /** Observed */
+            observed: {
+                [key: string]: number;
+            };
+            /** Pvalue */
+            pValue: number | null;
+            /** Reached */
+            reached: number;
+            /**
+             * Test
+             * @description levels | orders | first-position; null when too few to test
+             */
+            test: string | null;
+            /** Variable */
+            variable: string;
+        };
+        /** SimBranch */
+        SimBranch: {
+            /** Else */
+            else: number;
+            /** Elsecovered */
+            elseCovered: boolean;
+            /** Id */
+            id: string;
+            /** Reached */
+            reached: number;
+            /** Then */
+            then: number;
+            /** Thencovered */
+            thenCovered: boolean;
+            /** Undetermined */
+            undetermined: number;
+        };
+        /** SimEnd */
+        SimEnd: {
+            /** Covered */
+            covered: boolean;
+            /** Id */
+            id: string;
+            /** Outcome */
+            outcome: string | null;
+            /** Reached */
+            reached: number;
+        };
+        /** SimNode */
+        SimNode: {
+            /**
+             * Covered
+             * @description Reached at least once (by the coverage source)
+             */
+            covered: boolean;
+            /** Id */
+            id: string;
+            /**
+             * Reached
+             * @description Simulated participants who reached it
+             */
+            reached: number;
+            /** Type */
+            type: string;
+        };
+        /** SimPage */
+        SimPage: {
+            /** Covered */
+            covered: boolean;
+            /** Id */
+            id: string;
+            /** Reached */
+            reached: number;
+            /** Shown */
+            shown: number;
+        };
+        /** SimPath */
+        SimPath: {
+            /** Count */
+            count: number;
+            /**
+             * End
+             * @description <outcome>@<end node> or stuck@<page>
+             */
+            end: string;
+            /** Pages */
+            pages: string[];
+        };
+        /** SimQuestion */
+        SimQuestion: {
+            /** Id */
+            id: string;
+            /** Required */
+            required: boolean;
+            /** Showncovered */
+            shownCovered: boolean;
+            /**
+             * States
+             * @description answered, unanswered, irrelevant, not-reached
+             */
+            states: {
+                [key: string]: number;
+            };
+        };
+        /** SimQuota */
+        SimQuota: {
+            /** Full */
+            full: number;
+            /** Node */
+            node: string;
+            /** Open */
+            open: number;
+            /** Quota */
+            quota: string | null;
+        };
+        /** SimRandomiser */
+        SimRandomiser: {
+            /**
+             * Balanced
+             * @description pValue >= 0.001
+             */
+            balanced: boolean | null;
+            /** Chisquare */
+            chiSquare: number | null;
+            /** Children */
+            children: string[];
+            /** Df */
+            df: number | null;
+            /**
+             * Expected
+             * @description Expected count per category
+             */
+            expected: number | null;
+            /** Id */
+            id: string;
+            /**
+             * Maxdeviation
+             * @description max |observed - expected| / expected
+             */
+            maxDeviation: number | null;
+            /** Observedorders */
+            observedOrders: number;
+            /**
+             * Orders
+             * @description child ids joined by ',' -> count
+             */
+            orders: {
+                [key: string]: number;
+            };
+            /** Pvalue */
+            pValue: number | null;
+            /** Pick */
+            pick: number | null;
+            /** Possibleorders */
+            possibleOrders: number;
+            /** Reached */
+            reached: number;
+            /**
+             * Test
+             * @description levels | orders | first-position; null when too few to test
+             */
+            test: string | null;
+        };
+        /** SimWarning */
+        SimWarning: {
+            /**
+             * Certain
+             * @description True when it comes from exhaustive enumeration
+             */
+            certain: boolean;
+            /**
+             * Code
+             * @description node.unreachable | end.never_reached | branch.arm_never_taken | branch.always_same_arm | question.required_never_shown | participants.stuck | assignment.imbalanced | randomiser.imbalanced | runtime.diagnostic | coverage.sampled
+             */
+            code: string;
+            /** Message */
+            message: string;
+            /**
+             * Severity
+             * @enum {string}
+             */
+            severity: "error" | "warning" | "info";
+            /**
+             * Target
+             * @description Node, page, question or variable id
+             */
+            target: string | null;
+        };
+        /** SimulateRequest */
+        SimulateRequest: {
+            /**
+             * Answerstrategy
+             * @description uniform: random valid answers (blank is one option for optional questions); skip-optional; first-choice; weights: per-question answer weights
+             * @default uniform
+             * @enum {string}
+             */
+            answerStrategy: "uniform" | "skip-optional" | "first-choice" | "weights";
+            /**
+             * Exhaustive
+             * @description Also enumerate every path when the path space is small enough
+             * @default true
+             */
+            exhaustive: boolean;
+            /**
+             * N
+             * @description Simulated participants
+             * @default 1000
+             */
+            n: number;
+            /**
+             * Quotafull
+             * @description Probability a quota check comes back full
+             * @default 0.1
+             */
+            quotaFull: number;
+            /**
+             * Seed
+             * @description Seed of the simulation (same seed, same report)
+             * @default 1
+             */
+            seed: number;
+            /**
+             * Weights
+             * @description answerStrategy 'weights': question id -> answer -> weight. Answer is the choice code, a number or text; '' is blank; a multi answer is codes joined by ','
+             */
+            weights?: {
+                [key: string]: {
+                    [key: string]: number;
+                };
+            } | null;
+        };
+        /** SimulationReport */
+        SimulationReport: {
+            /** Answerstrategy */
+            answerStrategy: unknown;
+            /** Assignments */
+            assignments: components["schemas"]["SimAssignment"][];
+            /** Branches */
+            branches: components["schemas"]["SimBranch"][];
+            /**
+             * Coverage
+             * @enum {string}
+             */
+            coverage: "exhaustive" | "sampled";
+            /**
+             * Diagnostics
+             * @description '<code> <site>' -> participants
+             */
+            diagnostics: {
+                [key: string]: number;
+            };
+            /** Ends */
+            ends: components["schemas"]["SimEnd"][];
+            /**
+             * Format
+             * @constant
+             */
+            format: "osp-sim-report/1";
+            /** Nodes */
+            nodes: components["schemas"]["SimNode"][];
+            /**
+             * Outcomes
+             * @description End outcome (or 'stuck') -> participants
+             */
+            outcomes: {
+                [key: string]: number;
+            };
+            /** Pages */
+            pages: components["schemas"]["SimPage"][];
+            /** Participants */
+            participants: number;
+            pathSpace: components["schemas"]["PathSpace"];
+            /**
+             * Pathsseen
+             * @description Distinct paths in the sample
+             */
+            pathsSeen: number;
+            /** Planchecksum */
+            planChecksum: string | null;
+            /** Questions */
+            questions: components["schemas"]["SimQuestion"][];
+            /** Quotafull */
+            quotaFull: number | null;
+            /** Quotas */
+            quotas: components["schemas"]["SimQuota"][];
+            /** Randomisers */
+            randomisers: components["schemas"]["SimRandomiser"][];
+            /** Revision */
+            revision: number;
+            /** Seed */
+            seed: number | null;
+            /**
+             * Stuck
+             * @description Page -> participants who could not pass it
+             */
+            stuck: {
+                [key: string]: number;
+            };
+            /** Surveyid */
+            surveyId: string;
+            /** Toppaths */
+            topPaths: components["schemas"]["SimPath"][];
+            /** Warnings */
+            warnings: components["schemas"]["SimWarning"][];
+        };
         /** SnapshotRequest */
         SnapshotRequest: {
             /** Baserevision */
@@ -1516,6 +1934,11 @@ export interface components {
             replay: boolean;
             /** Revision */
             revision: number;
+            /**
+             * Superseded
+             * @description True when this was a late save of an older state the server already holds (its event log is a prefix of the server copy's). Nothing was written; `revision` is the server's current revision.
+             */
+            superseded?: boolean;
         };
         /** StaleBody */
         StaleBody: {
@@ -1544,6 +1967,12 @@ export interface components {
             assigned: {
                 [key: string]: unknown;
             };
+            /**
+             * Localcopy
+             * @description Where an end-only session keeps its copy (plan settings.localCopy). Always sent by this server; absent means `browser`.
+             * @enum {string}
+             */
+            localCopy?: "browser" | "memory";
             /** Planchecksum */
             planChecksum: string;
             /** Planurl */
@@ -1557,6 +1986,7 @@ export interface components {
             revision: number;
             /**
              * Savemode
+             * @description From the plan's settings. `end-only`: send no snapshots before submit.
              * @enum {string}
              */
             saveMode: "every-page" | "end-only";
@@ -2170,6 +2600,35 @@ export interface operations {
                     "application/json": {
                         [key: string]: unknown;
                     };
+                };
+            };
+            /** @description Unauthorized */
+            401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorBody"];
+                };
+            };
+        };
+    };
+    getRetentionOptions: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["RetentionOptions"];
                 };
             };
             /** @description Unauthorized */
@@ -3371,6 +3830,77 @@ export interface operations {
                 };
                 content: {
                     "application/json": components["schemas"]["RejectedBody"];
+                };
+            };
+        };
+    };
+    simulateSurvey: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                survey_id: string;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["SimulateRequest"];
+            };
+        };
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["SimulationReport"];
+                };
+            };
+            /** @description Unauthorized */
+            401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorBody"];
+                };
+            };
+            /** @description Forbidden */
+            403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorBody"];
+                };
+            };
+            /** @description Not Found */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorBody"];
+                };
+            };
+            /** @description Unprocessable Content */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["RejectedBody"];
+                };
+            };
+            /** @description Service Unavailable */
+            503: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorBody"];
                 };
             };
         };

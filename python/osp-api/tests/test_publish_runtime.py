@@ -6,8 +6,11 @@ from __future__ import annotations
 import hashlib
 import json
 from pathlib import Path
+from typing import get_args
 
 from osp_runtime.plan import canonical_json
+from osp_spec.model import Retention
+from osp_spec.theme import PRESETS
 from osp_store import TenantContext
 
 FIXTURES = Path(__file__).resolve().parents[3] / "fixtures"
@@ -101,3 +104,73 @@ def test_publish_rejects_a_bad_save_mode_and_unknown_slugs_404(benv):
     r = c.post(f"/api/surveys/{s['id']}/publish", json={"saveMode": "never"})
     assert r.status_code == 422
     assert benv.client().post(f"/api/s/{s['publicSlug']}/sessions").status_code == 404
+
+
+def _publishable(c) -> str:
+    s = c.post("/api/surveys", json={"title": "Themed"}).json()
+    r = c.post(f"/api/surveys/{s['id']}/ops", json={"ops": [RETENTION], "baseRevision": 0})
+    assert r.status_code == 200, r.text
+    return s["id"]
+
+
+def _preset(name: str) -> dict:
+    return PRESETS[name].model_dump(mode="json", by_alias=True)
+
+
+def test_publish_embeds_the_clean_preset_when_the_lab_has_no_default(benv):
+    c = benv.login("editor@a.example")
+    pub = c.post(f"/api/surveys/{_publishable(c)}/publish").json()
+    plan = benv.client().get(pub["planUrl"]).json()
+    assert plan["theme"] == _preset("clean")
+    assert plan["checksum"] == _plan_checksum(plan) == pub["planChecksum"]
+
+
+def test_publish_embeds_the_lab_default_theme(benv):
+    ctx = TenantContext(benv.tenants["A"], "test")
+    warm = _preset("warm")
+    benv.store.set_lab_default_theme(ctx, benv.store.create_theme(ctx, "Warm", warm).id)
+    c = benv.login("editor@a.example")
+    pub = c.post(f"/api/surveys/{_publishable(c)}/publish").json()
+    plan = benv.client().get(pub["planUrl"]).json()
+    assert plan["theme"]["preset"] == "warm" and plan["theme"] == warm
+
+
+def test_a_theme_failing_the_contrast_guard_blocks_publish(benv):
+    ctx = TenantContext(benv.tenants["A"], "test")
+    bad = _preset("clean")
+    bad["colours"]["light"]["text"] = "#f0f0f0"  # light grey on white
+    benv.store.set_lab_default_theme(ctx, benv.store.create_theme(ctx, "Pale", bad).id)
+    c = benv.login("editor@a.example")
+    sid = _publishable(c)
+    r = c.post(f"/api/surveys/{sid}/publish")
+    assert r.status_code == 422
+    body = r.json()
+    assert "accessibility" in body["message"]
+    assert {d["code"] for d in body["diagnostics"]} == {"theme.contrast"}
+    first = body["diagnostics"][0]
+    assert first["pointer"].startswith("/labTheme/colours/light/")
+    assert "'Pale'" in first["message"] and "Nearest passing value" in first["message"]
+    assert benv.store.list_versions(ctx, sid) == []  # nothing was frozen
+
+
+def test_missing_retention_is_named_in_the_publish_error(benv):
+    c = benv.login("editor@a.example")
+    s = c.post("/api/surveys", json={"title": "First"}).json()
+    r = c.post(f"/api/surveys/{s['id']}/publish")
+    assert r.status_code == 422
+    body = r.json()
+    assert body["message"].startswith("Choose how long participant data is kept")
+    (d,) = [d for d in body["diagnostics"] if d["code"] == "publish.retention_required"]
+    assert d["pointer"] == "/settings/retention" and d["severity"] == "error"
+
+
+def test_meta_lists_the_retention_options(benv):
+    c = benv.login("viewer@a.example")
+    r = c.get("/api/meta/retention")
+    assert r.status_code == 200
+    body = r.json()
+    assert body["required"] is True and body["pointer"] == "/settings/retention"
+    kinds = {k["kind"]: k["field"] for k in body["kinds"]}
+    assert kinds == {"days-after-close": "days", "after-date": "until", "indefinite": None}
+    assert set(kinds) == set(get_args(Retention.model_fields["kind"].annotation))
+    assert benv.client().get("/api/meta/retention").status_code == 401

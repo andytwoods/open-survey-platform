@@ -256,16 +256,26 @@ export function choicesFor(
 	return { choices: toPreview(list?.choices, lang), sharedList: id };
 }
 
-/** Matrix rows (sub-questions). */
+/** Matrix rows (sub-questions), keyed by row id; rows without an id or repeated are dropped. */
 export function rowsFor(question: CardQuestion, lang = 'en'): PreviewChoice[] {
-	return toPreview(question.rows, lang);
+	const rows = Array.isArray(question.rows) ? question.rows : [];
+	return rows
+		.filter((r): r is { id: string; label: SpecText } => !!r && typeof r === 'object' && typeof r.id === 'string' && r.id !== '')
+		.map((r) => ({ value: r.id, label: textFor(r.label, lang) }))
+		.filter((r, i, all) => all.findIndex((o) => o.value === r.value) === i);
 }
 
-/** Scale range, made safe for the slider widget (finite, min < max, step > 0). */
+/**
+ * Slider range, made safe for the widget (finite, min < max, step > 0). Numbers may be
+ * decimal text (osp-spec `DecimalText`); defaults are the model's (0, 100, 1).
+ */
 export function scaleRange(question: CardQuestion): { min: number; max: number; step: number } {
-	const num = (v: unknown, d: number) => (typeof v === 'number' && Number.isFinite(v) ? v : d);
+	const num = (v: unknown, d: number) => {
+		const n = typeof v === 'number' ? v : typeof v === 'string' && v.trim() !== '' ? Number(v) : NaN;
+		return Number.isFinite(n) ? n : d;
+	};
 	const min = num(question.min, 0);
-	let max = num(question.max, 10);
+	let max = num(question.max, 100);
 	if (max <= min) max = min + 1;
 	let step = num(question.step, 1);
 	if (step <= 0 || step > max - min) step = 1;

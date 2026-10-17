@@ -3,6 +3,7 @@ packages:
   - api-client
   - ui-components
   - engine
+  - engine-sim
   - runtime
   - hooks-sandbox
   - harness

@@ -147,8 +147,9 @@ export function sessionLanguage(plan: Plan, o: Pick<BootOptions, 'languages' | '
 }
 
 /** No durable local copy for this plan: end-only with `localCopy: memory` (§5.0). */
-function memoryChosen(plan: Plan, saveMode: SaveMode): boolean {
-	return saveMode === 'end-only' && plan.settings?.localCopy === 'memory';
+function memoryChosen(plan: Plan, rec: Pick<LocalRecord, 'saveMode' | 'localCopy'>): boolean {
+	// The server's word (start/resume `localCopy`) first, else the plan's setting.
+	return rec.saveMode === 'end-only' && (rec.localCopy ?? plan.settings?.localCopy) === 'memory';
 }
 
 export class Session {
@@ -198,7 +199,7 @@ export class Session {
 		this.reconciled = reconciled;
 		this.fresh = fresh;
 		this.net = rec.saveMode === 'end-only' ? 'local' : 'saved';
-		this.memory = env.store.kind === 'memory' ? (memoryChosen(plan, rec.saveMode) ? 'chosen' : 'blocked') : null;
+		this.memory = env.store.kind === 'memory' ? (memoryChosen(plan, rec) ? 'chosen' : 'blocked') : null;
 	}
 
 	get saveMode(): SaveMode {
@@ -861,7 +862,7 @@ async function loadPlan(env: Env, url: string, checksum: string, cached: Plan | 
 	return p;
 }
 
-function newRecord(slug: string, r: { sessionId: string; resumeToken: string; sessionSeed: number; assigned: Record<string, unknown>; planUrl: string; planChecksum: string; saveMode: SaveMode }, now: number): LocalRecord {
+function newRecord(slug: string, r: { sessionId: string; resumeToken: string; sessionSeed: number; assigned: Record<string, unknown>; planUrl: string; planChecksum: string; saveMode: SaveMode; localCopy?: 'browser' | 'memory' }, now: number): LocalRecord {
 	return {
 		slug,
 		sessionId: r.sessionId,
@@ -871,6 +872,7 @@ function newRecord(slug: string, r: { sessionId: string; resumeToken: string; se
 		planUrl: r.planUrl,
 		planChecksum: r.planChecksum,
 		saveMode: r.saveMode,
+		...(r.localCopy ? { localCopy: r.localCopy } : {}),
 		plan: null,
 		snapshot: null,
 		serverRevision: 0,
@@ -915,7 +917,7 @@ function restartEngine(env: Env, plan: Plan, rec: LocalRecord, o: BootOptions, s
  * `localCopy: memory` (then nothing is kept beyond this window, §5.0).
  */
 async function storeFor(env: Env, plan: Plan, rec: LocalRecord): Promise<Env> {
-	if (env.store.kind === 'memory' || !memoryChosen(plan, rec.saveMode)) return env;
+	if (env.store.kind === 'memory' || !memoryChosen(plan, rec)) return env;
 	try {
 		await env.store.delete(rec.slug);
 	} catch {

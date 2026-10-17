@@ -198,7 +198,7 @@
 			{/if}
 		</select>
 	{:else}
-		<!-- choicelist, condition, expression: summarised here, edited in their own editor. -->
+		<!-- choicelist, rows, condition, expression: summarised here, edited in their own editor. -->
 		<div class="external">
 			<span class="summary" data-testid="summary">{externalSummary(kind, shown)}</span>
 			<button

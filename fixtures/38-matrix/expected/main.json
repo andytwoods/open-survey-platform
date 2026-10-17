@@ -1,0 +1,296 @@
+{
+  "format": "osp-fixture-expected/0",
+  "fixture": "38-matrix",
+  "script": "main",
+  "pending": [],
+  "steps": [
+    {
+      "index": 0,
+      "page": "p1",
+      "visible": [
+        "taste"
+      ],
+      "errors": {},
+      "nav": {
+        "back": false
+      },
+      "questions": {
+        "taste_tea": {
+          "state": "unanswered",
+          "value": null
+        },
+        "taste_coffee": {
+          "state": "unanswered",
+          "value": null
+        },
+        "taste_cocoa": {
+          "state": "unanswered",
+          "value": null
+        },
+        "cups": {
+          "state": "not-reached",
+          "value": null
+        },
+        "when_morning": {
+          "state": "not-reached",
+          "value": null
+        },
+        "when_evening": {
+          "state": "not-reached",
+          "value": null
+        }
+      },
+      "orders": {
+        "blocks": {},
+        "items": {},
+        "choices": {}
+      },
+      "conditions": {},
+      "end": null,
+      "labels": {
+        "taste": "How do you rate these drinks?"
+      }
+    },
+    {
+      "index": 1,
+      "page": "p1",
+      "visible": [
+        "taste"
+      ],
+      "errors": {
+        "taste_tea": {
+          "kind": "required"
+        },
+        "taste_coffee": {
+          "kind": "required"
+        }
+      },
+      "nav": {
+        "back": false
+      },
+      "questions": {
+        "taste_tea": {
+          "state": "unanswered",
+          "value": null
+        },
+        "taste_coffee": {
+          "state": "unanswered",
+          "value": null
+        },
+        "taste_cocoa": {
+          "state": "unanswered",
+          "value": null
+        },
+        "cups": {
+          "state": "not-reached",
+          "value": null
+        },
+        "when_morning": {
+          "state": "not-reached",
+          "value": null
+        },
+        "when_evening": {
+          "state": "not-reached",
+          "value": null
+        }
+      },
+      "orders": {
+        "blocks": {},
+        "items": {},
+        "choices": {}
+      },
+      "conditions": {},
+      "end": null,
+      "labels": {
+        "taste": "How do you rate these drinks?"
+      }
+    },
+    {
+      "index": 2,
+      "page": "p2",
+      "visible": [
+        "cups"
+      ],
+      "errors": {},
+      "nav": {
+        "back": true
+      },
+      "questions": {
+        "taste_tea": {
+          "state": "answered",
+          "value": 3
+        },
+        "taste_coffee": {
+          "state": "answered",
+          "value": 1
+        },
+        "taste_cocoa": {
+          "state": "unanswered",
+          "value": null
+        },
+        "cups": {
+          "state": "unanswered",
+          "value": null
+        },
+        "when_morning": {
+          "state": "irrelevant",
+          "value": null
+        },
+        "when_evening": {
+          "state": "irrelevant",
+          "value": null
+        }
+      },
+      "orders": {
+        "blocks": {},
+        "items": {},
+        "choices": {}
+      },
+      "conditions": {},
+      "end": null,
+      "labels": {
+        "cups": "You rated tea Good. How many cups a day?"
+      }
+    },
+    {
+      "index": 3,
+      "page": "p2",
+      "visible": [
+        "cups"
+      ],
+      "errors": {
+        "cups": {
+          "kind": "required"
+        }
+      },
+      "nav": {
+        "back": true
+      },
+      "questions": {
+        "taste_tea": {
+          "state": "answered",
+          "value": 3
+        },
+        "taste_coffee": {
+          "state": "answered",
+          "value": 1
+        },
+        "taste_cocoa": {
+          "state": "unanswered",
+          "value": null
+        },
+        "cups": {
+          "state": "unanswered",
+          "value": null
+        },
+        "when_morning": {
+          "state": "irrelevant",
+          "value": null
+        },
+        "when_evening": {
+          "state": "irrelevant",
+          "value": null
+        }
+      },
+      "orders": {
+        "blocks": {},
+        "items": {},
+        "choices": {}
+      },
+      "conditions": {},
+      "end": null,
+      "labels": {
+        "cups": "You rated tea Good. How many cups a day?"
+      }
+    },
+    {
+      "index": 4,
+      "page": null,
+      "visible": [],
+      "errors": {},
+      "nav": null,
+      "questions": {
+        "taste_tea": {
+          "state": "answered",
+          "value": 3
+        },
+        "taste_coffee": {
+          "state": "answered",
+          "value": 1
+        },
+        "taste_cocoa": {
+          "state": "unanswered",
+          "value": null
+        },
+        "cups": {
+          "state": "answered",
+          "value": 2
+        },
+        "when_morning": {
+          "state": "irrelevant",
+          "value": null
+        },
+        "when_evening": {
+          "state": "irrelevant",
+          "value": null
+        }
+      },
+      "orders": {
+        "blocks": {},
+        "items": {},
+        "choices": {}
+      },
+      "conditions": {},
+      "end": "complete",
+      "labels": {}
+    }
+  ],
+  "invariants": [],
+  "response": {
+    "surveyId": "f38_matrix",
+    "surveyVersion": 1,
+    "end": "complete",
+    "allocation": "server",
+    "sessionSeed": 3801,
+    "conditions": {},
+    "orders": {
+      "blocks": {},
+      "items": {},
+      "choices": {}
+    },
+    "answers": {
+      "taste_tea": {
+        "state": "answered",
+        "value": 3
+      },
+      "taste_coffee": {
+        "state": "answered",
+        "value": 1
+      },
+      "taste_cocoa": {
+        "state": "unanswered",
+        "value": null
+      },
+      "cups": {
+        "state": "answered",
+        "value": 2
+      },
+      "when_morning": {
+        "state": "irrelevant",
+        "value": null
+      },
+      "when_evening": {
+        "state": "irrelevant",
+        "value": null
+      }
+    },
+    "csvState": {
+      "drink_tea__state": "answered",
+      "drink_coffee__state": "answered",
+      "drink_cocoa__state": "unanswered",
+      "cups__state": "answered",
+      "when_morning__state": "irrelevant",
+      "when_evening__state": "irrelevant"
+    }
+  }
+}

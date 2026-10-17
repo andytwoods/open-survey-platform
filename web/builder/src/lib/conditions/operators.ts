@@ -53,6 +53,7 @@ const NUMBER: OperatorDef[] = [
 const BY_TYPE: Record<string, OperatorDef[]> = {
 	integer: NUMBER,
 	decimal: NUMBER,
+	slider: NUMBER,
 	single: [
 		{ id: 'eq', label: 'is', value: 'choice' },
 		{ id: 'ne', label: 'is not', value: 'choice' },

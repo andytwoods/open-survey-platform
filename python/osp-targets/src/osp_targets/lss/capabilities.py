@@ -28,6 +28,7 @@ def _rows(defs: tuple[str, ...], field: str, level: Level, note: str) -> None:
 
 
 ANSWERABLE = (
+    "SliderQuestion",
     "IntegerQuestion",
     "DecimalQuestion",
     "TextQuestion",
@@ -148,6 +149,74 @@ _row(
     "(`<q>_<code>` = Y or empty) instead of one list of codes.",
 )
 _row("DateQuestion.type", "native", "Type D (date); stored with a 00:00:00 time.")
+
+# --- Matrix and slider (C2c; semantics.md §2) ---------------------------------------------
+_row(
+    "MatrixQuestion.type",
+    "native",
+    "Type F (array): one subquestion per row, the columns as answer options. Each row is "
+    "its own response column `<q>_<row>`, as our row variables are (C2c-1).",
+)
+_row("MatrixQuestion.id", "native", "The question code when `name` is unset.")
+_row("MatrixQuestion.label", "native", "`question_l10ns.question`.")
+_row("MatrixQuestion.help", "native", "`question_l10ns.help`.")
+_row(
+    "MatrixQuestion.showIf",
+    "native",
+    "Question `relevance`; irrelevant answers are cleared on submit (spike-1 Q6).",
+)
+_row(
+    "MatrixQuestion.name",
+    "native",
+    "The question code; each row's EM variable is `<code>_<row code>` (our `<name>_<row id>`).",
+)
+_row(
+    "MatrixQuestion.required",
+    "native",
+    "`mandatory` = Y when every row is required; see $matrix.someRowsRequired.",
+)
+_row("MatrixQuestion.rows", "native", "Subquestions, in order.")
+_row("MatrixQuestion.choiceList", "lowered", "The shared list is copied into the answer options.")
+_row("MatrixQuestion.choices", "native", "Answer options (the columns).")
+_row(
+    "MatrixRow.id",
+    "native",
+    "The subquestion code (letters and digits; other characters are removed).",
+)
+_row("MatrixRow.label", "native", "The subquestion text.")
+_row("MatrixRow.required", "native", "See MatrixQuestion.required.")
+_row(
+    "SliderQuestion.type",
+    "approximated",
+    "Type N (numerical input): a number box, not a slider (LimeSurvey's slider layout exists "
+    "only on type K). Like ours it starts empty; the end labels are not shown.",
+)
+_row("SliderQuestion.valueType", "native", "`integer`: `num_value_int_only` = 1.")
+_rows(
+    ("SliderQuestion",),
+    "min",
+    "lowered",
+    "Joined into `em_validation_q` as `q >= min`.",
+)
+_rows(
+    ("SliderQuestion",),
+    "max",
+    "lowered",
+    "Joined into `em_validation_q` as `q <= max`.",
+)
+_row(
+    "SliderQuestion.step",
+    "lowered",
+    "Joined into `em_validation_q` as `fmod(q - min, step) == 0`.",
+)
+_row("SliderQuestion.minLabel", "unsupported", "A number box has no end labels; dropped.")
+_row("SliderQuestion.maxLabel", "unsupported", "A number box has no end labels; dropped.")
+_row(
+    "$matrix.someRowsRequired",
+    "lowered",
+    "`mandatory` is per question: when only some rows are required, `em_validation_q` "
+    "requires those rows instead (checked only while the question is relevant, §4).",
+)
 _row("NoteQuestion.type", "native", "Type X (text display / boilerplate).")
 _rows(CHOICE_QUESTIONS, "choiceList", "lowered", "The shared list is copied into the question.")
 _rows(CHOICE_QUESTIONS, "choices", "native", "Answer options of the question.")

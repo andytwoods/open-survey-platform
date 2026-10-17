@@ -1,0 +1,105 @@
+{
+  "specVersion": "osp-survey/0.1",
+  "id": "f39_slider",
+  "version": 1,
+  "metadata": {
+    "title": "Sliders",
+    "description": "A slider starts unanswered and is never answered by default (§2, C2c-3; runtime-design §6): required blocks until it is set; values lie on the step grid; integer and decimal sliders store like integer and decimal answers.",
+    "languages": [
+      "en"
+    ]
+  },
+  "settings": {
+    "backNavigation": true
+  },
+  "blocks": [
+    {
+      "id": "p1",
+      "pages": [
+        {
+          "id": "p1_page",
+          "items": [
+            {
+              "type": "slider",
+              "id": "pain",
+              "label": "How strong is the (fictional) pain?",
+              "required": true,
+              "min": 0,
+              "max": 10,
+              "step": 1,
+              "minLabel": "None",
+              "maxLabel": "Worst imaginable"
+            },
+            {
+              "type": "slider",
+              "id": "sleep",
+              "label": "Hours of sleep last night (optional)",
+              "valueType": "decimal",
+              "min": 0,
+              "max": 12,
+              "step": "0.5"
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "id": "p2",
+      "pages": [
+        {
+          "id": "p2_page",
+          "items": [
+            {
+              "type": "text",
+              "id": "pain_why",
+              "label": "You rated the pain ${pain}. What helps?",
+              "showIf": {
+                "kind": "compare",
+                "op": ">=",
+                "left": {
+                  "kind": "ref",
+                  "id": "pain"
+                },
+                "right": {
+                  "kind": "int",
+                  "value": 7
+                }
+              }
+            },
+            {
+              "type": "note",
+              "id": "rested",
+              "label": "You slept ${sleep} hours.",
+              "showIf": {
+                "kind": "answered",
+                "ref": {
+                  "kind": "ref",
+                  "id": "sleep"
+                }
+              }
+            },
+            {
+              "type": "slider",
+              "id": "mood",
+              "label": "Mood right now (optional)",
+              "min": -5,
+              "max": 5
+            }
+          ]
+        }
+      ]
+    }
+  ],
+  "flow": [
+    {
+      "type": "block",
+      "id": "n_p1",
+      "block": "p1"
+    },
+    {
+      "type": "block",
+      "id": "n_p2",
+      "block": "p2"
+    }
+  ]
+}

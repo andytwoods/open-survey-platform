@@ -1,0 +1,146 @@
+{
+  "specVersion": "osp-survey/0.1",
+  "id": "f38_matrix",
+  "version": 1,
+  "metadata": {
+    "title": "Matrix questions",
+    "description": "Each matrix row is its own variable <matrix name>_<row id> with its own state (§2, C2c-1): required per row, rows irrelevant with their matrix, rows usable in conditions and piping.",
+    "languages": [
+      "en"
+    ]
+  },
+  "settings": {
+    "backNavigation": true
+  },
+  "choiceLists": [
+    {
+      "id": "often",
+      "choices": [
+        {
+          "value": "never",
+          "label": "Never"
+        },
+        {
+          "value": "sometimes",
+          "label": "Sometimes"
+        },
+        {
+          "value": "daily",
+          "label": "Daily"
+        }
+      ]
+    }
+  ],
+  "blocks": [
+    {
+      "id": "p1",
+      "pages": [
+        {
+          "id": "p1_page",
+          "items": [
+            {
+              "type": "matrix",
+              "id": "taste",
+              "name": "drink",
+              "label": "How do you rate these drinks?",
+              "required": true,
+              "rows": [
+                {
+                  "id": "tea",
+                  "label": "Tea"
+                },
+                {
+                  "id": "coffee",
+                  "label": "Coffee"
+                },
+                {
+                  "id": "cocoa",
+                  "label": "Cocoa (optional)",
+                  "required": false
+                }
+              ],
+              "choices": [
+                {
+                  "value": 1,
+                  "label": "Poor"
+                },
+                {
+                  "value": 2,
+                  "label": "Fine"
+                },
+                {
+                  "value": 3,
+                  "label": "Good"
+                }
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "id": "p2",
+      "pages": [
+        {
+          "id": "p2_page",
+          "items": [
+            {
+              "type": "integer",
+              "id": "cups",
+              "label": "You rated tea ${taste_tea}. How many cups a day?",
+              "required": true,
+              "showIf": {
+                "kind": "compare",
+                "op": "==",
+                "left": {
+                  "kind": "ref",
+                  "id": "taste_tea"
+                },
+                "right": {
+                  "kind": "int",
+                  "value": 3
+                }
+              }
+            },
+            {
+              "type": "matrix",
+              "id": "when",
+              "label": "When do you drink cocoa?",
+              "rows": [
+                {
+                  "id": "morning",
+                  "label": "In the morning"
+                },
+                {
+                  "id": "evening",
+                  "label": "In the evening",
+                  "required": true
+                }
+              ],
+              "choiceList": "often",
+              "showIf": {
+                "kind": "answered",
+                "ref": {
+                  "kind": "ref",
+                  "id": "taste_cocoa"
+                }
+              }
+            }
+          ]
+        }
+      ]
+    }
+  ],
+  "flow": [
+    {
+      "type": "block",
+      "id": "n_p1",
+      "block": "p1"
+    },
+    {
+      "type": "block",
+      "id": "n_p2",
+      "block": "p2"
+    }
+  ]
+}

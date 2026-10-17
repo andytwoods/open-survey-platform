@@ -88,8 +88,17 @@ def _types(survey: Any) -> dict[str, str]:
         for page in (block or {}).get("pages") or []:
             for q in (page or {}).get("items") or []:
                 if isinstance(q, dict) and isinstance(q.get("id"), str):
-                    if isinstance(q.get("type"), str) and q["type"] != "note":
-                        out[q["id"]] = q["type"]
+                    qtype = q.get("type")
+                    if qtype == "matrix":
+                        # semantics §2 (C2c-1): each row is a single-choice variable m_r.
+                        for row in q.get("rows") or []:
+                            if isinstance(row, dict) and isinstance(row.get("id"), str):
+                                out[f"{q['id']}_{row['id']}"] = "single"
+                    elif qtype == "slider":
+                        vt = q.get("valueType")
+                        out[q["id"]] = vt if vt in ("integer", "decimal") else "integer"
+                    elif isinstance(qtype, str) and qtype != "note":
+                        out[q["id"]] = qtype
     for v in survey.get("variables") or []:
         if isinstance(v, dict) and isinstance(v.get("id"), str):
             vtype = v.get("valueType") or ("single" if v.get("kind") == "assigned" else None)

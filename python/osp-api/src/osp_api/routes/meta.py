@@ -4,11 +4,12 @@ and theme JSON Schemas. Static data, but behind sign-in like every builder route
 from __future__ import annotations
 
 from functools import cache
-from typing import Any
+from typing import Any, Literal, get_args
 
 from fastapi import APIRouter, Response
 from osp_ops import op_catalogue
 from osp_spec import json_schema
+from osp_spec.model import Retention
 from osp_spec.property_schema import property_schemas_json
 from osp_spec.theme import theme_json_schema
 from pydantic import BaseModel, Field
@@ -56,3 +57,65 @@ def survey_schema(_auth: Auth, response: Response) -> dict[str, Any]:
 def theme_schema(_auth: Auth, response: Response) -> dict[str, Any]:
     response.headers["Cache-Control"] = _CACHE
     return theme_json_schema()
+
+
+# -- retention (settings.retention, required at publish) ---------------------------------
+
+_RETENTION_TEXT: dict[str, tuple[str, str, str | None]] = {
+    "days-after-close": (
+        "Delete a set number of days after the survey closes",
+        "Responses are deleted `days` days after the survey is closed.",
+        "days",
+    ),
+    "after-date": (
+        "Delete after a date",
+        "Responses are deleted after the calendar date `until` (YYYY-MM-DD).",
+        "until",
+    ),
+    "indefinite": (
+        "Keep until I delete it",
+        "Responses are kept until a researcher deletes them. An explicit choice.",
+        None,
+    ),
+}
+
+
+class RetentionKind(BaseModel):
+    kind: str
+    label: str
+    description: str
+    field: Literal["days", "until"] | None = Field(
+        description="The extra field this kind needs: `days` (integer >= 0), "
+        "`until` (date) or none."
+    )
+
+
+class RetentionOptions(BaseModel):
+    required: bool = Field(description="Publishing is refused without settings.retention.")
+    pointer: str = Field(description="Where the policy lives in the survey document.")
+    kinds: list[RetentionKind]
+
+
+@cache
+def _retention() -> RetentionOptions:
+    kinds = get_args(Retention.model_fields["kind"].annotation)
+    return RetentionOptions(
+        required=True,
+        pointer="/settings/retention",
+        kinds=[
+            RetentionKind(
+                kind=k,
+                label=_RETENTION_TEXT[k][0],
+                description=_RETENTION_TEXT[k][1],
+                field=_RETENTION_TEXT[k][2],  # type: ignore[arg-type]
+            )
+            for k in kinds
+        ],
+    )
+
+
+@router.get("/retention", operation_id="getRetentionOptions", responses=errors(401))
+def retention(_auth: Auth, response: Response) -> RetentionOptions:
+    """The allowed `settings.retention` policies (the builder's retention control)."""
+    response.headers["Cache-Control"] = _CACHE
+    return _retention()

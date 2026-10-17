@@ -24,12 +24,17 @@ from osp_spec.model import (
     ComputedVariable,
     EmbeddedVariable,
     EndNode,
+    MatrixQuestion,
     MultiQuestion,
     NoteQuestion,
     QuotaCheckNode,
     RandomiserNode,
     SingleQuestion,
+    SliderQuestion,
     TextQuestion,
+    matrix_row_id,
+    matrix_row_name,
+    matrix_row_required,
 )
 from pydantic import BaseModel
 
@@ -306,7 +311,14 @@ class _Exporter:
                     name = getattr(q, "name", None) or q.id
                     self.names[q.id] = name
                     self.taken.add(name.lower())
-                    self.types[q.id] = q.type
+                    self.types[q.id] = q.valueType if isinstance(q, SliderQuestion) else q.type
+                    if isinstance(q, MatrixQuestion):
+                        # Each row is its own variable (semantics.md §2, C2c-1).
+                        for row in q.rows:
+                            rid = matrix_row_id(q.id, row.id)
+                            self.names[rid] = matrix_row_name(q, row.id)
+                            self.taken.add(self.names[rid].lower())
+                            self.types[rid] = "single"
         for v in self.s.variables:
             name = v.name or v.id
             self.names[v.id] = name
@@ -337,8 +349,10 @@ class _Exporter:
         for b in self.s.blocks:
             for page in b.pages:
                 for q in page.items:
-                    for attr in ("label", "help", "constraintMessage"):
+                    for attr in ("label", "help", "constraintMessage", "minLabel", "maxLabel"):
                         yield from strings(getattr(q, attr, None))
+                    for row in getattr(q, "rows", None) or []:
+                        yield from strings(row.label)
                     for c in getattr(q, "choices", None) or []:
                         yield from strings(c.label)
         for node in _flow_nodes(self.s.flow):
@@ -585,7 +599,59 @@ class _Exporter:
             self.rows.append({"type": "end group"})
         self.rows.append({"type": "end group"})
 
+    def _matrix(self, q: MatrixQuestion, ptr: str) -> None:
+        """A `table-list` group: a label-only header row, then one `select_one` per row,
+        each its own variable `<matrix name>_<row id>` (semantics.md §2, C2c-1)."""
+        name = self.names[q.id]
+        list_name = q.choiceList
+        if list_name is None:
+            list_name = self._alloc_list(f"{name}_choices")
+            self._choice_rows(list_name, q.choices or [], ptr + "/choices")
+        # The matrix's own name (reserved in _index) names the group; it holds no value.
+        group = {"type": "begin group", "name": name, "appearance": "table-list"}
+        if q.showIf is not None:
+            group["relevant"] = self._xpath().condition(q.showIf)
+        self.rows.append(group)
+        header = {
+            "type": f"select_one {list_name}",
+            "name": self._alloc(f"osp_{name}_header"),
+            "appearance": "label",
+        }
+        # The header row carries the matrix text above the column labels.
+        self._labelled(header, "label", q.label, ptr + "/label")
+        self._labelled(header, "hint", q.help, ptr + "/help")
+        self.rows.append(header)
+        for k, mrow in enumerate(q.rows):
+            rid = matrix_row_id(q.id, mrow.id)
+            row = {
+                "type": f"select_one {list_name}",
+                "name": self.names[rid],
+                "appearance": "list-nolabel",
+            }
+            self._labelled(row, "label", mrow.label, ptr + pointer("rows", k, "label"))
+            if matrix_row_required(q, mrow):
+                row["required"] = "yes"
+            self.rows.append(row)
+            self._label_calc(rid)
+        self.rows.append({"type": "end group"})
+
+    def _label_calc(self, qid: str) -> None:
+        if qid not in self.label_calcs:
+            return
+        name = self.names[qid]
+        calc = self._label_calc_name(qid)
+        self.rows.append(
+            {
+                "type": "calculate",
+                "name": calc,
+                "calculation": f"jr:choice-name(${{{name}}}, '${{{name}}}')",
+            }
+        )
+
     def _question(self, q: Any, ptr: str) -> None:
+        if isinstance(q, MatrixQuestion):
+            self._matrix(q, ptr)
+            return
         name = self.names[q.id]
         row: dict[str, str] = {"type": "", "name": name}
         if isinstance(q, (SingleQuestion, MultiQuestion)):
@@ -599,6 +665,10 @@ class _Exporter:
                 seed = self._alloc(f"osp_seed_{name}")
                 self.rows.append({"type": "calculate", "name": seed, "calculation": _SEED_CALC})
                 row["parameters"] = f"randomize=true seed=${{{seed}}}"
+        elif isinstance(q, SliderQuestion):
+            # `range` enforces the track and step; Enketo shows no value until touched.
+            row["type"] = "range"
+            row["parameters"] = f"start={q.min} end={q.max} step={q.step}"
         else:
             row["type"] = q.type
             if isinstance(q, TextQuestion) and q.multiline:
@@ -612,7 +682,7 @@ class _Exporter:
                 row["required"] = "yes"
             parts = []
             for key, op in (("min", ">="), ("max", "<=")):
-                bound = getattr(q, key, None)
+                bound = None if isinstance(q, SliderQuestion) else getattr(q, key, None)
                 if bound is not None:
                     parts.append(f". {op} {bound}")
             if q.constraint is not None:
@@ -623,15 +693,7 @@ class _Exporter:
                 row, "constraint_message", q.constraintMessage, ptr + "/constraintMessage"
             )
         self.rows.append(row)
-        if q.id in self.label_calcs:
-            calc = self._label_calc_name(q.id)
-            self.rows.append(
-                {
-                    "type": "calculate",
-                    "name": calc,
-                    "calculation": f"jr:choice-name(${{{name}}}, '${{{name}}}')",
-                }
-            )
+        self._label_calc(q.id)
 
 
 def _assign_calc(seed: str, v: AssignedVariable) -> str:

@@ -21,9 +21,16 @@ export const SCHEMAS: Record<string, PropertySchemaData> = {
 	date: schema('date', 'text', 'Date', 'calendar', BASE),
 	integer: schema('integer', 'number', 'Whole number', 'hash', BASE),
 	decimal: schema('decimal', 'number', 'Decimal number', 'calculator', BASE),
-	// Provisional: osp-spec has no matrix / slider type yet.
-	matrix: schema('matrix', 'matrix', 'Matrix', 'grid-3x3', [...BASE, 'choices', 'rows']),
-	slider: schema('slider', 'scale', 'Slider', 'sliders-horizontal', [...BASE, 'min', 'max', 'step']),
+	matrix: schema('matrix', 'matrix', 'Matrix', 'grid-3x3', ['label', 'help', 'rows', 'choices', 'showIf', 'required', 'name']),
+	slider: schema('slider', 'scale', 'Slider', 'sliders-horizontal', [
+		...BASE,
+		'min',
+		'max',
+		'step',
+		'minLabel',
+		'maxLabel',
+		'valueType'
+	]),
 	note: schema('note', 'note', 'Note', 'sticky-note', ['label', 'help', 'showIf'])
 };
 
@@ -122,9 +129,9 @@ export const SAMPLES: Record<CardFamily, Sample[]> = {
 				label: 'How often do you study at these times?',
 				choiceList: 'freq5',
 				rows: [
-					{ value: 'morning', label: 'Morning' },
-					{ value: 'evening', label: 'Evening' },
-					{ value: 'night', label: 'After midnight' }
+					{ id: 'morning', label: 'Morning' },
+					{ id: 'evening', label: 'Evening' },
+					{ id: 'night', label: 'After midnight', required: false }
 				]
 			}
 		}

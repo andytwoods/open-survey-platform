@@ -512,3 +512,26 @@ def test_multiline_text_is_long_free_text() -> None:
     assert _question(root, "short")["type"] == "S"
     themes = {q["title"]: q.get("question_theme_name") for q in _rows(root, "questions")}
     assert themes == {"long": "longfreetext", "short": "shortfreetext"}
+
+
+def test_matrix_is_an_array_and_slider_a_number() -> None:
+    """C2c: matrix → type F with one subquestion per row; a row is `<q>_<sq>` in EM.
+    Slider → type N with min/max/step validation, reported as approximated."""
+    import re
+
+    data = json.loads((REPO / "fixtures/38-matrix/survey.json").read_text(encoding="utf-8"))
+    out, diags = build_lss(data)
+    assert out is not None, diags
+    xml = out.xml.decode()
+    assert "<type><![CDATA[F]]></type>" in xml
+    assert out.name_map["drink_tea"] == "drink_tea"
+    assert 'drink_tea.NAOK == "3"' in xml
+    assert "!is_empty(drink_tea.NAOK) and !is_empty(drink_coffee.NAOK)" in xml
+    assert "$matrix.someRowsRequired" in {d.feature for d in diags}
+
+    data = json.loads((REPO / "fixtures/39-slider/survey.json").read_text(encoding="utf-8"))
+    out, diags = build_lss(data)
+    assert out is not None, diags
+    assert re.search(r"fmod\(sleep\.NAOK - \(0\), 0\.5\) == 0", out.xml.decode())
+    levels = {d.feature: d.level for d in diags}
+    assert levels["SliderQuestion.type"] == "approximated"

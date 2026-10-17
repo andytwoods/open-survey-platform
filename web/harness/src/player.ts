@@ -228,16 +228,32 @@ function settled(): boolean {
 	return document.querySelectorAll('.items [data-question]').length === v.items.length;
 }
 
-/** What the engine (inside the app) says a visible item is: type, label, choices. */
-function viewItems(): Array<{ id: string; type: string; label: string; choices: Array<{ value: string; label: string }> }> {
+/** One visible item as the engine (inside the app) says it is. */
+interface ItemInfo {
+	id: string;
+	type: string;
+	label: string;
+	choices: Array<{ value: string; label: string }>;
+	/** A matrix's rows (semantics §2, C2c-1): each its own question, set by its row id. */
+	rows: Array<{ id: string; label: string }>;
+}
+
+/** What the engine (inside the app) says a visible item is: type, label, choices, rows. */
+function viewItems(): ItemInfo[] {
 	const s = (window as unknown as { __osp?: { view(): { items: ViewItem[] } } }).__osp;
 	const plain = (t: Array<{ text: string }> | null | undefined) => (t ?? []).map((p) => p.text).join('');
 	return (s?.view().items ?? []).map((i) => ({
 		id: i.id,
 		type: i.type,
 		label: plain(i.label),
-		choices: (i.choices ?? []).map((c) => ({ value: String(c.value), label: plain(c.label) }))
+		choices: (i.choices ?? []).map((c) => ({ value: String(c.value), label: plain(c.label) })),
+		rows: (i.rows ?? []).map((r) => ({ id: r.id, label: plain(r.label) }))
 	}));
+}
+
+/** Ids a script may set on this page: questions, and the rows of every matrix. */
+function settable(items: ItemInfo[]): Set<string> {
+	return new Set(items.flatMap((it) => [it.id, ...it.rows.map((r) => r.id)]));
 }
 
 const ROLE: Record<string, 'textbox' | 'radiogroup' | 'group'> = {
@@ -246,7 +262,9 @@ const ROLE: Record<string, 'textbox' | 'radiogroup' | 'group'> = {
 	text: 'textbox',
 	single: 'radiogroup',
 	multi: 'group',
-	date: 'group'
+	date: 'group',
+	matrix: 'group',
+	slider: 'group'
 };
 
 // -- the player ---------------------------------------------------------------------------
@@ -382,14 +400,19 @@ export class Player {
 		for (const it of dom.items) {
 			const vi = byId.get(it.id);
 			labels[it.id] = vi && it.label === toPlain(vi.label).trim() ? toHtml(vi.label) : escapeHtml(it.label);
-			if (vi?.choices) {
+			if (vi?.choices && vi.type !== 'matrix') {
 				choiceLabels[it.id] = it.choices.map((c, k) => {
 					const vc = vi.choices![k];
 					const same = vc && c.label === toPlain(vc.label).trim();
 					return [vc?.value ?? null, same ? toHtml(vc.label) : escapeHtml(c.label)];
 				});
 			}
-			if (it.error) {
+			if (it.error && vi?.rows) {
+				// A matrix shows one message; the engine's errors are per row (C2c-1).
+				const rowErrors = vi.rows.filter((r) => eng.errors[r.id]);
+				if (!rowErrors.length) errors[it.id] = { kind: 'unknown', message: it.error };
+				for (const r of rowErrors) errors[r.id] = eng.errors[r.id];
+			} else if (it.error) {
 				// The kind comes from the engine; the message must be the one on screen.
 				const e = eng.errors[it.id];
 				if (!e) errors[it.id] = { kind: 'unknown', message: it.error };
@@ -471,6 +494,26 @@ export class Player {
 				if (shown.length !== want.size || shown.some((x) => !want.has(x))) problem(path, [...want], shown);
 				break;
 			}
+			case 'matrix': {
+				// The DOM lists every row's radios in row order, one per column.
+				const cols = vi.choices ?? [];
+				(vi.rows ?? []).forEach((r, k) => {
+					const cells = it.choices.slice(k * cols.length, (k + 1) * cols.length);
+					const checked = cells.findIndex((c) => c.checked);
+					const want = cols.findIndex((c) => r.value !== null && String(c.value) === String(r.value));
+					if (checked !== want) problem(`${path}.${r.id}`, r.value ?? null, checked < 0 ? null : String(cols[checked]?.value));
+				});
+				break;
+			}
+			case 'slider': {
+				// The typed alternative shows the value; an untouched slider shows nothing.
+				const shown = (it.inputs.find((x) => x.label === 'Or type a number')?.value ?? '').trim();
+				const held = val === null || val === undefined ? '' : String(val);
+				if (shown !== held && !(held === '' && vi.error) && !(held !== '' && Number(shown) === Number(held))) {
+					problem(path, held, shown);
+				}
+				break;
+			}
 			case 'date': {
 				const f: Record<string, string> = {};
 				for (const i of it.inputs) f[i.label.toLowerCase()] = i.value.trim();
@@ -494,10 +537,10 @@ export class Player {
 		// `setIfShown` looks at the page as it was before this action's answers (the engine
 		// runner's rule); `set` answers in order, so a question revealed live by an earlier
 		// answer on the same page can be set (showIf is live within a page).
-		const before = new Set((await page.evaluate(viewItems)).map((it) => it.id));
+		const before = settable(await page.evaluate(viewItems));
 		for (const [id, value] of Object.entries(a.set ?? {})) {
 			const items = await page.evaluate(viewItems);
-			if (!items.some((it) => it.id === id)) throw new ScriptError(i, `set ${id}: not on the page`);
+			if (!settable(items).has(id)) throw new ScriptError(i, `set ${id}: not on the page`);
 			await this.answer(i, items, id, value);
 		}
 		for (const [id, value] of Object.entries(a.setIfShown ?? {})) {
@@ -648,13 +691,10 @@ export class Player {
 	}
 
 	/** Answer one question through its widget, found by role and accessible name. */
-	private async answer(
-		i: number,
-		items: Array<{ id: string; type: string; label: string; choices: Array<{ value: string; label: string }> }>,
-		id: string,
-		value: unknown
-	) {
+	private async answer(i: number, items: ItemInfo[], id: string, value: unknown) {
 		const page = this.page;
+		const matrix = items.find((x) => x.rows.some((r) => r.id === id));
+		if (matrix) return this.answerRow(i, items, matrix, id, value);
 		const it = items.find((x) => x.id === id)!;
 		const role = ROLE[it.type];
 		if (!role) throw new ScriptError(i, `set ${id}: type ${it.type} takes no answer`);
@@ -692,6 +732,14 @@ export class Player {
 				}
 				break;
 			}
+			case 'slider':
+				// The slider's typed alternative (runtime-design §6): exact, like a participant
+				// who types rather than drags.
+				await typeInto(
+					control.getByRole('textbox', { name: 'Or type a number', exact: true }),
+					value === null || value === undefined ? '' : String(value)
+				);
+				break;
 			case 'date': {
 				const [y, m, d] = typeof value === 'string' ? value.split('-') : ['', '', ''];
 				await typeInto(control.getByRole('textbox', { name: 'Day', exact: true }), d ? String(Number(d)) : '');
@@ -700,6 +748,20 @@ export class Player {
 				break;
 			}
 		}
+	}
+
+	/** Answer one matrix row (C2c-1): the matrix group, the row's radio group, the column. */
+	private async answerRow(i: number, items: ItemInfo[], matrix: ItemInfo, id: string, value: unknown) {
+		if (value === null) throw new ScriptError(i, `set ${id}: a radio group cannot be cleared`);
+		const nth = items.filter((x) => x.label.trim() === matrix.label.trim() && ROLE[x.type] === 'group').findIndex((x) => x.id === matrix.id);
+		const group = this.page.getByRole('group', { name: nameOf(matrix.label) }).nth(nth);
+		const row = matrix.rows.find((r) => r.id === id)!;
+		const col = matrix.choices.find((c) => c.value === String(value));
+		if (!col) throw new ScriptError(i, `set ${id}: no column ${String(value)}`);
+		const radio = group.getByRole('radiogroup', { name: exactName(row.label) }).getByRole('radio', { name: exactName(col.label) });
+		if ((await radio.count()) === 0) throw new ScriptError(i, `set ${id}: no radio "${col.label}" in row "${row.label}"`);
+		await radio.focus();
+		await radio.press('Space');
 	}
 
 	// -- the stored response ---------------------------------------------------------------

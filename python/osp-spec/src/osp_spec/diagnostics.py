@@ -63,6 +63,9 @@ CODES: dict[str, Severity] = {
     "quota.unused": "warning",
     # Questions
     "question.bounds": "error",
+    "question.slider": "error",
+    "matrix.duplicate_row": "error",
+    "matrix.row_id": "error",
     # Settings
     "settings.retention": "error",
     # Publishing only (publish_diagnostics; never from validate)

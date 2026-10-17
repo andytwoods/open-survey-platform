@@ -20,18 +20,26 @@ from .doc import (
 )
 from .registry import REVERSE_PATCH, Ctx, Invocation, OpError, Params, op
 
-type QuestionType = Literal["integer", "decimal", "text", "single", "multi", "date", "note"]
+type QuestionType = Literal[
+    "integer", "decimal", "text", "single", "multi", "date", "matrix", "slider", "note"
+]
 Index = Field(default=None, ge=0)
 
 DEFAULT_LABEL = "New question"
 DEFAULT_CHOICES: list[dict[str, Any]] = [{"value": 1, "label": "Option 1"}]
+DEFAULT_ROWS: list[dict[str, Any]] = [
+    {"id": "r1", "label": "Row 1"},
+    {"id": "r2", "label": "Row 2"},
+]
 
 
 def new_question(qid: str, qtype: str, label: JsonValue = None) -> dict[str, Any]:
     q: dict[str, Any] = {"id": qid, "type": qtype}
     q["label"] = DEFAULT_LABEL if label is None else copy.deepcopy(label)
-    if qtype in ("single", "multi"):
+    if qtype in ("single", "multi", "matrix"):
         q["choices"] = copy.deepcopy(DEFAULT_CHOICES)
+    if qtype == "matrix":
+        q["rows"] = copy.deepcopy(DEFAULT_ROWS)
     return q
 
 

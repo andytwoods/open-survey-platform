@@ -30,7 +30,7 @@ _KNOWN = {
     "$schema", "$id", "$defs", "$ref", "title", "description", "type", "enum", "const",
     "properties", "additionalProperties", "required", "propertyNames", "dependentSchemas",
     "items", "minItems", "minLength", "minimum", "maximum", "pattern",
-    "anyOf", "oneOf", "not", "if", "then", "else",
+    "anyOf", "allOf", "oneOf", "not", "if", "then", "else",
 }  # fmt: skip
 
 
@@ -108,6 +108,8 @@ def valid(s: Any, v: Any, root: dict = SCHEMA) -> bool:  # noqa: C901, PLR0911, 
             if k in v and not valid(dep, v, root):
                 return False
     if "anyOf" in s and not any(valid(x, v, root) for x in s["anyOf"]):
+        return False
+    if "allOf" in s and not all(valid(x, v, root) for x in s["allOf"]):
         return False
     if "oneOf" in s and sum(valid(x, v, root) for x in s["oneOf"]) != 1:
         return False
