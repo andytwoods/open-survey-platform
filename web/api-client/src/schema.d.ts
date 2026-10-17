@@ -228,6 +228,23 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
+    "/api/meta/targets": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** Targets */
+        get: operations["listExportTargets"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
     "/api/meta/theme-schema": {
         parameters: {
             query?: never;
@@ -378,6 +395,23 @@ export interface paths {
         post?: never;
         /** Delete Survey */
         delete: operations["deleteSurvey"];
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/surveys/{survey_id}/export-check": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** Export Check */
+        get: operations["checkExport"];
+        put?: never;
+        post?: never;
+        delete?: never;
         options?: never;
         head?: never;
         patch?: never;
@@ -687,6 +721,16 @@ export interface components {
             /** Text */
             text: string;
         };
+        /** CapabilityRow */
+        CapabilityRow: {
+            /**
+             * Level
+             * @enum {string}
+             */
+            level: "native" | "lowered" | "approximated" | "unsupported";
+            /** Note */
+            note: string;
+        };
         ChoiceValue: number | string;
         /** CreateChoiceList */
         CreateChoiceListParams: {
@@ -875,6 +919,72 @@ export interface components {
             code: string;
             /** Message */
             message: string;
+        };
+        /** ExportCheck */
+        ExportCheck: {
+            /**
+             * Counts
+             * @description Diagnostics per severity
+             */
+            counts: {
+                [key: string]: number;
+            };
+            /** Diagnostics */
+            diagnostics: components["schemas"]["ExportDiagnostic"][];
+            /**
+             * Exportable
+             * @description False when an error diagnostic means no file
+             */
+            exportable: boolean;
+            /**
+             * Revision
+             * @description The draft revision that was checked
+             */
+            revision: number;
+            /**
+             * Target
+             * @enum {string}
+             */
+            target: "xlsform" | "lss";
+        };
+        /** ExportDiagnostic */
+        ExportDiagnostic: {
+            /** Code */
+            code: string;
+            /** Feature */
+            feature: string;
+            /** Level */
+            level: ("native" | "lowered" | "approximated" | "unsupported") | null;
+            /** Message */
+            message: string;
+            /** Pointer */
+            pointer: string;
+            /**
+             * Severity
+             * @enum {string}
+             */
+            severity: "info" | "warning" | "loss" | "error";
+            /** Target */
+            target: string;
+        };
+        /** ExportTarget */
+        ExportTarget: {
+            /**
+             * Capabilities
+             * @description Capability table: "<SchemaDef>.<field>[=<value>]" or "$<behaviour>" -> row
+             */
+            capabilities: {
+                [key: string]: components["schemas"]["CapabilityRow"];
+            };
+            /** Description */
+            description: string;
+            /**
+             * Id
+             * @enum {string}
+             */
+            id: "xlsform" | "lss";
+            /** Label */
+            label: string;
         };
         /** ExprDiagnostic */
         ExprDiagnostic: {
@@ -2201,6 +2311,35 @@ export interface operations {
             };
         };
     };
+    listExportTargets: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ExportTarget"][];
+                };
+            };
+            /** @description Unauthorized */
+            401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorBody"];
+                };
+            };
+        };
+    };
     getThemeSchema: {
         parameters: {
             query?: never;
@@ -2788,6 +2927,66 @@ export interface operations {
             };
             /** @description Conflict */
             409: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorBody"];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    checkExport: {
+        parameters: {
+            query: {
+                target: "xlsform" | "lss";
+            };
+            header?: never;
+            path: {
+                survey_id: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ExportCheck"];
+                };
+            };
+            /** @description Unauthorized */
+            401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorBody"];
+                };
+            };
+            /** @description Forbidden */
+            403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorBody"];
+                };
+            };
+            /** @description Not Found */
+            404: {
                 headers: {
                     [name: string]: unknown;
                 };

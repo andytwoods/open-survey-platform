@@ -149,6 +149,7 @@ export class SurveyStore {
 			this.title = r.data.title;
 			this.survey = r.data.survey;
 			this.revision = r.data.revision;
+			if (r.data.diagnostics) this.diagnostics = r.data.diagnostics;
 			return true;
 		} finally {
 			this.loading = false;
@@ -162,6 +163,7 @@ export class SurveyStore {
 			this.title = r.data.title;
 			this.survey = r.data.survey;
 			this.revision = r.data.revision;
+			if (r.data.diagnostics) this.diagnostics = r.data.diagnostics;
 		}
 		return r;
 	}
