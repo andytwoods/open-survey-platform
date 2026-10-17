@@ -137,7 +137,11 @@ def test_contract_documents_the_settings_schema(benv):
     schemas = benv.app.openapi()["components"]["schemas"]
     settings = schemas["LayoutSettings"]
     assert settings["additionalProperties"] is False
-    assert set(settings["properties"]) == {"schemaVersion", "query", "cards", "showNotes"}
+    assert set(settings["properties"]) == {
+        "schemaVersion", "query", "cards", "showNotes", "theme", "export",
+    }  # fmt: skip
+    assert schemas["LayoutTheme"]["additionalProperties"] is False
+    assert schemas["LayoutExport"]["additionalProperties"] is False
     assert schemas["CardLayout"]["additionalProperties"] is False
     assert schemas["LayoutQuery"]["additionalProperties"] is False
     assert schemas["ResultsLayoutOut"]["properties"]["settings"]["$ref"].endswith("/LayoutSettings")

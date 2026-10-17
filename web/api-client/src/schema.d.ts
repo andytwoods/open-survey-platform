@@ -1750,6 +1750,36 @@ export interface components {
             /** Variable */
             variable: string;
         };
+        /**
+         * LayoutExport
+         * @description V4's figure export settings and the "Export all" bundle (task V6).
+         */
+        LayoutExport: {
+            /**
+             * Bundle
+             * @description What "Export all" puts in the ZIP
+             * @default all
+             * @enum {string}
+             */
+            bundle: "svg" | "png" | "all";
+            /**
+             * Dpi
+             * @default 300
+             * @enum {integer}
+             */
+            dpi: 150 | 300 | 600;
+            /**
+             * Hidecountsbelow
+             * @description k for "Hide counts below k"; null: off
+             */
+            hideCountsBelow?: number | null;
+            /**
+             * Widthmm
+             * @description Final figure width
+             * @default 85
+             */
+            widthMm: number;
+        };
         /** LayoutFilter */
         LayoutFilter: {
             /** In */
@@ -1806,6 +1836,7 @@ export interface components {
              * @description Cards in display order; questions not listed follow in survey order
              */
             cards?: components["schemas"]["CardLayout"][];
+            export?: components["schemas"]["LayoutExport"];
             query?: components["schemas"]["LayoutQuery"];
             /**
              * Schemaversion
@@ -1819,6 +1850,7 @@ export interface components {
              * @default false
              */
             showNotes: boolean;
+            theme?: components["schemas"]["LayoutTheme"];
         };
         /**
          * LayoutSplit
@@ -1834,6 +1866,25 @@ export interface components {
             excludeMissing: boolean;
             /** Question */
             question?: string | null;
+        };
+        /**
+         * LayoutTheme
+         * @description The colours the Results page draws its cards and figures in (task V6): the app's own
+         *     colours, the survey's theme, a built-in preset or a lab library theme. A theme id is a
+         *     reference only; the theme document itself is never stored in a layout.
+         */
+        LayoutTheme: {
+            /**
+             * Id
+             * @description The preset id or lab library theme id (presets and library themes only)
+             */
+            id?: string | null;
+            /**
+             * Kind
+             * @default app
+             * @enum {string}
+             */
+            kind: "app" | "survey" | "preset" | "library";
         };
         /** MoveBlock */
         MoveBlockParams: {
