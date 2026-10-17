@@ -24,11 +24,27 @@ def test_dev_defaults(tmp_path):
 
 @pytest.mark.parametrize(
     "env",
-    [{"OSP_ENV": "staging"}, {"OSP_PORT": "eighty"}, {"OSP_PORT": "70000"}],
+    [
+        {"OSP_ENV": "staging"},
+        {"OSP_PORT": "eighty"},
+        {"OSP_PORT": "70000"},
+        {"OSP_LIVE_POLL_MS": "ten"},
+        {"OSP_LIVE_POLL_MS": "500"},
+        {"OSP_LIVE_POLL_MS": "-10000"},
+        {"OSP_LIVE_POLL_MS": "3600001"},
+    ],
 )
 def test_bad_settings_are_refused(tmp_path, env):
     with pytest.raises(ConfigError):
         Settings.from_env(_dev(tmp_path, **env))
+
+
+def test_live_poll_interval_setting(tmp_path):
+    assert Settings.from_env(_dev(tmp_path)).live_poll_ms == 10_000
+    env = _dev(tmp_path, OSP_LIVE_POLL_MS="30000")
+    assert Settings.from_env(env).live_poll_ms == 30_000
+    app = build_app(Settings.from_env(env), env)
+    assert app.state.live_poll_ms == 30_000 and app.state.watermark_limiter is not None
 
 
 def test_dev_keys_generated_once_private_and_reused(tmp_path):

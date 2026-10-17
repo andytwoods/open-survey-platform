@@ -793,6 +793,27 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
+    "/api/surveys/{survey_id}/results/watermark": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /**
+         * Results Watermark
+         * @description Did the responses change? (survey.export; not audited; per actor a burst of 5 calls,
+         *     then one a second.)
+         */
+        get: operations["resultsWatermark"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
     "/api/surveys/{survey_id}/simulate": {
         parameters: {
             query?: never;
@@ -2747,6 +2768,12 @@ export interface components {
              * @description Label language; default the survey's main language
              */
             language?: string | null;
+            /**
+             * Live
+             * @description An automatic refresh by the live page: audited as results.live, coalesced per actor and query (one row per 15 minutes) instead of results.read. Not part of queryHash.
+             * @default false
+             */
+            live: boolean;
             split?: components["schemas"]["SplitSpec"] | null;
             /**
              * Status
@@ -3792,6 +3819,30 @@ export interface components {
             name: string;
             /** Version */
             version: string;
+        };
+        /**
+         * WatermarkResponse
+         * @description The live page's poll (LV-D2): compare ``watermark`` with the last
+         *     ``ResultsResponse.watermark`` and re-query only when it differs.
+         */
+        WatermarkResponse: {
+            /**
+             * Pollafterms
+             * @description How long to wait before polling again (the server's OSP_LIVE_POLL_MS); polling faster is rate-limited (429)
+             */
+            pollAfterMs: number;
+            /**
+             * Responses
+             * @description Stored responses of the versions used (every status, before filters)
+             */
+            responses: number;
+            /** Versionsused */
+            versionsUsed: number[];
+            /**
+             * Watermark
+             * @description The same value a results query of these versions returns; changes whenever a response is added or deleted
+             */
+            watermark: string;
         };
         /** WithdrawResponse */
         WithdrawResponse: {
@@ -6522,6 +6573,76 @@ export interface operations {
                 };
                 content: {
                     "application/json": components["schemas"]["RejectedBody"];
+                };
+            };
+        };
+    };
+    resultsWatermark: {
+        parameters: {
+            query?: {
+                /** @description Version numbers (repeat); default latest */
+                versions?: number[] | null;
+            };
+            header?: never;
+            path: {
+                survey_id: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["WatermarkResponse"];
+                };
+            };
+            /** @description Unauthorized */
+            401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorBody"];
+                };
+            };
+            /** @description Forbidden */
+            403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorBody"];
+                };
+            };
+            /** @description Not Found */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorBody"];
+                };
+            };
+            /** @description Unprocessable Content */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["RejectedBody"];
+                };
+            };
+            /** @description Too Many Requests */
+            429: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorBody"];
                 };
             };
         };

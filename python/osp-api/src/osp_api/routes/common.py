@@ -67,9 +67,16 @@ class UnsupportedMediaType(AppError):
     code = "request.media_type"
 
 
+class RateLimited(AppError):
+    """Too many calls by one actor (the live watermark poll); the body says when to retry."""
+
+    code = "rate_limited"
+
+
 STATUS: dict[type[AppError], int] = {
     UnsupportedMediaType: 415,
     ServiceUnavailable: 503,
+    RateLimited: 429,
     Unauthenticated: 401,
     Forbidden: 403,
     NotFoundError: 404,
@@ -87,6 +94,7 @@ _MODELS: dict[int, type[BaseModel]] = {
     409: ErrorBody,
     415: ErrorBody,
     422: RejectedBody,
+    429: ErrorBody,
     502: ErrorBody,
     503: ErrorBody,
 }

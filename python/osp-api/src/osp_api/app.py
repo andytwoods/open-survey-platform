@@ -19,6 +19,12 @@ from pydantic import BaseModel
 from . import participant, routes
 from .client_address import parse_trusted_proxies
 from .identity import IdentityProvider
+from .routes.results import (
+    DEFAULT_LIVE_POLL_MS,
+    MAX_LIVE_POLL_MS,
+    MIN_LIVE_POLL_MS,
+    watermark_limiter,
+)
 
 API_TITLE = "Open Survey Platform API"
 
@@ -40,6 +46,7 @@ def create_app(
     allowed_origins: Sequence[str] = (),
     public_origins: Sequence[str] = (),
     trusted_proxies: Sequence[str] = (),
+    live_poll_ms: int = DEFAULT_LIVE_POLL_MS,
 ) -> FastAPI:
     """``sessions`` backs the participant endpoints and ``builder`` the builder ones
     (surveys, ops, meta, me); without them they answer 503. Given only ``builder``,
@@ -50,10 +57,20 @@ def create_app(
     (exact origins, D11) may make unsafe requests cross-origin, with credentials (CORS).
     ``public_origins`` (D14) are the host's own public origins: accepted by the Origin check
     on unsafe requests, without CORS. ``trusted_proxies`` (IPs/CIDRs, D13) are the peers
-    whose ``X-Forwarded-For`` gives the participant address for rate limiting."""
+    whose ``X-Forwarded-For`` gives the participant address for rate limiting.
+    ``live_poll_ms`` (``OSP_LIVE_POLL_MS``) is the interval the results watermark endpoint
+    advertises to the live results page (task LV2)."""
     for o in (*allowed_origins, *public_origins):
         if o == "*" or not o.startswith(("https://", "http://")) or o.count("/") != 2:
             raise ValueError("origins must be exact http(s) origins, no wildcard or path")
+    if (
+        isinstance(live_poll_ms, bool)
+        or not isinstance(live_poll_ms, int)
+        or not MIN_LIVE_POLL_MS <= live_poll_ms <= MAX_LIVE_POLL_MS
+    ):
+        raise ValueError(
+            f"live_poll_ms must be an integer from {MIN_LIVE_POLL_MS} to {MAX_LIVE_POLL_MS}"
+        )
     if sessions is None and builder is not None:
         sessions = builder.sessions
     pkg_version = version("osp-api")
@@ -74,6 +91,8 @@ def create_app(
         return VersionInfo(name="osp-api", version=pkg_version)
 
     app.state.trusted_proxies = parse_trusted_proxies(trusted_proxies)
+    app.state.live_poll_ms = live_poll_ms
+    app.state.watermark_limiter = watermark_limiter()
     participant.install(app, sessions)
     routes.install(app, builder, allowed_origins, identity, public_origins)
     if allowed_origins:

@@ -95,6 +95,61 @@ def test_errors(benv):
     assert "results.read" not in actions  # refused calls read nothing
 
 
+def test_watermark_endpoint(benv):
+    c, sid, ctx = _setup(benv)
+    before = len(benv.store.list_audit(ctx))
+    r = c.get(f"/api/surveys/{sid}/results/watermark")
+    assert r.status_code == 200, r.text
+    body = r.json()
+    assert body["responses"] == 5 and body["versionsUsed"] == [1]
+    assert body["pollAfterMs"] == 10_000 and set(body) == {
+        "watermark", "responses", "versionsUsed", "pollAfterMs",
+    }  # fmt: skip
+    assert len(benv.store.list_audit(ctx)) == before  # not audited
+    q = c.post(f"/api/surveys/{sid}/results/query", json={}).json()
+    assert q["watermark"] == body["watermark"]
+    data.add_response(benv.store, ctx, data.publish(benv.store, ctx, sid, data.SURVEY).id, {})
+    both = c.get(f"/api/surveys/{sid}/results/watermark", params={"versions": [1, 2]})
+    assert both.json()["versionsUsed"] == [1, 2] and both.json()["responses"] == 6
+    latest = c.get(f"/api/surveys/{sid}/results/watermark").json()
+    assert latest["versionsUsed"] == [2] and latest["watermark"] != body["watermark"]
+    url = f"/api/surveys/{sid}/results/watermark"
+    assert c.get(url, params={"versions": [7]}).status_code == 404
+    assert c.get(url, params={"versions": [0]}).status_code == 422
+    assert benv.login("viewer@a.example").get(url).status_code == 403
+    assert benv.login("owner@b.example").get(url).status_code == 404
+
+
+def test_watermark_is_rate_limited_per_actor(benv):
+    from osp_runtime import TokenBucket
+
+    c, sid, _ = _setup(benv)
+    benv.app.state.watermark_limiter = TokenBucket(5, 1, lambda: benv.clock.now())
+    url = f"/api/surveys/{sid}/results/watermark"
+    codes = [c.get(url).status_code for _ in range(7)]
+    assert codes == [200] * 5 + [429] * 2
+    refused = c.get(url)
+    assert refused.json()["code"] == "rate_limited" and "pollAfterMs" in refused.json()["message"]
+    assert benv.login("owner@a.example").get(url).status_code == 200  # another actor's budget
+    benv.clock.advance(seconds=1)
+    assert c.get(url).status_code == 200  # one a second after the burst
+    assert c.get(url).status_code == 429
+
+
+def test_live_query_is_audited_as_results_live(benv):
+    c, sid, ctx = _setup(benv)
+    url = f"/api/surveys/{sid}/results/query"
+    first = c.post(url, json={"live": True, "cards": [{"question": "fruit"}]})
+    assert first.status_code == 200, first.text
+    again = c.post(url, json={"live": True, "cards": [{"question": "fruit"}]})
+    assert again.json()["cached"] is True and again.json()["queryHash"] == first.json()["queryHash"]
+    manual = c.post(url, json={"cards": [{"question": "fruit"}]})
+    assert manual.json()["queryHash"] == first.json()["queryHash"]
+    actions = [a.action for a in benv.store.list_audit(ctx) if a.action.startswith("results.")]
+    assert actions == ["results.live", "results.read"]
+    assert c.post(url, json={"live": "maybe"}).status_code == 422
+
+
 def test_export_is_recorded_without_values(benv):
     c, sid, ctx = _setup(benv)
     query = {"split": {"condition": "arm"}, "denominator": "shown"}

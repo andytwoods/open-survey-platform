@@ -43,6 +43,7 @@ ROUTES: list[tuple[str, str, dict | None]] = [
     ("GET", f"/api/surveys/{SID}/export-check?target=lss", None),
     ("POST", f"/api/surveys/{SID}/results/query", {"cards": [{"question": "q1"}]}),
     ("GET", f"/api/surveys/{SID}/results/text/{{question}}", None),
+    ("GET", f"/api/surveys/{SID}/results/watermark", None),
     (
         "POST",
         f"/api/surveys/{SID}/results/export",
@@ -156,6 +157,7 @@ def test_viewer_cannot_create_or_export(benv, survey_a):
     assert c.get(f"/api/surveys/{survey_a}/export/codebook").status_code == 403
     assert c.post(f"/api/surveys/{survey_a}/results/query", json={}).status_code == 403
     assert c.get(f"/api/surveys/{survey_a}/results/text/q1").status_code == 403
+    assert c.get(f"/api/surveys/{survey_a}/results/watermark").status_code == 403
     export = {"query": {}, "cards": ["q1"], "formats": ["png"]}
     assert c.post(f"/api/surveys/{survey_a}/results/export", json=export).status_code == 403
     assert c.get(f"/api/surveys/{survey_a}/results/layouts").status_code == 403
