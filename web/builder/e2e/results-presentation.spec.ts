@@ -13,6 +13,15 @@ import { axe, signIn, writeHeaders } from './fixtures';
 const card = (page: Page, name: string) => page.getByRole('article', { name });
 const themePicker = (page: Page) => page.getByLabel('Theme', { exact: true });
 
+/** Present → the Present dialog (task LV4) → Start presenting with its defaults. */
+async function startPresenting(page: Page) {
+	await page.getByRole('button', { name: 'Present' }).click();
+	const dialog = page.getByRole('dialog', { name: 'Present results' });
+	await expect(dialog).toBeVisible();
+	await dialog.getByRole('button', { name: 'Start presenting' }).click();
+	await expect(dialog).toBeHidden();
+}
+
 /** The Warm preset's colours, as a lab library theme document (osp-theme/0.1). */
 const WARM = {
 	themeVersion: 'osp-theme/0.1',
@@ -145,7 +154,7 @@ test('presentation mode: only the cards; Escape and the floating button leave; t
 	await openResults(page, id);
 	await expect(page.locator('header.topbar')).toBeVisible();
 
-	await page.getByRole('button', { name: 'Present' }).click();
+	await startPresenting(page);
 	const exit = page.getByTestId('exit-presentation');
 	await expect(exit).toBeVisible();
 	await expect(exit).toBeFocused();
@@ -159,9 +168,12 @@ test('presentation mode: only the cards; Escape and the floating button leave; t
 	await expect(fruit.getByRole('combobox', { name: 'Chart' })).toHaveCount(0);
 	await expect(fruit.getByRole('button', { name: 'Export Fruit?' })).toHaveCount(0);
 	await expect(fruit.locator('[data-chart="bars"] svg.marks')).toBeVisible();
+	// On screen, cells below 5 are hidden by default (LV4, LV-D5): Apple (2) and Banana (1).
 	await expect(fruit.getByTestId('card-caption')).toHaveText(
-		'Fruit? (fruit). Version 1; Complete responses only; Denominator: answered. n = 3 responses.'
+		'Fruit? (fruit). Version 1; Complete responses only; Denominator: answered. n = 3 responses. Counts below 5 hidden (shown as "n<5"; 2 cells).'
 	);
+	await expect(fruit.locator('[data-chart="bars"] svg.marks text', { hasText: 'n<5' }).first()).toBeVisible();
+	await expect(page.getByTestId('present-footer')).toHaveText(/^5 responses · updated \d\d:\d\d · counts below 5 hidden$/);
 	expect(await axe(page)).toEqual([]);
 
 	await page.keyboard.press('Escape');
@@ -171,7 +183,7 @@ test('presentation mode: only the cards; Escape and the floating button leave; t
 	await expect(fruit.getByRole('combobox', { name: 'Chart' })).toBeVisible();
 
 	// The floating button leaves too.
-	await page.getByRole('button', { name: 'Present' }).click();
+	await startPresenting(page);
 	await expect(exit).toBeVisible();
 	await exit.click();
 	await expect(page.locator('header.topbar')).toBeVisible();
@@ -196,6 +208,8 @@ test('a shared link: ?present=1 opens the cards only, ?layout= the saved layout;
 		await expect(page.locator('header.topbar')).toHaveCount(0);
 		await expect(page.getByRole('list', { name: 'Questions' }).getByRole('article')).toHaveCount(9); // Why? is hidden
 		await expect(card(page, 'Fruit?').locator('[data-chart="donut"] svg.marks')).toBeVisible();
+		// A link alone never shows exact counts (LV4, lead decision 1).
+		await expect(page.getByTestId('present-footer')).toHaveText(/counts below 5 hidden$/);
 		// The dark preset is dark-only: the page shows it dark whatever the device prefers.
 		await expect(page.locator('.results[data-presenting]')).toHaveAttribute('style', /color-scheme: dark/);
 		const doc = await page.evaluate(() => document.documentElement.scrollWidth);

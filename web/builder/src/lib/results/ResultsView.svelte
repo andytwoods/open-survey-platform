@@ -13,14 +13,17 @@
 	import { readTokens } from './charts/theme';
 	import type { ThemeTokens } from './charts/types';
 	import ExportAll from './export/ExportAll.svelte';
+	import { suppressCard } from './export/model';
 	import FilterBar from './FilterBar.svelte';
-	import { IDLE_AFTER_MS, liveIn, pendingText, statusText, withLive } from './live';
+	import { IDLE_AFTER_MS, liveIn, liveModeIn, pendingText, presentFooter, statusText, withLive, type PresentRefresh } from './live';
 	import { conditionVariables } from './model';
 	import { layoutIn, presentIn, withPresent } from './presentation';
 	import { presentation } from './presentation.svelte';
+	import PresentDialog from './PresentDialog.svelte';
 	import ResultCard from './ResultCard.svelte';
 	import { surveyThemeOf } from './results-theme';
 	import { apiSource, ResultsController, type ResultsSource } from './results.svelte';
+	import { enterFullscreen, exitFullscreen, keepAwake } from './screen';
 	import ThemePicker from './ThemePicker.svelte';
 
 	/**
@@ -30,7 +33,10 @@
 	 * adds the page's own theme (the cards and every export are drawn in it) and a
 	 * presentation mode that shows only the cards (`?present=1`, Escape to leave). Task LV3
 	 * adds Live: the page polls the watermark and refreshes as responses arrive (by itself
-	 * when idle; a "N new responses · Refresh" badge while the researcher is busy).
+	 * when idle; a "N new responses · Refresh" badge while the researcher is busy). Task LV4
+	 * makes presentation mode live too, through the Present dialog: refreshes in batches (k
+	 * new responses or the time cap) with small cells hidden on screen by default, a footer
+	 * with the count and time (never the size of a delta), fullscreen and a wake lock.
 	 */
 	let {
 		surveyId,
@@ -68,7 +74,6 @@
 					intervalMs: live.intervalMs,
 					retryMs: live.retryMs,
 					error: live.error,
-					pausedBy: live.pausedBy,
 					lastRefreshAt: live.lastRefreshAt
 				})
 			: ''
@@ -95,10 +100,11 @@
 	/** The theme's tokens as CSS custom properties, for the cards (or, presenting, the page). */
 	const themeStyle = $derived(pageTheme ? cssVarsToStyle(themeToCssVars(pageTheme, themeMode)) : undefined);
 
-	// -- presentation mode (V6) ----------------------------------------------------------------
+	// -- presentation mode (V6, live in LV4) ---------------------------------------------------
 	const presenting = $derived(presentation.active);
 	let presentButton = $state<HTMLButtonElement | null>(null);
 	let exitButton = $state<HTMLButtonElement | null>(null);
+	let presentDialog = $state(false);
 	let urlSynced = false;
 	$effect(() => {
 		// Mirror the flag into the URL once the page has read its initial state.
@@ -107,12 +113,39 @@
 		const next = withPresent(location.href, on);
 		if (next !== location.href) history.replaceState(history.state, '', next);
 	});
-	async function present(on: boolean) {
-		if (on) presentation.enter();
-		else presentation.exit();
+	/** Start presenting with the dialog's choices (LV-D5); a palette toggle or `?present=1` take the defaults. */
+	async function present(on: boolean, choice?: { live: boolean; refresh: PresentRefresh; exact: boolean; fullscreen: boolean }) {
+		if (on) {
+			if (choice) live?.set(choice.live);
+			presentation.enter(choice);
+			if (choice?.fullscreen) void enterFullscreen();
+		} else {
+			presentation.exit();
+			void exitFullscreen();
+		}
 		await tick();
 		(on ? exitButton : presentButton)?.focus();
 	}
+	/** The cards as shown: presenting, cells below k are hidden on screen (LV-D5) unless exact counts were chosen. */
+	const shownCards = $derived(
+		cards.map((card) => {
+			const k = presentation.k;
+			if (k === null) return { card, hidden: 0 };
+			const s = suppressCard($state.snapshot(card) as Card, k);
+			return { card: s.card, hidden: s.hidden };
+		})
+	);
+	/** The projected footer: count and time, never "N new" (LV-D5). */
+	const footer = $derived(
+		controller.response
+			? presentFooter({ responses: controller.response.responses, updatedAt: controller.receivedAt, live: live?.on ?? false, k: presentation.k })
+			: ''
+	);
+	$effect(() => {
+		// A live lab screen stays awake (ignored where the browser does not allow it).
+		if (!presentation.active || !live?.on || typeof navigator === 'undefined') return;
+		return keepAwake();
+	});
 	function onWindowKey(e: KeyboardEvent) {
 		touch();
 		if (!presenting || e.key !== 'Escape' || e.defaultPrevented) return;
@@ -122,19 +155,20 @@
 		void present(false);
 	}
 	$effect(() => {
-		// Mirror the live flag into the URL once the page has read its initial state (LV3).
+		// Mirror the live flag (and the presentation cadence, LV4) into the URL once the page has
+		// read its initial state (LV3). The suppression switch is never in the URL.
 		const on = live?.on ?? false;
+		const mode = presentation.refresh;
 		if (!urlSynced || typeof history === 'undefined') return;
-		const next = withLive(location.href, on);
+		const next = withLive(location.href, on, mode);
 		if (next !== location.href) history.replaceState(history.state, '', next);
 	});
 	$effect(() => {
-		// Leaving presentation mode: poll again at once (live pauses while presenting until LV4).
-		// Only the flag is a dependency: wake() reads and writes the poller's own state.
-		const presenting = presentation.active;
-		untrack(() => {
-			if (!presenting) live?.wake();
-		});
+		// Entering or leaving presentation mode, or changing its cadence, changes the live policy:
+		// check now. Only the flags are dependencies: wake() reads and writes the poller's own state.
+		void presentation.active;
+		void presentation.refresh;
+		untrack(() => live?.wake());
 	});
 
 	// -- reordering (drag the handle, or focus it and use the arrow keys) --------------------
@@ -220,7 +254,10 @@
 		const search = typeof location === 'undefined' ? '' : location.search;
 		presentation.active = presentIn(search);
 		// `?live=` in a shared link wins over the layout's setting; absent, the layout decides.
+		// `?live=every|batched` also carries the presentation cadence (never the suppression switch).
 		const urlLive = liveIn(search);
+		const urlMode = liveModeIn(search);
+		if (urlMode) presentation.refresh = urlMode;
 		urlSynced = true;
 		if (publishedVersions === 0) return;
 		void controller.theme.load(controller.source.themes?.bind(controller.source));
@@ -270,7 +307,7 @@
 				{#if response}
 					<div class="export-all">
 						<ExportAll {controller} />
-						<Button bind:ref={presentButton} onclick={() => void present(true)} disabled={!cards.length} aria-keyshortcuts="Escape">
+						<Button bind:ref={presentButton} onclick={() => (presentDialog = true)} disabled={!cards.length} aria-haspopup="dialog">
 							<Presentation size={16} aria-hidden="true" /> Present
 						</Button>
 					</div>
@@ -305,7 +342,6 @@
 					</div>
 				{/if}
 			</section>
-			<div class="visually-hidden" role="status" aria-live="polite" data-testid="live-announce">{announce}</div>
 		{:else}
 			<button
 				bind:this={exitButton}
@@ -319,6 +355,7 @@
 				<X size={16} aria-hidden="true" /> Exit presentation
 			</button>
 		{/if}
+		<div class="visually-hidden" role="status" aria-live="polite" data-testid="live-announce">{announce}</div>
 
 		<div class="live" role="status" aria-live="polite">
 			{#if controller.loading && (!controller.quiet || slow)}
@@ -369,14 +406,15 @@
 				</p>
 				<div class="visually-hidden" role="status" aria-live="polite" data-testid="move-status">{moveMessage}</div>
 				<ol class="cards" aria-label="Questions" style={presenting ? undefined : themeStyle} data-theme-mode={pageTheme ? themeMode : undefined}>
-					{#each cards as card, i (card.question)}
+					{#each shownCards as shown, i (shown.card.question)}
+						{@const card = shown.card}
 						{@const name = nameOf(card)}
 						{@const hidden = controller.charts.hidden(card.question)}
 						{@const pulse = controller.pulsing.includes(card.question)}
 						{#if presenting}
 							{#if !hidden}
 								<li data-question={card.question}>
-									<ResultCard {card} {controller} tokens={chartTokens} presenting {pulse} />
+									<ResultCard {card} {controller} tokens={chartTokens} presenting {pulse} k={presentation.k} hiddenCells={shown.hidden} />
 								</li>
 							{/if}
 						{:else}
@@ -455,9 +493,14 @@
 			{:else}
 				<p class="empty">This version has no questions to show.</p>
 			{/if}
+			{#if presenting && footer}
+				<p class="present-footer" data-testid="present-footer">{footer}</p>
+			{/if}
 		{/if}
 	{/if}
 </div>
+<!-- Outside the non-presenting branch, so starting a presentation does not unmount the open dialog. -->
+<PresentDialog bind:open={presentDialog} hasLive={!!live} liveOn={live?.on ?? false} onstart={(choice) => void present(true, choice)} />
 
 <style>
 	.results {
@@ -564,6 +607,16 @@
 		max-width: 64rem;
 		margin: 0 auto;
 		width: 100%;
+	}
+	/* The projected footer (LV4): the count and when the screen was drawn; never the delta. */
+	.present-footer {
+		max-width: 64rem;
+		width: 100%;
+		margin: 0 auto;
+		padding-bottom: var(--space-6);
+		color: var(--color-text-muted);
+		font-size: var(--text-sm);
+		font-variant-numeric: tabular-nums;
 	}
 	.exit-present {
 		position: fixed;

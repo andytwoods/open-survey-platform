@@ -181,6 +181,8 @@ export class ResultsController {
 	liveUpdate = $state<{ seq: number; at: number; responses: number; changed: string[] } | null>(null);
 	/** Cards whose numbers just changed in a live refresh (a short outline pulse). */
 	pulsing = $state<string[]>([]);
+	/** When the results on screen were received (the presentation footer's "updated hh:mm", LV4). */
+	receivedAt = $state<number | null>(null);
 	readonly latest: number;
 	#abort: AbortController | null = null;
 	#seq = 0;
@@ -200,7 +202,7 @@ export class ResultsController {
 						refresh: (live) => this.load({ live }),
 						watermark: () => this.response?.watermark ?? null,
 						busy: () => this.loading || this.dirty || this.busyCheck(),
-						policy: () => livePolicy({ presenting: presentation.active })
+						policy: () => livePolicy({ presenting: presentation.active, refresh: presentation.refresh })
 					},
 					opts
 				)
@@ -364,6 +366,7 @@ export class ResultsController {
 			return false;
 		}
 		this.response = r.data;
+		this.receivedAt = Date.now();
 		const choices = choiceVariables(r.data.cards);
 		if (choices.length || !this.choices.length) this.choices = choices;
 		if (opts.live) this.#noteLiveUpdate(before, r.data);

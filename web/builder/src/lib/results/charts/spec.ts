@@ -233,6 +233,9 @@ function donut(ctx: Ctx): Spec {
 	if (!hasAnswers(groups)) return emptySpec(ctx, 'No answers to show.');
 	const rows = categoryData(ctx.card, groups);
 	const data = rows.data.filter((d) => (d.count as number) > 0).map((d) => ({ ...d, slice: `${d.label}: ${d.text}` }));
+	// Every answered option hidden ("Hide counts below k"): nothing to draw, say so rather than
+	// an empty, unlabelled ring (an arc mark with no items has no accessible name).
+	if (!data.length && rows.data.some((d) => d.hidden)) return emptySpec(ctx, `Every option has ${hiddenText} responses: counts hidden.`);
 	const theta = { field: 'count', type: 'quantitative', stack: true };
 	const order = { field: 'order', type: 'quantitative' };
 	const view: Spec = {

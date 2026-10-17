@@ -2,7 +2,7 @@
 	import { buildSpec, CHART_LABELS, chartsFor, isChart, ResultsChart, splitsFor } from './charts';
 	import type { MenuChoice, SplitLayout, ThemeTokens } from './charts/types';
 	import ExportMenu from './export/ExportMenu.svelte';
-	import { captionFor } from './export/run';
+	import { autoCaption } from './export/model';
 	import { cardSections, DATE_UNITS, stateRows, TYPE_NAMES } from './model';
 	import type { ResultsController } from './results.svelte';
 	import ResultsTable from './ResultsTable.svelte';
@@ -17,7 +17,9 @@
 	 * truth), split layout and date period where they apply, the Vega-Lite chart (or its
 	 * Table view), statistics and the Export menu. Versions that do not combine show as
 	 * per-version facets; a grid has one chart for all rows and one table per row.
-	 * Presenting (task V6): only the title, the chart (or table) and its caption.
+	 * Presenting (task V6): only the title, the chart (or table) and its caption. A presented
+	 * card may come with small cells hidden (task LV4, LV-D5): `k` and `hiddenCells` say so,
+	 * the chart and table draw "n<k", and the caption names it.
 	 */
 	let {
 		card,
@@ -25,7 +27,9 @@
 		tokens,
 		tools,
 		presenting = false,
-		pulse = false
+		pulse = false,
+		k = null,
+		hiddenCells = 0
 	}: {
 		card: Card;
 		controller: ResultsController;
@@ -37,6 +41,10 @@
 		presenting?: boolean;
 		/** The card's numbers just changed in a live refresh (task LV3): a short outline pulse. */
 		pulse?: boolean;
+		/** On-screen suppression threshold the card was prepared with (`suppressCard`), null for exact counts. */
+		k?: number | null;
+		/** How many of its cells that hid. */
+		hiddenCells?: number;
 	} = $props();
 
 	const LAYOUT_LABELS: Record<SplitLayout, string> = {
@@ -70,17 +78,22 @@
 			? `${CHART_LABELS[chart]}${layout && layouts.length > 1 ? `, ${LAYOUT_LABELS[layout].toLowerCase()}` : ''} of ${title}. The Table view has the exact numbers.`
 			: ''
 	);
+	const hiddenLabel = $derived(`n<${k ?? 5}`);
 	const spec = $derived.by(() => {
 		if (showTable || !isChart(chart) || card.type === 'note') return null;
 		try {
 			// A plain copy: Vega clones the spec, and $state proxies cannot be cloned.
-			return buildSpec($state.snapshot(card) as Card, chart, { theme: 'app', tokens, split: layout, intervals, denominator, description });
+			return buildSpec($state.snapshot(card) as Card, chart, { theme: 'app', tokens, split: layout, intervals, denominator, description, hiddenLabel });
 		} catch {
 			return null;
 		}
 	});
-	/** Presenting: the figure's caption (as edited, or written from the question, filters and n). */
-	const caption = $derived(presenting ? captionFor(card, { filters: controller.activeFilters }, controller.exports, 0).text : '');
+	/** Presenting: the figure's caption (as edited, or written from the question, filters, n and what is hidden). */
+	const caption = $derived(
+		presenting
+			? (controller.exports.caption(card.question) ?? autoCaption(card, { filters: controller.activeFilters, k, hiddenCells }))
+			: ''
+	);
 </script>
 
 {#snippet states(s: StateCounts, label: string)}
@@ -119,7 +132,7 @@
 			{#each facets as f (f.facet ?? 'all')}
 				{#each f.sections as s (s.key)}
 					{@const name = [title, f.facet !== null ? `version ${f.facet}` : null, s.heading].filter(Boolean).join(', ')}
-					<ResultsTable unit={s.unit} type={card.type} {denominator} caption={name} />
+					<ResultsTable unit={s.unit} type={card.type} {denominator} caption={name} {hiddenLabel} />
 				{/each}
 			{/each}
 		{/if}

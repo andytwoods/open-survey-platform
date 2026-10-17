@@ -90,8 +90,7 @@ something did:
 - A hidden tab stops checking and checks again the moment you come back. If the server
   cannot be reached, the page keeps the last results and tries again, waiting longer each
   time. Losing access to the survey turns Live off and says so.
-- Live is paused in presentation mode for now (a batched, suppressed form for projected
-  screens is coming).
+- In presentation mode, Live refreshes in batches and hides small counts (below).
 
 The status line says what Live is doing: "Checking every 10 s · updated 14:32". The
 interval is the server's (`OSP_LIVE_POLL_MS`, 10 s by default). The choice is kept in the
@@ -102,12 +101,33 @@ Refresh or Show results is an ordinary `results.read`.
 
 ## Presentation mode
 
-**Present** hides everything but the cards: no top bar, filters, layout bar or per-card
-controls, just each question's title, its chart (or table) and its caption, on the theme's
-background. Press **Escape** or the floating **Exit presentation** button to come back. The
-URL gains `?present=1`, so the view can be shared with a colleague who has access or printed
-from the browser; `?layout=<id>` in the same URL opens a saved layout. **Present results**
-in the palette toggles it too.
+**Present** opens a small dialog, then hides everything but the cards: no top bar, filters,
+layout bar or per-card controls, just each question's title, its chart (or table) and its
+caption, on the theme's background, with a footer such as "142 responses · updated 14:32 ·
+live · counts below 5 hidden". Press **Escape** or the floating **Exit presentation** button
+to come back. The URL gains `?present=1`, so the view can be shared with a colleague who has
+access or printed from the browser; `?layout=<id>` in the same URL opens a saved layout.
+**Present results** in the palette enters with the defaults below.
+
+The dialog's choices, for a screen in a room:
+
+- **Live: Refresh as responses arrive**, on if Live is on. **In batches** (the default) the
+  screen redraws only when five new responses have arrived, or ten minutes have passed since
+  it last redrew, whichever comes first, so the audience never sees one person's answers
+  land. **On every change** redraws at once. The cadence travels in the URL (`?live=1` for
+  batches, `?live=every`), so a link opened on the lab screen keeps it.
+- **Small counts: Hide counts below 5 on screen**, on by default. Hidden cells read "n<5" in
+  charts and tables and the caption says how many are hidden, as in a suppressed export.
+  Switching it off shows exact counts and a warning: in a room, the person who just pressed
+  Submit can be told from the card that moved. The switch is made afresh each time and is
+  never read from the URL: a shared link always opens suppressed.
+- **Fullscreen** asks the browser for fullscreen; the first Escape then leaves fullscreen,
+  the second leaves presentation. While live, the screen is kept awake where the browser
+  allows it.
+
+The footer shows the response count and the time of the last redraw, never how many
+responses arrived since. Text answers are never shown in presentation mode. When the host
+session expires, the sign-in banner appears and Live stops.
 
 ## Exporting figures
 
