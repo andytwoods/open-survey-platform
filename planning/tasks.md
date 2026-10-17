@@ -60,11 +60,11 @@ Scaffold decisions (16 Oct 2026): stay on SvelteKit 3; `certifi` allowed at runt
 |---|---|---|---|---|---|---|---|
 | R1 | TS engine `web/engine`: plan types (first commit), state machine, effects, event log, exact decimals, randomize/node_seed port, fixture runner | web L2 | C3b | All non-pending fixtures pass; 10k-seed + hash-vector parity with Python | done | agent:R1 | |
 | R2 | `osp-runtime`: plan compiler (after R1 plan types) + session API: start, revisioned snapshot save (409), idempotent quota + submit, save modes, resume tokens | L4 | C9, R1 types | API tests: stale write 409, idempotent retries, end-only stores no answers before submit | done | agent:R2 | |
-| R3 | Participant app `web/runtime`: local-first save, lifecycle flush, resume reconciliation, focus/nav rules | web | R1 | Playwright: refresh at every step, tab kill, offline → online, zero lost answers | doing | agent:R3 | |
-| R4 | Harness: fixture scripts through `web/runtime` on device profiles + interruption tests | qa | R3 | `make harness-quick` < 5 min | todo | | |
+| R3 | Participant app `web/runtime`: local-first save, lifecycle flush, resume reconciliation, focus/nav rules | web | R1 | Playwright: refresh at every step, tab kill, offline → online, zero lost answers | done | agent:R3 | |
+| R4 | Harness: fixture scripts through `web/runtime` on device profiles + interruption tests | qa | R3 | `make harness-quick` < 5 min | done | | |
 | R5 | Pilot widgets × responsive/a11y rules (§6) | web | R1 | axe + snapshots per widget × width; keyboard tests | done | | |
 | R6 | Adversarial fixtures (§4) | fixtures | C3b | ≥ 15 new fixtures; listed in `fixtures/README.md` | done | | |
-| R7 | Researcher hooks: sandbox, events, actions, effects, adversarial gate (§7a) | web | R1, R3 | Adversarial test suite green | doing | agent:R7 | |
+| R7 | Researcher hooks: sandbox, events, actions, effects, adversarial gate (§7a) | web | R1, R3 | Adversarial test suite green | done | agent:R7 | |
 | R8 | Themes: theme model + tokens, contrast guard, runtime application, theme library storage (§6a); editor UI later | L1 + web | — | Contrast guard tests; all presets AA; tokens applied in runtime | done | agent:R8 | |
 
 ### Wave D (started 16 Oct 2026)
@@ -73,10 +73,10 @@ Scaffold decisions (16 Oct 2026): stay on SvelteKit 3; `certifi` allowed at runt
 |---|---|---|---|
 | R8b | Appearance (theme editor) view | R8 | done |
 | C2b | Spec/expr gaps: page titles, booleans, Condition, choice codes | C2 | done |
-| R2b | Publish compiles the runtime plan + serves it; fix fixture 28 invariant | R1, R2, C10 | doing |
-| B2 | Builder op client + store + patch applier + undo/redo against the real API | C10 | doing |
-| B5 | Question cards (families) on the canvas, from property schemas | B1, R5 | doing |
-| M2 | CSV/JSON export with `__state` columns + codebook | R1, R2 | doing |
+| R2b | Publish compiles the runtime plan + serves it; fix fixture 28 invariant | R1, R2, C10 | done |
+| B2 | Builder op client + store + patch applier + undo/redo against the real API | C10 | done |
+| B5 | Question cards (families) on the canvas, from property schemas | B1, R5 | done |
+| M2 | CSV/JSON export with `__state` columns + codebook | R1, R2 | done |
 
 ### Wave C (remaining)
 
@@ -90,27 +90,49 @@ Scaffold decisions (16 Oct 2026): stay on SvelteKit 3; `certifi` allowed at runt
 
 | id | title | depends on | status |
 |---|---|---|---|
-| B1 | Property schema format + 6 MVP types | C2 | todo |
-| B2 | Op client + store + patch applier + undo/redo | C10 | todo |
-| B3 | Shell + outline tree (drag + keyboard) | B2 | todo |
-| B4 | Property panel + basic field editors | B1, B2 | todo |
-| B5 | Question cards (6 families) | B1 | todo |
-| B6 | Choice list editor | B4 | todo |
-| B7 | Condition builder | B4, C1 | todo |
-| B8 | Flow editor | B3, B7 | todo |
-| B9 | JSON view with Apply | B2 | todo |
-| B10 | Diagnostics strip + export badges | B1, C6 | todo |
-| B11 | Enketo preview + debugger panel | C4, C7 | todo |
+| B1 | Property schema format + 6 MVP types | C2 | done |
+| B2 | Op client + store + patch applier + undo/redo | C10 | done |
+| B3 | Shell + outline tree (drag + keyboard) | B2 | done |
+| B4 | Property panel + basic field editors | B1, B2 | done |
+| B5 | Question cards (6 families) | B1 | done |
+| B6 | Choice list editor | B4 | done |
+| B7 | Condition builder | B4, C1 | done |
+| B8 | Flow editor | B3, B7 | done |
+| B9 | JSON view with Apply | B2 | done |
+| B10 | Diagnostics strip + export badges | B1, C6 | done |
+| B11 | Enketo preview + debugger panel | C4, C7 | done |
 
-Acceptance criteria for B1–B11: `builder-design.md` §9.
+Acceptance criteria for B1–B11: `builder-design.md` §9. B11 shipped as the own-runtime preview + debugger (Enketo dropped).
 
 ## Phase 4: MVP completion
 
 | id | title | depends on | status |
 |---|---|---|---|
-| M1 | Simulator + sampled path coverage report (`osp-qa`) | C4 | todo |
-| M2 | CSV/JSON export with state columns + codebook | C9 | todo |
-| M3 | Reproducibility package | M2, C6 | todo |
-| M4 | LSS exporter (uses spike 1 lessons: reserved names, `{q.shown}`, latched assignment) | C2 | todo |
-| M5 | Consent-before-collection, deletion, no-IP default (MVP item 12b) | C7, C9 | todo |
-| M6 | Pilot survey built end to end in the builder by the user | all | todo |
+| M1 | Simulator + sampled path coverage report (`osp-qa`) | C4 | done |
+| M2 | CSV/JSON export with state columns + codebook | C9 | done |
+| M3 | Reproducibility package | M2, C6 | done |
+| M4 | LSS exporter (uses spike 1 lessons: reserved names, `{q.shown}`, latched assignment) | C2 | done |
+| M5 | Consent-before-collection, deletion, no-IP default (MVP item 12b) | C7, C9 | done |
+| M6 | Pilot survey built end to end in the builder by the user | all | todo (needs human: Andy) |
+
+## Wave E (17 Oct 2026): separate pages, host-owned sign-in, builder gaps
+
+Plan P: `planning/pages-split.md`. From here, tasks are also posted to the HubAI board; workers push
+branch `agent/<id>` to GitHub (`origin`) with `make check` exit code and test counts in the task note.
+
+| id | title | depends on | acceptance criteria | status |
+|---|---|---|---|---|
+| P1 | Host-owned identity in osp-api (signed headers, in-process, dev); our accounts removed; migration 0007 | — | pages-split §B1–B2, D2–D6, D12 | done |
+| P2 | Builder as separate Vite pages, host config, no sign-in UI | — | pages-split §F1–F3, D1, D7–D10 | done |
+| P4 | `docs/hosting.md` + tested proxy example | P1, P2 | doc fields match code; `test_hosting_example.py` | done |
+| P5 | Trusted proxies, public origins, participant API prefix, shared nonce store (0008) | P4 | pages-split D13–D16 | done |
+| H1 | Harness runs isolated per run (shared-folder flake) | — | 12 consecutive green incl. parallel | done |
+| B13 | Question type picker + `change_question_type` | — | all 9 types addable; change type with undo, conflict check | done |
+| B14 | Canvas shows real per-type question cards | B13 | matrix shows rows × columns; live update | done |
+| R9 | Refresh straight after typing loses an answer when storage is blocked (fixture 30 `storage-blocked` fails ~1 in 20): two keepalive saves can reach the server out of order | — | Root cause confirmed from traces; fix in either arrival order without weakening two-device conflict detection (fixture 25 unchanged); decision recorded in `semantics.md` saving section + `runtime-design.md`; unit tests both sides for both orders + edit-not-append; ≥ 200 repeats of fixture 30 green incl. under parallel load; `make harness-full` green | todo |
+| B15 | Grid (matrix) rows editor in the properties panel | B14 | Add, rename (incl. translations), reorder (drag + keyboard), delete rows; ops with undo; row ids stable; deleting a row referenced by conditions warns like `delete_question` force; card updates live; e2e incl. 320 px, axe | todo |
+| B16 | Question-type toolbox in the outline pane (click or drag a type onto a page) | B13 | Click adds to the selected/last page; drag onto a page or between questions inserts there; keyboard alternative; same picker catalogue; e2e + axe | todo |
+| B17 | Top-bar targets at 320 px are 20 px (axe flags them under dialog overlays) | — | All top-bar targets ≥ 44 px at 320/375 px (overflow menu if needed); axe clean with any dialog open at 320 px; no horizontal scroll | todo |
+| B18 | Canvas cards show validator error/warning counts | B14 | Cards receive diagnostics per question; counts and click-to-property; e2e | todo |
+| R10 | Researcher hooks run in the builder Preview | R7 | Preview frame runs hooks in the same sandbox as the participant app; hook errors visible in the debugger; CSP for preview documented; e2e | todo |
+
