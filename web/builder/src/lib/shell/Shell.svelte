@@ -486,6 +486,8 @@
 					onAddQuestion={store ? (id) => addQuestion(id) : undefined}
 					exportBadges={badges}
 					onBadge={store ? (b) => void goTo(ownerOf(store.survey, b.pointer)) : undefined}
+					diagnostics={store?.diagnostics ?? []}
+					onDiagnostic={store ? (d) => void goTo(ownerOf(store.survey, d.pointer)) : undefined}
 				/>
 			{/snippet}
 			{#snippet jsonView()}

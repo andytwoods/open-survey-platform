@@ -7,7 +7,9 @@ import {
 	ownerOf,
 	reasonOf,
 	stripItems,
-	type ExportDiagnostic
+	validationByOwner,
+	type ExportDiagnostic,
+	type ValidationDiagnostic
 } from './model';
 
 const SURVEY = {
@@ -159,5 +161,36 @@ describe('strip items and counts', () => {
 		const [item] = stripItems(SURVEY, [], [err]);
 		expect(item).toMatchObject({ kind: 'export', level: 'error', message: 'survey did not parse' });
 		expect(item.owner.id).toBe('q1');
+	});
+});
+
+describe('validationByOwner (B18)', () => {
+	const vd = (pointer: string, severity: ValidationDiagnostic['severity'] = 'error'): ValidationDiagnostic => ({
+		severity,
+		code: 'c',
+		message: pointer,
+		pointer
+	});
+
+	it('groups by the innermost owner, keeping the validator order', () => {
+		const m = validationByOwner(SURVEY, [
+			vd('/blocks/0/pages/0/items/1/label', 'warning'),
+			vd('/blocks/0/pages/0/items/0/choices/1/value'),
+			vd('/blocks/0/pages/0/items/1/label/fr'),
+			vd('/blocks/0/pages/0/title'),
+			vd('/metadata/languages')
+		]);
+		expect(m.get('q2')?.map((d) => d.severity)).toEqual(['warning', 'error']);
+		expect(m.get('q1')).toHaveLength(1);
+		expect(m.get('p1')).toHaveLength(1);
+		expect(m.get(SURVEY_ID)).toHaveLength(1);
+	});
+
+	it('tolerates junk', () => {
+		expect(validationByOwner(null, []).size).toBe(0);
+		expect(validationByOwner(SURVEY, 'x' as never).size).toBe(0);
+		const m = validationByOwner(SURVEY, [null, 3, { severity: 'error' }] as never);
+		expect(m.get(SURVEY_ID)).toHaveLength(1);
+		expect(validationByOwner(SURVEY, [vd('/blocks/9/pages/0/items/0')]).get(SURVEY_ID)).toHaveLength(1);
 	});
 });

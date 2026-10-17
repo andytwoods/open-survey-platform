@@ -29,6 +29,7 @@
 		diagnostics,
 		lang = 'en',
 		onselect,
+		ondiagnostic,
 		exportBadges,
 		preview,
 		notice,
@@ -48,6 +49,14 @@
 	const required = $derived(question?.required === true && fam !== 'note');
 	const badges = $derived(badgesFor(question, schema, diagnostics));
 	const hasBadges = $derived(badges.length > 0 || !!exportBadges);
+	// Count badges (B18) are buttons when the caller can go to the property; the messages
+	// are their accessible description and tooltip.
+	const severityOf = (kind: string) => (kind === 'errors' ? 'error' : kind === 'warnings' ? 'warning' : null);
+	const messages = (severity: string) =>
+		(Array.isArray(diagnostics) ? diagnostics : [])
+			.filter((d) => d?.severity === severity)
+			.map((d) => String(d.message ?? ''))
+			.join(' ');
 
 	function select() {
 		onselect?.(String(question?.id ?? ''));
@@ -86,10 +95,25 @@
 	{#if hasBadges}
 		<ul id="{uid}-badges" class="badges">
 			{#each badges as b (b.kind)}
+				{@const severity = severityOf(b.kind)}
+				{#if severity && ondiagnostic}
+					{@const why = messages(severity)}
+					<li class="badge count" data-badge={b.kind} data-tone={b.tone}>
+						<button
+							type="button"
+							class="count-btn"
+							title={why}
+							aria-describedby="{uid}-{b.kind}-why"
+							onclick={() => ondiagnostic(severity)}>{b.label}</button
+						>
+						<span id="{uid}-{b.kind}-why" class="osp-visually-hidden">{why}</span>
+					</li>
+				{:else}
 				<li class="badge" data-badge={b.kind} data-tone={b.tone}>
 					<span class="badge-label">{b.label}{#if b.detail}<span class="osp-visually-hidden">:</span>{/if}</span>
 					{#if b.detail}<code class="badge-detail">{b.detail}</code>{/if}
 				</li>
+				{/if}
 			{/each}
 			{@render exportBadges?.()}
 		</ul>
@@ -235,6 +259,24 @@
 		border-color: var(--color-warning);
 		color: var(--color-warning);
 		font-weight: var(--weight-medium);
+	}
+	.badges > li.count {
+		position: relative;
+		z-index: 2; /* above the stretched select button */
+		padding: 0;
+	}
+	.count-btn {
+		padding: 0 var(--space-2);
+		border: 0;
+		border-radius: inherit;
+		background: transparent;
+		color: inherit;
+		font: inherit;
+		cursor: pointer;
+	}
+	.count-btn:focus-visible {
+		outline: 2px solid var(--color-focus);
+		outline-offset: 2px;
 	}
 	.badge-label {
 		font-weight: var(--weight-medium);

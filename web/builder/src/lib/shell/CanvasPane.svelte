@@ -3,7 +3,7 @@
 	import QuestionCard from '../cards/QuestionCard.svelte';
 	import { choiceListsOf } from '../choices/model';
 	import ExportBadges from '../diagnostics/ExportBadges.svelte';
-	import type { ExportBadge } from '../diagnostics/model';
+	import { validationByOwner, type ExportBadge, type ValidationDiagnostic } from '../diagnostics/model';
 	import { defaultLanguage, type OutlineNode } from '../model/outline';
 	import { schemaFor } from '../properties/schemas.svelte';
 	import type { PropertySchemasDoc } from '../properties/types';
@@ -28,7 +28,9 @@
 		mock = false,
 		onAddQuestion,
 		exportBadges,
-		onBadge
+		onBadge,
+		diagnostics = [],
+		onDiagnostic
 	}: {
 		pages: OutlineNode[];
 		selection: SelectionStore;
@@ -43,6 +45,10 @@
 		exportBadges?: ReadonlyMap<string, readonly ExportBadge[]>;
 		/** A badge was clicked: go to the property it is about. */
 		onBadge?: (badge: ExportBadge) => void;
+		/** The validator's diagnostics for `survey` (B18): each card shows its own counts. */
+		diagnostics?: readonly ValidationDiagnostic[];
+		/** A card's error or warning count was clicked: go to its first such diagnostic. */
+		onDiagnostic?: (diagnostic: ValidationDiagnostic) => void;
 	} = $props();
 
 	const cardId = (id: string) => `card-${id}`;
@@ -50,6 +56,12 @@
 	const questions = $derived(canvasQuestions(survey));
 	const choiceLists = $derived(choiceListsOf(survey));
 	const lang = $derived(defaultLanguage(survey));
+	const byQuestion = $derived(validationByOwner(survey, diagnostics));
+
+	function goToFirst(id: string, severity: 'error' | 'warning') {
+		const d = byQuestion.get(id)?.find((x) => x.severity === severity);
+		if (d) onDiagnostic?.(d);
+	}
 	const kind = (n: OutlineNode) => (n.type === 'page' ? 'Page' : n.type === 'block' ? 'Block' : '');
 
 	$effect(() => {
@@ -117,6 +129,8 @@
 										selected={selection.id === question.id}
 										{lang}
 										{choiceLists}
+										diagnostics={byQuestion.get(question.id) ?? null}
+										ondiagnostic={onDiagnostic ? (s) => goToFirst(question.id, s) : undefined}
 										data-pane-focus={focusMark(question.id)}
 										onselect={() => selection.select(question.id)}
 									/>

@@ -147,6 +147,27 @@ export function exportBadges(
 	return out;
 }
 
+// --- validation per card (B18) ---------------------------------------------------------
+
+/**
+ * Validator diagnostics grouped by the block/page/question they land in (`SURVEY_ID` for
+ * the rest), in the validator's order, so each card can show its own counts.
+ */
+export function validationByOwner(
+	survey: unknown,
+	diagnostics: readonly ValidationDiagnostic[]
+): Map<string, ValidationDiagnostic[]> {
+	const out = new Map<string, ValidationDiagnostic[]>();
+	for (const d of Array.isArray(diagnostics) ? diagnostics : []) {
+		if (!isObj(d as unknown)) continue;
+		const { id } = ownerOf(survey, typeof d.pointer === 'string' ? d.pointer : '');
+		let list = out.get(id);
+		if (!list) out.set(id, (list = []));
+		list.push(d);
+	}
+	return out;
+}
+
 // --- strip items and counts ------------------------------------------------------------
 
 export type ItemKind = 'error' | 'warning' | 'info' | 'export';
