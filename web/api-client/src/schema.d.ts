@@ -2171,6 +2171,12 @@ export interface components {
              */
             cards?: components["schemas"]["CardLayout"][];
             export?: components["schemas"]["LayoutExport"];
+            /**
+             * Live
+             * @description Open with Live on: the page polls the watermark and refreshes as responses arrive (task LV3, planning/live-results.md). Layouts saved before it open with Live off.
+             * @default false
+             */
+            live: boolean;
             query?: components["schemas"]["LayoutQuery"];
             /**
              * Schemaversion

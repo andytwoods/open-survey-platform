@@ -45,6 +45,7 @@ FULL = {
     "showNotes": True,
     "theme": {"kind": "library", "id": "th_01HZX"},
     "export": {"widthMm": 180, "dpi": 600, "hideCountsBelow": 5, "bundle": "png"},
+    "live": True,
 }
 
 
@@ -67,6 +68,7 @@ def test_a_full_layout_round_trips():
     assert out["cards"][1]["bins"] == {"width": 5.0, "count": None, "unit": None}
     assert out["theme"] == {"kind": "library", "id": "th_01HZX"}
     assert out["export"] == {"widthMm": 180, "dpi": 600, "hideCountsBelow": 5, "bundle": "png"}
+    assert out["live"] is True
     assert validate_settings(out) == out  # idempotent
 
 
@@ -75,6 +77,7 @@ def test_theme_and_export_default_to_the_app_colours_and_v4s_defaults():
     out = validate_settings({"cards": [{"question": "q1"}]})
     assert out["theme"] == {"kind": "app", "id": None}
     assert out["export"] == {"widthMm": 85, "dpi": 300, "hideCountsBelow": None, "bundle": "all"}
+    assert out["live"] is False  # a layout saved before LV3 opens with Live off
     for kind in ("app", "survey"):
         assert validate_settings({"theme": {"kind": kind}})["theme"] == {"kind": kind, "id": None}
     assert validate_settings({"theme": {"kind": "preset", "id": "warm"}})["theme"]["id"] == "warm"
@@ -113,6 +116,8 @@ def test_theme_and_export_default_to_the_app_colours_and_v4s_defaults():
         ({"cards": [{"question": "q"}, {"question": "q"}]}, ""),  # listed twice
         ({"cards": [{"question": f"q{i}"} for i in range(501)]}, "/cards"),
         ({"showNotes": "yes"}, "/showNotes"),
+        ({"live": "on"}, "/live"),
+        ({"live": 1}, "/live"),
         ({"theme": {"kind": "rainbow"}}, "/theme/kind"),
         ({"theme": {"kind": "app", "id": "x"}}, "/theme"),  # app and survey take no id
         ({"theme": {"kind": "library"}}, "/theme"),  # presets and library themes need one
