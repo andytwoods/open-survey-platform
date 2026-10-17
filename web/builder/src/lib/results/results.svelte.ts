@@ -15,6 +15,7 @@ import {
 	choiceVariables,
 	cloneFilters,
 	defaultFilters,
+	type CardBins,
 	describeFilters,
 	filterProblems,
 	sameFilters,
@@ -23,7 +24,16 @@ import {
 	type ChoiceVariable,
 	type ResultsFilters
 } from './model';
-import type { ResultsExportRecord, ResultsExportRequest, ResultsQuery, ResultsResponse, TextPage } from './types';
+import { chartNotices, inOrder, moved, type ChartNotice, type PageState } from './layouts';
+import { apiLayouts, type LayoutSource } from './layouts-api';
+import type {
+	Card,
+	ResultsExportRecord,
+	ResultsExportRequest,
+	ResultsQuery,
+	ResultsResponse,
+	TextPage
+} from './types';
 
 export type Fetched<T> = { ok: true; data: T } | { ok: false; status: number; message: string; aborted?: boolean };
 
@@ -38,6 +48,8 @@ export interface ResultsSource {
 	recordExport(body: ResultsExportRequest): Promise<Fetched<ResultsExportRecord>>;
 	/** The platform's name and version, for export manifests. */
 	platform?(): Promise<{ name: string; version: string }>;
+	/** Saved layouts (task V5b); without it the page has no layout bar. */
+	layouts?: LayoutSource;
 }
 
 function failed(status: number, error: unknown, fallback: string): Fetched<never> {
@@ -96,7 +108,8 @@ export function apiSource(surveyId: string): ResultsSource {
 				/* fall through */
 			}
 			return { name: 'Open Survey Platform', version: 'unknown' };
-		}
+		},
+		layouts: apiLayouts(surveyId)
 	};
 }
 
@@ -116,14 +129,69 @@ export class ResultsController {
 	error = $state<{ status: number; message: string } | null>(null);
 	/** The choice variables of the latest response (the filter and split options). */
 	choices = $state<ChoiceVariable[]>([]);
+	/** Display order (V5b): questions listed here first, the rest in survey order. */
+	order = $state<string[]>([]);
+	/** Show note items (a saved layout's "showNotes"). */
+	showNotes = $state(false);
+	readonly latest: number;
 	#abort: AbortController | null = null;
 	#seq = 0;
 	#timer: ReturnType<typeof setInterval> | null = null;
 
 	constructor(source: ResultsSource, publishedVersions: number) {
 		this.source = source;
+		this.latest = publishedVersions;
 		this.draft = defaultFilters(publishedVersions);
 		this.applied = cloneFilters(this.draft);
+	}
+
+	/** The response's cards in display order (notes only when "show notes" is on). */
+	get cards(): Card[] {
+		const cards = (this.response?.cards ?? []).filter((c) => c.type !== 'note' || this.showNotes);
+		return inOrder(cards, this.order);
+	}
+
+	/** The response's questions in survey order (what a saved layout lists). */
+	get questions(): string[] {
+		return (this.response?.cards ?? []).map((c) => c.question);
+	}
+
+	/** Cards whose chosen chart (from a layout) does not suit them, and what they show instead. */
+	get chartNotices(): ChartNotice[] {
+		return chartNotices(this.response?.cards ?? [], this.charts.all);
+	}
+
+	/** Move a card to position `to` of the display order (drag or keyboard). */
+	move(question: string, to: number) {
+		this.order = moved(
+			this.cards.map((c) => c.question),
+			question,
+			to
+		);
+	}
+
+	/** What a saved layout would hold now (the applied filters, not the draft). */
+	pageState(): PageState {
+		return {
+			filters: cloneFilters(this.applied),
+			cards: this.charts.snapshot(),
+			captions: { ...this.exports.captions },
+			order: [...this.order],
+			showNotes: this.showNotes
+		};
+	}
+
+	/** Open a layout's state and fetch. Bins need the card list, so they may re-ask once. */
+	async restore(state: PageState): Promise<boolean> {
+		this.draft = cloneFilters(state.filters);
+		this.applied = cloneFilters(state.filters);
+		this.charts.restore(state.cards);
+		this.exports.restoreCaptions(state.captions);
+		this.order = [...state.order];
+		this.showNotes = state.showNotes;
+		const ok = await this.load({ allCards: true });
+		if (ok && this.query().cards) return this.load();
+		return ok;
 	}
 
 	get problems() {
@@ -167,7 +235,7 @@ export class ResultsController {
 
 	/** The query the applied filters and chart choices make. */
 	query(): ResultsQuery {
-		return toQuery(this.applied, this.response ? cardRequests(this.response.cards, this.charts.units) : undefined);
+		return toQuery(this.applied, this.response ? cardRequests(this.response.cards, this.charts.bins as Record<string, CardBins>) : undefined);
 	}
 
 	/** Apply the draft filters and fetch. False when the draft has a problem. */
@@ -195,7 +263,8 @@ export class ResultsController {
 		if (JSON.stringify(this.query()) !== JSON.stringify(before)) void this.load();
 	}
 
-	async load(): Promise<boolean> {
+	/** Fetch. `allCards`: ask without a card list (every question), e.g. after the versions change. */
+	async load(opts: { allCards?: boolean } = {}): Promise<boolean> {
 		this.#abort?.abort();
 		const abort = new AbortController();
 		this.#abort = abort;
@@ -203,7 +272,9 @@ export class ResultsController {
 		this.loading = true;
 		this.error = null;
 		this.#startClock();
-		const r = await this.source.query(this.query(), abort.signal);
+		const body = this.query();
+		if (opts.allCards) delete body.cards;
+		const r = await this.source.query(body, abort.signal);
 		if (seq !== this.#seq) return false;
 		this.loading = false;
 		this.#stopClock();

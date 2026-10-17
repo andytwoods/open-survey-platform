@@ -8,6 +8,7 @@
 	import StatsTable from './StatsTable.svelte';
 	import TextAnswers from './TextAnswers.svelte';
 	import type { Card, StateCounts } from './types';
+	import type { Snippet } from 'svelte';
 
 	/**
 	 * One question's results (tasks V2, V4): its text and variable, warnings, response-state
@@ -19,12 +20,15 @@
 	let {
 		card,
 		controller,
-		tokens
+		tokens,
+		tools
 	}: {
 		card: Card;
 		controller: ResultsController;
 		/** The app's light/dark design tokens: palettes are baked into specs, so a change rebuilds. */
 		tokens: ThemeTokens;
+		/** The page's per-card tools (move, hide: task V5b), beside the title. */
+		tools?: Snippet;
 	} = $props();
 
 	const LAYOUT_LABELS: Record<SplitLayout, string> = {
@@ -82,7 +86,10 @@
 
 <article class="result-card" id="result-{card.question}" aria-labelledby="{uid}-h" data-type={card.type}>
 	<header>
-		<h3 id="{uid}-h">{title}</h3>
+		<div class="title-row">
+			<h3 id="{uid}-h">{title}</h3>
+			{#if tools}<div class="tools">{@render tools()}</div>{/if}
+		</div>
 		<p class="meta">
 			<code>{card.name}</code>
 			<span>{TYPE_NAMES[card.type]}</span>
@@ -212,6 +219,22 @@
 		margin: 0;
 		font-size: var(--text-md);
 		overflow-wrap: anywhere;
+	}
+	.title-row {
+		display: flex;
+		align-items: flex-start;
+		justify-content: space-between;
+		gap: var(--space-2);
+		min-width: 0;
+	}
+	.title-row h3 {
+		flex: 1 1 auto;
+		min-width: 0;
+	}
+	.tools {
+		display: flex;
+		flex: 0 0 auto;
+		gap: var(--space-1);
 	}
 	h4 {
 		margin: 0;

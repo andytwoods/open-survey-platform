@@ -1,6 +1,12 @@
 <script lang="ts">
+	import Eye from '@lucide/svelte/icons/eye';
+	import EyeOff from '@lucide/svelte/icons/eye-off';
+	import GripVertical from '@lucide/svelte/icons/grip-vertical';
 	import { Button, theme } from '@osp/ui-components';
-	import { onDestroy, onMount } from 'svelte';
+	import { onDestroy, onMount, tick } from 'svelte';
+	import LayoutBar from './LayoutBar.svelte';
+	import { LayoutsController } from './layouts.svelte';
+	import type { Card } from './types';
 	import { readTokens } from './charts/theme';
 	import type { ThemeTokens } from './charts/types';
 	import ExportAll from './export/ExportAll.svelte';
@@ -31,7 +37,59 @@
 	// The source and version count are fixed for the page's life (a new publish reloads).
 	// svelte-ignore state_referenced_locally
 	const controller = new ResultsController(source ?? apiSource(surveyId), publishedVersions);
+	/** Saved layouts (V5b), when the source offers them. */
+	const layouts = controller.source.layouts ? new LayoutsController(controller.source.layouts, controller) : null;
 	const conditions = $derived(conditionVariables(survey));
+	const cards = $derived(controller.cards);
+	const notices = $derived(controller.chartNotices);
+
+	// -- reordering (drag the handle, or focus it and use the arrow keys) --------------------
+	const uid = $props.id();
+	let dragging = $state<string | null>(null);
+	let over = $state<string | null>(null);
+	let moveMessage = $state('');
+	const nameOf = (c: Card) => c.label || c.name;
+
+	async function moveTo(question: string, to: number, refocus: boolean) {
+		const n = cards.length;
+		const target = Math.max(0, Math.min(n - 1, to));
+		if (cards[target]?.question === question) return;
+		controller.move(question, target);
+		const card = cards.find((c) => c.question === question);
+		moveMessage = `${card ? nameOf(card) : question} moved to position ${target + 1} of ${n}.`;
+		if (refocus) {
+			await tick();
+			document.querySelector<HTMLElement>(`[data-move="${CSS.escape(question)}"]`)?.focus();
+		}
+	}
+
+	function onHandleKey(e: KeyboardEvent, question: string, i: number) {
+		const to =
+			e.key === 'ArrowUp' ? i - 1 : e.key === 'ArrowDown' ? i + 1 : e.key === 'Home' ? 0 : e.key === 'End' ? cards.length - 1 : null;
+		if (to === null) return;
+		e.preventDefault();
+		void moveTo(question, to, true);
+	}
+
+	function onDrop(e: DragEvent, target: string) {
+		e.preventDefault();
+		const q = dragging ?? e.dataTransfer?.getData('text/plain');
+		dragging = null;
+		over = null;
+		if (!q || q === target) return;
+		void moveTo(
+			q,
+			cards.findIndex((c) => c.question === target),
+			false
+		);
+	}
+
+	function hide(question: string, hidden: boolean) {
+		controller.charts.setHidden(question, hidden);
+		void tick().then(() =>
+			document.querySelector<HTMLElement>(`[data-${hidden ? 'show' : 'hide'}="${CSS.escape(question)}"]`)?.focus()
+		);
+	}
 	const response = $derived(controller.response);
 	const active = $derived(controller.activeFilters);
 	const slow = $derived(controller.loading && controller.elapsed >= 1);
@@ -62,7 +120,10 @@
 	const narrow = $derived(innerWidth < 720);
 
 	onMount(() => {
-		if (publishedVersions > 0) void controller.load();
+		if (publishedVersions === 0) return;
+		// The survey's default layout opens first; without one (or if the list fails), the defaults.
+		if (layouts) void layouts.init().then((opened) => (opened ? undefined : controller.load()));
+		else void controller.load();
 	});
 	onDestroy(() => controller.dispose());
 </script>
@@ -83,6 +144,7 @@
 			Nothing is published yet. Publish the survey and collect responses to see results here.
 		</p>
 	{:else}
+		{#if layouts}<LayoutBar {layouts} />{/if}
 		<FilterBar {controller} {conditions} {publishedVersions} {narrow} />
 
 		<section class="summary" aria-labelledby="active-filters-h">
@@ -135,12 +197,91 @@
 			</ul>
 		{/if}
 
+		{#if notices.length}
+			<ul class="warnings" aria-label="Layout notices" data-testid="layout-notices">
+				{#each notices as n (n.question)}<li>{n.message}</li>{/each}
+			</ul>
+		{/if}
+
 		{#if response}
-			{#if response.cards.length}
+			{#if cards.length}
+				<p id="{uid}-move-help" class="visually-hidden">
+					Drag the handle, or focus it and press the up or down arrow key, to move the card. Home and End move it
+					to the start or end.
+				</p>
+				<div class="visually-hidden" role="status" aria-live="polite" data-testid="move-status">{moveMessage}</div>
 				<ol class="cards" aria-label="Questions">
-					{#each response.cards as card (card.question)}
-						<li>
-							<ResultCard {card} {controller} {tokens} />
+					{#each cards as card, i (card.question)}
+						{@const name = nameOf(card)}
+						{@const hidden = controller.charts.hidden(card.question)}
+						<li
+							class:over={over === card.question && dragging !== card.question}
+							class:dragging={dragging === card.question}
+							data-question={card.question}
+							ondragover={(e) => {
+								if (!dragging) return;
+								e.preventDefault();
+								over = card.question;
+							}}
+							ondragleave={() => {
+								if (over === card.question) over = null;
+							}}
+							ondrop={(e) => onDrop(e, card.question)}
+						>
+							{#snippet handle()}
+								<button
+									type="button"
+									class="tool handle"
+									draggable="true"
+									data-move={card.question}
+									aria-label="Move {name}"
+									aria-describedby="{uid}-move-help"
+									title="Drag, or use the arrow keys, to move"
+									onkeydown={(e) => onHandleKey(e, card.question, i)}
+									ondragstart={(e) => {
+										dragging = card.question;
+										e.dataTransfer?.setData('text/plain', card.question);
+										if (e.dataTransfer) e.dataTransfer.effectAllowed = 'move';
+									}}
+									ondragend={() => {
+										dragging = null;
+										over = null;
+									}}
+								>
+									<GripVertical size={16} aria-hidden="true" />
+								</button>
+							{/snippet}
+							{#if hidden}
+								<div class="hidden-card" data-testid="hidden-card">
+									{@render handle()}
+									<span class="hidden-name"><span class="visually-hidden">Hidden: </span>{name}</span>
+									<button
+										type="button"
+										class="tool show"
+										data-show={card.question}
+										aria-label="Show {name}"
+										onclick={() => hide(card.question, false)}
+									>
+										<Eye size={16} aria-hidden="true" /> Show
+									</button>
+								</div>
+							{:else}
+								<ResultCard {card} {controller} {tokens}>
+									{#snippet tools()}
+										{@render handle()}
+										<button
+											type="button"
+											class="tool"
+											data-hide={card.question}
+											aria-label="Hide {name}"
+											title="Hide this card"
+											onclick={() => hide(card.question, true)}
+										>
+											<EyeOff size={16} aria-hidden="true" />
+										</button>
+									{/snippet}
+								</ResultCard>
+							{/if}
 						</li>
 					{/each}
 				</ol>
@@ -257,6 +398,52 @@
 	}
 	.cards > li {
 		min-width: 0;
+		border-radius: var(--radius-md);
+	}
+	.cards > li.over {
+		outline: 2px dashed var(--color-accent);
+		outline-offset: 2px;
+	}
+	.cards > li.dragging {
+		opacity: 0.6;
+	}
+	.hidden-card {
+		display: flex;
+		align-items: center;
+		gap: var(--space-2);
+		padding: var(--space-1) var(--space-2);
+		border: 1px dashed var(--color-border-strong);
+		border-radius: var(--radius-md);
+		color: var(--color-text-muted);
+		font-size: var(--text-sm);
+	}
+	.hidden-name {
+		flex: 1 1 auto;
+		min-width: 0;
+		overflow-wrap: anywhere;
+	}
+	.tool {
+		display: inline-flex;
+		align-items: center;
+		justify-content: center;
+		gap: var(--space-1);
+		min-width: 2.75rem;
+		min-height: 2.75rem;
+		padding: 0 var(--space-2);
+		border: 1px solid var(--color-border);
+		border-radius: var(--radius-md);
+		background: var(--color-surface-raised);
+		color: var(--color-text);
+		font: inherit;
+		font-size: var(--text-sm);
+		cursor: pointer;
+	}
+	.tool.handle {
+		cursor: grab;
+	}
+	.tool:focus-visible {
+		outline: 2px solid var(--color-focus);
+		outline-offset: 1px;
 	}
 	.visually-hidden {
 		position: absolute;

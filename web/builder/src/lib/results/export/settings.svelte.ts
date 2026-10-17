@@ -37,4 +37,14 @@ export class ExportSettings {
 		delete next[question];
 		this.#captions = next;
 	}
+
+	/** The edited captions (a saved layout keeps them, task V5b). */
+	get captions(): Readonly<Record<string, string>> {
+		return this.#captions;
+	}
+
+	/** Replace the edited captions (a layout was opened). Width, DPI and k stay as they are. */
+	restoreCaptions(captions: Readonly<Record<string, string>>) {
+		this.#captions = { ...captions };
+	}
 }

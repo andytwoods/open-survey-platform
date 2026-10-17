@@ -177,7 +177,8 @@ export async function exportCard(card: Card, page: ExportPage, s: ExportSettings
 
 /** Every card's SVG, PNG, CSV and spec plus one manifest, as a store-only ZIP. Audited first. */
 export async function exportAll(page: ExportPage, s: ExportSettingsLike, progress?: (done: number, total: number) => void): Promise<FileOut> {
-	const cards = page.response.cards.filter((c) => c.type !== 'note');
+	// Hidden cards (V5b) are left out, as they are on the page.
+	const cards = page.response.cards.filter((c) => c.type !== 'note' && !page.charts.hidden(c.question));
 	const refused = await page.record({
 		cards: cards.map((c) => c.question),
 		formats: ['svg', 'png', 'csv', 'vega-lite', 'manifest', 'zip'],

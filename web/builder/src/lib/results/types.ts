@@ -25,6 +25,14 @@ export type SplitInfo = S['SplitInfo'];
 export type ResultsExportRequest = S['ResultsExportRequest'];
 export type ResultsExportRecord = S['ResultsExportRecord'];
 
+// Saved layouts (task V5): settings only, never data.
+export type LayoutSettings = S['LayoutSettings'];
+export type LayoutQuery = S['LayoutQuery'];
+export type CardLayout = S['CardLayout'];
+export type LayoutBins = S['LayoutBins'];
+export type ResultsLayout = S['ResultsLayoutOut'];
+export type ResultsLayoutList = S['ResultsLayoutList'];
+
 /** What one table or chart shows: a card, one version facet of it, or one matrix row. */
 export interface ResultUnit {
 	groups: Group[];
