@@ -621,6 +621,7 @@ export class Session {
 			(e) => e.status === 401 || e.status === 404 // already gone
 		);
 		this.state = E.decline(this.state);
+		this.rec.snapshot = E.snapshot(this.state); // in memory only: finish() deletes the copy
 		await this.finish();
 	}
 
