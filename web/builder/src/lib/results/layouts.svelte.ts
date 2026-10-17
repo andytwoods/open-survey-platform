@@ -73,15 +73,18 @@ export class LayoutsController {
 		this.status = message;
 	}
 
-	/** List the layouts and open the default. False when no layout was opened (load defaults). */
-	async init(): Promise<boolean> {
+	/**
+	 * List the layouts and open `preferred` (a `?layout=` id from a shared link, task V6) or
+	 * the default. False when no layout was opened (load defaults).
+	 */
+	async init(preferred: string | null = null): Promise<boolean> {
 		const r = await this.source.list();
 		if (!r.ok) {
 			this.#fail(r.status, r.body, { action: 'loaded' });
 			return false;
 		}
 		this.#setList(r.data);
-		const def = r.data.layouts.find((l) => l.id === r.data.defaultLayoutId);
+		const def = r.data.layouts.find((l) => l.id === preferred) ?? r.data.layouts.find((l) => l.id === r.data.defaultLayoutId);
 		if (!def) return false;
 		await this.open(def.id);
 		return true;

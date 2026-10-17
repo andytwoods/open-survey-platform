@@ -281,6 +281,53 @@ describe('saved layouts on the Results page', () => {
 		await waitFor(() => expect(titles()[0]).toBe('Grid'));
 	});
 
+	it('keeps the theme and the Export all bundle (V6): saved, restored, and a deleted lab theme falls back with a notice', async () => {
+		const themed = emptyState(1);
+		themed.theme = { kind: 'preset', id: 'warm' };
+		themed.exports = { widthMm: 180, dpi: 600, k: 5, bundle: 'svg' };
+		const gone = emptyState(1);
+		gone.theme = { kind: 'library', id: 'deleted' };
+		const { calls } = await setup([
+			{ name: 'Warm', settings: toSettings(themed, 1, QUESTIONS), isDefault: true },
+			{ name: 'Gone', settings: toSettings(gone, 1, QUESTIONS) }
+		]);
+		await waitFor(() => expect(picker().value).not.toBe(''));
+		const themePicker = screen.getByLabelText('Theme') as HTMLSelectElement;
+		expect(themePicker.value).toBe('preset:warm');
+		expect(screen.getByRole('list', { name: 'Questions' }).getAttribute('style')).toContain('--color-accent: #a3431a');
+		expect(unsaved()).toBe(false);
+
+		// The export settings came back too.
+		await fireEvent.click(screen.getByRole('button', { name: 'Export all' }));
+		const dialog = await screen.findByRole('dialog', { name: 'Export all figures' });
+		expect((within(dialog).getByRole('radio', { name: /SVG only/ }) as HTMLInputElement).checked).toBe(true);
+		expect((within(dialog).getByRole('radio', { name: /Double column, 180 mm/ }) as HTMLInputElement).checked).toBe(true);
+		expect((within(dialog).getByRole('checkbox', { name: 'Hide counts below k' }) as HTMLInputElement).checked).toBe(true);
+		expect(within(dialog).queryByRole('radio', { name: '600 DPI' })).toBeNull(); // no PNG in an SVG-only bundle
+		expect(within(dialog).getByTestId('export-all-note').textContent).toContain('each as SVG');
+		expect(within(dialog).getByTestId('export-all-note').textContent).toContain('Colours: Preset “Warm” (light colours');
+		await fireEvent.click(within(dialog).getByRole('radio', { name: /PNG only/ }));
+		expect((within(dialog).getByRole('radio', { name: '600 DPI' }) as HTMLInputElement).checked).toBe(true);
+		await fireEvent.click(within(dialog).getByRole('button', { name: 'Done' }));
+		await waitFor(() => expect(screen.queryByRole('dialog')).toBeNull());
+		expect(unsaved()).toBe(true); // the bundle changed
+
+		// A theme change is saved with the layout.
+		await fireEvent.change(themePicker, { target: { value: 'survey' } });
+		await fireEvent.click(screen.getByRole('button', { name: 'Save layout' }));
+		await waitFor(() => expect(unsaved()).toBe(false));
+		const saved = calls.filter((c) => c.op === 'update').at(-1)!.body as { settings: LayoutSettings };
+		expect(saved.settings.theme).toEqual({ kind: 'survey', id: null });
+		expect(saved.settings.export).toEqual({ widthMm: 180, dpi: 600, hideCountsBelow: 5, bundle: 'png' });
+
+		// A layout naming a lab theme that no longer exists: app colours, and a notice.
+		const goneId = [...picker().options].find((o) => o.textContent === 'Gone')!.value;
+		await fireEvent.change(picker(), { target: { value: goneId } });
+		await waitFor(() => expect(screen.getByTestId('theme-notice').textContent).toContain('no longer in the lab library'));
+		expect(screen.getByRole('list', { name: 'Questions' }).getAttribute('style')).toBeNull();
+		expect(unsaved()).toBe(false);
+	});
+
 	it('passes axe with the layout bar, a notice and a hidden card', async () => {
 		const { t } = await setup([{ name: 'Paper', settings: paperLayout(), isDefault: true }]);
 		await screen.findByTestId('layout-notices');

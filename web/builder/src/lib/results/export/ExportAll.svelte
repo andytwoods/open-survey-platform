@@ -3,14 +3,23 @@
 	import { Button, Dialog } from '@osp/ui-components';
 	import type { ResultsController } from '../results.svelte';
 	import { smallCells, suppressCard, WARN_BELOW } from './model';
-	import { download, exportAll } from './run';
+	import { bundleFormats, download, exportAll } from './run';
+	import type { Bundle } from './settings.svelte';
 	import SettingsFields from './SettingsFields.svelte';
 
 	/**
-	 * "Export all" (task V4): one ZIP with every card's SVG, PNG, CSV and Vega-Lite spec at
-	 * the shared settings (captions as edited per card) and one manifest.json.
+	 * "Export all" (tasks V4, V6): one ZIP with every shown card's figure files at the
+	 * shared settings (captions as edited per card) and one manifest.json. The bundle is
+	 * SVG only, PNG only (at the size and DPI chosen) or everything (SVG, PNG, CSV and the
+	 * Vega-Lite spec); a saved layout keeps the choice.
 	 */
 	let { controller }: { controller: ResultsController } = $props();
+
+	const BUNDLES: { id: Bundle; label: string; hint: string }[] = [
+		{ id: 'svg', label: 'SVG only', hint: 'Vector images sized in mm' },
+		{ id: 'png', label: 'PNG only', hint: 'Images at the width and resolution below' },
+		{ id: 'all', label: 'Everything', hint: 'SVG, PNG, CSV and the Vega-Lite spec per question' }
+	];
 
 	let open = $state(false);
 	let busy = $state(false);
@@ -18,11 +27,11 @@
 	let error = $state<string | null>(null);
 	let done = $state<string | null>(null);
 
+	const uid = $props.id();
 	const s = $derived(controller.exports);
-	const cards = $derived(
-		(controller.response?.cards ?? []).filter((c) => c.type !== 'note' && !controller.charts.hidden(c.question))
-	);
+	const cards = $derived(controller.cards.filter((c) => c.type !== 'note' && !controller.charts.hidden(c.question)));
 	const small = $derived(open ? cards.reduce((n, c) => n + smallCells(suppressCard(c, s.k).card), 0) : 0);
+	const files = $derived(bundleFormats(s.bundle).map((f) => (f === 'vega-lite' ? 'Vega-Lite spec' : f.toUpperCase())));
 
 	async function run() {
 		if (busy) return;
@@ -48,13 +57,22 @@
 	<Archive size={16} aria-hidden="true" /> Export all
 </Button>
 
-<Dialog bind:open title="Export all figures" description="A ZIP with each question's SVG, PNG, CSV and Vega-Lite spec, and one manifest." size="md">
+<Dialog bind:open title="Export all figures" description="A ZIP with a file set per shown question, in the page's order, and one manifest." size="md">
 	<div class="body">
-		<SettingsFields settings={s} />
-		<p class="note">
+		<fieldset class="bundles">
+			<legend>Contents</legend>
+			{#each BUNDLES as b (b.id)}
+				<label class="bundle">
+					<input type="radio" name="{uid}-bundle" value={b.id} bind:group={s.bundle} />
+					<span><strong>{b.label}</strong> <span class="muted">{b.hint}</span></span>
+				</label>
+			{/each}
+		</fieldset>
+		<SettingsFields settings={s} dpi={s.bundle !== 'svg'} />
+		<p class="note" data-testid="export-all-note">
 			{cards.length}
-			{cards.length === 1 ? 'question' : 'questions'}, each with its chart as chosen on its card and its caption
-			(edited captions are kept).
+			{cards.length === 1 ? 'question' : 'questions'}, each as {files.join(', ')}, with its chart as chosen on its card and
+			its caption (edited captions are kept). Colours: {controller.theme.exportDescription}.
 		</p>
 		{#if small > 0}
 			<p class="warning" data-testid="small-cells-all">
@@ -86,6 +104,32 @@
 		margin: 0;
 		color: var(--color-text-muted);
 		font-size: var(--text-sm);
+	}
+	.bundles {
+		display: grid;
+		grid-template-columns: repeat(auto-fit, minmax(13rem, 1fr));
+		gap: var(--space-1) var(--space-3);
+		margin: 0;
+		padding: var(--space-2) var(--space-3);
+		border: 1px solid var(--color-border);
+		border-radius: var(--radius-md);
+		min-width: 0;
+	}
+	legend {
+		padding: 0 var(--space-1);
+		font-size: var(--text-sm);
+		font-weight: var(--weight-bold);
+	}
+	.bundle {
+		display: flex;
+		align-items: center;
+		gap: var(--space-2);
+		min-height: 2.75rem;
+		font-size: var(--text-sm);
+	}
+	.muted {
+		color: var(--color-text-muted);
+		font-size: var(--text-xs);
 	}
 	.warning {
 		margin: 0;

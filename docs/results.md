@@ -50,8 +50,36 @@ menu offers, by type:
 | Text | Response states, and **Show answers** for the verbatim answers in pages (reading them is audited) |
 
 With a split, **Groups** chooses *Grouped bars*, *100 % stacked bars* or *Small
-multiples*. Charts are drawn with Vega-Lite as SVG, follow the builder's light or dark
-theme, and carry titles and descriptions for screen readers.
+multiples*. Charts are drawn with Vega-Lite as SVG, follow the page's theme (below), and
+carry titles and descriptions for screen readers.
+
+## Theme
+
+**Theme**, above the cards, chooses the colours the cards and every export are drawn in,
+independently of the survey:
+
+- **App colours (default)**: the builder's own light or dark colours on screen; exported
+  figures use the print theme (white background, the Okabe-Ito colour-blind-safe palette).
+- **This survey's theme**: what participants see: the survey's own theme from the
+  Appearance view, else the lab's default theme, else the Clean preset.
+- A built-in **preset** (Clean, Warm, High contrast, Dark, Compact) or a theme from the
+  **lab theme library**.
+
+The note under the picker says what is showing. A theme is checked for what charts draw:
+text on the background needs 4.5:1 contrast, bars and axis lines 3:1; a theme that fails
+is still shown, with a warning. Themes that follow the device show in the builder's light or
+dark mode and export in their light colours; a dark-only theme exports dark. The choice is
+kept in a saved layout as a reference; if the lab theme is later deleted, the layout falls
+back to the app colours and says so.
+
+## Presentation mode
+
+**Present** hides everything but the cards: no top bar, filters, layout bar or per-card
+controls, just each question's title, its chart (or table) and its caption, on the theme's
+background. Press **Escape** or the floating **Exit presentation** button to come back. The
+URL gains `?present=1`, so the view can be shared with a colleague who has access or printed
+from the browser; `?layout=<id>` in the same URL opens a saved layout. **Present results**
+in the palette toggles it too.
 
 ## Exporting figures
 
@@ -68,9 +96,14 @@ or **Vega-Lite spec and manifest…**. The export dialog offers:
   suppression cannot hide small cells in them; the dialog says so.
 - A **Caption**, with **Use the automatic caption** as a start, drawn under the figure.
 
-Figures use a print theme: white background, the Okabe-Ito colour-blind-safe palette and
-ordered palettes for scales. **Export all** downloads a ZIP with every card's SVG, PNG, CSV
-and spec plus one manifest.
+Figures use the page's theme (above): by default the print theme, white background with the
+Okabe-Ito colour-blind-safe palette and ordered palettes for scales; with a theme chosen, its
+colours at the same text sizes. The manifest records which.
+
+**Export all** downloads one ZIP with a file set per shown card, in the page's order, plus
+one manifest. **Contents** chooses *SVG only*, *PNG only* (at the width and resolution
+chosen) or *Everything* (SVG, PNG, CSV and spec). Width, resolution, "Hide counts below k"
+and the contents choice are kept in a saved layout.
 
 Every query and every figure export is recorded in the audit log with the filters used and
 the versions, never with answer values.

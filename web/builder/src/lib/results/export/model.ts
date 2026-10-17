@@ -303,7 +303,11 @@ export interface ManifestInput {
 	platform: { name: string; version: string };
 	libraries: { vega: string; vegaLite: string; vegaEmbed: string };
 	scope: 'card' | 'page';
+	/** The colours the figures were drawn in (task V6); default the publication look. */
+	theme?: string;
 }
+
+export const PUBLICATION_THEME = 'export (white background, Okabe-Ito palette, text >= 8 pt at final size)';
 
 /** The manifest (V-D6): where the figures came from, enough to redo them. Values excluded. */
 export function manifest(m: ManifestInput) {
@@ -328,7 +332,7 @@ export function manifest(m: ManifestInput) {
 		units: 'responses',
 		platform: m.platform,
 		vega: m.libraries,
-		theme: 'export (white background, Okabe-Ito palette, text >= 8 pt at final size)',
+		theme: m.theme ?? PUBLICATION_THEME,
 		figures: m.figures
 	};
 }

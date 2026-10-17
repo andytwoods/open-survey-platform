@@ -8,19 +8,24 @@
 	// card's Table view (V2) is the full accessible alternative.
 	import type { View } from 'vega';
 	import type { TopLevelSpec } from 'vega-lite';
-	import { readTokens, themeConfig } from './theme';
-	import type { ChartTheme } from './types';
+	import { defaultTokens, readTokens, themeConfig } from './theme';
+	import type { ChartTheme, ThemeTokens } from './types';
 
 	interface Props {
 		spec: TopLevelSpec;
 		theme?: ChartTheme;
+		/**
+		 * The colours to draw with (task V6: a results theme). Without them the app theme
+		 * reads the page's tokens and the export theme uses the publication look.
+		 */
+		tokens?: ThemeTokens;
 		title: string;
 		description?: string;
 		/** Called with each new view (e.g. for SVG / PNG export). */
 		onview?: (view: View) => void;
 	}
 
-	let { spec, theme = 'app', title, description = '', onview }: Props = $props();
+	let { spec, theme = 'app', tokens, title, description = '', onview }: Props = $props();
 
 	const uid = $props.id();
 	let host: HTMLDivElement | undefined = $state();
@@ -43,7 +48,7 @@
 	});
 
 	$effect(() => {
-		if (theme !== 'app') return;
+		if (theme !== 'app' || tokens) return;
 		const bump = () => tokenTick++;
 		const mq = globalThis.matchMedia?.('(prefers-color-scheme: dark)');
 		mq?.addEventListener('change', bump);
@@ -58,12 +63,13 @@
 	$effect(() => {
 		const el = host;
 		const t = theme;
+		const given = tokens;
 		void tokenTick;
 		if (!el) return;
 		const final = {
 			...spec,
 			description: description || (spec as { description?: string }).description || title,
-			config: themeConfig(t, t === 'app' ? readTokens(el) : undefined)
+			config: themeConfig(t, given ?? (t === 'app' ? readTokens(el) : undefined))
 		} as TopLevelSpec;
 		// Each embed draws into its own child, so a slow old embed can never overwrite a new one.
 		const target = document.createElement('div');
@@ -97,7 +103,15 @@
 	});
 </script>
 
-<figure class="osp-chart" class:export={theme === 'export'} aria-labelledby="{uid}-t" aria-describedby={description ? `${uid}-d` : undefined} data-status={status}>
+<figure
+	class="osp-chart"
+	class:export={theme === 'export'}
+	style:background={theme === 'export' ? (tokens ?? defaultTokens('export')).bg : undefined}
+	style:color={theme === 'export' ? (tokens ?? defaultTokens('export')).text : undefined}
+	aria-labelledby="{uid}-t"
+	aria-describedby={description ? `${uid}-d` : undefined}
+	data-status={status}
+>
 	<figcaption class="osp-visually-hidden" id="{uid}-t">{title}</figcaption>
 	{#if description}<p class="osp-visually-hidden" id="{uid}-d">{description}</p>{/if}
 	<!-- svelte-ignore a11y_no_noninteractive_tabindex -->
@@ -110,10 +124,6 @@
 		margin: 0;
 		min-width: 0;
 		max-width: 100%;
-	}
-	.osp-chart.export {
-		background: #ffffff;
-		color: #000000;
 	}
 	.host {
 		width: 100%;

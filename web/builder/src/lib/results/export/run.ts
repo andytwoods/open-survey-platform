@@ -1,7 +1,7 @@
 // Export runs (task V4): one card's files or the whole page as a ZIP, audited first.
 // Browser only (renders with Vega, downloads with an <a download>).
 import { chartsFor, isChart, splitsFor } from '../charts/menu';
-import type { Card, ChartChoice, SplitLayout } from '../charts/types';
+import type { Card, ChartChoice, SplitLayout, ThemeTokens } from '../charts/types';
 import type { ChartChoices } from '../charts.svelte';
 import type { ResultsQuery, ResultsResponse } from '../types';
 import { utf8 } from './bytes';
@@ -13,10 +13,12 @@ import {
 	fileName,
 	fileStem,
 	manifest,
+	PUBLICATION_THEME,
 	suppressCard,
 	type FigureEntry,
 	type FileFormat
 } from './model';
+import type { Bundle } from './settings.svelte';
 import { zipStore, type ZipEntry } from './zip';
 
 export type ExportFormat = 'png' | 'svg' | 'csv' | 'vega-lite';
@@ -25,6 +27,8 @@ export interface ExportSettingsLike {
 	widthMm: number;
 	dpi: number;
 	k: number | null;
+	/** What "Export all" bundles (task V6); default everything. */
+	bundle?: Bundle;
 	caption(question: string): string | undefined;
 }
 
@@ -35,9 +39,33 @@ export interface ExportPage {
 	/** The active filters in words. */
 	filters: string[];
 	charts: ChartChoices;
+	/**
+	 * The cards "Export all" draws, in display order, hidden cards and notes left out
+	 * (task V6). Default: the response's cards in survey order, minus hidden and notes.
+	 */
+	cards?: Card[];
+	/** The results theme's colours for figures (task V6); null for the publication look. */
+	theme?: { tokens: ThemeTokens | null; description: string };
 	/** Writes the `results.export` audit row; resolves to an error message or null. */
 	record(body: { cards: string[]; formats: string[]; scope: 'card' | 'page'; suppressBelow: number | null }): Promise<string | null>;
 	platform(): Promise<{ name: string; version: string }>;
+}
+
+/** The formats a bundle puts in the ZIP (task V6). */
+export function bundleFormats(bundle: Bundle | undefined): ExportFormat[] {
+	switch (bundle) {
+		case 'svg':
+			return ['svg'];
+		case 'png':
+			return ['png'];
+		default:
+			return ['svg', 'png', 'csv', 'vega-lite'];
+	}
+}
+
+/** The cards a page export draws: hidden cards (V5b) and notes are left out, as on the page. */
+export function exportCards(page: Pick<ExportPage, 'response' | 'charts' | 'cards'>): Card[] {
+	return page.cards ?? page.response.cards.filter((c) => c.type !== 'note' && !page.charts.hidden(c.question));
 }
 
 export interface FileOut {
@@ -95,14 +123,15 @@ export async function cardFiles(card: Card, page: ExportPage, s: ExportSettingsL
 		hiddenCells: 0,
 		files: []
 	};
+	const tokens = page.theme?.tokens ?? null;
 	// The hidden count is known before the caption (the caption names it).
-	const probe = chart ? figureSpec(card, { chart, layout, denominator, intervals, widthMm: s.widthMm, caption: '', k: s.k }) : null;
+	const probe = chart ? figureSpec(card, { chart, layout, denominator, intervals, widthMm: s.widthMm, caption: '', k: s.k, tokens }) : null;
 	const hidden = probe?.hidden ?? 0;
 	const cap = captionFor(card, page, s, hidden);
 	entry.caption = cap.text;
 	entry.captionEdited = cap.edited;
 	entry.hiddenCells = hidden;
-	const figure = chart ? figureSpec(card, { chart, layout, denominator, intervals, widthMm: s.widthMm, caption: cap.text, k: s.k }) : null;
+	const figure = chart ? figureSpec(card, { chart, layout, denominator, intervals, widthMm: s.widthMm, caption: cap.text, k: s.k, tokens }) : null;
 	const add = (format: FileFormat, data: Uint8Array) => {
 		const name = fileName(named, format);
 		files.push({ name, data, type: MIME[format] });
@@ -143,7 +172,8 @@ async function manifestBytes(page: ExportPage, s: ExportSettingsLike, figures: F
 			exportedAt: new Date().toISOString(),
 			platform,
 			libraries,
-			scope
+			scope,
+			theme: page.theme?.description ?? PUBLICATION_THEME
 		})
 	);
 }
@@ -175,13 +205,22 @@ export async function exportCard(card: Card, page: ExportPage, s: ExportSettings
 	return files;
 }
 
-/** Every card's SVG, PNG, CSV and spec plus one manifest, as a store-only ZIP. Audited first. */
+/** The ZIP's file name: the survey, the day and, for a one-format bundle, the format. */
+export function zipName(surveyId: string, bundle: Bundle | undefined, day = new Date().toISOString().slice(0, 10)): string {
+	const suffix = bundle === 'svg' || bundle === 'png' ? `-${bundle}` : '';
+	return `results-${surveyId.slice(0, 8)}-${day}${suffix}.zip`;
+}
+
+/**
+ * Every shown card's files plus one manifest, as a store-only ZIP: SVG only, PNG only, or
+ * everything (SVG, PNG, CSV and spec), per `s.bundle` (task V6). Audited first.
+ */
 export async function exportAll(page: ExportPage, s: ExportSettingsLike, progress?: (done: number, total: number) => void): Promise<FileOut> {
-	// Hidden cards (V5b) are left out, as they are on the page.
-	const cards = page.response.cards.filter((c) => c.type !== 'note' && !page.charts.hidden(c.question));
+	const cards = exportCards(page);
+	const formats = bundleFormats(s.bundle);
 	const refused = await page.record({
 		cards: cards.map((c) => c.question),
-		formats: ['svg', 'png', 'csv', 'vega-lite', 'manifest', 'zip'],
+		formats: [...formats, 'manifest', 'zip'],
 		scope: 'page',
 		suppressBelow: s.k
 	});
@@ -194,12 +233,11 @@ export async function exportAll(page: ExportPage, s: ExportSettingsLike, progres
 		let stem = fileStem(card);
 		for (let n = 2; stems.has(stem); n++) stem = `${fileStem(card)}_${n}`;
 		stems.add(stem);
-		const { files, entry } = await cardFiles(card, page, s, ['svg', 'png', 'csv', 'vega-lite'], stem);
+		const { files, entry } = await cardFiles(card, page, s, formats, stem);
 		entries.push(...files.map((f) => ({ name: f.name, data: f.data })));
 		figures.push(entry);
 	}
 	progress?.(cards.length, cards.length);
 	entries.push({ name: 'manifest.json', data: await manifestBytes(page, s, figures, 'page') });
-	const day = new Date().toISOString().slice(0, 10);
-	return { name: `results-${page.response.surveyId.slice(0, 8)}-${day}.zip`, data: zipStore(entries), type: 'application/zip' };
+	return { name: zipName(page.response.surveyId, s.bundle), data: zipStore(entries), type: 'application/zip' };
 }

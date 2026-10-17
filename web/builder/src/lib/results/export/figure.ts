@@ -3,8 +3,8 @@
 // final width × dpi / 96, resampled to the exact pixel width, and given pHYs DPI metadata.
 import type { TopLevelSpec } from 'vega-lite';
 import { buildSpec } from '../charts/spec';
-import { EXPORT_TEXT } from '../charts/theme';
-import type { Card, ChartChoice, SplitLayout } from '../charts/types';
+import { EXPORT_TEXT, EXPORT_TOKENS } from '../charts/theme';
+import type { Card, ChartChoice, SplitLayout, ThemeTokens } from '../charts/types';
 import { cssWidth, pixelHeight, pixelWidth, suppressCard, wrapText } from './model';
 import { withDpi } from './png';
 
@@ -17,6 +17,8 @@ export interface FigureOptions {
 	caption: string;
 	/** "Hide counts below k", or null. */
 	k: number | null;
+	/** The colours to draw with (task V6: a results theme); default the publication look. */
+	tokens?: ThemeTokens | null;
 }
 
 type Spec = Record<string, unknown>;
@@ -35,8 +37,10 @@ const compound = (s: Spec) => 'facet' in s || 'vconcat' in s || 'hconcat' in s |
 export function figureSpec(card: Card, o: FigureOptions): { spec: TopLevelSpec; hidden: number; widthPx: number } {
 	const { card: shown, hidden } = suppressCard(card, o.k);
 	const width = cssWidth(o.widthMm);
+	const tokens = o.tokens ?? EXPORT_TOKENS;
 	const base = {
 		theme: 'export' as const,
+		tokens,
 		split: o.layout,
 		denominator: o.denominator,
 		intervals: o.intervals,
@@ -61,13 +65,19 @@ export function figureSpec(card: Card, o: FigureOptions): { spec: TopLevelSpec; 
 			fontSize: size,
 			fontWeight: 'normal',
 			lineHeight: Math.round(size * 1.35),
-			color: '#000000',
+			color: tokens.text,
 			offset: 12
 		};
 	}
 	const meta = (spec.usermeta as Spec | undefined) ?? {};
 	spec.usermeta = { ...meta, osp: { ...((meta.osp as Spec | undefined) ?? {}), caption: o.caption, widthMm: o.widthMm, hideCountsBelow: o.k } };
 	return { spec: spec as unknown as TopLevelSpec, hidden, widthPx: width };
+}
+
+/** The background a figure spec was built with (for the PNG's padding). */
+export function specBackground(spec: TopLevelSpec): string {
+	const bg = (spec as { config?: { background?: unknown } }).config?.background;
+	return typeof bg === 'string' && bg ? bg : '#ffffff';
 }
 
 // -- rendering (browser) -----------------------------------------------------------------
@@ -137,7 +147,7 @@ export async function renderFigure(spec: TopLevelSpec): Promise<Rendered> {
 					canvas.height = pxH;
 					const g = canvas.getContext('2d');
 					if (!g) throw new Error('The PNG could not be made.');
-					g.fillStyle = '#ffffff';
+					g.fillStyle = specBackground(spec);
 					g.fillRect(0, 0, pxW, pxH);
 					g.drawImage(drawn, 0, 0, pxW, pxH);
 				}

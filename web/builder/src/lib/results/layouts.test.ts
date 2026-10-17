@@ -47,6 +47,8 @@ function full(): PageState {
 	s.captions = { fruit: 'Figure 1. Fruit.' };
 	s.order = ['grid', 'fruit'];
 	s.showNotes = true;
+	s.theme = { kind: 'library', id: 'th1' };
+	s.exports = { widthMm: 180, dpi: 600, k: 5, bundle: 'png' };
 	return s;
 }
 
@@ -59,6 +61,8 @@ describe('page state <-> layout settings', () => {
 		expect(back.cards).toEqual(s.cards);
 		expect(back.captions).toEqual(s.captions);
 		expect(back.showNotes).toBe(true);
+		expect(back.theme).toEqual(s.theme);
+		expect(back.exports).toEqual(s.exports);
 		// The order comes back as the full display order the layout listed.
 		expect(back.order).toEqual(inOrder(plain.cards, s.order).map((c) => c.question));
 		expect(back.order.slice(0, 3)).toEqual(['grid', 'fruit', 'sat']);
@@ -68,8 +72,10 @@ describe('page state <-> layout settings', () => {
 
 	it('writes the schema V5a accepts: query, cards in display order, nothing else', () => {
 		const settings = toSettings(full(), LATEST, questions);
-		expect(Object.keys(settings).sort()).toEqual(['cards', 'query', 'schemaVersion', 'showNotes']);
+		expect(Object.keys(settings).sort()).toEqual(['cards', 'export', 'query', 'schemaVersion', 'showNotes', 'theme']);
 		expect(settings.schemaVersion).toBe('osp-results-layout/0.1');
+		expect(settings.theme).toEqual({ kind: 'library', id: 'th1' });
+		expect(settings.export).toEqual({ widthMm: 180, dpi: 600, hideCountsBelow: 5, bundle: 'png' });
 		expect(settings.query).toEqual({
 			versions: [1, 2],
 			status: 'all',
@@ -174,6 +180,36 @@ describe('page state <-> layout settings', () => {
 		const cap = structuredClone(base);
 		cap.captions.age = 'x'.repeat(3000);
 		expect(toSettings(cap, LATEST).cards![0].caption).toHaveLength(2000);
+	});
+
+	it('theme and export parts (V6): references only, defaults for anything missing or wrong', () => {
+		const pre = { schemaVersion: 'osp-results-layout/0.1', showNotes: false } as LayoutSettings; // saved before V6
+		expect(fromSettings(pre, LATEST).theme).toEqual({ kind: 'app' });
+		expect(fromSettings(pre, LATEST).exports).toEqual({ widthMm: 85, dpi: 300, k: null, bundle: 'all' });
+		const read = (theme: unknown, exp: unknown) => fromSettings({ ...pre, theme, export: exp } as LayoutSettings, LATEST);
+		expect(read({ kind: 'survey', id: null }, null).theme).toEqual({ kind: 'survey' });
+		expect(read({ kind: 'preset', id: 'warm' }, null).theme).toEqual({ kind: 'preset', id: 'warm' });
+		expect(read({ kind: 'library', id: 'bad id' }, null).theme).toEqual({ kind: 'app' });
+		expect(read({ kind: 'rainbow' }, null).theme).toEqual({ kind: 'app' });
+		expect(read(null, { widthMm: 120, dpi: 150, hideCountsBelow: 3, bundle: 'svg' }).exports).toEqual({ widthMm: 120, dpi: 150, k: 3, bundle: 'svg' });
+		expect(read(null, { widthMm: 9, dpi: 72, hideCountsBelow: 1, bundle: 'pdf' }).exports).toEqual({ widthMm: 85, dpi: 300, k: null, bundle: 'all' });
+		// Writing clamps to what the server accepts.
+		const s = emptyState(LATEST);
+		s.exports = { widthMm: 9999, dpi: 72, k: 1, bundle: 'zip' as never };
+		expect(toSettings(s, LATEST).export).toEqual({ widthMm: 500, dpi: 300, hideCountsBelow: 2, bundle: 'all' });
+		s.theme = { kind: 'survey' };
+		expect(toSettings(s, LATEST).theme).toEqual({ kind: 'survey', id: null });
+		// Never a theme document.
+		s.theme = { kind: 'preset', id: 'warm' };
+		expect(JSON.stringify(toSettings(s, LATEST))).not.toContain('colours');
+		// A theme or export change is an unsaved change.
+		const base = emptyState(LATEST);
+		const themed = structuredClone(base);
+		themed.theme = { kind: 'preset', id: 'warm' };
+		expect(sameLayout(themed, base, LATEST, questions)).toBe(false);
+		const bundled = structuredClone(base);
+		bundled.exports.bundle = 'svg';
+		expect(sameLayout(bundled, base, LATEST, questions)).toBe(false);
 	});
 
 	it('date bounds survive the trip as whole days', () => {

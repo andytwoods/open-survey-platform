@@ -1,7 +1,10 @@
 // Chart themes (planning/results-viewer.md V-D7). The app theme follows the design tokens
 // (light/dark, read from CSS custom properties); the export theme is for figures: white
 // background, the Okabe-Ito qualitative palette, ordered palettes for Likert scales and
-// text >= 8 pt at final size. Pure apart from `readTokens`, which reads the DOM.
+// text >= 8 pt at final size. Both take a set of tokens (task V6): the Results page can be
+// drawn in a survey theme, whose colours then reach the figures too (`tokensFromTheme`).
+// Pure apart from `readTokens`, which reads the DOM.
+import { derivePalette, FONT_STACKS, THEME_DEFAULTS, type Mode, type Theme } from '@osp/ui-components';
 import type { Config } from 'vega-lite';
 import type { ChartTheme, ThemeTokens } from './types';
 
@@ -22,6 +25,39 @@ export const LIGHT_TOKENS: ThemeTokens = {
 
 /** Generic sans stack for exports: no bundled font (V-D7). */
 export const EXPORT_FONT = 'Helvetica, Arial, sans-serif';
+
+/** The publication look (V-D7): white, black text, Okabe-Ito blue as the series colour. */
+export const EXPORT_TOKENS: ThemeTokens = {
+	bg: '#ffffff',
+	surface: '#ffffff',
+	border: '#d9d9d9',
+	borderStrong: '#666666',
+	text: '#000000',
+	textMuted: '#333333',
+	accent: OKABE_ITO[0],
+	font: EXPORT_FONT
+};
+
+/** The tokens a theme uses when none are given. */
+export const defaultTokens = (theme: ChartTheme): ThemeTokens => (theme === 'export' ? EXPORT_TOKENS : LIGHT_TOKENS);
+
+/**
+ * Chart tokens from a survey theme in one mode (task V6): the same derived palette the
+ * participant page is drawn with, and the theme's font stack.
+ */
+export function tokensFromTheme(theme: Theme, mode: Mode): ThemeTokens {
+	const p = derivePalette(theme.colours[mode]);
+	return {
+		bg: p.bg,
+		surface: p.surface,
+		border: p.border,
+		borderStrong: p['border-strong'],
+		text: p.text,
+		textMuted: p['text-muted'],
+		accent: p.accent,
+		font: FONT_STACKS[theme.font ?? THEME_DEFAULTS.font]
+	};
+}
 
 /**
  * Export text sizes in px, for a figure rendered at its final width at 96 px/in:
@@ -96,6 +132,43 @@ export function inkOn(fill: string): string {
 	return luminance(fill) > 0.18 ? '#1d2433' : '#ffffff';
 }
 
+/** WCAG 2 contrast ratio of two colours (1 when either cannot be parsed). */
+export function contrast(a: string, b: string): number {
+	if (!rgb(a) || !rgb(b)) return 1;
+	const la = luminance(a);
+	const lb = luminance(b);
+	return (Math.max(la, lb) + 0.05) / (Math.min(la, lb) + 0.05);
+}
+
+export interface ChartContrastProblem {
+	/** What fails: axis text, hint text, the bars, or the axis line. */
+	what: string;
+	ratio: number;
+	required: number;
+}
+
+/** Text on the background needs WCAG AA 4.5:1; bars and axis lines 3:1 (graphical objects). */
+const CHART_PAIRS: [keyof ThemeTokens, number, string][] = [
+	['text', 4.5, 'axis titles and labels on the background'],
+	['textMuted', 4.5, 'axis tick labels on the background'],
+	['accent', 3, 'bars and points on the background'],
+	['borderStrong', 3, 'axis lines on the background']
+];
+
+/**
+ * The contrast checks a chart drawn from `tokens` fails (task V6: a results theme is
+ * contrast-checked for what the figures actually draw, as the survey guard does for the
+ * participant page). Empty when every pair passes.
+ */
+export function chartContrast(tokens: ThemeTokens): ChartContrastProblem[] {
+	const out: ChartContrastProblem[] = [];
+	for (const [key, required, what] of CHART_PAIRS) {
+		const ratio = contrast(tokens[key], tokens.bg);
+		if (ratio < required) out.push({ what, ratio: Math.round(ratio * 100) / 100, required });
+	}
+	return out;
+}
+
 // -- ordered palettes -------------------------------------------------------------------
 
 /** Diverging ends (orange ↔ blue, colour-blind safe) and the neutral middle, per theme. */
@@ -120,38 +193,43 @@ export function likertPalette(k: number, theme: ChartTheme = 'export'): string[]
 	return k % 2 ? [...neg, p.neutral, ...pos] : [...neg, ...pos];
 }
 
+const isDark = (tokens: ThemeTokens) => luminance(tokens.bg) < 0.2;
+
 /** Sequential palette for heatmaps (light → strong), readable on the theme's background. */
-export function sequentialPalette(theme: ChartTheme, tokens: ThemeTokens = LIGHT_TOKENS): string[] {
+export function sequentialPalette(theme: ChartTheme, tokens: ThemeTokens = defaultTokens(theme)): string[] {
+	if (isDark(tokens)) return ['#1d2433', '#24406e', '#2f63b0', '#6b9be6', '#c9dbff'];
 	if (theme === 'export') return ['#f2f6fb', '#c6dbef', '#6baed6', '#2171b5', '#08306b'];
-	const dark = luminance(tokens.bg) < 0.2;
-	return dark ? ['#1d2433', '#24406e', '#2f63b0', '#6b9be6', '#c9dbff'] : ['#eef3fb', '#c4d5f2', '#7d9fe0', '#2f63c4', '#123a8a'];
+	return ['#eef3fb', '#c4d5f2', '#7d9fe0', '#2f63c4', '#123a8a'];
 }
 
-/** The single-series colour (bars without a split). */
-export function seriesColor(theme: ChartTheme, tokens: ThemeTokens = LIGHT_TOKENS): string {
-	return theme === 'export' ? OKABE_ITO[0] : tokens.accent;
+/** The single-series colour (bars without a split): the tokens' accent (Okabe-Ito blue for exports). */
+export function seriesColor(theme: ChartTheme, tokens: ThemeTokens = defaultTokens(theme)): string {
+	return tokens.accent;
 }
 
-/** Qualitative palette for groups / unordered categories. */
-export function categoryPalette(theme: ChartTheme, tokens: ThemeTokens = LIGHT_TOKENS): string[] {
-	if (theme === 'export') return OKABE_ITO;
-	const dark = luminance(tokens.bg) < 0.2;
-	// Okabe-Ito with the accent first; black swapped for a light grey on dark backgrounds.
-	const rest = OKABE_ITO.slice(1).map((c) => (dark && c === '#000000' ? '#c8ccd4' : c));
+/**
+ * Qualitative palette for groups / unordered categories: the accent in place of Okabe-Ito's
+ * blue, then the rest (so the publication tokens give Okabe-Ito itself); black swapped for
+ * a light grey on dark backgrounds.
+ */
+export function categoryPalette(theme: ChartTheme, tokens: ThemeTokens = defaultTokens(theme)): string[] {
+	const dark = isDark(tokens);
+	const accent = tokens.accent.toLowerCase();
+	const rest = OKABE_ITO.slice(1)
+		.filter((c) => c.toLowerCase() !== accent)
+		.map((c) => (dark && c === '#000000' ? '#c8ccd4' : c));
 	return [tokens.accent, ...rest];
 }
 
 // -- Vega-Lite config -------------------------------------------------------------------
 
-/** The Vega-Lite `config` for a theme. */
-export function themeConfig(theme: ChartTheme, tokens: ThemeTokens = LIGHT_TOKENS): Config {
+/** The Vega-Lite `config` for a theme drawn from `tokens`. */
+export function themeConfig(theme: ChartTheme, tokens: ThemeTokens = defaultTokens(theme)): Config {
 	const exp = theme === 'export';
-	const t = exp
-		? { ...LIGHT_TOKENS, bg: '#ffffff', text: '#000000', textMuted: '#333333', border: '#d9d9d9', borderStrong: '#666666', font: EXPORT_FONT }
-		: tokens;
+	const t = tokens;
 	const size = exp ? EXPORT_TEXT : APP_TEXT;
 	return {
-		background: exp ? '#ffffff' : 'transparent',
+		background: exp ? t.bg : 'transparent',
 		font: t.font,
 		padding: 8,
 		view: { stroke: null },
@@ -194,6 +272,6 @@ export function themeConfig(theme: ChartTheme, tokens: ThemeTokens = LIGHT_TOKEN
 }
 
 /** Text colours the builders need for direct labels and the neutral line. */
-export function textColors(theme: ChartTheme, tokens: ThemeTokens = LIGHT_TOKENS): { text: string; muted: string; bg: string } {
-	return theme === 'export' ? { text: '#000000', muted: '#333333', bg: '#ffffff' } : { text: tokens.text, muted: tokens.textMuted, bg: tokens.bg };
+export function textColors(theme: ChartTheme, tokens: ThemeTokens = defaultTokens(theme)): { text: string; muted: string; bg: string } {
+	return { text: tokens.text, muted: tokens.textMuted, bg: tokens.bg };
 }

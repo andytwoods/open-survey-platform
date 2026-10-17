@@ -10,6 +10,7 @@ import { ChartChoices } from './charts.svelte';
 import type { MenuChoice } from './charts/types';
 import type { ExportPage } from './export/run';
 import { ExportSettings } from './export/settings.svelte';
+import { ResultsTheme, type ThemeLibraryList } from './results-theme.svelte';
 import {
 	cardRequests,
 	choiceVariables,
@@ -50,6 +51,8 @@ export interface ResultsSource {
 	platform?(): Promise<{ name: string; version: string }>;
 	/** Saved layouts (task V5b); without it the page has no layout bar. */
 	layouts?: LayoutSource;
+	/** The lab's theme library (task V6); without it the theme picker offers no lab themes. */
+	themes?(): Promise<Fetched<ThemeLibraryList>>;
 }
 
 function failed(status: number, error: unknown, fallback: string): Fetched<never> {
@@ -109,7 +112,22 @@ export function apiSource(surveyId: string): ResultsSource {
 			}
 			return { name: 'Open Survey Platform', version: 'unknown' };
 		},
-		layouts: apiLayouts(surveyId)
+		layouts: apiLayouts(surveyId),
+		async themes() {
+			const signal = new AbortController().signal;
+			try {
+				const { data, error, response } = await api.GET('/api/themes');
+				if (data) {
+					return {
+						ok: true,
+						data: { themes: data.themes as unknown as ThemeLibraryList['themes'], defaultThemeId: data.defaultThemeId ?? null }
+					};
+				}
+				return failed(response.status, error, 'The lab theme library could not be listed.');
+			} catch (e) {
+				return thrown(e, signal);
+			}
+		}
 	};
 }
 
@@ -120,6 +138,8 @@ export class ResultsController {
 	readonly source: ResultsSource;
 	readonly charts = new ChartChoices();
 	readonly exports = new ExportSettings();
+	/** The page's own theme (task V6): the choice, the survey's theme and the lab library. */
+	readonly theme = new ResultsTheme();
 	draft = $state<ResultsFilters>(defaultFilters(0));
 	applied = $state<ResultsFilters>(defaultFilters(0));
 	response = $state<ResultsResponse | null>(null);
@@ -177,7 +197,9 @@ export class ResultsController {
 			cards: this.charts.snapshot(),
 			captions: { ...this.exports.captions },
 			order: [...this.order],
-			showNotes: this.showNotes
+			showNotes: this.showNotes,
+			theme: { ...this.theme.choice },
+			exports: this.exports.snapshot()
 		};
 	}
 
@@ -187,6 +209,8 @@ export class ResultsController {
 		this.applied = cloneFilters(state.filters);
 		this.charts.restore(state.cards);
 		this.exports.restoreCaptions(state.captions);
+		this.exports.restore(state.exports);
+		this.theme.choose({ ...state.theme });
 		this.order = [...state.order];
 		this.showNotes = state.showNotes;
 		const ok = await this.load({ allCards: true });
@@ -207,18 +231,22 @@ export class ResultsController {
 		});
 	}
 
-	/** What an export needs: the response, its query, the filters in words (V4). */
+	/** What an export needs: the response, its query, the filters in words (V4), the theme (V6). */
 	exportPage(): ExportPage | null {
 		if (!this.response) return null;
 		// A plain copy: figures are built from it and Vega clones specs (proxies cannot be cloned).
 		const response = $state.snapshot(this.response) as ResultsResponse;
 		const source = this.source;
 		const query = this.query();
+		const shown = this.cards.filter((c) => c.type !== 'note' && !this.charts.hidden(c.question)).map((c) => c.question);
 		return {
 			response,
 			query,
 			filters: this.activeFilters,
 			charts: this.charts,
+			// Display order (V5b), hidden cards and notes left out; plain copies from the snapshot.
+			cards: shown.map((q) => response.cards.find((c) => c.question === q)!),
+			theme: { tokens: this.theme.exportTokens, description: this.theme.exportDescription },
 			async record(body) {
 				const r = await source.recordExport({ query, ...body } as ResultsExportRequest);
 				if (r.ok) return null;
