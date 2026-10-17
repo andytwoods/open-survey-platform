@@ -1,0 +1,239 @@
+{
+  "bankVersion": "osp-bank-item/0.1",
+  "id": "ace-brfss",
+  "version": 1,
+  "kind": "block",
+  "title": "Adverse Childhood Experience (ACE) module, BRFSS 2021",
+  "abbreviation": "ACE (BRFSS)",
+  "description": "CDC's Behavioral Risk Factor Surveillance System ACE module (updated 2021): 11 adverse-experience questions and 2 protective-factor questions, with CDC's response codes (7 = don't know / not sure, 9 = refused). Written for telephone interviews: the interviewer prologue is shortened to its last two sentences, which the note keeps verbatim, and the question wording is unchanged, as CDC asks (\"You may not change the substantive content of the materials\"). Sensitive content: plan support information for participants.",
+  "tags": [
+    "childhood-adversity",
+    "ace",
+    "trauma",
+    "brfss"
+  ],
+  "languages": [
+    "en"
+  ],
+  "licence": {
+    "class": "public-domain",
+    "holder": "US Centers for Disease Control and Prevention (US Government work)",
+    "statement": "The questionnaires are not copyrighted, and there are no fees for their use. (CDC agency materials policy: content \"is not subject to copyright, is in the public domain\"; \"You may not change the substantive content of the materials.\")",
+    "url": "https://www.cdc.gov/violenceprevention/aces/ace-brfss.html",
+    "evidenceDate": "2026-10-17"
+  },
+  "citation": {
+    "text": "Centers for Disease Control and Prevention (2021). Behavioral Risk Factor Surveillance System Adverse Childhood Experience (ACE) Module. Atlanta, GA: CDC. Original study: Felitti VJ et al. (1998), American Journal of Preventive Medicine 14(4):245–258.",
+    "doi": "10.1016/S0749-3797(98)00017-8"
+  },
+  "source": {
+    "url": "https://www.cdc.gov/aces/media/pdf/BRFSS_ACEModuleQuestions_2021_508.pdf",
+    "note": "BRFSS ACE module questions, updated as of 2021, read 2026-10-17. CDC notes the questions are subject to change."
+  },
+  "scoring": {
+    "text": "No scoring recipe is bundled: CDC's module page gives none. Many studies count the adverse experiences reported (questions 1–11, with questions 6–11 counted when the answer is once or more than once), but how to treat \"don't know\", \"refused\" and \"parents not married\" (question 5) is a study decision to preregister. Questions 12–13 are protective factors, not adverse experiences."
+  },
+  "fragment": {
+    "choiceLists": [
+      {
+        "id": "ace_yesno",
+        "choices": [
+          {
+            "value": 1,
+            "label": "Yes"
+          },
+          {
+            "value": 2,
+            "label": "No"
+          },
+          {
+            "value": 7,
+            "label": "Don't know / Not sure"
+          },
+          {
+            "value": 9,
+            "label": "Refused"
+          }
+        ]
+      },
+      {
+        "id": "ace_parents",
+        "choices": [
+          {
+            "value": 1,
+            "label": "Yes"
+          },
+          {
+            "value": 2,
+            "label": "No"
+          },
+          {
+            "value": 8,
+            "label": "Parents not married"
+          },
+          {
+            "value": 7,
+            "label": "Don't know / Not sure"
+          },
+          {
+            "value": 9,
+            "label": "Refused"
+          }
+        ]
+      },
+      {
+        "id": "ace_often",
+        "choices": [
+          {
+            "value": 1,
+            "label": "Never"
+          },
+          {
+            "value": 2,
+            "label": "Once"
+          },
+          {
+            "value": 3,
+            "label": "More than once"
+          },
+          {
+            "value": 7,
+            "label": "Don't know / Not sure"
+          },
+          {
+            "value": 9,
+            "label": "Refused"
+          }
+        ]
+      },
+      {
+        "id": "ace_time",
+        "choices": [
+          {
+            "value": 1,
+            "label": "Never"
+          },
+          {
+            "value": 2,
+            "label": "A little of the time"
+          },
+          {
+            "value": 3,
+            "label": "Some of the time"
+          },
+          {
+            "value": 4,
+            "label": "Most of the time"
+          },
+          {
+            "value": 5,
+            "label": "All of the time"
+          },
+          {
+            "value": 7,
+            "label": "Don't know / Not sure"
+          },
+          {
+            "value": 9,
+            "label": "Refused"
+          }
+        ]
+      }
+    ],
+    "variables": [],
+    "block": {
+      "id": "ace_block",
+      "title": "ACE (BRFSS)",
+      "pages": [
+        {
+          "id": "ace_page",
+          "items": [
+            {
+              "id": "ace_intro",
+              "type": "note",
+              "label": "All questions refer to the time period before you were 18 years of age. Now, looking back before you were 18 years of age---."
+            },
+            {
+              "id": "ace_q1",
+              "type": "single",
+              "label": "Did you live with anyone who was depressed, mentally ill, or suicidal?",
+              "choiceList": "ace_yesno"
+            },
+            {
+              "id": "ace_q2",
+              "type": "single",
+              "label": "Did you live with anyone who was a problem drinker or alcoholic?",
+              "choiceList": "ace_yesno"
+            },
+            {
+              "id": "ace_q3",
+              "type": "single",
+              "label": "Did you live with anyone who used illegal street drugs or who abused prescription medications?",
+              "choiceList": "ace_yesno"
+            },
+            {
+              "id": "ace_q4",
+              "type": "single",
+              "label": "Did you live with anyone who served time or was sentenced to serve time in a prison, jail, or other correctional facility?",
+              "choiceList": "ace_yesno"
+            },
+            {
+              "id": "ace_q5",
+              "type": "single",
+              "label": "Were your parents separated or divorced?",
+              "choiceList": "ace_parents"
+            },
+            {
+              "id": "ace_q6",
+              "type": "single",
+              "label": "How often did your parents or adults in your home ever slap, hit, kick, punch or beat each other up?",
+              "choiceList": "ace_often"
+            },
+            {
+              "id": "ace_q7",
+              "type": "single",
+              "label": "Not including spanking, (before age 18), how often did a parent or adult in your home ever hit, beat, kick, or physically hurt you in any way?",
+              "choiceList": "ace_often"
+            },
+            {
+              "id": "ace_q8",
+              "type": "single",
+              "label": "How often did a parent or adult in your home ever swear at you, insult you, or put you down?",
+              "choiceList": "ace_often"
+            },
+            {
+              "id": "ace_q9",
+              "type": "single",
+              "label": "How often did anyone at least 5 years older than you or an adult, ever touch you sexually?",
+              "choiceList": "ace_often"
+            },
+            {
+              "id": "ace_q10",
+              "type": "single",
+              "label": "How often did anyone at least 5 years older than you or an adult, try to make you touch them sexually?",
+              "choiceList": "ace_often"
+            },
+            {
+              "id": "ace_q11",
+              "type": "single",
+              "label": "How often did anyone at least 5 years older than you or an adult, force you to have sex?",
+              "choiceList": "ace_often"
+            },
+            {
+              "id": "ace_q12",
+              "type": "single",
+              "label": "For how much of your childhood was there an adult in your household who made you feel safe and protected? Would you say never, a little of the time, some of the time, most of the time, or all of the time?",
+              "choiceList": "ace_time"
+            },
+            {
+              "id": "ace_q13",
+              "type": "single",
+              "label": "For how much of your childhood was there an adult in your household who tried hard to make sure your basic needs were met? Would you say never, a little of the time, some of the time, most of the time, or all of the time?",
+              "choiceList": "ace_time"
+            }
+          ]
+        }
+      ]
+    }
+  }
+}

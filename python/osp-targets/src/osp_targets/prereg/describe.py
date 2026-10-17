@@ -353,6 +353,17 @@ def prereg_data(version: SurveyVersion) -> dict[str, Any]:
             "defaultLanguage": lay.default_language,
             "license": md.license,
             "ddi": md.ddi,
+            # The instruments used, derived at publish (question-bank.md lead decision 1).
+            **(
+                {
+                    "instruments": [
+                        i.model_dump(mode="json", by_alias=True, exclude_none=True)
+                        for i in md.instruments
+                    ]
+                }
+                if md.instruments
+                else {}
+            ),
         },
         "structure": {
             "blocks": blocks,

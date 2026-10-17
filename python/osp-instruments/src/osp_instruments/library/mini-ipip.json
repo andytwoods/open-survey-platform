@@ -1,0 +1,418 @@
+{
+  "bankVersion": "osp-bank-item/0.1",
+  "id": "mini-ipip",
+  "version": 1,
+  "kind": "block",
+  "title": "Mini-IPIP (20-item Big Five)",
+  "abbreviation": "Mini-IPIP",
+  "description": "Twenty IPIP items, four per Big Five factor, answered on the IPIP five-point accuracy scale. The IPIP key page gives no administration order: the items are interleaved by factor (Extraversion, Agreeableness, Conscientiousness, Neuroticism, Intellect/Imagination) in the order the key lists them.",
+  "tags": [
+    "personality",
+    "big-five",
+    "ipip"
+  ],
+  "languages": [
+    "en"
+  ],
+  "licence": {
+    "class": "public-domain",
+    "holder": "International Personality Item Pool (Oregon Research Institute; Lewis R. Goldberg)",
+    "statement": "Because the IPIP has been placed in the public domain, permission has already been automatically granted for any person to use IPIP items, scales, and inventories for any purpose, commercial or non-commercial.. It is not necessary to contact the IPIP site author (Lew Goldberg) or the IPIP Consultant (John A. Johnson) for permission to use IPIP materials. (Home page: \"The items and scales are in the public domain, which means that one can copy, edit, translate, or use them for any purpose without asking permission and without paying a fee.\")",
+    "url": "https://ipip.ori.org/newPermission.htm",
+    "evidenceDate": "2026-10-17"
+  },
+  "citation": {
+    "text": "Donnellan MB, Oswald FL, Baird BM, Lucas RE (2006). The Mini-IPIP scales: tiny-yet-effective measures of the Big Five factors of personality. Psychological Assessment 18(2):192–203.",
+    "doi": "10.1037/1040-3590.18.2.192"
+  },
+  "source": {
+    "url": "https://ipip.ori.org/MiniIPIPKey.htm",
+    "note": "Items and keys from the IPIP Mini-IPIP key page; instructions and response labels from https://ipip.ori.org/New_IPIP-50-item-scale.htm (\"These are suggestions, not requirements\"); read 2026-10-17."
+  },
+  "scoring": {
+    "text": "Each scale is the sum of its four items (4–20), + keyed items scored 1–5 and − keyed items 6 − answer, as on https://ipip.ori.org/newScoringInstructions.htm. Factor IV is scored as Neuroticism (high = less emotionally stable), as the Mini-IPIP authors chose. Items: extraversion: q1, q6, q11 (reversed), q16 (reversed); agreeableness: q2, q7, q12 (reversed), q17 (reversed); conscientiousness: q3, q8, q13 (reversed), q18 (reversed); neuroticism: q4, q9, q14 (reversed), q19 (reversed); intellect: q5, q10 (reversed), q15 (reversed), q20 (reversed)."
+  },
+  "fragment": {
+    "choiceLists": [
+      {
+        "id": "ipip_accuracy",
+        "choices": [
+          {
+            "value": 1,
+            "label": "Very Inaccurate"
+          },
+          {
+            "value": 2,
+            "label": "Moderately Inaccurate"
+          },
+          {
+            "value": 3,
+            "label": "Neither Accurate Nor Inaccurate"
+          },
+          {
+            "value": 4,
+            "label": "Moderately Accurate"
+          },
+          {
+            "value": 5,
+            "label": "Very Accurate"
+          }
+        ]
+      }
+    ],
+    "variables": [
+      {
+        "id": "mini_ipip_extraversion",
+        "kind": "computed",
+        "expr": {
+          "kind": "arith",
+          "op": "+",
+          "left": {
+            "kind": "arith",
+            "op": "+",
+            "left": {
+              "kind": "arith",
+              "op": "+",
+              "left": {
+                "kind": "ref",
+                "id": "mini_ipip_q1"
+              },
+              "right": {
+                "kind": "ref",
+                "id": "mini_ipip_q6"
+              }
+            },
+            "right": {
+              "kind": "arith",
+              "op": "-",
+              "left": {
+                "kind": "int",
+                "value": 6
+              },
+              "right": {
+                "kind": "ref",
+                "id": "mini_ipip_q11"
+              }
+            }
+          },
+          "right": {
+            "kind": "arith",
+            "op": "-",
+            "left": {
+              "kind": "int",
+              "value": 6
+            },
+            "right": {
+              "kind": "ref",
+              "id": "mini_ipip_q16"
+            }
+          }
+        }
+      },
+      {
+        "id": "mini_ipip_agreeableness",
+        "kind": "computed",
+        "expr": {
+          "kind": "arith",
+          "op": "+",
+          "left": {
+            "kind": "arith",
+            "op": "+",
+            "left": {
+              "kind": "arith",
+              "op": "+",
+              "left": {
+                "kind": "ref",
+                "id": "mini_ipip_q2"
+              },
+              "right": {
+                "kind": "ref",
+                "id": "mini_ipip_q7"
+              }
+            },
+            "right": {
+              "kind": "arith",
+              "op": "-",
+              "left": {
+                "kind": "int",
+                "value": 6
+              },
+              "right": {
+                "kind": "ref",
+                "id": "mini_ipip_q12"
+              }
+            }
+          },
+          "right": {
+            "kind": "arith",
+            "op": "-",
+            "left": {
+              "kind": "int",
+              "value": 6
+            },
+            "right": {
+              "kind": "ref",
+              "id": "mini_ipip_q17"
+            }
+          }
+        }
+      },
+      {
+        "id": "mini_ipip_conscientiousness",
+        "kind": "computed",
+        "expr": {
+          "kind": "arith",
+          "op": "+",
+          "left": {
+            "kind": "arith",
+            "op": "+",
+            "left": {
+              "kind": "arith",
+              "op": "+",
+              "left": {
+                "kind": "ref",
+                "id": "mini_ipip_q3"
+              },
+              "right": {
+                "kind": "ref",
+                "id": "mini_ipip_q8"
+              }
+            },
+            "right": {
+              "kind": "arith",
+              "op": "-",
+              "left": {
+                "kind": "int",
+                "value": 6
+              },
+              "right": {
+                "kind": "ref",
+                "id": "mini_ipip_q13"
+              }
+            }
+          },
+          "right": {
+            "kind": "arith",
+            "op": "-",
+            "left": {
+              "kind": "int",
+              "value": 6
+            },
+            "right": {
+              "kind": "ref",
+              "id": "mini_ipip_q18"
+            }
+          }
+        }
+      },
+      {
+        "id": "mini_ipip_neuroticism",
+        "kind": "computed",
+        "expr": {
+          "kind": "arith",
+          "op": "+",
+          "left": {
+            "kind": "arith",
+            "op": "+",
+            "left": {
+              "kind": "arith",
+              "op": "+",
+              "left": {
+                "kind": "ref",
+                "id": "mini_ipip_q4"
+              },
+              "right": {
+                "kind": "ref",
+                "id": "mini_ipip_q9"
+              }
+            },
+            "right": {
+              "kind": "arith",
+              "op": "-",
+              "left": {
+                "kind": "int",
+                "value": 6
+              },
+              "right": {
+                "kind": "ref",
+                "id": "mini_ipip_q14"
+              }
+            }
+          },
+          "right": {
+            "kind": "arith",
+            "op": "-",
+            "left": {
+              "kind": "int",
+              "value": 6
+            },
+            "right": {
+              "kind": "ref",
+              "id": "mini_ipip_q19"
+            }
+          }
+        }
+      },
+      {
+        "id": "mini_ipip_intellect",
+        "kind": "computed",
+        "expr": {
+          "kind": "arith",
+          "op": "+",
+          "left": {
+            "kind": "arith",
+            "op": "+",
+            "left": {
+              "kind": "arith",
+              "op": "+",
+              "left": {
+                "kind": "ref",
+                "id": "mini_ipip_q5"
+              },
+              "right": {
+                "kind": "arith",
+                "op": "-",
+                "left": {
+                  "kind": "int",
+                  "value": 6
+                },
+                "right": {
+                  "kind": "ref",
+                  "id": "mini_ipip_q10"
+                }
+              }
+            },
+            "right": {
+              "kind": "arith",
+              "op": "-",
+              "left": {
+                "kind": "int",
+                "value": 6
+              },
+              "right": {
+                "kind": "ref",
+                "id": "mini_ipip_q15"
+              }
+            }
+          },
+          "right": {
+            "kind": "arith",
+            "op": "-",
+            "left": {
+              "kind": "int",
+              "value": 6
+            },
+            "right": {
+              "kind": "ref",
+              "id": "mini_ipip_q20"
+            }
+          }
+        }
+      }
+    ],
+    "block": {
+      "id": "mini_ipip_block",
+      "title": "Mini-IPIP",
+      "pages": [
+        {
+          "id": "mini_ipip_page",
+          "items": [
+            {
+              "id": "mini_ipip_instructions",
+              "type": "note",
+              "label": "Describe yourself as you generally are now, not as you wish to be in the future. Describe yourself as you honestly see yourself, in relation to other people you know of the same sex as you are, and roughly your same age. So that you can describe yourself in an honest manner, your responses will be kept in absolute confidence. Indicate for each statement whether it is 1. Very Inaccurate, 2. Moderately Inaccurate, 3. Neither Accurate Nor Inaccurate, 4. Moderately Accurate, or 5. Very Accurate as a description of you."
+            },
+            {
+              "id": "mini_ipip",
+              "type": "matrix",
+              "label": "How Accurately Can You Describe Yourself?",
+              "choiceList": "ipip_accuracy",
+              "rows": [
+                {
+                  "id": "q1",
+                  "label": "Am the life of the party."
+                },
+                {
+                  "id": "q2",
+                  "label": "Sympathize with others' feelings."
+                },
+                {
+                  "id": "q3",
+                  "label": "Get chores done right away."
+                },
+                {
+                  "id": "q4",
+                  "label": "Have frequent mood swings."
+                },
+                {
+                  "id": "q5",
+                  "label": "Have a vivid imagination."
+                },
+                {
+                  "id": "q6",
+                  "label": "Talk to a lot of different people at parties."
+                },
+                {
+                  "id": "q7",
+                  "label": "Feel others' emotions."
+                },
+                {
+                  "id": "q8",
+                  "label": "Like order."
+                },
+                {
+                  "id": "q9",
+                  "label": "Get upset easily."
+                },
+                {
+                  "id": "q10",
+                  "label": "Have difficulty understanding abstract ideas."
+                },
+                {
+                  "id": "q11",
+                  "label": "Don't talk a lot."
+                },
+                {
+                  "id": "q12",
+                  "label": "Am not really interested in others."
+                },
+                {
+                  "id": "q13",
+                  "label": "Often forget to put things back in their proper place."
+                },
+                {
+                  "id": "q14",
+                  "label": "Am relaxed most of the time."
+                },
+                {
+                  "id": "q15",
+                  "label": "Am not interested in abstract ideas."
+                },
+                {
+                  "id": "q16",
+                  "label": "Keep in the background."
+                },
+                {
+                  "id": "q17",
+                  "label": "Am not interested in other people's problems."
+                },
+                {
+                  "id": "q18",
+                  "label": "Make a mess of things."
+                },
+                {
+                  "id": "q19",
+                  "label": "Seldom feel blue."
+                },
+                {
+                  "id": "q20",
+                  "label": "Do not have a good imagination."
+                }
+              ]
+            }
+          ]
+        }
+      ]
+    }
+  }
+}

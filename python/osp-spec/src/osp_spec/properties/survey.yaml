@@ -59,6 +59,7 @@ properties:
     group: Advanced
     help: { en: "Licence of the questionnaire itself, e.g. CC-BY-4.0." }
 hidden:
+  metadata.instruments: "The instruments used, derived from the questions' bank sources at publish (question-bank.md lead decision 1); never edited by hand."
   settings.retention: "Chosen in Survey settings (options from /api/meta/retention); publishing is refused until it is set."
   consent: "Edited in Survey settings (Consent section, the set_consent op): text per language, button labels, decline counting."
   settings.theme: "Set in the Appearance view (Use for this survey); a full copy of the theme."

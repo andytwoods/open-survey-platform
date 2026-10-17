@@ -25,5 +25,6 @@ properties:
     group: Basics
     help: { en: "The realised order is fixed the first time a participant reaches the page." }
 hidden:
+  source: "Question-bank provenance (planning/question-bank.md §2.3): written only when a bank item is inserted, removed with clear_source; shown as the provenance line, never edited in the panel."
   id: "Stable identity; assigned when the page is added, never edited in the panel."
   items: "Questions are edited on the canvas and in the outline tree, not in the property panel."

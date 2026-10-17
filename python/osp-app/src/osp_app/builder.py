@@ -27,6 +27,7 @@ from dataclasses import dataclass, field
 from datetime import UTC, date, datetime, time
 from typing import Any
 
+from osp_instruments import lookup as bundled_instrument
 from osp_ops import Draft as OpsDraft
 from osp_ops import Invocation, apply_transaction
 from osp_runtime import InvalidPayload, RuntimeConfig, SessionService
@@ -39,6 +40,7 @@ from osp_runtime.plan import (
     runtime_config,
 )
 from osp_spec import SPEC_VERSION, Diagnostic, parse, publish_diagnostics
+from osp_spec.bank import with_instruments
 from osp_store import (
     Conflict,
     Draft,
@@ -534,7 +536,10 @@ class Builder:
         # The plan's seed version is the published number (semantics R1-1), so compile
         # for the number this version will get; the store re-checks it atomically.
         number = 1 + max((v.number for v in self.store.list_versions(ctx, survey_id)), default=0)
-        body = {**draft.body, "version": number}
+        # metadata.instruments is derived from the `source` fields here, so the published
+        # version names every instrument it uses (question-bank.md lead decision 1). Bundled
+        # items are described from osp-instruments; lab items keep what insert captured.
+        body = with_instruments({**draft.body, "version": number}, bundled_instrument)
         plan, plan_diags = compile_survey(body)
         if plan is None:
             raise Rejected("The runtime plan can't be built.", _errors(plan_diags) or plan_diags)

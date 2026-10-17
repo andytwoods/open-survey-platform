@@ -547,6 +547,30 @@ _row(
     "(§1); telling not-reached from irrelevant needs the survey logic replayed (osp-engine).",
 )
 
+# --- Question-bank provenance (planning/question-bank.md §2.3, §5) -----------------------
+for _d in (*QUESTIONS, "MatrixQuestion", "Page", "Block"):
+    _row(
+        f"{_d}.source",
+        "unsupported",
+        "Question-bank provenance annotation (which bank item and version this came from), "
+        "not part of the form; it stays in the survey document and the codebook.",
+    )
+for _f in ("bank", "version", "library", "item", "checksum"):
+    _row(f"Source.{_f}", "unsupported", "See Page.source.")
+_row(
+    "Metadata.instruments",
+    "unsupported",
+    "The instruments used (citation, licence), derived at publish; listed in the codebook, "
+    "not written to the form. Cite them in the study documentation.",
+)
+for _def, _fields in (
+    ("Instrument", ("bank", "version", "library", "title", "abbreviation", "licence", "citation")),
+    ("InstrumentLicence", ("class", "holder", "statement", "url", "evidenceDate")),
+    ("InstrumentCitation", ("text", "doi")),
+):  # fmt: skip
+    for _f in _fields:
+        _row(f"{_def}.{_f}", "unsupported", "See Metadata.instruments.")
+
 LSS: dict[str, Capability] = {}
 for _key, _level, _note in _ROWS:
     if _key in LSS:  # pragma: no cover - caught by the tests

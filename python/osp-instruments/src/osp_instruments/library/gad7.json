@@ -1,0 +1,166 @@
+{
+  "bankVersion": "osp-bank-item/0.1",
+  "id": "gad7",
+  "version": 1,
+  "kind": "block",
+  "title": "Generalized Anxiety Disorder-7",
+  "abbreviation": "GAD-7",
+  "description": "Seven items on how often anxiety symptoms bothered the respondent over the last two weeks, 0–3 each. A screening aid, not a diagnosis.",
+  "tags": [
+    "anxiety",
+    "screener",
+    "mental-health",
+    "gad"
+  ],
+  "languages": [
+    "en"
+  ],
+  "licence": {
+    "class": "public-domain",
+    "holder": "Pfizer Inc. (developed by Drs. Robert L. Spitzer, Janet B.W. Williams, Kurt Kroenke and colleagues)",
+    "statement": "All PHQ, GAD-7 screeners and translations are downloadable from this website and no permission is required to reproduce, translate, display or distribute them. (Instruction manual: \"All of the measures included in Table 1 are in the public domain. No permission is required to reproduce, translate, display or distribute.\")",
+    "url": "https://www.phqscreeners.com/select-screener",
+    "evidenceDate": "2026-10-17"
+  },
+  "citation": {
+    "text": "Spitzer RL, Kroenke K, Williams JBW, Löwe B (2006). A brief measure for assessing generalized anxiety disorder: the GAD-7. Archives of Internal Medicine 166(10):1092–1097.",
+    "doi": "10.1001/archinte.166.10.1092"
+  },
+  "source": {
+    "url": "https://www.phqscreeners.com/images/sites/g/files/g10060481/f/201412/GAD-7_English.pdf",
+    "note": "English form as published on phqscreeners.com, read 2026-10-17; the check-mark instruction is left out."
+  },
+  "scoring": {
+    "text": "Sum of items 1–7 (0–21), in gad7_total. Cutpoints from the instruction manual: 5, 10 and 15 = mild, moderate and severe anxiety."
+  },
+  "fragment": {
+    "choiceLists": [
+      {
+        "id": "phq_frequency",
+        "choices": [
+          {
+            "value": 0,
+            "label": "Not at all"
+          },
+          {
+            "value": 1,
+            "label": "Several days"
+          },
+          {
+            "value": 2,
+            "label": "More than half the days"
+          },
+          {
+            "value": 3,
+            "label": "Nearly every day"
+          }
+        ]
+      }
+    ],
+    "variables": [
+      {
+        "id": "gad7_total",
+        "kind": "computed",
+        "expr": {
+          "kind": "arith",
+          "op": "+",
+          "left": {
+            "kind": "arith",
+            "op": "+",
+            "left": {
+              "kind": "arith",
+              "op": "+",
+              "left": {
+                "kind": "arith",
+                "op": "+",
+                "left": {
+                  "kind": "arith",
+                  "op": "+",
+                  "left": {
+                    "kind": "arith",
+                    "op": "+",
+                    "left": {
+                      "kind": "ref",
+                      "id": "gad7_q1"
+                    },
+                    "right": {
+                      "kind": "ref",
+                      "id": "gad7_q2"
+                    }
+                  },
+                  "right": {
+                    "kind": "ref",
+                    "id": "gad7_q3"
+                  }
+                },
+                "right": {
+                  "kind": "ref",
+                  "id": "gad7_q4"
+                }
+              },
+              "right": {
+                "kind": "ref",
+                "id": "gad7_q5"
+              }
+            },
+            "right": {
+              "kind": "ref",
+              "id": "gad7_q6"
+            }
+          },
+          "right": {
+            "kind": "ref",
+            "id": "gad7_q7"
+          }
+        }
+      }
+    ],
+    "block": {
+      "id": "gad7_block",
+      "title": "GAD-7",
+      "pages": [
+        {
+          "id": "gad7_page",
+          "items": [
+            {
+              "id": "gad7",
+              "type": "matrix",
+              "label": "Over the last 2 weeks, how often have you been bothered by the following problems?",
+              "choiceList": "phq_frequency",
+              "rows": [
+                {
+                  "id": "q1",
+                  "label": "Feeling nervous, anxious or on edge"
+                },
+                {
+                  "id": "q2",
+                  "label": "Not being able to stop or control worrying"
+                },
+                {
+                  "id": "q3",
+                  "label": "Worrying too much about different things"
+                },
+                {
+                  "id": "q4",
+                  "label": "Trouble relaxing"
+                },
+                {
+                  "id": "q5",
+                  "label": "Being so restless that it is hard to sit still"
+                },
+                {
+                  "id": "q6",
+                  "label": "Becoming easily annoyed or irritable"
+                },
+                {
+                  "id": "q7",
+                  "label": "Feeling afraid as if something awful might happen"
+                }
+              ]
+            }
+          ]
+        }
+      ]
+    }
+  }
+}

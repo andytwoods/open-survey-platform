@@ -11,6 +11,7 @@
 | `validate.py` | `validate(any) -> list[Diagnostic]`, `parse(any) -> (Survey \| None, diagnostics)`. Never raises |
 | `diagnostics.py` | `Diagnostic(severity, code, message, pointer)` and the `CODES` registry |
 | `reserved.py` | Reserved variable names (spike-1 Q2) |
+| `bank.py` | Question bank documents (planning/question-bank.md §2): `BankItem`, `Fragment`, `extract_fragment`, `check_fragment`, `with_instruments` (derives `metadata.instruments` from `source` at publish) |
 | `schema.py` | `json_schema()`; committed copy in `schema/survey.schema.json` |
 
 Regenerate the committed schema after a model change:

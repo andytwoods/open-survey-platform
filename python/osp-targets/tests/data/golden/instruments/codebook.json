@@ -1,0 +1,338 @@
+{
+  "format": "osp-codebook/1",
+  "survey": {
+    "id": "bank_demo",
+    "title": {
+      "en": "Question bank provenance (invented test data)"
+    },
+    "version": 1,
+    "checksum": "sha256:test-instruments",
+    "languages": [
+      "en"
+    ],
+    "defaultLanguage": "en"
+  },
+  "csv": {
+    "stateColumns": true,
+    "multi": "columns",
+    "bom": false,
+    "escapeFormulas": true,
+    "columns": [
+      "_response_id",
+      "_session_id",
+      "_version",
+      "_version_checksum",
+      "_plan_checksum",
+      "_engine_version",
+      "_allocation_mode",
+      "_save_mode",
+      "_seed",
+      "_started_at",
+      "_submitted_at",
+      "_late",
+      "_after_close",
+      "_end",
+      "_language",
+      "demo_q1",
+      "demo_q1__state",
+      "demo_q2",
+      "demo_q2__state",
+      "mood",
+      "mood__state",
+      "age",
+      "age__state",
+      "demo_total",
+      "demo_total__state"
+    ]
+  },
+  "missingValues": {
+    "states": [
+      {
+        "state": "answered",
+        "meaning": "Shown and answered.",
+        "csv": "the value",
+        "json": "the value"
+      },
+      {
+        "state": "unanswered",
+        "meaning": "Shown, left empty (only possible when not required).",
+        "csv": "empty",
+        "json": "null"
+      },
+      {
+        "state": "irrelevant",
+        "meaning": "Its page was reached, but its show-if hid it.",
+        "csv": "empty",
+        "json": "null"
+      },
+      {
+        "state": "not-reached",
+        "meaning": "The flow never got to its page.",
+        "csv": "empty",
+        "json": "null"
+      }
+    ],
+    "csv": "Empty value cell plus the <var>__state column. No numeric missing codes (such as -99) are ever written.",
+    "json": "value null plus state per answer."
+  },
+  "saveMode": {
+    "mode": null,
+    "implications": "Not recorded for this version (it has no publication with a save mode, or no responses yet). The per-response _save_mode column is authoritative."
+  },
+  "metaColumns": [
+    {
+      "column": "_response_id",
+      "meaning": "Response id (server)."
+    },
+    {
+      "column": "_session_id",
+      "meaning": "Participant session id (pseudonymous)."
+    },
+    {
+      "column": "_version",
+      "meaning": "Published survey version the response belongs to (semantics §9)."
+    },
+    {
+      "column": "_version_checksum",
+      "meaning": "Checksum of that version's survey document."
+    },
+    {
+      "column": "_plan_checksum",
+      "meaning": "Checksum of the runtime plan the participant's browser ran."
+    },
+    {
+      "column": "_engine_version",
+      "meaning": "Version of the participant engine (web/engine)."
+    },
+    {
+      "column": "_allocation_mode",
+      "meaning": "How conditions were assigned: server (our server, at session start), seeded (the engine drew at least one condition from the session seed), or limesurvey-native."
+    },
+    {
+      "column": "_save_mode",
+      "meaning": "every-page or end-only (runtime-design §5.0)."
+    },
+    {
+      "column": "_seed",
+      "meaning": "Session seed (positive integer, semantics §7); reproduces every order."
+    },
+    {
+      "column": "_started_at",
+      "meaning": "Session start, UTC, ISO 8601."
+    },
+    {
+      "column": "_submitted_at",
+      "meaning": "Submission accepted by the server, UTC, ISO 8601."
+    },
+    {
+      "column": "_late",
+      "meaning": "true if the server accepted the submit after the session had expired (its quota holds were released or its resume link had expired); a late response is not counted toward quotas (semantics S-2). Set by the server, never by the browser."
+    },
+    {
+      "column": "_after_close",
+      "meaning": "true if the response was submitted after the survey was closed; empty if not known."
+    },
+    {
+      "column": "_end",
+      "meaning": "End outcome reached (e.g. complete); empty if none was recorded."
+    },
+    {
+      "column": "_language",
+      "meaning": "Language the participant used."
+    }
+  ],
+  "instruments": [
+    {
+      "bank": "demo2",
+      "version": 1,
+      "library": "bundled",
+      "title": "Demo two-item scale",
+      "abbreviation": "DEMO-2",
+      "licence": {
+        "class": "cc0",
+        "holder": "Invented for tests",
+        "statement": "Invented test data; no real instrument.",
+        "url": "https://example.org/terms",
+        "evidenceDate": "2026-10-17"
+      },
+      "citation": {
+        "text": "Nobody, A. (2026). An invented scale.",
+        "doi": "10.0000/invented"
+      },
+      "variables": [
+        "demo_q1",
+        "demo_q2"
+      ],
+      "scoringVariables": [
+        "demo_total"
+      ]
+    },
+    {
+      "bank": "3f1c2d4e-lab",
+      "version": 2,
+      "library": "lab",
+      "title": "Our lab's mood item",
+      "variables": [
+        "mood"
+      ],
+      "scoringVariables": []
+    }
+  ],
+  "conditions": [],
+  "randomisers": [],
+  "orders": [],
+  "variables": [
+    {
+      "name": "demo_q1",
+      "id": "demo_q1",
+      "type": "single",
+      "label": {
+        "en": "... feel invented?"
+      },
+      "block": "demo",
+      "page": "p_demo",
+      "required": false,
+      "choices": [
+        {
+          "code": 0,
+          "label": {
+            "en": "Never"
+          }
+        },
+        {
+          "code": 1,
+          "label": {
+            "en": "Sometimes"
+          }
+        },
+        {
+          "code": 2,
+          "label": {
+            "en": "Often"
+          }
+        },
+        {
+          "code": 3,
+          "label": {
+            "en": "Always"
+          }
+        }
+      ],
+      "choiceOrder": "fixed",
+      "source": {
+        "bank": "demo2",
+        "version": 1,
+        "library": "bundled"
+      },
+      "csvColumns": [
+        "demo_q1",
+        "demo_q1__state"
+      ],
+      "missing": "Answered: the value. Unanswered, irrelevant, not-reached: empty; demo_q1__state says which state applies."
+    },
+    {
+      "name": "demo_q2",
+      "id": "demo_q2",
+      "type": "single",
+      "label": {
+        "en": "... feel like test data?"
+      },
+      "block": "demo",
+      "page": "p_demo",
+      "required": false,
+      "choices": [
+        {
+          "code": 0,
+          "label": {
+            "en": "Never"
+          }
+        },
+        {
+          "code": 1,
+          "label": {
+            "en": "Sometimes"
+          }
+        },
+        {
+          "code": 2,
+          "label": {
+            "en": "Often"
+          }
+        },
+        {
+          "code": 3,
+          "label": {
+            "en": "Always"
+          }
+        }
+      ],
+      "choiceOrder": "fixed",
+      "source": {
+        "bank": "demo2",
+        "version": 1,
+        "library": "bundled"
+      },
+      "csvColumns": [
+        "demo_q2",
+        "demo_q2__state"
+      ],
+      "missing": "Answered: the value. Unanswered, irrelevant, not-reached: empty; demo_q2__state says which state applies."
+    },
+    {
+      "name": "mood",
+      "id": "mood",
+      "type": "slider",
+      "label": {
+        "en": "Mood right now"
+      },
+      "block": "own",
+      "page": "p_own",
+      "required": false,
+      "valueType": "integer",
+      "min": 0,
+      "max": 10,
+      "step": 1,
+      "source": {
+        "bank": "3f1c2d4e-lab",
+        "version": 2,
+        "library": "lab"
+      },
+      "csvColumns": [
+        "mood",
+        "mood__state"
+      ],
+      "missing": "Answered: the value. Unanswered, irrelevant, not-reached: empty; mood__state says which state applies."
+    },
+    {
+      "name": "age",
+      "id": "age",
+      "type": "integer",
+      "label": {
+        "en": "Age"
+      },
+      "block": "own",
+      "page": "p_own",
+      "required": false,
+      "csvColumns": [
+        "age",
+        "age__state"
+      ],
+      "missing": "Answered: the value. Unanswered, irrelevant, not-reached: empty; age__state says which state applies."
+    }
+  ],
+  "otherVariables": [
+    {
+      "name": "demo_total",
+      "id": "demo_total",
+      "kind": "computed",
+      "expr": "demo_q1 + demo_q2",
+      "csvColumns": [
+        "demo_total",
+        "demo_total__state"
+      ],
+      "missing": "Answered: the computed value. Empty when an input was null: not-reached if every question it reads was not reached, irrelevant if each was not reached or hidden, otherwise unanswered. See its __state column."
+    }
+  ],
+  "quotas": [],
+  "hooks": []
+}

@@ -766,3 +766,37 @@ def test_engine_records_for_matrix_slider_and_consent() -> None:
     assert "_consent_version" not in rows["39-slider"]["resp-main"]
     book = codebook(_version("40-consent"))
     assert book.data["consent"] and "synthetic study about sleep" in book.markdown
+
+
+# -- question-bank provenance ------------------------------------------------------------------
+
+
+def test_codebook_instruments_golden() -> None:
+    """Instruments used (planning/question-bank.md §5): `metadata.instruments` with the
+    variables each produced and its scoring variables; `source` on every variable; no data
+    column carries either. Invented test data."""
+    s = json.loads((DATA / "instruments-survey.json").read_text(encoding="utf-8"))
+    book = codebook(SurveyVersion(s, number=1, checksum="sha256:test-instruments"))
+    out = GOLDEN / "instruments"
+    _golden(out / "codebook.md", book.markdown.encode("utf-8"))
+    _golden(
+        out / "codebook.json",
+        (json.dumps(book.data, ensure_ascii=False, indent=2) + "\n").encode("utf-8"),
+    )
+    demo, lab = book.data["instruments"]
+    assert demo["variables"] == ["demo_q1", "demo_q2"]
+    assert demo["scoringVariables"] == ["demo_total"]
+    assert lab["variables"] == ["mood"] and lab["scoringVariables"] == []
+    by_name = {v["name"]: v for v in book.data["variables"]}
+    assert by_name["demo_q2"]["source"] == {"bank": "demo2", "version": 1, "library": "bundled"}
+    assert "source" not in by_name["age"]
+    assert "## Instruments used" in book.markdown
+    assert not any("source" in c or "demo2" in c for c in book.data["csv"]["columns"])
+    # Without sources the section is absent (every other golden is unchanged).
+    assert "instruments" not in codebook(_version("01-all-types")).data
+    # The preregistration record carries the same list (OS1).
+    from osp_targets.prereg import prereg_data
+
+    pre = prereg_data(SurveyVersion(s, number=1, checksum="sha256:test-instruments"))
+    assert [i["bank"] for i in pre["survey"]["instruments"]] == ["demo2", "3f1c2d4e-lab"]
+    assert "instruments" not in prereg_data(_version("01-all-types"))["survey"]

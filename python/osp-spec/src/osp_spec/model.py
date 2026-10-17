@@ -55,6 +55,78 @@ class Model(BaseModel):
     )
 
 
+# --- Provenance (planning/question-bank.md §2.3) ----------------------------------------
+
+# A bank item id (a uuid) or a bundled library id ("phq9").
+type BankRef = Annotated[
+    str, StringConstraints(pattern=r"^[A-Za-z0-9][A-Za-z0-9_.-]*$", min_length=1, max_length=64)
+]
+type BankLibrary = Literal["lab", "host", "bundled", "file"]
+# How an instrument may be used (question-bank.md §2.1, §7). Which classes may be bundled
+# with the software is licence-policy.toml `[instruments] allowed`. `free-use`: the holder
+# grants free use but says nothing on redistribution or adaptation (not bundle-able).
+type LicenceClass = Literal[
+    "public-domain",
+    "cc0",
+    "cc-by-4.0",
+    "free-use",
+    "author-permission",
+    "free-noncommercial",
+    "licensed-to-lab",
+    "unknown",
+]
+LICENCE_CLASSES: tuple[str, ...] = (
+    "public-domain",
+    "cc0",
+    "cc-by-4.0",
+    "free-use",
+    "author-permission",
+    "free-noncommercial",
+    "licensed-to-lab",
+    "unknown",
+)
+type Checksum = Annotated[str, StringConstraints(pattern=r"^sha256:[0-9a-f]{64}$")]
+
+
+class Source(Model):
+    """Where an inserted question, page or block came from: which bank item, which version,
+    which library. Written only by the bank insert op; the runtime never reads it. A matrix
+    row has the source of its matrix; an item without one has its page's, then its block's."""
+
+    bank: BankRef
+    version: StrictInt = Field(ge=1)
+    library: BankLibrary
+    item: Identifier | None = None  # the fragment-local id this object had ("phq9_q3")
+    checksum: Checksum | None = None  # of the inserted fragment: "edited since insert"
+
+
+class InstrumentLicence(Model):
+    class_: LicenceClass = Field(alias="class")
+    holder: StrictStr | None = None
+    statement: StrictStr | None = None
+    url: StrictStr | None = None
+    evidenceDate: Date | None = None
+
+
+class InstrumentCitation(Model):
+    text: StrictStr
+    doi: StrictStr | None = None
+
+
+class Instrument(Model):
+    """One instrument the survey uses (lead decision 1, question-bank.md): derived from the
+    `source` fields at publish (`osp_spec.bank.with_instruments`), so a published version
+    stays self-describing even if the bank item is later deleted."""
+
+    bank: BankRef
+    version: StrictInt = Field(ge=1)
+    library: BankLibrary
+    title: StrictStr | None = None
+    abbreviation: StrictStr | None = None
+    licence: InstrumentLicence | None = None
+    citation: InstrumentCitation | None = None
+
+
 # --- Metadata ---------------------------------------------------------------------------
 
 
@@ -65,6 +137,9 @@ class Metadata(Model):
     defaultLanguage: LanguageTag | None = None  # first of `languages` when omitted
     license: StrictStr | None = None
     ddi: dict[str, JsonValue] | None = None  # free-form DDI study metadata
+    # The instruments used (question-bank.md lead decision 1): derived at publish from the
+    # `source` fields, never edited by hand.
+    instruments: list[Instrument] | None = None
 
 
 class Retention(Model):
@@ -156,6 +231,7 @@ class _QuestionBase(Model):
     custom: dict[CustomKey, CustomValue] | None = Field(
         default=None, max_length=MAX_CUSTOM_PROPERTIES
     )
+    source: Source | None = None  # question-bank provenance (§2.3)
 
 
 class _AnswerableBase(_QuestionBase):
@@ -311,6 +387,7 @@ class Page(Model):
     showIf: Condition | None = None  # false: the page is skipped, its items irrelevant (§6)
     items: list[Question] = Field(min_length=1)
     itemOrder: Order = "fixed"  # realised order fixed at first reach (semantics.md §7)
+    source: Source | None = None  # question-bank provenance (§2.3)
 
 
 class Block(Model):
@@ -319,6 +396,7 @@ class Block(Model):
     id: Identifier
     title: StrictStr | None = None  # builder-only label, never shown to participants
     pages: list[Page] = Field(min_length=1)
+    source: Source | None = None  # question-bank provenance (§2.3)
 
 
 # --- Variables --------------------------------------------------------------------------

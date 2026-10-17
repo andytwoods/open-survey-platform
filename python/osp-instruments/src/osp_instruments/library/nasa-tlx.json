@@ -1,0 +1,173 @@
+{
+  "bankVersion": "osp-bank-item/0.1",
+  "id": "nasa-tlx",
+  "version": 1,
+  "kind": "block",
+  "title": "NASA Task Load Index (raw TLX ratings)",
+  "abbreviation": "NASA-TLX",
+  "description": "The six NASA-TLX workload ratings, each on a 0–100 scale in steps of 5 with the end labels of the 1986 rating sheet (Low/High; Good/Poor for Performance), and the rating-scale definitions as help text. The pairwise-comparison weighting step is not included.",
+  "tags": [
+    "workload",
+    "hci",
+    "human-factors"
+  ],
+  "languages": [
+    "en"
+  ],
+  "licence": {
+    "class": "public-domain",
+    "holder": "NASA Ames Research Center (US Government work)",
+    "statement": "Copyright: Work of the US Gov. Public Use Permitted. Distribution Limits: Public",
+    "url": "https://ntrs.nasa.gov/citations/20000021488",
+    "evidenceDate": "2026-10-17"
+  },
+  "citation": {
+    "text": "Hart SG, Staveland LE (1988). Development of NASA-TLX (Task Load Index): results of empirical and theoretical research. In Hancock PA, Meshkati N (eds), Human Mental Workload, pp. 139–183. Amsterdam: North-Holland.",
+    "doi": "10.1016/S0166-4115(08)62386-9"
+  },
+  "source": {
+    "url": "https://ntrs.nasa.gov/api/citations/20000021488/downloads/20000021488.pdf",
+    "note": "NASA Task Load Index (TLX): Paper and Pencil Package v1.0 (1986), rating scale definitions; text taken from a scan, OCR noise corrected, subscale names in title case; read 2026-10-17."
+  },
+  "scoring": {
+    "text": "Raw TLX: the mean of the six ratings (0–100), in tlx_raw. Performance runs from Good (0) to Poor (100), so a high value is high workload on every scale. The weighted TLX needs the 15 pairwise comparisons, which are not bundled."
+  },
+  "fragment": {
+    "choiceLists": [],
+    "variables": [
+      {
+        "id": "tlx_raw",
+        "kind": "computed",
+        "expr": {
+          "kind": "arith",
+          "op": "/",
+          "left": {
+            "kind": "arith",
+            "op": "+",
+            "left": {
+              "kind": "arith",
+              "op": "+",
+              "left": {
+                "kind": "arith",
+                "op": "+",
+                "left": {
+                  "kind": "arith",
+                  "op": "+",
+                  "left": {
+                    "kind": "arith",
+                    "op": "+",
+                    "left": {
+                      "kind": "ref",
+                      "id": "tlx_mental"
+                    },
+                    "right": {
+                      "kind": "ref",
+                      "id": "tlx_physical"
+                    }
+                  },
+                  "right": {
+                    "kind": "ref",
+                    "id": "tlx_temporal"
+                  }
+                },
+                "right": {
+                  "kind": "ref",
+                  "id": "tlx_performance"
+                }
+              },
+              "right": {
+                "kind": "ref",
+                "id": "tlx_effort"
+              }
+            },
+            "right": {
+              "kind": "ref",
+              "id": "tlx_frustration"
+            }
+          },
+          "right": {
+            "kind": "int",
+            "value": 6
+          }
+        }
+      }
+    ],
+    "block": {
+      "id": "nasa_tlx_block",
+      "title": "NASA-TLX",
+      "pages": [
+        {
+          "id": "nasa_tlx_page",
+          "items": [
+            {
+              "id": "tlx_mental",
+              "type": "slider",
+              "label": "Mental Demand",
+              "help": "How much mental and perceptual activity was required (e.g., thinking, deciding, calculating, remembering, looking, searching, etc)? Was the task easy or demanding, simple or complex, exacting or forgiving?",
+              "min": 0,
+              "max": 100,
+              "step": 5,
+              "minLabel": "Low",
+              "maxLabel": "High"
+            },
+            {
+              "id": "tlx_physical",
+              "type": "slider",
+              "label": "Physical Demand",
+              "help": "How much physical activity was required (e.g., pushing, pulling, turning, controlling, activating, etc.)? Was the task easy or demanding, slow or brisk, slack or strenuous, restful or laborious?",
+              "min": 0,
+              "max": 100,
+              "step": 5,
+              "minLabel": "Low",
+              "maxLabel": "High"
+            },
+            {
+              "id": "tlx_temporal",
+              "type": "slider",
+              "label": "Temporal Demand",
+              "help": "How much time pressure did you feel due to the rate or pace at which the tasks or task elements occurred? Was the pace slow and leisurely or rapid and frantic?",
+              "min": 0,
+              "max": 100,
+              "step": 5,
+              "minLabel": "Low",
+              "maxLabel": "High"
+            },
+            {
+              "id": "tlx_performance",
+              "type": "slider",
+              "label": "Performance",
+              "help": "How successful do you think you were in accomplishing the goals of the task set by the experimenter (or yourself)? How satisfied were you with your performance in accomplishing these goals?",
+              "min": 0,
+              "max": 100,
+              "step": 5,
+              "minLabel": "Good",
+              "maxLabel": "Poor"
+            },
+            {
+              "id": "tlx_effort",
+              "type": "slider",
+              "label": "Effort",
+              "help": "How hard did you have to work (mentally and physically) to accomplish your level of performance?",
+              "min": 0,
+              "max": 100,
+              "step": 5,
+              "minLabel": "Low",
+              "maxLabel": "High"
+            },
+            {
+              "id": "tlx_frustration",
+              "type": "slider",
+              "label": "Frustration Level",
+              "help": "How insecure, discouraged, irritated, stressed and annoyed versus secure, gratified, content, relaxed and complacent did you feel during the task?",
+              "min": 0,
+              "max": 100,
+              "step": 5,
+              "minLabel": "Low",
+              "maxLabel": "High"
+            }
+          ]
+        }
+      ]
+    }
+  }
+}
