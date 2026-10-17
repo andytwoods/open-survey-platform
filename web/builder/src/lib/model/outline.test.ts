@@ -27,7 +27,19 @@ const doc = {
 				{ id: 'p2', items: [{ id: 'q1', type: 'single', label: { de: 'Nur Deutsch' } }] }
 			]
 		},
-		{ id: 'b2', pages: [{ id: 'p3', items: [{ id: 'q2', type: 'integer', label: 'Hours' }] }] }
+		{
+			id: 'b2',
+			pages: [
+				{
+					id: 'p3',
+					items: [
+						{ id: 'q2', type: 'integer', label: 'Hours' },
+						{ id: 'q3', type: 'matrix', label: 'Grid', rows: [{ id: 'r1', label: 'R1' }] },
+						{ id: 'q4', type: 'slider', label: 'Pain' }
+					]
+				}
+			]
+		}
 	]
 };
 
@@ -44,6 +56,8 @@ describe('outlineFromSurvey', () => {
 		expect(p1.children![0]).toMatchObject({ id: 'intro', label: '(intro)', family: 'note' });
 		expect(p2.children![0]).toMatchObject({ label: 'Nur Deutsch', family: 'choice', questionType: 'single' });
 		expect(tree[1].children![0].children![0]).toMatchObject({ label: 'Hours', family: 'number' });
+		expect(tree[1].children![0].children![1]).toMatchObject({ label: 'Grid', family: 'matrix' });
+		expect(tree[1].children![0].children![2]).toMatchObject({ label: 'Pain', family: 'scale' });
 		expect(surveyTitle(doc)).toBe('Sleep');
 	});
 

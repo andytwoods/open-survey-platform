@@ -30,7 +30,11 @@ function choices(raw: unknown, lang: string): ChoiceInfo[] {
 		.map((c) => ({ value: c.value as string | number, label: textOf(c.label, lang) || String(c.value) }));
 }
 
-/** Every question with a value (notes are left out), in document order. */
+/**
+ * Every question with a value (notes are left out), in document order. A matrix has no value
+ * of its own: each row is listed as a `single` question `<matrix id>_<row id>` with the
+ * matrix's columns as choices (semantics.md §2, C2c-1).
+ */
 export function questionsFromSurvey(survey: unknown, lang = 'en'): QuestionInfo[] {
 	const s = obj(survey);
 	if (!s) return [];
@@ -44,6 +48,23 @@ export function questionsFromSurvey(survey: unknown, lang = 'en'): QuestionInfo[
 			for (const q of list(page?.items).map(obj)) {
 				if (!q || typeof q.id !== 'string' || typeof q.type !== 'string' || q.type === 'note') continue;
 				const raw = q.choices ?? (typeof q.choiceList === 'string' ? lists.get(q.choiceList) : undefined);
+				if (q.type === 'matrix') {
+					const label = textOf(q.label, lang);
+					const columns = choices(raw, lang);
+					for (const row of list(q.rows).map(obj)) {
+						if (!row || typeof row.id !== 'string' || row.id === '') continue;
+						const required = typeof row.required === 'boolean' ? row.required : q.required === true;
+						out.push({
+							id: `${q.id}_${row.id}`,
+							type: 'single',
+							label: `${label} – ${textOf(row.label, lang)}`,
+							choices: columns,
+							required,
+							conditional: q.showIf !== undefined && q.showIf !== null
+						});
+					}
+					continue;
+				}
 				out.push({
 					id: q.id,
 					type: q.type,

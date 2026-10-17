@@ -20,6 +20,8 @@ QUESTION_CLASSES: dict[str, type[BaseModel]] = {
     "single": m.SingleQuestion,
     "multi": m.MultiQuestion,
     "date": m.DateQuestion,
+    "matrix": m.MatrixQuestion,
+    "slider": m.SliderQuestion,
     "note": m.NoteQuestion,
 }
 NODE_CLASSES: dict[str, type[BaseModel]] = {

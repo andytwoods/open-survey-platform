@@ -1202,7 +1202,7 @@ export interface components {
             versionId: string;
         };
         /** @enum {string} */
-        QuestionType: "integer" | "decimal" | "text" | "single" | "multi" | "date" | "note";
+        QuestionType: "integer" | "decimal" | "text" | "single" | "multi" | "date" | "matrix" | "slider" | "note";
         /** QuotaResponse */
         QuotaResponse: {
             /** Nodeid */

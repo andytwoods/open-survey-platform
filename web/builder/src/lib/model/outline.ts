@@ -31,6 +31,8 @@ const FAMILY: Record<string, Family> = {
 	date: 'text',
 	single: 'choice',
 	multi: 'choice',
+	matrix: 'matrix',
+	slider: 'scale',
 	note: 'note'
 };
 

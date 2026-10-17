@@ -14,6 +14,7 @@ import {
 	exprToText,
 	pipeSegments,
 	resolveFamily,
+	rowsFor,
 	scaleRange,
 	textFor,
 	withoutCardData
@@ -174,8 +175,27 @@ describe('pipes and text', () => {
 		});
 	});
 
+	it('previews matrix rows by row id, dropping rows without an id or repeated', () => {
+		const q = {
+			id: 'm',
+			type: 'matrix',
+			rows: [{ id: 'tea', label: { en: 'Tea' } }, { id: 'tea', label: 'dup' }, { label: 'no id' }, null, { id: 'cocoa', label: 'Cocoa', required: false }]
+		} as unknown as CardQuestion;
+		expect(rowsFor(q)).toEqual([
+			{ value: 'tea', label: 'Tea' },
+			{ value: 'cocoa', label: 'Cocoa' }
+		]);
+		expect(rowsFor({ id: 'm', type: 'matrix', rows: null })).toEqual([]);
+	});
+
 	it('makes any scale range safe for the slider', () => {
-		expect(scaleRange({ id: 's', type: 'slider' })).toEqual({ min: 0, max: 10, step: 1 });
+		expect(scaleRange({ id: 's', type: 'slider' })).toEqual({ min: 0, max: 100, step: 1 });
+		expect(scaleRange({ id: 's', type: 'slider', min: '0.5', max: '2.5', step: '0.5' })).toEqual({
+			min: 0.5,
+			max: 2.5,
+			step: 0.5
+		});
+		expect(scaleRange({ id: 's', type: 'slider', min: 'x', max: '', step: '0' })).toEqual({ min: 0, max: 100, step: 1 });
 		expect(scaleRange({ id: 's', type: 'slider', min: 5, max: 5, step: -1 })).toEqual({ min: 5, max: 6, step: 1 });
 		expect(scaleRange({ id: 's', type: 'slider', min: 1, max: 7, step: 0.5 })).toEqual({ min: 1, max: 7, step: 0.5 });
 	});

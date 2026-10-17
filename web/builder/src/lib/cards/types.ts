@@ -27,10 +27,17 @@ export interface SpecChoiceList {
 	choices: readonly SpecChoice[];
 }
 
+/** One matrix row (osp-spec `MatrixRow`): its variable is `<matrix id>_<row id>`. */
+export interface SpecMatrixRow {
+	id: string;
+	label: SpecText;
+	required?: boolean | null;
+}
+
 /**
- * A question as stored in the survey. `rows` (matrix) and `min`/`max`/`step`/`minLabel`/
- * `maxLabel` (scale) are provisional: osp-spec has no matrix or slider type yet, so these
- * follow the participant widgets' props until it does.
+ * A question as stored in the survey. `rows` is a matrix's (osp-spec `MatrixQuestion`);
+ * `min`/`max`/`step`/`valueType`/`minLabel`/`maxLabel` a slider's (`SliderQuestion`, where
+ * numbers may also be decimal text).
  */
 export interface CardQuestion {
 	id: string;
@@ -44,12 +51,13 @@ export interface CardQuestion {
 	choices?: readonly SpecChoice[] | null;
 	choiceList?: string | null;
 	choiceOrder?: 'fixed' | 'shuffle' | string;
-	rows?: readonly SpecChoice[] | null;
-	min?: number;
-	max?: number;
-	step?: number;
-	minLabel?: SpecText;
-	maxLabel?: SpecText;
+	rows?: readonly SpecMatrixRow[] | null;
+	min?: number | string;
+	max?: number | string;
+	step?: number | string;
+	valueType?: 'integer' | 'decimal' | string;
+	minLabel?: SpecText | null;
+	maxLabel?: SpecText | null;
 	[field: string]: unknown;
 }
 

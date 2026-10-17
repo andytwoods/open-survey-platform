@@ -428,7 +428,9 @@ class _Checker:
             self._choice_items(cl.choices, pointer("choiceLists", i, "choices"), None)
         for qid, info in self.questions.items():
             q = info.q
-            if qid in self.row_of or not isinstance(q, (SingleQuestion, MultiQuestion, MatrixQuestion)):
+            if qid in self.row_of or not isinstance(
+                q, (SingleQuestion, MultiQuestion, MatrixQuestion)
+            ):
                 continue
             if (q.choiceList is None) == (q.choices is None):
                 self.emit(
@@ -981,7 +983,9 @@ def _slider(self: _Checker, q: SliderQuestion, ptr: str) -> None:
         value = Decimal(text)
         if q.valueType == "integer" and value != value.to_integral_value():
             self.emit(
-                "question.slider", f"{ptr}/{key}", f"{key} must be a whole number on an integer slider"
+                "question.slider",
+                f"{ptr}/{key}",
+                f"{key} must be a whole number on an integer slider",
             )
             continue
         values[key] = value
