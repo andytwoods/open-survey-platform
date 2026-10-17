@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'vitest';
 import type { OutlineNode } from '../model/outline';
-import { boxesFrom, dropTargetAt } from './drag';
+import { boxesFrom, dropTargetAt, insertTargetAt } from './drag';
 import { applyMoves, describeMove, destinations, keyboardTarget, moveOps, movableIds } from './moves';
 
 const q = (id: string): OutlineNode => ({ id, type: 'question', label: id.toUpperCase() });
@@ -140,6 +140,35 @@ describe('dropTargetAt', () => {
 	it('is null where nothing would move', () => {
 		expect(dropTargetAt(boxes, 21, 'question', ROOTS, ['a'])).toBeNull();
 		expect(dropTargetAt(boxes, 5, 'question', ROOTS, ['a'])).toBeNull();
+	});
+});
+
+describe('insertTargetAt (a new question from the toolbox)', () => {
+	const order: [string, number][] = [
+		['b1', 1], ['p1', 2], ['a', 3], ['b', 3], ['c', 3], ['p2', 2], ['d', 3], ['e', 3], ['b2', 1], ['p3', 2], ['f', 3]
+	];
+	const boxes = boxesFrom(order.map(([id, level], i) => ({ id, level, top: i * 10, bottom: i * 10 + 10 })));
+
+	it('goes before/after any question, even where a move would be a no-op', () => {
+		expect(insertTargetAt(boxes, 21, ROOTS)).toMatchObject({ target: { parent: 'p1', slot: 0 }, edge: 'before', rowId: 'a' });
+		expect(insertTargetAt(boxes, 28, ROOTS)).toMatchObject({ target: { parent: 'p1', slot: 1 }, edge: 'after' });
+		expect(insertTargetAt(boxes, 78, ROOTS)).toMatchObject({ target: { parent: 'p2', slot: 2 }, edge: 'after', lineRowId: 'e' });
+	});
+
+	it('goes into a page at its end, including an empty page', () => {
+		expect(insertTargetAt(boxes, 55, ROOTS)).toMatchObject({ target: { parent: 'p2', slot: 2 }, edge: 'into' });
+		const empty = [block('b1', page('p1'))];
+		const two = boxesFrom([
+			{ id: 'b1', level: 1, top: 0, bottom: 10 },
+			{ id: 'p1', level: 2, top: 10, bottom: 20 }
+		]);
+		expect(insertTargetAt(two, 15, empty)).toMatchObject({ target: { parent: 'p1', slot: 0 }, edge: 'into' });
+	});
+
+	it('is null over a block row, or with no rows', () => {
+		expect(insertTargetAt(boxes, 5, ROOTS)).toBeNull();
+		expect(insertTargetAt(boxes, 85, ROOTS)).toBeNull();
+		expect(insertTargetAt([], 5, ROOTS)).toBeNull();
 	});
 });
 

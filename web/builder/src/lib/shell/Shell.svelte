@@ -47,8 +47,11 @@
 		rememberType,
 		type QuestionTypeId
 	} from '../question-types/catalogue';
+	import InsertAtDialog from '../question-types/InsertAtDialog.svelte';
+	import { TypeDrag } from '../question-types/type-drag.svelte';
 	import TypeChangeDialog, { type TypeChangeRequest } from '../question-types/TypeChangeDialog.svelte';
 	import TypePickerDialog from '../question-types/TypePickerDialog.svelte';
+	import TypeToolbox from '../question-types/TypeToolbox.svelte';
 	import TopBar from './TopBar.svelte';
 
 	/**
@@ -64,7 +67,8 @@
 
 	const registry = new CommandRegistry({
 		isMac: detectMac(),
-		isModalOpen: () => paletteOpen || (previewOpen && !store) || moveToOpen || pickerOpen || !!typeChange
+		isModalOpen: () =>
+			paletteOpen || (previewOpen && !store) || moveToOpen || pickerOpen || insertAtOpen || !!typeChange
 	});
 	const mockPages = MOCK_SURVEY.children ?? [];
 	// Outline moves show at once (optimistic) and are reconciled with the server's reply.
@@ -157,13 +161,13 @@
 		pickerOpen = true;
 	}
 
-	async function addQuestionOfType(type: QuestionTypeId, pageId?: string) {
+	async function addQuestionOfType(type: QuestionTypeId, pageId?: string, index?: number) {
 		if (!store) return;
 		const page = pageId ?? targetPage(pages, selection.id);
 		if (!page) return toast('Add a page first.');
 		rememberType(type);
 		lastType = type;
-		const out = await store.submit([{ op: 'add_question', params: { page, type } }]);
+		const out = await store.submit([{ op: 'add_question', params: { page, type, ...(index !== undefined ? { index } : {}) } }]);
 		if (out.status !== 'applied') return;
 		const id = addedQuestionId(out.result.patch);
 		if (id) {
@@ -171,6 +175,20 @@
 			// Select it and put the cursor in its text, ready to type.
 			await goTo({ id, type: 'question', properties: ['label'] });
 		}
+	}
+
+	// The toolbox under the outline (B16): click adds, drag inserts, Shift+Enter asks where.
+	const typeDrag = new TypeDrag();
+	let toolboxCollapsed = $state(false);
+	let insertAtOpen = $state(false);
+	let insertAtType = $state<QuestionTypeId | null>(null);
+	let insertAtReturnId = $state<string | null>(null);
+
+	function chooseWhere(type: QuestionTypeId) {
+		insertAtType = type;
+		const active = document.activeElement;
+		insertAtReturnId = active instanceof HTMLElement && active.id ? active.id : null;
+		insertAtOpen = true;
 	}
 
 	const selectedQuestion = () => {
@@ -267,6 +285,11 @@
 	const propertiesCollapsible = $derived(editing && innerWidth < PROPERTIES_BREAKPOINT);
 	const showOutline = $derived(!outlineCollapsible || outlineOpen);
 	const showProperties = $derived(!propertiesCollapsible || propertiesOpen);
+	// In the narrow outline overlay the toolbox starts folded, leaving the tree the room.
+	$effect(() => {
+		const narrow = outlineCollapsible;
+		untrack(() => (toolboxCollapsed = narrow));
+	});
 
 	// Registered during init (not onMount) so child components see the shortcuts on first render.
 	const offCommands = registry.registerAll(
@@ -451,16 +474,28 @@
 				data-pane="outline"
 				onkeydown={(e) => closeOverlayOnEscape(e, 'outline')}
 			>
-				<div class="pane-scroll">
-					<h2 id="outline-heading" class="pane-heading">Outline</h2>
-					{#key store?.surveyId}
-						<OutlineTree
-							roots={pages}
-							{selection}
-							multi={outlineSelection}
-							onMove={store ? moveItems : undefined}
+				<div class="outline-stack">
+					<div class="pane-scroll">
+						<h2 id="outline-heading" class="pane-heading">Outline</h2>
+						{#key store?.surveyId}
+							<OutlineTree
+								roots={pages}
+								{selection}
+								multi={outlineSelection}
+								onMove={store ? moveItems : undefined}
+								typeDrag={store ? typeDrag : undefined}
+							/>
+						{/key}
+					</div>
+					{#if store && editing}
+						<TypeToolbox
+							drag={typeDrag}
+							bind:collapsed={toolboxCollapsed}
+							onadd={(t) => void addQuestionOfType(t)}
+							oninsert={(t, target) => void addQuestionOfType(t, target.parent ?? undefined, target.slot)}
+							onchoosewhere={chooseWhere}
 						/>
-					{/key}
+					{/if}
 				</div>
 				{#if !outlineCollapsible}
 					<PaneResizer
@@ -562,6 +597,14 @@
 		returnFocusId={picker.mode === 'change' ? pickerReturnId : null}
 		onchoose={onTypeChosen}
 	/>
+	<InsertAtDialog
+		bind:open={insertAtOpen}
+		type={insertAtType}
+		roots={pages}
+		selectedId={selection.id}
+		returnFocusId={insertAtReturnId}
+		oninsert={(t, target) => void addQuestionOfType(t, target.parent ?? undefined, target.slot)}
+	/>
 	<TypeChangeDialog request={typeChange} onresolve={onTypeChangeResolved} />
 	<MoveToDialog bind:open={moveToOpen} roots={pages} ids={outlineSelection.ids} onMove={(ids, t) => void moveItems(ids, t)} />
 {/if}
@@ -624,6 +667,21 @@
 	.pane-scroll {
 		flex: 1;
 		min-width: 0;
+		overflow: auto;
+	}
+	.outline-stack {
+		display: flex;
+		flex: 1;
+		flex-direction: column;
+		min-width: 0;
+		min-height: 0;
+	}
+	.outline-stack > .pane-scroll {
+		min-height: 6rem;
+	}
+	.outline-stack > :global(.toolbox) {
+		flex: none;
+		max-height: 50%;
 		overflow: auto;
 	}
 	.outline {
