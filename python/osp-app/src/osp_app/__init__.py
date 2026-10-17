@@ -13,6 +13,7 @@ from .errors import (
     RevisionConflictError,
     Unauthenticated,
 )
+from .preview import preview_plan
 from .runtime_repo import StoreParticipantRepo
 from .services import AppServices, build_services
 from .simulate import simulate_survey
@@ -42,6 +43,7 @@ __all__ = [
     "SurveyView",
     "Unauthenticated",
     "build_services",
+    "preview_plan",
     "simulate_survey",
     "command",
     "dispatch",
