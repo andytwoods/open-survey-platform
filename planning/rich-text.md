@@ -1,6 +1,9 @@
 # Rich text in every builder text field (plan RT)
 
-Status: **proposed** 17 Oct 2026 (task RT1, plan only; nothing built). The owner wants a GUI
+Status: **decided** 17 Oct 2026 (task RT1, plan only; nothing built). The lead's answers to §13
+are in "Lead decisions" at the end and have been folded into the body below (underline
+dropped, headings not in question stems, per-field length limits); the build is tasks
+RT2–RT6 in `tasks.md`. The owner wants a GUI
 for text (bold, italic, links, lists…) instead of typing raw text into question text, help,
 notes, choice labels, consent, endings and closed messages. This document fixes the editor
 library and its licence, the rich-text model in the spec, piping chips, translations, paste
@@ -91,7 +94,8 @@ per-language map may mix plain and rich values.
 - **Blocks:** `p` (paragraph), `h` (heading, `level` 1–3, relative to the page), `ul`/`ol`
   (single-level lists of inline runs). Nothing else: no blockquote, code, table, image,
   horizontal rule, alignment. Media embeds arrive as a new block kind from MM1.
-- **Inline runs:** `{text, marks?, href?, lang?}` with `marks ⊆ {b, i, u}`; `href` is an
+- **Inline runs:** `{text, marks?, href?, lang?}` with `marks ⊆ {b, i}` (no underline: lead
+  decision 1; on the web it reads as a link); `href` is an
   absolute `https:` URL (≤ 2 000 characters) and makes the run a link (adjacent runs with the
   same `href` are one link); `lang` is a `LanguageTag` (the existing per-segment language
   span). `{pipe: id}` is a pipe node, same identifiers and built-ins as `${id}` today.
@@ -103,30 +107,41 @@ per-language map may mix plain and rich values.
   and `blocks` are not valid language tags, so the union `StrictStr | RichText |
   dict[LanguageTag, StrictStr | RichText]` is unambiguous.
 - **Levels per field** (enforced by the validator, declared in the property YAML as
-  `rich: block | inline` on the existing `richtext` kind; `text` stays plain):
+  `rich: block | stem | inline` on the existing `richtext` kind; `text` stays plain). Each
+  level carries its length limit (lead decision 4):
 
-| Level | Allowed | Fields |
-|---|---|---|
-| **block** | all blocks, marks, links, pipes, breaks | question `label` and `help` (every type; a note's content is its label), `metadata.description`, `Consent.text` (no pipes, as today), `EndNode.message`, and later `Ending.body`, `closedMessage`, `notOpenMessage` (EN1, EN3) |
-| **inline** | exactly one `p`; marks, links, pipes, breaks; no headings or lists | `Choice.label`, `MatrixRow.label`, slider `minLabel`/`maxLabel`, `Page.title`, `constraintMessage`, `Consent.agreeLabel`/`declineLabel` |
-| **plain** | string only | `metadata.title` (used in `<title>`, lists, exports), `Block.title`, choice values, ids, hook strings |
+| Level | Allowed | Limit | Fields |
+|---|---|---|---|
+| **block** | all blocks (headings 1–3, lists, paragraphs), marks, links, pipes, breaks | 20 000 | a note's `label` (`note.yaml`), `metadata.description`, `Consent.text` (no pipes, as today), `EndNode.message`, and later `Ending.body`, `closedMessage`, `notOpenMessage` (EN1, EN3) |
+| **stem** | paragraphs and lists, marks, links, pipes, breaks; **no headings** (a stem is a label: lead decision 2) | 2 000 | answerable questions' `label` and `help` (every type but note) |
+| **inline** | exactly one `p`; marks, links, pipes, breaks; no headings or lists | 500 | `Choice.label`, `MatrixRow.label`, matrix column labels, slider `minLabel`/`maxLabel`, `Page.title`, `constraintMessage`, `Consent.agreeLabel`/`declineLabel` |
+| **plain** | string only | – | `metadata.title` (used in `<title>`, lists, exports; lead decision 6), `Block.title`, choice values, ids, hook strings |
 
-  Headings in an answerable question's label are allowed by the model but the editor hides
-  the heading buttons there (a heading inside a question stem is a layout smell); notes,
-  description, consent and endings show them. Needs human: see §13 Q2.
+  The level is a property of the field, so a note's label is `block` while a single-choice
+  label is `stem`: the per-type YAMLs (`properties/note.yaml` vs `single.yaml` …) declare it.
+  The editor shows the heading control only at `block` level; the validator refuses headings
+  elsewhere (`text.block_not_allowed`), so a pasted or imported heading in a stem is a
+  diagnostic, not a silent layout change.
 
 ### 3.2 Validation (osp-spec, all diagnostics, never exceptions)
 
 - Structure: pydantic rejects unknown keys, unknown block types, `level` outside 1–3,
-  nested lists (the shape has no nesting), marks outside `{b, i, u}`.
+  nested lists (the shape has no nesting), marks outside `{b, i}`.
 - `link.scheme` (error): `href` not `https:` (no `http:`, `mailto:`, `javascript:`, relative).
-  `link.empty` (error): a link with no text. Rendering adds `rel="noopener noreferrer"`; it
-  is never stored.
-- `text.too_long` (error): more than **20 000** text characters per field per language
-  (pipes count 0); `text.too_many_blocks` (error) above 200 blocks or 100 list items.
-  Needs human: §13 Q4.
-- `text.block_not_allowed` (error): headings or lists, or more than one block, in an
-  inline field.
+  `link.empty` (error): a link with no text. Rendering adds `target="_blank"
+  rel="noopener noreferrer"`; neither is stored.
+- `text.too_long` (error): more text characters per field per language than the field's
+  level allows (lead decision 4): **20 000** at `block`, **2 000** at `stem`, **500** at
+  `inline`; pipes count 0. The same limits apply to plain strings in those fields (today
+  they have none), as a warning for existing surveys and an error on new writes.
+  `text.too_many_blocks` (error) above 200 blocks or 100 list items.
+- `text.block_not_allowed` (error): a heading outside a `block` field; lists, or more than
+  one block, in an `inline` field.
+- **Validated on every write.** The API validates the tree (structure, links, limits,
+  levels) before an op's result is stored, which is what the existing comments "sanitised at
+  save" (`web/engine/src/engine.ts:1246`, `web/engine/src/plan.ts:25`) promise and nothing
+  implements today. RT2 makes the promise true or removes the comments (lead decision, final
+  line).
 - Pipes: the same `_check_ref` path as `${id}` today (`pipe.invalid`, `ref.*`,
   `consent.pipe`), with the diagnostic pointer at the node
   (`/pages/2/items/0/label/en/blocks/0/content/3`).
@@ -148,8 +163,8 @@ through the op.
 `RichText`, `Block`, `Inline` become `$defs` with properties, so `schema_fields()` adds
 `RichText.type`, `RichText.blocks`, `Block.*`, `Inline.*` keys: both capability tables get
 rows (native for LSS; native/lowered/approximated for XLSForm per §8), plus behaviour rows
-`$rich.bold`, `$rich.italic`, `$rich.underline`, `$rich.link`, `$rich.heading`,
-`$rich.list`, `$rich.break`, `$rich.lang`. Property YAMLs gain `rich: block|inline`;
+`$rich.bold`, `$rich.italic`, `$rich.link`, `$rich.heading`, `$rich.list`, `$rich.break`,
+`$rich.lang`. Property YAMLs gain `rich: block|stem|inline`;
 `export_schema.py` regenerates `survey.schema.json`; `fixtures/FORMAT.md` and
 `docs/building-a-survey.md` document the subset. `doc.py` `text_sites()` learns to walk the
 tree and to cover page titles, slider labels and consent (today's gap).
@@ -201,9 +216,10 @@ ProseMirror parses pasted HTML **through the schema**, so anything the schema ha
 for is dropped or unwrapped by construction; we add rules, not a sanitiser:
 
 - `<b>`, `<strong>`, `font-weight: bold|600+` → `b`; `<i>`, `<em>`, `font-style: italic` →
-  `i`; `<u>`, `text-decoration: underline` → `u` (Google Docs pastes styled `<span>`s; Word
-  pastes `<b>`/`<i>` with `mso-` styles, which are ignored).
-- `<h1>`–`<h6>` → `h` clamped to 1–3 in block fields, paragraphs in inline fields;
+  `i` (Google Docs pastes styled `<span>`s; Word pastes `<b>`/`<i>` with `mso-` styles, which
+  are ignored). `<u>` and `text-decoration: underline` are dropped to plain text (no
+  underline mark: lead decision 1), counted in the "Formatting simplified" status line.
+- `<h1>`–`<h6>` → `h` clamped to 1–3 in block fields, paragraphs in stem and inline fields;
   `<ul>/<ol>` nested → flattened to one level (indent markers from Word's `mso-list` become
   plain items); `<li>` with blocks inside → one run.
 - `<a href>` kept only when the href is `https:`; otherwise the text stays and the link is
@@ -227,18 +243,18 @@ for is dropped or unwrapped by construction; we add rules, not a sanitiser:
   changes with `make contract`; the engine's `RenderedText` becomes rendered blocks whose
   runs are `{kind: 'text'|'value', text, marks?, href?, lang?}` (values stay escaped data).
 - **`toHtml` / `toPlain`:** `toHtml` emits only our tags (`p`, `h3`–`h5`, `ul`, `ol`, `li`,
-  `strong`, `em`, `u`, `a href rel`, `br`, `span lang`) with every text escaped, from the
+  `strong`, `em`, `a href target rel`, `br`, `span lang`) with every text escaped, from the
   tree: safe by construction. A **single paragraph emits no `<p>` wrapper**, so every
   existing expected trace stays byte-identical. `toPlain` flattens for accessible names,
   `document.title`, the error summary and the harness comparison (`player.ts:404`).
 - **Participant UI:** ui-components `Text` type becomes blocks; `RichText.svelte` renders
-  blocks and runs as components (`<strong>`, `<em>`, `<u>`, `<a>`, `<h3>`…, `<ul>`), still
+  blocks and runs as components (`<strong>`, `<em>`, `<a>`, `<h3>`…, `<ul>`), still
   never `{@html}`; `RichInline.svelte` renders the inline level inside `<label>`/`<legend>`
   (block content is not valid there). Question labels with block content are rendered in a
   `<div id>` referenced by `aria-labelledby`, as `QuestionFrame` can already do for help.
   Headings map to `h3`–`h5` under the page's `h2`. Links open in a new tab
-  (`target=_blank rel=noopener noreferrer`) with visually hidden "(opens in a new tab)";
-  needs human §13 Q3. End message, consent and page titles stop using `plain()` and render
+  (`target=_blank rel=noopener noreferrer`) with visually hidden "(opens in a new tab)"
+  (lead decision 3). End message, consent and page titles stop using `plain()` and render
   rich. `svelte/no-at-html-tags` becomes an eslint **error** across `web/`.
 - **Builder preview** is the runtime in an iframe, so it shows formatting as soon as the
   runtime does. Builder cards (`CardShell`, `PipedText`) render the same component read-only.
@@ -253,13 +269,12 @@ for is dropped or unwrapped by construction; we add rules, not a sanitiser:
 | `p` | paragraphs separated by a blank line | `<p>` |
 | `br` | newline | `<br />` |
 | `b` / `i` | `**text**` / `_text_` | `<strong>` / `<em>` |
-| `u` | `<span style="text-decoration:underline">` (XLSForm allows styled spans; Enketo renders them; Collect: approximated, not verified) | `<u>` |
-| link | `[text](https://…)` | `<a href rel="noopener noreferrer">` |
+| link | `[text](https://…)` (Enketo opens links in a new tab itself) | `<a href target="_blank" rel="noopener noreferrer">` |
 | `h` level L | `#` × (L+1), lowered (absolute heading sizes in the form) | `<h3>`–`<h5>`, lowered |
 | `ul` / `ol` | `- item` / `1. item` (single level; native in Enketo, approximated in Collect) | `<ul>` / `<ol>` native |
 | pipe | `${name}` / `${osp_label_q}` as today | `{code}` / `{code.shown}` as today |
 | `lang` | lost: `$rich.lang` unsupported | `<span lang>` |
-| literal `* _ # \` in text | **escaped with `\`** (the XLSForm rule), which replaces today's `$text.markup` warning on plain text: text shows as written. Behaviour change for existing surveys; needs human §13 Q5 | `html.escape` as today; `{` → `\{` as today |
+| literal `* _ # \` in text | **escaped with `\`** (the XLSForm rule), which replaces today's `$text.markup` warning on plain text: text shows as written. Behaviour change for existing surveys, confirmed (lead decision 5): RT4 records it in the devlog and in the XLSForm capability notes | `html.escape` as today; `{` → `\{` as today |
 
 Loss diagnostics come from the capability rows (§3.4) through the existing `note()` path
 (once per feature and pointer). The codebook and preregistration writers flatten rich text
@@ -273,7 +288,7 @@ strings; the drafter's guardrails should reject links to anything but `https:`.
 ## 9. The editor in the builder
 
 - **One component**, `RichTextEditor.svelte` in `web/builder/src/lib/richtext/`, props:
-  `value` (plain or rich, one language), `level` (`block | inline`), `pipes` (candidate list
+  `value` (plain or rich, one language), `level` (`block | stem | inline`), `pipes` (candidate list
   or `none`), `referenceValue` (§5), `maxChars`, `label`/`description` ids, `onCommit`,
   `placeholder`. Files: `schema.ts` (the extensions and the pipe node), `convert.ts` (spec
   tree ↔ ProseMirror JSON, plain ↔ rich; property-based tests that `fromDoc(toDoc(x)) = x`),
@@ -289,12 +304,13 @@ strings; the drafter's guardrails should reject links to anything but `https:`.
   stay stable.
 - **Toolbar** (bits-ui Toolbar: `role=toolbar`, roving tabindex, arrow keys, Home/End;
   buttons are ui-components `IconButton`s with `aria-pressed`, labels and
-  `aria-keyshortcuts`): Bold `Ctrl+B`, Italic `Ctrl+I`, Underline `Ctrl+U`, Link `Ctrl+K`
+  `aria-keyshortcuts`): Bold `Ctrl+B`, Italic `Ctrl+I`, Link `Ctrl+K`
   (ui `Dialog` with URL field, https validation, Remove link), Bulleted list, Numbered list,
-  Heading (block fields: a small `Select` Paragraph/Heading 1–3), Line break
+  Heading (block fields only: a small `Select` Paragraph/Heading 1–3), Line break
   (`Shift+Enter`), Insert answer (§4), Clear formatting, Undo/Redo (`Ctrl+Z`/`Ctrl+Y`).
-  Inline fields show only Bold, Italic, Underline, Link, Insert answer. Markdown input rules
-  (`**x**`, `- `, `1. `) are on for people who type that way.
+  Stem fields show everything but Heading; inline fields show only Bold, Italic, Link,
+  Insert answer. `Ctrl+U` does nothing (no underline). Markdown input rules (`**x**`, `- `,
+  `1. `) are on for people who type that way.
 - **Keyboard:** Tab and Shift+Tab always leave the editor (never inserted); Escape in the
   editor reverts the draft (the existing contract); `Alt+F10` focuses the toolbar and
   Escape from the toolbar returns to the text (the WAI-ARIA toolbar pattern).
@@ -304,15 +320,16 @@ strings; the drafter's guardrails should reject links to anything but `https:`.
   `aria-placeholder`. Mark toggles update `aria-pressed`; shortcut toggles announce
   ("Bold on") through the existing `announce()` (polite, deduplicated); link insertion and
   chip insertion announce too.
-- **Character count:** `N / 20 000` below the field (text characters, per language), live
-  region only from 90 % of the limit; above the limit the count turns into the error and
+- **Character count:** `N / limit` below the field (the field's level limit: 20 000, 2 000
+  or 500; text characters, per language), live region only from 90 % of the limit; above
+  the limit the count turns into the error and
   the commit still happens (the server's `text.too_long` is what blocks publishing).
 - **320 px:** toolbar wraps to two rows and collapses rarely used buttons into a *More* menu
   (bits-ui DropdownMenu) at `< 480 px`; chips wrap; link dialog is full-width; the
   properties pane is already a drawer at 320 px. Targets ≥ 44 px.
 - **Theme:** tokens only (light/dark); chips use the existing `PipedText` token style;
   editor focus ring is the shared `focus-visible` 2 px outline.
-- **Where it plugs in:** `PropertyField` (`richtext` block/inline per YAML; `text` kinds
+- **Where it plugs in:** `PropertyField` (`richtext` block/stem/inline per YAML; `text` kinds
   that are translatable and participant-facing use the inline editor; `metadata.title` stays
   an `Input`), `NodeCard` end message (block), `ConsentEditor` text (block, no pipes) and
   labels (inline), `ChoiceListEditor` and `RowsEditor` rows (inline, edit-on-focus; Alt+Arrow
@@ -350,61 +367,66 @@ the editor, then the per-row editors and translations. Phases:
 | 4 | RT6 translations in the pane (editing language, reference strip, copy from default) | ~1.5 agent-days |
 | later | TR1 translations table + CSV/XLIFF; EN1/EN3 use the model for endings and closed messages; MM1 adds a media block; IM1 parses LSS/XLSForm text into the tree | per their plans |
 
-Decisions proposed (to be confirmed by the owner):
+Decisions (proposed 17 Oct 2026, confirmed by the lead the same day; D4, D5, D7, D8 and D9
+amended per the lead decisions at the end):
 
 - **RT-D1 Editor:** Tiptap 3 open-source core on ProseMirror (MIT), builder-only, lazy
   chunk, our own toolbar from bits-ui + ui-components. No StarterKit, no Pro, no cloud.
 - **RT-D2 Model:** a closed JSON tree (`{"type":"rich","blocks":[…]}`) as a third `Text`
   variant; never HTML or Markdown strings in the spec; plain strings stay valid everywhere.
 - **RT-D3 Normalisation:** formatting-free rich text is stored as a plain string by the ops.
-- **RT-D4 Subset:** paragraphs, line breaks, bold, italic, underline, `https:` links,
-  single-level bulleted and numbered lists, headings 1–3, language spans, pipes. No colours,
-  fonts, sizes, alignment, images, tables, code (media via MM1).
-- **RT-D5 Levels:** block for question label/help, description, consent text, end message
-  and future endings/closed messages; inline for choice and row labels, slider labels, page
-  title, constraint message, consent button labels; `metadata.title` and builder-only
-  strings stay plain.
+- **RT-D4 Subset:** paragraphs, line breaks, bold, italic, `https:` links, single-level
+  bulleted and numbered lists, headings 1–3, language spans, pipes. No underline (lead
+  decision 1), colours, fonts, sizes, alignment, images, tables, code (media via MM1).
+- **RT-D5 Levels:** block (headings allowed) for notes, description, consent text, end
+  message and future endings/closed/not-open messages; stem (no headings) for answerable
+  questions' label and help (lead decision 2); inline for choice, row and column labels,
+  slider labels, page title, constraint message, consent button labels; `metadata.title`
+  (lead decision 6) and builder-only strings stay plain.
 - **RT-D6 Rendering:** tree → Svelte components; `{@html}` banned by lint; `toHtml` emits
   only our tags with escaped text and keeps single paragraphs unwrapped.
-- **RT-D7 Links:** `https:` only; open in a new tab with `rel="noopener noreferrer"` and a
-  hidden "(opens in a new tab)".
-- **RT-D8 Limits:** 20 000 text characters per field per language, 200 blocks, 100 list
-  items, single-level lists; counts shown in the editor.
+- **RT-D7 Links:** `https:` only; open in a new tab with `target="_blank"
+  rel="noopener noreferrer"` and a hidden "(opens in a new tab)" (lead decision 3).
+- **RT-D8 Limits:** text characters per field per language by level: 20 000 block, 2 000
+  stem, 500 inline (lead decision 4); 200 blocks, 100 list items, single-level lists; counts
+  shown in the editor.
 - **RT-D9 Exports:** XLSForm gets the Markdown subset with backslash escaping of literal
-  markup; LSS gets allow-listed HTML; every loss is a capability row.
+  markup, also in existing plain text (behaviour change, confirmed: lead decision 5); LSS
+  gets allow-listed HTML; every loss is a capability row.
 - **RT-D10 Pipes:** chips backed by `{pipe: id}` nodes; candidates listed client-side like
   the condition editor; server `ref.*` diagnostics are the truth and show on the chip.
 - **RT-D11 Translations:** one editing language per pane with the default language as a
   read-only reference and *Copy from default*; formatting may differ per language.
 
-## 12. Proposed build tasks (for the lead to add to `tasks.md` / HubAI)
+## 12. Build tasks (added to `tasks.md` as RT2–RT6 by the lead, 17 Oct 2026)
 
 | id | what | depends on | acceptance criteria |
 |---|---|---|---|
-| RT2 | Rich-text model end to end | – | `RichText`/`Block`/`Inline` in `osp_spec.model` with the union in §3.1; validator codes `link.scheme`, `link.empty`, `text.too_long`, `text.too_many_blocks`, `text.block_not_allowed`, pipes through `_check_ref` with node pointers; `normalise_text()` used by every text op, with a shared fixture proving Python and TS agree; `doc.py` walks the tree and covers page titles, slider labels and consent; property YAML `rich: block\|inline` + `export_schema.py`; both capability tables cover the new keys (§3.4); plan contract `Block[]` (`make contract`), engine rendered blocks, `toHtml` single-paragraph rule keeps every existing expected trace identical, `toPlain`; ui-components `RichText`/`RichInline`, runtime renders label/help/choices/rows/slider/end/consent/page title rich with `aria-labelledby` where needed; `svelte/no-at-html-tags` error; fixture `41-rich-text` + RTL case; docs (`building-a-survey.md`, `FORMAT.md`, `semantics.md` §8 note on pipes inside formatting); hypothesis fuzz on the tree |
-| RT3 | The editor in the builder | RT2 | Tiptap deps added (licence gate green; depcruise rule confining them; lazy chunk); `richtext/` module per §9 with round-trip property tests and paste fixtures (§6); toolbar, link dialog, chips + picker, counts, Escape/blur/debounce contract, edit-on-focus; wired into `PropertyField` (block/inline), `NodeCard`, `ConsentEditor`; cards render rich; e2e `richtext.spec.ts` (flows, keyboard-only, paste, 320/375/1440 snapshots on linux + win32 + darwin via `snapshots.yml`, axe light/dark); bundle size recorded in the devlog |
-| RT4 | Exports | RT2 | XLSForm Markdown writer with escaping (§8 table) and LSS HTML writer; `$rich.*` and field rows with levels and notes; diagnostics once per feature/pointer; tests on fixture 41 for both targets; the optional LimeSurvey Docker import test passes with rich labels; `docs/publishing.md` capability text updated |
+| RT2 | Rich-text model end to end | – | `RichText`/`Block`/`Inline` in `osp_spec.model` with the union in §3.1 (marks `b`, `i` only); validator codes `link.scheme`, `link.empty`, `text.too_long` (per-level limits 20 000 / 2 000 / 500), `text.too_many_blocks`, `text.block_not_allowed` (headings outside `block`), pipes through `_check_ref` with node pointers; the API validates every written rich value so the "sanitised at save" comments in `engine.ts` and `plan.ts` become true (or are removed); `normalise_text()` used by every text op, with a shared fixture proving Python and TS agree; `doc.py` walks the tree and covers page titles, slider labels and consent; property YAML `rich: block\|stem\|inline` + `export_schema.py`; both capability tables cover the new keys (§3.4); plan contract `Block[]` (`make contract`), engine rendered blocks, `toHtml` single-paragraph rule keeps every existing expected trace identical, `toPlain`; ui-components `RichText`/`RichInline`, runtime renders label/help/choices/rows/slider/end/consent/page title rich with `aria-labelledby` where needed, links `target=_blank rel=noopener noreferrer` + hidden "(opens in a new tab)"; `svelte/no-at-html-tags` error; fixture `41-rich-text` + RTL case; docs (`building-a-survey.md`, `FORMAT.md`, `semantics.md` §8 note on pipes inside formatting); hypothesis fuzz on the tree |
+| RT3 | The editor in the builder | RT2 | Tiptap deps added (licence gate green; depcruise rule confining them; lazy chunk); `richtext/` module per §9 with round-trip property tests and paste fixtures (§6, underline dropped on paste); toolbar per level (no underline, heading only at `block`), link dialog, chips + picker, per-level counts, Escape/blur/debounce contract, edit-on-focus; wired into `PropertyField` (block/stem/inline), `NodeCard`, `ConsentEditor`; cards render rich; e2e `richtext.spec.ts` (flows, keyboard-only, paste, 320/375/1440 snapshots on linux + win32 + darwin via `snapshots.yml`, axe light/dark); bundle size recorded in the devlog |
+| RT4 | Exports | RT2 | XLSForm Markdown writer with escaping (§8 table), including literal `* _ #` in existing plain text, recorded as a behaviour change in the devlog and the XLSForm capability notes; LSS HTML writer; `$rich.*` and field rows with levels and notes; diagnostics once per feature/pointer; tests on fixture 41 for both targets; the optional LimeSurvey Docker import test passes with rich labels; `docs/publishing.md` capability text updated |
 | RT5 | Choice and row editors | RT3 | `ChoiceListEditor` and `RowsEditor` rows use the inline editor with edit-on-focus; Alt+Arrow, Enter-to-next, Escape, `aria-label` per row kept; 200-row perf check (one editor instance); `PastePanel` unchanged; e2e + axe + snapshots |
 | RT6 | Translations in the pane | RT3, RT5 | Editing-language select in `PropertiesPane` (URL `?lang=`), passed to panel, choices, rows, end message, consent; reference strip + *Copy from default*; missing-translation hints per language; counts per language; e2e in `languages.spec.ts` (en/de flows, keyboard, axe) |
 
-## 13. Open questions (needs human)
+## 13. Open questions (all answered: see "Lead decisions" below, same numbering)
 
 1. **Underline:** keep it (the owner listed it; LSS native, XLSForm approximated via a styled
-   span) or drop it to keep exports clean? My recommendation: keep.
+   span) or drop it to keep exports clean? My recommendation: keep. → **Dropped.**
 2. **Headings in answerable question labels:** the model allows block content in every
    `label`; should the editor offer headings only in notes, description, consent and endings
-   (recommended), or everywhere?
+   (recommended), or everywhere? → **Only outside stems** (the `stem` level, §3.1).
 3. **Links open in a new tab** (recommended, so a participant does not lose the survey) or
-   in the same tab?
+   in the same tab? → **New tab.**
 4. **Limit of 20 000 characters** per field per language (recommended; a consent text is
    rarely above 8 000) and whether choice labels should have a smaller cap (say 1 000).
+   → **20 000 / 2 000 / 500 by level.**
 5. **XLSForm escaping of literal `* _ #`** in existing plain text: today they pass through
    and may render as formatting in Enketo/Collect; the plan escapes them so text shows as
-   written. Confirm this behaviour change.
+   written. Confirm this behaviour change. → **Confirmed.**
 6. **`metadata.title` stays plain** (recommended: it is the `<title>`, the list entry, the
-   export name) or becomes inline rich?
+   export name) or becomes inline rich? → **Plain.**
 7. **Build order:** RT2 → RT3 → (RT4 ∥ RT5) → RT6 as proposed, or exports (RT4) straight
-   after RT2 so the model's losses are visible before the editor lands?
+   after RT2 so the model's losses are visible before the editor lands? → **As proposed.**
 
 ## Lead decisions (17 Oct 2026)
 
