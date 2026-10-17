@@ -125,6 +125,7 @@ _rows(
 )
 _row("DecimalQuestion.type", "native", "`decimal`.")
 _row("TextQuestion.type", "native", "`text`; trimming follows Enketo (§2).")
+_row("TextQuestion.multiline", "native", "`appearance: multiline` (a textarea in Enketo).")
 _row("SingleQuestion.type", "native", "`select_one <list>`.")
 _row("MultiQuestion.type", "native", "`select_multiple <list>`.")
 _row("DateQuestion.type", "native", "`date`.")

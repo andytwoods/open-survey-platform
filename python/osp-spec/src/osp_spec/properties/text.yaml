@@ -24,6 +24,12 @@ properties:
     label: { en: "Show if" }
     group: Logic
     help: { en: "Show the question only when this condition is true. Always shown when empty." }
+  multiline:
+    kind: bool
+    label: { en: "Long text" }
+    default: false
+    group: Basics
+    help: { en: "Show a multi-line box that keeps line breaks, for longer answers." }
   required:
     kind: bool
     label: { en: "Required" }

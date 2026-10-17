@@ -151,6 +151,7 @@ _row(
 )
 _row("DecimalQuestion.type", "native", "Type N (numerical input).")
 _row("TextQuestion.type", "native", "Type S (short free text).")
+_row("TextQuestion.multiline", "native", "Type T (long free text) instead of S.")
 _row("SingleQuestion.type", "native", "Type L (list, radio).")
 _row(
     "MultiQuestion.type",

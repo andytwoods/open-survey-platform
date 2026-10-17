@@ -505,6 +505,15 @@ def test_unmappable_quota_is_dropped_and_reported_once(when: dict) -> None:
     assert [(d.feature, d.severity) for d in check] == [("$quota.dropped", "loss")]
 
 
+def test_multiline_text_is_long_free_text() -> None:
+    data = _survey([_q("long", "text", multiline=True), _q("short", "text")])
+    _, _, root = _export(data)
+    assert _question(root, "long")["type"] == "T"
+    assert _question(root, "short")["type"] == "S"
+    themes = {q["title"]: q.get("question_theme_name") for q in _rows(root, "questions")}
+    assert themes == {"long": "longfreetext", "short": "shortfreetext"}
+
+
 def test_matrix_is_an_array_and_slider_a_number() -> None:
     """C2c: matrix → type F with one subquestion per row; a row is `<q>_<sq>` in EM.
     Slider → type N with min/max/step validation, reported as approximated."""

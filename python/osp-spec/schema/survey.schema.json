@@ -2899,6 +2899,11 @@
         "label": {
           "$ref": "#/$defs/Text"
         },
+        "multiline": {
+          "default": false,
+          "title": "Multiline",
+          "type": "boolean"
+        },
         "name": {
           "anyOf": [
             {

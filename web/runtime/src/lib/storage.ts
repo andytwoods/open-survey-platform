@@ -15,6 +15,8 @@ export interface LocalRecord {
 	planUrl: string;
 	planChecksum: string;
 	saveMode: SaveMode;
+	/** Where an end-only session keeps its copy, as the server said at start/resume. */
+	localCopy?: 'browser' | 'memory';
 	/** The plan itself, so a refresh while offline still renders. */
 	plan: Plan | null;
 	/** The newest local engine snapshot (null only before the engine has started). */
@@ -183,4 +185,125 @@ export function localStorageBackup(ls?: Storage): SyncBackup | undefined {
 			}
 		}
 	};
+}
+
+/**
+ * Where the session is, when there is no local copy to say so (IndexedDB blocked, or an
+ * `end-only` survey kept in memory): the session id and resume token, so a refresh asks the
+ * server instead of starting a new session (runtime-design §5 step 7, R4-3). Never answers:
+ * in `end-only` mode at most the session's start event (seed, conditions, language, device,
+ * URL parameters, all of them already in this tab), so a refresh can `restart()` it (R6-5).
+ *
+ * Kept in `sessionStorage` (this tab only, gone when it closes), or, when that is blocked
+ * too, in the URL fragment (never sent to the server; the address bar then holds the token,
+ * as a resume link does). An `every-page` session, whose answers are on the server anyway,
+ * may also be found from another tab later (`localStorage`, the device pointer), as its
+ * IndexedDB record would be; an `end-only` one never: closing the window loses it (§5.0).
+ */
+export interface PointerRecord {
+	sessionId: string;
+	resumeToken: string;
+	/** The engine's start event (end-only memory sessions), for `restart()`. */
+	start?: unknown;
+}
+
+export interface SessionPointer {
+	readonly kind: 'localStorage' | 'sessionStorage' | 'fragment';
+	get(slug: string): PointerRecord | null;
+	set(slug: string, p: PointerRecord): void;
+	clear(slug: string): void;
+}
+
+const POINTER_KEY = (slug: string) => `osp-runtime:session:${slug}`;
+const FRAGMENT_KEY = 'osp-session';
+
+function asPointer(x: unknown): PointerRecord | null {
+	if (!x || typeof x !== 'object') return null;
+	const p = x as PointerRecord;
+	return typeof p.sessionId === 'string' && typeof p.resumeToken === 'string' && p.resumeToken ? p : null;
+}
+
+export function sessionStoragePointer(ss?: Storage): SessionPointer | null {
+	return storagePointer('sessionStorage', ss);
+}
+
+/** The device pointer (every-page sessions only, see above). */
+export function localStoragePointer(ls?: Storage): SessionPointer | null {
+	return storagePointer('localStorage', ls);
+}
+
+function storagePointer(kind: 'localStorage' | 'sessionStorage', given?: Storage): SessionPointer | null {
+	let s: Storage | undefined = given;
+	try {
+		s ??= kind === 'localStorage' ? globalThis.localStorage : globalThis.sessionStorage;
+		if (!s) return null;
+		const probe = 'osp-runtime:probe';
+		s.setItem(probe, '1');
+		s.removeItem(probe);
+	} catch {
+		return null; // blocked, or quota 0
+	}
+	const store = s;
+	return {
+		kind,
+		get(slug) {
+			try {
+				const raw = store.getItem(POINTER_KEY(slug));
+				return raw ? asPointer(JSON.parse(raw)) : null;
+			} catch {
+				return null;
+			}
+		},
+		set(slug, p) {
+			try {
+				store.setItem(POINTER_KEY(slug), JSON.stringify(p));
+			} catch {
+				/* full: a refresh then starts again, as before */
+			}
+		},
+		clear(slug) {
+			try {
+				store.removeItem(POINTER_KEY(slug));
+			} catch {
+				/* ignore */
+			}
+		}
+	};
+}
+
+/** The URL fragment as the last resort (`#osp-session=<sessionId>.<token>`). */
+export function fragmentPointer(
+	loc: { hash: string; pathname: string; search: string } = globalThis.location,
+	replace: (url: string) => void = (url) => globalThis.history?.replaceState(globalThis.history.state, '', url)
+): SessionPointer {
+	const read = () => new URLSearchParams(loc.hash.replace(/^#/, ''));
+	const write = (h: URLSearchParams) => {
+		const hash = h.toString();
+		replace(loc.pathname + loc.search + (hash ? `#${hash}` : ''));
+	};
+	return {
+		kind: 'fragment',
+		get() {
+			const v = read().get(FRAGMENT_KEY);
+			const dot = v ? v.indexOf('.') : -1;
+			if (!v || dot <= 0) return null;
+			return asPointer({ sessionId: v.slice(0, dot), resumeToken: v.slice(dot + 1) });
+		},
+		set(_slug, p) {
+			const h = read();
+			h.set(FRAGMENT_KEY, `${p.sessionId}.${p.resumeToken}`);
+			write(h);
+		},
+		clear() {
+			const h = read();
+			if (!h.has(FRAGMENT_KEY)) return;
+			h.delete(FRAGMENT_KEY);
+			write(h);
+		}
+	};
+}
+
+/** sessionStorage if it works, else the URL fragment. */
+export function sessionPointer(): SessionPointer {
+	return sessionStoragePointer() ?? fragmentPointer();
 }

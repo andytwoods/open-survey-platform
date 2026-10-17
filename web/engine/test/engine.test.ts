@@ -219,3 +219,31 @@ describe('assignment, randomiser, languages, ctx', () => {
 		expect(ctx.results.age).toEqual({ state: 'answered', value: 5 });
 	});
 });
+
+describe('regression: an error leaves with the question an answer hides', () => {
+	// properties.test.ts, fast-check seed -1539521225 (shrunk). q2 is required and shown
+	// while q1 != 3; answering q1 = 0 shows it, Next demands it, then clearing q1 hides it
+	// (two-valued logic: null != 3 is false). Its `required` error must not stay behind.
+	it('drops the error of a question hidden by a later answer on the same page', () => {
+		const plan = makePlan({
+			pages: {
+				p1: [q('q1', 'integer', { required: false }), q('q2', 'integer', { required: true, showIf: cmp('!=', ref('q1'), int(3)) })],
+				p2: [q('q3', 'integer', { required: false })]
+			},
+			flow: [blockNode('p1'), blockNode('p2')]
+		});
+		let s = start(plan, { sessionSeed: 1, clock: clock() });
+		s = answer(s, 'q1', 0);
+		const r = next(s);
+		expect(r.result.outcome).toBe('invalid');
+		expect(Object.keys(view(r.state).errors)).toEqual(['q2']);
+		s = answer(r.state, 'q1', '');
+		const v = view(s);
+		expect(v.items.map((i) => i.id)).toEqual(['q1']);
+		expect(v.errors).toEqual({});
+		// The snapshot round trip agrees, and the page can now be submitted.
+		const again = restore(plan, JSON.parse(JSON.stringify(snapshot(s))));
+		expect(isState(again) && view(again).errors).toEqual({});
+		expect(next(s).result.outcome).toBe('advanced');
+	});
+});
