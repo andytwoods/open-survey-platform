@@ -315,3 +315,29 @@ def test_page_showif_min_max_and_if_are_lowered() -> None:
     assert rows["band"]["calculation"].startswith("if(")
     content, _ = export_xlsform(data)
     assert "if(" in _xform(content)
+
+
+def test_matrix_is_a_table_list_and_slider_a_range() -> None:
+    """C2c: matrix rows are select_one fields named <matrix name>_<row id> in a table-list
+    group; a slider is a `range`; conditions on a row use the row's name."""
+    data = json.loads((REPO / "fixtures/38-matrix/survey.json").read_text(encoding="utf-8"))
+    form, diags = build_xlsform(data)
+    assert form is not None, diags
+    rows = {r.get("name"): r for r in form.survey}
+    assert rows["drink"]["appearance"] == "table-list"
+    assert rows["osp_drink_header"]["appearance"] == "label"
+    assert rows["drink_tea"]["type"] == "select_one drink_choices"
+    assert rows["drink_tea"].get("required") == "yes"
+    assert "required" not in rows["drink_cocoa"]
+    assert "${drink_tea}" in rows["cups"]["relevant"]
+    assert rows["when"]["relevant"] == "string-length(${drink_cocoa}) > 0"
+    assert rows["when_evening"].get("required") == "yes"
+
+    data = json.loads((REPO / "fixtures/39-slider/survey.json").read_text(encoding="utf-8"))
+    form, diags = build_xlsform(data)
+    assert form is not None, diags
+    rows = {r.get("name"): r for r in form.survey}
+    assert rows["sleep"]["type"] == "range"
+    assert rows["sleep"]["parameters"] == "start=0 end=12 step=0.5"
+    assert "constraint" not in rows["pain"]  # range enforces min, max and step
+    assert {d.feature for d in diags} >= {"SliderQuestion.minLabel", "SliderQuestion.maxLabel"}

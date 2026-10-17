@@ -212,3 +212,28 @@ def test_unsafe_integer_literals_become_text() -> None:
 def test_runtime_config_for_every_valid_case(path: Path) -> None:
     plan, _ = compile_survey(_survey(path))
     RuntimeConfig.from_json(runtime_config(plan))
+
+
+def test_matrix_rows_and_slider_track() -> None:
+    """C2c-1: a matrix lists its rows; each row is a `single` item and a question of its
+    own. C2c-3: a slider carries its track."""
+    plan, _ = compile_survey(_survey(CASES / "valid" / "v11_matrix_slider.json"))
+    assert plan is not None
+    grid = plan["items"]["grid"]
+    assert grid["type"] == "matrix"
+    assert grid["rows"] == ["grid_a", "grid_b"]
+    assert [c["value"] for c in grid["choices"]] == [1, 2]
+    assert plan["pages"]["p1"]["items"] == ["grid", "vas"]
+    assert plan["questions"] == ["grid_a", "grid_b", "vas", "score"]
+    row = plan["items"]["grid_b"]
+    assert row["type"] == "single"
+    assert row["matrix"] == "grid"
+    assert row["name"] == "att_b"
+    assert row["required"] is False
+    assert plan["items"]["grid_a"]["required"] is True
+    assert "showIf" not in row
+    vas = plan["items"]["vas"]
+    assert (vas["valueType"], vas["min"], vas["max"], vas["step"]) == ("decimal", "0", "1", "0.01")
+    assert vas["minLabel"]["de"] == ["Gar nicht"]
+    score = plan["items"]["score"]
+    assert (score["valueType"], score["step"]) == ("integer", 1)

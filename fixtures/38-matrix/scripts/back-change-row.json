@@ -1,0 +1,44 @@
+{
+  "format": "osp-fixture-script/0",
+  "id": "back-change-row",
+  "description": "Answer every row, so both follow-ups show; one row of the second matrix is required on its own. Go back and change the tea row: the follow-up that depends on that row becomes irrelevant and is cleared on submit, while the other matrix keeps its answered row.",
+  "sessionSeed": 3802,
+  "language": "en",
+  "actions": [
+    {
+      "expectPage": "p1",
+      "set": {
+        "taste_tea": 3,
+        "taste_coffee": 2,
+        "taste_cocoa": 1
+      },
+      "do": "next"
+    },
+    {
+      "expectPage": "p2",
+      "set": {
+        "cups": 4,
+        "when_morning": "daily"
+      },
+      "do": "next"
+    },
+    {
+      "expectPage": "p2",
+      "do": "back"
+    },
+    {
+      "expectPage": "p1",
+      "set": {
+        "taste_tea": 1
+      },
+      "do": "next"
+    },
+    {
+      "expectPage": "p2",
+      "set": {
+        "when_evening": "never"
+      },
+      "do": "next"
+    }
+  ]
+}

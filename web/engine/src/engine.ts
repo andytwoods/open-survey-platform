@@ -30,6 +30,9 @@
  *   recorded result on every later pass; `full` shows the `onFull` block, then ends.
  * - §7 realised orders are computed at first reach and stored before the page renders.
  *   Assigned conditions are null to expressions until their `assign` node is reached.
+ * - §2 (C2c-1) a matrix stores nothing itself: each row is a `single` question with its own
+ *   state, value and `required`, relevant exactly when the matrix is. (C2c-3) a slider is
+ *   unanswered until set and stores an integer or decimal on its step grid.
  */
 
 import { planChecksum, canonicalJson } from './canonical.ts';
@@ -39,7 +42,9 @@ import {
 	ENGINE_VERSION,
 	CONSENT_PAGE,
 	PLAN_VERSION,
+	isMatrix,
 	isQuestion,
+	valueTypeOf,
 	type BlockNode,
 	type ChoiceValue,
 	type Expr,
@@ -77,7 +82,8 @@ import {
 	type StartOptions,
 	type State,
 	type StepResult,
-	type ViewItem
+	type ViewItem,
+	type ViewRow
 } from './types.ts';
 import { canonicalDecimal, checkAnswer, codeValue, matchChoice, toValue, trimAnswer, type Stored } from './values.ts';
 
@@ -229,7 +235,10 @@ class Env {
 		if (memo !== undefined) return memo;
 		const item = this.plan.items[id];
 		let r = false;
-		if (item && this.pageRelevant(item.page)) {
+		if (item && isQuestion(item) && item.matrix !== undefined) {
+			// §2 (C2c-1): a matrix row is relevant exactly when its matrix is.
+			r = item.matrix !== id && isMatrix(this.plan.items[item.matrix]) && this.relevant(item.matrix);
+		} else if (item && this.pageRelevant(item.page)) {
 			if (!item.showIf) r = true;
 			else if (this.busy.has(`r:${id}`)) return false; // a cycle: never in a valid plan
 			else {
@@ -259,7 +268,7 @@ class Env {
 	lookup: Lookup = (id: string): Value => {
 		if (id.startsWith('$')) return this.builtin(id);
 		const item = this.plan.items[id];
-		if (item) return isQuestion(item) ? toValue(item.type, this.value(id)) : null;
+		if (item) return isQuestion(item) ? toValue(valueTypeOf(item), this.value(id)) : null;
 		const v = this.plan.variables[id];
 		if (!v) return null;
 		switch (v.kind) {
@@ -511,10 +520,18 @@ function displayOrder(plan: Plan, d: Data, pageId: Id): Id[] {
 	return d.orders.items[pageId] ?? plan.pages[pageId]?.items ?? [];
 }
 
+/** Item ids with every matrix replaced by its rows (C2c-1). */
+function withRows(plan: Plan, ids: Id[]): Id[] {
+	return ids.flatMap((id) => {
+		const item = plan.items[id];
+		return isMatrix(item) ? item.rows : [id];
+	});
+}
+
 function validate(plan: Plan, d: Data, pageId: Id): Record<Id, PageError> {
 	const env = new Env(plan, d);
 	const errors: Record<Id, PageError> = {};
-	for (const id of displayOrder(plan, d, pageId)) {
+	for (const id of withRows(plan, displayOrder(plan, d, pageId))) {
 		const item = plan.items[id];
 		if (!item || !isQuestion(item) || !env.relevant(id)) continue;
 		// §4 (R1-4): unreadable input blocks the page, even on an optional question.
@@ -1231,6 +1248,41 @@ function errorView(plan: Plan, d: Data, env: Env, id: Id, e: PageError) {
 	return { ...e, message: msg };
 }
 
+/** A matrix as shown: its columns and one entry per row (C2c-1). */
+function matrixView(
+	plan: Plan,
+	d: Data,
+	env: Env,
+	item: Extract<Item, { type: 'matrix' }>,
+	errors: PageView['errors']
+): ViewItem {
+	const rows: ViewRow[] = [];
+	for (const rid of item.rows) {
+		const row = plan.items[rid];
+		if (!row || !isQuestion(row)) continue;
+		rows.push({
+			id: rid,
+			label: render(plan, d, env, row.label),
+			required: row.required,
+			state: env.state(rid),
+			value: d.values[rid] ?? null,
+			error: errors[rid] ?? null
+		});
+	}
+	return {
+		id: item.id,
+		type: 'matrix',
+		label: render(plan, d, env, item.label),
+		help: item.help ? render(plan, d, env, item.help) : null,
+		required: rows.some((r) => r.required),
+		state: null,
+		value: null,
+		error: rows.find((r) => r.error)?.error ?? null,
+		choices: item.choices.map((c) => ({ value: c.value, label: render(plan, d, env, c.label) })),
+		rows
+	};
+}
+
 /** What to show now. Pure; call it after every state change. */
 export function view(state: State): PageView {
 	const { plan, data: d } = state;
@@ -1243,6 +1295,10 @@ export function view(state: State): PageView {
 		for (const id of displayOrder(plan, d, page)) {
 			const item = plan.items[id];
 			if (!item || !env.relevant(id)) continue;
+			if (isMatrix(item)) {
+				items.push(matrixView(plan, d, env, item, errors));
+				continue;
+			}
 			const q = isQuestion(item) ? (item as QuestionItem) : null;
 			let choices: ViewItem['choices'] = null;
 			if (q?.choices) {
@@ -1261,7 +1317,19 @@ export function view(state: State): PageView {
 				state: q ? env.state(id) : null,
 				value: q ? (d.values[id] ?? null) : null,
 				error: errors[id] ?? null,
-				choices
+				choices,
+				...(q?.type === 'slider'
+					? {
+							slider: {
+								min: q.min ?? 0,
+								max: q.max ?? 100,
+								step: q.step ?? 1,
+								valueType: q.valueType ?? 'integer',
+								minLabel: q.minLabel ? render(plan, d, env, q.minLabel) : null,
+								maxLabel: q.maxLabel ? render(plan, d, env, q.maxLabel) : null
+							}
+						}
+					: {})
 			});
 		}
 	}

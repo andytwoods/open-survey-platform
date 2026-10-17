@@ -158,3 +158,16 @@ def test_deep_ast_is_a_diagnostic():
         ast = {"kind": "not", "arg": ast}
     res = print_expression(ast)
     assert res.text is None or res.text.startswith("not")
+
+
+def test_matrix_rows_and_sliders_are_typed() -> None:
+    """C2c: a matrix row is a single-choice variable `m_r`; a slider has its value type."""
+    from osp_api.routes.expressions import _types
+
+    items = [
+        {"type": "matrix", "id": "m", "rows": [{"id": "a"}, {"id": "b"}]},
+        {"type": "slider", "id": "s1"},
+        {"type": "slider", "id": "s2", "valueType": "decimal"},
+    ]
+    survey = {"blocks": [{"pages": [{"items": items}]}]}
+    assert _types(survey) == {"m_a": "single", "m_b": "single", "s1": "integer", "s2": "decimal"}

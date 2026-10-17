@@ -45,7 +45,7 @@ def owner_choices(ctx: Ctx, owner: str) -> tuple[list[dict[str, Any]], set[str],
             if q.get("choiceList") == owner
         }
         return obj["choices"], users, to_pointer((*loc.path, "choices"))
-    if obj.get("type") not in ("single", "multi"):
+    if obj.get("type") not in ("single", "multi", "matrix"):
         raise OpError("op.not_allowed", f"question '{owner}' has no choices", loc.pointer)
     if obj.get("choices") is None:
         shared = obj.get("choiceList")

@@ -183,6 +183,46 @@ class MultiQuestion(_ChoiceQuestionBase):
     type: Literal["multi"]
 
 
+class MatrixRow(Model):
+    """One row of a `matrix`: a single-choice sub-question with its own variable
+    (semantics.md §2, C2c-1). `id` is unique within its matrix; the row's variable id is
+    `<matrix id>_<row id>` and its export name `<matrix name>_<row id>`."""
+
+    id: Identifier
+    label: Text
+    required: bool | None = None  # None: the matrix's `required`
+
+
+class MatrixQuestion(_QuestionBase):
+    """Rows of single-choice sub-questions sharing one choice list (the columns).
+
+    The matrix itself stores no value: each row is its own variable with its own state
+    (semantics.md §2, C2c-1). Exactly one of `choiceList` / `choices` is set, as for choice
+    questions. Rows have no `showIf` or `constraint` of their own (C2c-2).
+    """
+
+    type: Literal["matrix"]
+    name: Identifier | None = None  # export-name prefix of every row (default: the id)
+    required: bool = False  # every row, unless the row sets its own `required`
+    rows: list[MatrixRow] = Field(min_length=1)
+    choiceList: Identifier | None = None
+    choices: list[Choice] | None = Field(default=None, min_length=1)
+
+
+class SliderQuestion(_AnswerableBase):
+    """A number picked on a track from `min` to `max` in `step`s. Starts unanswered: no
+    value until the participant sets one (runtime-design.md §6; semantics.md §2, C2c-3).
+    Stored like an `integer` or `decimal` answer, by `valueType`."""
+
+    type: Literal["slider"]
+    valueType: Literal["integer", "decimal"] = "integer"
+    min: StrictInt | DecimalText = 0  # inclusive
+    max: StrictInt | DecimalText = 100  # inclusive
+    step: StrictInt | DecimalText = 1  # > 0; answers lie on min + k * step
+    minLabel: Text | None = None  # shown under the `min` end of the track
+    maxLabel: Text | None = None
+
+
 class NoteQuestion(_QuestionBase):
     """Display-only text. Stores no value, so it has no `name`, `required` or `constraint`."""
 
@@ -196,13 +236,47 @@ type Question = Annotated[
     | SingleQuestion
     | MultiQuestion
     | DateQuestion
+    | MatrixQuestion
+    | SliderQuestion
     | NoteQuestion,
     Field(discriminator="type"),
 ]
 type AnswerableQuestion = (
-    IntegerQuestion | DecimalQuestion | TextQuestion | SingleQuestion | MultiQuestion | DateQuestion
+    IntegerQuestion
+    | DecimalQuestion
+    | TextQuestion
+    | SingleQuestion
+    | MultiQuestion
+    | DateQuestion
+    | SliderQuestion
 )
-QUESTION_TYPES = ("integer", "decimal", "text", "single", "multi", "date", "note")
+QUESTION_TYPES = (
+    "integer",
+    "decimal",
+    "text",
+    "single",
+    "multi",
+    "date",
+    "matrix",
+    "slider",
+    "note",
+)
+
+
+def matrix_row_id(matrix_id: str, row_id: str) -> str:
+    """The variable id of one matrix row (semantics.md §2, C2c-1): `<matrix id>_<row id>`.
+    Conditions and piping refer to a row by this id."""
+    return f"{matrix_id}_{row_id}"
+
+
+def matrix_row_name(matrix: MatrixQuestion, row_id: str) -> str:
+    """The export name of one matrix row: `<matrix name>_<row id>` (C2c-1)."""
+    return f"{matrix.name or matrix.id}_{row_id}"
+
+
+def matrix_row_required(matrix: MatrixQuestion, row: MatrixRow) -> bool:
+    """A row is required when it says so, else when the matrix is (C2c-1)."""
+    return matrix.required if row.required is None else row.required
 
 
 # --- Pages and blocks -------------------------------------------------------------------

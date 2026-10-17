@@ -14,6 +14,7 @@ export type PropertyKind =
 	| 'bool'
 	| 'enum'
 	| 'choicelist'
+	| 'rows'
 	| 'condition'
 	| 'expression';
 

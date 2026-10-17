@@ -37,7 +37,9 @@ Raw `-99`-style codes are **never** written into CSV, where they would silently 
 
 ## 2. Values and types
 
-- Types: `integer`, `decimal`, `text`, `single` (one choice value), `multi` (set of choice values), `date`.
+- Types: `integer`, `decimal`, `text`, `single` (one choice value), `multi` (set of choice values), `date`. A `slider` stores an `integer` or `decimal` (its `valueType`); a `matrix` stores nothing itself (its rows are `single` variables, below).
+- **Matrix rows are separate variables** [C2c-1]: row `r` of a `matrix` question with id `m` is a single-choice variable with id **`m_r`** (what conditions and piping refer to) and export name **`<matrix name>_r`** (the matrix's `name`, or its id), with its own value, state and `__state` column. Row ids are unique within their matrix; the derived id must be unique among all ids and at most 64 characters. Every row offers the matrix's columns (one shared choice list). A row is **relevant exactly when its matrix is** (rows have no `showIf` of their own), so a hidden matrix makes every row `irrelevant`. A row is required if it says so, else if the matrix is (`required` on the matrix is the default for every row); required is checked per row (§4). The matrix id itself has no value: referring to it is an error.
+- **Sliders start unanswered** [C2c-3] (runtime-design §6): no value until the participant sets one, so a required slider blocks Next until it is touched, and an untouched optional slider is `unanswered`, never its midpoint. A slider answer must lie on its grid, `min + k × step`; a value between steps is unreadable input (`invalid`, code `value.off_step`, §2 below), and one outside `min`…`max` is a `range` error (§4).
 - Numbers are **decimal**, not binary float. Integer division isn't an operator. `/` returns a decimal.
 - **Decimal precision** [R6-2]: arithmetic keeps **28 significant digits, rounding half-even** (Python's `decimal` default; the TS engine matches it exactly). `+ - *` on two integers stay exact integers. A decimal answer with more than 28 significant digits cannot be read exactly and is refused as unreadable input (§4).
 - **Decimals are stored and exported in canonical form** [R6-2]: no exponent, no `+`, no superfluous leading zeros, no trailing zeros after the point, `0` for any zero (`2.50` → `2.5`, `.5` → `0.5`, `-0.0` → `0`).
@@ -145,6 +147,11 @@ Added by M5 (MVP 12b). Where the docs were silent, the most protective option wa
 
 Resolved 16 Oct 2026: see `decisions-semantics-1.md` (C1-1 to C1-3, C3a-1 to C3a-9, C2-1 to C2-9, R6-1 to R6-6, R1-1 to R1-8, S-1 to S-4), plus the lead's M2-1 to M2-3. Earlier: missing-value encoding (§1), back navigation default (§5), text trimming follows Enketo (§2).
 
+Matrix and slider (C2c, 16 Oct 2026). C2c-1 and C2c-3 above follow from existing rules (a matrix row is a `single` question; a slider is an `integer`/`decimal` question that starts empty). These parts were not covered, so the agent picked the conservative option, marked here for a human to confirm:
+
+- **C2c-2 (provisional)**: matrix rows have no `showIf` or `constraint` of their own, and neither rows nor columns can be shuffled, in `osp-survey/0.1`. Per-row display logic would need its own same-page rules; use separate questions meanwhile.
+- **C2c-4 (provisional)**: a slider value that is in range but off the step grid (typed into the numeric alternative) is refused as unreadable input (`value.off_step`), rather than rounded to the nearest step or accepted as is. Rounding would store a value the participant did not give.
+
 Deferred to `osp-survey/0.2` (decided, not modelled yet): dedicated `scores` (null unless every item is answered, or an explicit `minAnswered` is set; reversal is `min + max − value`) and reverse scoring [C3a-4], and page-order shuffling within a block [C2-9]. Use computed variables with `if()` meanwhile.
 
-Open: C-1 and C-2 above (M5, consent).
+Open (provisional decisions in force): C2c-2, C2c-4. Open: C-1 and C-2 above (M5, consent).

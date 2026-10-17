@@ -161,6 +161,25 @@ def test_add_question_generates_ids_and_rejects_duplicates() -> None:
     assert codes(dup)[0] == "op.duplicate_id"
 
 
+@pytest.mark.parametrize("qtype", ["matrix", "slider"])
+def test_add_matrix_and_slider_questions_validate(qtype: str) -> None:
+    res = run("add_question", base(), {"page": "p_main", "type": qtype, "id": "qx"})
+    assert res.ok, codes(res)
+    survey, diags = parse(res.survey)
+    assert survey is not None and not [d for d in diags if d.severity == "error"]
+    if qtype == "matrix":
+        assert [r["id"] for r in question(res.survey, "qx")["rows"]] == ["r1", "r2"]
+        col = run("add_choice", res.survey, {"owner": "qx", "label": "Option 2"})
+        assert col.ok, codes(col)
+        prop = run(
+            "set_property", res.survey, {"target": "qx", "property": "required", "value": True}
+        )
+        assert prop.ok, codes(prop)
+    else:
+        prop = run("set_property", res.survey, {"target": "qx", "property": "max", "value": 10})
+        assert prop.ok, codes(prop)
+
+
 def test_duplicate_question_points_self_references_at_the_copy() -> None:
     res = run("duplicate_question", base(), {"id": "age"})
     assert res.ok

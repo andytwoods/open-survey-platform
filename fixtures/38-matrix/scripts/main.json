@@ -1,0 +1,32 @@
+{
+  "format": "osp-fixture-script/0",
+  "id": "main",
+  "description": "Submit the matrix empty: the two required rows block, the optional row does not. Rate tea Good, so the follow-up that pipes the row's label is shown; cocoa is unanswered, so the second matrix (and both its rows) stays irrelevant.",
+  "sessionSeed": 3801,
+  "language": "en",
+  "actions": [
+    {
+      "expectPage": "p1",
+      "do": "next"
+    },
+    {
+      "expectPage": "p1",
+      "set": {
+        "taste_tea": 3,
+        "taste_coffee": 1
+      },
+      "do": "next"
+    },
+    {
+      "expectPage": "p2",
+      "do": "next"
+    },
+    {
+      "expectPage": "p2",
+      "set": {
+        "cups": 2
+      },
+      "do": "next"
+    }
+  ]
+}

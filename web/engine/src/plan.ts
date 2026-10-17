@@ -51,8 +51,8 @@ export type Expr =
 
 // --- Items, pages, blocks ------------------------------------------------------------
 
-export type QuestionType = 'integer' | 'decimal' | 'text' | 'single' | 'multi' | 'date';
-export type ItemType = QuestionType | 'note';
+export type QuestionType = 'integer' | 'decimal' | 'text' | 'single' | 'multi' | 'date' | 'slider';
+export type ItemType = QuestionType | 'note' | 'matrix';
 
 export interface Choice {
 	value: ChoiceValue;
@@ -71,6 +71,22 @@ export interface NoteItem extends ItemBase {
 	type: 'note';
 }
 
+/**
+ * A matrix (semantics.md §2, C2c-1): display only. It stores no value; each of its `rows`
+ * is a `single` question item of its own (`<matrix id>_<row id>`, with `matrix` set), in
+ * `questions`, relevant exactly when the matrix is. The page lists the matrix, not its rows.
+ */
+export interface MatrixItem extends ItemBase {
+	type: 'matrix';
+	/** Export-name prefix of the rows. */
+	name: string;
+	required: boolean;
+	/** Row question ids, in display order. */
+	rows: Id[];
+	/** The columns, shared by every row. */
+	choices: Choice[];
+}
+
 export interface QuestionItem extends ItemBase {
 	type: QuestionType;
 	/** Export variable name (defaults to the id). */
@@ -81,12 +97,19 @@ export interface QuestionItem extends ItemBase {
 	/** Present for `single` and `multi`. */
 	choices?: Choice[];
 	choiceOrder?: Order;
-	/** Inclusive bounds for `integer` (integers) and `decimal` (integers or decimal text). */
+	/** Inclusive bounds for `integer`, `slider` (integers) and `decimal` (integers or decimal text). */
 	min?: number | string;
 	max?: number | string;
+	/** A matrix row: the matrix item it belongs to (its relevance is the matrix's). */
+	matrix?: Id;
+	/** `slider` only: stored as an integer or a canonical decimal; answers are min + k·step. */
+	valueType?: 'integer' | 'decimal';
+	step?: number | string;
+	minLabel?: Text;
+	maxLabel?: Text;
 }
 
-export type Item = NoteItem | QuestionItem;
+export type Item = NoteItem | MatrixItem | QuestionItem;
 
 export interface Page {
 	id: Id;
@@ -252,6 +275,16 @@ export interface Plan {
 	flow: FlowNode[];
 }
 
+/** An item that stores a value (not a note, not a matrix: a matrix's rows are questions). */
 export function isQuestion(item: Item): item is QuestionItem {
-	return item.type !== 'note';
+	return item.type !== 'note' && item.type !== 'matrix';
+}
+
+export function isMatrix(item: Item | undefined): item is MatrixItem {
+	return item?.type === 'matrix';
+}
+
+/** The value type a question stores and expressions see: a slider's `valueType`, else its type. */
+export function valueTypeOf(item: QuestionItem): Exclude<QuestionType, 'slider'> {
+	return item.type === 'slider' ? (item.valueType ?? 'integer') : item.type;
 }

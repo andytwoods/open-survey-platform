@@ -57,6 +57,13 @@ export const KNOWN_RUNTIME_BUGS: Record<string, KnownBug> = {
 			'session id or resume token, so the answers already saved on the server (R-1) are never resumed and the participant ' +
 			'starts again at p1 (runtime-design §5 step 7; fixture 30 "refresh and resume restore unsubmitted answers from the server").'
 	},
+	'39-slider/off-step': {
+		issue:
+			'C2c-1: the Slider widget (ui-components, R5) passes a typed value to the Bits slider, which snaps it to the ' +
+			'step grid and reports the snapped value: typing 7.25 on a 0.5-step slider stores 7 while the box still shows ' +
+			'7.25. Semantics §2 (C2c-4) refuses an off-step value as unreadable (value.off_step) rather than storing a value ' +
+			'the participant did not give, so the engine never sees the typed value.'
+	},
 	'18-multi-language/de': {
 		issue:
 			'R4-4: language negotiation. WebKit reports navigator.language "de-DE" for a German locale; App.svelte passes it ' +

@@ -50,12 +50,17 @@ from osp_spec.model import (
     EmbeddedVariable,
     EndNode,
     IntegerQuestion,
+    MatrixQuestion,
     MultiQuestion,
     NoteQuestion,
     QuotaCheckNode,
     RandomiserNode,
     SingleQuestion,
+    SliderQuestion,
     TextQuestion,
+    matrix_row_id,
+    matrix_row_name,
+    matrix_row_required,
 )
 from pydantic import BaseModel
 
@@ -177,6 +182,7 @@ _THEMES = {
     "S": "shortfreetext",
     "L": "listradio",
     "M": "multiplechoice",
+    "F": "arrays/array",
     "D": "date",
     "X": "boilerplate",
     "*": "equation",
@@ -423,7 +429,8 @@ class _Exporter:
                 for qi, q in enumerate(page.items):
                     ptr = pointer("blocks", bi, "pages", pi, "items", qi)
                     name = getattr(q, "name", None)
-                    entries.append((q.id, name or q.id, q.type, ptr + ("/name" if name else "/id")))
+                    qtype = q.valueType if isinstance(q, SliderQuestion) else q.type
+                    entries.append((q.id, name or q.id, qtype, ptr + ("/name" if name else "/id")))
         for vi, v in enumerate(self.s.variables):
             ptr = pointer("variables", vi) + ("/name" if v.name else "/id")
             if isinstance(v, EmbeddedVariable):
@@ -456,9 +463,33 @@ class _Exporter:
                 self.note("$names.reserved", ptr, f"{name} → {code}")
             else:
                 self.note("$names.rename", ptr, f"{name} → {code}")
+        self._matrix_rows()
+
+    def _matrix_rows(self) -> None:
+        """Each matrix row is a subquestion; Expression Manager names it `<q>_<sq>`, the
+        variable of its own that our row `<matrix id>_<row id>` is (semantics §2, C2c-1)."""
+        self.row_codes: dict[str, list[tuple[str, str]]] = {}  # matrix id -> [(row id, sq)]
+        for q in _questions(self.s):
+            if not isinstance(q, MatrixQuestion):
+                continue
+            used: set[str] = set()
+            pairs: list[tuple[str, str]] = []
+            for row in q.rows:
+                stem = sanitise_code(row.id)
+                sq, n = stem, 1
+                while sq.lower() in used:
+                    n += 1
+                    sq = stem[: CODE_MAX - len(str(n))] + str(n)
+                used.add(sq.lower())
+                pairs.append((row.id, sq))
+                rid = matrix_row_id(q.id, row.id)
+                self.codes[rid] = f"{self.codes[q.id]}_{sq}"
+                self.types[rid] = "single"
+                self.our_names[rid] = matrix_row_name(q, row.id)
+            self.row_codes[q.id] = pairs
 
     def _choice_codes(
-        self, q: SingleQuestion | MultiQuestion, ptr: str
+        self, q: SingleQuestion | MultiQuestion | MatrixQuestion, ptr: str
     ) -> list[tuple[str, Choice]]:
         """(LimeSurvey code, choice) for each choice of ``q``; invalid codes are replaced."""
         if q.choiceList is not None:
@@ -468,7 +499,7 @@ class _Exporter:
         else:
             choices = q.choices or []
             base = ptr + "/choices"
-        limit = ANSWER_CODE_MAX if isinstance(q, SingleQuestion) else CODE_MAX
+        limit = ANSWER_CODE_MAX if isinstance(q, SingleQuestion | MatrixQuestion) else CODE_MAX
         ok = re.compile(rf"^[A-Za-z0-9]{{1,{limit}}}$")
         used = {str(c.value).lower() for c in choices if ok.match(str(c.value))}
         out: list[tuple[str, Choice]] = []
@@ -488,6 +519,9 @@ class _Exporter:
             out.append((code, c))
             mapping[value] = code
         self.choice_maps[q.id] = mapping
+        if isinstance(q, MatrixQuestion):
+            for row in q.rows:
+                self.choice_maps[matrix_row_id(q.id, row.id)] = mapping
         return out
 
     # -- text ----------------------------------------------------------------------------
@@ -821,6 +855,23 @@ class _Exporter:
                 item.type = "D"
             case NoteQuestion():
                 item.type = "X"
+            case SliderQuestion():
+                # A number box: LimeSurvey's slider layout is only on type K (several
+                # numbers), and its range is checked by validation below.
+                item.type = "N"
+                if q.valueType == "integer":
+                    item.attributes.append(("num_value_int_only", "1", None))
+            case MatrixQuestion():
+                item.type = "F"
+                item.answers = [
+                    (c_code, self._texts(c.label, self._choice_ptr(q, ptr, i)))
+                    for i, (c_code, c) in enumerate(self._choice_codes(q, ptr))
+                ]
+                labels = {r.id: r.label for r in q.rows}
+                item.subquestions = [
+                    (sq, self._texts(labels[rid], ptr + pointer("rows", k, "label")))
+                    for k, (rid, sq) in enumerate(self.row_codes[q.id])
+                ]
             case SingleQuestion() | MultiQuestion():
                 item.type = "L" if isinstance(q, SingleQuestion) else "M"
                 rows = [
@@ -835,6 +886,9 @@ class _Exporter:
                     item.attributes.append(("random_order", "1", None))
         if q.showIf is not None:
             item.relevance = self.em.condition(q.showIf)
+        if isinstance(q, MatrixQuestion):
+            self._matrix_required(q, item, ptr)
+            return item
         if not isinstance(q, NoteQuestion):
             item.mandatory = q.required
             parts = [
@@ -842,6 +896,8 @@ class _Exporter:
                 for op, bound in ((">=", getattr(q, "min", None)), ("<=", getattr(q, "max", None)))
                 if bound is not None
             ]
+            if isinstance(q, SliderQuestion):
+                parts.append(f"fmod({code}.NAOK - ({q.min}), {q.step}) == 0")
             if q.constraint is not None:
                 parts.append(self.em.condition(q.constraint))
             if parts:
@@ -851,7 +907,24 @@ class _Exporter:
                 item.attributes.append(("em_validation_q_tip", tip, lang))
         return item
 
-    def _choice_ptr(self, q: SingleQuestion | MultiQuestion, ptr: str, i: int) -> str:
+    def _matrix_required(self, q: MatrixQuestion, item: _Item, ptr: str) -> None:
+        """`mandatory` is per question in LimeSurvey: all rows required → Y; only some →
+        a validation that the required rows are answered (only while relevant)."""
+        flags = [matrix_row_required(q, r) for r in q.rows]
+        if all(flags):
+            item.mandatory = True
+        elif any(flags):
+            self.note("$matrix.someRowsRequired", ptr + "/rows")
+            needed = [
+                f"!is_empty({item.code}_{sq}.NAOK)"
+                for (_rid, sq), flag in zip(self.row_codes[q.id], flags, strict=True)
+                if flag
+            ]
+            item.attributes.append(("em_validation_q", and_(*needed), None))
+
+    def _choice_ptr(
+        self, q: SingleQuestion | MultiQuestion | MatrixQuestion, ptr: str, i: int
+    ) -> str:
         if q.choiceList is None:
             return ptr + pointer("choices", i, "label")
         li = next(k for k, cl in enumerate(self.s.choiceLists) if cl.id == q.choiceList)

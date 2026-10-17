@@ -15,6 +15,7 @@ from .errors import (
 )
 from .runtime_repo import StoreParticipantRepo
 from .services import AppServices, build_services
+from .simulate import simulate_survey
 from .store_repos import StoreMembershipRepo, StoreSessionRepo, StoreUserRepo
 
 __all__ = [
@@ -41,6 +42,7 @@ __all__ = [
     "SurveyView",
     "Unauthenticated",
     "build_services",
+    "simulate_survey",
     "command",
     "dispatch",
 ]

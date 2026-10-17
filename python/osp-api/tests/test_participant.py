@@ -52,11 +52,12 @@ class Env:
             tenant = self.store.create_tenant(sys, name)
             self.tenants.append(TenantContext(tenant.id, "researcher"))
 
-    def publish(self, slug: str, tenant: int = 0, **cfg) -> None:
+    def publish(self, slug: str, tenant: int = 0, plan: dict | None = None, **cfg) -> None:
         ctx = self.tenants[tenant]
         survey, _ = self.store.create_survey(ctx, "S", {"blocks": []})
         version = self.store.publish_version(ctx, survey.id, b"", meta={})
-        self.service.publish(ctx.tenant_id, ctx.actor, version.id, slug, PLAN, {**CONFIG, **cfg})
+        plan = plan or PLAN
+        self.service.publish(ctx.tenant_id, ctx.actor, version.id, slug, plan, {**CONFIG, **cfg})
 
     def start(self, slug: str = "demo", **body):
         r = self.client.post(f"/api/s/{slug}/sessions", json=body or None)
@@ -97,6 +98,7 @@ def test_start_returns_seed_assignment_and_records_them_first(env):
     st = env.start(urlParams={"PROLIFIC_PID": "p-1"})
     assert 1 <= st["sessionSeed"] <= 2**53 - 1
     assert st["revision"] == 0 and st["saveMode"] == "every-page"
+    assert st["localCopy"] == "browser"  # the plan has no settings: the default
     assert st["planUrl"] == "/api/s/demo/plan/plan-sha-1"
     expected = assign(["gain", "loss"], None, node_seed("1", st["sessionSeed"], "a1/framing"))
     assert st["assigned"]["framing"] == expected
@@ -131,7 +133,11 @@ def test_stale_write_gives_409_with_server_snapshot(env):
     st = env.start()
     url = f"/api/sessions/{st['sessionId']}/snapshot"
     ok = env.client.put(url, json={"baseRevision": 0, "snapshot": {"p": 1}}, headers=auth(st))
-    assert ok.status_code == 200 and ok.json() == {"revision": 1, "replay": False}
+    assert ok.status_code == 200 and ok.json() == {
+        "revision": 1,
+        "replay": False,
+        "superseded": False,
+    }
     ok = env.client.put(url, json={"baseRevision": 1, "snapshot": {"p": 2}}, headers=auth(st))
     assert ok.json()["revision"] == 2
     stale = env.client.put(url, json={"baseRevision": 1, "snapshot": {"p": 9}}, headers=auth(st))
@@ -154,16 +160,62 @@ def test_lost_ack_retry_is_a_replay(env):
     body = {"baseRevision": 0, "snapshot": {"p": 1}}
     env.client.put(url, json=body, headers=auth(st))
     again = env.client.put(url, json=body, headers=auth(st))
-    assert again.status_code == 200 and again.json() == {"revision": 1, "replay": True}
+    assert again.status_code == 200 and again.json() == {
+        "revision": 1,
+        "replay": True,
+        "superseded": False,
+    }
     assert env.count(t.session_conflicts) == 0
+
+
+def snap(rev: int, *events: str) -> dict:
+    """An engine snapshot (osp-engine-snapshot/1) with the given event log."""
+    log = [{"seq": i + 1, "type": e} for i, e in enumerate(events)]
+    return {"format": "osp-engine-snapshot/1", "revision": rev, "data": {"events": log}}
+
+
+def test_late_save_of_an_older_prefix_is_a_no_op_not_a_conflict(env):
+    st = env.start()
+    url = f"/api/sessions/{st['sessionId']}/snapshot"
+    put = lambda base, s: env.client.put(  # noqa: E731
+        url, json={"baseRevision": base, "snapshot": s}, headers=auth(st)
+    )
+    assert put(0, snap(1, "start")).json()["revision"] == 1
+    assert put(1, snap(2, "start", "answer")).json()["revision"] == 2
+    assert put(2, snap(3, "start", "answer", "next")).json()["revision"] == 3
+    # A dead page's keepalive save of revision 1's state, arriving late: nothing new.
+    for base, old in ((0, snap(1, "start")), (1, snap(2, "start", "answer"))):
+        late = put(base, old)
+        assert late.status_code == 200
+        assert late.json() == {"revision": 3, "replay": False, "superseded": True}
+    assert env.count(t.session_conflicts) == 0
+    res = env.client.get("/api/sessions/resume", headers=auth(st)).json()
+    assert (res["revision"], res["snapshot"]) == (3, snap(3, "start", "answer", "next"))
+    # True divergence (same length, different events) is still a 409 and a conflict row.
+    diverged = put(1, snap(2, "start", "other"))
+    assert diverged.status_code == 409 and diverged.json()["revision"] == 3
+    assert env.count(t.session_conflicts) == 1
+    # So is a stale save that carries more than the server has.
+    longer = put(2, snap(4, "start", "answer", "next", "answer"))
+    assert longer.status_code == 409 and env.count(t.session_conflicts) == 2
+
+
+def test_start_and_resume_report_save_mode_and_local_copy(tmp_path):
+    env = Env(tmp_path)
+    plan = {**PLAN, "checksum": "plan-mem", "settings": {"localCopy": "memory"}}
+    env.publish("mem", plan=plan, saveMode="end-only")
+    st = env.start("mem")
+    assert (st["saveMode"], st["localCopy"]) == ("end-only", "memory")
+    res = env.client.get("/api/sessions/resume", headers=auth(st)).json()
+    assert (res["saveMode"], res["localCopy"]) == ("end-only", "memory")
 
 
 def test_quota_retries_are_idempotent(env):
     a, b, c = env.start(), env.start(), env.start()
     q = lambda st: env.client.post(f"/api/sessions/{st['sessionId']}/quota/qc1", headers=auth(st))  # noqa: E731
-    assert q(a).json() == {"nodeId": "qc1", "result": "admitted", "replay": False}
-    assert q(a).json() == {"nodeId": "qc1", "result": "admitted", "replay": True}
-    assert q(b).json()["result"] == "admitted"
+    assert q(a).json() == {"nodeId": "qc1", "result": "open", "replay": False}
+    assert q(a).json() == {"nodeId": "qc1", "result": "open", "replay": True}
+    assert q(b).json()["result"] == "open"
     assert q(c).json()["result"] == "full"  # limit 2
     assert q(c).json() == {"nodeId": "qc1", "result": "full", "replay": True}
     assert (
@@ -304,7 +356,7 @@ def test_quota_holds_are_released_after_24h_but_the_resume_link_lasts_30_days(en
     pub_id = env.repo.find_publication("demo").id
     assert (
         env.client.post(f"/api/sessions/{sid}/quota/qc1", headers=auth(st)).json()["result"]
-        == "admitted"
+        == "open"
     )
     env.clock.now += timedelta(hours=25)
     report = env.service.release_inactive()

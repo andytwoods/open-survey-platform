@@ -23,12 +23,13 @@ export const EDITOR_KINDS = [
 	'bool',
 	'enum',
 	'choicelist',
+	'rows',
 	'condition',
 	'expression'
 ] as const satisfies readonly PropertyKind[];
 
 /** Kinds edited elsewhere: the panel shows a button that asks the shell to open the editor. */
-export const EXTERNAL_KINDS: readonly PropertyKind[] = ['choicelist', 'condition', 'expression'];
+export const EXTERNAL_KINDS: readonly PropertyKind[] = ['choicelist', 'rows', 'condition', 'expression'];
 
 /** Pause after the last keystroke before a text buffer is sent (builder-design §4). */
 export const TEXT_DEBOUNCE_MS = 600;
@@ -229,6 +230,7 @@ export function enumOptions(spec: PropertySpec, survey: unknown, language: strin
 
 export function editorButtonLabel(kind: PropertyKind): string {
 	if (kind === 'choicelist') return 'Edit choices…';
+	if (kind === 'rows') return 'Edit rows…';
 	if (kind === 'condition') return 'Edit condition…';
 	return 'Edit expression…';
 }
@@ -238,6 +240,10 @@ export function externalSummary(kind: PropertyKind, value: unknown): string {
 	if (kind === 'choicelist') {
 		if (!Array.isArray(value) || value.length === 0) return 'No choices';
 		return value.length === 1 ? '1 choice' : `${value.length} choices`;
+	}
+	if (kind === 'rows') {
+		if (!Array.isArray(value) || value.length === 0) return 'No rows';
+		return value.length === 1 ? '1 row' : `${value.length} rows`;
 	}
 	if (value === undefined || value === null) return kind === 'condition' ? 'No condition' : 'Not set';
 	const text = exprToText(value);

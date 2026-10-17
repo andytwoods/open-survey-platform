@@ -148,8 +148,11 @@ So `steps` has one more entry than `actions`.
 
 **Values**: `integer` JSON integer; `decimal` JSON *string* (`"0.1"`), so no binary float
 sneaks in (§2); `text` the trimmed string; `single` the code; `multi` an array of codes in
-choice-list order (compare as a set); `date` `"YYYY-MM-DD"`. `value` is `null` unless the state
-is `answered`.
+choice-list order (compare as a set); `date` `"YYYY-MM-DD"`; `slider` as `integer` or `decimal`
+by its `valueType`. A **matrix** has no entry of its own: each row is a `single` question keyed
+by its row variable id `<matrix id>_<row id>` (in `questions`, `answers`, `errors` and a script's
+`set`), with CSV state column `<matrix name>_<row id>__state`; `visible` and `labels` list the
+matrix id (semantics §2, C2c-1; fixture 38). `value` is `null` unless the state is `answered`.
 
 **Response** (§1, §7, §9): `surveyId`, `surveyVersion`, `end`, `allocation` (`"server"`),
 `sessionSeed`, `conditions`, `orders`, `answers` (the JSON export form: value + state per

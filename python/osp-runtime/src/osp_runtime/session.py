@@ -13,8 +13,11 @@ import each other).
   every session call and stops working after ``resume_expiry`` without activity
   (default 30 days; per survey ``RuntimeConfig.resumeExpiryDays``; decision S-1).
 - **Snapshot**: conditional on ``baseRevision``; stale → :class:`StaleRevision` with
-  the server copy (the server copy wins; the loser is kept, R-2).
-- **Quota**: idempotent per (session, node); a place is held when admitted, used up on
+  the server copy (the server copy wins; the loser is kept, R-2). A late save whose
+  event log is a prefix of the server copy's (a dead page catching up) is not a
+  conflict: it is acknowledged as ``superseded`` and nothing is written.
+- **Quota**: idempotent per (session, node); the result uses the engine's words,
+  ``open`` or ``full``. A place is held when open, used up on
   completion, and released by :meth:`SessionService.release_inactive` after
   ``release_after`` (24 h) idle (R-3, C3a-3). This is a separate timer from the token:
   a session whose holds were released can still resume, and then takes its places
@@ -40,7 +43,7 @@ import json
 from collections.abc import Mapping
 from dataclasses import dataclass
 from datetime import datetime, timedelta
-from typing import Any, Protocol
+from typing import Any, Literal, Protocol
 
 from osp_engine.random import MAX_SEED, assign, node_seed
 
@@ -63,6 +66,10 @@ from .limiter import TokenBucket
 from .ports import Clock, RandomSource, SystemRandom, system_clock
 
 TOKEN_BYTES = 32
+LocalCopy = Literal["browser", "memory"]
+QuotaResult = Literal["open", "full"]
+#: Store / older-contract words for a quota result -> the engine's (``open`` | ``full``).
+_QUOTA_RESULT: dict[str, QuotaResult] = {"open": "open", "admitted": "open", "full": "full"}
 ANSWER_STATES = frozenset({"answered", "unanswered", "irrelevant", "not-reached"})  # semantics §1
 
 
@@ -176,18 +183,20 @@ class Started:
     plan_checksum: str
     save_mode: SaveMode
     revision: int = 0
+    local_copy: LocalCopy = "browser"
 
 
 @dataclass(frozen=True, slots=True)
 class SnapshotAck:
     revision: int
     replay: bool = False
+    superseded: bool = False  # an older prefix of the server copy: nothing written
 
 
 @dataclass(frozen=True, slots=True)
 class QuotaOutcome:
     node_id: str
-    result: str  # "admitted" | "full"
+    result: QuotaResult
     replay: bool
 
 
@@ -210,6 +219,7 @@ class Resumed:
     plan_checksum: str
     save_mode: str
     submitted: bool
+    local_copy: LocalCopy = "browser"
 
 
 @dataclass(frozen=True, slots=True)
@@ -234,6 +244,44 @@ def canonical_json(value: object) -> str:
     return json.dumps(
         value, sort_keys=True, separators=(",", ":"), ensure_ascii=False, allow_nan=False
     )
+
+
+def quota_result(value: object) -> QuotaResult:
+    """The engine's quota word for a stored or older-contract one (``admitted`` -> ``open``)."""
+    if isinstance(value, str) and value in _QUOTA_RESULT:
+        return _QUOTA_RESULT[value]
+    raise InvalidPayload(f"unknown quota result {str(value)[:20]!r}")
+
+
+def local_copy(plan: object) -> LocalCopy:
+    """``settings.localCopy`` from a runtime plan (default ``browser``, semantics §5)."""
+    settings = plan.get("settings") if isinstance(plan, Mapping) else None
+    value = settings.get("localCopy") if isinstance(settings, Mapping) else None
+    return "memory" if value == "memory" else "browser"
+
+
+def _events(snapshot: object) -> list[Any] | None:
+    """The engine event log of a snapshot (``data.events``), or None if it has none."""
+    data = snapshot.get("data") if isinstance(snapshot, Mapping) else None
+    events = data.get("events") if isinstance(data, Mapping) else None
+    return events if isinstance(events, list) else None
+
+
+def is_older_prefix(snapshot: object, server: object) -> bool:
+    """True when ``snapshot`` is an older state of ``server``: its event log is a prefix
+    of the server copy's (compared as canonical JSON) and its engine revision is not
+    newer. A dead page's late save then carries nothing the server lacks."""
+    mine, theirs = _events(snapshot), _events(server)
+    if mine is None or theirs is None or len(mine) > len(theirs):
+        return False
+    rev = snapshot.get("revision") if isinstance(snapshot, Mapping) else None
+    server_rev = server.get("revision") if isinstance(server, Mapping) else None
+    if isinstance(rev, int) and isinstance(server_rev, int) and rev > server_rev:
+        return False
+    try:
+        return canonical_json(mine) == canonical_json(theirs[: len(mine)])
+    except TypeError, ValueError, RecursionError:
+        return False
 
 
 def hash_token(token: str) -> str:
@@ -376,6 +424,7 @@ class SessionService:
             pub.plan_checksum,
             cfg.save_mode,
             row.revision,
+            local_copy(pub.plan),
         )
 
     # -- authentication --------------------------------------------------------------
@@ -463,6 +512,16 @@ class SessionService:
         if base_revision < 0:
             raise InvalidPayload("baseRevision must be >= 0")
         _size(snapshot, self.policy.max_snapshot_bytes, "snapshot")
+        # A late save from a dead page that the server copy already contains: a no-op,
+        # not a conflict. Revisions only grow, so it can't become current meanwhile.
+        cur = self._repo.get(cred.tenant_id, session_id)
+        if (
+            cur.submitted_at is None
+            and cur.save_mode == "every-page"
+            and base_revision < cur.revision
+            and is_older_prefix(snapshot, cur.snapshot)
+        ):
+            return SnapshotAck(cur.revision, superseded=True)
         w = self._repo.write_snapshot(cred.tenant_id, session_id, base_revision, snapshot)
         match w.status:
             case "ok" | "replay":
@@ -492,7 +551,7 @@ class SessionService:
         c = self._repo.claim_quota(cred.tenant_id, session_id, node_id, q.quota)
         match c.status:
             case "ok" | "replay":
-                return QuotaOutcome(node_id, c.result, c.status == "replay")
+                return QuotaOutcome(node_id, quota_result(c.result), c.status == "replay")
             case "submitted":
                 raise SessionSubmitted("this session was submitted")
             case _:
@@ -567,6 +626,7 @@ class SessionService:
             pub.plan_checksum,
             sess.save_mode,
             sess.submitted_at is not None,
+            local_copy(pub.plan),
         )
 
     # -- release job (decision R-3) --------------------------------------------------

@@ -54,6 +54,12 @@ STATUS: dict[type[SessionError], int] = {
 # -- models ----------------------------------------------------------------------------
 
 
+def _optional(schema: dict[str, Any]) -> None:
+    """Drop ``default`` from a field's JSON Schema, so the generated TS type marks it
+    optional (``field?:``): a client written against an older server still type-checks."""
+    schema.pop("default", None)
+
+
 class ErrorBody(BaseModel):
     code: str
     message: str
@@ -79,7 +85,15 @@ class StartResponse(BaseModel):
     assigned: dict[str, Any]
     planUrl: str
     planChecksum: str
-    saveMode: Literal["every-page", "end-only"]
+    saveMode: Literal["every-page", "end-only"] = Field(
+        description="From the plan's settings. `end-only`: send no snapshots before submit."
+    )
+    localCopy: Literal["browser", "memory"] = Field(
+        default="browser",
+        description="Where an end-only session keeps its copy (plan settings.localCopy). "
+        "Always sent by this server; absent means `browser`.",
+        json_schema_extra=_optional,
+    )
     revision: int
 
 
@@ -92,11 +106,23 @@ class SnapshotRequest(BaseModel):
 class SnapshotResponse(BaseModel):
     revision: int
     replay: bool = Field(description="True when this was a retry of the last accepted write.")
+    superseded: bool = Field(
+        default=False,
+        json_schema_extra=_optional,
+        description=(
+            "True when this was a late save of an older state the server already holds "
+            "(its event log is a prefix of the server copy's). Nothing was written; "
+            "`revision` is the server's current revision."
+        ),
+    )
 
 
 class QuotaResponse(BaseModel):
     nodeId: str
-    result: Literal["admitted", "full"]
+    result: Literal["open", "full", "admitted"] = Field(
+        description="The engine's words: `open` (a place is held) or `full`. `admitted` is "
+        "a deprecated alias of `open` from the first contract; this server never sends it."
+    )
     replay: bool
 
 
@@ -159,6 +185,11 @@ class ResumeResponse(BaseModel):
     planUrl: str
     planChecksum: str
     saveMode: Literal["every-page", "end-only"]
+    localCopy: Literal["browser", "memory"] = Field(
+        default="browser",
+        description="Plan settings.localCopy. Always sent by this server; absent means `browser`.",
+        json_schema_extra=_optional,
+    )
     submitted: bool
 
 
@@ -231,6 +262,7 @@ def install(app: FastAPI, service: SessionService | None) -> None:
             planUrl=plan_url(st.slug, st.plan_checksum),
             planChecksum=st.plan_checksum,
             saveMode=st.save_mode,
+            localCopy=st.local_copy,
             revision=st.revision,
         )
 
@@ -249,7 +281,7 @@ def install(app: FastAPI, service: SessionService | None) -> None:
         session_id: str, body: SnapshotRequest, s: Svc, token: Token
     ) -> SnapshotResponse:
         ack = s.save_snapshot(session_id, _token(token), body.baseRevision, body.snapshot)
-        return SnapshotResponse(revision=ack.revision, replay=ack.replay)
+        return SnapshotResponse(revision=ack.revision, replay=ack.replay, superseded=ack.superseded)
 
     @r.post(
         "/sessions/{session_id}/quota/{node_id}",
@@ -324,6 +356,7 @@ def install(app: FastAPI, service: SessionService | None) -> None:
             planUrl=plan_url(st.slug, st.plan_checksum),
             planChecksum=st.plan_checksum,
             saveMode=st.save_mode,
+            localCopy=st.local_copy,
             submitted=st.submitted,
         )
 

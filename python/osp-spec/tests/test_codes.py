@@ -193,6 +193,42 @@ def m_consent_outcome(s: dict) -> None:
     s["consent"] = {"text": "Consent?", "declineOutcome": "complete"}
 
 
+def _matrix(rows: list[dict] | None = None) -> dict:
+    rows = rows if rows is not None else [{"id": "a", "label": "A"}, {"id": "b", "label": "B"}]
+    return {"id": "m", "type": "matrix", "label": "M", "rows": rows,
+            "choices": [{"value": 1, "label": "Yes"}, {"value": 2, "label": "No"}]}  # fmt: skip
+
+
+def m_matrix_duplicate_row(s):
+    _items(s)[1] = _matrix([{"id": "a", "label": "A"}, {"id": "a", "label": "A again"}])
+
+
+def m_matrix_row_id(s):
+    _items(s)[1] = _matrix([{"id": "r" * 63, "label": "Long"}])
+
+
+def m_matrix_row_clash(s):
+    _items(s)[0]["id"] = "m_a"  # the id of row `a` of matrix `m`
+    _items(s)[1] = _matrix()
+
+
+def m_matrix_ref(s):
+    _items(s)[0]["showIf"] = answered("m")
+    _items(s)[1] = _matrix()
+
+
+def m_slider_range(s):
+    _items(s)[1] = {"id": "q2", "type": "slider", "label": "S", "min": 5, "max": 5}
+
+
+def m_slider_grid(s):
+    _items(s)[1] = {"id": "q2", "type": "slider", "label": "S", "min": 0, "max": 10, "step": 3}
+
+
+def m_slider_integer_step(s):
+    _items(s)[1] = {"id": "q2", "type": "slider", "label": "S", "max": 10, "step": "0.5"}
+
+
 TABLE: list[tuple[Callable[[dict], None], list[tuple[str, str]]]] = [
     (m_lang_dup, [("lang.duplicate", "/metadata/languages/1")]),
     (m_lang_default, [("lang.unknown_default", "/metadata/defaultLanguage")]),
@@ -223,6 +259,13 @@ TABLE: list[tuple[Callable[[dict], None], list[tuple[str, str]]]] = [
     (m_page_showif_own_item, [("ref.forward", "/blocks/0/pages/0/showIf")]),
     (m_consent_pipe, [("consent.pipe", "/consent/agreeLabel")]),
     (m_consent_outcome, [("consent.outcome", "/consent/declineOutcome")]),
+    (m_matrix_duplicate_row, [("matrix.duplicate_row", f"{P0}/1/rows/1/id")]),
+    (m_matrix_row_id, [("matrix.row_id", f"{P0}/1/rows/0/id")]),
+    (m_matrix_row_clash, [("id.duplicate", f"{P0}/1/rows/0/id")]),
+    (m_matrix_ref, [("ref.no_value", f"{P0}/0/showIf")]),
+    (m_slider_range, [("question.slider", f"{P0}/1/min")]),
+    (m_slider_grid, [("question.slider", f"{P0}/1/step")]),
+    (m_slider_integer_step, [("question.slider", f"{P0}/1/step")]),
 ]
 
 

@@ -307,7 +307,7 @@ export function flowCriticalVariables(plan: Plan): Set<Id> {
 	for (const q of Object.values(plan.quotas)) refsOf(q.when, read);
 	for (const it of Object.values(plan.items)) {
 		refsOf(it.showIf, read);
-		if (it.type !== 'note') refsOf(it.constraint, read);
+		if (it.type !== 'note' && it.type !== 'matrix') refsOf(it.constraint, read);
 	}
 	// Computed variables pass reads through (to a fixpoint).
 	let grew = true;

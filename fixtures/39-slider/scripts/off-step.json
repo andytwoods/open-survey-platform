@@ -1,0 +1,31 @@
+{
+  "format": "osp-fixture-script/0",
+  "id": "off-step",
+  "description": "A typed value between two steps of the decimal slider is unreadable input (value.off_step) and blocks Next even though the slider is optional (§2 R1-4, C2c-3). Fix it; a negative value on the page-2 slider is stored as a plain integer.",
+  "sessionSeed": 3902,
+  "language": "en",
+  "actions": [
+    {
+      "expectPage": "p1",
+      "set": {
+        "pain": 3,
+        "sleep": "7.25"
+      },
+      "do": "next"
+    },
+    {
+      "expectPage": "p1",
+      "set": {
+        "sleep": "6"
+      },
+      "do": "next"
+    },
+    {
+      "expectPage": "p2",
+      "set": {
+        "mood": -2
+      },
+      "do": "next"
+    }
+  ]
+}

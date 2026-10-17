@@ -67,6 +67,8 @@ TYPE_NOTES = {
     "single": "One choice code.",
     "multi": "Any number of choice codes.",
     "date": "Calendar date, YYYY-MM-DD.",
+    "slider": "A number picked on a slider, stored like an integer or decimal answer "
+    "(see valueType); empty until the participant set it (it never defaults to a value).",
 }
 
 
@@ -197,6 +199,9 @@ def codebook_data(
                 ]
             ),
             "choiceOrder": q.choice_order,
+            "matrix": q.matrix,
+            "matrixLabel": q.matrix_label,
+            **(q.scale or {}),
             "csvColumns": _question_columns(q, opts),
             "missing": _encoding(q, opts),
         }
@@ -442,7 +447,14 @@ def _render(data: dict[str, Any], heading: str = "#") -> str:
         add(f"{h3} `{v['name']}`")
         add("")
         add(f"- Type: {v['type']}. {TYPE_NOTES.get(v['type'], '')}".rstrip())
+        if v.get("matrix"):
+            add(
+                f"- Row of matrix {_code(v['matrix'])}: "
+                f"{_lang_text(v.get('matrixLabel'), langs)} (each row is its own variable)"
+            )
         add(f"- Label: {_lang_text(v['label'], langs)}")
+        if v.get("valueType"):
+            add(f"- Slider: {v['valueType']} from {v['min']} to {v['max']} in steps of {v['step']}")
         if v.get("help"):
             add(f"- Help: {_lang_text(v['help'], langs)}")
         if v["id"] != v["name"]:
