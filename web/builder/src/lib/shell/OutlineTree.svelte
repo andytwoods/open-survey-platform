@@ -4,7 +4,8 @@
 	import { tick, untrack } from 'svelte';
 	import { SvelteSet } from 'svelte/reactivity';
 	import type { OutlineNode } from '../model/outline';
-	import { dropTargetAt, measureRows, type DragHit, type RowBox } from '../outline/drag';
+	import { dropTargetAt, insertTargetAt, measureRows, type DragHit, type RowBox } from '../outline/drag';
+	import type { TypeDrag } from '../question-types/type-drag.svelte';
 	import { indexTree, keyboardTarget, movableIds, type DropTarget, type MovableType } from '../outline/moves';
 	import { MultiSelection } from '../outline/multi-select.svelte';
 	import { ancestorsOf, navigate, visibleRows } from '../outline/tree-nav';
@@ -16,18 +17,21 @@
 	 * active item is in the Tab order; arrows move within. Shift/Ctrl extend the selection.
 	 * With `onMove`, items reorder by pointer drag, Alt+↑/↓ (past a sibling) and
 	 * Alt+Shift+↑/↓ (across a page or block boundary); each gesture is one `onMove` call.
+	 * With `typeDrag`, a question type dragged from the toolbox drops into a page's gap.
 	 */
 	let {
 		roots,
 		selection,
 		multi = new MultiSelection(untrack(() => selection)),
-		onMove
+		onMove,
+		typeDrag
 	}: {
 		roots: OutlineNode[];
 		selection: SelectionStore;
 		multi?: MultiSelection;
 		/** Move the items (all one type) into the gap; resolves when the server answered. */
 		onMove?: (ids: string[], target: DropTarget) => Promise<unknown> | void;
+		typeDrag?: TypeDrag;
 	} = $props();
 
 	function allParents(nodes: OutlineNode[], out: string[] = []): string[] {
@@ -235,9 +239,25 @@
 		drag = null;
 	}
 
+	// -- a question type dragged from the toolbox ----------------------------------------
+
+	$effect(() => {
+		if (!typeDrag) return;
+		return typeDrag.attach((x, y) => {
+			if (!tree) return null;
+			// Only over the tree's visible part (it scrolls inside the pane).
+			const r = tree.getBoundingClientRect();
+			const v = tree.parentElement?.getBoundingClientRect() ?? r;
+			const inside = (b: DOMRect) => x >= b.left && x <= b.right && y >= b.top && y <= b.bottom;
+			if (!inside(r) || !inside(v)) return null;
+			const hit = insertTargetAt(measureRows(tree, rows), y, roots);
+			return hit && { hit, description: describeHit(hit) };
+		});
+	});
+
 	/** Which edge of this row shows the drop indicator, if any. */
 	function dropEdge(id: string): string | undefined {
-		const hit = drag?.active ? drag.hit : null;
+		const hit = drag?.active ? drag.hit : (typeDrag?.hit?.hit ?? null);
 		return hit && hit.lineRowId === id ? hit.edge : undefined;
 	}
 </script>

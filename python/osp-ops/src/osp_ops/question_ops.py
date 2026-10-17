@@ -17,6 +17,7 @@ from .doc import (
     get,
     insert_at,
     locate,
+    subtree_ids,
 )
 from .registry import REVERSE_PATCH, Ctx, Invocation, OpError, Params, op
 
@@ -102,7 +103,12 @@ def delete_question(ctx: Ctx, p: DeleteQuestion) -> Invocation:
             loc.pointer,
         )
     q, cascaded = delete_with_refs(
-        ctx, loc, {p.id}, cascade=p.cascade, force=p.force, what=f"question '{p.id}'"
+        ctx,
+        loc,
+        subtree_ids(get(ctx.doc, loc.path)),  # a grid: its row variables too
+        cascade=p.cascade,
+        force=p.force,
+        what=f"question '{p.id}'",
     )
     if cascaded:
         return REVERSE_PATCH

@@ -37,17 +37,18 @@ from __future__ import annotations
 
 import json
 import uuid
-from collections.abc import Callable, Mapping, Sequence
+from collections.abc import Callable, Iterator, Mapping, Sequence
 from dataclasses import dataclass
 from datetime import datetime
 from typing import Any, Literal
 
-from sqlalchemy import Connection, delete, insert, select, update
+from sqlalchemy import Connection, delete, func, insert, select, update
 
 from . import schema as t
 from .context import SystemContext, TenantContext, require_ctx, require_system
 from .crypto import canonical_json
 from .errors import Conflict, InvalidInput, NotFound
+from .records import Response
 from .store import Store, _answers, _id, _json, _seed
 
 SaveMode = Literal["every-page", "end-only"]
@@ -116,9 +117,14 @@ class ConsentRecord:
     consented_at: datetime | None
 
 
+# How often a stale write is read and judged again when a concurrent write beat its
+# fast-forward (R9-1). Each attempt means another save landed meanwhile.
+_JUDGE_ATTEMPTS = 3
+
+
 @dataclass(frozen=True, slots=True)
 class SnapshotWrite:
-    status: Literal["ok", "replay", "stale", "submitted", "end-only"]
+    status: Literal["ok", "replay", "superseded", "stale", "submitted", "end-only"]
     revision: int
     snapshot: Any = None  # the server copy, for "stale"
     conflict_id: str | None = None
@@ -636,13 +642,21 @@ class ParticipantStore:
         return n == 1
 
     def write_snapshot(
-        self, ctx: TenantContext, session_id: str, base_revision: int, snapshot: object
+        self,
+        ctx: TenantContext,
+        session_id: str,
+        base_revision: int,
+        snapshot: object,
+        judge: Callable[[object, int], str | None] | None = None,
     ) -> SnapshotWrite:
         """Conditional write: accepted only if ``base_revision`` is the current revision.
 
         A retry of the last accepted write (same content, base = current - 1) is a
-        ``replay``. Any other stale write keeps the server copy and stores the losing
-        snapshot in ``session_conflicts`` (decision R-2).
+        ``replay``. Otherwise ``judge(server_snapshot, server_revision)``, if given, may
+        settle a stale write inside this transaction: ``"superseded"`` (nothing written,
+        not a conflict) or ``"fast-forward"`` (written on the current revision; the caller
+        vouches that it overwrites nothing, decision R9-1). Any other stale write keeps
+        the server copy and stores the losing snapshot in ``session_conflicts`` (R-2).
         """
         ctx = require_ctx(ctx)
         sid = _id(session_id)
@@ -651,34 +665,52 @@ class ParticipantStore:
         body = _json(snapshot, "snapshot")
         ps = t.participant_sessions.c
         now = self._s._now()
-        with self._s._tx() as conn:
+
+        def write_on(conn: Connection, revision: int) -> bool:
+            """Write ``body`` if the session is still at ``revision``."""
             n = conn.execute(
                 update(t.participant_sessions)
                 .where(
                     self._open(ctx, sid)
                     & (ps.save_mode == "every-page")
-                    & (ps.revision == base_revision)
+                    & (ps.revision == revision)
                 )
                 .values(revision=ps.revision + 1, last_active_at=now)
             ).rowcount
-            if n == 1:
-                self._reacquire(conn, ctx, sid)
-                blob, kid = self._s._enc(body, "sessions", "instance", sid)
-                conn.execute(
-                    update(t.sessions)
-                    .where(self._s._session_where(ctx, sid))
-                    .values(instance_ct=blob, instance_key_id=kid, updated_at=now)
-                )
+            if n != 1:
+                return False
+            self._reacquire(conn, ctx, sid)
+            blob, kid = self._s._enc(body, "sessions", "instance", sid)
+            conn.execute(
+                update(t.sessions)
+                .where(self._s._session_where(ctx, sid))
+                .values(instance_ct=blob, instance_key_id=kid, updated_at=now)
+            )
+            return True
+
+        with self._s._tx() as conn:
+            if write_on(conn, base_revision):
                 return SnapshotWrite("ok", base_revision + 1)
-            cur = self._get(conn, ctx, sid)  # NotFound for another tenant's session
-            if cur.submitted_at is not None:
-                return SnapshotWrite("submitted", cur.revision)
-            if cur.save_mode != "every-page":
-                return SnapshotWrite("end-only", cur.revision)
-            if base_revision == cur.revision - 1 and canonical_json(body) == canonical_json(
-                cur.snapshot
-            ):
-                return SnapshotWrite("replay", cur.revision)
+            # A fast-forward writes on the revision just read. A concurrent writer can move
+            # it on in between (no row lock on Postgres' read committed): read and judge
+            # again rather than call a safe save a conflict.
+            for _ in range(_JUDGE_ATTEMPTS):
+                cur = self._get(conn, ctx, sid)  # NotFound for another tenant's session
+                if cur.submitted_at is not None:
+                    return SnapshotWrite("submitted", cur.revision)
+                if cur.save_mode != "every-page":
+                    return SnapshotWrite("end-only", cur.revision)
+                if base_revision == cur.revision - 1 and canonical_json(body) == canonical_json(
+                    cur.snapshot
+                ):
+                    return SnapshotWrite("replay", cur.revision)
+                verdict = judge(cur.snapshot, cur.revision) if judge is not None else None
+                if verdict == "superseded":
+                    return SnapshotWrite("superseded", cur.revision)
+                if verdict != "fast-forward":
+                    break
+                if write_on(conn, cur.revision):
+                    return SnapshotWrite("ok", cur.revision + 1)
             cid = str(uuid.uuid4())
             blob, kid = self._s._enc(body, "session_conflicts", "snapshot", cid)
             conn.execute(
@@ -1043,6 +1075,64 @@ class ParticipantStore:
         return self._s._dec(
             r["record_ct"], r["record_key_id"], "response_records", "record", r["id"]
         )
+
+    def response_watermark(self, ctx: TenantContext, version_id: str) -> tuple[int, str]:
+        """(count, newest submitted_at as ISO text) of one version's responses, without
+        reading (or auditing) any answers. Any new or deleted response changes it."""
+        ctx = require_ctx(ctx)
+        r = t.responses.c
+        with self._s.engine.connect() as conn:
+            n, newest = conn.execute(
+                select(func.count(), func.max(r.submitted_at)).where(
+                    (r.tenant_id == ctx.tenant_id) & (r.version_id == _id(version_id))
+                )
+            ).one()
+        return int(n), "" if newest is None else str(newest)
+
+    def stream_responses(
+        self, ctx: TenantContext, version_id: str, purpose: str = "results"
+    ) -> Iterator[tuple[Response, Any]]:
+        """Every response of one version with its full record (or None), decrypted one at
+        a time in submission order: one pass, constant memory. Audited up front as one
+        ``responses.read`` (count + purpose), like ``Store.list_responses``."""
+        ctx = require_ctx(ctx)
+        vid = _id(version_id)
+        r, rr = t.responses.c, t.response_records.c
+        where = (r.tenant_id == ctx.tenant_id) & (r.version_id == vid)
+        with self._s._tx() as conn:
+            self._s._one(conn, select(t.versions.c.id).where(self._s._version_where(ctx, vid)))
+            n = conn.execute(select(func.count()).where(where)).scalar_one()
+            self._s._audit(
+                conn,
+                ctx.tenant_id,
+                ctx.actor,
+                "responses.read",
+                "version",
+                vid,
+                {"count": n, "purpose": str(purpose)[:40]},
+            )
+        stmt = (
+            select(t.responses, rr.record_ct, rr.record_key_id)
+            .select_from(
+                t.responses.outerjoin(
+                    t.response_records, (rr.id == r.id) & (rr.tenant_id == r.tenant_id)
+                )
+            )
+            .where(where)
+            .order_by(r.submitted_at, r.id)
+        )
+        with self._s.engine.connect() as conn:
+            for row in conn.execution_options(yield_per=500).execute(stmt).mappings():
+                record = None
+                if row["record_ct"] is not None:
+                    record = self._s._dec(
+                        row["record_ct"],
+                        row["record_key_id"],
+                        "response_records",
+                        "record",
+                        row["id"],
+                    )
+                yield self._s._response(row), record
 
     # -- inactivity release (decision R-3) -------------------------------------------
 

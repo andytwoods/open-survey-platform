@@ -340,6 +340,178 @@ describe('no durable local copy (R4-3, R6-5)', () => {
 		expect(b.notice).toBeNull();
 	});
 
+	/**
+	 * R9-1 (fixture 30 `storage-blocked`): typing, then a refresh at once. A save is on the
+	 * wire when pagehide sends the newest copy too; the dead page never sees either reply.
+	 * Returns the dead page and the server, with both saves held at the network.
+	 */
+	async function refreshWhileSaving(edit = false, flushes = 1) {
+		const p = plan();
+		const server = new FakeServer(p);
+		const pointer = tabPointer();
+		const a = await open({ ...env(server, new MemoryStore()), pointer });
+		a.next(); // to p2 (age is required on p1)
+		a.answer('age', '1');
+		await a.next();
+		await settle();
+		expect(view(a.state).page).toBe('p2');
+		server.holdSaves = true;
+		a.answer('why', 'Rob');
+		await settle();
+		expect(server.held).toHaveLength(1); // 'Rob' is on the wire
+		a.answer('why', edit ? 'Bob' : 'Robin'); // appended keystrokes, or an edit
+		for (let i = 0; i < flushes; i++) a.flushKeepalive(); // visibilitychange, pagehide
+		await settle();
+		expect(server.held).toHaveLength(2);
+		a.dispose();
+		return { p, server, pointer };
+	}
+
+	for (const order of ['wire-first', 'newest-first'] as const) {
+		for (const edit of [false, true]) {
+			it(`a refresh straight after typing keeps the last answer (${order}${edit ? ', edited' : ''})`, async () => {
+				const { p, server, pointer } = await refreshWhileSaving(edit);
+				const [wire, newest] = server.held;
+				server.holdSaves = false;
+				if (order === 'wire-first') wire!();
+				newest!();
+				if (order === 'newest-first') wire!();
+				await settle();
+				expect(server.conflicts).toHaveLength(0);
+				const want = edit ? 'Bob' : 'Robin';
+				expect(serverAnswers(server, p).why).toEqual({ state: 'answered', value: want });
+				const b = await open({ ...env(server, new MemoryStore()), pointer });
+				expect(view(b.state).page).toBe('p2');
+				expect(b.state.data.values.why).toBe(want);
+				expect(b.notice).toBeNull();
+			});
+		}
+	}
+
+	it('visibilitychange + pagehide (two flushes) chain the newest copy once, no conflict', async () => {
+		const { p, server } = await refreshWhileSaving(false, 2);
+		expect(server.held).toHaveLength(2); // the wire save + one chained copy, not two
+		const [wire, newest] = server.held;
+		server.holdSaves = false;
+		newest!();
+		wire!();
+		await settle();
+		expect(server.conflicts).toHaveLength(0);
+		expect(serverAnswers(server, p).why).toEqual({ state: 'answered', value: 'Robin' });
+	});
+
+	for (const order of ['wire-first', 'newest-first'] as const) {
+		it(`hidden while a save waits out a backoff: the newest copy is chained too (${order})`, async () => {
+			const p = plan();
+			const server = new FakeServer(p);
+			const pointer = tabPointer();
+			const a = await open({ ...env(server, new MemoryStore()), pointer });
+			a.next();
+			a.answer('age', '1');
+			await a.next();
+			await settle();
+			server.offline = true;
+			a.answer('why', 'Rob'); // fails: the pump keeps 'Rob' in flight and sleeps
+			await settle();
+			a.answer('why', 'Robin'); // wakes it, fails again, sleeps; 'Rob' is still the body
+			await settle();
+			expect(a.rec.inflight?.snapshot.revision).toBeLessThan(a.rec.snapshot!.revision);
+			server.offline = false;
+			server.holdSaves = true;
+			a.flushKeepalive(); // not sending: resend the body, and chain the newest
+			await settle();
+			expect(server.held).toHaveLength(2);
+			a.dispose();
+			const [wire, newest] = server.held;
+			server.holdSaves = false;
+			if (order === 'wire-first') wire!();
+			newest!();
+			if (order === 'newest-first') wire!();
+			await settle();
+			expect(server.conflicts).toHaveLength(0);
+			expect(serverAnswers(server, p).why).toEqual({ state: 'answered', value: 'Robin' });
+			const b = await open({ ...env(server, new MemoryStore()), pointer });
+			expect(b.state.data.values.why).toBe('Robin');
+			expect(b.notice).toBeNull();
+		});
+	}
+
+	it('a page hidden and shown again clears the pointer’s promise once the server has it all', async () => {
+		const p = plan();
+		const server = new FakeServer(p);
+		const pointer = tabPointer();
+		const a = await open({ ...env(server, new MemoryStore()), pointer });
+		server.holdSaves = true;
+		a.answer('age', '1');
+		await settle();
+		a.flushKeepalive(); // tab hidden with a save on the wire
+		expect(pointer.map.get('demo')?.pending).toBe(a.rec.snapshot!.revision);
+		server.holdSaves = false;
+		for (const go of server.held) go();
+		await settle();
+		expect(a.net).toBe('saved');
+		expect(pointer.map.get('demo')?.pending).toBeUndefined();
+		expect(serverAnswers(server, p).age).toEqual({ state: 'answered', value: 1 });
+	});
+
+	it('the reloaded page waits for the dead page’s last save when its resume overtakes it', async () => {
+		const { p, server, pointer } = await refreshWhileSaving();
+		expect(pointer.map.get('demo')?.pending).toBeGreaterThan(0);
+		// The new page's resume reaches the server first and gets the old copy...
+		const booting = boot({ ...env(server, new MemoryStore()), pointer }, { slug: 'demo' });
+		await settle(20);
+		expect(server.calls.filter((c) => c === 'resume').length).toBe(1);
+		// ...then the two keepalive saves land, newest first.
+		server.holdSaves = false;
+		server.held[1]!();
+		server.held[0]!();
+		await settle(500);
+		const b = await booting;
+		sessions.push(b);
+		void b.run();
+		await settle();
+		expect(b.state.data.values.why).toBe('Robin');
+		expect(b.notice).toBeNull();
+		expect(server.conflicts).toHaveLength(0);
+		expect(serverAnswers(server, p).why).toEqual({ state: 'answered', value: 'Robin' });
+		// The pointer no longer promises a save once the new page has it.
+		b.flushKeepalive();
+		expect(pointer.map.get('demo')?.pending).toBeUndefined();
+	});
+
+	it('a dead page’s save that never lands delays the reload by at most ~3 s', async () => {
+		const { server, pointer } = await refreshWhileSaving();
+		server.held.length = 0; // both lost on the way
+		server.holdSaves = false;
+		const booting = boot({ ...env(server, new MemoryStore()), pointer }, { slug: 'demo' });
+		await settle(3200);
+		const b = await booting;
+		sessions.push(b);
+		expect(view(b.state).page).toBe('p2');
+		expect(b.state.data.values.why).toBeUndefined();
+		expect(server.calls.filter((c) => c === 'resume').length).toBe(7);
+	});
+
+	it('two devices that diverged still conflict: the server copy wins (R6-6)', async () => {
+		const p = plan();
+		const server = new FakeServer(p);
+		const store = durable();
+		const a = await open(env(server, store));
+		a.answer('age', '1');
+		await a.next();
+		await settle();
+		const b = await open(env(server, durable()), 'demo', a.rec.resumeToken);
+		b.answer('why', 'from B');
+		await b.next();
+		await settle();
+		a.answer('why', 'from A'); // A is stale and diverges from B
+		a.blur();
+		await settle(1000);
+		expect(server.conflicts).toHaveLength(1);
+		expect(serverAnswers(server, p).why).toEqual({ state: 'answered', value: 'from B' });
+		expect(a.notice).toBe('conflict');
+	});
+
 	it('end-only, storage blocked: a refresh restarts the session with the same seed and a notice', async () => {
 		const p = plan();
 		const server = new FakeServer(p, 'end-only');

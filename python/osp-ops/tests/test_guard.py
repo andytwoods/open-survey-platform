@@ -108,6 +108,29 @@ EXAMPLES: dict[str, list[dict[str, Any]]] = {
         {"owner": "spare", "text": "One\nTwo\n\nThree"},
         {"owner": "fruit", "text": "Kiwi\nx\tMango", "mode": "append"},
     ],
+    "add_matrix_row": [
+        {"question": "grid"},
+        {"question": "grid", "id": "smell", "label": {"en": "Smell", "de": "Geruch"}, "index": 0},
+        {"question": "grid", "label": "Feel", "required": False},
+    ],
+    "delete_matrix_row": [
+        {"question": "grid", "row": "look"},
+        {"question": "grid", "row": "taste", "cascade": True},
+        {"question": "grid", "row": "price", "force": True},
+    ],
+    "move_matrix_row": [
+        {"question": "grid", "row": "taste", "index": 2},
+        {"question": "grid", "row": "look", "index": 0},
+    ],
+    "rename_matrix_row": [
+        {"question": "grid", "row": "taste", "label": {"en": "Flavour", "de": "Geschmack"}},
+        {"question": "grid", "row": "look", "label": "Look"},
+    ],
+    "set_matrix_row_required": [
+        {"question": "grid", "row": "taste", "required": False},
+        {"question": "grid", "row": "price", "required": None},
+        {"question": "grid", "row": "price", "required": True},
+    ],
     "create_choice_list": [{}, {"id": "agree", "choices": [{"value": 1, "label": "A"}]}],
     "delete_choice_list": [{"id": "spare"}, {"id": "yesno", "cascade": True}],
     "set_condition": [

@@ -205,6 +205,13 @@ export interface PointerRecord {
 	resumeToken: string;
 	/** The engine's start event (end-only memory sessions), for `restart()`. */
 	start?: unknown;
+	/**
+	 * every-page, no durable copy (R9-1): the engine revision of the newest snapshot the
+	 * page sent with `keepalive` as it was hidden, not yet acknowledged. A number only,
+	 * never answers. The reloaded page waits briefly for the server to reach it, since its
+	 * resume can overtake the dead page's last save. Not kept in the URL fragment.
+	 */
+	pending?: number;
 }
 
 export interface SessionPointer {

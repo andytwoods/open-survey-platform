@@ -32,6 +32,8 @@ ROUTES: list[tuple[str, str, dict | None]] = [
     ("POST", f"/api/surveys/{SID}/simulate", {"n": 1}),
     ("POST", f"/api/surveys/{SID}/preview-plan", None),
     ("GET", f"/api/surveys/{SID}/export-check?target=lss", None),
+    ("POST", f"/api/surveys/{SID}/results/query", {"cards": [{"question": "q1"}]}),
+    ("GET", f"/api/surveys/{SID}/results/text/{{question}}", None),
     ("GET", "/api/themes", None),
     ("POST", "/api/themes", {"name": "x", "theme": {}}),
     ("PUT", "/api/themes/default", {"themeId": None}),
@@ -75,7 +77,7 @@ def test_route_list_covers_every_builder_route(benv):
         (method.upper(), path.replace("{survey_id}", SID))
         for path, item in benv.app.openapi()["paths"].items()
         for method, op in item.items()
-        if set(op.get("tags", ())) & {"me", "surveys", "ops", "meta", "themes"}
+        if set(op.get("tags", ())) & {"me", "surveys", "ops", "meta", "themes", "results"}
     }
     listed = {(m, p.split("?")[0]) for m, p, _ in ROUTES}
     assert {(m, p) for m, p in app_routes if p not in PUBLIC} == listed
@@ -132,6 +134,8 @@ def test_viewer_cannot_create_or_export(benv, survey_a):
     assert c.get(f"/api/surveys/{survey_a}/export/xlsform").status_code == 403
     assert c.get(f"/api/surveys/{survey_a}/export/responses").status_code == 403
     assert c.get(f"/api/surveys/{survey_a}/export/codebook").status_code == 403
+    assert c.post(f"/api/surveys/{survey_a}/results/query", json={}).status_code == 403
+    assert c.get(f"/api/surveys/{survey_a}/results/text/q1").status_code == 403
 
 
 def test_unknown_role_fails_closed(benv, survey_a):
