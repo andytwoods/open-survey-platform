@@ -291,3 +291,12 @@ style of numbered decisions):
 3. Whether *Live* belongs in saved layouts.
 4. Default poll interval: 10 s (recommended, because every poll is a signed request with a
    nonce write in production) or 5 s.
+
+## Lead decisions (17 Oct 2026)
+
+1. **Presentation mode defaults:** batched refresh at k = 5 new responses or 10 minutes, with on-screen small-cell suppression. Exact live counts on a projected screen are allowed only when an owner/editor switches suppression off in the Present dialog, which shows a warning; never via the URL alone.
+2. **Audit coalescing (LV-D7) is policy:** one `results.live` row per actor + query hash per 15-minute window, plus a new row whenever the query changes.
+3. **Live belongs in saved layouts** (additive `live` field), so a lab screen layout opens live.
+4. **Default poll interval 10 s**, server-advertised (`pollAfterMs`), configurable by the deployment.
+Build order: LV2 → LV3 → LV4 now; LV5 (SSE) and LV6 (incremental) only if measurements or hosts ask for them.
+
