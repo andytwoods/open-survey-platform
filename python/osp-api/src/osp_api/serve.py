@@ -26,6 +26,10 @@ OSP_TRUSTED_PROXIES   IPs/CIDRs whose X-Forwarded-For gives the  none
                       participant address (rate limits, D13)
 OSP_NONCE_STORE       ``memory`` or ``database`` (D16)           ``memory`` in dev,
                                                                  ``database`` in production
+OSP_PARTICIPANT_DIR   a built ``web/runtime/dist``: serve it at  none (the host serves
+                      ``/r/`` and ``/s/{slug}`` (static_files)   it)
+OSP_BUILDER_DIR       a built ``web/builder/build``: serve its   none
+                      files at ``/builder/``
 ==================  ==========================================  =====================
 
 Identity (plan P): osp-api has no sign-in. Behind a host, ``trusted-headers`` verifies the
@@ -55,7 +59,7 @@ import copy
 import logging
 import os
 import sys
-from collections.abc import Mapping, Sequence
+from collections.abc import Callable, Mapping, Sequence
 from dataclasses import dataclass
 from pathlib import Path
 
@@ -74,6 +78,7 @@ from .identity import (
     nonce_store_from_name,
     provider_from_env,
 )
+from .static_files import check_builder_dir, check_participant_dir, mount_static
 
 ENVIRONMENTS = ("dev", "production")
 _ON = frozenset({"1", "true", "on", "yes"})
@@ -97,6 +102,8 @@ class Settings:
     public_origins: tuple[str, ...] = ()
     trusted_proxies: tuple[str, ...] = ()
     nonce_store: str = "memory"
+    participant_dir: Path | None = None
+    builder_dir: Path | None = None
 
     @property
     def production(self) -> bool:
@@ -149,7 +156,22 @@ class Settings:
             public,
             proxies,
             nonces,
+            _static_dir(env, "OSP_PARTICIPANT_DIR", check_participant_dir),
+            _static_dir(env, "OSP_BUILDER_DIR", check_builder_dir),
         )
+
+
+def _static_dir(
+    env: Mapping[str, str], var: str, check: Callable[[Path], str | None]
+) -> Path | None:
+    raw = (env.get(var) or "").strip()
+    if not raw:
+        return None
+    path = Path(raw)
+    problem = check(path)
+    if problem:
+        raise ConfigError(f"{var}: {problem}")
+    return path
 
 
 def _origins(env: Mapping[str, str], var: str) -> tuple[str, ...]:
@@ -268,13 +290,15 @@ def build_app(
     store = prepare(settings, environ)
     identity = identity_provider(settings, host or settings.host, environ, store.engine)
     services = build_services(store, auto_create_labs=settings.auto_create_labs)
-    return create_app(
+    app = create_app(
         builder=services,
         identity=identity,
         allowed_origins=settings.allowed_origins,
         public_origins=settings.public_origins,
         trusted_proxies=settings.trusted_proxies,
     )
+    mount_static(app, participant_dir=settings.participant_dir, builder_dir=settings.builder_dir)
+    return app
 
 
 def _parser() -> argparse.ArgumentParser:

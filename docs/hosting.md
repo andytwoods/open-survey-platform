@@ -17,6 +17,8 @@ A tested version of the proxy below is `python/osp-api/tests/test_hosting_exampl
 | Database | SQLite or Postgres URL (below) | `OSP_DATABASE_URL` |
 | Encryption keys | Keyring for stored responses (`osp-cli gen-key`) | `OSP_STORE_KEYS` (optional `OSP_STORE_ACTIVE_KEY`) |
 
+All of these but the database come in one container image, `deploy/Dockerfile` (section 7).
+
 Run `osp-api` with `OSP_ENV=production`. It then refuses to start unless `OSP_DATABASE_URL`
 and `OSP_STORE_KEYS` are set. Keep the keys in your secret store: without them the stored
 responses cannot be read.
@@ -526,3 +528,73 @@ urlpatterns = [
 Add the CSP and `frame-ancestors` headers from section 5 (for example with
 `django-csp`), and the participant routes from section 4. Django answers a bad CSRF token
 with its own 403 page, which the builder shows as an access message.
+
+## 7. Running the container image
+
+`deploy/Dockerfile` builds one image with everything in section 1 except the database:
+`osp-api` and `osp-cli`, the participant app, the builder page files, the engine bundle
+(reproducibility packages) and the simulator with the Node binary that runs it (the
+preview's "run simulation"). Build it from the repository root:
+
+```sh
+docker build -f deploy/Dockerfile -t osp-api .
+```
+
+Base images are pinned by version (`python:3.14.8-slim-trixie`, `node:24.12.0-trixie-slim`,
+`ghcr.io/astral-sh/uv:0.11.23`; pnpm 12.14.0), set as build arguments at the top of the
+file. The image runs as an unprivileged user (`osp`, uid 10001), listens on `$PORT` (default
+8000), and has a `HEALTHCHECK` on `/api/health`.
+
+Run it next to a Postgres database:
+
+```sh
+docker run -d --name osp-api --network <private network> \
+  -e DATABASE_URL=postgres://osp:<password>@db:5432/osp \
+  -e OSP_STORE_KEYS=k1:<key from `docker run --rm osp-api osp-cli gen-key`> \
+  -e OSP_IDENTITY_KEYS=host1:<at least 32 random bytes> \
+  -e OSP_PUBLIC_ORIGINS=https://surveys.example.ac.uk \
+  -e OSP_TRUSTED_PROXIES=<your proxy's address> \
+  osp-api
+```
+
+| Setting | In the image |
+|---|---|
+| `OSP_ENV` | `production` (so `OSP_DATABASE_URL` and `OSP_STORE_KEYS` are required) |
+| `OSP_DATABASE_URL` | taken from `DATABASE_URL` when unset, as a PaaS links it (`postgres://…` works as it is, section 1) |
+| `PORT` / `OSP_PORT` | `PORT` wins (a PaaS sets it), else `OSP_PORT`, else 8000 |
+| `OSP_HOST` | `0.0.0.0`: inside a container the API must listen on its interface |
+| `OSP_DATA_DIR` | `/data`, a volume, owned by `osp` |
+| `OSP_PARTICIPANT_DIR` | `/app/web/runtime`: the participant app at `/r/` and `/s/{slug}` |
+| `OSP_BUILDER_DIR` | `/app/web/builder`: the builder files at `/builder/` |
+| `OSP_ENGINE_BUNDLE`, `OSP_SIM_CLI`, `OSP_NODE` | the bundled engine, simulator and Node |
+
+Everything else is as in section 1. Set `OSP_PARTICIPANT_URL_TEMPLATE` to your public
+participant link.
+
+**Migrations.** `osp-api serve` migrates the database to the latest schema before it starts
+listening, so a plain start is enough with one container. With several containers on one
+database, run the migration once as a release step, before the new containers start:
+`docker run --rm <same env> osp-api init` (Dokku: `app.json` `scripts.dokku.predeploy`;
+Heroku: a `release` process). `init` migrates and exits.
+
+**Volumes.** With Postgres the container keeps no state, and `/data` can stay empty. For a
+single machine without Postgres, use SQLite on the volume:
+`-v osp-data:/data -e OSP_DATABASE_URL=sqlite:////data/osp.db`, with one container only.
+
+**Keep the API private.** `OSP_HOST=0.0.0.0` makes it listen on the container's own
+interface, not on the internet. Section 5, item 1 still holds: put the container on a
+private network that only your host can reach, and don't publish its port to the public
+internet (`-p 127.0.0.1:8000:8000` at most, or no `-p` with a shared Docker network). On
+Dokku, give the app no domain and turn its proxy off (`dokku proxy:disable osp-api`).
+
+**What your host serves.** The image serves the participant app itself: forward
+`/r/*`, `/s/*`, `/api/s/*` and `/api/sessions/*` to it unsigned (section 4), and the
+builder API under your prefix signed (section 3). For the builder pages, your host still
+renders each page behind its sign-in (section 2), and needs the files: proxy your static
+prefix (say `/static/osp/`) to the container's `/builder/`, and read `manifest.json` from
+`http://<container>:8000/builder/manifest.json` at start-up, or copy the folder out of the
+image (`docker cp $(docker create osp-api):/app/web/builder ./osp-builder`). The `/builder/`
+files are static JavaScript, CSS and icons; they hold no data and need no sign-in.
+
+**Upgrades.** Rebuild from a newer commit and restart. The host's copy of the builder
+files must come from the same image, as the page bundles and the API move together.
