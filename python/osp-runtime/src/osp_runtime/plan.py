@@ -51,6 +51,7 @@ __all__ = [
     "checksum",
     "compile_plan",
     "compile_survey",
+    "embed_theme",
     "expr_json",
     "runtime_config",
     "seed_node",
@@ -370,6 +371,16 @@ class _Compiler:
         }
         plan["checksum"] = checksum(plan)
         return plan
+
+
+def embed_theme(plan: Json, theme: Json) -> Json:
+    """A copy of `plan` with `theme` (a validated `osp_spec.theme.Theme` as JSON) at
+    `plan.theme` and the checksum recomputed. The caller resolves and guards the theme
+    (publish: survey theme, else the lab default, else the "clean" preset; runtime-design
+    §6a); the plan only carries it, so the participant page needs no second fetch."""
+    out = {**plan, "theme": theme}
+    out["checksum"] = checksum(out)
+    return out
 
 
 def compile_plan(survey: Survey) -> Json:

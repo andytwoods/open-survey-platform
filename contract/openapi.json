@@ -1811,9 +1811,11 @@
             "type": "boolean"
           },
           "result": {
+            "description": "The engine's words: `open` (a place is held) or `full`. `admitted` is a deprecated alias of `open` from the first contract; this server never sends it.",
             "enum": [
-              "admitted",
-              "full"
+              "open",
+              "full",
+              "admitted"
             ],
             "title": "Result",
             "type": "string"
@@ -1989,6 +1991,15 @@
             "title": "Assigned",
             "type": "object"
           },
+          "localCopy": {
+            "description": "Plan settings.localCopy. Always sent by this server; absent means `browser`.",
+            "enum": [
+              "browser",
+              "memory"
+            ],
+            "title": "Localcopy",
+            "type": "string"
+          },
           "planChecksum": {
             "title": "Planchecksum",
             "type": "string"
@@ -2046,6 +2057,74 @@
           "submitted"
         ],
         "title": "ResumeResponse",
+        "type": "object"
+      },
+      "RetentionKind": {
+        "properties": {
+          "description": {
+            "title": "Description",
+            "type": "string"
+          },
+          "field": {
+            "anyOf": [
+              {
+                "enum": [
+                  "days",
+                  "until"
+                ],
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "description": "The extra field this kind needs: `days` (integer >= 0), `until` (date) or none.",
+            "title": "Field"
+          },
+          "kind": {
+            "title": "Kind",
+            "type": "string"
+          },
+          "label": {
+            "title": "Label",
+            "type": "string"
+          }
+        },
+        "required": [
+          "kind",
+          "label",
+          "description",
+          "field"
+        ],
+        "title": "RetentionKind",
+        "type": "object"
+      },
+      "RetentionOptions": {
+        "properties": {
+          "kinds": {
+            "items": {
+              "$ref": "#/components/schemas/RetentionKind"
+            },
+            "title": "Kinds",
+            "type": "array"
+          },
+          "pointer": {
+            "description": "Where the policy lives in the survey document.",
+            "title": "Pointer",
+            "type": "string"
+          },
+          "required": {
+            "description": "Publishing is refused without settings.retention.",
+            "title": "Required",
+            "type": "boolean"
+          }
+        },
+        "required": [
+          "required",
+          "pointer",
+          "kinds"
+        ],
+        "title": "RetentionOptions",
         "type": "object"
       },
       "ReverseRequest": {
@@ -2295,6 +2374,11 @@
           "revision": {
             "title": "Revision",
             "type": "integer"
+          },
+          "superseded": {
+            "description": "True when this was a late save of an older state the server already holds (its event log is a prefix of the server copy's). Nothing was written; `revision` is the server's current revision.",
+            "title": "Superseded",
+            "type": "boolean"
           }
         },
         "required": [
@@ -2352,6 +2436,15 @@
             "title": "Assigned",
             "type": "object"
           },
+          "localCopy": {
+            "description": "Where an end-only session keeps its copy (plan settings.localCopy). Always sent by this server; absent means `browser`.",
+            "enum": [
+              "browser",
+              "memory"
+            ],
+            "title": "Localcopy",
+            "type": "string"
+          },
           "planChecksum": {
             "title": "Planchecksum",
             "type": "string"
@@ -2370,6 +2463,7 @@
             "type": "integer"
           },
           "saveMode": {
+            "description": "From the plan's settings. `end-only`: send no snapshots before submit.",
             "enum": [
               "every-page",
               "end-only"
@@ -3267,6 +3361,38 @@
           }
         },
         "summary": "Property Schemas",
+        "tags": [
+          "meta"
+        ]
+      }
+    },
+    "/api/meta/retention": {
+      "get": {
+        "description": "The allowed `settings.retention` policies (the builder's retention control).",
+        "operationId": "getRetentionOptions",
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/RetentionOptions"
+                }
+              }
+            },
+            "description": "Successful Response"
+          },
+          "401": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorBody"
+                }
+              }
+            },
+            "description": "Unauthorized"
+          }
+        },
+        "summary": "Retention",
         "tags": [
           "meta"
         ]

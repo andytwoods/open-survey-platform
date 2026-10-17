@@ -32,6 +32,7 @@ ROUTES: list[tuple[str, str, dict | None]] = [
     ("GET", "/api/meta/property-schemas", None),
     ("GET", "/api/meta/survey-schema", None),
     ("GET", "/api/meta/theme-schema", None),
+    ("GET", "/api/meta/retention", None),
     ("GET", "/api/meta/targets", None),
     ("POST", "/api/meta/expressions/parse", {"text": "a > 1"}),
     ("POST", "/api/meta/expressions/print", {"ast": {"kind": "null"}}),

@@ -191,6 +191,26 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
+    "/api/meta/retention": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /**
+         * Retention
+         * @description The allowed `settings.retention` policies (the builder's retention control).
+         */
+        get: operations["getRetentionOptions"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
     "/api/meta/survey-schema": {
         parameters: {
             query?: never;
@@ -1321,9 +1341,10 @@ export interface components {
             replay: boolean;
             /**
              * Result
+             * @description The engine's words: `open` (a place is held) or `full`. `admitted` is a deprecated alias of `open` from the first contract; this server never sends it.
              * @enum {string}
              */
-            result: "admitted" | "full";
+            result: "open" | "full" | "admitted";
         };
         /** RejectedBody */
         RejectedBody: {
@@ -1393,6 +1414,12 @@ export interface components {
             assigned: {
                 [key: string]: unknown;
             };
+            /**
+             * Localcopy
+             * @description Plan settings.localCopy. Always sent by this server; absent means `browser`.
+             * @enum {string}
+             */
+            localCopy?: "browser" | "memory";
             /** Planchecksum */
             planChecksum: string;
             /** Planurl */
@@ -1414,6 +1441,35 @@ export interface components {
             } | null;
             /** Submitted */
             submitted: boolean;
+        };
+        /** RetentionKind */
+        RetentionKind: {
+            /** Description */
+            description: string;
+            /**
+             * Field
+             * @description The extra field this kind needs: `days` (integer >= 0), `until` (date) or none.
+             */
+            field: ("days" | "until") | null;
+            /** Kind */
+            kind: string;
+            /** Label */
+            label: string;
+        };
+        /** RetentionOptions */
+        RetentionOptions: {
+            /** Kinds */
+            kinds: components["schemas"]["RetentionKind"][];
+            /**
+             * Pointer
+             * @description Where the policy lives in the survey document.
+             */
+            pointer: string;
+            /**
+             * Required
+             * @description Publishing is refused without settings.retention.
+             */
+            required: boolean;
         };
         /** ReverseRequest */
         ReverseRequest: {
@@ -1516,6 +1572,11 @@ export interface components {
             replay: boolean;
             /** Revision */
             revision: number;
+            /**
+             * Superseded
+             * @description True when this was a late save of an older state the server already holds (its event log is a prefix of the server copy's). Nothing was written; `revision` is the server's current revision.
+             */
+            superseded?: boolean;
         };
         /** StaleBody */
         StaleBody: {
@@ -1544,6 +1605,12 @@ export interface components {
             assigned: {
                 [key: string]: unknown;
             };
+            /**
+             * Localcopy
+             * @description Where an end-only session keeps its copy (plan settings.localCopy). Always sent by this server; absent means `browser`.
+             * @enum {string}
+             */
+            localCopy?: "browser" | "memory";
             /** Planchecksum */
             planChecksum: string;
             /** Planurl */
@@ -1557,6 +1624,7 @@ export interface components {
             revision: number;
             /**
              * Savemode
+             * @description From the plan's settings. `end-only`: send no snapshots before submit.
              * @enum {string}
              */
             saveMode: "every-page" | "end-only";
@@ -2170,6 +2238,35 @@ export interface operations {
                     "application/json": {
                         [key: string]: unknown;
                     };
+                };
+            };
+            /** @description Unauthorized */
+            401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorBody"];
+                };
+            };
+        };
+    };
+    getRetentionOptions: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["RetentionOptions"];
                 };
             };
             /** @description Unauthorized */
