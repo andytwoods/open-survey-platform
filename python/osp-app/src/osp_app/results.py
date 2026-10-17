@@ -341,7 +341,9 @@ def parse_query(raw: Any) -> Query:
     language = raw.get("language")
     if language is not None:
         language = _str(language, "language", 35)
-    live = raw.get("live", False)
+    live = raw.get("live")
+    if live is None:
+        live = False
     if not isinstance(live, bool):
         raise InvalidRequest("live must be true or false")
     return Query(
@@ -1296,12 +1298,13 @@ def scan(
 class _Flight:
     """One computation in progress: waiters block on ``done`` and take its outcome."""
 
-    __slots__ = ("done", "error", "value")
+    __slots__ = ("done", "error", "value", "waiters")
 
     def __init__(self) -> None:
         self.done = threading.Event()
         self.value: Any = None
         self.error: BaseException | None = None
+        self.waiters = 0  # callers blocked on this flight (besides the leader)
 
 
 class ResultsCache:
@@ -1338,6 +1341,8 @@ class ResultsCache:
             leader = flight is None
             if flight is None:
                 flight = self._flights[key] = _Flight()
+            else:
+                flight.waiters += 1
         if not leader:
             flight.done.wait()
             if flight.error is not None:
@@ -1359,6 +1364,12 @@ class ResultsCache:
     @property
     def in_flight(self) -> int:
         return len(self._flights)
+
+    def waiting(self, key: tuple) -> int:
+        """Callers blocked on ``key``'s computation in progress (0 when none runs)."""
+        with self._lock:
+            flight = self._flights.get(key)
+            return flight.waiters if flight is not None else 0
 
     def put(self, key: tuple, value: Any) -> None:
         tenant, survey, _versions, watermark = key[:4]

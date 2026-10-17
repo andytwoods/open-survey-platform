@@ -110,7 +110,8 @@ def test_live_is_not_part_of_the_hash_or_the_cache_key(env):
     live = env.q(cards=[{"question": "fruit"}], live=True)
     assert live["queryHash"] == manual["queryHash"] and live["cached"] is True
     assert live["generatedAt"] == manual["generatedAt"]
-    for bad in ("true", 1, None):
+    assert env.q(cards=[{"question": "fruit"}], live=None)["cached"] is True  # null: manual
+    for bad in ("true", 1, 0):
         with pytest.raises(InvalidRequest):
             env.q(live=bad)
 
@@ -248,11 +249,11 @@ def test_cache_single_flight_computes_once_for_concurrent_identical_misses():
         th.start()
     arrived.wait(5)  # every worker is about to ask
     deadline = threading.Event()
-    for _ in range(200):  # until the leader is inside compute() and the rest are waiting
-        if calls and cache.in_flight == 1:
+    for _ in range(500):  # until the leader is inside compute() and the rest are waiting
+        if calls and cache.waiting(key) == waiters - 1:
             break
         deadline.wait(0.01)
-    assert len(calls) == 1 and cache.in_flight == 1
+    assert len(calls) == 1 and cache.in_flight == 1 and cache.waiting(key) == waiters - 1
     go.set()
     for th in threads:
         th.join(5)
@@ -286,10 +287,11 @@ def test_cache_single_flight_errors_reach_every_waiter_and_do_not_stick():
     threads = [threading.Thread(target=worker) for _ in range(4)]
     for th in threads:
         th.start()
-    for _ in range(200):
-        if calls and cache.in_flight == 1:
+    for _ in range(500):  # every worker joined the one flight before it fails
+        if calls and cache.waiting(key) == 3:
             break
         go.wait(0.01)
+    assert cache.waiting(key) == 3
     go.set()
     for th in threads:
         th.join(5)

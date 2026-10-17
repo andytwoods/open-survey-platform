@@ -21,7 +21,7 @@ from __future__ import annotations
 from datetime import datetime
 from typing import Annotated, Any, Literal
 
-from fastapi import APIRouter, Path, Query, Request
+from fastapi import APIRouter, Path, Query, Request, Response
 from osp_runtime import TokenBucket
 from pydantic import BaseModel, ConfigDict, Field
 
@@ -130,11 +130,11 @@ class ResultsQuery(_In):
     language: str | None = Field(
         None, max_length=35, description="Label language; default the survey's main language"
     )
-    live: bool = Field(
-        False,
-        description="An automatic refresh by the live page: audited as results.live, "
-        "coalesced per actor and query (one row per 15 minutes) instead of results.read. "
-        "Not part of queryHash.",
+    live: bool | None = Field(
+        None,
+        description="true for an automatic refresh by the live page: audited as "
+        "results.live, coalesced per actor and query (one row per 15 minutes) instead of "
+        "results.read. Omitted, null or false: a manual query. Not part of queryHash.",
     )
 
 
@@ -417,13 +417,15 @@ def results_watermark(
     auth: Auth,
     services: Services,
     request: Request,
+    response: Response,
     versions: Annotated[
         list[Annotated[int, Query(ge=1)]] | None,
         Query(max_length=50, description="Version numbers (repeat); default latest"),
     ] = None,
 ) -> dict[str, Any]:
     """Did the responses change? (survey.export; not audited; per actor a burst of 5 calls,
-    then one a second.)"""
+    then one a second; sent ``no-store`` so no proxy serves a stale watermark.)"""
+    response.headers["Cache-Control"] = "no-store"
     limiter = getattr(request.app.state, "watermark_limiter", None)
     if limiter is not None and not limiter.allow(auth.actor.user_id):
         raise RateLimited("Too many watermark requests: wait pollAfterMs between polls.")

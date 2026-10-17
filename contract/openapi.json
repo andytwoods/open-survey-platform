@@ -4317,10 +4317,16 @@
             "title": "Language"
           },
           "live": {
-            "default": false,
-            "description": "An automatic refresh by the live page: audited as results.live, coalesced per actor and query (one row per 15 minutes) instead of results.read. Not part of queryHash.",
-            "title": "Live",
-            "type": "boolean"
+            "anyOf": [
+              {
+                "type": "boolean"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "description": "true for an automatic refresh by the live page: audited as results.live, coalesced per actor and query (one row per 15 minutes) instead of results.read. Omitted, null or false: a manual query. Not part of queryHash.",
+            "title": "Live"
           },
           "split": {
             "anyOf": [
@@ -10713,7 +10719,7 @@
     },
     "/api/surveys/{survey_id}/results/watermark": {
       "get": {
-        "description": "Did the responses change? (survey.export; not audited; per actor a burst of 5 calls,\nthen one a second.)",
+        "description": "Did the responses change? (survey.export; not audited; per actor a burst of 5 calls,\nthen one a second; sent ``no-store`` so no proxy serves a stale watermark.)",
         "operationId": "resultsWatermark",
         "parameters": [
           {

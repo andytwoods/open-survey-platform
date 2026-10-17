@@ -803,7 +803,7 @@ export interface paths {
         /**
          * Results Watermark
          * @description Did the responses change? (survey.export; not audited; per actor a burst of 5 calls,
-         *     then one a second.)
+         *     then one a second; sent ``no-store`` so no proxy serves a stale watermark.)
          */
         get: operations["resultsWatermark"];
         put?: never;
@@ -2770,10 +2770,9 @@ export interface components {
             language?: string | null;
             /**
              * Live
-             * @description An automatic refresh by the live page: audited as results.live, coalesced per actor and query (one row per 15 minutes) instead of results.read. Not part of queryHash.
-             * @default false
+             * @description true for an automatic refresh by the live page: audited as results.live, coalesced per actor and query (one row per 15 minutes) instead of results.read. Omitted, null or false: a manual query. Not part of queryHash.
              */
-            live: boolean;
+            live?: boolean | null;
             split?: components["schemas"]["SplitSpec"] | null;
             /**
              * Status

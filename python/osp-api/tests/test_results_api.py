@@ -106,6 +106,7 @@ def test_watermark_endpoint(benv):
         "watermark", "responses", "versionsUsed", "pollAfterMs",
     }  # fmt: skip
     assert len(benv.store.list_audit(ctx)) == before  # not audited
+    assert r.headers["cache-control"] == "no-store"
     q = c.post(f"/api/surveys/{sid}/results/query", json={}).json()
     assert q["watermark"] == body["watermark"]
     data.add_response(benv.store, ctx, data.publish(benv.store, ctx, sid, data.SURVEY).id, {})

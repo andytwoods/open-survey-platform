@@ -193,6 +193,27 @@ is in which lab. With `OSP_AUTO_CREATE_LABS=on` (the default) a lab exists as so
 first name it. With `off`, create it first (`osp-cli lab create <id>`); until then a role
 in it confers nothing.
 
+### Live results polling
+
+With *Live* on, the Results page polls `GET /api/surveys/{id}/results/watermark` and
+re-queries only when the watermark changes. The poll is an ordinary signed GET, so your
+proxy needs nothing new: no streaming, no longer timeouts, no WebSocket upgrade. Things to
+know:
+
+- **Volume.** Each open live page makes one poll per `pollAfterMs` (the server's
+  `OSP_LIVE_POLL_MS`, default 10 s): one request through your proxy, one signature check
+  and, with `OSP_NONCE_STORE=database`, one nonce insert. 20 viewers at 10 s is 2
+  requests a second. The page pauses while its tab is hidden. Under load, raise
+  `OSP_LIVE_POLL_MS`: the page uses whatever interval the server sends.
+- **Rate limit.** osp-api allows each user a burst of 5 polls, then one a second, per
+  worker process. Faster polling gets `429` with `code: "rate_limited"`. Pass the 429
+  through unchanged; the page backs off.
+- **Caching.** Don't cache the poll in your proxy or CDN. A cached watermark makes the page
+  look frozen. Forward osp-api's `Cache-Control` as step 6 says.
+- **Audit.** The poll reads no answers and is not audited. An automatic refresh is audited
+  as `results.live`: one row per user and query per 15 minutes, plus a new row when the
+  query changes. A manual *Show results* stays `results.read`.
+
 ### Rotating the key
 
 1. Make a new secret: `python -c "import secrets; print(secrets.token_urlsafe(32))"`.
