@@ -169,3 +169,23 @@ describe('ThemeEditor', () => {
 		expect(ed.theme.baseSize).toBe(16);
 	});
 });
+
+describe('ThemeEditor.loadTheme (survey and library themes, B12)', () => {
+	it('starts from a source once, keeping edits when the same source opens again', () => {
+		const { ed } = editor();
+		expect(ed.loadTheme(presetTheme('warm'), 'survey:s1')).toBe(true);
+		expect(ed.theme.preset).toBe('warm');
+		expect(ed.canUndo).toBe(false);
+		ed.set('radius', 0);
+		expect(ed.loadTheme(presetTheme('warm'), 'survey:s1')).toBe(false);
+		expect(ed.theme.radius).toBe(0);
+	});
+
+	it('loads a library theme as an undoable step', () => {
+		const { ed } = editor();
+		ed.loadTheme(presetTheme('dark'), 'library:t1', { undoable: true });
+		expect(ed.theme.preset).toBe('dark');
+		expect(ed.undo()).toBe(true);
+		expect(ed.theme.preset).toBe('clean');
+	});
+});

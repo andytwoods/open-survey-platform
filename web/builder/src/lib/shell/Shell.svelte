@@ -15,6 +15,10 @@
 	import { flowCommands } from '../flow/commands';
 	import { requestAddNode } from '../flow/flow-ui.svelte';
 	import FlowView from '../flow/FlowView.svelte';
+	import PublishDialog from '../publish/PublishDialog.svelte';
+	import type { PublishProblem } from '../publish/model';
+	import { settingsCommands } from '../settings/commands';
+	import SettingsView from '../settings/SettingsView.svelte';
 	import { onDestroy, onMount, tick, untrack } from 'svelte';
 	import { CommandRegistry } from '../commands/registry';
 	import { detectMac } from '../commands/shortcut';
@@ -150,6 +154,7 @@
 		if (store) {
 			const id = store.surveyId;
 			if (v === 'flow') return resolve('/surveys/[id]/flow', { id });
+			if (v === 'settings') return resolve('/surveys/[id]/settings', { id });
 			return v === 'appearance'
 				? resolve('/surveys/[id]/appearance', { id })
 				: resolve('/surveys/[id]', { id });
@@ -229,7 +234,43 @@
 			addNode: requestAddNode
 		})
 	);
+	// Survey settings and Publish (B12).
+	let publishOpen = $state(false);
+	const offSettings = registry.registerAll(
+		settingsCommands({
+			inSettings: () => view === 'settings',
+			canOpen: () => !!store,
+			// eslint-disable-next-line svelte/no-navigation-without-resolve -- routeOf resolves
+			open: () => goto(routeOf('settings')),
+			publish: () => (publishOpen = true)
+		})
+	);
+
+	/** A publish problem's link: the settings section, the Appearance view or the item. */
+	async function goToProblem(p: PublishProblem) {
+		if (!store) return;
+		if (p.place.view === 'settings') {
+			const hash = p.place.section ? `#${p.place.section}` : '';
+			if (view === 'settings') {
+				document.getElementById(`settings-${p.place.section}`)?.focus();
+			} else {
+				// eslint-disable-next-line svelte/no-navigation-without-resolve -- routeOf resolves
+				await goto(routeOf('settings') + hash);
+			}
+		} else if (p.place.view === 'appearance') {
+			// eslint-disable-next-line svelte/no-navigation-without-resolve -- routeOf resolves
+			if (view !== 'appearance') await goto(routeOf('appearance'));
+		} else {
+			const owner = ownerOf(store.survey, p.place.pointer);
+			// eslint-disable-next-line svelte/no-navigation-without-resolve -- routeOf resolves
+			if (view !== 'editor') await goto(routeOf('editor'));
+			await tick();
+			await goTo(owner);
+		}
+	}
+
 	onDestroy(() => {
+		offSettings();
 		offCommands();
 		offAppearance();
 		offFlow();
@@ -274,7 +315,11 @@
 
 	{#if view === 'appearance'}
 		<main id="pane-appearance" class="appearance" aria-label="Appearance">
-			<AppearanceView />
+			<AppearanceView {store} />
+		</main>
+	{:else if view === 'settings' && store}
+		<main id="pane-settings" class="flow" aria-labelledby="settings-heading">
+			<SettingsView {store} />
 		</main>
 	{:else if view === 'flow' && store}
 		<main id="pane-flow" class="flow" aria-labelledby="flow-heading">
@@ -388,6 +433,7 @@
 <CommandPalette bind:open={paletteOpen} {registry} />
 
 {#if store}
+	<PublishDialog {store} bind:open={publishOpen} ongo={(p) => void goToProblem(p)} />
 	<MoveToDialog bind:open={moveToOpen} roots={pages} ids={outlineSelection.ids} onMove={(ids, t) => void moveItems(ids, t)} />
 {/if}
 

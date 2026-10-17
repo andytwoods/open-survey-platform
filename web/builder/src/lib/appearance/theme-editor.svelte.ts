@@ -204,6 +204,29 @@ export class ThemeEditor {
 		return true;
 	}
 
+	#source: string | null = null;
+
+	/**
+	 * Start editing a theme that came from somewhere (a survey's own theme, a library theme).
+	 * `source` names where it came from: opening the same source again keeps the edits in
+	 * progress. Not undoable (it is the starting point); undoable when `undoable` is set.
+	 */
+	loadTheme(theme: Theme, source: string, { undoable = false } = {}): boolean {
+		if (!undoable && source === this.#source) return false;
+		this.#source = source;
+		this.#draftChecked = true;
+		const { theme: parsed } = parseThemeJson(JSON.stringify(theme));
+		if (!parsed) return false;
+		if (undoable) {
+			this.update((t) => Object.assign(t, normalise(parsed)));
+			return true;
+		}
+		this.theme = normalise(parsed);
+		this.#past = [];
+		this.#future = [];
+		return true;
+	}
+
 	/** Start over from the Clean preset and forget the draft. Undoable. */
 	reset(): void {
 		this.update((t) => Object.assign(t, presetTheme('clean')));

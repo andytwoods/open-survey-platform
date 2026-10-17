@@ -11,6 +11,7 @@
 	import PanelRight from '@lucide/svelte/icons/panel-right';
 	import Redo2 from '@lucide/svelte/icons/redo-2';
 	import Search from '@lucide/svelte/icons/search';
+	import Send from '@lucide/svelte/icons/send';
 	import Sun from '@lucide/svelte/icons/sun';
 	import Undo2 from '@lucide/svelte/icons/undo-2';
 	import { Button, IconButton, theme } from '@osp/ui-components';
@@ -93,6 +94,11 @@
 					aria-current={view === 'flow' ? 'page' : undefined}
 					onclick={() => view !== 'flow' && registry.run('view.flow')}>Flow</button
 				>
+				<button
+					type="button"
+					aria-current={view === 'settings' ? 'page' : undefined}
+					onclick={() => view !== 'settings' && registry.run('view.settings')}>Settings</button
+				>
 			</nav>
 		{/if}
 		<span class="save-state" role="status" data-state={saveState}>
@@ -127,10 +133,16 @@
 			label={isDark ? 'Switch to light theme' : 'Switch to dark theme'}
 			onclick={() => registry.run('view.toggleTheme')}
 		/>
-		<Button variant="primary" onclick={() => registry.run('survey.preview')}>
+		<Button variant={viewTabs ? 'secondary' : 'primary'} onclick={() => registry.run('survey.preview')}>
 			<Eye size={16} aria-hidden="true" />
 			Preview
 		</Button>
+		{#if viewTabs}
+			<Button variant="primary" onclick={() => registry.run('survey.publish')}>
+				<Send size={16} aria-hidden="true" />
+				Publish
+			</Button>
+		{/if}
 		{#if propertiesCollapsible}
 			<IconButton
 				icon={PanelRight}
