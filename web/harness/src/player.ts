@@ -283,6 +283,8 @@ export interface PlayOptions {
 
 export class Player {
 	private contexts = new Map<string, { ctx: BrowserContext; page: Page }>();
+	/** Every context this player opened, closed at the end even if its setup failed. */
+	private opened: BrowserContext[] = [];
 	private device = 'A';
 	private gate: QuotaGate;
 	private plan: Plan | null = null;
@@ -300,8 +302,17 @@ export class Player {
 		return this.contexts.get(this.device)!.page;
 	}
 
+	/**
+	 * Close every context. A failed close is rethrown, never swallowed: Playwright disposes
+	 * the context's request context first and its trace chunk after, so a close that fails
+	 * half way leaves an open context with a dead request context in the worker, and the
+	 * worker's next test then fails in its trace fixture instead of this one.
+	 */
 	async close() {
-		for (const { ctx } of this.contexts.values()) await ctx.close().catch(() => undefined);
+		const errors: unknown[] = [];
+		for (const ctx of this.opened.splice(0)) await ctx.close().catch((e: unknown) => errors.push(e));
+		this.contexts.clear();
+		if (errors.length) throw errors[0];
 	}
 
 	private async newContext(): Promise<BrowserContext> {
@@ -311,6 +322,7 @@ export class Player {
 			baseURL: this.o.baseURL,
 			locale: script.language
 		});
+		this.opened.push(ctx);
 		if (script.storage === 'blocked') {
 			// Private mode: no IndexedDB (as R3's e2e does).
 			await ctx.addInitScript(() => {
