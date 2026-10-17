@@ -1,5 +1,5 @@
 import { expect, test, type Page } from '@playwright/test';
-import { axe, runFromPalette, signIn, writeHeaders } from './fixtures';
+import { axe, pickQuestionType, runFromPalette, signIn, writeHeaders } from './fixtures';
 
 // End to end against a real osp-api on SQLite (e2e/api_server.py, started by the
 // Playwright config): create a survey, edit through ops, undo/redo, reload. Sign-in is the
@@ -20,7 +20,8 @@ const question = (page: Page, name: string) => tree(page).getByRole('treeitem', 
 
 async function addQuestionFromPalette(page: Page) {
 	await page.getByRole('main', { name: 'Canvas' }).click({ position: { x: 5, y: 5 } });
-	await runFromPalette(page, 'add question', /Add question/);
+	await runFromPalette(page, 'add question', /^Add question…/);
+	await pickQuestionType(page);
 }
 
 test('create, add, rename, undo, redo, reload', async ({ page }) => {
@@ -79,6 +80,7 @@ test('add question button on the canvas, and a 409 is replayed onto the newer re
 	const surveyId = page.url().split('/').pop()!;
 
 	await page.getByRole('button', { name: /Add question to/ }).first().click();
+	await pickQuestionType(page);
 	await expect(question(page, 'New question')).toHaveAttribute('aria-selected', 'true');
 
 	// Someone else edits the same draft (same account, another client).

@@ -379,6 +379,44 @@
         "title": "CapabilityRow",
         "type": "object"
       },
+      "ChangeQuestionTypeParams": {
+        "additionalProperties": false,
+        "properties": {
+          "force": {
+            "default": false,
+            "title": "Force",
+            "type": "boolean"
+          },
+          "id": {
+            "title": "Id",
+            "type": "string"
+          },
+          "question": {
+            "anyOf": [
+              {
+                "additionalProperties": {
+                  "$ref": "#/components/schemas/JsonValue"
+                },
+                "type": "object"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "default": null,
+            "title": "Question"
+          },
+          "type": {
+            "$ref": "#/components/schemas/QuestionType"
+          }
+        },
+        "required": [
+          "id",
+          "type"
+        ],
+        "title": "ChangeQuestionType",
+        "type": "object"
+      },
       "ChoiceValue": {
         "anyOf": [
           {
@@ -1544,6 +1582,7 @@
           "op.not_found",
           "op.params",
           "op.patch",
+          "op.type_conflict",
           "op.unknown"
         ],
         "type": "string"
@@ -1557,6 +1596,7 @@
           "add_variable",
           "apply_patch",
           "bulk_paste_choices",
+          "change_question_type",
           "create_choice_list",
           "delete_block",
           "delete_choice",
@@ -3650,6 +3690,12 @@
             ],
             "description": "Participant link id: /s/{publicSlug}",
             "title": "Publicslug"
+          },
+          "publishedVersions": {
+            "default": 0,
+            "description": "How many versions have been published (0: never published)",
+            "title": "Publishedversions",
+            "type": "integer"
           },
           "revision": {
             "title": "Revision",

@@ -70,6 +70,7 @@
 					warnings,
 					repro: reproLink(store.surveyId, data.number, apiBase)
 				};
+				store.publishedVersions = Math.max(store.publishedVersions, data.number);
 				announce(`Published version ${data.number}.`);
 				return;
 			}

@@ -1,5 +1,5 @@
 import { expect, test, type Locator, type Page } from '@playwright/test';
-import { axe, signIn } from './fixtures';
+import { axe, pickQuestionType, signIn } from './fixtures';
 
 // Property panel (/dev/properties, task B4): axe in light and dark for every entity, edits
 // become set_property ops, focus and caret survive the echoed patch, keyboard-only use,
@@ -111,6 +111,7 @@ test('in the editor against a real osp-api: the panel edits a question through t
 	await page.getByRole('button', { name: 'Create survey' }).click();
 	await expect(page).toHaveURL(/\/surveys\/[^/]+$/);
 	await page.getByRole('button', { name: /Add question to/ }).first().click();
+	await pickQuestionType(page);
 
 	const saved = page.getByRole('banner').getByRole('status').first();
 	const required = page.getByRole('switch', { name: 'Required' });

@@ -129,6 +129,7 @@ RETENTION = {
 def test_publish_freezes_a_version(benv):
     c = benv.login("editor@a.example")
     s = _create(c)
+    assert s["publishedVersions"] == 0
     # A retention policy is required before publishing (no silent default).
     r = c.post(f"/api/surveys/{s['id']}/publish", json={"baseRevision": 0})
     assert r.status_code == 422 and "publish.retention_required" in r.text
@@ -144,6 +145,7 @@ def test_publish_freezes_a_version(benv):
     # The frozen body records its number (the plan's seed version), so both checksums move.
     assert again["number"] == 2 and again["slug"] == v["slug"]
     assert again["checksum"] != v["checksum"] and again["planChecksum"] != v["planChecksum"]
+    assert c.get(f"/api/surveys/{s['id']}").json()["publishedVersions"] == 2
     owner = benv.login("owner@a.example")
     assert owner.delete(f"/api/surveys/{s['id']}").status_code == 409  # research record
 

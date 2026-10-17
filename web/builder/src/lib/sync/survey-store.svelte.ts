@@ -39,7 +39,17 @@ interface OpsItem {
 	/** Set after a 409: this item is being replayed onto a newer revision. */
 	replay: boolean;
 	attempts: number;
+	/** Rejection codes the caller handles itself: not surfaced as `rejection`. */
+	quiet: readonly string[];
 	resolve: (o: Outcome) => void;
+}
+
+export interface SubmitOptions {
+	/**
+	 * Rejection codes the caller handles itself (e.g. asks before retrying with `force`):
+	 * a rejection whose first diagnostic has one of them is returned but not surfaced.
+	 */
+	quiet?: readonly string[];
 }
 
 interface ReverseItem {
@@ -79,6 +89,8 @@ export class SurveyStore {
 	survey = $state.raw<SurveyDoc | null>(null);
 	revision = $state(0);
 	diagnostics = $state.raw<Diagnostic[]>([]);
+	/** Published versions of this survey (responses may exist for each): 0 = never published. */
+	publishedVersions = $state(0);
 	/** The last rejected edit (422), until the next successful one or `clearRejection`. */
 	rejection = $state.raw<Rejection | null>(null);
 	conflict = $state.raw<{ message: string } | null>(null);
@@ -156,6 +168,7 @@ export class SurveyStore {
 			this.survey = r.data.survey;
 			this.revision = r.data.revision;
 			if (r.data.diagnostics) this.diagnostics = r.data.diagnostics;
+			this.publishedVersions = r.data.publishedVersions ?? 0;
 			return true;
 		} finally {
 			this.loading = false;
@@ -207,7 +220,7 @@ export class SurveyStore {
 	// -- edits ------------------------------------------------------------------------
 
 	/** Send one gesture's ops as one transaction. Resolves when the server has answered. */
-	submit(ops: Invocation[]): Promise<Outcome> {
+	submit(ops: Invocation[], options: SubmitOptions = {}): Promise<Outcome> {
 		if (!ops.length) return Promise.resolve({ status: 'dropped', message: 'No change.' });
 		return this.#enqueue((resolve) => ({
 			kind: 'ops',
@@ -215,6 +228,7 @@ export class SurveyStore {
 			txnId: this.#newTxn(),
 			replay: false,
 			attempts: 0,
+			quiet: options.quiet ?? [],
 			resolve
 		}));
 	}
@@ -375,7 +389,9 @@ export class SurveyStore {
 						r.diagnostics
 					);
 				}
-				this.rejection = { message: r.message, diagnostics: r.diagnostics };
+				if (!item.quiet.includes(r.diagnostics[0]?.code ?? '')) {
+					this.rejection = { message: r.message, diagnostics: r.diagnostics };
+				}
 				return { status: 'rejected', message: r.message, diagnostics: r.diagnostics };
 			case 'error':
 				if (r.status === 401) return this.#pause();

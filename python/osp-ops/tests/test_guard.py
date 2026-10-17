@@ -54,6 +54,13 @@ EXAMPLES: dict[str, list[dict[str, Any]]] = {
         {"id": "age", "force": True},
     ],
     "duplicate_question": [{"id": "age"}, {"id": "fruit", "new_id": "fruit2"}],
+    "change_question_type": [
+        {"id": "age", "type": "decimal"},
+        {"id": "why_pear", "type": "single"},
+        {"id": "rating", "type": "matrix"},
+        {"id": "consent", "type": "text", "force": True},
+        {"id": "when", "type": "note"},
+    ],
     "move_question": [
         {"id": "age", "page": "p_demo", "index": 2},
         {"id": "rating", "page": "p_consent", "index": 0},

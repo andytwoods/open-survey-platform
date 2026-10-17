@@ -35,7 +35,7 @@ Deletes are **rejected by default** when anything still refers to what they dele
 | `cascade: true` | repair the references: clear optional conditions (`showIf`, `constraint`), drop `${id}` pipes, remove `block`/`quotaCheck` flow nodes for a deleted block/quota, clear `quota.onFull.block`, remove the variable from `assign` nodes (and drop empty ones), inline a deleted choice list's choices into its questions. **Required** expressions (branch `if`, quota `when`, computed `expr`) are never rewritten: `op.cascade_blocked`. The inverse is an exact `apply_patch`. |
 | `force: true` | delete anyway and leave the references dangling (the validator then reports `ref.unknown` etc.). Inverses use it so undo always restores the prior state exactly. |
 
-The walker in `doc.py` finds the sites. A validator guard backs it up: a delete without `force` may not add any new `ref.unknown*` error. The same rule covers choice codes (`delete_choice`, a code change in `set_choice`, `bulk_paste_choices` in replace mode): conditions comparing an answer with that code (`q == 2`, `contains(q, 2)`) block the change unless `cascade`/`force` is set. `set_languages` dropping a language that still has translations works the same way.
+The walker in `doc.py` finds the sites. A validator guard backs it up: a delete without `force` may not add any new `ref.unknown*` error. The same rule covers choice codes (`delete_choice`, a code change in `set_choice`, `bulk_paste_choices` in replace mode): conditions comparing an answer with that code (`q == 2`, `contains(q, 2)`) block the change unless `cascade`/`force` is set. `set_languages` dropping a language that still has translations works the same way. `change_question_type` is checked by validating before and after: a new type, reference, piping or choice-code problem anywhere (`q == 1` once `q` is text, `contains(q, 2)` once it is single, a pipe naming a note) rejects it with `op.type_conflict`, one diagnostic per place, unless `force` (no `cascade`: nothing is rewritten).
 
 Why this policy: silently clearing a condition changes who sees a question. That's a research-design change, so it must be explicit.
 
@@ -43,7 +43,7 @@ Why this policy: silently clearing a condition changes who sees a question. That
 
 | area | ops |
 |---|---|
-| questions | `add_question`, `delete_question`, `duplicate_question`, `move_question`, `set_property` (any object, or `/metadata`, `/settings`) |
+| questions | `add_question`, `delete_question`, `duplicate_question`, `move_question`, `change_question_type` (keeps id, name, texts, `showIf`; converts choices and bounds where they carry over; see `question_type_ops.py`), `set_property` (any object, or `/metadata`, `/settings`) |
 | pages / blocks | `add_page`, `delete_page`, `rename_page`, `move_page`, `add_block`, `delete_block`, `rename_block`, `move_block` |
 | choices | `add_choice`, `delete_choice`, `move_choice`, `set_choice`, `bulk_paste_choices` |
 | choice lists | `create_choice_list`, `delete_choice_list` |

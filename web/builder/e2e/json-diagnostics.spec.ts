@@ -1,5 +1,5 @@
 import { expect, test, type Page } from '@playwright/test';
-import { axe, signIn, writeHeaders } from './fixtures';
+import { axe, pickQuestionType, signIn, writeHeaders } from './fixtures';
 
 // JSON view (B9) and diagnostics strip + export badges (B10), against a real osp-api on
 // SQLite (e2e/api_server.py, started by the Playwright config).
@@ -111,6 +111,7 @@ test('JSON view warns when the survey changed on the server while editing', asyn
 	expect(other.status()).toBe(200);
 	await page.getByRole('tab', { name: 'Canvas' }).click();
 	await page.getByRole('button', { name: /Add question to/ }).first().click();
+	await pickQuestionType(page);
 	await expect(tree(page).getByRole('treeitem', { name: 'Elsewhere' })).toBeVisible();
 
 	await page.getByRole('tab', { name: 'JSON' }).click();

@@ -39,6 +39,9 @@ class SurveyDetail(SurveySummary):
     diagnostics: list[Diagnostic] = Field(
         description="The validator's diagnostics for the draft as it is now"
     )
+    publishedVersions: int = Field(
+        0, description="How many versions have been published (0: never published)"
+    )
 
 
 class CreateSurveyRequest(BaseModel):
@@ -108,6 +111,7 @@ def detail(v: SurveyView) -> SurveyDetail:
         updatedAt=d.updated_at,
         updatedBy=d.updated_by,
         diagnostics=validate(d.body),
+        publishedVersions=v.published_versions,
     )
 
 

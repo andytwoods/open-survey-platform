@@ -231,8 +231,9 @@
 		display: inline-flex;
 		align-items: center;
 		gap: var(--space-1);
+		min-height: 2.75rem;
 		margin-top: var(--space-3);
-		padding: var(--space-1) var(--space-2);
+		padding: var(--space-1) var(--space-3);
 		border: 1px dashed var(--color-border-strong);
 		border-radius: var(--radius-md);
 		background: transparent;
