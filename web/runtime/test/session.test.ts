@@ -268,6 +268,56 @@ describe('effects and submit', () => {
 		expect(server.calls.filter((c) => c === 'submit').length).toBe(2);
 	});
 
+	it('the end sends no snapshot save that could land after the submit (H2d)', async () => {
+		// A real server runs requests concurrently, so a PUT sent alongside the submit can
+		// reach the store second and earn 409 session.submitted. Held saves model that.
+		const p = plan();
+		const server = new FakeServer(p);
+		const s = await open(env(server));
+		s.answer('age', '7');
+		s.next();
+		s.next();
+		await settle(100);
+		server.holdSaves = true;
+		s.next(); // the end
+		await settle(100);
+		expect(s.phase).toBe('done');
+		server.holdSaves = false;
+		for (const go of server.held.splice(0)) go();
+		s.flushKeepalive(); // the thank-you page is hidden or closed
+		await settle(60_000);
+		expect(server.refused).toEqual([]);
+		const submitAt = server.calls.indexOf('submit');
+		expect(server.calls.slice(submitAt)).toEqual(['submit']);
+		expect(server.only.submitted?.answers.age?.value).toBe(7);
+	});
+
+	it('a save already on the wire is settled before the submit is sent (H2d)', async () => {
+		const p = plan();
+		const server = new FakeServer(p);
+		const s = await open(env(server));
+		s.answer('age', '8');
+		s.next();
+		await settle(100);
+		server.holdSaves = true;
+		s.answer('why', 'typed last');
+		s.blur();
+		await settle(300); // that save is now on the wire, held
+		expect(server.held.length).toBe(1);
+		s.next(); // p3
+		s.next(); // the end
+		await settle(100);
+		expect(s.phase).toBe('submitting');
+		expect(server.calls).not.toContain('submit');
+		server.holdSaves = false;
+		for (const go of server.held.splice(0)) go();
+		await settle(60_000);
+		expect(s.phase).toBe('done');
+		expect(server.refused).toEqual([]);
+		expect(server.calls.slice(server.calls.indexOf('submit'))).toEqual(['submit']);
+		expect(server.only.submitted?.answers.why?.value).toBe('typed last');
+	});
+
 	it('end-only: no answers reach the server before submit', async () => {
 		const p = plan();
 		const server = new FakeServer(p, 'end-only');

@@ -348,8 +348,10 @@ export class Player {
 		});
 		ctx.on('request', (req) => {
 			const u = new URL(req.url());
-			if (req.method() === 'PUT' && /\/api\/sessions\/[^/]+\/snapshot$/.test(u.pathname) && !this.submitted) {
-				this.network.snapshotWrites++;
+			if (req.method() === 'PUT' && /\/api\/sessions\/[^/]+\/snapshot$/.test(u.pathname)) {
+				if (!this.submitted) this.network.snapshotWrites++;
+				// H2d: the submit ends saving; a later PUT can only earn a 409 session.submitted.
+				else this.problems.push({ path: 'network.save', expected: 'no snapshot PUT after submit', actual: 'a PUT' });
 			}
 			if (req.method() === 'POST' && /\/api\/sessions\/[^/]+\/submit$/.test(u.pathname)) {
 				this.submitted = true;
