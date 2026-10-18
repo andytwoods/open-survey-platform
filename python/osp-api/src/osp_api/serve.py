@@ -32,6 +32,8 @@ OSP_BUILDER_DIR       a built ``web/builder/build``: serve its   none
                       files at ``/builder/``
 OSP_LIVE_POLL_MS      how often the live results page may poll   ``10000``
                       the watermark (ms, 1000-3600000; LV2)
+OSP_BANK_HOST_SHARING labs may share question-bank items with    ``on``
+                      every lab on this host (QB4)
 ==================  ==========================================  =====================
 
 Identity (plan P): osp-api has no sign-in. Behind a host, ``trusted-headers`` verifies the
@@ -108,6 +110,7 @@ class Settings:
     participant_dir: Path | None = None
     builder_dir: Path | None = None
     live_poll_ms: int = DEFAULT_LIVE_POLL_MS
+    bank_host_sharing: bool = True
 
     @property
     def production(self) -> bool:
@@ -129,9 +132,8 @@ class Settings:
         if not raw_port.isdigit() or not 0 < int(raw_port) < 65536:
             raise ConfigError(f"OSP_PORT must be a port number, not {raw_port[:20]!r}")
         host = (env.get("OSP_HOST") or "127.0.0.1").strip()
-        auto = (env.get("OSP_AUTO_CREATE_LABS") or "on").strip().lower()
-        if auto not in _ON | _OFF:
-            raise ConfigError(f"OSP_AUTO_CREATE_LABS must be on or off, not {auto[:20]!r}")
+        auto = _switch(env, "OSP_AUTO_CREATE_LABS")
+        bank_sharing = _switch(env, "OSP_BANK_HOST_SHARING")
         allowed = _origins(env, "OSP_ALLOWED_ORIGINS")
         public = _origins(env, "OSP_PUBLIC_ORIGINS")
         proxies = tuple(p.strip() for p in (env.get("OSP_TRUSTED_PROXIES") or "").split(","))
@@ -161,7 +163,7 @@ class Settings:
             db,
             host,
             int(raw_port),
-            auto in _ON,
+            auto,
             allowed,
             public,
             proxies,
@@ -169,7 +171,16 @@ class Settings:
             _static_dir(env, "OSP_PARTICIPANT_DIR", check_participant_dir),
             _static_dir(env, "OSP_BUILDER_DIR", check_builder_dir),
             int(raw_poll),
+            bank_sharing,
         )
+
+
+def _switch(env: Mapping[str, str], var: str) -> bool:
+    """An on/off setting (default on)."""
+    raw = (env.get(var) or "on").strip().lower()
+    if raw not in _ON | _OFF:
+        raise ConfigError(f"{var} must be on or off, not {raw[:20]!r}")
+    return raw in _ON
 
 
 def _static_dir(
@@ -310,6 +321,7 @@ def build_app(
         store,
         auto_create_labs=settings.auto_create_labs,
         external_token_key=external_token_key,
+        bank_host_sharing=settings.bank_host_sharing,
     )
     app = create_app(
         builder=services,

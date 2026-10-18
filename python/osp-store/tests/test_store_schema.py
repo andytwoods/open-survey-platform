@@ -36,6 +36,9 @@ EXPECTED_TABLES = {
     # saved results layouts (plan V, V-D9, migration 0009)
     "results_layouts",
     "results_layout_defaults",
+    # question bank (task QB4, migration 0012)
+    "bank_items",
+    "bank_item_versions",
 }
 
 # Anything that would let us store where a participant connected from or with what.

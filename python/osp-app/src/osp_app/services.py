@@ -91,6 +91,7 @@ def build_services(
     clock: Clock | None = None,
     auto_create_labs: bool = True,
     external_token_key: bytes | None = None,
+    bank_host_sharing: bool = True,
 ) -> AppServices:
     sessions = SessionService(
         StoreParticipantRepo(store),
@@ -99,7 +100,7 @@ def build_services(
     )
     return AppServices(
         store=store,
-        builder=Builder(store, sessions),
+        builder=Builder(store, sessions, bank_host_sharing=bank_host_sharing),
         sessions=sessions,
         auto_create_labs=auto_create_labs,
     )

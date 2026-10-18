@@ -4,6 +4,173 @@
  */
 
 export interface paths {
+    "/api/bank": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** Search Bank */
+        get: operations["searchBank"];
+        put?: never;
+        /**
+         * Save Item
+         * @description Save a question, page or block of a survey draft as a new bank item in that lab.
+         *     422 with `bank.*` diagnostics when it can't be cut out or isn't a valid item.
+         */
+        post: operations["saveBankItem"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/bank/import": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /**
+         * Import File
+         * @description Every item of the file becomes a new lab item (all or nothing).
+         */
+        post: operations["importBankFile"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/bank/library": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /**
+         * Get Library
+         * @description The bundled instruments (read-only; `GET /api/bank/{id}` gives the document).
+         */
+        get: operations["getBankLibrary"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/bank/{item_id}": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** Get Item */
+        get: operations["getBankItem"];
+        put?: never;
+        post?: never;
+        /** Delete Item */
+        delete: operations["deleteBankItem"];
+        options?: never;
+        head?: never;
+        /**
+         * Update Item
+         * @description Metadata only (title, abbreviation, description, tags); a field sent as null is
+         *     cleared, a field not sent is kept. The fragment is version-bound.
+         */
+        patch: operations["updateBankItem"];
+        trace?: never;
+    };
+    "/api/bank/{item_id}/copy": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /**
+         * Copy Item
+         * @description An editable lab copy of a bundled or host-shared item, remembering its origin.
+         */
+        post: operations["copyBankItem"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/bank/{item_id}/export": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /**
+         * Export Item
+         * @description The portable `*.osp-bank.json` file (one item, one version).
+         */
+        get: operations["exportBankItem"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/bank/{item_id}/share": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /**
+         * Share Item
+         * @description Owner only. `host` shares with every lab on the host (unknown and licensed-to-lab
+         *     items are refused: 422 `bank.not_shareable`); `lab` takes it back.
+         */
+        post: operations["shareBankItem"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/bank/{item_id}/versions": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** List Versions */
+        get: operations["listBankItemVersions"];
+        put?: never;
+        /**
+         * New Version
+         * @description Version n+1 of the lab's own item from a survey target; metadata not given is kept.
+         */
+        post: operations["newBankItemVersion"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
     "/api/health": {
         parameters: {
             query?: never;
@@ -1205,6 +1372,163 @@ export interface components {
         };
         /** @enum {string} */
         Arm: "then" | "else" | "children";
+        /** BankFile */
+        BankFile: {
+            /** Bankfile */
+            bankFile: string;
+            /** Exportedat */
+            exportedAt: string;
+            /** Items */
+            items: {
+                [key: string]: unknown;
+            }[];
+            /**
+             * Private
+             * @description Holds a licensed-to-lab item: the lab's own backup
+             */
+            private: boolean;
+        };
+        /** BankImportOut */
+        BankImportOut: {
+            /** Diagnostics */
+            diagnostics: components["schemas"]["Diagnostic"][];
+            /** Items */
+            items: components["schemas"]["BankSummaryOut"][];
+        };
+        /** BankItemOut */
+        BankItemOut: {
+            /**
+             * Checksum
+             * @description sha256 of the fragment; null for bundled
+             */
+            checksum: string | null;
+            /**
+             * Document
+             * @description The osp-bank-item/0.1 document
+             */
+            document: {
+                [key: string]: unknown;
+            };
+            summary: components["schemas"]["BankSummaryOut"];
+            /**
+             * Version
+             * @description The version this document is
+             */
+            version: number;
+        };
+        /** BankList */
+        BankList: {
+            /**
+             * Canmanage
+             * @description The caller may save, edit, delete, import, export
+             */
+            canManage: boolean;
+            /**
+             * Canshare
+             * @description The caller may share items with the host (owner)
+             */
+            canShare: boolean;
+            /**
+             * Hostsharing
+             * @description This host allows sharing between labs
+             */
+            hostSharing: boolean;
+            /** Items */
+            items: components["schemas"]["BankSummaryOut"][];
+            /** Page */
+            page: number;
+            /** Pagesize */
+            pageSize: number;
+            /** Tenantid */
+            tenantId: string;
+            /** Total */
+            total: number;
+        };
+        /** BankSaveOut */
+        BankSaveOut: {
+            /**
+             * Diagnostics
+             * @description Warnings from the extraction (references outside the saved part cut)
+             */
+            diagnostics: components["schemas"]["Diagnostic"][];
+            item: components["schemas"]["BankItemOut"];
+        };
+        /** BankSummaryOut */
+        BankSummaryOut: {
+            /** Abbreviation */
+            abbreviation: string | null;
+            /**
+             * Canedit
+             * @description The caller may change this item (own lab, manage)
+             */
+            canEdit: boolean;
+            /** Createdat */
+            createdAt?: string | null;
+            /** Createdby */
+            createdBy?: string | null;
+            /** Deletedat */
+            deletedAt?: string | null;
+            /** Description */
+            description: string | null;
+            /** Id */
+            id: string;
+            /** Itemcount */
+            itemCount: number;
+            /**
+             * Kind
+             * @enum {string}
+             */
+            kind: "question" | "page" | "block";
+            /**
+             * Labid
+             * @description The owning lab; null for a bundled item
+             */
+            labId: string | null;
+            /** Languages */
+            languages: string[];
+            /** Licenceclass */
+            licenceClass: string;
+            /**
+             * Source
+             * @description lab: this lab's; host: another lab's shared; bundled
+             * @enum {string}
+             */
+            source: "lab" | "host" | "bundled";
+            /** Tags */
+            tags: string[];
+            /** Title */
+            title: string;
+            /** Updatedat */
+            updatedAt?: string | null;
+            /** Updatedby */
+            updatedBy?: string | null;
+            /**
+             * Version
+             * @description The current version
+             */
+            version: number;
+            /**
+             * Visibility
+             * @description null for a bundled item
+             */
+            visibility: ("lab" | "host") | null;
+        };
+        /** BankVersionOut */
+        BankVersionOut: {
+            /** Checksum */
+            checksum: string;
+            /**
+             * Createdat
+             * Format: date-time
+             */
+            createdAt: string;
+            /** Createdby */
+            createdBy: string;
+            /** Title */
+            title: string;
+            /** Version */
+            version: number;
+        };
         /** BinSpec */
         BinSpec: {
             /**
@@ -1441,6 +1765,16 @@ export interface components {
             consentedAt: string;
             /** Replay */
             replay: boolean;
+        };
+        /** CopyBankItemRequest */
+        CopyBankItemRequest: {
+            /**
+             * Tenantid
+             * @description The lab; needed only if you belong to several labs
+             */
+            tenantId?: string | null;
+            /** Version */
+            version?: number | null;
         };
         /** CreateChoiceList */
         CreateChoiceListParams: {
@@ -1969,6 +2303,27 @@ export interface components {
             /** Userid */
             userId: string;
         };
+        /** ImportBankFileRequest */
+        ImportBankFileRequest: {
+            /**
+             * Attestlicensed
+             * @description Owner's attestation that the lab holds the licence (licensed-to-lab)
+             * @default false
+             */
+            attestLicensed: boolean;
+            /**
+             * File
+             * @description The *.osp-bank.json document
+             */
+            file: {
+                [key: string]: unknown;
+            };
+            /**
+             * Tenantid
+             * @description The lab; needed only if you belong to several labs
+             */
+            tenantId?: string | null;
+        };
         /** ImportDiagnosticOut */
         ImportDiagnosticOut: {
             /** Code */
@@ -2412,6 +2767,33 @@ export interface components {
             page: string;
         };
         Name: string;
+        /** NewVersionRequest */
+        NewVersionRequest: {
+            /** Abbreviation */
+            abbreviation?: string | null;
+            /** Citation */
+            citation?: {
+                [key: string]: unknown;
+            } | null;
+            /** Description */
+            description?: string | null;
+            /** Licence */
+            licence?: {
+                [key: string]: unknown;
+            } | null;
+            /** Scoring */
+            scoring?: {
+                [key: string]: unknown;
+            } | null;
+            /** Surveyid */
+            surveyId: string;
+            /** Tags */
+            tags?: string[] | null;
+            /** Targetid */
+            targetId: string;
+            /** Title */
+            title?: string | null;
+        };
         /** OpCatalogueEntry */
         OpCatalogueEntry: {
             /** Area */
@@ -3087,6 +3469,39 @@ export interface components {
             name: string;
             states: components["schemas"]["StateCounts"];
         };
+        /** SaveBankItemRequest */
+        SaveBankItemRequest: {
+            /** Abbreviation */
+            abbreviation?: string | null;
+            /** Citation */
+            citation?: {
+                [key: string]: unknown;
+            } | null;
+            /** Description */
+            description?: string | null;
+            /**
+             * Licence
+             * @description Default: {class: unknown}
+             */
+            licence?: {
+                [key: string]: unknown;
+            } | null;
+            /** Scoring */
+            scoring?: {
+                [key: string]: unknown;
+            } | null;
+            /** Surveyid */
+            surveyId: string;
+            /** Tags */
+            tags?: string[];
+            /**
+             * Targetid
+             * @description The question, page or block id to save
+             */
+            targetId: string;
+            /** Title */
+            title: string;
+        };
         /** SetChoice */
         SetChoiceParams: {
             /**
@@ -3264,6 +3679,24 @@ export interface components {
         /** SetTitle */
         SetTitleParams: {
             title: components["schemas"]["Text"];
+        };
+        /** ShareBankItemRequest */
+        ShareBankItemRequest: {
+            /**
+             * Licenceclass
+             * @description Relicense as you share, e.g. cc-by-4.0 for the lab's own words
+             */
+            licenceClass?: string | null;
+            /**
+             * Tenantid
+             * @description The lab; needed only if you belong to several labs
+             */
+            tenantId?: string | null;
+            /**
+             * Visibility
+             * @enum {string}
+             */
+            visibility: "lab" | "host";
         };
         /** SimAssignment */
         SimAssignment: {
@@ -3947,6 +4380,22 @@ export interface components {
             /** Themes */
             themes: components["schemas"]["LabThemeOut"][];
         };
+        /** UpdateBankItemRequest */
+        UpdateBankItemRequest: {
+            /** Abbreviation */
+            abbreviation?: string | null;
+            /** Description */
+            description?: string | null;
+            /** Tags */
+            tags?: string[] | null;
+            /**
+             * Tenantid
+             * @description The lab; needed only if you belong to several labs
+             */
+            tenantId?: string | null;
+            /** Title */
+            title?: string | null;
+        };
         /** UpdateResultsLayoutRequest */
         UpdateResultsLayoutRequest: {
             /** Name */
@@ -4031,6 +4480,740 @@ export interface components {
 }
 export type $defs = Record<string, never>;
 export interface operations {
+    searchBank: {
+        parameters: {
+            query?: {
+                /** @description Every word must match */
+                q?: string | null;
+                kind?: ("question" | "page" | "block") | null;
+                source?: ("lab" | "host" | "bundled") | null;
+                lang?: string | null;
+                /** @description A licence class */
+                licence?: string | null;
+                /** @description Every tag must be present */
+                tag?: string[] | null;
+                page?: number;
+                pageSize?: number;
+                tenantId?: string | null;
+            };
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["BankList"];
+                };
+            };
+            /** @description Unauthorized */
+            401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorBody"];
+                };
+            };
+            /** @description Forbidden */
+            403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorBody"];
+                };
+            };
+            /** @description Unprocessable Content */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["RejectedBody"];
+                };
+            };
+        };
+    };
+    saveBankItem: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["SaveBankItemRequest"];
+            };
+        };
+        responses: {
+            /** @description Successful Response */
+            201: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["BankSaveOut"];
+                };
+            };
+            /** @description Unauthorized */
+            401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorBody"];
+                };
+            };
+            /** @description Forbidden */
+            403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorBody"];
+                };
+            };
+            /** @description Not Found */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorBody"];
+                };
+            };
+            /** @description Unprocessable Content */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["RejectedBody"];
+                };
+            };
+        };
+    };
+    importBankFile: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["ImportBankFileRequest"];
+            };
+        };
+        responses: {
+            /** @description Successful Response */
+            201: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["BankImportOut"];
+                };
+            };
+            /** @description Unauthorized */
+            401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorBody"];
+                };
+            };
+            /** @description Forbidden */
+            403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorBody"];
+                };
+            };
+            /** @description Unprocessable Content */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["RejectedBody"];
+                };
+            };
+        };
+    };
+    getBankLibrary: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["BankSummaryOut"][];
+                };
+            };
+            /** @description Unauthorized */
+            401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorBody"];
+                };
+            };
+            /** @description Forbidden */
+            403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorBody"];
+                };
+            };
+        };
+    };
+    getBankItem: {
+        parameters: {
+            query?: {
+                /** @description Default: the current version */
+                version?: number | null;
+                tenantId?: string | null;
+            };
+            header?: never;
+            path: {
+                item_id: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["BankItemOut"];
+                };
+            };
+            /** @description Unauthorized */
+            401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorBody"];
+                };
+            };
+            /** @description Forbidden */
+            403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorBody"];
+                };
+            };
+            /** @description Not Found */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorBody"];
+                };
+            };
+            /** @description Unprocessable Content */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["RejectedBody"];
+                };
+            };
+        };
+    };
+    deleteBankItem: {
+        parameters: {
+            query?: {
+                tenantId?: string | null;
+            };
+            header?: never;
+            path: {
+                item_id: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            204: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+            /** @description Unauthorized */
+            401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorBody"];
+                };
+            };
+            /** @description Forbidden */
+            403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorBody"];
+                };
+            };
+            /** @description Not Found */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorBody"];
+                };
+            };
+            /** @description Conflict */
+            409: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorBody"];
+                };
+            };
+            /** @description Unprocessable Content */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["RejectedBody"];
+                };
+            };
+        };
+    };
+    updateBankItem: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                item_id: string;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["UpdateBankItemRequest"];
+            };
+        };
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["BankItemOut"];
+                };
+            };
+            /** @description Unauthorized */
+            401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorBody"];
+                };
+            };
+            /** @description Forbidden */
+            403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorBody"];
+                };
+            };
+            /** @description Not Found */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorBody"];
+                };
+            };
+            /** @description Conflict */
+            409: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorBody"];
+                };
+            };
+            /** @description Unprocessable Content */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["RejectedBody"];
+                };
+            };
+        };
+    };
+    copyBankItem: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                item_id: string;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["CopyBankItemRequest"];
+            };
+        };
+        responses: {
+            /** @description Successful Response */
+            201: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["BankItemOut"];
+                };
+            };
+            /** @description Unauthorized */
+            401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorBody"];
+                };
+            };
+            /** @description Forbidden */
+            403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorBody"];
+                };
+            };
+            /** @description Not Found */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorBody"];
+                };
+            };
+            /** @description Unprocessable Content */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["RejectedBody"];
+                };
+            };
+        };
+    };
+    exportBankItem: {
+        parameters: {
+            query?: {
+                version?: number | null;
+                tenantId?: string | null;
+            };
+            header?: never;
+            path: {
+                item_id: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["BankFile"];
+                };
+            };
+            /** @description Unauthorized */
+            401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorBody"];
+                };
+            };
+            /** @description Forbidden */
+            403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorBody"];
+                };
+            };
+            /** @description Not Found */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorBody"];
+                };
+            };
+            /** @description Unprocessable Content */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["RejectedBody"];
+                };
+            };
+        };
+    };
+    shareBankItem: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                item_id: string;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["ShareBankItemRequest"];
+            };
+        };
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["BankItemOut"];
+                };
+            };
+            /** @description Unauthorized */
+            401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorBody"];
+                };
+            };
+            /** @description Forbidden */
+            403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorBody"];
+                };
+            };
+            /** @description Not Found */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorBody"];
+                };
+            };
+            /** @description Conflict */
+            409: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorBody"];
+                };
+            };
+            /** @description Unprocessable Content */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["RejectedBody"];
+                };
+            };
+        };
+    };
+    listBankItemVersions: {
+        parameters: {
+            query?: {
+                tenantId?: string | null;
+            };
+            header?: never;
+            path: {
+                item_id: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["BankVersionOut"][];
+                };
+            };
+            /** @description Unauthorized */
+            401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorBody"];
+                };
+            };
+            /** @description Forbidden */
+            403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorBody"];
+                };
+            };
+            /** @description Not Found */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorBody"];
+                };
+            };
+            /** @description Unprocessable Content */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["RejectedBody"];
+                };
+            };
+        };
+    };
+    newBankItemVersion: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                item_id: string;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["NewVersionRequest"];
+            };
+        };
+        responses: {
+            /** @description Successful Response */
+            201: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["BankSaveOut"];
+                };
+            };
+            /** @description Unauthorized */
+            401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorBody"];
+                };
+            };
+            /** @description Forbidden */
+            403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorBody"];
+                };
+            };
+            /** @description Not Found */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorBody"];
+                };
+            };
+            /** @description Conflict */
+            409: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorBody"];
+                };
+            };
+            /** @description Unprocessable Content */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["RejectedBody"];
+                };
+            };
+        };
+    };
     getHealth: {
         parameters: {
             query?: never;

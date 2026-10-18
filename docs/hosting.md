@@ -47,6 +47,7 @@ Other settings (all in `python/osp-api/src/osp_api/serve.py`):
 | `OSP_NONCE_STORE` | where replayed signatures are caught: `database` (every worker) or `memory` (one process) | `database` in production, `memory` in dev |
 | `OSP_PARTICIPANT_URL_TEMPLATE` | where participants open a survey (`{slug}`) | `/r/?s={slug}` |
 | `OSP_LIVE_POLL_MS` | how often a live results page may ask whether responses changed (milliseconds, 1000–3600000); every poll is one signed request through your proxy, so raise it under load | `10000` |
+| `OSP_BANK_HOST_SHARING` | whether a lab may share question-bank items with every other lab on this host (`POST /api/bank/{id}/share`). Turn it `off` on a host that runs unrelated labs: other labs' items are then never listed or readable | `on` |
 | `OSP_EXTERNAL_TOKEN_KEY` | secret (32+ bytes) that signs external-task return tokens (a survey with an [External task](logic.md#external-task-step) step). Set it when you run more than one worker, or across a restart, so every worker verifies the same tokens; unset, each process uses its own random key | a per-process random key |
 
 Never use `OSP_IDENTITY=dev` on a server. It makes everyone the lab owner, so osp-api refuses
