@@ -1,0 +1,202 @@
+{
+  "title": "Framing and incentive study",
+  "description": "review.md §2.3 in full: consent gate, constraint, calculate, quota, 2x2 assign, branch, shuffled block, piping, score. Partly pending (C3a-1..5).",
+  "clearInvisibleValues": "onHidden",
+  "pages": [
+    {
+      "name": "consent_blk_page",
+      "elements": [
+        {
+          "name": "consent",
+          "type": "radiogroup",
+          "title": "Do you consent to take part?",
+          "choices": [
+            {
+              "value": 1,
+              "text": {
+                "default": "Yes",
+                "de": "Ja"
+              }
+            },
+            {
+              "value": 0,
+              "text": {
+                "default": "No",
+                "de": "Nein"
+              }
+            }
+          ],
+          "isRequired": true
+        }
+      ]
+    },
+    {
+      "name": "demo_page",
+      "visibleIf": "!({consent} = 0)",
+      "elements": [
+        {
+          "name": "age",
+          "type": "text",
+          "title": "How old are you?",
+          "inputType": "number",
+          "step": 1,
+          "isRequired": true,
+          "validators": [
+            {
+              "type": "regex",
+              "regex": "^-?[0-9]+$"
+            },
+            {
+              "type": "expression",
+              "expression": "{age} empty or {age} notempty and {age} >= 18 and {age} notempty and {age} <= 120",
+              "text": "Please enter an age between 18 and 120."
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "stim_gain_page",
+      "visibleIf": "!({consent} = 0)",
+      "elements": [
+        {
+          "name": "stim_g",
+          "type": "html",
+          "html": "Programme A saves 200 people…"
+        }
+      ]
+    },
+    {
+      "name": "stim_loss_page",
+      "visibleIf": "false",
+      "elements": [
+        {
+          "name": "stim_l",
+          "type": "html",
+          "html": "With Programme A, 400 people die…"
+        }
+      ]
+    },
+    {
+      "name": "attitudes_page",
+      "visibleIf": "!({consent} = 0)",
+      "questionsOrder": "random",
+      "elements": [
+        {
+          "name": "att1",
+          "type": "radiogroup",
+          "title": "With the  you were offered, the programme seems fair.",
+          "choices": [
+            {
+              "value": 1,
+              "text": "Strongly disagree"
+            },
+            {
+              "value": 2,
+              "text": "Disagree"
+            },
+            {
+              "value": 3,
+              "text": "Neutral"
+            },
+            {
+              "value": 4,
+              "text": "Agree"
+            },
+            {
+              "value": 5,
+              "text": "Strongly agree"
+            }
+          ]
+        },
+        {
+          "name": "att2",
+          "type": "radiogroup",
+          "title": "I would support Programme A.",
+          "choices": [
+            {
+              "value": 1,
+              "text": "Strongly disagree"
+            },
+            {
+              "value": 2,
+              "text": "Disagree"
+            },
+            {
+              "value": 3,
+              "text": "Neutral"
+            },
+            {
+              "value": 4,
+              "text": "Agree"
+            },
+            {
+              "value": 5,
+              "text": "Strongly agree"
+            }
+          ]
+        },
+        {
+          "name": "att3",
+          "type": "radiogroup",
+          "title": "Programme A is too risky.",
+          "choices": [
+            {
+              "value": 1,
+              "text": "Strongly disagree"
+            },
+            {
+              "value": 2,
+              "text": "Disagree"
+            },
+            {
+              "value": 3,
+              "text": "Neutral"
+            },
+            {
+              "value": 4,
+              "text": "Agree"
+            },
+            {
+              "value": 5,
+              "text": "Strongly agree"
+            }
+          ]
+        }
+      ]
+    }
+  ],
+  "calculatedValues": [
+    {
+      "name": "age_band",
+      "expression": "iif({age} notempty and {age} < 40, '18-39', '40+')",
+      "includeIntoResult": true
+    },
+    {
+      "name": "att_score",
+      "expression": "(({att1} + {att2}) + (6 - {att3})) / 3",
+      "includeIntoResult": true
+    },
+    {
+      "name": "osp_outcome",
+      "expression": "iif({consent} = 0, 'declined', 'complete')",
+      "includeIntoResult": true
+    }
+  ],
+  "completedHtmlOnCondition": [
+    {
+      "expression": "{consent} = 0",
+      "html": {
+        "default": "<p>You chose not to take part in the study.</p>",
+        "de": "<p>Sie haben sich gegen die Teilnahme entschieden.</p>"
+      }
+    },
+    {
+      "expression": "!({consent} = 0)",
+      "html": {
+        "default": "<h3>Thank you</h3><p>You told us you are {age}. Your  is on its way.</p>",
+        "de": "<h3>Vielen Dank</h3><p>Sie sind {age} Jahre alt. Ihre Belohnung () ist unterwegs.</p>"
+      }
+    }
+  ]
+}

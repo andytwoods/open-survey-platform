@@ -1,0 +1,91 @@
+{
+  "title": "Block randomiser",
+  "description": "§7 randomiser node shuffling blocks; order fixed at first reach, stable on back/refresh.",
+  "clearInvisibleValues": "onHidden",
+  "pages": [
+    {
+      "name": "intro_page",
+      "elements": [
+        {
+          "name": "intro_q",
+          "type": "radiogroup",
+          "title": "Ready to start?",
+          "choices": [
+            {
+              "value": "yes",
+              "text": "Yes"
+            },
+            {
+              "value": "no",
+              "text": "No"
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "blk_x_page",
+      "elements": [
+        {
+          "name": "q_x",
+          "type": "text",
+          "title": "Block X: any number.",
+          "inputType": "number",
+          "step": 1,
+          "validators": [
+            {
+              "type": "regex",
+              "regex": "^-?[0-9]+$"
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "blk_y_page",
+      "elements": [
+        {
+          "name": "q_y",
+          "type": "text",
+          "title": "Block Y: any number.",
+          "inputType": "number",
+          "step": 1,
+          "validators": [
+            {
+              "type": "regex",
+              "regex": "^-?[0-9]+$"
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "blk_z_page",
+      "elements": [
+        {
+          "name": "q_z",
+          "type": "text",
+          "title": "Block Z: any number.",
+          "inputType": "number",
+          "step": 1,
+          "validators": [
+            {
+              "type": "regex",
+              "regex": "^-?[0-9]+$"
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "outro_page",
+      "elements": [
+        {
+          "name": "outro_q",
+          "type": "text",
+          "title": "Last question: say anything."
+        }
+      ]
+    }
+  ]
+}
