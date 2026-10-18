@@ -7,7 +7,7 @@ import { deepCopy, get as dget, has, pyLen, slice, strip, type Json, type JsonOb
 import { OpError, diag, op, type Ctx, type Invocation } from '../registry.ts';
 import { JsonDict, JSON_DICT_TAG, opt, params, req, str } from './params.ts';
 
-const FIELDS: Record<string, string[]> = {
+export const FIELDS: Record<string, string[]> = {
 	question: ['showIf', 'constraint'],
 	branch: ['if'],
 	quota: ['when'],
@@ -38,6 +38,15 @@ export function toAst(ctx: Ctx, condition: Json): Json {
 	const r = validate(ExprAdapter, expr);
 	if (!r.ok) throw new OpError('op.params', `not an expression AST: ${slice(r.errs[0]!.msg, 0, 300)}`, '/condition');
 	return dump(r.v);
+}
+
+/**
+ * Why `ast` is not an expression AST (osp_expr's model, `EXPR_ADAPTER.validate_python`), or
+ * null when it is. For the builder's condition printer (`/api/meta/expressions/print`).
+ */
+export function exprAstProblem(ast: Json): string | null {
+	const r = validate(ExprAdapter, ast);
+	return r.ok ? null : slice(r.errs[0]!.msg, 0, 300);
 }
 
 const SetCondition = params('SetCondition', [

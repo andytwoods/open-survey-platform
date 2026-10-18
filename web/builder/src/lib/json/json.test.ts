@@ -1,6 +1,8 @@
 import { describe, expect, it } from 'vitest';
+import { SPEC_VERSION } from '@osp/spec';
+import { memoryTransport } from '../sync/memory-transport';
 import { SurveyStore } from '../sync/survey-store.svelte';
-import { failure, type EditResult, type Invocation, type Result, type SurveyDoc, type SurveyTransport } from '../sync/transport';
+import type { SurveyDoc } from '../sync/transport';
 import { JsonDraft, jsonEqual, placeDiagnostics } from './json-draft.svelte';
 import { formatJson, locate, parseJson, positionAt } from './source';
 
@@ -62,49 +64,29 @@ describe('parseJson', () => {
 	});
 });
 
-/** A server that accepts `replace_survey` unless the survey has `"bad": true` (422). */
-class Server implements SurveyTransport {
-	doc: SurveyDoc = { metadata: { title: { en: 'T' } }, blocks: [] };
-	revision = 1;
-	ops: Invocation[][] = [];
-	async load(): Promise<Result<{ id: string; title: string; revision: number; survey: SurveyDoc }>> {
-		return { kind: 'ok', data: { id: 's', title: 'T', revision: this.revision, survey: structuredClone(this.doc) } };
-	}
-	async applyOps(_id: string, body: { ops: Invocation[]; baseRevision: number }): Promise<Result<EditResult>> {
-		this.ops.push(body.ops);
-		if (body.baseRevision !== this.revision) return failure(409, { currentRevision: this.revision });
-		const survey = body.ops[0].params!.survey as SurveyDoc;
-		if (survey.bad) {
-			return failure(422, {
-				message: 'Rejected.',
-				diagnostics: [{ severity: 'error', code: 'spec.bad', message: 'Not allowed', pointer: '/bad' }]
-			});
-		}
-		this.doc = structuredClone(survey);
-		this.revision++;
-		return {
-			kind: 'ok',
-			data: {
-				revision: this.revision,
-				patch: [{ op: 'replace', path: '', value: survey }],
-				diagnostics: [],
-				transactionId: `t${this.revision}`
-			}
-		};
-	}
-	async undo(): Promise<Result<EditResult>> {
-		return failure(500, {});
-	}
-	async redo(): Promise<Result<EditResult>> {
-		return failure(500, {});
-	}
-}
+
+const doc = (): SurveyDoc => ({
+	specVersion: SPEC_VERSION,
+	id: 'survey',
+	metadata: { title: { en: 'T' }, languages: ['en'], defaultLanguage: 'en' },
+	blocks: [{ id: 'b1', pages: [{ id: 'p1', items: [{ id: 'intro', type: 'note', label: { en: '' } }] }] }],
+	flow: [{ type: 'block', id: 'n1', block: 'b1' }]
+});
+
+const titled = (s: SurveyDoc | null, en: string): SurveyDoc => ({
+	...(s as SurveyDoc),
+	metadata: { ...((s as SurveyDoc).metadata as object), title: { en } }
+});
 
 async function setup() {
-	const server = new Server();
+	const server = memoryTransport({ id: 's', title: 'T', survey: doc(), revision: 1 });
 	const store = new SurveyStore({ transport: server, sleep: async () => {} });
 	await store.load('s');
-	return { server, store, draft: new JsonDraft(store) };
+	/** Someone else saves a new title. */
+	const elsewhere = (en: string) => {
+		server.draft = { ...server.draft, survey: titled(server.draft.survey, en), revision: server.draft.revision + 1 };
+	};
+	return { server, store, draft: new JsonDraft(store), elsewhere };
 }
 
 describe('JsonDraft', () => {
@@ -116,34 +98,37 @@ describe('JsonDraft', () => {
 		expect(draft.syntaxError?.position.line).toBe(1);
 		draft.edit('[1, 2]');
 		expect(await draft.apply()).toBe('invalid');
-		expect(server.ops).toHaveLength(0);
+		await store.settled();
+		expect(server.saves).toHaveLength(0);
 		expect(store.survey).toEqual(before);
 		expect(store.revision).toBe(1);
 		expect(draft.dirty).toBe(true);
 	});
 
 	it('a rejected Apply keeps the text, places diagnostics and leaves the draft', async () => {
-		const { store, draft } = await setup();
-		const text = formatJson({ ...store.survey, bad: true });
+		const { server, store, draft } = await setup();
+		const text = formatJson({ ...store.survey, blocks: 'not a list' });
 		draft.edit(text);
 		expect(await draft.apply()).toBe('rejected');
-		expect(store.revision).toBe(1);
-		expect(store.survey).not.toHaveProperty('bad');
+		await store.settled();
+		expect(server.saves).toHaveLength(0);
+		expect(store.survey?.blocks).toEqual(doc().blocks);
 		expect(draft.text).toBe(text);
-		expect(draft.current).toHaveLength(1);
-		expect(draft.current[0].position?.line).toBeGreaterThan(1);
+		expect(draft.current.length).toBeGreaterThan(0);
+		expect(draft.current.some((d) => (d.position?.line ?? 0) > 1)).toBe(true);
 		draft.edit(text + ' ');
 		expect(draft.current).toHaveLength(0); // the diagnostics described the old text
 	});
 
-	it('a valid Apply sends one replace_survey and re-syncs', async () => {
+	it('a valid Apply is one replace_survey, saved, and re-syncs', async () => {
 		const { server, store, draft } = await setup();
-		draft.edit(formatJson({ ...store.survey, metadata: { title: { en: 'New' } } }));
+		draft.edit(formatJson(titled(store.survey, 'New')));
 		expect(await draft.apply()).toBe('applied');
-		expect(server.ops).toEqual([[{ op: 'replace_survey', params: { survey: expect.any(Object) } }]]);
-		expect(store.revision).toBe(2);
-		expect((store.survey as { metadata: unknown }).metadata).toEqual({ title: { en: 'New' } });
 		expect(draft.dirty).toBe(false);
+		await store.settled();
+		expect(server.saves.map((s) => s.ops.map((o) => o.op))).toEqual([['replace_survey']]);
+		expect(store.revision).toBe(2);
+		expect(server.draft.survey).toEqual(titled(doc(), 'New'));
 		expect(draft.baseRevision).toBe(2);
 	});
 
@@ -151,43 +136,50 @@ describe('JsonDraft', () => {
 		const { server, store, draft } = await setup();
 		draft.edit(JSON.stringify(store.survey));
 		expect(await draft.apply()).toBe('unchanged');
-		expect(server.ops).toHaveLength(0);
+		await store.settled();
+		expect(server.saves).toHaveLength(0);
 		expect(draft.dirty).toBe(false);
 	});
 
 	it('warns when the survey changed on the server while editing; revert discards', async () => {
-		const { server, store, draft } = await setup();
-		draft.edit(formatJson({ ...store.survey, x: 1 }));
-		server.doc = { ...server.doc, other: true };
-		server.revision = 5;
+		const { server, store, draft, elsewhere } = await setup();
+		draft.edit(formatJson(titled(store.survey, 'Mine')));
+		elsewhere('Other');
 		await store.reload();
 		expect(draft.stale).toBe(true);
 		draft.sync(); // local edits are kept
-		expect(draft.text).toContain('"x": 1');
+		expect(draft.text).toContain('"Mine"');
 		expect(await draft.apply()).toBe('stale');
-		expect(server.ops).toHaveLength(0);
+		expect(server.saves).toHaveLength(0);
 		draft.revert();
 		expect(draft.dirty).toBe(false);
 		expect(draft.stale).toBe(false);
-		expect(draft.text).toContain('"other": true');
+		expect(draft.text).toContain('"Other"');
+	});
+
+	it('an edit made elsewhere in the builder also makes the JSON stale', async () => {
+		const { store, draft } = await setup();
+		draft.edit(formatJson(titled(store.survey, 'Mine')));
+		await store.submit([{ op: 'set_property', params: { target: 'p1', property: 'title', value: { en: 'P' } } }]);
+		expect(draft.stale).toBe(true);
 	});
 
 	it('Apply anyway overwrites a newer revision', async () => {
-		const { server, store, draft } = await setup();
-		draft.edit(formatJson({ ...store.survey, x: 1 }));
-		server.revision = 4;
+		const { server, store, draft, elsewhere } = await setup();
+		draft.edit(formatJson(titled(store.survey, 'Mine')));
+		elsewhere('Other');
 		await store.reload();
 		expect(await draft.apply({ force: true })).toBe('applied');
-		expect(server.doc).toHaveProperty('x', 1);
+		await store.settled();
+		expect(server.draft.survey).toEqual(titled(doc(), 'Mine'));
 	});
 
 	it('follows the store while there are no local edits', async () => {
-		const { server, store, draft } = await setup();
-		server.doc = { ...server.doc, y: 2 };
-		server.revision = 3;
+		const { store, draft, elsewhere } = await setup();
+		elsewhere('Followed');
 		await store.reload();
 		draft.sync();
-		expect(draft.text).toContain('"y": 2');
-		expect(draft.baseRevision).toBe(3);
+		expect(draft.text).toContain('"Followed"');
+		expect(draft.baseRevision).toBe(2);
 	});
 });

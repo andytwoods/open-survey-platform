@@ -699,7 +699,7 @@
 
 	{#if previewOpen && store}
 		<main id="pane-preview" class="preview-pane" aria-labelledby="preview-heading">
-			<PreviewPanel surveyId={store.surveyId} revision={store.revision} onclose={() => (previewOpen = false)} />
+			<PreviewPanel {store} onclose={() => (previewOpen = false)} />
 		</main>
 	{:else if view === 'appearance'}
 		<main id="pane-appearance" class="appearance" aria-label="Appearance">

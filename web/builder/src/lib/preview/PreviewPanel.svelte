@@ -1,20 +1,28 @@
 <script lang="ts">
 	/**
-	 * Preview + debugger (task B11, builder-design §5, runtime-design §9). The draft is
-	 * compiled to a plan (`POST /preview-plan`) and shown in device frames that run the real
+	 * Preview + debugger (task B11, builder-design §5, runtime-design §9). The draft, as edited
+	 * here, is compiled to a plan in the browser (compile.ts, CE5) and shown in device frames that run the real
 	 * participant app (`web/runtime`) in preview mode: nothing is saved, storage is memory
 	 * only. The debugger next to it steps the same run.
 	 */
 	import ArrowLeft from '@lucide/svelte/icons/arrow-left';
 	import RotateCcw from '@lucide/svelte/icons/rotate-ccw';
 	import { Button } from '@osp/ui-components';
-	import { onMount } from 'svelte';
+	import { onMount, untrack } from 'svelte';
 	import DebuggerPanel from '../debugger/DebuggerPanel.svelte';
 	import { link } from '../host/links';
 	import { frameUrl } from './bridge';
+	import type { SurveyStore } from '../sync/survey-store.svelte';
 	import { DEVICES, PreviewHost, randomSeed, type Device } from './host.svelte';
+	import { labDefaultTheme } from './lab-theme';
 
-	let { surveyId, revision, onclose }: { surveyId: string; revision: number; onclose: () => void } = $props();
+	let { store, onclose }: { store: SurveyStore; onclose: () => void } = $props();
+
+	/** Build the plan from the draft as it is now. */
+	const rebuild = () => {
+		store.flushBuffers(); // typed text not yet committed is part of the draft
+		return host.build(store.survey, store.version, () => labDefaultTheme(store.tenantId));
+	};
 
 	const host = new PreviewHost(1);
 	let device = $state<Device>('phone');
@@ -40,7 +48,7 @@
 		for (const d of DEVICES) if (!ids.has(d.id)) host.detach(d.id);
 	});
 	const errors = $derived(host.diagnostics.filter((d) => d.severity === 'error'));
-	const stale = $derived(host.revision !== null && host.revision !== revision);
+	const stale = $derived(host.revision !== null && host.revision !== store.version);
 
 	function applySeed() {
 		const n = Number(seedText);
@@ -54,7 +62,7 @@
 
 	onMount(() => {
 		const off = host.install(window, frameOrigin, (id) => iframes[id]?.contentWindow ?? null);
-		void host.fetch(surveyId);
+		void untrack(rebuild);
 		closeButton?.focus();
 		return off;
 	});
@@ -98,7 +106,7 @@
 			<RotateCcw size={16} aria-hidden="true" />
 			Restart
 		</Button>
-		<Button size="sm" onclick={() => void host.fetch(surveyId)}>Rebuild from draft</Button>
+		<Button size="sm" onclick={() => void rebuild()}>Rebuild from draft</Button>
 	</div>
 	<p class="note">
 		Preview mode: answers stay in this browser tab and are never saved.
@@ -155,7 +163,7 @@
 			{/if}
 		</section>
 		<aside class="side" aria-labelledby="debugger-heading">
-			<DebuggerPanel {host} {surveyId} />
+			<DebuggerPanel {host} surveyId={store.surveyId} />
 		</aside>
 	</div>
 </div>

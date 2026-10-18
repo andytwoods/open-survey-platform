@@ -1,8 +1,7 @@
 <script lang="ts">
 	import { theme } from '@osp/ui-components';
-	import { api } from '#lib/api.js';
 	import {
-		apiExpressionService,
+		localExpressionService,
 		ConditionBuilder,
 		ConditionDialog,
 		questionsFromSurvey,
@@ -12,13 +11,13 @@
 	import { PRESETS } from './presets';
 	import survey from './sample-survey.json';
 
-	// Developer page for the condition builder (task B7). Checked by e2e/conditions.spec.ts,
-	// which answers the parse/print endpoints with osp-api's own functions.
+	// Developer page for the condition builder (task B7), checked by e2e/conditions.spec.ts.
+	// Text ⇄ AST is parsed and checked in the browser (@osp/engine, @osp/ops), as in the editor.
 	onMount(() => theme.init());
 
 	const SURVEY_ID = 'dev-conditions';
 	const TARGET = 'q_target';
-	const service = apiExpressionService(api);
+	const service = localExpressionService(() => survey);
 	const questions = questionsFromSurvey(survey);
 
 	let preset = $state(new URLSearchParams(location.search).get('preset') ?? 'empty');
