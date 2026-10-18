@@ -1,0 +1,1026 @@
+{
+  "SurveyEntry": {
+    "SurveyID": "SV_LqVaeVpiGA04qEG",
+    "SurveyName": "Framing and incentive study",
+    "SurveyDescription": "review.md §2.3 in full: consent gate, constraint, calculate, quota, 2x2 assign, branch, shuffled block, piping, score. Partly pending (C3a-1..5).",
+    "SurveyOwnerID": "",
+    "SurveyBrandID": "",
+    "DivisionID": null,
+    "SurveyLanguage": "EN",
+    "SurveyActiveResponseSet": "RS_YPWH1bKEDC05pk6",
+    "SurveyStatus": "Inactive",
+    "SurveyStartDate": "0000-00-00 00:00:00",
+    "SurveyExpirationDate": "0000-00-00 00:00:00",
+    "SurveyCreationDate": "0000-00-00 00:00:00",
+    "CreatorID": "",
+    "LastModified": "0000-00-00 00:00:00",
+    "LastAccessed": "0000-00-00 00:00:00",
+    "LastActivated": "0000-00-00 00:00:00",
+    "Deleted": null
+  },
+  "SurveyElements": [
+    {
+      "SurveyID": "SV_LqVaeVpiGA04qEG",
+      "Element": "BL",
+      "PrimaryAttribute": "Survey Blocks",
+      "SecondaryAttribute": null,
+      "TertiaryAttribute": null,
+      "Payload": [
+        {
+          "Type": "Default",
+          "Description": "consent_blk",
+          "ID": "BL_C0gm905FsL8qziq",
+          "BlockElements": [
+            {
+              "Type": "Question",
+              "QuestionID": "QID1"
+            }
+          ],
+          "Options": {
+            "BlockLocking": "false",
+            "RandomizeQuestions": "false",
+            "BlockVisibility": "Expanded"
+          }
+        },
+        {
+          "Type": "Standard",
+          "Description": "demo",
+          "ID": "BL_PTHPSa6CRNJjHqD",
+          "BlockElements": [
+            {
+              "Type": "Question",
+              "QuestionID": "QID2"
+            }
+          ],
+          "Options": {
+            "BlockLocking": "false",
+            "RandomizeQuestions": "false",
+            "BlockVisibility": "Expanded"
+          }
+        },
+        {
+          "Type": "Standard",
+          "Description": "stim_gain",
+          "ID": "BL_w4hIwmEVPmSDVwi",
+          "BlockElements": [
+            {
+              "Type": "Question",
+              "QuestionID": "QID3"
+            }
+          ],
+          "Options": {
+            "BlockLocking": "false",
+            "RandomizeQuestions": "false",
+            "BlockVisibility": "Expanded"
+          }
+        },
+        {
+          "Type": "Standard",
+          "Description": "stim_loss",
+          "ID": "BL_Lw84T5BOFR1w3Gl",
+          "BlockElements": [
+            {
+              "Type": "Question",
+              "QuestionID": "QID4"
+            }
+          ],
+          "Options": {
+            "BlockLocking": "false",
+            "RandomizeQuestions": "false",
+            "BlockVisibility": "Expanded"
+          }
+        },
+        {
+          "Type": "Standard",
+          "Description": "attitudes",
+          "ID": "BL_244AGHQlS1TlJcS",
+          "BlockElements": [
+            {
+              "Type": "Question",
+              "QuestionID": "QID5"
+            },
+            {
+              "Type": "Question",
+              "QuestionID": "QID6"
+            },
+            {
+              "Type": "Question",
+              "QuestionID": "QID7"
+            }
+          ],
+          "Options": {
+            "BlockLocking": "false",
+            "RandomizeQuestions": "RandomWithOnlyX",
+            "Randomization": {
+              "Advanced": null,
+              "EvenPresentation": false,
+              "TotalRandSubset": 3
+            },
+            "BlockVisibility": "Expanded"
+          }
+        },
+        {
+          "Type": "Standard",
+          "Description": "screenout",
+          "ID": "BL_xpFaGstgIHt4Ssh",
+          "BlockElements": [
+            {
+              "Type": "Question",
+              "QuestionID": "QID8"
+            }
+          ],
+          "Options": {
+            "BlockLocking": "false",
+            "RandomizeQuestions": "false",
+            "BlockVisibility": "Expanded"
+          }
+        },
+        {
+          "Type": "Standard",
+          "Description": "End: end_declined",
+          "ID": "BL_nCFeSDX2cty6ILp",
+          "BlockElements": [
+            {
+              "Type": "Question",
+              "QuestionID": "QID9"
+            }
+          ],
+          "Options": {
+            "BlockLocking": "false",
+            "RandomizeQuestions": "false",
+            "BlockVisibility": "Expanded"
+          }
+        },
+        {
+          "Type": "Standard",
+          "Description": "End: end_complete",
+          "ID": "BL_jVJhyDYDJiOCSjR",
+          "BlockElements": [
+            {
+              "Type": "Question",
+              "QuestionID": "QID10"
+            }
+          ],
+          "Options": {
+            "BlockLocking": "false",
+            "RandomizeQuestions": "false",
+            "BlockVisibility": "Expanded"
+          }
+        },
+        {
+          "Type": "Trash",
+          "Description": "Trash / Unused Questions",
+          "ID": "BL_jMjooEnqdRBKiGH",
+          "BlockElements": []
+        }
+      ]
+    },
+    {
+      "SurveyID": "SV_LqVaeVpiGA04qEG",
+      "Element": "FL",
+      "PrimaryAttribute": "Survey Flow",
+      "SecondaryAttribute": null,
+      "TertiaryAttribute": null,
+      "Payload": {
+        "Type": "Root",
+        "FlowID": "FL_1",
+        "Flow": [
+          {
+            "Type": "EmbeddedData",
+            "FlowID": "FL_2",
+            "EmbeddedData": [
+              {
+                "Description": "src",
+                "Type": "Recipient",
+                "Field": "src",
+                "VariableType": "String",
+                "DataVisibility": [],
+                "AnalyzeText": false
+              }
+            ]
+          },
+          {
+            "Type": "Branch",
+            "FlowID": "FL_3",
+            "Description": "Default for src",
+            "BranchLogic": {
+              "0": {
+                "0": {
+                  "LogicType": "EmbeddedField",
+                  "LeftOperand": "src",
+                  "Operator": "Empty",
+                  "Type": "Expression",
+                  "Description": "src Empty"
+                },
+                "Type": "If"
+              },
+              "Type": "BooleanExpression",
+              "inPage": false
+            },
+            "Flow": [
+              {
+                "Type": "EmbeddedData",
+                "FlowID": "FL_4",
+                "EmbeddedData": [
+                  {
+                    "Description": "src",
+                    "Type": "Custom",
+                    "Field": "src",
+                    "VariableType": "String",
+                    "DataVisibility": [],
+                    "AnalyzeText": false,
+                    "Value": "direct"
+                  }
+                ]
+              }
+            ]
+          },
+          {
+            "Type": "Block",
+            "ID": "BL_C0gm905FsL8qziq",
+            "FlowID": "FL_5",
+            "Autofill": []
+          },
+          {
+            "Type": "Branch",
+            "FlowID": "FL_9",
+            "Description": "branch_1 (then)",
+            "BranchLogic": {
+              "0": {
+                "0": {
+                  "LogicType": "Question",
+                  "QuestionID": "QID1",
+                  "QuestionIsInLoop": "no",
+                  "ChoiceLocator": "q://QID1/SelectableChoice/2",
+                  "Operator": "Selected",
+                  "QuestionIDFromLocator": "QID1",
+                  "LeftOperand": "q://QID1/SelectableChoice/2",
+                  "Type": "Expression",
+                  "Description": "QID1 choice 2 is Selected"
+                },
+                "Type": "If"
+              },
+              "Type": "BooleanExpression",
+              "inPage": false
+            },
+            "Flow": [
+              {
+                "Type": "Standard",
+                "ID": "BL_nCFeSDX2cty6ILp",
+                "FlowID": "FL_6",
+                "Autofill": []
+              },
+              {
+                "Type": "EmbeddedData",
+                "FlowID": "FL_7",
+                "EmbeddedData": [
+                  {
+                    "Description": "ospoutcome",
+                    "Type": "Custom",
+                    "Field": "ospoutcome",
+                    "VariableType": "String",
+                    "DataVisibility": [],
+                    "AnalyzeText": false,
+                    "Value": "declined"
+                  }
+                ]
+              },
+              {
+                "Type": "EndSurvey",
+                "FlowID": "FL_8"
+              }
+            ]
+          },
+          {
+            "Type": "Standard",
+            "ID": "BL_PTHPSa6CRNJjHqD",
+            "FlowID": "FL_10",
+            "Autofill": []
+          },
+          {
+            "Type": "BlockRandomizer",
+            "FlowID": "FL_11",
+            "SubSet": 1,
+            "EvenPresentation": false,
+            "Flow": [
+              {
+                "Type": "EmbeddedData",
+                "FlowID": "FL_12",
+                "EmbeddedData": [
+                  {
+                    "Description": "framing",
+                    "Type": "Custom",
+                    "Field": "framing",
+                    "VariableType": "String",
+                    "DataVisibility": [],
+                    "AnalyzeText": false,
+                    "Value": "gain"
+                  }
+                ]
+              },
+              {
+                "Type": "EmbeddedData",
+                "FlowID": "FL_13",
+                "EmbeddedData": [
+                  {
+                    "Description": "framing",
+                    "Type": "Custom",
+                    "Field": "framing",
+                    "VariableType": "String",
+                    "DataVisibility": [],
+                    "AnalyzeText": false,
+                    "Value": "loss"
+                  }
+                ]
+              }
+            ]
+          },
+          {
+            "Type": "BlockRandomizer",
+            "FlowID": "FL_14",
+            "SubSet": 1,
+            "EvenPresentation": false,
+            "Flow": [
+              {
+                "Type": "EmbeddedData",
+                "FlowID": "FL_15",
+                "EmbeddedData": [
+                  {
+                    "Description": "incentive",
+                    "Type": "Custom",
+                    "Field": "incentive",
+                    "VariableType": "String",
+                    "DataVisibility": [],
+                    "AnalyzeText": false,
+                    "Value": "£5 voucher"
+                  }
+                ]
+              },
+              {
+                "Type": "EmbeddedData",
+                "FlowID": "FL_16",
+                "EmbeddedData": [
+                  {
+                    "Description": "incentive",
+                    "Type": "Custom",
+                    "Field": "incentive",
+                    "VariableType": "String",
+                    "DataVisibility": [],
+                    "AnalyzeText": false,
+                    "Value": "charity donation"
+                  }
+                ]
+              }
+            ]
+          },
+          {
+            "Type": "Branch",
+            "FlowID": "FL_19",
+            "Description": "branch_2 (then)",
+            "BranchLogic": {
+              "0": {
+                "0": {
+                  "LogicType": "EmbeddedField",
+                  "LeftOperand": "framing",
+                  "Operator": "EqualTo",
+                  "RightOperand": "gain",
+                  "Type": "Expression",
+                  "Description": "framing EqualTo gain"
+                },
+                "1": {
+                  "LogicType": "EmbeddedField",
+                  "LeftOperand": "framing",
+                  "Operator": "NotEmpty",
+                  "Type": "Expression",
+                  "Description": "framing NotEmpty",
+                  "Conjuction": "And"
+                },
+                "Type": "If"
+              },
+              "Type": "BooleanExpression",
+              "inPage": false
+            },
+            "Flow": [
+              {
+                "Type": "Standard",
+                "ID": "BL_w4hIwmEVPmSDVwi",
+                "FlowID": "FL_17",
+                "Autofill": []
+              }
+            ]
+          },
+          {
+            "Type": "Branch",
+            "FlowID": "FL_20",
+            "Description": "branch_2 (else)",
+            "BranchLogic": {
+              "0": {
+                "0": {
+                  "LogicType": "EmbeddedField",
+                  "LeftOperand": "framing",
+                  "Operator": "NotEqualTo",
+                  "RightOperand": "gain",
+                  "Type": "Expression",
+                  "Description": "framing NotEqualTo gain"
+                },
+                "1": {
+                  "LogicType": "EmbeddedField",
+                  "LeftOperand": "framing",
+                  "Operator": "NotEmpty",
+                  "Type": "Expression",
+                  "Description": "framing NotEmpty",
+                  "Conjuction": "And"
+                },
+                "Type": "If"
+              },
+              "1": {
+                "0": {
+                  "LogicType": "EmbeddedField",
+                  "LeftOperand": "framing",
+                  "Operator": "Empty",
+                  "Type": "Expression",
+                  "Description": "framing Empty"
+                },
+                "Type": "If",
+                "Conjuction": "Or"
+              },
+              "Type": "BooleanExpression",
+              "inPage": false
+            },
+            "Flow": [
+              {
+                "Type": "Standard",
+                "ID": "BL_Lw84T5BOFR1w3Gl",
+                "FlowID": "FL_18",
+                "Autofill": []
+              }
+            ]
+          },
+          {
+            "Type": "Standard",
+            "ID": "BL_244AGHQlS1TlJcS",
+            "FlowID": "FL_21",
+            "Autofill": []
+          },
+          {
+            "Type": "Standard",
+            "ID": "BL_jVJhyDYDJiOCSjR",
+            "FlowID": "FL_22",
+            "Autofill": []
+          },
+          {
+            "Type": "EndSurvey",
+            "FlowID": "FL_23"
+          }
+        ],
+        "Properties": {
+          "Count": 23
+        }
+      }
+    },
+    {
+      "SurveyID": "SV_LqVaeVpiGA04qEG",
+      "Element": "SO",
+      "PrimaryAttribute": "Survey Options",
+      "SecondaryAttribute": null,
+      "TertiaryAttribute": null,
+      "Payload": {
+        "BackButton": "true",
+        "SaveAndContinue": "true",
+        "SurveyProtection": "PublicSurvey",
+        "BallotBoxStuffingPrevention": "false",
+        "NoIndex": "Yes",
+        "SecureResponseFiles": "true",
+        "SurveyExpiration": "None",
+        "Header": "",
+        "Footer": "",
+        "ProgressBarDisplay": "None",
+        "PreviousButton": "",
+        "NextButton": "",
+        "SurveyTitle": "Framing and incentive study",
+        "SurveyLanguage": "EN"
+      }
+    },
+    {
+      "SurveyID": "SV_LqVaeVpiGA04qEG",
+      "Element": "QC",
+      "PrimaryAttribute": "Survey Question Count",
+      "SecondaryAttribute": "10",
+      "TertiaryAttribute": null,
+      "Payload": null
+    },
+    {
+      "SurveyID": "SV_LqVaeVpiGA04qEG",
+      "Element": "RS",
+      "PrimaryAttribute": "RS_YPWH1bKEDC05pk6",
+      "SecondaryAttribute": "Default Response Set",
+      "TertiaryAttribute": null,
+      "Payload": null
+    },
+    {
+      "SurveyID": "SV_LqVaeVpiGA04qEG",
+      "Element": "SQ",
+      "PrimaryAttribute": "QID1",
+      "SecondaryAttribute": "Do you consent to take part?",
+      "TertiaryAttribute": null,
+      "Payload": {
+        "QuestionText": "Do you consent to take part?",
+        "DefaultChoices": false,
+        "DataExportTag": "consent",
+        "QuestionType": "MC",
+        "Selector": "SAVR",
+        "Configuration": {
+          "QuestionDescriptionOption": "UseText",
+          "TextPosition": "inline"
+        },
+        "QuestionDescription": "Do you consent to take part?",
+        "Language": {
+          "DE": {
+            "QuestionText": "Do you consent to take part?",
+            "Choices": {
+              "1": {
+                "Display": "Ja"
+              },
+              "2": {
+                "Display": "Nein"
+              }
+            }
+          }
+        },
+        "QuestionID": "QID1",
+        "DataVisibility": {
+          "Private": false,
+          "Hidden": false
+        },
+        "SubSelector": "TX",
+        "Choices": {
+          "1": {
+            "Display": "Yes"
+          },
+          "2": {
+            "Display": "No"
+          }
+        },
+        "ChoiceOrder": [
+          "1",
+          "2"
+        ],
+        "NextChoiceId": 3,
+        "RecodeValues": {
+          "1": "1",
+          "2": "0"
+        },
+        "NextAnswerId": 1,
+        "Validation": {
+          "Settings": {
+            "ForceResponse": "ON",
+            "ForceResponseType": "ON",
+            "Type": "None"
+          }
+        }
+      }
+    },
+    {
+      "SurveyID": "SV_LqVaeVpiGA04qEG",
+      "Element": "SQ",
+      "PrimaryAttribute": "QID2",
+      "SecondaryAttribute": "How old are you?",
+      "TertiaryAttribute": null,
+      "Payload": {
+        "QuestionText": "How old are you?",
+        "DefaultChoices": false,
+        "DataExportTag": "age",
+        "QuestionType": "TE",
+        "Selector": "SL",
+        "Configuration": {
+          "QuestionDescriptionOption": "UseText"
+        },
+        "QuestionDescription": "How old are you?",
+        "Language": {
+          "DE": {
+            "QuestionText": "How old are you?"
+          }
+        },
+        "QuestionID": "QID2",
+        "DataVisibility": {
+          "Private": false,
+          "Hidden": false
+        },
+        "Validation": {
+          "Settings": {
+            "ForceResponse": "ON",
+            "ForceResponseType": "ON",
+            "Type": "ContentType",
+            "ContentType": "ValidNumber",
+            "ValidNumber": {
+              "Min": "",
+              "Max": "",
+              "NumDecimals": "0"
+            }
+          }
+        }
+      }
+    },
+    {
+      "SurveyID": "SV_LqVaeVpiGA04qEG",
+      "Element": "SQ",
+      "PrimaryAttribute": "QID3",
+      "SecondaryAttribute": "Programme A saves 200 people…",
+      "TertiaryAttribute": null,
+      "Payload": {
+        "QuestionText": "Programme A saves 200 people…",
+        "DefaultChoices": false,
+        "DataExportTag": "stim_g",
+        "QuestionType": "DB",
+        "Selector": "TB",
+        "Configuration": {
+          "QuestionDescriptionOption": "UseText"
+        },
+        "QuestionDescription": "Programme A saves 200 people…",
+        "Language": {
+          "DE": {
+            "QuestionText": "Programme A saves 200 people…"
+          }
+        },
+        "QuestionID": "QID3",
+        "DataVisibility": {
+          "Private": false,
+          "Hidden": false
+        }
+      }
+    },
+    {
+      "SurveyID": "SV_LqVaeVpiGA04qEG",
+      "Element": "SQ",
+      "PrimaryAttribute": "QID4",
+      "SecondaryAttribute": "With Programme A, 400 people die…",
+      "TertiaryAttribute": null,
+      "Payload": {
+        "QuestionText": "With Programme A, 400 people die…",
+        "DefaultChoices": false,
+        "DataExportTag": "stim_l",
+        "QuestionType": "DB",
+        "Selector": "TB",
+        "Configuration": {
+          "QuestionDescriptionOption": "UseText"
+        },
+        "QuestionDescription": "With Programme A, 400 people die…",
+        "Language": {
+          "DE": {
+            "QuestionText": "With Programme A, 400 people die…"
+          }
+        },
+        "QuestionID": "QID4",
+        "DataVisibility": {
+          "Private": false,
+          "Hidden": false
+        }
+      }
+    },
+    {
+      "SurveyID": "SV_LqVaeVpiGA04qEG",
+      "Element": "SQ",
+      "PrimaryAttribute": "QID5",
+      "SecondaryAttribute": "With the ${e://Field/incentive} you were offered, the programme seems fair.",
+      "TertiaryAttribute": null,
+      "Payload": {
+        "QuestionText": "With the ${e://Field/incentive} you were offered, the programme seems fair.",
+        "DefaultChoices": false,
+        "DataExportTag": "att1",
+        "QuestionType": "MC",
+        "Selector": "SAVR",
+        "Configuration": {
+          "QuestionDescriptionOption": "UseText",
+          "TextPosition": "inline"
+        },
+        "QuestionDescription": "With the ${e://Field/incentive} you were offered, the programme seems fair.",
+        "Language": {
+          "DE": {
+            "QuestionText": "With the ${e://Field/incentive} you were offered, the programme seems fair.",
+            "Choices": {
+              "1": {
+                "Display": "Strongly disagree"
+              },
+              "2": {
+                "Display": "Disagree"
+              },
+              "3": {
+                "Display": "Neutral"
+              },
+              "4": {
+                "Display": "Agree"
+              },
+              "5": {
+                "Display": "Strongly agree"
+              }
+            }
+          }
+        },
+        "QuestionID": "QID5",
+        "DataVisibility": {
+          "Private": false,
+          "Hidden": false
+        },
+        "SubSelector": "TX",
+        "Choices": {
+          "1": {
+            "Display": "Strongly disagree"
+          },
+          "2": {
+            "Display": "Disagree"
+          },
+          "3": {
+            "Display": "Neutral"
+          },
+          "4": {
+            "Display": "Agree"
+          },
+          "5": {
+            "Display": "Strongly agree"
+          }
+        },
+        "ChoiceOrder": [
+          "1",
+          "2",
+          "3",
+          "4",
+          "5"
+        ],
+        "NextChoiceId": 6,
+        "RecodeValues": {
+          "1": "1",
+          "2": "2",
+          "3": "3",
+          "4": "4",
+          "5": "5"
+        },
+        "NextAnswerId": 1,
+        "Validation": {
+          "Settings": {
+            "ForceResponse": "OFF",
+            "ForceResponseType": "ON",
+            "Type": "None"
+          }
+        }
+      }
+    },
+    {
+      "SurveyID": "SV_LqVaeVpiGA04qEG",
+      "Element": "SQ",
+      "PrimaryAttribute": "QID6",
+      "SecondaryAttribute": "I would support Programme A.",
+      "TertiaryAttribute": null,
+      "Payload": {
+        "QuestionText": "I would support Programme A.",
+        "DefaultChoices": false,
+        "DataExportTag": "att2",
+        "QuestionType": "MC",
+        "Selector": "SAVR",
+        "Configuration": {
+          "QuestionDescriptionOption": "UseText",
+          "TextPosition": "inline"
+        },
+        "QuestionDescription": "I would support Programme A.",
+        "Language": {
+          "DE": {
+            "QuestionText": "I would support Programme A.",
+            "Choices": {
+              "1": {
+                "Display": "Strongly disagree"
+              },
+              "2": {
+                "Display": "Disagree"
+              },
+              "3": {
+                "Display": "Neutral"
+              },
+              "4": {
+                "Display": "Agree"
+              },
+              "5": {
+                "Display": "Strongly agree"
+              }
+            }
+          }
+        },
+        "QuestionID": "QID6",
+        "DataVisibility": {
+          "Private": false,
+          "Hidden": false
+        },
+        "SubSelector": "TX",
+        "Choices": {
+          "1": {
+            "Display": "Strongly disagree"
+          },
+          "2": {
+            "Display": "Disagree"
+          },
+          "3": {
+            "Display": "Neutral"
+          },
+          "4": {
+            "Display": "Agree"
+          },
+          "5": {
+            "Display": "Strongly agree"
+          }
+        },
+        "ChoiceOrder": [
+          "1",
+          "2",
+          "3",
+          "4",
+          "5"
+        ],
+        "NextChoiceId": 6,
+        "RecodeValues": {
+          "1": "1",
+          "2": "2",
+          "3": "3",
+          "4": "4",
+          "5": "5"
+        },
+        "NextAnswerId": 1,
+        "Validation": {
+          "Settings": {
+            "ForceResponse": "OFF",
+            "ForceResponseType": "ON",
+            "Type": "None"
+          }
+        }
+      }
+    },
+    {
+      "SurveyID": "SV_LqVaeVpiGA04qEG",
+      "Element": "SQ",
+      "PrimaryAttribute": "QID7",
+      "SecondaryAttribute": "Programme A is too risky.",
+      "TertiaryAttribute": null,
+      "Payload": {
+        "QuestionText": "Programme A is too risky.",
+        "DefaultChoices": false,
+        "DataExportTag": "att3",
+        "QuestionType": "MC",
+        "Selector": "SAVR",
+        "Configuration": {
+          "QuestionDescriptionOption": "UseText",
+          "TextPosition": "inline"
+        },
+        "QuestionDescription": "Programme A is too risky.",
+        "Language": {
+          "DE": {
+            "QuestionText": "Programme A is too risky.",
+            "Choices": {
+              "1": {
+                "Display": "Strongly disagree"
+              },
+              "2": {
+                "Display": "Disagree"
+              },
+              "3": {
+                "Display": "Neutral"
+              },
+              "4": {
+                "Display": "Agree"
+              },
+              "5": {
+                "Display": "Strongly agree"
+              }
+            }
+          }
+        },
+        "QuestionID": "QID7",
+        "DataVisibility": {
+          "Private": false,
+          "Hidden": false
+        },
+        "SubSelector": "TX",
+        "Choices": {
+          "1": {
+            "Display": "Strongly disagree"
+          },
+          "2": {
+            "Display": "Disagree"
+          },
+          "3": {
+            "Display": "Neutral"
+          },
+          "4": {
+            "Display": "Agree"
+          },
+          "5": {
+            "Display": "Strongly agree"
+          }
+        },
+        "ChoiceOrder": [
+          "1",
+          "2",
+          "3",
+          "4",
+          "5"
+        ],
+        "NextChoiceId": 6,
+        "RecodeValues": {
+          "1": "1",
+          "2": "2",
+          "3": "3",
+          "4": "4",
+          "5": "5"
+        },
+        "NextAnswerId": 1,
+        "Validation": {
+          "Settings": {
+            "ForceResponse": "OFF",
+            "ForceResponseType": "ON",
+            "Type": "None"
+          }
+        }
+      }
+    },
+    {
+      "SurveyID": "SV_LqVaeVpiGA04qEG",
+      "Element": "SQ",
+      "PrimaryAttribute": "QID8",
+      "SecondaryAttribute": "Thank you. This study is now closed.",
+      "TertiaryAttribute": null,
+      "Payload": {
+        "QuestionText": "Thank you. This study is now closed.",
+        "DefaultChoices": false,
+        "DataExportTag": "bye",
+        "QuestionType": "DB",
+        "Selector": "TB",
+        "Configuration": {
+          "QuestionDescriptionOption": "UseText"
+        },
+        "QuestionDescription": "Thank you. This study is now closed.",
+        "Language": {
+          "DE": {
+            "QuestionText": "Thank you. This study is now closed."
+          }
+        },
+        "QuestionID": "QID8",
+        "DataVisibility": {
+          "Private": false,
+          "Hidden": false
+        }
+      }
+    },
+    {
+      "SurveyID": "SV_LqVaeVpiGA04qEG",
+      "Element": "SQ",
+      "PrimaryAttribute": "QID9",
+      "SecondaryAttribute": "You chose not to take part in the study.",
+      "TertiaryAttribute": null,
+      "Payload": {
+        "QuestionText": "<p>You chose not to take part in the study.</p>",
+        "DefaultChoices": false,
+        "DataExportTag": "ospend_end_declined",
+        "QuestionType": "DB",
+        "Selector": "TB",
+        "Configuration": {
+          "QuestionDescriptionOption": "UseText"
+        },
+        "QuestionDescription": "You chose not to take part in the study.",
+        "Language": {
+          "DE": {
+            "QuestionText": "<p>Sie haben sich gegen die Teilnahme entschieden.</p>"
+          }
+        },
+        "QuestionID": "QID9",
+        "DataVisibility": {
+          "Private": false,
+          "Hidden": false
+        }
+      }
+    },
+    {
+      "SurveyID": "SV_LqVaeVpiGA04qEG",
+      "Element": "SQ",
+      "PrimaryAttribute": "QID10",
+      "SecondaryAttribute": "Thank you You told us you are ${q://QID2/ChoiceTextEntryValue}. Your ${e://Field/incentive} is on it",
+      "TertiaryAttribute": null,
+      "Payload": {
+        "QuestionText": "<p>Thank you</p><p>You told us you are ${q://QID2/ChoiceTextEntryValue}. Your ${e://Field/incentive} is on its way.</p>",
+        "DefaultChoices": false,
+        "DataExportTag": "ospend_end_complete",
+        "QuestionType": "DB",
+        "Selector": "TB",
+        "Configuration": {
+          "QuestionDescriptionOption": "UseText"
+        },
+        "QuestionDescription": "Thank you You told us you are ${q://QID2/ChoiceTextEntryValue}. Your ${e://Field/incentive} is on its way.",
+        "Language": {
+          "DE": {
+            "QuestionText": "<p>Vielen Dank</p><p>Sie sind ${q://QID2/ChoiceTextEntryValue} Jahre alt. Ihre Belohnung (${e://Field/incentive}) ist unterwegs.</p>"
+          }
+        },
+        "QuestionID": "QID10",
+        "DataVisibility": {
+          "Private": false,
+          "Hidden": false
+        }
+      }
+    }
+  ]
+}

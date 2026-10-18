@@ -1,0 +1,405 @@
+{
+  "SurveyEntry": {
+    "SurveyID": "SV_3MqXQgIIhoyasSh",
+    "SurveyName": "Matrix questions",
+    "SurveyDescription": "Each matrix row is its own variable <matrix name>_<row id> with its own state (§2, C2c-1): required per row, rows irrelevant with their matrix, rows usable in conditions and piping.",
+    "SurveyOwnerID": "",
+    "SurveyBrandID": "",
+    "DivisionID": null,
+    "SurveyLanguage": "EN",
+    "SurveyActiveResponseSet": "RS_kdYNhmcPq2EHiHf",
+    "SurveyStatus": "Inactive",
+    "SurveyStartDate": "0000-00-00 00:00:00",
+    "SurveyExpirationDate": "0000-00-00 00:00:00",
+    "SurveyCreationDate": "0000-00-00 00:00:00",
+    "CreatorID": "",
+    "LastModified": "0000-00-00 00:00:00",
+    "LastAccessed": "0000-00-00 00:00:00",
+    "LastActivated": "0000-00-00 00:00:00",
+    "Deleted": null
+  },
+  "SurveyElements": [
+    {
+      "SurveyID": "SV_3MqXQgIIhoyasSh",
+      "Element": "BL",
+      "PrimaryAttribute": "Survey Blocks",
+      "SecondaryAttribute": null,
+      "TertiaryAttribute": null,
+      "Payload": [
+        {
+          "Type": "Default",
+          "Description": "p1",
+          "ID": "BL_bOm7aKKs7iFkaZJ",
+          "BlockElements": [
+            {
+              "Type": "Question",
+              "QuestionID": "QID1"
+            }
+          ],
+          "Options": {
+            "BlockLocking": "false",
+            "RandomizeQuestions": "false",
+            "BlockVisibility": "Expanded"
+          }
+        },
+        {
+          "Type": "Standard",
+          "Description": "p2",
+          "ID": "BL_2emiQsWJklzTKch",
+          "BlockElements": [
+            {
+              "Type": "Question",
+              "QuestionID": "QID2"
+            },
+            {
+              "Type": "Question",
+              "QuestionID": "QID3"
+            }
+          ],
+          "Options": {
+            "BlockLocking": "false",
+            "RandomizeQuestions": "false",
+            "BlockVisibility": "Expanded"
+          }
+        },
+        {
+          "Type": "Trash",
+          "Description": "Trash / Unused Questions",
+          "ID": "BL_E1YpEcyyXfVFhVe",
+          "BlockElements": []
+        }
+      ]
+    },
+    {
+      "SurveyID": "SV_3MqXQgIIhoyasSh",
+      "Element": "FL",
+      "PrimaryAttribute": "Survey Flow",
+      "SecondaryAttribute": null,
+      "TertiaryAttribute": null,
+      "Payload": {
+        "Type": "Root",
+        "FlowID": "FL_1",
+        "Flow": [
+          {
+            "Type": "Block",
+            "ID": "BL_bOm7aKKs7iFkaZJ",
+            "FlowID": "FL_2",
+            "Autofill": []
+          },
+          {
+            "Type": "Standard",
+            "ID": "BL_2emiQsWJklzTKch",
+            "FlowID": "FL_3",
+            "Autofill": []
+          },
+          {
+            "Type": "EndSurvey",
+            "FlowID": "FL_4"
+          }
+        ],
+        "Properties": {
+          "Count": 4
+        }
+      }
+    },
+    {
+      "SurveyID": "SV_3MqXQgIIhoyasSh",
+      "Element": "SO",
+      "PrimaryAttribute": "Survey Options",
+      "SecondaryAttribute": null,
+      "TertiaryAttribute": null,
+      "Payload": {
+        "BackButton": "true",
+        "SaveAndContinue": "true",
+        "SurveyProtection": "PublicSurvey",
+        "BallotBoxStuffingPrevention": "false",
+        "NoIndex": "Yes",
+        "SecureResponseFiles": "true",
+        "SurveyExpiration": "None",
+        "Header": "",
+        "Footer": "",
+        "ProgressBarDisplay": "None",
+        "PreviousButton": "",
+        "NextButton": "",
+        "SurveyTitle": "Matrix questions",
+        "SurveyLanguage": "EN"
+      }
+    },
+    {
+      "SurveyID": "SV_3MqXQgIIhoyasSh",
+      "Element": "QC",
+      "PrimaryAttribute": "Survey Question Count",
+      "SecondaryAttribute": "3",
+      "TertiaryAttribute": null,
+      "Payload": null
+    },
+    {
+      "SurveyID": "SV_3MqXQgIIhoyasSh",
+      "Element": "RS",
+      "PrimaryAttribute": "RS_kdYNhmcPq2EHiHf",
+      "SecondaryAttribute": "Default Response Set",
+      "TertiaryAttribute": null,
+      "Payload": null
+    },
+    {
+      "SurveyID": "SV_3MqXQgIIhoyasSh",
+      "Element": "SQ",
+      "PrimaryAttribute": "QID1",
+      "SecondaryAttribute": "How do you rate these drinks?",
+      "TertiaryAttribute": null,
+      "Payload": {
+        "QuestionText": "How do you rate these drinks?",
+        "DefaultChoices": false,
+        "DataExportTag": "drink",
+        "QuestionType": "Matrix",
+        "Selector": "Likert",
+        "Configuration": {
+          "QuestionDescriptionOption": "UseText",
+          "TextPosition": "inline",
+          "ChoiceColumnWidth": 25,
+          "RepeatHeaders": "none",
+          "WhiteSpace": "OFF",
+          "MobileFirst": true
+        },
+        "QuestionDescription": "How do you rate these drinks?",
+        "Language": {},
+        "QuestionID": "QID1",
+        "DataVisibility": {
+          "Private": false,
+          "Hidden": false
+        },
+        "SubSelector": "SingleAnswer",
+        "Choices": {
+          "1": {
+            "Display": "Tea"
+          },
+          "2": {
+            "Display": "Coffee"
+          },
+          "3": {
+            "Display": "Cocoa (optional)"
+          }
+        },
+        "ChoiceOrder": [
+          "1",
+          "2",
+          "3"
+        ],
+        "ChoiceDataExportTags": {
+          "1": "tea",
+          "2": "coffee",
+          "3": "cocoa"
+        },
+        "Answers": {
+          "1": {
+            "Display": "Poor"
+          },
+          "2": {
+            "Display": "Fine"
+          },
+          "3": {
+            "Display": "Good"
+          }
+        },
+        "AnswerOrder": [
+          "1",
+          "2",
+          "3"
+        ],
+        "NextAnswerId": 4,
+        "RecodeValues": {
+          "1": "1",
+          "2": "2",
+          "3": "3"
+        },
+        "NextChoiceId": 4,
+        "Validation": {
+          "Settings": {
+            "ForceResponse": "OFF",
+            "ForceResponseType": "ON",
+            "Type": "None"
+          }
+        }
+      }
+    },
+    {
+      "SurveyID": "SV_3MqXQgIIhoyasSh",
+      "Element": "SQ",
+      "PrimaryAttribute": "QID2",
+      "SecondaryAttribute": "You rated tea . How many cups a day?",
+      "TertiaryAttribute": null,
+      "Payload": {
+        "QuestionText": "You rated tea . How many cups a day?",
+        "DefaultChoices": false,
+        "DataExportTag": "cups",
+        "QuestionType": "TE",
+        "Selector": "SL",
+        "Configuration": {
+          "QuestionDescriptionOption": "UseText"
+        },
+        "QuestionDescription": "You rated tea . How many cups a day?",
+        "Language": {},
+        "QuestionID": "QID2",
+        "DataVisibility": {
+          "Private": false,
+          "Hidden": false
+        },
+        "Validation": {
+          "Settings": {
+            "ForceResponse": "ON",
+            "ForceResponseType": "ON",
+            "Type": "ContentType",
+            "ContentType": "ValidNumber",
+            "ValidNumber": {
+              "Min": "",
+              "Max": "",
+              "NumDecimals": "0"
+            }
+          }
+        },
+        "DisplayLogic": {
+          "0": {
+            "0": {
+              "LogicType": "Question",
+              "QuestionID": "QID1",
+              "QuestionIsInLoop": "no",
+              "ChoiceLocator": "q://QID1/SelectableChoice/1/3",
+              "Operator": "Selected",
+              "QuestionIDFromLocator": "QID1",
+              "LeftOperand": "q://QID1/SelectableChoice/1/3",
+              "Type": "Expression",
+              "Description": "QID1 choice 3 is Selected"
+            },
+            "Type": "If"
+          },
+          "Type": "BooleanExpression",
+          "inPage": false
+        }
+      }
+    },
+    {
+      "SurveyID": "SV_3MqXQgIIhoyasSh",
+      "Element": "SQ",
+      "PrimaryAttribute": "QID3",
+      "SecondaryAttribute": "When do you drink cocoa?",
+      "TertiaryAttribute": null,
+      "Payload": {
+        "QuestionText": "When do you drink cocoa?",
+        "DefaultChoices": false,
+        "DataExportTag": "when",
+        "QuestionType": "Matrix",
+        "Selector": "Likert",
+        "Configuration": {
+          "QuestionDescriptionOption": "UseText",
+          "TextPosition": "inline",
+          "ChoiceColumnWidth": 25,
+          "RepeatHeaders": "none",
+          "WhiteSpace": "OFF",
+          "MobileFirst": true
+        },
+        "QuestionDescription": "When do you drink cocoa?",
+        "Language": {},
+        "QuestionID": "QID3",
+        "DataVisibility": {
+          "Private": false,
+          "Hidden": false
+        },
+        "SubSelector": "SingleAnswer",
+        "Choices": {
+          "1": {
+            "Display": "In the morning"
+          },
+          "2": {
+            "Display": "In the evening"
+          }
+        },
+        "ChoiceOrder": [
+          "1",
+          "2"
+        ],
+        "ChoiceDataExportTags": {
+          "1": "morning",
+          "2": "evening"
+        },
+        "Answers": {
+          "1": {
+            "Display": "Never"
+          },
+          "2": {
+            "Display": "Sometimes"
+          },
+          "3": {
+            "Display": "Daily"
+          }
+        },
+        "AnswerOrder": [
+          "1",
+          "2",
+          "3"
+        ],
+        "NextAnswerId": 4,
+        "RecodeValues": {
+          "1": "1",
+          "2": "2",
+          "3": "3"
+        },
+        "NextChoiceId": 3,
+        "Validation": {
+          "Settings": {
+            "ForceResponse": "OFF",
+            "ForceResponseType": "ON",
+            "Type": "None"
+          }
+        },
+        "DisplayLogic": {
+          "0": {
+            "0": {
+              "LogicType": "Question",
+              "QuestionID": "QID1",
+              "QuestionIsInLoop": "no",
+              "ChoiceLocator": "q://QID1/SelectableChoice/3/1",
+              "Operator": "Selected",
+              "QuestionIDFromLocator": "QID1",
+              "LeftOperand": "q://QID1/SelectableChoice/3/1",
+              "Type": "Expression",
+              "Description": "QID1 choice 1 is Selected"
+            },
+            "Type": "If"
+          },
+          "1": {
+            "0": {
+              "LogicType": "Question",
+              "QuestionID": "QID1",
+              "QuestionIsInLoop": "no",
+              "ChoiceLocator": "q://QID1/SelectableChoice/3/2",
+              "Operator": "Selected",
+              "QuestionIDFromLocator": "QID1",
+              "LeftOperand": "q://QID1/SelectableChoice/3/2",
+              "Type": "Expression",
+              "Description": "QID1 choice 2 is Selected"
+            },
+            "Type": "If",
+            "Conjuction": "Or"
+          },
+          "2": {
+            "0": {
+              "LogicType": "Question",
+              "QuestionID": "QID1",
+              "QuestionIsInLoop": "no",
+              "ChoiceLocator": "q://QID1/SelectableChoice/3/3",
+              "Operator": "Selected",
+              "QuestionIDFromLocator": "QID1",
+              "LeftOperand": "q://QID1/SelectableChoice/3/3",
+              "Type": "Expression",
+              "Description": "QID1 choice 3 is Selected"
+            },
+            "Type": "If",
+            "Conjuction": "Or"
+          },
+          "Type": "BooleanExpression",
+          "inPage": false
+        }
+      }
+    }
+  ]
+}

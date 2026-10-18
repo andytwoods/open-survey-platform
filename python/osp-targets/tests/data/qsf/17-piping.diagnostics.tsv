@@ -1,0 +1,24 @@
+info	Survey.id	/id
+loss	Survey.version	/version
+warning	Metadata.description	/metadata/description
+info	Survey.choiceLists	/choiceLists
+info	Block.id	/blocks/0/id
+info	Page.id	/blocks/0/pages/0/id
+info	SingleQuestion.choiceList	/blocks/0/pages/0/items/0/choiceList
+info	SingleQuestion.choiceList	/blocks/0/pages/0/items/4/choiceList
+info	Block.id	/blocks/1/id
+info	Page.id	/blocks/1/pages/0/id
+info	TextQuestion.showIf	/blocks/1/pages/0/items/0/showIf
+info	Compare.kind	/blocks/1/pages/0/items/0/showIf
+info	Block.id	/blocks/2/id
+info	Page.id	/blocks/2/pages/0/id
+info	Block.id	/blocks/3/id
+info	Page.id	/blocks/3/pages/0/id
+info	BranchNode.if	/flow/2/if
+info	Compare.kind	/flow/2/if
+info	$choice.code	/choiceLists/0/choices/0/value
+info	$choice.code	/choiceLists/0/choices/1/value
+info	$choice.code	/choiceLists/0/choices/2/value
+info	$choice.code	/choiceLists/1/choices/0/value
+info	$choice.code	/choiceLists/1/choices/1/value
+warning	$missingStates	
