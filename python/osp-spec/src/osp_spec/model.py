@@ -8,7 +8,9 @@ Conventions:
   defaults to the `id`. Names are unique across questions and variables.
 - Collections are lists of objects carrying their own `id` (not maps keyed by id), so the
   validator can report a duplicate id instead of JSON silently dropping it.
-- Translatable strings (`Text`) are a plain string or a `{language: string}` map.
+- Translatable strings (`Text`) are a plain string, a rich-text tree (`RichText`,
+  planning/rich-text.md §3) or a `{language: string | RichText}` map. `PlainText` is the
+  same without the tree, for fields that are shown where formatting cannot be (the title).
 - Fields that must be true/false (`showIf`, `constraint`, branch `if`, quota `when`) are
   typed `Condition`; value expressions (computed `expr`) are `Expression`. Both are the
   same `osp-expr` AST in JSON; the validator type-checks a `Condition` as boolean.
@@ -27,6 +29,7 @@ from pydantic import (
     StrictInt,
     StrictStr,
     StringConstraints,
+    field_validator,
 )
 
 from .expr import Condition, Expression
@@ -37,7 +40,6 @@ type Identifier = Annotated[
     str, StringConstraints(pattern=r"^[A-Za-z_][A-Za-z0-9_]*$", min_length=1, max_length=64)
 ]
 type LanguageTag = Annotated[str, StringConstraints(pattern=r"^[A-Za-z]{2,3}(-[A-Za-z0-9]{1,8})*$")]
-type Text = StrictStr | dict[LanguageTag, StrictStr]
 type ChoiceValue = StrictInt | StrictStr
 type Order = Literal["fixed", "shuffle"]
 # A decimal written as text, so no binary float sneaks in (semantics.md §2).
@@ -63,6 +65,86 @@ class Model(BaseModel):
         validate_by_alias=True,
         serialize_by_alias=True,
     )
+
+
+# --- Rich text (planning/rich-text.md §3) ----------------------------------------------
+#
+# A closed tree: paragraphs, headings 1–3 and single-level lists of inline runs. A run is
+# text with optional marks (bold, italic), an https link and a language span; `{pipe: id}`
+# pipes an answer (the same identifiers and built-ins as `${id}` in a plain string);
+# `{br: true}` is a line break. Nothing else can be stored: no HTML, no styles, no
+# nesting. The validator (`osp_spec.richtext.check_rich`) adds link, length and level
+# rules; the renderer builds Svelte text nodes from it, never HTML.
+
+type Mark = Literal["b", "i"]
+MAX_HREF_LENGTH = 2000
+
+
+class TextRun(Model):
+    """A run of text: `marks` ⊆ {b, i}; `href` (an absolute https URL) makes it a link;
+    `lang` is a per-run language span."""
+
+    text: StrictStr
+    marks: list[Mark] | None = None
+    href: Annotated[str, StringConstraints(max_length=MAX_HREF_LENGTH)] | None = None
+    lang: LanguageTag | None = None
+
+    @field_validator("marks")
+    @classmethod
+    def _unique_marks(cls, marks: list[str] | None) -> list[str] | None:
+        if marks is not None and len(set(marks)) != len(marks):
+            raise ValueError("a mark may appear once per run")
+        return marks
+
+
+class PipeRun(Model):
+    """A piped value: a question or variable id, or a `$` built-in (semantics.md §8)."""
+
+    pipe: Annotated[str, StringConstraints(min_length=1, max_length=64)]
+
+
+class LineBreak(Model):
+    br: Literal[True]
+
+
+type Inline = TextRun | PipeRun | LineBreak
+
+
+class Paragraph(Model):
+    type: Literal["p"]
+    content: list[Inline]
+
+
+class Heading(Model):
+    """A heading relative to the page (rendered as h3–h5 under the page's h2)."""
+
+    type: Literal["h"]
+    level: StrictInt = Field(ge=1, le=3)
+    content: list[Inline]
+
+
+class RichList(Model):
+    """A bulleted (`ul`) or numbered (`ol`) list; one inline run per item, no nesting."""
+
+    type: Literal["ul", "ol"]
+    items: list[list[Inline]]
+
+
+type RichBlock = Annotated[Paragraph | Heading | RichList, Field(discriminator="type")]
+
+
+class RichText(Model):
+    """The rich-text variant of `Text`: `{"type": "rich", "blocks": [...]}`. `type` and
+    `blocks` are not language tags, so the union with a translation map is unambiguous."""
+
+    type: Literal["rich"]
+    blocks: list[RichBlock]
+
+
+# A translatable text: plain, rich, or per language (each plain or rich).
+type Text = StrictStr | RichText | dict[LanguageTag, StrictStr | RichText]
+# A translatable text that can only be plain (the survey title, lead decision 6).
+type PlainText = StrictStr | dict[LanguageTag, StrictStr]
 
 
 # --- Provenance (planning/question-bank.md §2.3) ----------------------------------------
@@ -141,7 +223,7 @@ class Instrument(Model):
 
 
 class Metadata(Model):
-    title: Text
+    title: PlainText  # the <title>, list entry and export name: never rich (lead decision 6)
     description: Text | None = None
     languages: list[LanguageTag] = Field(min_length=1)
     defaultLanguage: LanguageTag | None = None  # first of `languages` when omitted

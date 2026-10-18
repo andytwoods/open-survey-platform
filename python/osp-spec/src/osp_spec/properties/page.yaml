@@ -6,6 +6,7 @@ icon: file
 properties:
   title:
     kind: text
+    rich: inline
     label: { en: "Title" }
     translatable: true
     group: Basics

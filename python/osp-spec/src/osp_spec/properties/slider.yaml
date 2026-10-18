@@ -7,6 +7,7 @@ icon: sliders-horizontal
 properties:
   label:
     kind: richtext
+    rich: stem
     label: { en: "Question text" }
     translatable: true
     required: true
@@ -15,6 +16,7 @@ properties:
     help: { en: "What participants see. Use ${id} to pipe in an earlier answer." }
   help:
     kind: richtext
+    rich: stem
     label: { en: "Help text" }
     translatable: true
     group: Basics
@@ -39,12 +41,14 @@ properties:
     help: { en: "Answers are the left end plus a whole number of steps." }
   minLabel:
     kind: text
+    rich: inline
     label: { en: "Left label" }
     translatable: true
     group: Basics
     help: { en: "Text under the left end, e.g. \"Not at all\"." }
   maxLabel:
     kind: text
+    rich: inline
     label: { en: "Right label" }
     translatable: true
     group: Basics
@@ -76,6 +80,7 @@ properties:
     help: { en: "A condition an answer must satisfy. Checked only on answered values." }
   constraintMessage:
     kind: text
+    rich: inline
     label: { en: "Constraint message" }
     translatable: true
     group: Validation

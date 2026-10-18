@@ -22,7 +22,7 @@ from typing import Annotated, Any, Literal
 
 from pydantic import BaseModel, ConfigDict, Field, StrictStr, StringConstraints, ValidationError
 
-from .model import Model, Text
+from .model import Model, PlainText
 
 THEME_VERSION = "osp-theme/0.1"
 THEME_SCHEMA_ID = f"urn:osp:schema:{THEME_VERSION.replace('/', ':')}:theme"
@@ -73,7 +73,7 @@ class Theme(Model):
     preset: PresetId | None = None  # the preset this theme started from
     colours: Colours
     logoAssetId: AssetId | None = None  # an asset uploaded to and served from our origin
-    headerText: Text | None = None
+    headerText: PlainText | None = None  # a one-line banner: never rich
     font: FontId = "system-sans"
     baseSize: int = Field(default=16, ge=12, le=32)  # px; inputs use it, guard needs >= 16
     lineSpacing: float = Field(default=1.5, ge=1.0, le=2.5)

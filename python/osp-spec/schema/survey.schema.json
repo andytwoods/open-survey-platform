@@ -1604,6 +1604,37 @@
         }
       ]
     },
+    "Heading": {
+      "additionalProperties": false,
+      "description": "A heading relative to the page (rendered as h3–h5 under the page's h2).",
+      "properties": {
+        "content": {
+          "items": {
+            "$ref": "#/$defs/Inline"
+          },
+          "title": "Content",
+          "type": "array"
+        },
+        "level": {
+          "maximum": 3,
+          "minimum": 1,
+          "title": "Level",
+          "type": "integer"
+        },
+        "type": {
+          "const": "h",
+          "title": "Type",
+          "type": "string"
+        }
+      },
+      "required": [
+        "type",
+        "level",
+        "content"
+      ],
+      "title": "Heading",
+      "type": "object"
+    },
     "HexColour": {
       "pattern": "^#[0-9a-fA-F]{6}$",
       "type": "string"
@@ -2235,6 +2266,19 @@
       "title": "If",
       "type": "object"
     },
+    "Inline": {
+      "anyOf": [
+        {
+          "$ref": "#/$defs/TextRun"
+        },
+        {
+          "$ref": "#/$defs/PipeRun"
+        },
+        {
+          "$ref": "#/$defs/LineBreak"
+        }
+      ]
+    },
     "Instrument": {
       "additionalProperties": false,
       "description": "One instrument the survey uses (lead decision 1, question-bank.md): derived from the\n`source` fields at publish (`osp_spec.bank.with_instruments`), so a published version\nstays self-describing even if the bank item is later deleted.",
@@ -2567,6 +2611,28 @@
       ],
       "type": "string"
     },
+    "LineBreak": {
+      "additionalProperties": false,
+      "properties": {
+        "br": {
+          "const": true,
+          "title": "Br",
+          "type": "boolean"
+        }
+      },
+      "required": [
+        "br"
+      ],
+      "title": "LineBreak",
+      "type": "object"
+    },
+    "Mark": {
+      "enum": [
+        "b",
+        "i"
+      ],
+      "type": "string"
+    },
     "MatrixQuestion": {
       "additionalProperties": false,
       "description": "Rows of single-choice sub-questions sharing one choice list (the columns).\n\nThe matrix itself stores no value: each row is its own variable with its own state\n(semantics.md §2, C2c-1). Exactly one of `choiceList` / `choices` is set, as for choice\nquestions. Rows have no `showIf` or `constraint` of their own (C2c-2).",
@@ -2801,7 +2867,7 @@
           "title": "License"
         },
         "title": {
-          "$ref": "#/$defs/Text"
+          "$ref": "#/$defs/PlainText"
         }
       },
       "required": [
@@ -3331,6 +3397,62 @@
       "title": "Palette",
       "type": "object"
     },
+    "Paragraph": {
+      "additionalProperties": false,
+      "properties": {
+        "content": {
+          "items": {
+            "$ref": "#/$defs/Inline"
+          },
+          "title": "Content",
+          "type": "array"
+        },
+        "type": {
+          "const": "p",
+          "title": "Type",
+          "type": "string"
+        }
+      },
+      "required": [
+        "type",
+        "content"
+      ],
+      "title": "Paragraph",
+      "type": "object"
+    },
+    "PipeRun": {
+      "additionalProperties": false,
+      "description": "A piped value: a question or variable id, or a `$` built-in (semantics.md §8).",
+      "properties": {
+        "pipe": {
+          "maxLength": 64,
+          "minLength": 1,
+          "title": "Pipe",
+          "type": "string"
+        }
+      },
+      "required": [
+        "pipe"
+      ],
+      "title": "PipeRun",
+      "type": "object"
+    },
+    "PlainText": {
+      "anyOf": [
+        {
+          "type": "string"
+        },
+        {
+          "additionalProperties": {
+            "type": "string"
+          },
+          "propertyNames": {
+            "$ref": "#/$defs/LanguageTag"
+          },
+          "type": "object"
+        }
+      ]
+    },
     "Question": {
       "discriminator": {
         "mapping": {
@@ -3612,6 +3734,82 @@
         "kind"
       ],
       "title": "Retention",
+      "type": "object"
+    },
+    "RichBlock": {
+      "discriminator": {
+        "mapping": {
+          "h": "#/$defs/Heading",
+          "ol": "#/$defs/RichList",
+          "p": "#/$defs/Paragraph",
+          "ul": "#/$defs/RichList"
+        },
+        "propertyName": "type"
+      },
+      "oneOf": [
+        {
+          "$ref": "#/$defs/Paragraph"
+        },
+        {
+          "$ref": "#/$defs/Heading"
+        },
+        {
+          "$ref": "#/$defs/RichList"
+        }
+      ]
+    },
+    "RichList": {
+      "additionalProperties": false,
+      "description": "A bulleted (`ul`) or numbered (`ol`) list; one inline run per item, no nesting.",
+      "properties": {
+        "items": {
+          "items": {
+            "items": {
+              "$ref": "#/$defs/Inline"
+            },
+            "type": "array"
+          },
+          "title": "Items",
+          "type": "array"
+        },
+        "type": {
+          "enum": [
+            "ul",
+            "ol"
+          ],
+          "title": "Type",
+          "type": "string"
+        }
+      },
+      "required": [
+        "type",
+        "items"
+      ],
+      "title": "RichList",
+      "type": "object"
+    },
+    "RichText": {
+      "additionalProperties": false,
+      "description": "The rich-text variant of `Text`: `{\"type\": \"rich\", \"blocks\": [...]}`. `type` and\n`blocks` are not language tags, so the union with a translation map is unambiguous.",
+      "properties": {
+        "blocks": {
+          "items": {
+            "$ref": "#/$defs/RichBlock"
+          },
+          "title": "Blocks",
+          "type": "array"
+        },
+        "type": {
+          "const": "rich",
+          "title": "Type",
+          "type": "string"
+        }
+      },
+      "required": [
+        "type",
+        "blocks"
+      ],
+      "title": "RichText",
       "type": "object"
     },
     "Settings": {
@@ -4070,8 +4268,18 @@
           "type": "string"
         },
         {
+          "$ref": "#/$defs/RichText"
+        },
+        {
           "additionalProperties": {
-            "type": "string"
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "$ref": "#/$defs/RichText"
+              }
+            ]
           },
           "propertyNames": {
             "$ref": "#/$defs/LanguageTag"
@@ -4219,6 +4427,60 @@
       "title": "TextQuestion",
       "type": "object"
     },
+    "TextRun": {
+      "additionalProperties": false,
+      "description": "A run of text: `marks` ⊆ {b, i}; `href` (an absolute https URL) makes it a link;\n`lang` is a per-run language span.",
+      "properties": {
+        "href": {
+          "anyOf": [
+            {
+              "maxLength": 2000,
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Href"
+        },
+        "lang": {
+          "anyOf": [
+            {
+              "$ref": "#/$defs/LanguageTag"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null
+        },
+        "marks": {
+          "anyOf": [
+            {
+              "items": {
+                "$ref": "#/$defs/Mark"
+              },
+              "type": "array"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Marks"
+        },
+        "text": {
+          "title": "Text",
+          "type": "string"
+        }
+      },
+      "required": [
+        "text"
+      ],
+      "title": "TextRun",
+      "type": "object"
+    },
     "Theme": {
       "additionalProperties": false,
       "description": "A survey theme. Fields are design tokens; there is no free-form CSS here.",
@@ -4274,7 +4536,7 @@
         "headerText": {
           "anyOf": [
             {
-              "$ref": "#/$defs/Text"
+              "$ref": "#/$defs/PlainText"
             },
             {
               "type": "null"
