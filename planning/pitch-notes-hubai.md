@@ -54,6 +54,7 @@
 ## What went wrong; HubAI handled it
 - Worker Claude exited instantly: blocked after 3 tries
 - Lead Mac took over; 3 tasks done on attempt 3
+- Worker PC went silent: task requeued at 15 min
 - Windows workers found 26 Windows-only test failures
 - Mac lead found Mac-only bug (hidden Bank pane)
 - History restored mid-run; lead merged onto it
