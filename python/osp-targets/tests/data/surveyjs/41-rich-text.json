@@ -1,0 +1,125 @@
+{
+  "title": "Rich text in every field",
+  "description": "planning/rich-text.md §3 (task RT2): the rich-text model end to end. Block fields (a note, the consent text, the end message) carry headings and lists; stems (labels, help) carry marks, links and pipes; inline fields (choice, row and column labels, slider end labels, the page title, the constraint message, the consent buttons) carry one paragraph. Pipes sit inside formatting. Arabic is a second language with a rich RTL label; one label has no Arabic and falls back.",
+  "clearInvisibleValues": "onHidden",
+  "pages": [
+    {
+      "name": "p1_page",
+      "title": {
+        "default": "Part one",
+        "ar": "الجزء الأول"
+      },
+      "elements": [
+        {
+          "name": "intro",
+          "type": "html",
+          "html": {
+            "default": "<h3>Welcome</h3><p>Please answer <strong>every</strong> question.<br />It takes <em>two minutes</em>.</p><h4>What you need</h4><ul><li>Your <strong><em>participant code</em></strong></li><li>The <a href=\"https://example.org/study\" target=\"_blank\" rel=\"noopener noreferrer\">study page</a> open</li></ul><p><span lang=\"fr\">Merci</span> and thank you.</p>",
+            "ar": "<h3>مرحباً</h3><p>يرجى الإجابة على <strong>كل</strong> سؤال. <span lang=\"en\"><em>two minutes</em></span></p><ul><li><strong>رمز المشارك</strong></li><li><a href=\"https://example.org/study\" target=\"_blank\" rel=\"noopener noreferrer\">صفحة الدراسة</a></li></ul>"
+          }
+        },
+        {
+          "name": "name",
+          "type": "text",
+          "title": "Your name (as on the sheet)",
+          "description": "Either:\n\n- first name only, or\n- a nickname",
+          "isRequired": true
+        },
+        {
+          "name": "fav",
+          "type": "radiogroup",
+          "title": "Pick a fruit",
+          "choices": [
+            {
+              "value": "apple",
+              "text": {
+                "default": "Apple",
+                "ar": "تفاحة"
+              }
+            },
+            {
+              "value": "pear",
+              "text": {
+                "default": "Pear (green)",
+                "ar": "كمثرى"
+              }
+            },
+            {
+              "value": "other",
+              "text": {
+                "default": "Something else",
+                "ar": "شيء آخر"
+              }
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "p2_page",
+      "title": "Part two for {name}",
+      "elements": [
+        {
+          "name": "echo",
+          "type": "html",
+          "html": "<p><strong>Hello </strong>{name}<strong>, you chose </strong>{fav}.</p><ol><li>Trial </li><li>Language </li></ol>"
+        },
+        {
+          "name": "rate",
+          "type": "text",
+          "title": {
+            "default": "Rate {fav} from 1 to 5",
+            "ar": "قيّم {fav} من ١ إلى ٥"
+          },
+          "inputType": "number",
+          "step": 1,
+          "validators": [
+            {
+              "type": "regex",
+              "regex": "^-?[0-9]+$"
+            },
+            {
+              "type": "expression",
+              "expression": "{rate} empty or {rate} notempty and {rate} <= 5",
+              "text": "Enter 5 or less for {fav}"
+            }
+          ]
+        },
+        {
+          "name": "grid",
+          "type": "matrix",
+          "title": "How much do you agree?",
+          "columns": [
+            {
+              "value": 1,
+              "text": "Disagree"
+            },
+            {
+              "value": 2,
+              "text": "Agree"
+            }
+          ],
+          "rows": [
+            {
+              "value": "taste",
+              "text": "{fav} tastes good"
+            },
+            {
+              "value": "price",
+              "text": "It is cheap"
+            }
+          ]
+        },
+        {
+          "name": "mood",
+          "type": "slider",
+          "title": "How do you feel?",
+          "min": 0,
+          "max": 10,
+          "step": 1
+        }
+      ]
+    }
+  ],
+  "completedHtml": "<h3>Finished</h3><p>Goodbye, {name}<strong>!</strong></p><h3>All <strong>done</strong></h3><p>Thank you, {name}.</p><ul><li>Your fruit: {fav}</li><li>Your rating: {rate}</li></ul>"
+}

@@ -1,0 +1,26 @@
+loss	Survey.version	/version
+info	Survey.choiceLists	/choiceLists
+info	Survey.blocks	/blocks
+info	Block.id	/blocks/0/id
+info	Block.pages	/blocks/0/pages
+info	SingleQuestion.choiceList	/blocks/0/pages/0/items/0/choiceList
+info	Block.id	/blocks/1/id
+info	Block.pages	/blocks/1/pages
+info	IntegerQuestion.type	/blocks/1/pages/0/items/0
+info	Block.id	/blocks/2/id
+info	Block.pages	/blocks/2/pages
+info	IntegerQuestion.type	/blocks/2/pages/0/items/0
+info	Block.id	/blocks/3/id
+info	Block.pages	/blocks/3/pages
+info	IntegerQuestion.type	/blocks/3/pages/0/items/0
+info	Block.id	/blocks/4/id
+info	Block.pages	/blocks/4/pages
+info	Survey.flow	/flow
+info	BlockNode.type	/flow/0
+warning	RandomiserNode.type	/flow/1
+warning	RandomiserNode.children	/flow/1/children
+info	BlockNode.type	/flow/1/children/0
+info	BlockNode.type	/flow/1/children/1
+info	BlockNode.type	/flow/1/children/2
+info	BlockNode.type	/flow/2
+warning	$missingStates	

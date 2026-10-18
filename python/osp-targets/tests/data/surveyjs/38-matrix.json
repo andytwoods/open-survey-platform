@@ -1,0 +1,107 @@
+{
+  "title": "Matrix questions",
+  "description": "Each matrix row is its own variable <matrix name>_<row id> with its own state (§2, C2c-1): required per row, rows irrelevant with their matrix, rows usable in conditions and piping.",
+  "clearInvisibleValues": "onHidden",
+  "pages": [
+    {
+      "name": "p1_page",
+      "elements": [
+        {
+          "name": "drink",
+          "type": "matrix",
+          "title": "How do you rate these drinks?",
+          "columns": [
+            {
+              "value": 1,
+              "text": "Poor"
+            },
+            {
+              "value": 2,
+              "text": "Fine"
+            },
+            {
+              "value": 3,
+              "text": "Good"
+            }
+          ],
+          "rows": [
+            {
+              "value": "tea",
+              "text": "Tea"
+            },
+            {
+              "value": "coffee",
+              "text": "Coffee"
+            },
+            {
+              "value": "cocoa",
+              "text": "Cocoa (optional)"
+            }
+          ],
+          "validators": [
+            {
+              "type": "expression",
+              "expression": "{drink.tea} notempty and {drink.coffee} notempty"
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "p2_page",
+      "elements": [
+        {
+          "name": "cups",
+          "type": "text",
+          "title": "You rated tea {drink.tea}. How many cups a day?",
+          "inputType": "number",
+          "step": 1,
+          "visibleIf": "{drink.tea} = 3",
+          "isRequired": true,
+          "validators": [
+            {
+              "type": "regex",
+              "regex": "^-?[0-9]+$"
+            }
+          ]
+        },
+        {
+          "name": "when",
+          "type": "matrix",
+          "title": "When do you drink cocoa?",
+          "columns": [
+            {
+              "value": "never",
+              "text": "Never"
+            },
+            {
+              "value": "sometimes",
+              "text": "Sometimes"
+            },
+            {
+              "value": "daily",
+              "text": "Daily"
+            }
+          ],
+          "rows": [
+            {
+              "value": "morning",
+              "text": "In the morning"
+            },
+            {
+              "value": "evening",
+              "text": "In the evening"
+            }
+          ],
+          "visibleIf": "{drink.cocoa} notempty",
+          "validators": [
+            {
+              "type": "expression",
+              "expression": "{when.evening} notempty"
+            }
+          ]
+        }
+      ]
+    }
+  ]
+}

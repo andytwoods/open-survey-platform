@@ -1,0 +1,16 @@
+loss	Survey.version	/version
+info	Survey.choiceLists	/choiceLists
+info	Survey.blocks	/blocks
+info	Block.id	/blocks/0/id
+info	Block.pages	/blocks/0/pages
+info	Block.id	/blocks/1/id
+info	Block.pages	/blocks/1/pages
+info	IntegerQuestion.type	/blocks/1/pages/0/items/0
+info	Compare.kind	/blocks/1/pages/0/items/0/showIf
+info	MatrixQuestion.choiceList	/blocks/1/pages/0/items/1/choiceList
+info	Survey.flow	/flow
+info	BlockNode.type	/flow/0
+info	BlockNode.type	/flow/1
+info	$matrix.someRowsRequired	/blocks/0/pages/0/items/0/rows
+info	$matrix.someRowsRequired	/blocks/1/pages/0/items/1/rows
+warning	$missingStates	
