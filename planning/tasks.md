@@ -192,11 +192,11 @@ Plan V: `planning/results-viewer.md` (decisions V-D1–V-D10). V1 publishes the 
 | EN2 | Declarative end redirects with an accessible delay | EN1 | §6 EN2 (security tests mandatory) | done |
 | EN3 | Closing, availability windows and response limit | EX1 | §6 EN3 | todo |
 | EN4 | Outcome column + quota place release on non-complete outcomes | EN1 | §6 EN4, with lead decision 5 (branch agent/EN4: migration 0011 `responses.outcome` + `osp-cli backfill-outcomes`, submit releases quota places on non-complete outcomes, results `outcomes` counts + "By outcome" header, status filter in SQL) | done |
-| EN5 | Show the participant's answers after submit | EN1 | §6 EN5 | todo |
+| EN5 | Show the participant's answers after submit | EN1 | §6 EN5 | done |
 | EN6 | Quota editor in the builder | — | §6 EN6 | todo |
 | QB2 | Question bank: spec, `source`, `metadata.instruments`, osp-instruments package + verified bundle | QB1 | `planning/question-bank.md` §8 item 1 + lead decision 7 (verify every class A/B row online, URL + date; draft letter for the owner) | done |
-| QB3 | Question bank ops | QB2 | §8 item 2 | review |
-| QB4 | Question bank store, API, permissions (migration 0011) | QB2 | §8 item 3 | todo |
+| QB3 | Question bank ops | QB2 | §8 item 2 | done |
+| QB4 | Question bank store, API, permissions (migration 0011) | QB2 | §8 item 3 | done |
 | QB5 | Question bank in the builder | QB3, QB4 | §8 item 4 | todo |
 | QB6 | Bundled translations | QB2 | §8 item 5 | todo |
 | MM1 | Images, audio and video in surveys (by URL + a pluggable host media library) | — | **Plan first** (`planning/media.md`, post for lead review before coding). Media on question text/help, notes, choices (image choices) and matrix columns: `Media {kind: image/audio/video, url, alt (required for images), caption, transcript/captions URL (required for audio/video), width/height hint}`; added by **URL** in the builder; plus a **media provider contract** so a host backend can serve a list: `GET <host>/media?query=&cursor=` (via the same signed host proxy as the API, documented in `docs/hosting.md`) returning items {id, kind, url, thumbUrl, alt, …}, with the builder's media picker using it when the host config provides `links.mediaLibrary`, else URL-only; validation (https only, allowed origins list per deployment, CSP `img-src`/`media-src` generated from it, size/duration hints); participant rendering responsive + accessible (alt, captions track, transcript link, no autoplay with sound, reduced motion); research features: "must play to the end before Next", play/pause/seek counts + time-to-first-play recorded as paradata in the event log (inside the reproducibility package), preload next page's media; offline/slow network behaviour; exports (XLSForm `image`/`audio`/`video` columns; LSS where possible; loss diagnostics otherwise); tests across spec/engine/runtime/builder/e2e incl. 320 px and axe | todo |
