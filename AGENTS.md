@@ -71,6 +71,7 @@ vite build (builder)              # page entries + manifest.json in web/builder/
 make contract-check               # OpenAPI + TS client regenerated in memory; fail if stale
 make licence-check                # Python + JS licences vs licence-policy.toml
 make harness-quick                # Enketo equivalence (Playwright) on touched fixtures (stub for now)
+make demo-e2e                     # the serverless Pages demo, static build, every /api request blocked
 ```
 
 Changed an endpoint? Run `make contract` and commit `contract/openapi.json` and `web/api-client/src/schema.d.ts`.

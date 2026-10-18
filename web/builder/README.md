@@ -125,3 +125,23 @@ tweak would leave stale images behind):
   native Windows checkout can also draw `-win32` itself.
 
 Review the diffs by eye before committing (`git diff --stat` shows which changed).
+
+## Serverless demo (GitHub Pages)
+
+`demo-site/` is a second, separate build of the same pages (`vite.demo.config.ts`, task
+DEMO2) that runs with no server: the docs site serves it at `/demo/` (the editor on an
+invented "Coffee and focus" study, `demo-site/study.json`) and `/demo/take/` (the
+participant app on that study, in preview mode). `src/lib/demo/` answers every API call in
+the page (`setLocalBackend` in `src/lib/api.ts`): survey edits through `@osp/ops`
+(`MemorySurveyTransport`, undo/redo from stored inverses), diagnostics from `@osp/spec`,
+Preview compiled by `@osp/engine`, and static metadata (property schemas, retention
+options, the bundled bank instruments, theme presets…) generated from the Python packages
+through the real API by `scripts/demo_data.py` into `demo-site/public/data/` (gitignored).
+What needs a server (publish, results, imports, exports, bank sharing, the theme library)
+answers "Not available in the demo". The draft follows you between the demo's pages
+(sessionStorage) and a reload starts afresh.
+
+- `make demo-build`: the data file, then `build-demo/` (relative URLs: any base path).
+- `make docs-demo`: `make docs` plus `build-demo/` copied to `.build/site/demo/`.
+- `make demo-e2e` (in `make check`): `e2e-demo/`, the build served by a plain static file
+  server at `/open-survey-platform/demo/` with every `/api` request aborted.
