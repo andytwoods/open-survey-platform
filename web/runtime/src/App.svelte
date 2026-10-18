@@ -185,7 +185,22 @@
 			// Keep the secret out of the address bar, history and bookmarks.
 			history.replaceState(null, '', location.pathname + location.search);
 		}
-		return { resumeToken, urlParams: Object.fromEntries(params.filter(([k]) => k !== 's')) };
+		// EX2: a return from an external task carries osp_token and the task's return values.
+		const query = new URLSearchParams(location.search);
+		const ospToken = query.get('osp_token');
+		let externalReturn: { token: string; values: Record<string, string> } | null = null;
+		if (ospToken) {
+			const values: Record<string, string> = {};
+			for (const [k, v] of query) if (k !== 's' && k !== 'osp_token' && k !== 'osp_return') values[k] = v;
+			externalReturn = { token: ospToken, values };
+			// Clean osp_* and the return values out of the address bar, keeping only `s`.
+			const s = query.get('s');
+			history.replaceState(null, '', location.pathname + (s ? `?s=${encodeURIComponent(s)}` : ''));
+		}
+		const urlParams = Object.fromEntries(
+			params.filter(([k]) => k !== 's' && k !== 'osp_token' && k !== 'osp_return')
+		);
+		return { resumeToken, urlParams, externalReturn };
 	}
 
 	/** The host's API prefix (D15), from `<div id="app" data-api-base="…">`. */
@@ -201,7 +216,9 @@
 
 	async function start() {
 		bootError = null;
-		const { resumeToken, urlParams } = preview ? { resumeToken: null, urlParams: {} } : readUrl();
+		const { resumeToken, urlParams, externalReturn } = preview
+			? { resumeToken: null, urlParams: {}, externalReturn: null }
+			: readUrl();
 		if (preview) slug = preview.slug;
 		if (!slug) {
 			bootError = new BootError('not-found', 'This survey link is not valid.');
@@ -226,6 +243,8 @@
 			random: Math.random,
 			setTimer: (fn, ms) => setTimeout(fn, ms),
 			clearTimer: (h) => clearTimeout(h as number),
+			navigate: (u: string) => location.assign(u),
+			returnUrl: () => location.origin + location.pathname + location.search,
 			log
 		};
 		const languages = navigator.languages?.length ? navigator.languages : [navigator.language];
@@ -242,6 +261,7 @@
 			const planTheme = (s.plan as unknown as { theme?: Theme }).theme;
 			if (planTheme && typeof planTheme === 'object') applyTheme(planTheme);
 			s.subscribe(() => version++);
+			s.externalReturn = externalReturn; // EX2: consumed by the pending external effect
 			session = s;
 			(window as unknown as { __osp?: unknown }).__osp = s; // test and debugging hook
 			void s.run();
@@ -351,6 +371,11 @@
 		<main class="page" id="main" aria-busy="true">
 			<h1 tabindex="-1" bind:this={heading}>{title}</h1>
 			<p role="status">{net === 'offline' ? ui.submittingOffline : ui.submitting}</p>
+		</main>
+	{:else if phase === 'external'}
+		<main class="page" id="main" aria-busy="true" data-testid="external-handoff">
+			<h1 tabindex="-1" bind:this={heading}>{title}</h1>
+			<p role="status">{ui.external}</p>
 		</main>
 	{:else}
 		<main class="page" id="main" lang={view.language} onfocusout={() => session?.blur()}>

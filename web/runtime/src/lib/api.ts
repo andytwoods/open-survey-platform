@@ -13,6 +13,7 @@ export type ResumeResponse = S['ResumeResponse'];
 export type SnapshotResponse = S['SnapshotResponse'];
 export type QuotaResponse = S['QuotaResponse'];
 export type SubmitResponse = S['SubmitResponse'];
+export type ExternalHandoffResponse = S['ExternalHandoffResponse'];
 export type SaveMode = StartResponse['saveMode'];
 
 /** The server answered with an error status. `status` 0 never happens here (see NetworkError). */
@@ -52,6 +53,9 @@ export interface Api {
 	consent?(sessionId: string, token: string, version: string): Promise<unknown>;
 	decline?(sessionId: string, token: string): Promise<unknown>;
 	withdraw?(sessionId: string, token: string): Promise<unknown>;
+	/** External task (task EX2): mint a return token before the hop, verify it on return. */
+	externalHandoff?(sessionId: string, token: string, nodeId: string): Promise<ExternalHandoffResponse>;
+	externalReturn?(sessionId: string, token: string, nodeId: string, returnToken: string): Promise<unknown>;
 }
 
 /** Browsers cap the total body of in-flight keepalive requests at 64 KiB. */
@@ -118,6 +122,13 @@ export function httpApi(base = DEFAULT_API_BASE, fetchImpl: typeof fetch = (...a
 		consent: (sid, token, version) =>
 			call('POST', `/api/sessions/${enc(sid)}/consent`, { token, body: { consentVersion: version } }),
 		decline: (sid, token) => call('POST', `/api/sessions/${enc(sid)}/decline`, { token }),
-		withdraw: (sid, token) => call('POST', `/api/sessions/${enc(sid)}/withdraw`, { token })
+		withdraw: (sid, token) => call('POST', `/api/sessions/${enc(sid)}/withdraw`, { token }),
+		externalHandoff: (sid, token, nodeId) =>
+			call('POST', `/api/sessions/${enc(sid)}/external/${enc(nodeId)}/handoff`, { token }),
+		externalReturn: (sid, token, nodeId, returnToken) =>
+			call('POST', `/api/sessions/${enc(sid)}/external/${enc(nodeId)}/return`, {
+				token,
+				body: { returnToken }
+			})
 	};
 }
