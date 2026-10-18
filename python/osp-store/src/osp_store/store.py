@@ -25,6 +25,7 @@ from sqlalchemy import Connection, Engine, delete, func, insert, select, update
 from sqlalchemy.exc import DBAPIError, IntegrityError
 
 from . import schema as t
+from .bank import BankLibrary
 from .context import SystemContext, TenantContext, require_ctx, require_system
 from .crypto import Keyring, aad_for, canonical_json
 from .errors import (
@@ -178,7 +179,7 @@ def _answers(value: object) -> dict[str, dict[str, Any]]:
     return out
 
 
-class Store(ThemeLibrary, ResultsLayoutLibrary, PanelProfiles):  # mixins (one module each)
+class Store(ThemeLibrary, ResultsLayoutLibrary, PanelProfiles, BankLibrary):  # one module each
     def __init__(self, engine: Engine, keyring: Keyring, clock: Clock = _utcnow) -> None:
         self._engine = engine
         self._keys = keyring

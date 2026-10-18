@@ -106,7 +106,14 @@ def test_checksum_is_key_order_independent():
 
 def test_store_has_no_way_to_mutate_a_version(store):
     names = [n for n in dir(store) if "version" in n and not n.startswith("_")]
-    assert sorted(names) == ["get_version", "list_versions", "publish_version"]
+    assert sorted(names) == [
+        "add_bank_version",  # bank item versions (QB4): added and read, never changed
+        "get_bank_version",
+        "get_version",
+        "list_bank_versions",
+        "list_versions",
+        "publish_version",
+    ]
 
 
 def test_tampered_version_body_is_detected(store, tenants, engine):

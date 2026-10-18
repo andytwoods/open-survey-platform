@@ -4,6 +4,7 @@ Survey JSON is opaque here: osp-spec validates it, the store keeps it, identifie
 by survey id + draft revision, or version id + checksum.
 """
 
+from .bank import BankItemMeta, BankQuery, StoredBankItem, StoredBankVersion
 from .context import SystemContext, TenantContext
 from .crypto import Keyring, canonical_json, generate_key
 from .db import DatabaseUrlError, create_engine, downgrade, migrate, normalise_database_url
@@ -52,6 +53,8 @@ __all__ = [
     "AccessDenied",
     "AuditEntry",
     "BackfillReport",
+    "BankItemMeta",
+    "BankQuery",
     "Conflict",
     "ConsentRecord",
     "CryptoError",
@@ -80,6 +83,8 @@ __all__ = [
     "Store",
     "SubmitResult",
     "StoreError",
+    "StoredBankItem",
+    "StoredBankVersion",
     "StoredPanelProfile",
     "StoredResultsLayout",
     "StoredTheme",

@@ -478,6 +478,58 @@ panel_profiles = Table(
     _ts("updated_at"),
 )
 
+# --- Question bank (task QB4, migration 0012_question_bank; planning/question-bank.md §3) ---
+# A lab's saved bank items (a question, page or block with its metadata) and every version
+# of each. The item row carries what lists and filters need; ``bank_item_versions.body`` is
+# the whole ``osp-bank-item/0.1`` document (opaque here; ``osp_spec.bank`` validates it in
+# osp-app) and is never updated once written, except its metadata keys (title, tags, ...)
+# on the current version when the item's metadata is edited. ``visibility = 'host'`` makes
+# the item readable by every lab on the host (writable only by its own lab). Deleting is
+# soft (``deleted_at``): surveys that inserted the item keep pointing at it. ``search_text``
+# is a lower-cased bag of title, abbreviation, tags and item labels for LIKE search.
+bank_items = Table(
+    "bank_items",
+    metadata,
+    Column("id", ID, primary_key=True),
+    Column("tenant_id", ID, ForeignKey("tenants.id"), nullable=False, index=True),
+    Column("visibility", String(16), nullable=False, server_default="lab"),
+    Column("licence_class", String(40), nullable=False),
+    Column("title", String(200), nullable=False),
+    Column("abbreviation", String(40), nullable=True),
+    Column("kind", String(16), nullable=False),
+    Column("tags", JsonType, nullable=False),
+    Column("languages", JsonType, nullable=False),
+    Column("search_text", Text, nullable=False),
+    Column("current_version", Integer, nullable=False),
+    Column("created_by", String(80), nullable=False),
+    _ts("created_at"),
+    Column("updated_by", String(80), nullable=False),
+    _ts("updated_at"),
+    _ts("deleted_at", nullable=True),
+    UniqueConstraint("tenant_id", "id"),
+    CheckConstraint("visibility IN ('lab', 'host')", name="visibility"),
+    CheckConstraint("kind IN ('question', 'page', 'block')", name="kind"),
+    CheckConstraint("current_version >= 1", name="current_version_positive"),
+    CheckConstraint("title <> ''", name="title_not_empty"),
+    Index("ix_bank_items_visibility", "visibility"),
+)
+
+bank_item_versions = Table(
+    "bank_item_versions",
+    metadata,
+    Column("item_id", ID, primary_key=True),
+    Column("version", Integer, primary_key=True),
+    Column("tenant_id", ID, nullable=False, index=True),
+    Column("body", JsonType, nullable=False),  # the whole osp-bank-item/0.1 document
+    Column("checksum", String(80), nullable=False),  # sha256:<hex> of the fragment
+    Column("created_by", String(80), nullable=False),
+    _ts("created_at"),
+    ForeignKeyConstraint(
+        ["tenant_id", "item_id"], ["bank_items.tenant_id", "bank_items.id"], ondelete="CASCADE"
+    ),
+    CheckConstraint("version >= 1", name="version_positive"),
+)
+
 #: (table, ciphertext column, key-id column) for every encrypted field. The AEAD field
 #: name is the ciphertext column without ``_ct``; the row id is the table's ``id``.
 ENCRYPTED_FIELDS: tuple[tuple[Table, str, str], ...] = (
