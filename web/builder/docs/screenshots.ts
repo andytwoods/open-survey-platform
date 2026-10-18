@@ -1,7 +1,7 @@
 import { expect, test, type Page } from '@playwright/test';
-import { mkdirSync } from 'node:fs';
+import { mkdirSync, readFileSync } from 'node:fs';
 import { join } from 'node:path';
-import { applyOps, createSurvey, DEMO_TITLE } from '../demo/seed';
+import { applyOps, createSurvey, DEMO_TITLE, demoSurvey, publishForParticipants } from '../demo/seed';
 
 /**
  * Screenshots for the docs site (`make docs-screenshots`; mkdocs.yml at the repo root).
@@ -92,7 +92,12 @@ test('builder and participant screenshots', async ({ page, browser }) => {
 	await page.getByLabel('Consent text').click();
 	await expect(page.getByLabel('Consent text')).toHaveAttribute('contenteditable', 'true');
 	await page.keyboard.type('This invented study asks about coffee and sleep. Taking part is voluntary.');
-	await page.getByLabel('Agree button').fill('Yes, I take part');
+	// The agree label is a one-line rich-text field: focus it, wait for the editor, type.
+	const agree = page.getByLabel('Agree button');
+	await agree.click();
+	await expect(agree).toHaveAttribute('contenteditable', 'true');
+	await page.keyboard.press('ControlOrMeta+a');
+	await page.keyboard.type('Yes, I take part');
 	await page.keyboard.press('Tab');
 	await expect(page.getByTestId('consent-preview')).toContainText('Yes, I take part');
 	await saved(page);
@@ -184,4 +189,113 @@ test('builder and participant screenshots', async ({ page, browser }) => {
 	if (await hideFilters.count()) await hideFilters.click();
 	await page.getByRole('article', { name: 'Fruit?' }).scrollIntoViewIfNeeded();
 	await shot(page, 'results');
+});
+
+// -- Feature-tour screenshots (task SHOW1: docs/index.md) ----------------------------------
+// Run alone with `make docs-screenshots DOCS_ARGS="-g showcase"`. Invented data only: the
+// demo survey, the end-nodes fixture, the invented import samples, and responses made up by
+// `osp-cli fake-responses` (docs_server.py).
+
+const FIXTURES = new URL('../../../fixtures/', import.meta.url);
+const IMPORTS = new URL('../../../python/osp-targets/tests/data/imports/', import.meta.url);
+const filePath = (url: URL) => url.pathname.replace(/^\/([A-Za-z]:)/, '$1');
+
+/** The demo survey in English and German; "How do you usually take your coffee?" is left
+ *  untranslated so the properties panel shows a missing translation. */
+function bilingualDemo() {
+	const s = JSON.parse(JSON.stringify(demoSurvey()));
+	s.metadata.languages = ['en', 'de'];
+	const items = s.blocks[0].pages[0].items;
+	items[0].label = {
+		en: items[0].label,
+		de: 'Danke, dass Sie bei dieser (erfundenen) Studie helfen. Sie dauert etwa zwei Minuten.'
+	};
+	items[1].label = { en: items[1].label, de: 'Wie viele Tassen Kaffee haben Sie gestern getrunken?' };
+	return s;
+}
+
+test('showcase screenshots', async ({ page }) => {
+	await page.goto('/');
+	await expect(page.getByRole('heading', { name: 'Your surveys' })).toBeVisible();
+
+	// -- Import preview ----------------------------------------------------------------------
+	await page.getByRole('button', { name: 'Import from Qualtrics, LimeSurvey or SurveyJS…' }).click();
+	const imp = page.getByRole('dialog', { name: 'Import a survey' });
+	await imp.getByLabel('Survey file').setInputFiles(filePath(new URL('coffee.lss', IMPORTS)));
+	await expect(imp.getByTestId('import-preview')).toContainText('Read as LimeSurvey (.lss)');
+	await shot(page, 'import');
+	await page.keyboard.press('Escape');
+	await expect(imp).toBeHidden();
+
+	// -- Languages: the properties panel in German, with the English reference ---------------
+	const lid = await createSurvey(page, `${DEMO_TITLE} (two languages)`, bilingualDemo());
+	await page.goto(`/surveys/${lid}?lang=de`);
+	await expect(tree(page)).toBeVisible();
+	await tree(page).locator('[role="treeitem"][data-id="taken"]').click();
+	await expect(page.locator('[data-property="label"]').getByTestId('reference-strip')).toBeVisible();
+	await shot(page, 'languages');
+
+	// -- Question bank: PHQ-9 in the Bank section ----------------------------------------------
+	const id = await createSurvey(page, DEMO_TITLE);
+	await page.goto(`/surveys/${id}`);
+	await expect(tree(page)).toBeVisible();
+	await select(page, 'cups');
+	const toggle = page.getByRole('button', { name: 'Bank', exact: true });
+	if ((await toggle.getAttribute('aria-expanded')) !== 'true') await toggle.click();
+	const bank = page.getByTestId('bank-pane');
+	await bank.getByRole('searchbox', { name: 'Search the bank' }).fill('PHQ');
+	const phq9 = bank.locator('[data-bank-result="phq9"]');
+	await expect(phq9).toBeVisible();
+	await phq9.getByRole('button', { name: /^Patient Health Questionnaire-9/ }).click();
+	await expect(phq9.getByTestId('bank-preview')).toBeVisible();
+	await shot(page, 'bank');
+
+	// -- Branches and endings: the end-nodes fixture ---------------------------------------------
+	const endNodes = JSON.parse(readFileSync(new URL('11-end-nodes/survey.json', FIXTURES), 'utf8'));
+	endNodes.metadata.title = 'Breakfast study (invented)';
+	const eid = await createSurvey(page, 'Breakfast study (invented)', endNodes);
+	await applyOps(page, eid, [
+		{
+			op: 'set_redirect_template',
+			params: {
+				name: 'prolific',
+				template: { url: 'https://app.prolific.com/submissions/complete?cc={cc}', params: { cc: {} } }
+			}
+		},
+		{
+			op: 'set_ending',
+			params: {
+				outcome: 'complete',
+				ending: {
+					title: 'Thank you for your time',
+					body: 'You rated breakfast ${rating} out of 10.',
+					redirect: { template: 'prolific', params: { cc: 'C1AB2XYZ' }, mode: 'auto', delay: 5 }
+				}
+			}
+		}
+	]);
+	await page.goto(`/surveys/${eid}/flow`);
+	await expect(page.getByRole('heading', { name: 'Survey flow', level: 2 })).toBeVisible();
+	await expect(page.locator('article[data-node-id="end_ineligible"]')).toBeVisible();
+	await shot(page, 'flow-branches');
+
+	await page.goto(`/surveys/${eid}/settings`);
+	await expect(page.getByRole('heading', { name: 'Survey settings', level: 2 })).toBeVisible();
+	const complete = page.locator('#settings-ending-complete');
+	await expect(complete.getByTestId('redirect-url-complete')).toContainText('app.prolific.com');
+	await complete.evaluate((el) => el.scrollIntoView({ block: 'start' }));
+	await page.evaluate(() => window.scrollBy(0, -80));
+	await shot(page, 'endings');
+
+	// -- Results: 150 invented responses -------------------------------------------------------
+	const rid = await createSurvey(page, DEMO_TITLE);
+	await publishForParticipants(page, rid);
+	const fake = await page.request.post(`/api/e2e/docs-fake/${rid}?n=150`, { headers: headers(page) });
+	const report = await fake.json();
+	expect(report.error, JSON.stringify(report)).toBeUndefined();
+	// Presentation mode: just the charts (counts below 5 hidden, as by default).
+	await page.goto(`/surveys/${rid}/results?present=1`);
+	await expect(page.getByRole('button', { name: 'Exit presentation' })).toBeVisible();
+	await expect(page.locator('svg.marks').first()).toBeVisible();
+	await shot(page, 'results-present');
 });

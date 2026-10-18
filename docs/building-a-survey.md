@@ -14,6 +14,10 @@ opens on the new survey, which starts with one block, one page and a note.
 
 ## Import a survey
 
+<figure markdown="span">
+  ![The Import a survey dialog previewing an invented LimeSurvey file](assets/screenshots/import.png){ loading=lazy }
+</figure>
+
 Surveys built elsewhere can be brought in from the same page. Under the create form, press
 **Import from Qualtrics, LimeSurvey or SurveyJS…** and choose a file:
 

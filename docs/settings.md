@@ -39,6 +39,10 @@ is blocked until you choose.* The chosen policy goes into the codebook with the 
 
 ## Languages
 
+<figure markdown="span">
+  ![The properties panel with German as the editing language, showing the English text as a reference with Copy from en](assets/screenshots/languages.png){ loading=lazy }
+</figure>
+
 A survey can carry its text in several languages. Under **Languages**, add a language by its
 tag (`de`, `pt-BR`), remove one (the builder asks before deleting its translations), and
 choose the **Default language**.
@@ -85,6 +89,10 @@ A survey without a consent page publishes with a warning, not an error, since co
 be taken elsewhere.
 
 ## Endings
+
+<figure markdown="span">
+  ![The ending editor for the outcome complete, with a title, piped text, a preview and a Prolific redirect](assets/screenshots/endings.png){ loading=lazy }
+</figure>
 
 One card per **outcome** the survey can end with: `complete` (the end of the flow, and any
 End node left at the default), each End node's outcome, each checked quota's outcome when

@@ -76,7 +76,13 @@ licence-check:
 # `make check`; GitHub Pages deploys main's build (.github/workflows/docs.yml).
 # `docs-screenshots` redraws docs/assets/screenshots/ with Playwright against a fresh stack
 # (web/builder/docs/), like the demo videos; not part of `make check`, commit the PNGs.
-.PHONY: docs docs-check docs-serve docs-screenshots
+# sim-build first: the Results screenshot is drawn over `osp-cli fake-responses` data.
+# `docs-showcase` then writes lossless WebP copies of the home page's (feature tour, task
+# SHOW1) images into docs/assets/showcase/, a third of the PNG size. It needs `cwebp`
+# (libwebp; a tool here, not a project dependency, like ffmpeg for the demo videos).
+CWEBP ?= cwebp
+SHOWCASE_SHOTS := editor type-picker flow-branches languages appearance bank endings results-present import publish participant-phone
+.PHONY: docs docs-check docs-serve docs-screenshots docs-showcase
 docs:
 	$(UV_RUN) mkdocs build --strict
 
@@ -85,9 +91,17 @@ docs-check: docs
 docs-serve:
 	$(UV_RUN) mkdocs serve
 
-docs-screenshots:
+docs-screenshots: sim-build
 	OSP_DOCS_PORT="$${OSP_DOCS_PORT:-$(HARNESS_FREE_PORT)}" OSP_DOCS_API_PORT="$${OSP_DOCS_API_PORT:-$(HARNESS_FREE_PORT)}" \
 		$(PNPM) -C web --filter @osp/builder exec playwright test -c docs/playwright.config.ts $(DOCS_ARGS)
+	$(MAKE) docs-showcase
+
+docs-showcase:
+	@mkdir -p docs/assets/showcase
+	@for name in $(SHOWCASE_SHOTS); do \
+		$(CWEBP) -quiet -lossless -z 9 -metadata none docs/assets/screenshots/$$name.png -o docs/assets/showcase/$$name.webp || exit 1; \
+	done
+	@du -ch docs/assets/showcase/*.webp | tail -1
 
 # Fixture harness (task R4, web/harness): every fixture script played through the real
 # participant app (web/runtime) in a real browser against osp-api on a fresh SQLite store
