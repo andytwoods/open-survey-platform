@@ -390,14 +390,16 @@
 						onCommit={(v) => commitLabel(c.value, v)}
 					/>
 				</div>
-				<IconButton icon={Copy} label="Duplicate {nameOf(i)}" data-field="duplicate" onclick={() => duplicate(i)} />
-				<IconButton
-					icon={Trash}
-					label="Delete {nameOf(i)}"
-					data-field="delete"
-					disabled={choices.length <= 1}
-					onclick={() => remove(i)}
-				/>
+				<div class="row-actions">
+					<IconButton icon={Copy} label="Duplicate {nameOf(i)}" data-field="duplicate" onclick={() => duplicate(i)} />
+					<IconButton
+						icon={Trash}
+						label="Delete {nameOf(i)}"
+						data-field="delete"
+						disabled={choices.length <= 1}
+						onclick={() => remove(i)}
+					/>
+				</div>
 				{#if err || rowDiags.length}
 					<div class="row-msgs" id={errId}>
 						{#if err}<p class="msg" data-severity="error">{err}</p>{/if}
@@ -453,8 +455,12 @@
 	.head,
 	.rows > li {
 		display: grid;
-		grid-template-columns: 2rem 6rem minmax(0, 1fr) auto auto;
+		grid-template-columns: 2rem 6rem minmax(0, 1fr) auto;
 		align-items: center;
+		gap: var(--space-2);
+	}
+	.row-actions {
+		display: flex;
 		gap: var(--space-2);
 	}
 	.head {
@@ -530,6 +536,19 @@
 	}
 	.label {
 		min-width: 0;
+	}
+	/* A phone (the editor's toolbar folds at the same width): the label takes its own line. */
+	@media (max-width: 479.98px) {
+		.head {
+			display: none;
+		}
+		.label {
+			grid-column: 1 / -1;
+			grid-row: 2;
+		}
+		.row-actions {
+			grid-column: 4;
+		}
 	}
 	input[aria-invalid='true'] {
 		border-color: var(--color-danger);

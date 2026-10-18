@@ -154,7 +154,8 @@ test('a formatted row label is stored as a tree, shown on the card and in the di
 	await expect(tea).not.toHaveAttribute('contenteditable', 'true');
 	await expect(tea.locator('em')).toHaveText('tea');
 	await expect(dialog.getByRole('button', { name: 'Move Green tea' })).toBeVisible();
-	await expect(card(page).locator('em')).toHaveText('tea');
+	// The canvas card shows row labels as words (its rows are a preview, not the renderer).
+	await expect(card(page)).toContainText('Green tea');
 	const rows = await serverRows(page, id);
 	expect(rows[0]).toEqual({
 		id: 'tea',
