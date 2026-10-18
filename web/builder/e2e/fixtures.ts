@@ -1,5 +1,5 @@
 import AxeBuilder from '@axe-core/playwright';
-import { test as base, expect, type Page } from '@playwright/test';
+import { test as base, expect, type Locator, type Page } from '@playwright/test';
 
 /**
  * Every test starts on the mock shell (`/?mock`) with a stubbed health endpoint (no backend
@@ -88,6 +88,33 @@ export async function axe(page: Page) {
 /** The element that has focus, described for assertions. */
 export function focused(page: Page) {
 	return page.locator('*:focus');
+}
+
+// -- rich text fields (planning/rich-text.md §9, RT3) ------------------------------------
+//
+// A participant-facing text field is a read-only textbox until it is focused; then the
+// editor (a contenteditable with the same accessible name) swaps in. A locator by label
+// resolves to whichever is present, so these helpers wait for the editor before typing.
+
+/** Focus a rich-text field and wait for its editor to open. */
+export async function openRich(page: Page, field: Locator): Promise<void> {
+	await field.click();
+	await expect(field).toHaveAttribute('contenteditable', 'true');
+	await expect(field).toBeFocused();
+}
+
+/** Replace a rich-text field's content with `text` (the editor stays open and focused). */
+export async function fillRich(page: Page, field: Locator, text: string): Promise<void> {
+	await openRich(page, field);
+	await page.keyboard.press('ControlOrMeta+a');
+	await page.keyboard.press('Backspace');
+	if (text) await page.keyboard.type(text);
+}
+
+/** Put the caret at the end of the open editor's text (End alone does not move it on macOS). */
+export async function caretToEnd(page: Page): Promise<void> {
+	await page.keyboard.press('ControlOrMeta+a');
+	await page.keyboard.press('ArrowRight');
 }
 
 /**

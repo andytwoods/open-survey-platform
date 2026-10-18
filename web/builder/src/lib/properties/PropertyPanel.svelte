@@ -3,7 +3,7 @@
 	import { setContext, tick } from 'svelte';
 	import { SvelteSet } from 'svelte/reactivity';
 	import { BUFFERS, type BufferRegistry } from './context';
-	import { diagnosticsFor, fieldId, getAt, groupLabel, groupProperties, localised, opAddress } from './logic';
+	import { diagnosticsFor, fieldId, getAt, groupLabel, groupProperties, localised, opAddress, propertyPointer } from './logic';
 	import PropertyField from './PropertyField.svelte';
 	import type { LocalisedText, OpenEditorRequest, PanelDiagnostic, PanelOp, TypeSchema } from './types';
 
@@ -120,6 +120,7 @@
 							defaultLanguage={defaultLang}
 							survey={surveyDoc}
 							diagnostics={diagnosticsFor(diagnostics, pointer, entry.key)}
+							pointer={propertyPointer(pointer, entry.key)}
 							{onOp}
 							{onOpenEditor}
 							{onDirty}

@@ -1,13 +1,14 @@
 <script lang="ts">
 	import type { Snippet } from 'svelte';
 	import { cardIcon } from './icons';
-	import { badgesFor, isFamily, textFor, withoutCardData } from './logic';
-	import PipedText from './PipedText.svelte';
+	import { isEmptyValue, RichView } from '../richtext';
+	import { badgesFor, isFamily, richFor, textFor, withoutCardData } from './logic';
 	import type { CardProps } from './types';
 
 	/**
 	 * The frame every question card shares (builder-design §2): type + id header, the label
-	 * with `${pipes}` as tokens, required marker, badges, and a read-only participant preview.
+	 * rendered rich (formatting, `${pipes}` as chips; planning/rich-text.md §7), required
+	 * marker, badges, and a read-only participant preview.
 	 *
 	 * Selecting: the label is a real <button> (name = the visible label, plus "selected" when
 	 * it is), stretched over the whole card, so a click anywhere or Enter / Space selects.
@@ -44,8 +45,8 @@
 	const uid = $derived(`qc-${String(question?.id ?? 'x').replace(/[^A-Za-z0-9_-]/g, '_')}`);
 	const Icon = $derived(cardIcon(schema?.icon, fam));
 	const typeLabel = $derived(textFor(schema?.label, lang) || String(question?.type ?? 'Question'));
-	const label = $derived(textFor(question?.label, lang));
-	const help = $derived(textFor(question?.help, lang));
+	const label = $derived(richFor(question?.label, lang));
+	const help = $derived(richFor(question?.help, lang));
 	const required = $derived(question?.required === true && fam !== 'note');
 	const badges = $derived(badgesFor(question, schema, diagnostics));
 	const hasBadges = $derived(badges.length > 0 || !!exportBadges);
@@ -84,13 +85,13 @@
 			aria-describedby={hasBadges ? `${uid}-badges` : undefined}
 			onclick={select}
 		>
-			{#if label}<PipedText text={label} />{:else}<span class="empty">Untitled question</span>{/if}
+			{#if !isEmptyValue(label)}<RichView value={label} inline {lang} />{:else}<span class="empty">Untitled question</span>{/if}
 			{#if required}<span class="req" aria-hidden="true">*</span><span class="osp-visually-hidden"
 					>(required)</span
 				>{/if}{#if selected}<span class="osp-visually-hidden">, selected</span>{/if}
 		</button>
 	</p>
-	{#if help}<p class="help"><PipedText text={help} /></p>{/if}
+	{#if !isEmptyValue(help)}<p class="help"><RichView value={help} inline {lang} /></p>{/if}
 
 	{#if hasBadges}
 		<ul id="{uid}-badges" class="badges">

@@ -1,5 +1,5 @@
 import { expect, test, type Page } from '@playwright/test';
-import { axe, pickQuestionType, signIn } from './fixtures';
+import { axe, fillRich, pickQuestionType, signIn } from './fixtures';
 
 // Survey settings, Appearance save actions and Publish (task B12), end to end against a
 // real osp-api on SQLite (e2e/api_server.py, which also serves the participant app):
@@ -57,11 +57,10 @@ test('settings → theme → publish → the participant link shows the survey i
 
 	// Consent: text, labels, decline counting, preview.
 	await page.getByRole('checkbox', { name: 'Show a consent page before the first question' }).check();
-	const text = page.getByLabel('Consent text');
-	await text.fill('This study asks about sleep. Taking part is voluntary.');
-	await text.blur();
-	await page.getByLabel('Agree button').fill('Yes, I take part');
-	await page.getByLabel('Agree button').blur();
+	await fillRich(page, page.getByLabel('Consent text'), 'This study asks about sleep. Taking part is voluntary.');
+	await page.keyboard.press('Tab');
+	await fillRich(page, page.getByLabel('Agree button'), 'Yes, I take part');
+	await page.keyboard.press('Tab');
 	await page.getByRole('checkbox', { name: 'Count declines' }).check();
 	await expect(page.getByTestId('consent-preview')).toContainText('Taking part is voluntary.');
 	await expect(page.getByTestId('consent-preview')).toContainText('Yes, I take part');

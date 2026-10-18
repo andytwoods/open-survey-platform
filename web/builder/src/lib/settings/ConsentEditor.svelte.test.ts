@@ -1,6 +1,7 @@
 import '@testing-library/svelte/vitest';
 import { fireEvent, render } from '@testing-library/svelte';
 import { describe, expect, it } from 'vitest';
+import { activate, blurField, typeInto } from '../richtext/test-utils';
 import type { Outcome } from '../sync/survey-store.svelte';
 import type { Invocation } from '../sync/transport';
 import ConsentEditor from './ConsentEditor.svelte';
@@ -9,30 +10,34 @@ import ConsentEditor from './ConsentEditor.svelte';
 // consent object, so an edit made while the previous one is still in flight must build on
 // what was sent, not on the not-yet-updated survey (the publish e2e lost the consent text
 // this way when the agree label was committed before the text's echo arrived).
+// The fields are rich-text editors (RT3): tests drive them through the editor's commands.
 
 type Consent = Record<string, unknown> | null;
 
-function setup() {
+function setup(consent: Record<string, unknown> = { text: { en: '' } }) {
 	const sent: Consent[] = [];
 	const answers: ((o: Outcome) => void)[] = [];
 	const submit = (ops: Invocation[]) => {
 		sent.push((ops[0]!.params as { consent: Consent }).consent);
 		return new Promise<Outcome>((resolve) => answers.push(resolve));
 	};
-	const survey = { metadata: { title: 'S', languages: ['en'] }, consent: { text: { en: '' } }, blocks: [] };
+	const survey = { metadata: { title: 'S', languages: ['en'] }, consent, blocks: [] };
 	const view = render(ConsentEditor, { survey, defaultLanguage: 'en', submit });
 	return { ...view, sent, answers };
+}
+
+/** Edit a consent field as a researcher would: focus, replace the text, leave. */
+async function edit(el: HTMLElement, text: string) {
+	const ed = await activate(el);
+	await typeInto(ed, text);
+	await blurField(el.id);
 }
 
 describe('ConsentEditor', () => {
 	it('keeps an edit still in flight when the next field is committed', async () => {
 		const { getByLabelText, getByRole, sent } = setup();
-		const text = getByLabelText('Consent text') as HTMLTextAreaElement;
-		await fireEvent.input(text, { target: { value: 'Taking part is voluntary.' } });
-		await fireEvent.change(text);
-		const agree = getByLabelText('Agree button') as HTMLInputElement;
-		await fireEvent.input(agree, { target: { value: 'Yes, I take part' } });
-		await fireEvent.change(agree);
+		await edit(getByLabelText('Consent text'), 'Taking part is voluntary.');
+		await edit(getByLabelText('Agree button'), 'Yes, I take part');
 		await fireEvent.click(getByRole('checkbox', { name: 'Count declines' }));
 
 		expect(sent).toHaveLength(3);
@@ -46,18 +51,30 @@ describe('ConsentEditor', () => {
 
 	it('builds on the survey again once nothing is in flight', async () => {
 		const { getByLabelText, rerender, sent, answers } = setup();
-		const text = getByLabelText('Consent text') as HTMLTextAreaElement;
-		await fireEvent.input(text, { target: { value: 'Draft' } });
-		await fireEvent.change(text);
+		await edit(getByLabelText('Consent text'), 'Draft');
 		// The server refuses it: the survey keeps the old consent, and the next edit starts there.
 		answers[0]!({ status: 'rejected', message: 'No.', diagnostics: [] } as unknown as Outcome);
 		await Promise.resolve();
 		await rerender({
 			survey: { metadata: { title: 'S', languages: ['en'] }, consent: { text: { en: 'Server' } }, blocks: [] }
 		});
-		const agree = getByLabelText('Agree button') as HTMLInputElement;
-		await fireEvent.input(agree, { target: { value: 'OK' } });
-		await fireEvent.change(agree);
+		await edit(getByLabelText('Agree button'), 'OK');
 		expect(sent[1]).toEqual({ text: { en: 'Server' }, agreeLabel: { en: 'OK' } });
+	});
+
+	it('shows a rich consent text with its formatting, offers no pipes, and keeps the tree when editing', async () => {
+		const rich = { type: 'rich', blocks: [{ type: 'h', level: 1, content: [{ text: 'Information' }] }, { type: 'p', content: [{ text: 'Read ', marks: ['b'] }, { text: 'this' }] }] };
+		const { getByLabelText, getByTestId, container, sent } = setup({ text: { en: rich } });
+		const field = getByLabelText('Consent text');
+		expect(field.querySelector('.osp-rv-h')!.textContent).toBe('Information');
+		expect(getByTestId('consent-preview').querySelector('strong')!.textContent).toBe('Read ');
+		const ed = await activate(field);
+		expect(container.querySelector('[role="toolbar"] [aria-label="Insert answer"]')).toBeNull();
+		expect(container.querySelector('[role="toolbar"] select[aria-label="Text style"]')).not.toBeNull();
+		ed.commands.insertContentAt(ed.state.doc.content.size - 1, ' now');
+		await blurField(field.id);
+		expect(sent[0]).toEqual({
+			text: { en: { type: 'rich', blocks: [{ type: 'h', level: 1, content: [{ text: 'Information' }] }, { type: 'p', content: [{ text: 'Read ', marks: ['b'] }, { text: 'this now' }] }] } }
+		});
 	});
 });

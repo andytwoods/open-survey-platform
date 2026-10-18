@@ -118,16 +118,31 @@ Three ways:
   ![The type picker](assets/screenshots/type-picker.png){ loading=lazy }
 </figure>
 
-Then fill in **Question text** in the properties panel. Rich-text fields accept
-`${id}` to [pipe in](logic.md#piping) an earlier answer.
+Then fill in **Question text** in the properties panel. Use **Insert answer** in the
+field's toolbar (or type `${`) to [pipe in](logic.md#piping) an earlier answer: it
+appears as a chip you can move or delete as one character.
 
 ### Formatting text
 
 Every participant-facing text can carry formatting: **bold**, *italic*, links, line
 breaks, bulleted and numbered lists and, in notes, the consent text and ending text,
-headings. A formatting toolbar in the properties panel is coming (task RT3); until then
-formatted text is written in the JSON view as a small tree, and the participant app, the
-preview and the exports already render it.
+headings. Click into a text field in the properties panel (or Tab to it) and a toolbar
+appears above it: Bold (++ctrl+b++), Italic (++ctrl+i++), Link (`https://` addresses
+only, opened in a new tab), lists, a line break (++shift+enter++), Insert
+answer, Clear formatting, Undo and Redo, and in notes and other long texts a *Text style*
+select for headings. ++alt+f10++ moves to the toolbar and ++esc++ back to the text;
+++tab++ always leaves the field. Your edit is saved after a short pause or when you leave
+the field; ++esc++ throws away what you typed since the last save. A count under the
+field shows how much of the field's limit you have used.
+
+Pasting from Word, Google Docs or a web page keeps the formatting the survey can hold and
+drops the rest (colours, fonts, images, tables become their text, underline, nested
+lists); a line under the field says what was simplified. Underline is never offered: on the
+web it reads as a link.
+
+Choice and matrix row labels, and the translations of a text, are still edited as plain
+text in their own dialogs (tasks RT5 and RT6). The JSON view shows and accepts the stored
+form:
 
 A plain string stays a plain string. A formatted value is `{"type": "rich", "blocks":
 [...]}`, where each block is a paragraph `{"type": "p", "content": [...]}`, a heading

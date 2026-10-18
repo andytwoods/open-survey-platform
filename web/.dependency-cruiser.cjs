@@ -53,6 +53,14 @@ module.exports = {
 			severity: 'error',
 			from: {},
 			to: { circular: true }
+		},
+		{
+			name: 'tiptap-stays-in-richtext',
+			severity: 'error',
+			comment:
+				'The rich-text editor (Tiptap/ProseMirror, planning/rich-text.md §2) is a builder-only lazy chunk: only builder/src/lib/richtext/ may import it, so the participant runtime and ui-components never carry it.',
+			from: { pathNot: '^builder/src/lib/richtext/' },
+			to: { path: 'node_modules/(@tiptap/|prosemirror-)' }
 		}
 	],
 	options: {

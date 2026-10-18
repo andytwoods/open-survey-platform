@@ -49,6 +49,7 @@
         }
       },
       "hidden": {
+        "source": "Question-bank provenance (planning/question-bank.md §2.3): written only when a bank item is inserted, removed with clear_source; shown as the provenance line, never edited in the panel.",
         "id": "Stable identity used by flow nodes; assigned when the block is added.",
         "pages": "Pages are edited in the outline tree, not in the property panel."
       }
@@ -73,7 +74,8 @@
           "group": "Basics",
           "help": {
             "en": "What participants see. Use ${id} to pipe in an earlier answer."
-          }
+          },
+          "rich": "stem"
         },
         "help": {
           "kind": "richtext",
@@ -85,7 +87,8 @@
           "group": "Basics",
           "help": {
             "en": "Shown under the question text."
-          }
+          },
+          "rich": "stem"
         },
         "showIf": {
           "kind": "condition",
@@ -134,7 +137,8 @@
           "group": "Validation",
           "help": {
             "en": "Shown when the constraint fails."
-          }
+          },
+          "rich": "inline"
         },
         "name": {
           "kind": "text",
@@ -150,6 +154,7 @@
         }
       },
       "hidden": {
+        "source": "Question-bank provenance (planning/question-bank.md §2.3): written only when a bank item is inserted, removed with clear_source; shown as the provenance line, never edited in the panel.",
         "id": "Stable identity used by every reference; assigned when the question is added, never edited in the panel.",
         "type": "The discriminator; changing type is its own op, not a property edit.",
         "custom": "The lab's own properties (planning/property-profiles.md): defined by the lab panel profile and edited through its custom fields with the set_custom_property op, never as one object."
@@ -175,7 +180,8 @@
           "group": "Basics",
           "help": {
             "en": "What participants see. Use ${id} to pipe in an earlier answer."
-          }
+          },
+          "rich": "stem"
         },
         "help": {
           "kind": "richtext",
@@ -187,7 +193,8 @@
           "group": "Basics",
           "help": {
             "en": "Shown under the question text."
-          }
+          },
+          "rich": "stem"
         },
         "showIf": {
           "kind": "condition",
@@ -260,7 +267,8 @@
           "group": "Validation",
           "help": {
             "en": "Shown when the constraint fails."
-          }
+          },
+          "rich": "inline"
         },
         "name": {
           "kind": "text",
@@ -276,6 +284,7 @@
         }
       },
       "hidden": {
+        "source": "Question-bank provenance (planning/question-bank.md §2.3): written only when a bank item is inserted, removed with clear_source; shown as the provenance line, never edited in the panel.",
         "id": "Stable identity used by every reference; assigned when the question is added, never edited in the panel.",
         "type": "The discriminator; changing type is its own op, not a property edit.",
         "custom": "The lab's own properties (planning/property-profiles.md): defined by the lab panel profile and edited through its custom fields with the set_custom_property op, never as one object."
@@ -301,7 +310,8 @@
           "group": "Basics",
           "help": {
             "en": "What participants see. Use ${id} to pipe in an earlier answer."
-          }
+          },
+          "rich": "stem"
         },
         "help": {
           "kind": "richtext",
@@ -313,7 +323,8 @@
           "group": "Basics",
           "help": {
             "en": "Shown under the question text."
-          }
+          },
+          "rich": "stem"
         },
         "showIf": {
           "kind": "condition",
@@ -386,7 +397,8 @@
           "group": "Validation",
           "help": {
             "en": "Shown when the constraint fails."
-          }
+          },
+          "rich": "inline"
         },
         "name": {
           "kind": "text",
@@ -402,6 +414,7 @@
         }
       },
       "hidden": {
+        "source": "Question-bank provenance (planning/question-bank.md §2.3): written only when a bank item is inserted, removed with clear_source; shown as the provenance line, never edited in the panel.",
         "id": "Stable identity used by every reference; assigned when the question is added, never edited in the panel.",
         "type": "The discriminator; changing type is its own op, not a property edit.",
         "custom": "The lab's own properties (planning/property-profiles.md): defined by the lab panel profile and edited through its custom fields with the set_custom_property op, never as one object."
@@ -427,7 +440,8 @@
           "group": "Basics",
           "help": {
             "en": "What participants see above the rows. Use ${id} to pipe in an earlier answer."
-          }
+          },
+          "rich": "stem"
         },
         "help": {
           "kind": "richtext",
@@ -439,7 +453,8 @@
           "group": "Basics",
           "help": {
             "en": "Shown under the question text."
-          }
+          },
+          "rich": "stem"
         },
         "rows": {
           "kind": "rows",
@@ -528,6 +543,7 @@
         }
       },
       "hidden": {
+        "source": "Question-bank provenance (planning/question-bank.md §2.3): written only when a bank item is inserted, removed with clear_source; shown as the provenance line, never edited in the panel.",
         "id": "Stable identity used by every reference; assigned when the question is added, never edited in the panel.",
         "type": "The discriminator; changing type is its own op, not a property edit.",
         "choiceList": "Edited through the choices editor, which switches between inline choices and a shared list (exactly one is set).",
@@ -554,7 +570,8 @@
           "group": "Basics",
           "help": {
             "en": "What participants see. Use ${id} to pipe in an earlier answer."
-          }
+          },
+          "rich": "stem"
         },
         "help": {
           "kind": "richtext",
@@ -566,7 +583,8 @@
           "group": "Basics",
           "help": {
             "en": "Shown under the question text."
-          }
+          },
+          "rich": "stem"
         },
         "choices": {
           "kind": "choicelist",
@@ -664,7 +682,8 @@
           "group": "Validation",
           "help": {
             "en": "Shown when the constraint fails."
-          }
+          },
+          "rich": "inline"
         },
         "name": {
           "kind": "text",
@@ -680,6 +699,7 @@
         }
       },
       "hidden": {
+        "source": "Question-bank provenance (planning/question-bank.md §2.3): written only when a bank item is inserted, removed with clear_source; shown as the provenance line, never edited in the panel.",
         "id": "Stable identity used by every reference; assigned when the question is added, never edited in the panel.",
         "type": "The discriminator; changing type is its own op, not a property edit.",
         "choiceList": "Edited through the choices editor, which switches between inline choices and a shared list (exactly one is set).",
@@ -706,7 +726,8 @@
           "group": "Basics",
           "help": {
             "en": "What participants see. Use ${id} to pipe in an earlier answer."
-          }
+          },
+          "rich": "block"
         },
         "help": {
           "kind": "richtext",
@@ -718,7 +739,8 @@
           "group": "Basics",
           "help": {
             "en": "Shown under the question text."
-          }
+          },
+          "rich": "stem"
         },
         "showIf": {
           "kind": "condition",
@@ -734,6 +756,7 @@
         }
       },
       "hidden": {
+        "source": "Question-bank provenance (planning/question-bank.md §2.3): written only when a bank item is inserted, removed with clear_source; shown as the provenance line, never edited in the panel.",
         "id": "Stable identity used by every reference; assigned when the question is added, never edited in the panel.",
         "type": "The discriminator; changing type is its own op, not a property edit.",
         "custom": "The lab's own properties (planning/property-profiles.md): defined by the lab panel profile and edited through its custom fields with the set_custom_property op, never as one object."
@@ -757,7 +780,8 @@
           "group": "Basics",
           "help": {
             "en": "An optional heading shown above the page's questions."
-          }
+          },
+          "rich": "inline"
         },
         "showIf": {
           "kind": "condition",
@@ -800,6 +824,7 @@
         }
       },
       "hidden": {
+        "source": "Question-bank provenance (planning/question-bank.md §2.3): written only when a bank item is inserted, removed with clear_source; shown as the provenance line, never edited in the panel.",
         "id": "Stable identity; assigned when the page is added, never edited in the panel.",
         "items": "Questions are edited on the canvas and in the outline tree, not in the property panel."
       }
@@ -824,7 +849,8 @@
           "group": "Basics",
           "help": {
             "en": "What participants see. Use ${id} to pipe in an earlier answer."
-          }
+          },
+          "rich": "stem"
         },
         "help": {
           "kind": "richtext",
@@ -836,7 +862,8 @@
           "group": "Basics",
           "help": {
             "en": "Shown under the question text."
-          }
+          },
+          "rich": "stem"
         },
         "choices": {
           "kind": "choicelist",
@@ -934,7 +961,8 @@
           "group": "Validation",
           "help": {
             "en": "Shown when the constraint fails."
-          }
+          },
+          "rich": "inline"
         },
         "name": {
           "kind": "text",
@@ -950,6 +978,7 @@
         }
       },
       "hidden": {
+        "source": "Question-bank provenance (planning/question-bank.md §2.3): written only when a bank item is inserted, removed with clear_source; shown as the provenance line, never edited in the panel.",
         "id": "Stable identity used by every reference; assigned when the question is added, never edited in the panel.",
         "type": "The discriminator; changing type is its own op, not a property edit.",
         "choiceList": "Edited through the choices editor, which switches between inline choices and a shared list (exactly one is set).",
@@ -976,7 +1005,8 @@
           "group": "Basics",
           "help": {
             "en": "What participants see. Use ${id} to pipe in an earlier answer."
-          }
+          },
+          "rich": "stem"
         },
         "help": {
           "kind": "richtext",
@@ -988,7 +1018,8 @@
           "group": "Basics",
           "help": {
             "en": "Shown under the question text."
-          }
+          },
+          "rich": "stem"
         },
         "min": {
           "kind": "number",
@@ -1039,7 +1070,8 @@
           "group": "Basics",
           "help": {
             "en": "Text under the left end, e.g. \"Not at all\"."
-          }
+          },
+          "rich": "inline"
         },
         "maxLabel": {
           "kind": "text",
@@ -1051,7 +1083,8 @@
           "group": "Basics",
           "help": {
             "en": "Text under the right end, e.g. \"Extremely\"."
-          }
+          },
+          "rich": "inline"
         },
         "valueType": {
           "kind": "enum",
@@ -1127,7 +1160,8 @@
           "group": "Validation",
           "help": {
             "en": "Shown when the constraint fails."
-          }
+          },
+          "rich": "inline"
         },
         "name": {
           "kind": "text",
@@ -1143,6 +1177,7 @@
         }
       },
       "hidden": {
+        "source": "Question-bank provenance (planning/question-bank.md §2.3): written only when a bank item is inserted, removed with clear_source; shown as the provenance line, never edited in the panel.",
         "id": "Stable identity used by every reference; assigned when the question is added, never edited in the panel.",
         "type": "The discriminator; changing type is its own op, not a property edit.",
         "custom": "The lab's own properties (planning/property-profiles.md): defined by the lab panel profile and edited through its custom fields with the set_custom_property op, never as one object."
@@ -1173,7 +1208,8 @@
           },
           "required": false,
           "translatable": true,
-          "group": "Basics"
+          "group": "Basics",
+          "rich": "block"
         },
         "metadata.defaultLanguage": {
           "kind": "enum",
@@ -1282,8 +1318,11 @@
         }
       },
       "hidden": {
+        "metadata.instruments": "The instruments used, derived from the questions' bank sources at publish (question-bank.md lead decision 1); never edited by hand.",
         "settings.retention": "Chosen in Survey settings (options from /api/meta/retention); publishing is refused until it is set.",
         "consent": "Edited in Survey settings (Consent section, the set_consent op): text per language, button labels, decline counting.",
+        "settings.endings": "Edited in Survey settings (Endings section, the set_ending op) and from an End node's card: title, body, status line and redirect per outcome.",
+        "settings.redirectTemplates": "Edited in Survey settings (Endings section, the set_redirect_template op): the https templates an ending's redirect may use.",
         "settings.theme": "Set in the Appearance view (Use for this survey); a full copy of the theme.",
         "hooks": "Edited in Survey settings (Researcher hooks section, the set_hooks op): the script, the handled events and what each reads; redirects and parent messages in the JSON view.",
         "specVersion": "Format version, written by the platform.",
@@ -1318,7 +1357,8 @@
           "group": "Basics",
           "help": {
             "en": "What participants see. Use ${id} to pipe in an earlier answer."
-          }
+          },
+          "rich": "stem"
         },
         "help": {
           "kind": "richtext",
@@ -1330,7 +1370,8 @@
           "group": "Basics",
           "help": {
             "en": "Shown under the question text."
-          }
+          },
+          "rich": "stem"
         },
         "showIf": {
           "kind": "condition",
@@ -1392,7 +1433,8 @@
           "group": "Validation",
           "help": {
             "en": "Shown when the constraint fails."
-          }
+          },
+          "rich": "inline"
         },
         "name": {
           "kind": "text",
@@ -1408,6 +1450,7 @@
         }
       },
       "hidden": {
+        "source": "Question-bank provenance (planning/question-bank.md §2.3): written only when a bank item is inserted, removed with clear_source; shown as the provenance line, never edited in the panel.",
         "id": "Stable identity used by every reference; assigned when the question is added, never edited in the panel.",
         "type": "The discriminator; changing type is its own op, not a property edit.",
         "custom": "The lab's own properties (planning/property-profiles.md): defined by the lab panel profile and edited through its custom fields with the set_custom_property op, never as one object."

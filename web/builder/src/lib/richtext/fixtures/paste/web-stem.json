@@ -1,0 +1,36 @@
+{
+  "level": "stem",
+  "report": { "images": 1, "tables": 0, "underline": 0, "links": 0, "headings": 1, "nested": 0, "styles": true, "merged": 0 },
+  "status": "Formatting simplified: colours and fonts, 1 image and 1 heading removed",
+  "blocks": [
+    { "type": "p", "content": [{ "text": "A page heading" }] },
+    {
+      "type": "p",
+      "content": [
+        { "text": "Paragraph with " },
+        { "text": "strong", "marks": ["b"] },
+        { "text": ", " },
+        { "text": "em", "marks": ["i"] },
+        { "text": ", code, sup and " },
+        { "text": "spanned bold", "marks": ["b"] },
+        { "text": "." },
+        { "br": true },
+        { "text": "Second line after a break." }
+      ]
+    },
+    { "type": "p", "content": [{ "text": "A quoted paragraph." }] },
+    { "type": "p", "content": [{ "text": "Caption text" }] },
+    { "type": "ul", "items": [[{ "text": "Item with" }, { "br": true }, { "text": "two paragraphs" }], [{ "text": "Plain item" }]] },
+    { "type": "p", "content": [{ "text": "Nested divs become a paragraph" }] },
+    {
+      "type": "p",
+      "content": [
+        { "text": "Pipes: " },
+        { "pipe": "score" },
+        { "text": " and " },
+        { "pipe": "$position.index" },
+        { "text": " but not ${12} nor ${a b}." }
+      ]
+    }
+  ]
+}

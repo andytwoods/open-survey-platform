@@ -1,4 +1,5 @@
 <script lang="ts">
+	import { RichTextEditor, RichView, type RichValue } from '../richtext';
 	import type { Outcome } from '../sync/survey-store.svelte';
 	import type { Invocation } from '../sync/transport';
 	import {
@@ -8,15 +9,18 @@
 		consentWith,
 		languagesOf,
 		missingConsentLanguages,
+		richExact,
+		sameText,
 		setText,
-		textExact,
 		type ConsentTextField
 	} from './model';
 
 	/**
 	 * The consent page (survey.consent, semantics.md §11) through `set_consent`: text and
 	 * button labels per language, decline counting, and a preview of what participants see
-	 * first. Texts are saved when a field loses focus. Nothing can be piped into them.
+	 * first. The text is rich at block level, the button labels inline (planning/rich-text.md
+	 * RT-D5); nothing can be piped into them, so the editors offer no chips. Texts are saved
+	 * after a pause or when a field loses focus.
 	 */
 	let {
 		survey,
@@ -39,13 +43,13 @@
 	let inFlight = 0;
 	const latest = () => (inFlight > 0 ? sent : consent);
 
-	const shown = (field: ConsentTextField) => textExact(consent?.[field], editLang, defaultLanguage);
-	const preview = (field: ConsentTextField) => {
+	const shown = (field: ConsentTextField): RichValue => richExact(consent?.[field], editLang, defaultLanguage);
+	const preview = (field: ConsentTextField): RichValue => {
 		const own = shown(field);
 		if (own) return own;
 		const v = consent?.[field];
-		if (typeof v === 'string') return v;
-		if (v && typeof v === 'object') return (v as Record<string, string>)[defaultLanguage] ?? '';
+		const fallback = richExact(v, defaultLanguage, defaultLanguage);
+		if (fallback) return fallback;
 		return field === 'text' ? '' : CONSENT_DEFAULTS[field];
 	};
 
@@ -65,9 +69,9 @@
 		void send(on ? { text: { [defaultLanguage]: '' } } : null);
 	}
 
-	function commit(field: ConsentTextField, value: string) {
+	function commit(field: ConsentTextField, value: RichValue) {
 		const base = latest();
-		if (!base || value === textExact(base[field], editLang, defaultLanguage)) return;
+		if (!base || sameText(value, richExact(base[field], editLang, defaultLanguage))) return;
 		const next = setText(base[field], editLang, defaultLanguage, value);
 		if (field === 'text' && next === undefined) {
 			void send(consentWith(base, 'text', { [defaultLanguage]: '' }));
@@ -100,41 +104,49 @@
 			{/if}
 		{/if}
 		{#key editLang}
-			<label class="field">
-				<span>Consent text</span>
-				<textarea
-					rows="6"
-					lang={editLang}
+			<div class="field">
+				<span id="consent-text-label">Consent text</span>
+				<RichTextEditor
+					id="consent-text"
 					value={shown('text')}
-					onchange={(e) => commit('text', e.currentTarget.value)}
-					aria-describedby="consent-text-help"
-				></textarea>
-			</label>
+					level="block"
+					pipes={null}
+					labelledBy="consent-text-label"
+					describedBy="consent-text-help"
+					lang={editLang}
+					onCommit={(v) => commit('text', v)}
+				/>
+			</div>
 			<p class="help" id="consent-text-help">
-				The study information and consent statement. Plain text; answers can't be piped in, because this page
-				comes first.
+				The study information and consent statement. Answers can't be piped in, because this page comes first.
 			</p>
 			<div class="pair">
-				<label class="field">
-					<span>Agree button</span>
-					<input
-						type="text"
-						lang={editLang}
+				<div class="field">
+					<span id="consent-agree-label">Agree button</span>
+					<RichTextEditor
+						id="consent-agree"
 						value={shown('agreeLabel')}
+						level="inline"
+						pipes={null}
+						labelledBy="consent-agree-label"
 						placeholder={CONSENT_DEFAULTS.agreeLabel}
-						onchange={(e) => commit('agreeLabel', e.currentTarget.value)}
-					/>
-				</label>
-				<label class="field">
-					<span>Decline button</span>
-					<input
-						type="text"
 						lang={editLang}
-						value={shown('declineLabel')}
-						placeholder={CONSENT_DEFAULTS.declineLabel}
-						onchange={(e) => commit('declineLabel', e.currentTarget.value)}
+						onCommit={(v) => commit('agreeLabel', v)}
 					/>
-				</label>
+				</div>
+				<div class="field">
+					<span id="consent-decline-label">Decline button</span>
+					<RichTextEditor
+						id="consent-decline"
+						value={shown('declineLabel')}
+						level="inline"
+						pipes={null}
+						labelledBy="consent-decline-label"
+						placeholder={CONSENT_DEFAULTS.declineLabel}
+						lang={editLang}
+						onCommit={(v) => commit('declineLabel', v)}
+					/>
+				</div>
 			</div>
 		{/key}
 		<label class="check">
@@ -152,10 +164,12 @@
 		<section class="preview" aria-labelledby="consent-preview-h">
 			<h4 id="consent-preview-h">Preview</h4>
 			<div class="page" lang={editLang} data-testid="consent-preview">
-				<p class="text">{preview('text') || 'Your consent text appears here.'}</p>
+				<div class="text">
+					{#if preview('text')}<RichView value={preview('text')} />{:else}<p class="empty">Your consent text appears here.</p>{/if}
+				</div>
 				<div class="buttons" aria-hidden="true">
-					<span class="btn primary">{preview('agreeLabel')}</span>
-					<span class="btn">{preview('declineLabel')}</span>
+					<span class="btn primary"><RichView value={preview('agreeLabel')} inline /></span>
+					<span class="btn"><RichView value={preview('declineLabel')} inline /></span>
 				</div>
 			</div>
 		</section>
@@ -196,21 +210,18 @@
 		gap: var(--space-1);
 		font-size: var(--text-sm);
 		flex: 1;
+		min-width: 0;
 	}
-	.field input,
-	.field select,
-	.field textarea {
+	.field select {
 		padding: var(--space-1) var(--space-2);
 		min-block-size: 2.25rem;
+		max-width: 16rem;
 		border: 1px solid var(--color-border-strong);
 		border-radius: var(--radius-md);
 		background: var(--color-surface-raised);
 		color: var(--color-text);
 		font: inherit;
 		font-size: var(--text-md);
-	}
-	.field select {
-		max-width: 16rem;
 	}
 	.pair {
 		display: flex;
@@ -230,7 +241,10 @@
 	}
 	.text {
 		margin: 0 0 var(--space-4);
-		white-space: pre-wrap;
+	}
+	.empty {
+		margin: 0;
+		color: var(--color-text-muted);
 	}
 	.buttons {
 		display: flex;

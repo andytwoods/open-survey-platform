@@ -3,7 +3,7 @@
  * `set_property`, matching diagnostics to fields and shaping translatable text.
  * Display and op-shaping only; validation is the server's job (AGENTS.md rule 8).
  */
-import { isRichText, plainTextOf } from '@osp/engine';
+import { isRichText, plainTextOf, type RichText } from '@osp/engine';
 import { exprToText } from '../cards/logic';
 import {
 	CUSTOM_PREFIX,
@@ -160,20 +160,28 @@ export function fieldId(prefix: string, key: string): string {
 
 // --- Text ----------------------------------------------------------------------------
 
+/** A text value for one language: plain or rich (planning/rich-text.md, RT2). */
+export type TextValue = string | RichText;
+
 /**
- * The text shown for `language`: a plain string is the same in every language; a rich
- * value (planning/rich-text.md, RT2) is shown flattened until the editor lands (RT3), so
- * the researcher sees the words and typing replaces the formatting with plain text.
+ * The value for `language`, plain or rich: a plain string is the same in every language;
+ * a map gives that language's entry (or nothing). The rich editor shows it as it is.
  */
-export function textIn(value: unknown, language: string): string {
+export function richIn(value: unknown, language: string): TextValue {
 	if (typeof value === 'string') return value;
-	if (isRichText(value)) return plainTextOf(value);
+	if (isRichText(value)) return value;
 	if (isObj(value)) {
 		const v = value[language];
 		if (typeof v === 'string') return v;
-		if (isRichText(v)) return plainTextOf(v);
+		if (isRichText(v)) return v;
 	}
 	return '';
+}
+
+/** `richIn` flattened to words, for plain inputs and summaries. */
+export function textIn(value: unknown, language: string): string {
+	const v = richIn(value, language);
+	return typeof v === 'string' ? v : plainTextOf(v);
 }
 
 const present = (v: unknown) => (typeof v === 'string' && v !== '') || isRichText(v);
@@ -192,7 +200,8 @@ export function fallbackText(value: unknown, defaultLanguage: string): string {
 }
 
 /**
- * The new value of a translatable field after editing it in `language`.
+ * The new value of a translatable field after editing it in `language` (`text` is the
+ * plain string or rich tree the editor committed; `""` empties the language).
  * A map gets that language set (or removed when emptied); a plain or rich value stays as
  * it is when edited in the default language and becomes a map when another language is
  * added; the other languages' rich values are kept. `undefined` means unset.
@@ -201,7 +210,7 @@ export function withTranslation(
 	old: unknown,
 	language: string,
 	defaultLanguage: string,
-	text: string
+	text: TextValue
 ): unknown {
 	if (isObj(old) && !isRichText(old)) {
 		const out: Record<string, unknown> = {};
@@ -223,7 +232,7 @@ export function textValue(
 	old: unknown,
 	language: string,
 	defaultLanguage: string,
-	text: string
+	text: TextValue
 ): unknown {
 	if (spec.translatable) return withTranslation(old, language, defaultLanguage, text);
 	return text === '' ? undefined : text;

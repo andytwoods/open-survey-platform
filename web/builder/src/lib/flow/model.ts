@@ -4,7 +4,8 @@
  * and pin server diagnostics to nodes. Display and op-building only: the server decides
  * what is valid (AGENTS.md rule 8). Every function accepts hostile input and never throws.
  */
-import { exprToText, textFor } from '../cards/logic';
+import type { RichText } from '@osp/engine';
+import { exprToText, richFor } from '../cards/logic';
 
 export const NODE_TYPES = ['block', 'branch', 'randomiser', 'assign', 'quotaCheck', 'externalTask', 'end'] as const;
 export type FlowNodeType = (typeof NODE_TYPES)[number];
@@ -318,8 +319,9 @@ export function nodeLabel(node: unknown, survey?: unknown): string {
 	}
 }
 
-export function endMessage(node: unknown, language: string): string {
-	return isObj(node) ? textFor(node.message, language) : '';
+/** An End node's message in `language`, plain or rich (the editor shows it as it is). */
+export function endMessage(node: unknown, language: string): string | RichText {
+	return isObj(node) ? richFor(node.message, language) : '';
 }
 
 // --- Diagnostics ----------------------------------------------------------------------------

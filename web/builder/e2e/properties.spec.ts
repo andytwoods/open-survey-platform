@@ -1,9 +1,10 @@
-import { expect, test, type Locator, type Page } from '@playwright/test';
-import { axe, pickQuestionType, signIn } from './fixtures';
+import { expect, test, type Page } from '@playwright/test';
+import { axe, caretToEnd, fillRich, openRich, pickQuestionType, signIn } from './fixtures';
 
 // Property panel (/dev/properties, task B4): axe in light and dark for every entity, edits
-// become set_property ops, focus and caret survive the echoed patch, keyboard-only use,
-// and a diagnostic elsewhere focuses its field.
+// become set_property ops, focus survives the echoed patch, keyboard-only use, and a
+// diagnostic elsewhere focuses its field. Text fields are the rich editor (RT3): the
+// formatting flows themselves are in richtext.spec.ts.
 
 async function open(page: Page, type = 'single') {
 	await page.goto('/dev/properties');
@@ -12,9 +13,6 @@ async function open(page: Page, type = 'single') {
 }
 
 const log = (page: Page) => page.getByTestId('op-log');
-// (The End key doesn't move the caret on macOS.)
-const toEnd = (field: Locator) =>
-	field.evaluate((el: HTMLTextAreaElement) => el.setSelectionRange(el.value.length, el.value.length));
 
 for (const scheme of ['light', 'dark'] as const) {
 	test.describe(`property panel, ${scheme}`, () => {
@@ -28,25 +26,26 @@ for (const scheme of ['light', 'dark'] as const) {
 	});
 }
 
-test('typing sends one set_property after a pause; focus and caret survive the patch', async ({ page }) => {
+test('typing sends one set_property after a pause; focus and the caret survive the patch', async ({ page }) => {
 	await open(page);
 	const field = page.getByLabel('Question text');
-	await field.click();
-	await toEnd(field);
-	await field.pressSequentially(' Really', { delay: 20 });
+	await expect(field).toHaveText('How many hours do you sleep?');
+	await openRich(page, field);
+	await caretToEnd(page);
+	await page.keyboard.type(' Really', { delay: 20 });
 	await expect(log(page).getByRole('listitem')).toHaveCount(1);
 	await expect(log(page)).toContainText('"property":"label","value":{"en":"How many hours do you sleep? Really"}');
-	// Put the caret mid-text; the echoed patch (150 ms later) must not move it or focus.
-	await field.evaluate((el: HTMLTextAreaElement) => el.setSelectionRange(4, 8));
+	// The echoed patch (150 ms later) must not move focus or the caret: typing carries on
+	// at the end, straight through the echo.
 	await page.waitForTimeout(400);
 	await expect(field).toBeFocused();
-	expect(await field.evaluate((el: HTMLTextAreaElement) => [el.selectionStart, el.selectionEnd])).toEqual([4, 8]);
-	// Keep typing straight through the next echo.
-	await toEnd(field);
-	await field.pressSequentially('!', { delay: 20 });
-	await field.press('Tab');
+	await page.keyboard.type('!', { delay: 20 });
+	await page.keyboard.press('Tab');
 	await expect(log(page).getByRole('listitem')).toHaveCount(2);
-	await expect(field).toHaveValue('How many hours do you sleep? Really!');
+	await expect(log(page)).toContainText('"value":{"en":"How many hours do you sleep? Really!"}');
+	// Blurred: back to the read-only view, with the text.
+	await expect(field).not.toHaveAttribute('contenteditable', 'true');
+	await expect(field).toHaveText('How many hours do you sleep? Really!');
 });
 
 test('switch, select and editor buttons work from the keyboard', async ({ page }) => {
@@ -86,11 +85,10 @@ test('translatable fields show the language and a missing-translation hint', asy
 	await open(page);
 	await page.getByTestId('language').selectOption('de');
 	const field = page.getByLabel('Question text');
-	await expect(field).toHaveValue('');
-	await expect(field).toHaveAttribute('placeholder', 'How many hours do you sleep?');
+	await expect(field).toHaveAttribute('aria-placeholder', 'How many hours do you sleep?');
 	await expect(field).toHaveAccessibleDescription(/de\s*Missing translation/);
-	await field.fill('Wie viele Stunden schlafen Sie?');
-	await field.press('Tab');
+	await fillRich(page, field, 'Wie viele Stunden schlafen Sie?');
+	await page.keyboard.press('Tab');
 	await expect(log(page)).toContainText(
 		'"value":{"en":"How many hours do you sleep?","de":"Wie viele Stunden schlafen Sie?"}'
 	);

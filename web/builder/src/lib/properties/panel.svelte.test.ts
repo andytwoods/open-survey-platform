@@ -1,7 +1,9 @@
 import '@testing-library/svelte/vitest';
 import { fireEvent, render } from '@testing-library/svelte';
 import axe from 'axe-core';
+import { tick } from 'svelte';
 import { afterEach, describe, expect, it, vi } from 'vitest';
+import { activate, blurField, editable, typeInto } from '../richtext/test-utils';
 import fixture from './fixtures/property-schemas.json';
 import { EXTERNAL_KINDS, TEXT_DEBOUNCE_MS, groupProperties } from './logic';
 import PropertyPanel from './PropertyPanel.svelte';
@@ -10,6 +12,8 @@ import type { OpenEditorRequest, PanelDiagnostic, PanelOp, PropertySchemasDoc, T
 // The property panel against the real schemas (fixtures/property-schemas.json is exactly
 // what GET /api/meta/property-schemas serves): every MVP property editable, text debounce,
 // focus and caret kept when patches arrive, inline diagnostics, focusProperty, axe.
+// Participant-facing text fields are the rich editor (planning/rich-text.md §9, RT3): at
+// rest a read-only textbox, an editor once focused; tests drive it through its commands.
 
 const doc = fixture as unknown as PropertySchemasDoc;
 const schemaOf = (type: string) => doc.schemas.find((s) => s.type === type)!;
@@ -50,9 +54,16 @@ function setup(
 	const r = render(PropertyPanel, { props });
 	const field = (key: string) =>
 		r.container.querySelector<HTMLElement>(
-			`[data-property="${key}"] :is(input, textarea, select, button.switch, button.open-editor)`
+			`[data-property="${key}"] :is(input, textarea, select, button.switch, button.open-editor, [role="textbox"])`
 		)!;
 	return { ...r, ops, opened, dirty, props, field };
+}
+
+/** Edit a rich field as a researcher would: focus, replace the text, leave. */
+async function editRich(el: HTMLElement, text: string) {
+	const ed = await activate(el);
+	await typeInto(ed, text);
+	await blurField(el.id);
 }
 
 afterEach(() => {
@@ -82,8 +93,14 @@ describe('every MVP property is editable', () => {
 					continue;
 				}
 				if (spec.kind === 'text' || spec.kind === 'richtext') {
-					await fireEvent.input(el, { target: { value: 'Edited' } });
-					await fireEvent.blur(el);
+					if (spec.rich) {
+						expect(el.getAttribute('role'), key).toBe('textbox');
+						await editRich(el, 'Edited');
+					} else {
+						expect(el.tagName, key).toBe('INPUT');
+						await fireEvent.input(el, { target: { value: 'Edited' } });
+						await fireEvent.blur(el);
+					}
 					const value = spec.translatable ? { en: 'Edited' } : 'Edited';
 					expect(t.ops.slice(before), key).toEqual([{ op: 'set_property', params: { ...address, value } }]);
 				} else if (spec.kind === 'bool') {
@@ -111,10 +128,28 @@ describe('every MVP property is editable', () => {
 
 	it('shows defaults when the target has no value', () => {
 		const t = setup(schemaOf('single'));
-		expect((t.field('label') as HTMLTextAreaElement).value).toBe('Untitled question');
+		expect(t.field('label').textContent).toBe('Untitled question');
 		expect(t.field('required').getAttribute('aria-checked')).toBe('false');
 		expect((t.field('choiceOrder') as HTMLSelectElement).value).toBe('fixed');
 		expect(t.container.querySelector('[data-property="choices"] [data-testid="summary"]')!.textContent).toBe('2 choices');
+	});
+
+	it('picks the editor level from the schema: block for a note, stem for a question, inline for a page title', async () => {
+		const note = setup(schemaOf('note'));
+		expect(note.container.querySelector('[data-property="label"] .osp-rt')!.getAttribute('data-level')).toBe('block');
+		note.unmount();
+		const single = setup(schemaOf('single'));
+		expect(single.container.querySelector('[data-property="label"] .osp-rt')!.getAttribute('data-level')).toBe('stem');
+		expect(single.container.querySelector('[data-property="constraintMessage"] .osp-rt')!.getAttribute('data-level')).toBe('inline');
+		expect(single.container.querySelector('[data-property="name"] .osp-rt')).toBeNull();
+		single.unmount();
+		const page = setup(schemaOf('page'));
+		expect(page.container.querySelector('[data-property="title"] .osp-rt')!.getAttribute('data-level')).toBe('inline');
+		page.unmount();
+		// metadata.title stays a plain input (lead decision 6).
+		const survey = setup(schemaOf('survey'));
+		expect(survey.field('metadata.title').tagName).toBe('INPUT');
+		expect(survey.container.querySelector('[data-property="metadata.description"] .osp-rt')!.getAttribute('data-level')).toBe('block');
 	});
 
 	it('offers survey languages for optionsFrom and "Not set" when there is no default', () => {
@@ -163,6 +198,21 @@ describe('text buffers', () => {
 		expect(t.ops).toHaveLength(1);
 	});
 
+	it(`the rich editor sends once after the same pause`, async () => {
+		const t = setup(schemaOf('text'), { id: 'q1', type: 'text', label: { en: 'One' } });
+		const ed = await activate(t.field('label'));
+		vi.useFakeTimers();
+		await typeInto(ed, 'On');
+		vi.advanceTimersByTime(TEXT_DEBOUNCE_MS - 1);
+		await typeInto(ed, 'One two');
+		vi.advanceTimersByTime(TEXT_DEBOUNCE_MS - 1);
+		expect(t.ops).toEqual([]);
+		expect(t.dirty).toEqual([true]);
+		vi.advanceTimersByTime(1);
+		expect(t.ops).toEqual([{ op: 'set_property', params: { target: 'q1', property: 'label', value: { en: 'One two' } } }]);
+		expect(t.dirty).toEqual([true, false]);
+	});
+
 	it('send immediately on blur and on Enter, and never twice', async () => {
 		vi.useFakeTimers();
 		const t = setup(schemaOf('text'));
@@ -178,7 +228,7 @@ describe('text buffers', () => {
 		expect(t.ops).toHaveLength(2);
 	});
 
-	it('Escape throws away unsent text', async () => {
+	it('Escape throws away unsent text (plain and rich)', async () => {
 		vi.useFakeTimers();
 		const t = setup(schemaOf('text'), { id: 'q1', type: 'text', name: 'orig' });
 		const el = t.field('name') as HTMLInputElement;
@@ -187,23 +237,30 @@ describe('text buffers', () => {
 		vi.advanceTimersByTime(TEXT_DEBOUNCE_MS * 2);
 		expect(el.value).toBe('orig');
 		expect(t.ops).toEqual([]);
+		vi.useRealTimers();
+
+		const ed = await activate(t.field('label'));
+		await typeInto(ed, 'oops');
+		await fireEvent.keyDown(editable(t.field('label').id)!, { key: 'Escape' });
+		expect(ed.getText()).toBe('Untitled question');
+		expect(t.ops).toEqual([]);
 	});
 
 	it('flush on selection change edits the object the text was typed into', async () => {
-		vi.useFakeTimers();
 		const s = schemaOf('text');
 		const t = setup(s, { id: 'q1', type: 'text', label: { en: 'One' } });
-		await fireEvent.input(t.field('label'), { target: { value: 'One!' } });
+		const ed = await activate(t.field('label'));
+		await typeInto(ed, 'One!');
 		await t.rerender({ ...t.props, target: { id: 'q2', type: 'text', label: { en: 'Two' } } });
 		expect(t.ops).toEqual([{ op: 'set_property', params: { target: 'q1', property: 'label', value: { en: 'One!' } } }]);
-		expect((t.field('label') as HTMLTextAreaElement).value).toBe('Two');
+		expect(t.field('label').textContent).toBe('Two');
 	});
 
-	it('flush() commits every pending buffer', async () => {
-		vi.useFakeTimers();
+	it('flush() commits every pending buffer, plain and rich', async () => {
 		const t = setup(schemaOf('text'));
 		await fireEvent.input(t.field('name'), { target: { value: 'n' } });
-		await fireEvent.input(t.field('constraintMessage'), { target: { value: 'm' } });
+		const ed = await activate(t.field('constraintMessage'));
+		await typeInto(ed, 'm');
 		(t.component as unknown as { flush(): void }).flush();
 		expect(t.ops.map((o) => (o.op === 'set_property' ? o.params.property : o.params.key)).sort()).toEqual(['constraintMessage', 'name']);
 	});
@@ -213,40 +270,39 @@ describe('focus is kept when patches arrive', () => {
 	const s = schemaOf('single');
 	const base = { id: 'q1', type: 'single', label: { en: 'Hello world' } };
 
-	it('keeps focus and caret when another property is patched', async () => {
+	it('keeps the editor open and focused when another property is patched', async () => {
 		const t = setup(s, base);
-		const el = t.field('label') as HTMLTextAreaElement;
-		el.focus();
-		el.setSelectionRange(3, 5);
+		const el = t.field('label');
+		const ed = await activate(el);
+		ed.commands.setTextSelection({ from: 3, to: 5 });
 		await t.rerender({ ...t.props, target: { ...base, required: true } });
-		expect(document.activeElement).toBe(t.field('label'));
-		expect(t.field('label')).toBe(el); // same node, not re-rendered
-		expect([el.selectionStart, el.selectionEnd]).toEqual([3, 5]);
+		const editing = editable(el.id)!;
+		expect(document.activeElement).toBe(editing);
+		expect(ed.getText()).toBe('Hello world');
+		expect([ed.state.selection.from, ed.state.selection.to]).toEqual([3, 5]);
 		expect(t.field('required').getAttribute('aria-checked')).toBe('true');
 	});
 
-	it('keeps focus and caret when the focused field itself is patched', async () => {
+	it('keeps focus and the selection when the focused field itself is patched', async () => {
 		const t = setup(s, base);
-		const el = t.field('label') as HTMLTextAreaElement;
-		el.focus();
-		el.setSelectionRange(3, 5);
+		const el = t.field('label');
+		const ed = await activate(el);
+		ed.commands.setTextSelection({ from: 3, to: 5 });
 		await t.rerender({ ...t.props, target: { ...base, label: { en: 'Hello there world' } } });
-		await Promise.resolve();
-		expect(el.value).toBe('Hello there world');
-		expect(document.activeElement).toBe(el);
-		expect([el.selectionStart, el.selectionEnd]).toEqual([3, 5]);
+		await tick();
+		expect(ed.getText()).toBe('Hello there world');
+		expect(document.activeElement).toBe(editable(el.id));
+		expect([ed.state.selection.from, ed.state.selection.to]).toEqual([3, 5]);
 	});
 
 	it('never overwrites text the user is still typing', async () => {
-		vi.useFakeTimers();
 		const t = setup(s, base);
-		const el = t.field('label') as HTMLTextAreaElement;
-		el.focus();
-		await fireEvent.input(el, { target: { value: 'Hello world, again' } });
+		const ed = await activate(t.field('label'));
+		vi.useFakeTimers();
+		await typeInto(ed, 'Hello world, again');
 		// An unrelated patch (and an echo of the old label) arrives mid-typing.
 		await t.rerender({ ...t.props, target: { ...base, required: true } });
-		expect(el.value).toBe('Hello world, again');
-		expect(document.activeElement).toBe(el);
+		expect(ed.getText()).toBe('Hello world, again');
 		vi.advanceTimersByTime(TEXT_DEBOUNCE_MS);
 		expect(t.ops.at(-1)!.params).toEqual({ target: 'q1', property: 'label', value: { en: 'Hello world, again' } });
 	});
@@ -282,7 +338,7 @@ describe('lab profile (B21)', () => {
 		};
 		const t = setup(s, { id: 'q1', type: 'single', custom: { construct: 'affect' } }, { groupLabels: { Logic: { en: 'Conditions' } } });
 		expect([...t.container.querySelectorAll('.group-toggle')].map((b) => b.textContent?.trim())).toContain('Conditions');
-		expect((t.field('custom.construct') as HTMLTextAreaElement | HTMLInputElement).value).toBe('affect');
+		expect((t.field('custom.construct') as HTMLInputElement).value).toBe('affect');
 		expect((t.field('custom.weight') as HTMLInputElement).value).toBe('1');
 		await fireEvent.input(t.field('custom.construct'), { target: { value: 'arousal' } });
 		await fireEvent.blur(t.field('custom.construct'));
@@ -306,15 +362,22 @@ describe('translations', () => {
 		expect(label.getAttribute('data-missing-translation')).toBe('true');
 		expect(label.textContent).toContain('Missing translation');
 		expect(label.textContent).toContain('de');
-		const el = t.field('label') as HTMLTextAreaElement;
-		expect(el.value).toBe('');
-		expect(el.placeholder).toBe('Hi');
+		const el = t.field('label');
+		expect(el.querySelector('.osp-rt-placeholder')!.textContent).toBe('Hi');
+		expect(el.getAttribute('aria-placeholder')).toBe('Hi');
 		expect(el.getAttribute('aria-describedby')).toContain(`${el.id}-lang`);
-		await fireEvent.input(el, { target: { value: 'Hallo' } });
-		await fireEvent.blur(el);
+		expect(el.getAttribute('lang')).toBe('de');
+		await editRich(el, 'Hallo');
 		expect(t.ops).toEqual([{ op: 'set_property', params: { target: 'q1', property: 'label', value: { en: 'Hi', de: 'Hallo' } } }]);
 		// Non-translatable fields have no language marker.
 		expect(t.container.querySelector('[data-property="name"] .lang')).toBeNull();
+	});
+
+	it('keeps a rich value in another language when this one is edited', async () => {
+		const rich = { type: 'rich', blocks: [{ type: 'p', content: [{ text: 'Hi', marks: ['b'] }] }] };
+		const t = setup(schemaOf('single'), { id: 'q1', type: 'single', label: { en: rich } }, { language: 'de' });
+		await editRich(t.field('label'), 'Hallo');
+		expect(t.ops).toEqual([{ op: 'set_property', params: { target: 'q1', property: 'label', value: { en: rich, de: 'Hallo' } } }]);
 	});
 });
 
@@ -334,6 +397,24 @@ describe('diagnostics', () => {
 		expect(t.container.textContent).not.toContain('Somewhere else.');
 	});
 
+	it('a ref.* diagnostic on a pipe marks that chip', async () => {
+		const label = { en: { type: 'rich', blocks: [{ type: 'p', content: [{ text: 'Hi ' }, { pipe: 'ghost' }, { text: ' and ' }, { pipe: 'ok' }] }] } };
+		const t = setup(
+			schemaOf('single'),
+			{ id: 'q1', type: 'single', label },
+			{
+				pointer: '/blocks/0/pages/0/items/0',
+				diagnostics: [{ severity: 'error', code: 'ref.unknown', message: 'ghost does not exist', pointer: '/blocks/0/pages/0/items/0/label/en/blocks/0/content/1' }]
+			}
+		);
+		const el = t.field('label');
+		expect(el.getAttribute('aria-invalid')).toBe('true');
+		await activate(el);
+		const chips = [...editable(el.id)!.querySelectorAll('.osp-rt-chip')];
+		expect(chips.map((c) => c.classList.contains('osp-rt-chip-error'))).toEqual([true, false]);
+		expect(chips[0]!.getAttribute('title')).toBe('ghost does not exist');
+	});
+
 	it('focusProperty expands a collapsed group and focuses the field', async () => {
 		const t = setup(schemaOf('integer'), { id: 'q1', type: 'integer' }, { diagnostics: diags, pointer: '/blocks/0/pages/0/items/0' });
 		const toggle = t.container.querySelector<HTMLButtonElement>('[data-group="Validation"] .group-toggle')!;
@@ -349,7 +430,7 @@ describe('diagnostics', () => {
 });
 
 describe('accessibility', () => {
-	for (const type of ['single', 'survey', 'page', 'block']) {
+	for (const type of ['single', 'note', 'survey', 'page', 'block']) {
 		it(`${type} panel has no axe violations`, async () => {
 			const t = setup(schemaOf(type), undefined, {
 				language: 'de',
@@ -361,4 +442,11 @@ describe('accessibility', () => {
 			expect(res.violations.map((v) => `${v.id}: ${v.nodes.map((n) => n.target).join(', ')}`)).toEqual([]);
 		});
 	}
+
+	it('the open editor has no axe violations', async () => {
+		const t = setup(schemaOf('note'), { id: 'q1', type: 'note', label: { en: 'Read ${name}' } });
+		await activate(t.field('label'));
+		const res = await axe.run(t.container, { rules: { 'color-contrast': { enabled: false }, region: { enabled: false } } });
+		expect(res.violations.map((v) => `${v.id}: ${v.nodes.map((n) => n.target).join(', ')}`)).toEqual([]);
+	});
 });
