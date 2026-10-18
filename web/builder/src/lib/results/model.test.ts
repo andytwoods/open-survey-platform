@@ -89,7 +89,7 @@ describe('filters → query', () => {
 			])
 		).toBe('6 complete · 1 screened out · 2 outcome unknown');
 		expect(describeOutcomes([])).toBe('');
-		expect(describeOutcomes(plain.outcomes)).toBe('5 outcome unknown');
+		expect(describeOutcomes(plain.outcomes ?? [])).toBe('5 outcome unknown');
 	});
 
 	it('gives the end of a day across month and year ends', () => {
