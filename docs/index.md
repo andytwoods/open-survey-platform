@@ -13,13 +13,30 @@ description: >-
 run it on any screen size, and keep everything you need to show exactly what each
 participant saw.
 
-[Get started](getting-started.md){ .md-button .md-button--primary }
-[See it in action](demos.md){ .md-button }
+<a class="md-button md-button--primary" href="demo/">Open the live builder</a>
+<a class="md-button md-button--primary" href="demo/take/">Take the demo study</a>
+[Get started](getting-started.md){ .md-button }
+{ .osp-demo-buttons }
 
-<figure markdown="span">
-  ![The builder editing an invented coffee and sleep study: the survey outline and question-type toolbox on the left, the questions drawn as participants see them in the middle, and the selected question's properties on the right](assets/showcase/editor.webp){ width="1280" height="800" }
-  <figcaption>The builder, editing an invented "Coffee and sleep study". Every screenshot on this site uses made-up data.</figcaption>
-</figure>
+The builder below is the real thing, running entirely in your browser on an invented
+"Coffee and focus" study: edit questions, logic, languages and the theme, then press
+**Preview** to run it. Nothing is sent anywhere, and a reload starts afresh.
+<a href="demo/take/">Take the demo study</a> to answer it as a participant would, through to
+its ending.
+
+<div class="osp-demo-frame">
+  <iframe src="demo/" title="The Open Survey Platform builder, live, editing an invented coffee and focus study" loading="lazy"></iframe>
+</div>
+
+<style>
+  .osp-demo-buttons { display: flex; flex-wrap: wrap; gap: 0.5rem; }
+  .osp-demo-buttons .md-button { margin: 0; }
+  .osp-demo-frame { margin: 1rem 0 1.5rem; border: 1px solid var(--md-default-fg-color--lightest); border-radius: 0.4rem; overflow: hidden; }
+  .osp-demo-frame iframe { display: block; width: 100%; height: min(80vh, 50rem); border: 0; }
+  @media (max-width: 44.9375em) {
+    .osp-demo-frame { display: none; }
+  }
+</style>
 
 !!! note "Status: early development"
     Usable on a laptop for building and running test surveys (October 2026); not yet
@@ -45,8 +62,6 @@ participant saw.
 [Read more: building a survey](building-a-survey.md) ·
 [question types](question-types.md)
 
-![The "Add a question" picker open over the editor, listing the nine question types with a filter box](assets/showcase/type-picker.webp){ loading=lazy width="1280" height="800" }
-
 ## Logic and flow
 
 **Show the right questions to the right people, in a reproducible order.**
@@ -60,8 +75,6 @@ participant saw.
 - Every random decision is seeded and recorded with the response, so it can be recomputed.
 
 [Read more: logic and flow](logic.md)
-
-![The survey flow of an invented breakfast study: a block, then a branch that ends the survey with the outcome "ineligible" when the participant answers no](assets/showcase/flow-branches.webp){ loading=lazy width="1280" height="800" }
 
 ## Languages and appearance
 
@@ -77,14 +90,6 @@ participant saw.
 - Save themes to a lab library and share them as JSON.
 
 [Read more: languages](settings.md#languages) · [appearance](appearance.md)
-
-=== "Translating"
-
-    ![The properties panel with German as the editing language: the English question text is shown above the field as a reference, with a "Copy from en" button](assets/showcase/languages.webp){ loading=lazy width="1280" height="800" }
-
-=== "Themes"
-
-    ![The Appearance page: theme controls on the left and a live preview of a sample page in the Warm theme at phone, tablet and desktop widths](assets/showcase/appearance.webp){ loading=lazy width="1280" height="800" }
 
 ## A question bank with validated instruments
 
@@ -103,8 +108,6 @@ participant saw.
 
 [Read more: the question bank](question-bank.md)
 
-![The Bank section under the outline, searched for "PHQ": PHQ-2 and PHQ-9 cards marked Bundled and Public domain, each with an Insert button](assets/showcase/bank.webp){ loading=lazy width="1280" height="800" }
-
 ## Endings, redirects and recruitment panels
 
 **A different ending for each outcome, and a safe hand-off to Prolific or an experiment.**
@@ -120,8 +123,6 @@ participant saw.
 
 [Read more: endings](settings.md#endings) · [redirects](settings.md#redirects) ·
 [external tasks](logic.md#external-task-step)
-
-![The ending editor for the outcome "complete": title, text with a piped rating, a preview of the end screen, and an "Afterwards" section that sends participants to a Prolific completion address](assets/showcase/endings.webp){ loading=lazy width="1280" height="800" }
 
 ## Results you can show and publish
 
@@ -139,8 +140,6 @@ participant saw.
 
 [Read more: results](results.md)
 
-![Presentation mode for an invented study with 150 made-up responses: a histogram of cups of coffee and a bar chart of how people take their coffee, with counts below 5 shown as n<5](assets/showcase/results-present.webp){ loading=lazy width="1280" height="800" }
-
 ## Import and export
 
 **Bring surveys in from other tools, and take them out again.**
@@ -156,8 +155,6 @@ participant saw.
 
 [Read more: importing](building-a-survey.md#import-a-survey) ·
 [exports](publishing.md#exporting-the-survey-itself)
-
-![The "Import a survey" dialog previewing an invented LimeSurvey file: what will be created, three features that will not carry over, and four that will behave differently](assets/showcase/import.webp){ loading=lazy width="1280" height="800" }
 
 ## Open science built in
 
@@ -177,8 +174,6 @@ participant saw.
 [reproducibility package](publishing.md#the-reproducibility-package) ·
 [AI drafting](ai-drafting.md)
 
-![The publish dialog after publishing version 1: the participant link, downloads for XLSForm, LimeSurvey, the reproducibility package and the preregistration bundle, and an OSF upload form](assets/showcase/publish.webp){ loading=lazy width="1280" height="800" }
-
 ## Yours to run, open to everyone
 
 **Self-hosted, MIT-licensed and built for accessibility.**
@@ -195,11 +190,6 @@ participant saw.
   at 320 px wide, and the builder can be driven entirely from the keyboard.
 
 [Read more: hosting](hosting.md) · [contributing](reference/contributing.md)
-
-<figure markdown="span">
-  ![The participant app on a phone in the Warm theme: two coffee questions, a "Continue on another device" link and a Next button](assets/showcase/participant-phone.webp){ loading=lazy width="300" height="649" }
-  <figcaption>The participant app at phone size.</figcaption>
-</figure>
 
 ## How it compares
 

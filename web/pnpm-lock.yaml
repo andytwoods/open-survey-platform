@@ -248,9 +248,15 @@ importers:
       '@osp/engine':
         specifier: workspace:*
         version: link:../engine
+      '@osp/ops':
+        specifier: workspace:*
+        version: link:../ops
       '@osp/runtime':
         specifier: workspace:*
         version: link:../runtime
+      '@osp/spec':
+        specifier: workspace:*
+        version: link:../spec
       '@osp/ui-components':
         specifier: workspace:*
         version: link:../ui-components

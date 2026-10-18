@@ -26,3 +26,4 @@ vite.config.ts.timestamp-*
 /test-results
 /playwright-report
 /blob-report
+/e2e-demo/test-results

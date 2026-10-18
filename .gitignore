@@ -43,3 +43,7 @@ spikes/spike-enketo/build/
 .claude/settings.local.json
 .claude/.stop-hook*
 .idea/
+
+# Serverless Pages demo (make docs-demo): the build and its generated data
+web/builder/build-demo/
+web/builder/demo-site/public/data/
