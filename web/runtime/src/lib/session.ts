@@ -207,6 +207,8 @@ export class Session {
 	private closed = false;
 	private effectRunning = false;
 	private hooks: HookDriver | null = null;
+	/** Answers given while a hook ran, with the page they were given on (`answer`). */
+	private held: { where: string; itemId: string; value: unknown }[] = [];
 	/** The session started on this load (hooks `begin`), rather than resumed (`resume`). */
 	private fresh: boolean;
 	/** This tab's own submit (or decline) was acknowledged: the one time a redirect may fire. */
@@ -348,6 +350,12 @@ export class Session {
 	// -- participant actions ---------------------------------------------------------
 
 	answer(itemId: string, value: unknown) {
+		if (this.phase === 'hook') {
+			// The inputs stay live while a hook runs (e.g. onPageShown on arrival): keep what
+			// was typed and apply it when the hook is done, never drop it (hookDone).
+			this.held.push({ where: this.where(), itemId, value });
+			return;
+		}
 		if (this.phase !== 'page') return;
 		if (this.hooks) {
 			// The runner applies the answer synchronously (onState commits it), then runs
@@ -395,7 +403,7 @@ export class Session {
 		try {
 			r = await this.hooks!.next();
 		} finally {
-			if (this.phase === 'hook') this.phase = 'page';
+			this.hookDone();
 		}
 		this.moved(before);
 		this.saveNow();
@@ -426,7 +434,7 @@ export class Session {
 			try {
 				o = await this.hooks.back();
 			} finally {
-				if (this.phase === 'hook') this.phase = 'page';
+				this.hookDone();
 			}
 			const moved = o.outcome !== 'refused';
 			this.moved(before);
@@ -454,7 +462,7 @@ export class Session {
 		try {
 			o = await this.hooks.retry();
 		} finally {
-			if (this.phase === 'hook') this.phase = 'page';
+			this.hookDone();
 		}
 		this.afterHook(o);
 		this.saveNow();
@@ -540,26 +548,48 @@ export class Session {
 		if (!this.plan.hooks || !this.env.hooks || this.hooks || this.closed) return;
 		// No researcher code runs before the participant agrees (semantics §11).
 		if (E.awaitingConsent(this.state)) return;
+		// While the sandbox loads the page is up but its hooks are not: Next waits (it would
+		// skip onPageNext) and answers are held, since the runner starts from this state.
+		const loading = this.phase === 'page';
+		if (loading) {
+			this.phase = 'hook';
+			this.emit();
+		}
 		try {
 			this.hooks = await this.env.hooks(this.plan, this.state, (s) => this.fromHooks(s));
 		} catch (e) {
 			this.log('hooks unavailable', e);
 			this.hooks = null;
+			this.held = [];
 			this.fail(ui.hooksFailed);
 			return;
 		}
-		if (!this.hooks) return;
+		if (!this.hooks) {
+			if (loading) this.hookDone();
+			this.emit();
+			return;
+		}
 		this.phase = 'hook';
 		this.emit();
 		let o: FireOutcome;
 		try {
 			o = this.fresh ? await this.hooks.begin() : await this.hooks.resume();
 		} finally {
-			if (this.phase === 'hook') this.phase = 'page';
+			this.hookDone();
 		}
 		this.afterHook(o);
 		this.saveNow();
 		this.emit();
+	}
+
+	/** A hook call is over: back to the page, with the answers given meanwhile on it. */
+	private hookDone() {
+		if (this.phase !== 'hook') return;
+		this.phase = 'page';
+		const held = this.held;
+		this.held = [];
+		const here = this.where();
+		for (const h of held) if (h.where === here) this.answer(h.itemId, h.value);
 	}
 
 	private afterHook(o: FireOutcome) {
