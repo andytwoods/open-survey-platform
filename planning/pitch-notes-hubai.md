@@ -6,25 +6,34 @@ Strict 3 min + 2 min questions. Organisers' structure: problem → old way → r
 ## 1. The problem (~25 s)
 - Scientists now build research software with AI agents
 - One person can run many agents at once
+- A lab or hackathon team runs many more
 - But agents can't see each other; work collides
-- And nobody can vouch for code they never read
 - Footer: "Planning began Friday daytime; first commit 17:46"
 
-## 2. The old way (~35 s): my own weekend
-- I built a Qualtrics replacement: one person, many agents
-- 467 commits, 2,801 tests, 247 browser tests
-- Mostly TypeScript: a language I don't know
-- I never read a single line, so I can't stand behind it
-- Screenshot: the survey builder (one slide, no demo)
+## 2. The old way (~35 s): one screenshot slide
+- Kanban apps for agents: Vibe Kanban, Kanbots, Kanban Code
+  - one person, one machine, one card = one agent
+- Agent messaging: MCP Agent Mail
+  - agents talk and reserve files; no shared task board
+- Vendor clouds: assign a GitHub issue to Copilot
+  - paid, their machines, one agent per issue
+- Gap: a team of people, their agents and spare PCs, one board
 
 ## 3. The reinvention (~2 min): HubAI
 - One line: a shared task board for a team's agents
-- Built in Django, my stack; I read every line
-- Demo: live board, cards moving, 50 tasks done
-- Demo: a spare PC claims a task on screen
-- Demo: inbox shows the claim and the report
+- Any agent joins over MCP: one line to add
+- Claims: two agents can't take the same task
+- Inbox: agents and people message each other
+- Spare PCs become workers, on Windows or Mac
 - Failures handled: 3 tries then a human; silent PC requeued
-- Fallback: HubAI demo video if the Wi-Fi fails
+- Built in Django, my stack; open source, self-hosted, free
+
+## Demo beats (inside part 3)
+- Live board: this weekend's tasks, 50 done
+- Say: "three PCs built an app overnight through this"
+- A spare PC claims a task on screen
+- Inbox: the claim lands, the agent reports back
+- Fallback: screen recording if the Wi-Fi fails
 
 ## Last slide (stays up during questions)
 - Top: one line on what I do
@@ -34,19 +43,26 @@ Strict 3 min + 2 min questions. Organisers' structure: problem → old way → r
 - Check students are happy to be shown
 
 ## Slides (4)
-1. Problem: agents can't see each other + footer
-2. Old way: SurveyGUI screenshot + "I never read a line"
+1. Problem: many agents, no shared view + footer
+2. Old way: the four tools, one line each, the gap
 3. HubAI: live demo (board, worker, inbox)
 4. Me, my students, the ask (up during Q&A)
 
 ## Likely questions (2 min)
-- Is SurveyGUI any good? Tests say yes; I can't vouch
-- Trust code you didn't read? Only with tests, small tasks
-- Why not GitHub Issues? Agents need claims, inbox, retries
+- Why not Vibe Kanban? One person's laptop; HubAI is a team
+- Why not Agent Mail? Messages, but no board or workers
+- Why not GitHub Issues + Copilot? Paid cloud; HubAI uses your PCs
+- Trust code agents wrote? Small tasks, tests, a human merges
 - What would funding buy? Months, not a weekend, of this
-- Safe? Workers take only your own tasks
 - Can my lab use it? Yes: open source, MIT, free
 
 ## Cut if short of time
-- SurveyGUI numbers: keep only "never read a line"
+- Old way: name the tools, skip the sub-bullets
 - Demo: skip the inbox, keep board + worker claim
+
+## Sources (checked 18 Oct 2026)
+- https://www.vibekanban.com/
+- https://github.com/langwatch/kanban-code
+- https://ai-tldr.dev/tools/kanbots/
+- https://github.com/Dicklesworthstone/mcp_agent_mail
+- https://docs.github.com/en/copilot/using-github-copilot/coding-agent/using-copilot-to-work-on-an-issue
