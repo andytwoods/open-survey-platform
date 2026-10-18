@@ -169,6 +169,10 @@ tab)" for screen readers. Nothing else can be stored: no colours, fonts, sizes, 
 raw HTML (`text.block_not_allowed`, `link.scheme`, `link.empty`, `text.too_long`). A
 formatted value that uses no formatting at all is saved as the plain string it is.
 
+The exports carry the formatting too: XLSForm as Markdown (with literal `* _ # \` escaped,
+also in plain text), LimeSurvey as HTML. [Publishing](publishing.md#exporting-the-survey-itself)
+lists what each target loses.
+
 ### Moving things
 
 Drag an item by its handle in the outline, or use the keyboard: ++alt+up++ /

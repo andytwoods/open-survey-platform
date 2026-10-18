@@ -22,7 +22,7 @@ REPO = Path(__file__).resolve().parents[3]
 CASES = sorted((REPO / "python/osp-spec/tests/cases/valid").glob("*.json"))
 FIXTURES = sorted((REPO / "fixtures").glob("*/survey.json"))
 GOLDEN = Path(__file__).parent / "data/lss"
-GOLDEN_FIXTURES = ["13-randomiser-blocks", "17-piping", "20-worked-example"]
+GOLDEN_FIXTURES = ["13-randomiser-blocks", "17-piping", "20-worked-example", "41-rich-text"]
 
 
 def _fixture_survey(path: Path) -> Any:
@@ -332,6 +332,72 @@ def test_piping_uses_shown_for_choice_labels() -> None:
     assert text.startswith("You chose {c.shown}, {n} &amp; {")
     assert text.endswith("} \\{x} &lt;b&gt;")
     assert {"$pipe.multi", "$text.markup", "$text.braces"} <= {d.feature for d in diags}
+
+
+def test_rich_text_is_html_everywhere_it_is_written() -> None:
+    """RT4: question, help, answers, page title (HTML description, plain group name), the
+    ending (no `<p>` around block HTML) and the constraint tip."""
+    rich = {
+        "type": "rich",
+        "blocks": [
+            {
+                "type": "p",
+                "content": [{"text": "Hi ", "marks": ["b"]}, {"pipe": "c"}, {"text": " <"}],
+            },
+            {"type": "ul", "items": [[{"text": "x", "lang": "fr"}]]},
+        ],
+    }
+    one = {
+        "type": "rich",
+        "blocks": [
+            {"type": "p", "content": [{"text": "T", "marks": ["i"]}, {"br": True}, {"text": "2"}]}
+        ],
+    }
+    data = _survey(
+        [
+            _q("c", "single", choices=[{"value": "y", "label": one}]),
+            {
+                "id": "n",
+                "type": "integer",
+                "label": rich,
+                "help": one,
+                "constraint": {
+                    "kind": "compare",
+                    "op": "<=",
+                    "left": {"kind": "ref", "id": "n"},
+                    "right": {"kind": "int", "value": 5},
+                },
+                "constraintMessage": one,
+            },
+        ],
+        settings={"endings": {"complete": {"title": one, "body": rich}}},
+    )
+    data["blocks"][0]["pages"][0]["title"] = one
+    _, diags, root = _export(data)
+    n = _question(root, "n")["qid"]
+    l10n = next(r for r in _rows(root, "question_l10ns") if r["qid"] == n)
+    assert l10n["question"] == (
+        '<p><strong>Hi </strong>{c.shown} &lt;</p><ul><li><span lang="fr">x</span></li></ul>'
+    )
+    assert l10n["help"] == "<em>T</em><br />2"
+    assert [r["answer"] for r in _rows(root, "answer_l10ns")] == ["<em>T</em><br />2"]
+    group = _rows(root, "group_l10ns")[0]
+    assert group["description"] == "<em>T</em><br />2"
+    assert group["group_name"] == "T 2"
+    end = _rows(root, "surveys_languagesettings")[0]["surveyls_endtext"]
+    assert end == (
+        "<p><em>T</em><br />2</p><p><strong>Hi </strong>{c.shown} &lt;</p>"
+        '<ul><li><span lang="fr">x</span></li></ul>'
+    )
+    tips = [
+        r["value"]
+        for r in _rows(root, "question_attributes")
+        if r["attribute"] == "em_validation_q_tip"
+    ]
+    assert tips == ["<em>T</em><br />2"]
+    assert not [d for d in diags if d.feature.startswith(("TextRun", "RichList", "Paragraph"))]
+    assert "Heading.type" not in {d.feature for d in diags}
+    assert len(diags) == len({(d.feature, d.pointer) for d in diags})
 
 
 def test_branches_and_end_nodes_become_group_relevance() -> None:

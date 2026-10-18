@@ -36,7 +36,7 @@ from osp_expr.ast import (
     TextLit,
 )
 from osp_expr.static import references
-from osp_spec import Survey, flatten_text, parse, redirect_templates
+from osp_spec import Survey, is_rich, parse, redirect_templates
 from osp_spec.hooks import DEFAULT_PARAM_PATTERN, placeholders
 from osp_spec.model import (
     AssignedVariable,
@@ -67,8 +67,10 @@ from pydantic import BaseModel
 
 from ..capabilities.base import Capability
 from ..diagnostics import SEVERITY_FOR_LEVEL, ExportDiagnostic, pointer
+from ..richtext import as_json
 from .capabilities import LSS
 from .em import EMPTY, FALSE, TRUE, EMContext, EMWriter, and_, not_, or_, string_literal
+from .html import is_block_html, to_html
 from .xml import Table, write_document
 
 TARGET = "lss"
@@ -109,6 +111,8 @@ _CODE_OK = re.compile(r"^[A-Za-z][A-Za-z0-9]*$")
 _PIPE = re.compile(r"\$\{([^}]*)\}")
 _CONTROL = re.compile(r"[\x00-\x08\x0b\x0c\x0e-\x1f]")
 _MARKUP = re.compile(r"[&<>\n]")
+# Our own tags in a rendered text (every `<` of the researcher's text is `&lt;` by then).
+_TAGS = re.compile(r"<[^>]+>")
 _LATCH_MAX = 1_000_000
 # LimeSurvey needs a quota message; used when the quota's screen-out block has no text.
 _QUOTA_FULL = "<p>Thank you. This survey is now closed for your group.</p>"
@@ -558,13 +562,13 @@ class _Exporter:
     # -- text ----------------------------------------------------------------------------
 
     def _texts(self, text: object, ptr: str) -> Texts:
-        """``{language: LimeSurvey text}`` with pipes rewritten to Expression Manager. Rich
-        text (RT2) is flattened to plain text until RT4 writes the HTML subset; the loss is
-        reported through the `RichText.*` / `TextRun.*` capability rows (feature_uses)."""
-        text = flatten_text(text)
+        """``{language: LimeSurvey HTML}``: plain strings escaped with `\\n` as `<br />`,
+        rich text (RT2) as the HTML subset (RT4, `html.py`), pipes rewritten to Expression
+        Manager."""
+        text = as_json(text)
         if text is None:
             return {}
-        if isinstance(text, str):
+        if isinstance(text, str) or is_rich(text):
             per_lang = {lang: (text, ptr) for lang in self.langs}
         else:
             assert isinstance(text, dict)
@@ -573,7 +577,24 @@ class _Exporter:
                 lang: (text.get(lang, fallback), ptr + pointer(lang) if lang in text else ptr)
                 for lang in self.langs
             }
-        return {lang: self._render(s, sp) for lang, (s, sp) in per_lang.items()}
+        return {lang: self._html(value, vp) for lang, (value, vp) in per_lang.items()}
+
+    def _html(self, value: object, ptr: str) -> str:
+        if is_rich(value):
+            assert isinstance(value, dict)
+            return to_html(
+                value,
+                escape=lambda s, path: self._escape(s, ptr + pointer(*path)),
+                pipe=lambda qid, path: self._pipe(qid, ptr + pointer(*path)),
+                report=lambda key, path: self.note(key, ptr + pointer(*path)),
+            )
+        return self._render(value if isinstance(value, str) else "", ptr)
+
+    @staticmethod
+    def _paragraph(text: str) -> str:
+        """A text as one paragraph of a longer LimeSurvey text: wrapped in `<p>` unless it
+        is already block HTML (a rich value with more than one block)."""
+        return text if is_block_html(text) else f"<p>{text}</p>"
 
     def _escape(self, s: str, ptr: str) -> str:
         if _CONTROL.search(s):
@@ -592,26 +613,28 @@ class _Exporter:
         for m in _PIPE.finditer(s):
             out.append(self._escape(s[pos : m.start()], ptr))
             pos = m.end()
-            qid = m.group(1).strip()
-            if qid.startswith("$"):
-                # Built-ins ($trial, $position.*; semantics §8) are our runtime's.
-                self.note("$pipe.builtin", ptr, f"${{{qid}}}")
-                continue
-            if qid not in self.codes:
-                out.append(self._escape(m.group(0), ptr))
-                continue
-            code = self.codes[qid]
-            kind = self.types.get(qid)
-            if kind == "single":
-                self.note("$pipe.choiceLabel", ptr, f"${{{qid}}}")
-                out.append(f"{{{code}.shown}}")
-            elif kind == "multi":
-                self.note("$pipe.multi", ptr, f"${{{qid}}}")
-                out.append("{" + self.em.value(Ref(id=qid)) + "}")
-            else:
-                out.append(f"{{{code}}}")
+            out.append(self._pipe(m.group(1).strip(), ptr, m.group(0)))
         out.append(self._escape(s[pos:], ptr))
         return "".join(out)
+
+    def _pipe(self, qid: str, ptr: str, raw: str | None = None) -> str:
+        """The Expression Manager text for one `${qid}` (`raw` is how it was written, kept
+        as escaped text when the id is unknown), with the piping diagnostics at `ptr`."""
+        if qid.startswith("$"):
+            # Built-ins ($trial, $position.*; semantics §8) are our runtime's.
+            self.note("$pipe.builtin", ptr, f"${{{qid}}}")
+            return ""
+        if qid not in self.codes:
+            return self._escape(raw if raw is not None else "${" + qid + "}", ptr)
+        code = self.codes[qid]
+        kind = self.types.get(qid)
+        if kind == "single":
+            self.note("$pipe.choiceLabel", ptr, f"${{{qid}}}")
+            return f"{{{code}.shown}}"
+        if kind == "multi":
+            self.note("$pipe.multi", ptr, f"${{{qid}}}")
+            return "{" + self.em.value(Ref(id=qid)) + "}"
+        return f"{{{code}}}"
 
     def _all_langs(self, s: str) -> Texts:
         return {lang: s for lang in self.langs}
@@ -866,7 +889,7 @@ class _Exporter:
         for key in ("title", "body"):
             ptr = pointer("settings", "endings", outcome, key)
             for lang, t in self._texts(getattr(ending, key), ptr).items():
-                parts[lang].append(f"<p>{t}</p>")
+                parts[lang].append(self._paragraph(t))
         return {lang: "".join(ps) for lang, ps in parts.items() if ps}
 
     def _outcome(self) -> None:
@@ -906,11 +929,16 @@ class _Exporter:
         assert isinstance(block, Block)
         for pi, page in enumerate(block.pages):
             pptr = pointer("blocks", bi, "pages", pi)
+            # A formatted title (RT2) is HTML in the description; the group name, which
+            # LimeSurvey shows as plain text, gets the text without the tags.
+            title = self._texts(page.title, pptr + "/title")
+            if _any_rich(page.title):
+                name = {lang: _TAGS.sub("", t.replace("<br />", " ")) for lang, t in title.items()}
+            else:
+                name = title if page.title is not None else self._all_langs(page.id)
             group = _Group(
-                name=self._texts(page.title, pptr + "/title")
-                if page.title is not None
-                else self._all_langs(page.id),
-                description=self._texts(page.title, pptr + "/title"),
+                name=name,
+                description=title,
                 relevance=alive
                 if page.showIf is None
                 else and_(alive, self.em.condition(page.showIf)),
@@ -1064,7 +1092,7 @@ class _Exporter:
             for qi, q in enumerate(page.items):
                 ptr = pointer("blocks", bi, "pages", pi, "items", qi, "label")
                 for lang, t in self._texts(q.label, ptr).items():
-                    parts[lang].append(f"<p>{t}</p>")
+                    parts[lang].append(self._paragraph(t))
         return {lang: "".join(p) for lang, p in parts.items() if p}
 
     # -- tables --------------------------------------------------------------------------
@@ -1376,6 +1404,14 @@ def sanitise_code(name: str) -> str:
     if not s or not s[0].isalpha():
         s = "q" + s
     return s[:CODE_MAX]
+
+
+def _any_rich(text: object) -> bool:
+    """Whether a `Text` holds a rich value (as a whole or in any language)."""
+    text = as_json(text)
+    if is_rich(text):
+        return True
+    return isinstance(text, dict) and any(is_rich(v) for v in text.values())
 
 
 def _literal_text(lit: Expr) -> str:

@@ -1,0 +1,221 @@
+{
+ "survey": {
+  "columns": [
+   "type",
+   "name",
+   "label::English (en)",
+   "label::Arabic (ar)",
+   "hint::English (en)",
+   "hint::Arabic (ar)",
+   "required",
+   "constraint",
+   "constraint_message::English (en)",
+   "constraint_message::Arabic (ar)",
+   "calculation",
+   "appearance",
+   "parameters"
+  ],
+  "rows": [
+   {
+    "type": "begin group",
+    "name": "p1"
+   },
+   {
+    "type": "begin group",
+    "name": "p1_page",
+    "appearance": "field-list"
+   },
+   {
+    "type": "note",
+    "name": "intro",
+    "label::English (en)": "## Welcome\n\nPlease answer **every** question.\nIt takes *two minutes*.\n\n### What you need\n\n- Your *__participant code__*\n- The [study page](https://example.org/study) open\n\nMerci and thank you.",
+    "label::Arabic (ar)": "## مرحباً\n\nيرجى الإجابة على **كل** سؤال. *two minutes*\n\n- **رمز المشارك**\n- [صفحة الدراسة](https://example.org/study)"
+   },
+   {
+    "type": "text",
+    "name": "name",
+    "label::English (en)": "Your **name** (as on the [sheet](https://example.org/info))",
+    "label::Arabic (ar)": "Your **name** (as on the [sheet](https://example.org/info))",
+    "hint::English (en)": "Either:\n\n- first name only, or\n- a *nickname*",
+    "hint::Arabic (ar)": "Either:\n\n- first name only, or\n- a *nickname*",
+    "required": "yes"
+   },
+   {
+    "type": "select_one fav_choices",
+    "name": "fav",
+    "label::English (en)": "Pick a fruit",
+    "label::Arabic (ar)": "Pick a fruit"
+   },
+   {
+    "type": "calculate",
+    "name": "osp_label_fav",
+    "calculation": "jr:choice-name(${fav}, '${fav}')"
+   },
+   {
+    "type": "end group"
+   },
+   {
+    "type": "end group"
+   },
+   {
+    "type": "begin group",
+    "name": "p2"
+   },
+   {
+    "type": "begin group",
+    "name": "p2_page",
+    "appearance": "field-list"
+   },
+   {
+    "type": "note",
+    "name": "echo",
+    "label::English (en)": "**Hello** ${name}**, you chose** ${osp_label_fav}.\n\n1. Trial \n2. Language ",
+    "label::Arabic (ar)": "**Hello** ${name}**, you chose** ${osp_label_fav}.\n\n1. Trial \n2. Language "
+   },
+   {
+    "type": "integer",
+    "name": "rate",
+    "label::English (en)": "Rate ${osp_label_fav} from **1** to **5**",
+    "label::Arabic (ar)": "قيّم ${osp_label_fav} من **١** إلى **٥**",
+    "constraint": ". <= 5",
+    "constraint_message::English (en)": "Enter **5 or less** for ${osp_label_fav}",
+    "constraint_message::Arabic (ar)": "Enter **5 or less** for ${osp_label_fav}"
+   },
+   {
+    "type": "begin group",
+    "name": "grid",
+    "appearance": "table-list"
+   },
+   {
+    "type": "select_one grid_choices",
+    "name": "osp_grid_header",
+    "appearance": "label",
+    "label::English (en)": "How much do you agree?",
+    "label::Arabic (ar)": "How much do you agree?"
+   },
+   {
+    "type": "select_one grid_choices",
+    "name": "grid_taste",
+    "appearance": "list-nolabel",
+    "label::English (en)": "${osp_label_fav} tastes **good**",
+    "label::Arabic (ar)": "${osp_label_fav} tastes **good**"
+   },
+   {
+    "type": "select_one grid_choices",
+    "name": "grid_price",
+    "appearance": "list-nolabel",
+    "label::English (en)": "It is cheap",
+    "label::Arabic (ar)": "It is cheap"
+   },
+   {
+    "type": "end group"
+   },
+   {
+    "type": "range",
+    "name": "mood",
+    "parameters": "start=0 end=10 step=1",
+    "label::English (en)": "How do you feel?",
+    "label::Arabic (ar)": "How do you feel?"
+   },
+   {
+    "type": "end group"
+   },
+   {
+    "type": "end group"
+   },
+   {
+    "type": "begin group",
+    "name": "osp_end_n_end",
+    "appearance": "field-list"
+   },
+   {
+    "type": "note",
+    "name": "osp_end_n_end_message",
+    "label::English (en)": "## Finished\n\nGoodbye, ${name}**!**",
+    "label::Arabic (ar)": "## Finished\n\nGoodbye, ${name}**!**"
+   },
+   {
+    "type": "end group"
+   },
+   {
+    "type": "begin group",
+    "name": "osp_ending_complete",
+    "appearance": "field-list",
+    "label::English (en)": "All **done**",
+    "label::Arabic (ar)": "All **done**"
+   },
+   {
+    "type": "note",
+    "name": "osp_ending_complete_body",
+    "label::English (en)": "Thank you, ${name}.\n\n- Your fruit: ${osp_label_fav}\n- Your rating: ${rate}",
+    "label::Arabic (ar)": "Thank you, ${name}.\n\n- Your fruit: ${osp_label_fav}\n- Your rating: ${rate}"
+   },
+   {
+    "type": "end group"
+   },
+   {
+    "type": "calculate",
+    "name": "osp_outcome",
+    "calculation": "'complete'"
+   }
+  ]
+ },
+ "choices": {
+  "columns": [
+   "list_name",
+   "name",
+   "label::English (en)",
+   "label::Arabic (ar)"
+  ],
+  "rows": [
+   {
+    "list_name": "fav_choices",
+    "name": "apple",
+    "label::English (en)": "**Apple**",
+    "label::Arabic (ar)": "تفاحة"
+   },
+   {
+    "list_name": "fav_choices",
+    "name": "pear",
+    "label::English (en)": "Pear (*green*)",
+    "label::Arabic (ar)": "كمثرى"
+   },
+   {
+    "list_name": "fav_choices",
+    "name": "other",
+    "label::English (en)": "Something else",
+    "label::Arabic (ar)": "شيء آخر"
+   },
+   {
+    "list_name": "grid_choices",
+    "name": "1",
+    "label::English (en)": "*Disagree*",
+    "label::Arabic (ar)": "*Disagree*"
+   },
+   {
+    "list_name": "grid_choices",
+    "name": "2",
+    "label::English (en)": "Agree",
+    "label::Arabic (ar)": "Agree"
+   }
+  ]
+ },
+ "settings": {
+  "columns": [
+   "form_title",
+   "form_id",
+   "default_language",
+   "style",
+   "version"
+  ],
+  "rows": [
+   {
+    "form_title": "Rich text in every field",
+    "form_id": "f41_rich_text",
+    "default_language": "English (en)",
+    "style": "pages",
+    "version": "1"
+   }
+  ]
+ }
+}

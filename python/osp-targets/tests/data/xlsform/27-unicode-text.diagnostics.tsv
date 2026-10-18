@@ -1,0 +1,18 @@
+loss	Metadata.description	/metadata/description
+info	Survey.blocks	/blocks
+info	Block.pages	/blocks/0/pages
+info	Block.pages	/blocks/1/pages
+warning	TextQuestion.showIf	/blocks/1/pages/0/items/4/showIf
+info	Compare.kind	/blocks/1/pages/0/items/4/showIf
+warning	TextQuestion.showIf	/blocks/1/pages/0/items/5/showIf
+info	Compare.kind	/blocks/1/pages/0/items/5/showIf
+warning	TextQuestion.showIf	/blocks/1/pages/0/items/6/showIf
+info	Compare.kind	/blocks/1/pages/0/items/6/showIf
+info	Survey.flow	/flow
+info	BlockNode.type	/flow/0
+info	BlockNode.type	/flow/1
+warning	$pipe.escaping	/blocks/1/pages/0/items/0/label
+warning	$pipe.escaping	/blocks/1/pages/0/items/1/label
+warning	$pipe.escaping	/blocks/1/pages/0/items/2/label
+warning	$pipe.escaping	/blocks/1/pages/0/items/3/label
+warning	$missingStates	

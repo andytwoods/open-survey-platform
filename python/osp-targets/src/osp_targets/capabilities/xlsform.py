@@ -438,43 +438,76 @@ _row("Contains.kind", "lowered", "`selected(${q}, value)`.")
 _row("Contains.ref", "native", "`${q}`.")
 _row("Contains.value", "native", "The code, as an XPath string.")
 
-# --- Rich text (planning/rich-text.md §3, task RT2; the Markdown writer is task RT4) ------
-_FLAT = (
-    "Rich text is flattened to plain text until RT4 writes the Enketo/Collect Markdown "
-    "subset: paragraphs separated by a blank line, list items as `- ` / `1. ` lines, "
-    "headings as their text; bold, italic, links and language spans are dropped."
+# --- Rich text (planning/rich-text.md §3 and §8, tasks RT2 and RT4) -----------------------
+_row(
+    "RichText.type",
+    "native",
+    "Written as the Markdown subset Enketo and ODK Collect render in labels, hints and "
+    "constraint messages: `**bold**`, `*italic*`, `[text](https://url)`, `#` headings, "
+    "`- ` / `1. ` lists, line and paragraph breaks. Literal `\\ * _ #` are escaped.",
 )
-_row("RichText.type", "approximated", _FLAT)
-_row("RichText.blocks", "approximated", _FLAT)
+_row("RichText.blocks", "native", "Blocks separated by a blank line.")
 _row("Paragraph.type", "native", "A paragraph: separated from the next by a blank line.")
-_row("Paragraph.content", "native", "The paragraph's runs, as text.")
-_row("Heading.type", "approximated", "The heading's text as a paragraph; `#` headings in RT4.")
-_row("Heading.level", "approximated", "See Heading.type.")
-_row("Heading.content", "native", "The heading's runs, as text.")
+_row("Paragraph.content", "native", "The paragraph's runs.")
+_row(
+    "Heading.type",
+    "lowered",
+    "`##`, `###` or `####` at the start of a line (level + 1: a single `#` is the form "
+    "title's size). Enketo and Collect give headings absolute sizes, not sizes relative to "
+    "the page.",
+)
+_row("Heading.level", "native", "See Heading.type.")
+_row("Heading.content", "native", "The heading's runs.")
 _row(
     "RichList.type",
     "approximated",
-    "One `- ` or `1. ` line per item (Enketo renders them as a list, Collect as text); "
-    "verified and documented in RT4.",
+    "One `- ` or `1. ` line per item (a numbered list is written after a newline, which "
+    "Enketo requires). Enketo renders a list; Collect shows the markers as text.",
 )
-_row("RichList.items", "approximated", "See RichList.type.")
-_row("TextRun.text", "native", "The run's text; literal `* _ #` are not yet escaped (RT4).")
-_row("TextRun.marks", "unsupported", "Bold and italic are dropped until RT4 writes `**` / `_`.")
+_row("RichList.items", "native", "See RichList.type.")
+_row(
+    "TextRun.text",
+    "native",
+    "The text, with literal `\\ * _ #` escaped with a backslash so they show as written "
+    "(as in plain strings: see $text.markup).",
+)
+_row("TextRun.marks", "native", "`**bold**`, `*italic*`, `*__both__*`.")
 _row(
     "TextRun.href",
-    "unsupported",
-    "The link text stays; the URL is dropped until RT4 writes `[text](url)`.",
+    "native",
+    "`[text](https://url)`; adjacent runs with the same URL are one link. Enketo and "
+    "Collect open it outside the form. See $rich.linkSyntax.",
 )
-_row("TextRun.lang", "unsupported", "Per-run language spans have no XLSForm form; dropped.")
+_row(
+    "TextRun.lang",
+    "unsupported",
+    "Per-run language spans have no XLSForm form (Enketo keeps only `style` on a span); "
+    "the text is written without it.",
+)
 _row("PipeRun.pipe", "native", "A pipe node is written as `${name}`, like `${id}` in plain text.")
-_row("LineBreak.br", "native", "A newline in the label.")
-_row("$rich.bold", "unsupported", "See TextRun.marks.")
-_row("$rich.italic", "unsupported", "See TextRun.marks.")
-_row("$rich.link", "unsupported", "See TextRun.href.")
-_row("$rich.heading", "approximated", "See Heading.type.")
+_row(
+    "LineBreak.br",
+    "native",
+    "A newline in the label. Inside a list item it is a space (see $rich.listBreak).",
+)
+_row("$rich.bold", "native", "See TextRun.marks.")
+_row("$rich.italic", "native", "See TextRun.marks.")
+_row("$rich.link", "native", "See TextRun.href.")
+_row("$rich.heading", "lowered", "See Heading.type.")
 _row("$rich.list", "approximated", "See RichList.type.")
 _row("$rich.break", "native", "See LineBreak.br.")
 _row("$rich.lang", "unsupported", "See TextRun.lang.")
+_row(
+    "$rich.listBreak",
+    "approximated",
+    "A line break inside a list item is written as a space: a newline would end the list.",
+)
+_row(
+    "$rich.linkSyntax",
+    "approximated",
+    "A `]` or a line break in link text, or a `)` in the URL, cannot be written in "
+    "`[text](url)`; the text is written followed by the URL in parentheses.",
+)
 
 # --- Behaviours that are not a single field ----------------------------------------------
 _row("$pipe.value", "native", "`${q}` in a label inserts the raw value (§8).")
@@ -501,7 +534,10 @@ _row(
 _row(
     "$text.markup",
     "approximated",
-    "XLSForm labels are Markdown with some HTML: `*`, `_`, `#`, `<` may render as formatting.",
+    "XLSForm labels are Markdown with some HTML. A literal `\\`, `*`, `_` or `#` is "
+    "written with a backslash in front and shows as written (since RT4; before, it could "
+    "render as formatting in Enketo and Collect). `<`, `>`, `[text](url)` and a line "
+    "starting with `- `, `+ ` or `1. ` have no escape and may still render as markup.",
 )
 _row(
     "$text.controlCharacters",

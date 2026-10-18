@@ -51,9 +51,10 @@ def test_lss_summary_is_stable() -> None:
     # and added Settings.redirectTemplates, Ending.redirect and EndRedirect.*. EX2 added the
     # ExternalTaskNode rows (id native; type/template/params/returns unsupported). RT2 added
     # the rich-text rows (RichText/Paragraph/Heading/RichList/TextRun/PipeRun/LineBreak and
-    # $rich.*): flattened to plain text until RT4 writes the HTML subset.
-    assert dict(counts) == {"native": 149, "lowered": 58, "approximated": 37, "unsupported": 126}
-    assert LSS["TextRun.marks"].level == "unsupported"  # RT4 flips this to native
+    # $rich.*); RT4 writes them as HTML (all native but the lowered heading).
+    assert dict(counts) == {"native": 163, "lowered": 60, "approximated": 28, "unsupported": 119}
+    assert LSS["TextRun.marks"].level == "native"
+    assert LSS["Heading.type"].level == "lowered"
     assert LSS["MatrixQuestion.type"].level == "native"
     assert LSS["SliderQuestion.type"].level == "approximated"
     assert LSS["Survey.quotas"].level == "lowered"
