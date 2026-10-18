@@ -162,6 +162,9 @@ test('keyboard: arrows through the types, Shift+Enter chooses the page and posit
 	await dec.getByLabel('Position').selectOption({ label: 'At the start' });
 	await dec.getByRole('button', { name: 'Add', exact: true }).press('Enter');
 	await expect(dec).toBeHidden();
+	// The add runs once the dialog has closed, and "All changes saved" still shows from the
+	// last one: wait for the new question to be selected (it is stored by then).
+	await expect(page.getByTestId('question-type')).toHaveText('Decimal number');
 	await expect(saved(page)).toHaveText(/All changes saved/);
 	pages = await pagesOf(page);
 	expect(pages[1][0]).toBe('decimal');
