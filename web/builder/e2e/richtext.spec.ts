@@ -15,9 +15,12 @@ async function open(page: Page, type = 'single') {
 
 const log = (page: Page) => page.getByTestId('op-log');
 const toolbar = (page: Page) => page.getByRole('toolbar', { name: 'Text formatting' });
-/** Select the word before the caret; ProseMirror reads the browser's selection asynchronously, so wait for it. */
+/**
+ * Select the word before the caret; ProseMirror reads the browser's selection asynchronously, so wait for it.
+ * Word-wise movement is Alt+Arrow on macOS (Cmd+Arrow goes to the line start) and Ctrl+Arrow elsewhere.
+ */
 async function selectWordLeft(page: Page) {
-	await page.keyboard.press('Shift+ControlOrMeta+ArrowLeft');
+	await page.keyboard.press(process.platform === 'darwin' ? 'Shift+Alt+ArrowLeft' : 'Shift+Control+ArrowLeft');
 	await page.waitForTimeout(100);
 }
 
