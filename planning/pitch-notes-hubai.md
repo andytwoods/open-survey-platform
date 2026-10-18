@@ -1,73 +1,52 @@
 # Pitch notes: HubAI (glance, don't read)
 
-Goal: not to win. To show funders and collaborators how I work.
+Goal: not to win. Show funders and collaborators how I work.
+Strict 3 min + 2 min questions. Organisers' structure: problem → old way → reinvention (most time).
 
-## The event
-- "Reinvent the Wheel": agentic AI improves science software
-- 3 min problem + demo, then 2 min judges
-- Teach the room: for? broken? better? No jargon
-- Submit by Sun 10:00: public repo, MIT, commit hash
+## 1. The problem (~25 s)
+- Scientists now build research software with AI agents
+- One person can run many agents at once
+- But agents can't see each other; work collides
+- And nobody can vouch for code they never read
+- Footer: "Planning began Friday daytime; first commit 17:46"
 
-## Open: the confession (slide 1)
-- This weekend I built a Qualtrics replacement
-- 467 commits, 2801 tests, 247 browser tests
+## 2. The old way (~35 s): my own weekend
+- I built a Qualtrics replacement: one person, many agents
+- 467 commits, 2,801 tests, 247 browser tests
 - Mostly TypeScript: a language I don't know
-- I never read a single line of it
-- So I can't stand behind it
-- That's the real problem with AI-built science software
+- I never read a single line, so I can't stand behind it
+- Screenshot: the survey builder (one slide, no demo)
 
-## The turn
-- Trust needs code I can judge
-- So: the tool that let me build it
+## 3. The reinvention (~2 min): HubAI
+- One line: a shared task board for a team's agents
+- Built in Django, my stack; I read every line
+- Demo: live board, cards moving, 50 tasks done
+- Demo: a spare PC claims a task on screen
+- Demo: inbox shows the claim and the report
+- Failures handled: 3 tries then a human; silent PC requeued
+- Fallback: HubAI demo video if the Wi-Fi fails
 
-## One line (slide 2)
-- HubAI: one task board for a team's agents
-- Agents and humans share it over MCP
+## Last slide (stays up during questions)
+- Top: one line on what I do
+- Up to 4 tiles: student screenshot + one-line project
+- Bottom: "Get in touch: funding, collaboration, PhDs"
+- https://www.surrey.ac.uk/artificial-intelligence/cdt
+- Check students are happy to be shown
 
-## What HubAI does
-- Board: To do, Doing, Postpone, Done
-- Atomic claims: two agents can't take one task
-- Inbox: messages plus automatic board events
-- Spare PCs become workers; run tasks unattended
-- 3 tries, then a human; silent 15 min → requeued
+## Slides (4)
+1. Problem: agents can't see each other + footer
+2. Old way: SurveyGUI screenshot + "I never read a line"
+3. HubAI: live demo (board, worker, inbox)
+4. Me, my students, the ask (up during Q&A)
 
-## Why I can stand behind this one
-- Django, the stack I know and love
-- Follows my own published best-practices guide
-- Small: 47 commits, 54 tests, I read it all
-- Live on Appliku; reviewed by four AI models
-
-## It worked: SurveyGUI is the evidence
-- 60 board tasks, 50 done, overnight
-- 1 Mac lead + 2 Windows worker PCs
-- Crashed worker: blocked after 3 tries, Mac took over
-- Silent worker: task requeued at 15 min
-- Windows and Mac bugs caught by splitting machines
-
-## Demo beats (slide 3)
-- Live board: 50 done, cards moving
-- Worker PC claims a task on screen
-- Inbox: claim event lands, agent reports done
-- Fallback: HubAI demo video on landing page
-
-## What this says about me (slide 4)
-- I build research tools, not just papers
-- I know when not to trust AI output
-- I make AI work reviewable: small tasks, tests
-- Open source, MIT, reusable by any lab
-- Ask: funding, collaborators, PhD students
-
-## Likely questions
+## Likely questions (2 min)
 - Is SurveyGUI any good? Tests say yes; I can't vouch
 - Trust code you didn't read? Only with tests, small tasks
 - Why not GitHub Issues? Agents need claims, inbox, retries
 - What would funding buy? Months, not a weekend, of this
 - Safe? Workers take only your own tasks
-- Next? More agent types; science teams using it
+- Can my lab use it? Yes: open source, MIT, free
 
-## Friday daytime start
-- Slide 1 footer: "Planning began Friday daytime; first commit 17:46"
-
-## Close (last slide)
-- "Get in touch: funding, collaboration, PhDs"
-- https://www.surrey.ac.uk/artificial-intelligence/cdt
+## Cut if short of time
+- SurveyGUI numbers: keep only "never read a line"
+- Demo: skip the inbox, keep board + worker claim
