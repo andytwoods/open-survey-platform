@@ -117,7 +117,7 @@
 	<div class="bar">
 		<h2 id="json-view-heading">Survey JSON</h2>
 		<span class="state" data-testid="json-state">
-			{#if draft.applying}Applying…{:else if draft.dirty}Unapplied edits{:else}Revision {draft.baseRevision}{/if}
+			{#if draft.applying}Applying…{:else if draft.dirty}Unapplied edits{:else}Revision {draft.serverRevision}{/if}
 		</span>
 		<div class="actions">
 			<Button onclick={revert} disabled={!draft.dirty || draft.applying}>Revert</Button>
