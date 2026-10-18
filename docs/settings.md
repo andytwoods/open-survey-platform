@@ -153,6 +153,18 @@ automatically in the countdown mode) and a quota outcome's redirect as that quot
 only when every value is fixed; a piped value cannot be re-checked there, so such a
 redirect is reported as a loss. XLSForm has no redirect after a submit.
 
+### Prolific and other recruitment panels
+
+Prolific adds `PROLIFIC_PID`, `STUDY_ID` and `SESSION_ID` to the study link. Capture each as
+an **embedded** variable (an *URL parameter* variable) with that parameter name; the value is
+recorded with the response and can be piped anywhere a variable can. A **completion code per
+outcome** is then an ending redirect to Prolific's completion URL: declare a `prolific`
+template, and on the `complete` ending use a literal `cc` for the completion code (and on a
+`screened_out` ending the screen-out code), piping `${prolific_pid}` if the URL needs it.
+Because endings are keyed by outcome, a screened-out participant gets the screen-out code
+automatically. A **mid-study task** hosted elsewhere (jsPsych, PsychoJS/Pavlovia, Gorilla)
+uses an [External task](logic.md#external-task-step) flow node, not a redirect.
+
 ## Whole-survey properties
 
 Select **Whole survey** from the diagnostics strip to edit the survey's **Title**,

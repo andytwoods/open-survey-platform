@@ -13,6 +13,7 @@ the runtime plan and gives the survey its public slug:
     endonly   fixtures/33-end-only-save              end-only
     hooks     web/runtime/e2e/surveys/flow           every-page, plus HOOKS (researcher code)
     redirect  web/runtime/e2e/surveys/redirect       every-page (end redirects, EN2)
+    external  web/runtime/e2e/surveys/external       every-page (external task step, EX2)
 
 It serves ``osp_api.app.create_app`` (the real participant API under ``/api``), the built
 app (``web/runtime/dist``) at ``/s/{slug}`` and ``/r/*``, and test-only routes under
@@ -57,6 +58,7 @@ SURVEYS: dict[str, tuple[Path, str]] = {
     "endonly": (ROOT / "fixtures" / "33-end-only-save", "end-only"),
     "hooks": (HERE / "surveys" / "flow", "every-page"),
     "redirect": (HERE / "surveys" / "redirect", "every-page"),
+    "external": (HERE / "surveys" / "external", "every-page"),
 }
 
 # The `hooks` survey's manifest (runtime-design §7a). osp-survey/0.1 has no hooks field, so

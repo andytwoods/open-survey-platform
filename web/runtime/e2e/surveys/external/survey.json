@@ -1,0 +1,55 @@
+{
+  "specVersion": "osp-survey/0.1",
+  "id": "e2e_external",
+  "version": 1,
+  "metadata": {
+    "title": "External task",
+    "description": "EX2 end-to-end: a page, an external-task hop to a (stubbed) task host with a signed return token, then a page that shows the value the task sent back.",
+    "languages": ["en"]
+  },
+  "settings": {
+    "backNavigation": true,
+    "redirectTemplates": {
+      "task": {
+        "url": "https://run.pavlovia.org/lab/e?pid={pid}",
+        "params": { "pid": {} }
+      }
+    }
+  },
+  "variables": [
+    { "id": "prolific_pid", "kind": "embedded", "source": "url", "param": "PROLIFIC_PID" },
+    { "id": "rt", "kind": "embedded", "source": "url", "param": "rt", "valueType": "integer" }
+  ],
+  "blocks": [
+    {
+      "id": "p1",
+      "pages": [
+        {
+          "id": "p1_page",
+          "items": [{ "type": "text", "id": "name", "label": "What is your first name?", "required": true }]
+        }
+      ]
+    },
+    {
+      "id": "p2",
+      "pages": [
+        {
+          "id": "p2_page",
+          "items": [{ "type": "note", "id": "score", "label": "Your task score was ${rt}." }]
+        }
+      ]
+    }
+  ],
+  "flow": [
+    { "type": "block", "id": "n_p1", "block": "p1" },
+    {
+      "type": "externalTask",
+      "id": "et1",
+      "template": "task",
+      "params": { "pid": "${prolific_pid}" },
+      "returns": ["rt"]
+    },
+    { "type": "block", "id": "n_p2", "block": "p2" },
+    { "type": "end", "id": "end_complete" }
+  ]
+}
