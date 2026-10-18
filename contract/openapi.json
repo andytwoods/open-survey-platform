@@ -2363,7 +2363,9 @@
           "target": {
             "enum": [
               "xlsform",
-              "lss"
+              "lss",
+              "qsf",
+              "surveyjs"
             ],
             "title": "Target",
             "type": "string"
@@ -2458,7 +2460,9 @@
           "id": {
             "enum": [
               "xlsform",
-              "lss"
+              "lss",
+              "qsf",
+              "surveyjs"
             ],
             "title": "Id",
             "type": "string"
@@ -11960,7 +11964,9 @@
             "schema": {
               "enum": [
                 "xlsform",
-                "lss"
+                "lss",
+                "qsf",
+                "surveyjs"
               ],
               "title": "Target",
               "type": "string"
@@ -12236,6 +12242,79 @@
         ]
       }
     },
+    "/api/surveys/{survey_id}/export/qsf": {
+      "get": {
+        "operationId": "exportQsf",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "survey_id",
+            "required": true,
+            "schema": {
+              "title": "Survey Id",
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "format": "binary",
+                  "type": "string"
+                }
+              }
+            },
+            "description": "Qualtrics survey file (.qsf)"
+          },
+          "401": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorBody"
+                }
+              }
+            },
+            "description": "Unauthorized"
+          },
+          "403": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorBody"
+                }
+              }
+            },
+            "description": "Forbidden"
+          },
+          "404": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorBody"
+                }
+              }
+            },
+            "description": "Not Found"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/RejectedBody"
+                }
+              }
+            },
+            "description": "Unprocessable Content"
+          }
+        },
+        "summary": "Export Qsf",
+        "tags": [
+          "surveys"
+        ]
+      }
+    },
     "/api/surveys/{survey_id}/export/responses": {
       "get": {
         "operationId": "exportResponses",
@@ -12393,6 +12472,79 @@
           }
         },
         "summary": "Export Responses",
+        "tags": [
+          "surveys"
+        ]
+      }
+    },
+    "/api/surveys/{survey_id}/export/surveyjs": {
+      "get": {
+        "operationId": "exportSurveyjs",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "survey_id",
+            "required": true,
+            "schema": {
+              "title": "Survey Id",
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "format": "binary",
+                  "type": "string"
+                }
+              }
+            },
+            "description": "SurveyJS survey JSON"
+          },
+          "401": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorBody"
+                }
+              }
+            },
+            "description": "Unauthorized"
+          },
+          "403": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorBody"
+                }
+              }
+            },
+            "description": "Forbidden"
+          },
+          "404": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorBody"
+                }
+              }
+            },
+            "description": "Not Found"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/RejectedBody"
+                }
+              }
+            },
+            "description": "Unprocessable Content"
+          }
+        },
+        "summary": "Export Surveyjs",
         "tags": [
           "surveys"
         ]
