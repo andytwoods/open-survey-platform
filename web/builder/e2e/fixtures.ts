@@ -33,6 +33,27 @@ export const test = base.extend<{ shell: Page }>({
 
 export { expect };
 
+// -- waiting for a save ------------------------------------------------------------------
+
+/** The editor's save status in the top bar: `data-state` (saved, saving…) and `data-edits`. */
+export const saveStatus = (page: Page) => page.getByRole('banner').getByRole('status').first();
+
+const editsSoFar = async (page: Page) => Number((await saveStatus(page).getAttribute('data-edits')) ?? 0);
+
+/**
+ * Run `action`, then wait until the edit(s) it makes are queued *and* answered by the server.
+ * "All changes saved" alone does not show that: it is still up from the last edit until the
+ * new one is queued, and a command chosen in the palette, a menu or a dialog is queued only
+ * after that has closed (a timer), so a test can read the server before the edit was sent.
+ * `data-edits` counts items queued since load and never goes down.
+ */
+export async function savedAfter(page: Page, action: () => Promise<unknown>, edits = 1): Promise<void> {
+	const before = await editsSoFar(page);
+	await action();
+	await expect.poll(() => editsSoFar(page), { message: `${edits} more edit(s) queued` }).toBeGreaterThanOrEqual(before + edits);
+	await expect(saveStatus(page)).toHaveAttribute('data-state', 'saved');
+}
+
 /**
  * Run a command from the palette by typing `query` and pressing Enter on `option`. Waits
  * for the input to have focus (keys typed before that are lost) and for `option` to be the
@@ -74,6 +95,12 @@ export async function writeHeaders(page: Page): Promise<Record<string, string>> 
 // -- helpers ----------------------------------------------------------------------------
 
 export async function axe(page: Page) {
+	// A tooltip is portalled outside the landmarks (axe's "region"). One opens 400 ms after
+	// the pointer rests on a trigger, e.g. a toolbar button just clicked, or one a closing
+	// dialog uncovers, so on a slow machine it is up by the time axe runs: park the pointer
+	// and let it close first.
+	await page.mouse.move(0, 0);
+	await expect(page.locator('.osp-tooltip')).toHaveCount(0);
 	const results = await new AxeBuilder({ page })
 		.withTags(['wcag2a', 'wcag2aa', 'wcag21a', 'wcag21aa', 'wcag22aa', 'best-practice'])
 		.analyze();

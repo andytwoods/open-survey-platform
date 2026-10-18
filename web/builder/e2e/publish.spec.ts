@@ -1,5 +1,5 @@
 import { expect, test, type Page } from '@playwright/test';
-import { axe, fillRich, pickQuestionType, signIn } from './fixtures';
+import { axe, fillRich, pickQuestionType, savedAfter, signIn } from './fixtures';
 
 // Survey settings, Appearance save actions and Publish (task B12), end to end against a
 // real osp-api on SQLite (e2e/api_server.py, which also serves the participant app):
@@ -26,8 +26,7 @@ test('settings → theme → publish → the participant link shows the survey i
 	await signInAndCreate(page, `Publish e2e ${Date.now()}`);
 	// A question, so the survey has something to answer.
 	await page.getByRole('button', { name: /Add question to/ }).first().click();
-	await pickQuestionType(page);
-	await expect(saved(page)).toHaveText(/All changes saved/);
+	await savedAfter(page, () => pickQuestionType(page));
 
 	// Publishing without retention is refused, with a link to the retention control.
 	await banner(page).getByRole('button', { name: 'Publish', exact: true }).click();

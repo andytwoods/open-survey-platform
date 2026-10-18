@@ -100,6 +100,11 @@ export class SurveyStore {
 	loading = $state(false);
 	/** Queued items (ops, undo, redo) not yet answered. */
 	pending = $state(0);
+	/**
+	 * Items queued since load, never decreasing: "saved" after this grew means the edit was
+	 * answered, not the one before it (the save status shows it as `data-edits`).
+	 */
+	edits = $state(0);
 	/** A 401 stopped sending: the queue is kept until `resume()`. */
 	paused = $state(false);
 	#resume: (() => void) | null = null;
@@ -288,6 +293,7 @@ export class SurveyStore {
 		return new Promise<Outcome>((resolve) => {
 			this.#queue.push(make(resolve));
 			this.pending = this.#queue.length;
+			this.edits += 1;
 			if (!this.#draining) this.#draining = this.#drain();
 		});
 	}

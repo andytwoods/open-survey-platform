@@ -1,5 +1,5 @@
 import { expect, test, type Page } from '@playwright/test';
-import { axe, focused, pickQuestionType, runFromPalette, signIn, writeHeaders } from './fixtures';
+import { axe, focused, pickQuestionType, runFromPalette, savedAfter, signIn, writeHeaders } from './fixtures';
 
 // Question types (task B13), end to end against a real osp-api on SQLite: add every type
 // through the type picker (button, keyboard, palette), the last used type first; change a
@@ -201,8 +201,7 @@ test('320 px: the picker fits, no horizontal scroll, 44 px targets', async ({ pa
 test('after publishing, changing a type warns that collected data keeps the old type', async ({ page }) => {
 	await createSurvey(page, `Published types ${Date.now()}`);
 	await page.getByRole('button', { name: /Add question to/ }).first().click();
-	await pickQuestionType(page, /^Whole number\b/);
-	await expect(saved(page)).toHaveText(/All changes saved/);
+	await savedAfter(page, () => pickQuestionType(page, /^Whole number\b/));
 
 	const surveyId = page.url().split('/').pop()!;
 	const headers = await writeHeaders(page);

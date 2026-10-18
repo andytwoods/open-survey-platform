@@ -1,10 +1,13 @@
+import { fileURLToPath } from 'node:url';
 import { defineConfig, devices } from '@playwright/test';
+import { E2E_OUT_DIR, E2E_PORT } from './e2e/out-dir';
 
 // End-to-end tests for the builder: `make web-e2e` (not part of `make check`). Needs `uv`.
 // Override the ports (OSP_E2E_PORT / OSP_E2E_API_PORT) to run beside another checkout's
 // servers: an existing server on the port is reused, whatever it was built from.
-const PORT = Number(process.env.OSP_E2E_PORT ?? 4317);
+const PORT = E2E_PORT;
 const API_PORT = Number(process.env.OSP_E2E_API_PORT ?? 4318);
+const OUT_DIR = fileURLToPath(E2E_OUT_DIR);
 
 export default defineConfig({
 	testDir: 'e2e',
@@ -35,7 +38,7 @@ export default defineConfig({
 		{
 			// The production pages plus the dev-only galleries (OSP_DEV_PAGES=1), served by the
 			// reference host in dev-host/ at today's URLs with the dev config.
-			command: `vite build --logLevel warn && vite preview --host 127.0.0.1 --port ${PORT} --strictPort`,
+			command: `vite build --logLevel warn --outDir "${OUT_DIR}" && vite preview --outDir "${OUT_DIR}" --host 127.0.0.1 --port ${PORT} --strictPort`,
 			url: `http://127.0.0.1:${PORT}`,
 			env: { OSP_API_URL: `http://127.0.0.1:${API_PORT}`, OSP_DEV_PAGES: '1' },
 			reuseExistingServer: !process.env.CI,

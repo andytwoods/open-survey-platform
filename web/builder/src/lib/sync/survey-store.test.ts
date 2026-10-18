@@ -133,6 +133,19 @@ describe('SurveyStore: apply', () => {
 		expect(store.revision).toBe(5);
 	});
 
+	it('counts every queued item at once, never down (what e2e waits on after "saved")', async () => {
+		const { store } = await setup();
+		expect(store.edits).toBe(0);
+		const first = store.submit([set('/a', 1)]);
+		expect(store.edits).toBe(1);
+		expect(store.saveState).toBe('saving');
+		await first;
+		await store.submit([{ op: 'bad', params: { path: '/b' } }], { quiet: ['op.invalid'] });
+		await store.undo();
+		expect(store.edits).toBe(3);
+		expect(store.pending).toBe(0);
+	});
+
 	it('refetches when the patch does not apply to the local copy', async () => {
 		const { server, store } = await setup();
 		store.survey = { unrelated: true }; // local copy drifted
