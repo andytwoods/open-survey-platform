@@ -54,6 +54,9 @@ import {
 	type Plan,
 	type QuestionItem,
 	type Segment,
+	type RichBlock,
+	type InlineRun,
+	toBlocks,
 	type Text
 } from './plan.ts';
 import { assign as drawCondition, checkSeed, nodeSeed, randomize, InvalidSeedError } from './random.ts';
@@ -78,6 +81,7 @@ import {
 	type Position,
 	type QuestionState,
 	type QuotaResult,
+	type RenderedRun,
 	type RenderedText,
 	type ResolvedRedirect,
 	type ResponseRecord,
@@ -1245,15 +1249,25 @@ export function setLanguage(state: State, language: string): State {
 
 // --- Rendering -------------------------------------------------------------------------
 
-function segmentsFor(plan: Plan, lang: string, text: Text | undefined | null): Segment[] {
+function segmentsFor(plan: Plan, lang: string, text: Text | undefined | null): Segment[] | RichBlock[] {
 	if (!text) return [];
 	return text[lang] ?? text[plan.defaultLanguage] ?? Object.values(text)[0] ?? [];
 }
 
-/** Text without piping (pipes render empty): for choice labels inside a pipe. */
+/** The text in `lang` as blocks (a plain string is one paragraph; planning/rich-text.md §7). */
+function blocksFor(plan: Plan, lang: string, text: Text | undefined | null): RichBlock[] {
+	return toBlocks(segmentsFor(plan, lang, text));
+}
+
+function runsOf(block: RichBlock): InlineRun[] {
+	return 'items' in block ? block.items.flat() : block.content;
+}
+
+/** Text without piping or formatting (pipes render empty): for choice labels inside a pipe. */
 function plainText(plan: Plan, lang: string, text: Text | undefined): string {
-	return segmentsFor(plan, lang, text)
-		.map((s) => (typeof s === 'string' ? s : ''))
+	return blocksFor(plan, lang, text)
+		.flatMap(runsOf)
+		.map((r) => ('text' in r ? r.text : ''))
 		.join('');
 }
 
@@ -1297,13 +1311,21 @@ function pipeText(plan: Plan, d: Data, env: Env, id: string): string {
 	return formatValue(env.lookup(id));
 }
 
+/** Rendered blocks: every pipe filled (semantics.md §8), formatting kept. */
 function render(plan: Plan, d: Data, env: Env, text: Text | undefined | null): RenderedText {
-	const out: RenderedText = [];
-	for (const s of segmentsFor(plan, d.language, text)) {
-		if (typeof s === 'string') out.push({ kind: 'text', text: s });
-		else out.push({ kind: 'value', text: pipeText(plan, d, env, s.pipe) });
-	}
-	return out;
+	const run = (n: InlineRun): RenderedRun => {
+		if ('pipe' in n) return { kind: 'value', text: pipeText(plan, d, env, n.pipe) };
+		if ('br' in n) return { kind: 'br' };
+		return { kind: 'text', ...n };
+	};
+	return blocksFor(plan, d.language, text).map((b) =>
+		'items' in b ? { type: b.type, items: b.items.map((i) => i.map(run)) } : { ...b, content: b.content.map(run) }
+	);
+}
+
+/** A participant-supplied string (a hook's message) as rendered text: one `value` run. */
+export function valueText(text: string): RenderedText {
+	return [{ type: 'p', content: [{ kind: 'value', text }] }];
 }
 
 const ESCAPES: Record<string, string> = { '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' };
@@ -1312,14 +1334,79 @@ export function escapeHtml(s: string): string {
 	return s.replace(/[&<>"']/g, (c) => ESCAPES[c]!);
 }
 
-/** HTML for rendered text: researcher text as is (sanitised at save), values escaped (§8). */
-export function toHtml(text: RenderedText | null): string {
-	if (!text) return '';
-	return text.map((p) => (p.kind === 'value' ? escapeHtml(p.text) : p.text)).join('');
+function runsHtml(runs: RenderedRun[]): string {
+	let out = '';
+	let i = 0;
+	while (i < runs.length) {
+		const r = runs[i]!;
+		if (r.kind === 'br') {
+			out += '<br>';
+			i++;
+			continue;
+		}
+		if (r.kind === 'value') {
+			out += escapeHtml(r.text);
+			i++;
+			continue;
+		}
+		if (r.href) {
+			// Adjacent runs with the same href are one link (planning/rich-text.md §3.1).
+			let inner = '';
+			const href = r.href;
+			while (i < runs.length) {
+				const n = runs[i]!;
+				if (n.kind !== 'text' || n.href !== href) break;
+				inner += runHtml({ ...n, href: undefined });
+				i++;
+			}
+			out += `<a href="${escapeHtml(href)}" target="_blank" rel="noopener noreferrer">${inner}</a>`;
+			continue;
+		}
+		out += runHtml(r);
+		i++;
+	}
+	return out;
 }
 
+function runHtml(r: Extract<RenderedRun, { kind: 'text' }>): string {
+	// Researcher text is written as it is (fixtures/FORMAT.md §3: traces keep plain text
+	// byte-identical); the structure is our own tags only; attribute values are escaped.
+	let s = r.text;
+	if (r.marks?.includes('i')) s = `<em>${s}</em>`;
+	if (r.marks?.includes('b')) s = `<strong>${s}</strong>`;
+	if (r.lang) s = `<span lang="${escapeHtml(r.lang)}">${s}</span>`;
+	return s;
+}
+
+/**
+ * HTML for rendered text, as fixture traces record it (fixtures/FORMAT.md §3): researcher
+ * text as written, piped values escaped (§8), formatting as our own tags (`strong`, `em`,
+ * `a` with `target="_blank" rel="noopener noreferrer"`, `span lang`, `br`, `p`, `h3`–`h5`,
+ * `ul`/`ol`/`li`). A single paragraph has no `<p>` wrapper, so every trace written before
+ * RT2 is unchanged. Never rendered by the runtime, which builds text nodes from the blocks.
+ */
+export function toHtml(text: RenderedText | null): string {
+	if (!text) return '';
+	if (text.length === 1 && text[0]!.type === 'p') return runsHtml(text[0]!.content);
+	return text
+		.map((b) => {
+			if (b.type === 'p') return `<p>${runsHtml(b.content)}</p>`;
+			if (b.type === 'h') return `<h${b.level + 2}>${runsHtml(b.content)}</h${b.level + 2}>`;
+			return `<${b.type}>${b.items.map((i) => `<li>${runsHtml(i)}</li>`).join('')}</${b.type}>`;
+		})
+		.join('');
+}
+
+function runsPlain(runs: RenderedRun[]): string {
+	return runs.map((r) => (r.kind === 'br' ? '\n' : r.text)).join('');
+}
+
+/** Plain text of rendered blocks: blocks separated by a blank line, list items by a newline. */
 export function toPlain(text: RenderedText | null): string {
-	return text ? text.map((p) => p.text).join('') : '';
+	if (!text) return '';
+	return text
+		.map((b) => ('items' in b ? b.items.map(runsPlain).join('\n') : runsPlain(b.content)))
+		.join('\n\n');
 }
 
 // --- External task (task EX2, planning/external-tasks.md) ------------------------------
@@ -1461,7 +1548,7 @@ function redirectDiagnostics(state: State): RuntimeDiagnostic[] {
 
 function errorView(plan: Plan, d: Data, env: Env, id: Id, e: PageError) {
 	const item = plan.items[id];
-	if (e.kind === 'hook') return { ...e, message: [{ kind: 'value' as const, text: e.text }] }; // untrusted: escaped
+	if (e.kind === 'hook') return { ...e, message: valueText(e.text) }; // untrusted: escaped
 	const msg =
 		e.kind === 'constraint' && item && isQuestion(item) && item.constraintMessage
 			? render(plan, d, env, item.constraintMessage)

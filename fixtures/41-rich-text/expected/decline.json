@@ -1,0 +1,98 @@
+{
+  "pending": [],
+  "steps": [
+    {
+      "index": 0,
+      "page": "$consent",
+      "visible": [],
+      "errors": {},
+      "nav": null,
+      "questions": {
+        "name": {
+          "state": "not-reached",
+          "value": null
+        },
+        "fav": {
+          "state": "not-reached",
+          "value": null
+        },
+        "rate": {
+          "state": "not-reached",
+          "value": null
+        },
+        "grid_taste": {
+          "state": "not-reached",
+          "value": null
+        },
+        "grid_price": {
+          "state": "not-reached",
+          "value": null
+        },
+        "mood": {
+          "state": "not-reached",
+          "value": null
+        }
+      },
+      "orders": {
+        "blocks": {},
+        "items": {},
+        "choices": {}
+      },
+      "conditions": {},
+      "end": null,
+      "labels": {},
+      "choiceLabels": {},
+      "ending": null
+    },
+    {
+      "index": 1,
+      "page": null,
+      "visible": [],
+      "errors": {},
+      "nav": null,
+      "questions": {
+        "name": {
+          "state": "not-reached",
+          "value": null
+        },
+        "fav": {
+          "state": "not-reached",
+          "value": null
+        },
+        "rate": {
+          "state": "not-reached",
+          "value": null
+        },
+        "grid_taste": {
+          "state": "not-reached",
+          "value": null
+        },
+        "grid_price": {
+          "state": "not-reached",
+          "value": null
+        },
+        "mood": {
+          "state": "not-reached",
+          "value": null
+        }
+      },
+      "orders": {
+        "blocks": {},
+        "items": {},
+        "choices": {}
+      },
+      "conditions": {},
+      "end": "declined",
+      "labels": {},
+      "choiceLabels": {},
+      "ending": {
+        "title": null,
+        "message": null,
+        "body": null,
+        "status": "not-recorded"
+      }
+    }
+  ],
+  "invariants": [],
+  "response": null
+}

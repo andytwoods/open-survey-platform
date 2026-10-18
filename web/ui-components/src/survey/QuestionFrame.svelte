@@ -5,6 +5,12 @@
 		controlId: string;
 		/** id of the visible question label (for aria-labelledby). */
 		labelId: string;
+		/**
+		 * For `kind: 'field'`: set (to `labelId`) when the label holds block content and is a
+		 * `<div>` rather than a `<label for>`, so the control must name itself with
+		 * `aria-labelledby` (planning/rich-text.md §7); undefined when `<label for>` names it.
+		 */
+		labelledBy: string | undefined;
 		/** ids of help + error, or undefined. Put on the control (or the group). */
 		describedBy: string | undefined;
 		invalid: boolean;
@@ -23,7 +29,8 @@
 	import CircleAlert from '@lucide/svelte/icons/circle-alert';
 	import { onMount, type Snippet } from 'svelte';
 	import { announce } from '../live-region.svelte';
-	import { dirFor, fill, isEmptyText, messagesFor, plainText } from './locale';
+	import { dirFor, fill, isEmptyText, isInline, messagesFor, plainText } from './locale';
+	import RichInline from './RichInline.svelte';
 	import RichText from './RichText.svelte';
 	import type { Text, WidgetMessages } from './types';
 
@@ -60,9 +67,13 @@
 	const errorId = $derived(`${id}-error`);
 	const hasHelp = $derived(!isEmptyText(help));
 	const hasError = $derived(!!error && kind !== 'note');
+	// A label with block content (several paragraphs, a list, a heading) cannot live in a
+	// <label>: it becomes a <div id> the control points at with aria-labelledby.
+	const inlineLabel = $derived(isInline(label));
 	const ctx: FrameContext = $derived({
 		controlId: `${id}-input`,
 		labelId: `${id}-label`,
+		labelledBy: kind === 'field' && !inlineLabel ? `${id}-label` : undefined,
 		describedBy: [hasHelp && helpId, hasError && errorId].filter(Boolean).join(' ') || undefined,
 		invalid: hasError
 	});
@@ -73,8 +84,8 @@
 	});
 </script>
 
-{#snippet labelContent()}
-	<RichText text={label} />
+{#snippet labelContent(inline: boolean)}
+	{#if inline}<RichInline text={label} {messages} />{:else}<RichText text={label} {messages} />{/if}
 	{#if required && kind !== 'note'}
 		<span class="req" aria-hidden="true">*</span>
 		<span class="osp-visually-hidden">({m.required})</span>
@@ -82,7 +93,14 @@
 {/snippet}
 
 {#snippet below()}
-	{#if hasHelp}<p id={helpId} class="q-help"><RichText text={help} /></p>{/if}
+	{#if hasHelp}
+		{#if isInline(help)}<p id={helpId} class="q-help"><RichInline text={help} {messages} /></p>{:else}<div
+				id={helpId}
+				class="q-help"
+			>
+				<RichText text={help} {messages} />
+			</div>{/if}
+	{/if}
 	{#if hasError}
 		<p id={errorId} class="q-error">
 			<CircleAlert class="q-error-icon" aria-hidden="true" />
@@ -102,16 +120,17 @@
 >
 	{#if kind === 'fieldset'}
 		<fieldset class="q-fieldset" aria-describedby={ctx.describedBy} {disabled}>
-			<legend id={ctx.labelId} class="q-label">{@render labelContent()}</legend>
+			<!-- A legend holds phrasing content: block content is flattened inline. -->
+			<legend id={ctx.labelId} class="q-label">{@render labelContent(true)}</legend>
 			{@render below()}
 			{@render children?.(ctx)}
 		</fieldset>
 	{:else}
-		{#if kind === 'field'}
-			<label id={ctx.labelId} for={ctx.controlId} class="q-label">{@render labelContent()}</label>
+		{#if kind === 'field' && inlineLabel}
+			<label id={ctx.labelId} for={ctx.controlId} class="q-label">{@render labelContent(true)}</label>
 		{:else}
 			<div id={ctx.labelId} class="q-label" class:q-note={kind === 'note'}>
-				{@render labelContent()}
+				{@render labelContent(false)}
 			</div>
 		{/if}
 		{@render below()}

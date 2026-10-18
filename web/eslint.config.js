@@ -24,7 +24,10 @@ export default defineConfig(
 			'no-undef': 'off',
 			// SvelteKit-only rule: the builder pages navigate with full loads from the host's
 			// link templates (builder/src/lib/host/links.ts), not SvelteKit's resolve().
-			'svelte/no-navigation-without-resolve': 'off'
+			'svelte/no-navigation-without-resolve': 'off',
+			// Researcher text is a closed tree rendered as text nodes and our own elements
+			// (planning/rich-text.md §7, §10); nothing in web/ may inject HTML.
+			'svelte/no-at-html-tags': 'error'
 		}
 	},
 	{

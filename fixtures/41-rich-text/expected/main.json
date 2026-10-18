@@ -1,0 +1,351 @@
+{
+  "pending": [],
+  "steps": [
+    {
+      "index": 0,
+      "page": "$consent",
+      "visible": [],
+      "errors": {},
+      "nav": null,
+      "questions": {
+        "name": {
+          "state": "not-reached",
+          "value": null
+        },
+        "fav": {
+          "state": "not-reached",
+          "value": null
+        },
+        "rate": {
+          "state": "not-reached",
+          "value": null
+        },
+        "grid_taste": {
+          "state": "not-reached",
+          "value": null
+        },
+        "grid_price": {
+          "state": "not-reached",
+          "value": null
+        },
+        "mood": {
+          "state": "not-reached",
+          "value": null
+        }
+      },
+      "orders": {
+        "blocks": {},
+        "items": {},
+        "choices": {}
+      },
+      "conditions": {},
+      "end": null,
+      "labels": {},
+      "choiceLabels": {},
+      "ending": null
+    },
+    {
+      "index": 1,
+      "page": "p1",
+      "visible": [
+        "intro",
+        "name",
+        "fav"
+      ],
+      "errors": {},
+      "nav": {
+        "back": false
+      },
+      "questions": {
+        "name": {
+          "state": "unanswered",
+          "value": null
+        },
+        "fav": {
+          "state": "unanswered",
+          "value": null
+        },
+        "rate": {
+          "state": "not-reached",
+          "value": null
+        },
+        "grid_taste": {
+          "state": "not-reached",
+          "value": null
+        },
+        "grid_price": {
+          "state": "not-reached",
+          "value": null
+        },
+        "mood": {
+          "state": "not-reached",
+          "value": null
+        }
+      },
+      "orders": {
+        "blocks": {},
+        "items": {},
+        "choices": {}
+      },
+      "conditions": {},
+      "end": null,
+      "labels": {
+        "intro": "<h3>Welcome</h3><p>Please answer <strong>every</strong> question.<br>It takes <em>two minutes</em>.</p><h4>What you need</h4><ul><li>Your <strong><em>participant code</em></strong></li><li>The <a href=\"https://example.org/study\" target=\"_blank\" rel=\"noopener noreferrer\">study page</a> open</li></ul><p><span lang=\"fr\">Merci</span> and thank you.</p>",
+        "name": "Your <strong>name</strong> (as on the <a href=\"https://example.org/info\" target=\"_blank\" rel=\"noopener noreferrer\">sheet</a>)",
+        "fav": "Pick a fruit"
+      },
+      "choiceLabels": {
+        "fav": [
+          [
+            "apple",
+            "<strong>Apple</strong>"
+          ],
+          [
+            "pear",
+            "Pear (<em>green</em>)"
+          ],
+          [
+            "other",
+            "Something else"
+          ]
+        ]
+      },
+      "ending": null
+    },
+    {
+      "index": 2,
+      "page": "p2",
+      "visible": [
+        "echo",
+        "rate",
+        "grid",
+        "mood"
+      ],
+      "errors": {},
+      "nav": {
+        "back": true
+      },
+      "questions": {
+        "name": {
+          "state": "answered",
+          "value": "Sam & <Co>"
+        },
+        "fav": {
+          "state": "answered",
+          "value": "pear"
+        },
+        "rate": {
+          "state": "unanswered",
+          "value": null
+        },
+        "grid_taste": {
+          "state": "unanswered",
+          "value": null
+        },
+        "grid_price": {
+          "state": "unanswered",
+          "value": null
+        },
+        "mood": {
+          "state": "unanswered",
+          "value": null
+        }
+      },
+      "orders": {
+        "blocks": {},
+        "items": {},
+        "choices": {}
+      },
+      "conditions": {},
+      "end": null,
+      "labels": {
+        "echo": "<p><strong>Hello </strong>Sam &amp; &lt;Co&gt;<strong>, you chose </strong>Pear (green).</p><ol><li>Trial 2</li><li>Language en</li></ol>",
+        "rate": "Rate Pear (green) from <strong>1</strong> to <strong>5</strong>",
+        "grid": "How much do you agree?",
+        "mood": "How do you feel?"
+      },
+      "choiceLabels": {
+        "grid": [
+          [
+            1,
+            "<em>Disagree</em>"
+          ],
+          [
+            2,
+            "Agree"
+          ]
+        ]
+      },
+      "ending": null
+    },
+    {
+      "index": 3,
+      "page": "p2",
+      "visible": [
+        "echo",
+        "rate",
+        "grid",
+        "mood"
+      ],
+      "errors": {
+        "rate": {
+          "kind": "constraint",
+          "message": "Enter <strong>5 or less</strong> for Pear (green)"
+        }
+      },
+      "nav": {
+        "back": true
+      },
+      "questions": {
+        "name": {
+          "state": "answered",
+          "value": "Sam & <Co>"
+        },
+        "fav": {
+          "state": "answered",
+          "value": "pear"
+        },
+        "rate": {
+          "state": "answered",
+          "value": 9
+        },
+        "grid_taste": {
+          "state": "unanswered",
+          "value": null
+        },
+        "grid_price": {
+          "state": "unanswered",
+          "value": null
+        },
+        "mood": {
+          "state": "unanswered",
+          "value": null
+        }
+      },
+      "orders": {
+        "blocks": {},
+        "items": {},
+        "choices": {}
+      },
+      "conditions": {},
+      "end": null,
+      "labels": {
+        "echo": "<p><strong>Hello </strong>Sam &amp; &lt;Co&gt;<strong>, you chose </strong>Pear (green).</p><ol><li>Trial 2</li><li>Language en</li></ol>",
+        "rate": "Rate Pear (green) from <strong>1</strong> to <strong>5</strong>",
+        "grid": "How much do you agree?",
+        "mood": "How do you feel?"
+      },
+      "choiceLabels": {
+        "grid": [
+          [
+            1,
+            "<em>Disagree</em>"
+          ],
+          [
+            2,
+            "Agree"
+          ]
+        ]
+      },
+      "ending": null
+    },
+    {
+      "index": 4,
+      "page": null,
+      "visible": [],
+      "errors": {},
+      "nav": null,
+      "questions": {
+        "name": {
+          "state": "answered",
+          "value": "Sam & <Co>"
+        },
+        "fav": {
+          "state": "answered",
+          "value": "pear"
+        },
+        "rate": {
+          "state": "answered",
+          "value": 3
+        },
+        "grid_taste": {
+          "state": "answered",
+          "value": 2
+        },
+        "grid_price": {
+          "state": "answered",
+          "value": 1
+        },
+        "mood": {
+          "state": "answered",
+          "value": 7
+        }
+      },
+      "orders": {
+        "blocks": {},
+        "items": {},
+        "choices": {}
+      },
+      "conditions": {},
+      "end": "complete",
+      "labels": {},
+      "choiceLabels": {},
+      "ending": {
+        "title": "All done",
+        "message": "Finished\n\nGoodbye, Sam & <Co>!",
+        "body": "Thank you, Sam & <Co>.\n\nYour fruit: Pear (green)\nYour rating: 3",
+        "status": "recorded"
+      }
+    }
+  ],
+  "invariants": [],
+  "response": {
+    "surveyId": "f41_rich_text",
+    "surveyVersion": 1,
+    "end": "complete",
+    "allocation": "server",
+    "sessionSeed": 4101,
+    "conditions": {},
+    "orders": {
+      "blocks": {},
+      "items": {},
+      "choices": {}
+    },
+    "answers": {
+      "name": {
+        "state": "answered",
+        "value": "Sam & <Co>"
+      },
+      "fav": {
+        "state": "answered",
+        "value": "pear"
+      },
+      "rate": {
+        "state": "answered",
+        "value": 3
+      },
+      "grid_taste": {
+        "state": "answered",
+        "value": 2
+      },
+      "grid_price": {
+        "state": "answered",
+        "value": 1
+      },
+      "mood": {
+        "state": "answered",
+        "value": 7
+      }
+    },
+    "csvState": {
+      "name__state": "answered",
+      "fav__state": "answered",
+      "rate__state": "answered",
+      "grid_taste__state": "answered",
+      "grid_price__state": "answered",
+      "mood__state": "answered"
+    },
+    "consentVersion": "sha256:a8a1ff20fd802f789f2bd5ac79d6a37cbe9bfe3afb8621f4104330fdbaefad46",
+    "consentedAt": 3000
+  }
+}

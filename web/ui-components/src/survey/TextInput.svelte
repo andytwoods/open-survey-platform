@@ -29,6 +29,7 @@
 			value={value ?? ''}
 			{multiline}
 			invalid={ctx.invalid}
+			aria-labelledby={ctx.labelledBy}
 			aria-describedby={ctx.describedBy}
 			maxlength={maxLength}
 			enterkeyhint={multiline ? undefined : 'next'}

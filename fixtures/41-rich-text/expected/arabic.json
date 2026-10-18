@@ -1,0 +1,280 @@
+{
+  "pending": [],
+  "steps": [
+    {
+      "index": 0,
+      "page": "$consent",
+      "visible": [],
+      "errors": {},
+      "nav": null,
+      "questions": {
+        "name": {
+          "state": "not-reached",
+          "value": null
+        },
+        "fav": {
+          "state": "not-reached",
+          "value": null
+        },
+        "rate": {
+          "state": "not-reached",
+          "value": null
+        },
+        "grid_taste": {
+          "state": "not-reached",
+          "value": null
+        },
+        "grid_price": {
+          "state": "not-reached",
+          "value": null
+        },
+        "mood": {
+          "state": "not-reached",
+          "value": null
+        }
+      },
+      "orders": {
+        "blocks": {},
+        "items": {},
+        "choices": {}
+      },
+      "conditions": {},
+      "end": null,
+      "labels": {},
+      "choiceLabels": {},
+      "ending": null
+    },
+    {
+      "index": 1,
+      "page": "p1",
+      "visible": [
+        "intro",
+        "name",
+        "fav"
+      ],
+      "errors": {},
+      "nav": {
+        "back": false
+      },
+      "questions": {
+        "name": {
+          "state": "unanswered",
+          "value": null
+        },
+        "fav": {
+          "state": "unanswered",
+          "value": null
+        },
+        "rate": {
+          "state": "not-reached",
+          "value": null
+        },
+        "grid_taste": {
+          "state": "not-reached",
+          "value": null
+        },
+        "grid_price": {
+          "state": "not-reached",
+          "value": null
+        },
+        "mood": {
+          "state": "not-reached",
+          "value": null
+        }
+      },
+      "orders": {
+        "blocks": {},
+        "items": {},
+        "choices": {}
+      },
+      "conditions": {},
+      "end": null,
+      "labels": {
+        "intro": "<h3>مرحباً</h3><p>يرجى الإجابة على <strong>كل</strong> سؤال. <span lang=\"en\"><em>two minutes</em></span></p><ul><li><strong>رمز المشارك</strong></li><li><a href=\"https://example.org/study\" target=\"_blank\" rel=\"noopener noreferrer\">صفحة الدراسة</a></li></ul>",
+        "name": "Your <strong>name</strong> (as on the <a href=\"https://example.org/info\" target=\"_blank\" rel=\"noopener noreferrer\">sheet</a>)",
+        "fav": "Pick a fruit"
+      },
+      "choiceLabels": {
+        "fav": [
+          [
+            "apple",
+            "تفاحة"
+          ],
+          [
+            "pear",
+            "كمثرى"
+          ],
+          [
+            "other",
+            "شيء آخر"
+          ]
+        ]
+      },
+      "ending": null
+    },
+    {
+      "index": 2,
+      "page": "p2",
+      "visible": [
+        "echo",
+        "rate",
+        "grid",
+        "mood"
+      ],
+      "errors": {},
+      "nav": {
+        "back": true
+      },
+      "questions": {
+        "name": {
+          "state": "answered",
+          "value": "دانة"
+        },
+        "fav": {
+          "state": "answered",
+          "value": "apple"
+        },
+        "rate": {
+          "state": "unanswered",
+          "value": null
+        },
+        "grid_taste": {
+          "state": "unanswered",
+          "value": null
+        },
+        "grid_price": {
+          "state": "unanswered",
+          "value": null
+        },
+        "mood": {
+          "state": "unanswered",
+          "value": null
+        }
+      },
+      "orders": {
+        "blocks": {},
+        "items": {},
+        "choices": {}
+      },
+      "conditions": {},
+      "end": null,
+      "labels": {
+        "echo": "<p><strong>Hello </strong>دانة<strong>, you chose </strong>تفاحة.</p><ol><li>Trial 2</li><li>Language ar</li></ol>",
+        "rate": "قيّم تفاحة من <strong>١</strong> إلى <strong>٥</strong>",
+        "grid": "How much do you agree?",
+        "mood": "How do you feel?"
+      },
+      "choiceLabels": {
+        "grid": [
+          [
+            1,
+            "<em>Disagree</em>"
+          ],
+          [
+            2,
+            "Agree"
+          ]
+        ]
+      },
+      "ending": null
+    },
+    {
+      "index": 3,
+      "page": null,
+      "visible": [],
+      "errors": {},
+      "nav": null,
+      "questions": {
+        "name": {
+          "state": "answered",
+          "value": "دانة"
+        },
+        "fav": {
+          "state": "answered",
+          "value": "apple"
+        },
+        "rate": {
+          "state": "answered",
+          "value": 5
+        },
+        "grid_taste": {
+          "state": "answered",
+          "value": 1
+        },
+        "grid_price": {
+          "state": "answered",
+          "value": 2
+        },
+        "mood": {
+          "state": "answered",
+          "value": 2
+        }
+      },
+      "orders": {
+        "blocks": {},
+        "items": {},
+        "choices": {}
+      },
+      "conditions": {},
+      "end": "complete",
+      "labels": {},
+      "choiceLabels": {},
+      "ending": {
+        "title": "All done",
+        "message": "Finished\n\nGoodbye, دانة!",
+        "body": "Thank you, دانة.\n\nYour fruit: تفاحة\nYour rating: 5",
+        "status": "recorded"
+      }
+    }
+  ],
+  "invariants": [],
+  "response": {
+    "surveyId": "f41_rich_text",
+    "surveyVersion": 1,
+    "end": "complete",
+    "allocation": "server",
+    "sessionSeed": 4102,
+    "conditions": {},
+    "orders": {
+      "blocks": {},
+      "items": {},
+      "choices": {}
+    },
+    "answers": {
+      "name": {
+        "state": "answered",
+        "value": "دانة"
+      },
+      "fav": {
+        "state": "answered",
+        "value": "apple"
+      },
+      "rate": {
+        "state": "answered",
+        "value": 5
+      },
+      "grid_taste": {
+        "state": "answered",
+        "value": 1
+      },
+      "grid_price": {
+        "state": "answered",
+        "value": 2
+      },
+      "mood": {
+        "state": "answered",
+        "value": 2
+      }
+    },
+    "csvState": {
+      "name__state": "answered",
+      "fav__state": "answered",
+      "rate__state": "answered",
+      "grid_taste__state": "answered",
+      "grid_price__state": "answered",
+      "mood__state": "answered"
+    },
+    "consentVersion": "sha256:a8a1ff20fd802f789f2bd5ac79d6a37cbe9bfe3afb8621f4104330fdbaefad46",
+    "consentedAt": 3000
+  }
+}

@@ -20,8 +20,9 @@
  */
 
 /**
- * One run of display text. `text` is plain text, already escaped/resolved by the engine
- * (piping included); widgets render it as a text node and never as HTML.
+ * One run of display text (planning/rich-text.md §7). `text` is plain text, already
+ * resolved by the engine (piping included); widgets render it as a text node and never as
+ * HTML. `href` makes the run a link (an absolute https URL, opened in a new tab).
  */
 export interface TextSegment {
 	text: string;
@@ -29,10 +30,31 @@ export interface TextSegment {
 	em?: boolean;
 	/** BCP 47 tag when this run is in a different language from the question. */
 	lang?: string;
+	/** An https link; adjacent runs with the same href are one link. */
+	href?: string;
 }
 
-/** Display text: a plain string, or structured segments. */
-export type Text = string | readonly TextSegment[];
+/** A line break inside a run of inline text. */
+export interface TextBreak {
+	br: true;
+}
+
+export type InlineNode = TextSegment | TextBreak;
+
+/** Inline display text: a plain string, or runs and breaks. */
+export type InlineText = string | readonly InlineNode[];
+
+/**
+ * One block of display text: a paragraph, a heading (1–3, rendered as h3–h5 under the
+ * page's h2) or a single-level bulleted / numbered list.
+ */
+export type TextBlock =
+	| { type: 'p'; content: readonly InlineNode[] }
+	| { type: 'h'; level: 1 | 2 | 3; content: readonly InlineNode[] }
+	| { type: 'ul' | 'ol'; items: readonly (readonly InlineNode[])[] };
+
+/** Display text: a plain string, inline runs, or blocks (RichText renders any of them). */
+export type Text = InlineText | readonly TextBlock[];
 
 export interface Choice {
 	/** Stored value. Unique within the question. */
@@ -146,4 +168,6 @@ export interface WidgetMessages {
 	invalidDate: string;
 	/** Announced once when a question is revealed. `{label}` is replaced. */
 	revealed: string;
+	/** Visually hidden suffix of a link in researcher text (links open in a new tab). */
+	opensInNewTab: string;
 }

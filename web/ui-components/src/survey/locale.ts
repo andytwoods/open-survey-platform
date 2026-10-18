@@ -2,7 +2,7 @@
  * Pure helpers for the question widgets: text, direction, number and date formats.
  * No DOM access, so they are unit-tested directly (locale.test.ts).
  */
-import type { Text, WidgetMessages } from './types';
+import type { InlineNode, Text, TextBlock, WidgetMessages } from './types';
 
 export const defaultMessages: WidgetMessages = {
 	required: 'Required',
@@ -17,7 +17,8 @@ export const defaultMessages: WidgetMessages = {
 	outOfRange: 'Enter a number from {min} to {max}.',
 	incompleteDate: 'Enter a day, month and year.',
 	invalidDate: 'Enter a real date.',
-	revealed: 'New question: {label}'
+	revealed: 'New question: {label}',
+	opensInNewTab: '(opens in a new tab)'
 };
 
 export function messagesFor(overrides?: Partial<WidgetMessages>): WidgetMessages {
@@ -29,11 +30,41 @@ export function fill(template: string, values: Record<string, string | number>):
 	return template.replace(/\{(\w+)\}/g, (m, k: string) => (k in values ? String(values[k]) : m));
 }
 
+export function isBlocks(text: Text | undefined): text is readonly TextBlock[] {
+	return Array.isArray(text) && text.length > 0 && typeof text[0] === 'object' && text[0] !== null && 'type' in text[0];
+}
+
+/** The inline nodes of a text, blocks flattened in reading order (a break between blocks). */
+export function inlineNodes(text: Text | undefined): readonly InlineNode[] {
+	if (text === undefined) return [];
+	if (typeof text === 'string') return [{ text }];
+	if (!isBlocks(text)) return text as readonly InlineNode[];
+	const out: InlineNode[] = [];
+	text.forEach((b, i) => {
+		if (i > 0) out.push({ br: true });
+		if ('items' in b) {
+			b.items.forEach((item, j) => {
+				if (j > 0) out.push({ br: true });
+				out.push(...item);
+			});
+		} else out.push(...b.content);
+	});
+	return out;
+}
+
+/**
+ * Whether a text can live inside a `<label>`, `<legend>` or button: a string, inline
+ * runs, or exactly one paragraph. Headings, lists and several paragraphs need a `<div>`.
+ */
+export function isInline(text: Text | undefined): boolean {
+	return !isBlocks(text) || (text.length === 1 && text[0]!.type === 'p');
+}
+
 /** Plain text of a label (for announcements and ids, never for rendering markup). */
 export function plainText(text: Text | undefined): string {
-	if (text === undefined) return '';
-	if (typeof text === 'string') return text;
-	return text.map((s) => s.text).join('');
+	return inlineNodes(text)
+		.map((s) => ('br' in s ? '\n' : s.text))
+		.join('');
 }
 
 export function isEmptyText(text: Text | undefined): boolean {

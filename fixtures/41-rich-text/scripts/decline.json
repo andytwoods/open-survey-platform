@@ -1,0 +1,13 @@
+{
+  "format": "osp-fixture-script/0",
+  "id": "decline",
+  "description": "A decline from the rich consent page: nothing recorded; the default declined ending.",
+  "sessionSeed": 4103,
+  "language": "en",
+  "actions": [
+    {
+      "expectPage": "$consent",
+      "do": "decline"
+    }
+  ]
+}

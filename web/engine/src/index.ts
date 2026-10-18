@@ -7,6 +7,7 @@
 export * from './plan.ts';
 export * from './types.ts';
 export * from './redirect.ts';
+export * from './richtext.ts';
 export {
 	agree,
 	answer,
@@ -34,6 +35,7 @@ export {
 	start,
 	toHtml,
 	toPlain,
+	valueText,
 	tryAnswer,
 	tryBack,
 	tryResolve,

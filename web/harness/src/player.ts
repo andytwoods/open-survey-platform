@@ -156,6 +156,11 @@ function esc(s: string) {
  * A label as a name pattern. Accessible-name computation collapses white space and some
  * browsers drop zero-width characters (U+200B …), so both are matched loosely.
  */
+/** Whitespace collapsed and trimmed: how the DOM shows a label with breaks or list items. */
+function squash(s: string): string {
+	return s.replace(/\s+/g, ' ').trim();
+}
+
 function namePattern(label: string): string {
 	const zw = /[\u200B-\u200D\u2060\uFEFF]/;
 	return label
@@ -258,7 +263,13 @@ interface ItemInfo {
 /** What the engine (inside the app) says a visible item is: type, label, choices, rows. */
 function viewItems(): ItemInfo[] {
 	const s = (window as unknown as { __osp?: { view(): { items: ViewItem[] } } }).__osp;
-	const plain = (t: Array<{ text: string }> | null | undefined) => (t ?? []).map((p) => p.text).join('');
+	// Rendered blocks (RT2) flattened in the page: text runs and values joined, breaks as newlines.
+	type Run = { kind: string; text?: string };
+	type Blk = { type: string; content?: Run[]; items?: Run[][] };
+	const plain = (t: Blk[] | null | undefined) =>
+		(t ?? [])
+			.map((b) => (b.items ? b.items.map((i) => i.map((r) => r.text ?? '\n').join('')).join('\n') : (b.content ?? []).map((r) => r.text ?? '\n').join('')))
+			.join('\n\n');
 	return (s?.view().items ?? []).map((i) => ({
 		id: i.id,
 		type: i.type,
@@ -421,7 +432,8 @@ export class Player {
 		for (const it of dom.items) {
 			const vi = byId.get(it.id);
 			if (!vi) continue;
-			if (it.label !== toPlain(vi.label).trim()) problem(`screen.label.${it.id}`, toPlain(vi.label), it.label);
+			// Whitespace-insensitive: a rich label's breaks and list items are DOM structure, not text.
+			if (squash(it.label) !== squash(toPlain(vi.label))) problem(`screen.label.${it.id}`, toPlain(vi.label), it.label);
 			this.checkValue(it, vi, problem);
 		}
 
@@ -430,11 +442,11 @@ export class Player {
 		const errors: Record<string, unknown> = {};
 		for (const it of dom.items) {
 			const vi = byId.get(it.id);
-			labels[it.id] = vi && it.label === toPlain(vi.label).trim() ? toHtml(vi.label) : escapeHtml(it.label);
+			labels[it.id] = vi && squash(it.label) === squash(toPlain(vi.label)) ? toHtml(vi.label) : escapeHtml(it.label);
 			if (vi?.choices && vi.type !== 'matrix') {
 				choiceLabels[it.id] = it.choices.map((c, k) => {
 					const vc = vi.choices![k];
-					const same = vc && c.label === toPlain(vc.label).trim();
+					const same = vc && squash(c.label) === squash(toPlain(vc.label));
 					return [vc?.value ?? null, same ? toHtml(vc.label) : escapeHtml(c.label)];
 				});
 			}
@@ -636,8 +648,9 @@ export class Player {
 			case 'decline': {
 				// The consent page (M5): its buttons are named by the plan's labels.
 				const label = await page.evaluate((which) => {
-					const c = (window as unknown as { __osp: { view(): { consent?: Record<string, Array<{ text: string }>> } } }).__osp.view().consent;
-					return (c?.[which] ?? []).map((p) => p.text).join('');
+					type Blk = { content?: Array<{ text?: string }> }; // rendered blocks (RT2)
+					const c = (window as unknown as { __osp: { view(): { consent?: Record<string, Blk[]> } } }).__osp.view().consent;
+					return (c?.[which] ?? []).map((b) => (b.content ?? []).map((p) => p.text ?? '').join('')).join(' ');
 				}, a.do);
 				const btn = page.getByRole('button', { name: exactName(label) });
 				if (!label || (await btn.count()) === 0) throw new ScriptError(i, `${a.do}: no consent button "${label}"`);

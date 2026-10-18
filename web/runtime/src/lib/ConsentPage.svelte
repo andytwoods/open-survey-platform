@@ -6,8 +6,9 @@
 	 */
 	import { onMount } from 'svelte';
 	import type { PageView } from '@osp/engine';
+	import { RichText } from '@osp/ui-components/survey';
 	import type { Session } from './session';
-	import { plain } from './view-map';
+	import { blocks, paragraphs, plain } from './view-map';
 	import { consentUi } from './consent-messages';
 	import EndRedirect from './EndRedirect.svelte';
 	import EndScreen from './EndScreen.svelte';
@@ -20,12 +21,9 @@
 	// A declined ending may redirect too (end-of-survey plan §4.2); the view changes once
 	// the session has finished, which is when the session gives it.
 	const redirect = $derived(declined ? session.redirect : null);
-	const paragraphs = $derived(
-		plain(view.consent?.text)
-			.split(/\n\s*\n/)
-			.map((p) => p.trim())
-			.filter(Boolean)
-	);
+	// The consent text as blocks: plain text split at blank lines (as before RT2), rich text
+	// with its headings, lists and links; rendered as text nodes, never HTML.
+	const text = $derived(blocks(paragraphs(view.consent?.text)));
 
 	onMount(() => heading?.focus());
 	$effect(() => {
@@ -59,9 +57,7 @@
 	{:else}
 		<h1 tabindex="-1" bind:this={heading}>{plain(view.title)}</h1>
 		<div class="items consent" data-page={view.page} data-testid="consent">
-			{#each paragraphs as p, i (i)}
-				<p>{p}</p>
-			{/each}
+			<RichText {text} block />
 		</div>
 		<div class="actions">
 			<button type="button" class="btn primary" onclick={onAgree} disabled={busy} aria-busy={busy}>
@@ -101,8 +97,9 @@
 		outline: var(--focus-ring-width) solid var(--color-focus);
 		outline-offset: 4px;
 	}
-	.consent p {
+	.consent :global(p) {
 		margin: 0 0 var(--space-3);
+		white-space: pre-line;
 	}
 	.actions {
 		display: flex;

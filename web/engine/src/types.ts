@@ -1,7 +1,7 @@
 /** Public engine types (runtime-design.md §3). Everything in `Data` is plain JSON. */
 
 import type { Stored } from './values.ts';
-import type { ChoiceValue, Id, Plan } from './plan.ts';
+import type { ChoiceValue, Id, Mark, Plan } from './plan.ts';
 
 export type Clock = () => number;
 export type Device = 'phone' | 'tablet' | 'desktop';
@@ -271,8 +271,21 @@ export interface Snapshot {
 	data: Data;
 }
 
-/** Text after piping. `value` parts are participant data: HTML-escape them when rendering. */
-export type RenderedText = Array<{ kind: 'text'; text: string } | { kind: 'value'; text: string }>;
+/**
+ * Text after piping, as rendered blocks (planning/rich-text.md §7). `text` runs are the
+ * researcher's own words with their formatting; `value` runs are participant data (escape
+ * them when rendering as HTML; the runtime renders text nodes). A plain string is one
+ * paragraph of runs. `toHtml` / `toPlain` flatten it; a single paragraph renders inline.
+ */
+export type RenderedRun =
+	| { kind: 'text'; text: string; marks?: Mark[]; href?: string; lang?: string }
+	| { kind: 'value'; text: string }
+	| { kind: 'br' };
+export type RenderedBlock =
+	| { type: 'p'; content: RenderedRun[] }
+	| { type: 'h'; level: 1 | 2 | 3; content: RenderedRun[] }
+	| { type: 'ul' | 'ol'; items: RenderedRun[][] };
+export type RenderedText = RenderedBlock[];
 
 export interface ViewChoice {
 	value: ChoiceValue;

@@ -22,8 +22,7 @@ import {
 	type Plan,
 	type QuestionState,
 	type State,
-	type Value
-} from '@osp/engine';
+	type Value, toBlocks } from '@osp/engine';
 
 export interface Read {
 	id: string;
@@ -249,8 +248,11 @@ export function explainPage(state: State, texts: Record<string, string>, pageId?
 }
 
 function firstText(item: Item, plan: Plan): string {
-	const segs = item.label[plan.defaultLanguage] ?? Object.values(item.label)[0] ?? [];
-	return segs.map((s) => (typeof s === 'string' ? s.replace(/<[^>]*>/g, '') : `\${${s.pipe}}`)).join('');
+	// Plain segments or rich blocks (RT2): the text runs, pipes as `${id}`.
+	return toBlocks(item.label[plan.defaultLanguage] ?? Object.values(item.label)[0] ?? [])
+		.flatMap((b) => ('items' in b ? b.items.flat() : b.content))
+		.map((r) => ('text' in r ? r.text : 'pipe' in r ? `\${${r.pipe}}` : ' '))
+		.join('');
 }
 
 export function explainItem(state: State, texts: Record<string, string>, item: Item, visible: boolean): Reason {

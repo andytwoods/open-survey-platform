@@ -38,6 +38,59 @@ describe('QuestionFrame (via the widgets)', () => {
 		expect(container.querySelector('input, textarea, button')).toBeNull();
 	});
 
+	it('renders rich runs as our own elements: links open in a new tab, never HTML (RT2)', () => {
+		const { container } = render(Note, {
+			id: 'n2',
+			label: [
+				{ text: 'Read the ' },
+				{ text: 'sheet', href: 'https://example.org/s' },
+				{ text: ' now', href: 'https://example.org/s', em: true },
+				{ br: true },
+				{ text: '<b>x</b>', strong: true }
+			]
+		});
+		const links = container.querySelectorAll('a');
+		expect(links.length).toBe(1); // adjacent runs with one href are one link
+		const a = links[0]!;
+		expect(a.getAttribute('href')).toBe('https://example.org/s');
+		expect(a.getAttribute('target')).toBe('_blank');
+		expect(a.getAttribute('rel')).toBe('noopener noreferrer');
+		expect(a.querySelector('em')?.textContent).toBe(' now');
+		expect(a.querySelector('.osp-visually-hidden')?.textContent).toBe(' (opens in a new tab)');
+		expect(container.querySelector('br')).not.toBeNull();
+		expect(container.querySelector('b')).toBeNull();
+		expect(container.querySelector('strong')?.textContent).toBe('<b>x</b>');
+	});
+
+	it('renders block content as headings, paragraphs and lists; a field names itself with aria-labelledby', () => {
+		const label = [
+			{ type: 'h' as const, level: 1 as const, content: [{ text: 'Before you start' }] },
+			{ type: 'p' as const, content: [{ text: 'Your name' }] },
+			{ type: 'ul' as const, items: [[{ text: 'one' }], [{ text: 'two' }]] }
+		];
+		const help = [
+			{ type: 'p' as const, content: [{ text: 'First' }] },
+			{ type: 'ol' as const, items: [[{ text: 'a' }]] }
+		];
+		const { container } = render(TextInput, { id: 'q2', label, help, value: '' });
+		expect(container.querySelector('label')).toBeNull();
+		expect(container.querySelector('h3')?.textContent).toBe('Before you start');
+		expect(container.querySelectorAll('#q2-label li').length).toBe(2);
+		expect(container.querySelectorAll('#q2-help ol li').length).toBe(1);
+		const box = screen.getByRole('textbox', { name: /Before you start/ });
+		expect(box.getAttribute('aria-labelledby')).toBe('q2-label');
+		expect(box.getAttribute('aria-describedby')).toBe('q2-help');
+	});
+
+	it('keeps a one-paragraph block label inside <label for>', () => {
+		const label = [{ type: 'p' as const, content: [{ text: 'Plain', strong: true }] }];
+		const { container } = render(TextInput, { id: 'q3', label, value: '' });
+		const lab = container.querySelector('label');
+		expect(lab?.getAttribute('for')).toBe('q3-input');
+		expect(lab?.querySelector('p')).toBeNull();
+		expect(lab?.querySelector('strong')?.textContent).toBe('Plain');
+	});
+
 	it('marks required, links help and error with aria-describedby', () => {
 		render(TextInput, {
 			id: 'q1',

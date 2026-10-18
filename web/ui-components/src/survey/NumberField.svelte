@@ -73,6 +73,7 @@
 			value={text}
 			chars={mode === 'integer' ? 10 : 12}
 			invalid={ctx.invalid}
+			aria-labelledby={ctx.labelledBy}
 			aria-describedby={ctx.describedBy}
 			{inputmode}
 			enterkeyhint="next"

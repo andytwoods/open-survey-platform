@@ -269,7 +269,7 @@
               },
               {
                 "additionalProperties": {
-                  "type": "string"
+                  "$ref": "#/components/schemas/JsonValue"
                 },
                 "type": "object"
               },
@@ -3234,6 +3234,7 @@
           "op.internal",
           "op.invalid_result",
           "op.invalid_survey",
+          "op.invalid_text",
           "op.not_allowed",
           "op.not_applicable",
           "op.not_found",
