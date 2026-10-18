@@ -10,7 +10,14 @@ from concurrent.futures import ThreadPoolExecutor
 from datetime import timedelta
 
 import pytest
-from osp_store import Conflict, NotFound, ParticipantStore, SystemContext, TenantContext
+from osp_store import (
+    AccessDenied,
+    Conflict,
+    NotFound,
+    ParticipantStore,
+    SystemContext,
+    TenantContext,
+)
 from osp_store import schema as t
 from sqlalchemy import select, update
 
@@ -269,8 +276,9 @@ def _small_pub(store, ps, ctx, cap):
     )
 
 
-def _submit(ps, ctx, sid, checksum="c", **kw):
-    return ps.submit(ctx, sid, answers=ANS, record={"r": 1, "server": {"late": False}},
+def _submit(ps, ctx, sid, checksum="c", record=None, **kw):
+    record = {"r": 1, "server": {"late": False}} if record is None else record
+    return ps.submit(ctx, sid, answers=ANS, record=record,
                      record_checksum=checksum * 64, realised_orders={},
                      engine_version=None, **kw)  # fmt: skip
 
@@ -335,6 +343,119 @@ def test_late_flag_from_caller_releases_remaining_holds(store, ps, tenants):
     assert ps.quota_usage(a, p.id)["women"] == (0, 5)  # a late submit is not counted
     assert ps.assignment_counts(a, p.id)["arm"] == {"a": 0, "b": 0}
     assert ps.get_record(a, r.response_id) == {"r": 1, "server": {"late": True}}
+
+
+def _ended(outcome):
+    return {"record": {"end": outcome, "answers": ANS}, "server": {"late": False}}
+
+
+def test_non_complete_outcome_releases_the_quota_place_and_is_a_column(store, ps, tenants):
+    """Lead decision 5 (end-of-survey plan §4.5): quota places count completes only."""
+    a, _ = tenants
+    p = _small_pub(store, ps, a, cap=1)
+    s = start(ps, a, p, balanced=("arm",))
+    assert ps.claim_quota(a, s.id, "qc1", "women").result == "admitted"
+    assert ps.quota_usage(a, p.id)["women"] == (1, 1)
+    r = _submit(ps, a, s.id, record=_ended("screened_out"))
+    assert (r.status, r.late) == ("ok", False)
+    assert ps.quota_usage(a, p.id)["women"] == (0, 1)  # the place is free again
+    assert ps.assignment_counts(a, p.id)["arm"] == {"a": 1, "b": 0}  # counted at start
+    assert store.get_response(a, r.response_id).outcome == "screened_out"
+    [e] = [e for e in store.list_audit(a) if e.action == "response.submit"]
+    assert e.detail["outcome"] == "screened_out" and e.detail["quota_released"] == 1
+    # Another participant can take the place; a repeated submit releases nothing twice.
+    other = start(ps, a, p)
+    assert ps.claim_quota(a, other.id, "qc1", "women").result == "admitted"
+    assert _submit(ps, a, s.id, record=_ended("screened_out")).status == "replay"
+    assert ps.quota_usage(a, p.id)["women"] == (1, 1)
+    # The submitted session stays submitted: no snapshot can take the place back.
+    assert ps.write_snapshot(a, s.id, 1, {"v": 2}).status == "submitted"
+    assert ps.quota_usage(a, p.id)["women"] == (1, 1)
+
+
+def test_complete_outcome_keeps_the_place_even_after_withdrawal(store, ps, tenants):
+    """Semantics §6 and C-1: a completed response's place stays used."""
+    a, _ = tenants
+    p = _small_pub(store, ps, a, cap=1)
+    s = start(ps, a, p)
+    ps.claim_quota(a, s.id, "qc1", "women")
+    r = _submit(ps, a, s.id, record=_ended("complete"))
+    assert store.get_response(a, r.response_id).outcome == "complete"
+    assert ps.quota_usage(a, p.id)["women"] == (1, 1)
+    assert ps.withdraw(a, s.id, "changed my mind") == 1
+    assert ps.quota_usage(a, p.id)["women"] == (1, 1)  # C-1: the place stays used
+
+
+def test_outcome_column_is_null_without_a_usable_end(store, ps, tenants):
+    a, _ = tenants
+    p = _small_pub(store, ps, a, cap=1)
+    for checksum, record in (
+        ("c", {"r": 1, "server": {"late": False}}),  # no record.end at all
+        ("d", {"record": {"end": 5}, "server": {}}),  # not a string
+        ("e", {"record": {"end": "x" * 81}, "server": {}}),  # too long
+    ):
+        s = start(ps, a, p)
+        ps.claim_quota(a, s.id, "qc1", "women")
+        r = _submit(ps, a, s.id, checksum=checksum, record=record)
+        assert store.get_response(a, r.response_id).outcome is None
+        # Nothing to go on: the place is treated as used (as before migration 0011)...
+        assert ps.quota_usage(a, p.id)["women"] == (1, 1)
+        with store.engine.begin() as conn:  # ...so make room for the next case
+            conn.execute(update(t.quota_counters).values(used=0))
+
+
+def test_outcome_counts_and_complete_only_stream_use_the_column(store, ps, tenants):
+    a, _ = tenants
+    p = _small_pub(store, ps, a, cap=5)
+    for checksum, outcome in (("c", "complete"), ("d", "complete"), ("e", "screened_out")):
+        s = start(ps, a, p)
+        _submit(ps, a, s.id, checksum=checksum, record=_ended(outcome))
+    legacy = start(ps, a, p)
+    _submit(ps, a, legacy.id, checksum="f", record={"r": 1, "server": {}})
+    assert ps.outcome_counts(a, p.version_id) == {"complete": 2, "screened_out": 1, None: 1}
+    every = Counter(r.outcome for r, _rec in ps.stream_responses(a, p.version_id))
+    assert every == {"complete": 2, "screened_out": 1, None: 1}
+    complete = ps.stream_responses(a, p.version_id, complete_only=True)
+    assert Counter(r.outcome for r, _rec in complete) == {"complete": 2, None: 1}  # NULL kept
+    assert len(store.list_audit(a)) >= 2
+
+
+def test_backfill_outcomes_reads_the_record_once_and_is_idempotent(store, ps, tenants, sys_ctx):
+    a, _ = tenants
+    p = _small_pub(store, ps, a, cap=5)
+    ids = {}
+    for checksum, record in (
+        ("c", _ended("quota_full")),
+        ("d", _ended("complete")),
+        ("e", {"record": {"noEnd": True}, "server": {}}),
+    ):
+        s = start(ps, a, p)
+        ids[checksum] = _submit(ps, a, s.id, checksum=checksum, record=record).response_id
+    no_record = store.record_response(a, p.version_id, ANS, session_seed=3)  # a row only
+    with store.engine.begin() as conn:  # as rows stored before migration 0011 look
+        conn.execute(update(t.responses).values(outcome=None))
+    assert ps.outcome_counts(a, p.version_id) == {None: 4}
+    report = ps.backfill_outcomes(sys_ctx, batch=2)
+    assert (report.scanned, report.updated) == (3, 2)
+    assert store.get_response(a, ids["c"]).outcome == "quota_full"
+    assert store.get_response(a, ids["d"]).outcome == "complete"
+    assert store.get_response(a, ids["e"]).outcome is None
+    assert store.get_response(a, no_record.id).outcome is None
+    again = ps.backfill_outcomes(sys_ctx)
+    assert (again.scanned, again.updated) == (1, 0)  # only the record without an end
+    al = t.audit_log.c
+    with store.engine.connect() as conn:
+        rows = conn.execute(
+            select(al.tenant_id, al.detail)
+            .where(al.action == "responses.backfill_outcome")
+            .order_by(al.id)
+        ).all()
+    assert [tuple(r) for r in rows] == [
+        (None, {"scanned": 3, "updated": 2}),
+        (None, {"scanned": 1, "updated": 0}),
+    ]
+    with pytest.raises(AccessDenied):
+        ps.backfill_outcomes(a)  # a tenant context is not a system context
 
 
 def test_withdrawal_removes_runtime_rows(ps, pub, tenants, store, engine):

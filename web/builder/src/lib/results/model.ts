@@ -254,6 +254,18 @@ export function describeFilters(
 	return out;
 }
 
+/**
+ * The header's per-outcome counts (task EN4): "6 complete · 1 screened out · 2 outcome
+ * unknown". Outcomes are the survey's own identifiers, so `_` and `-` become spaces; a
+ * null outcome (a response stored without one) reads "outcome unknown". '' when empty.
+ */
+export function describeOutcomes(outcomes: readonly { outcome: string | null; responses: number }[]): string {
+	return outcomes
+		.filter((o) => o.responses > 0)
+		.map((o) => `${o.responses} ${o.outcome === null ? 'outcome unknown' : o.outcome.replace(/[_-]+/g, ' ')}`)
+		.join(' · ');
+}
+
 // -- chart menu ------------------------------------------------------------------------
 // Which charts suit a card, and the default, come from `chartsFor` (charts/menu.ts, task
 // V3): the one source of truth. A date card's period is its own choice (it re-queries).

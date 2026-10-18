@@ -60,6 +60,25 @@ from .themes import ThemeLibrary
 
 Clock = Callable[[], datetime]
 ALLOCATION_MODES = frozenset({"server", "limesurvey-native"})
+#: Longest end outcome kept in ``responses.outcome`` (migration 0011).
+OUTCOME_MAX = 80
+
+
+def outcome_of(stored: object) -> str | None:
+    """The end outcome inside a stored response record (``{"record": {"end": ...}}``, as
+    the participant runtime stores it): a non-empty string of at most :data:`OUTCOME_MAX`
+    characters, else None. Never raises: a record is participant input."""
+    if not isinstance(stored, Mapping):
+        return None
+    record = stored.get("record")
+    if not isinstance(record, Mapping):
+        return None
+    end = record.get("end")
+    if isinstance(end, str) and 0 < len(end) <= OUTCOME_MAX:
+        return end
+    return None
+
+
 _MAX_SEED = 2**63 - 1
 
 
@@ -811,6 +830,7 @@ class Store(ThemeLibrary, ResultsLayoutLibrary, PanelProfiles):  # mixins (one m
             answers,
             r["started_at"],
             r["submitted_at"],
+            r["outcome"],
         )
 
     def _response_where(self, ctx: TenantContext, response_id: object) -> Any:
@@ -830,10 +850,13 @@ class Store(ThemeLibrary, ResultsLayoutLibrary, PanelProfiles):  # mixins (one m
         engine_version: str | None = None,
         started_at: datetime | None = None,
         submitted_at: datetime | None = None,
+        outcome: str | None = None,
     ) -> Response:
         """Store a submitted response bound to one version and that version's checksum.
 
         With ``session_id``, seed / conditions / orders default to the session's.
+        ``outcome`` is the end outcome (``complete``, ``screened_out``, ...); None when the
+        caller has none (a row without an engine record).
         """
         ctx = require_ctx(ctx)
         vid = _id(version_id)
@@ -844,6 +867,10 @@ class Store(ThemeLibrary, ResultsLayoutLibrary, PanelProfiles):  # mixins (one m
             not isinstance(engine_version, str) or len(engine_version) > 64
         ):
             raise InvalidInput("engine_version must be a string of at most 64 characters")
+        if outcome is not None and (
+            not isinstance(outcome, str) or not 0 < len(outcome) <= OUTCOME_MAX
+        ):
+            raise InvalidInput(f"outcome must be a string of 1-{OUTCOME_MAX} characters")
         if started_at is not None:
             _aware(started_at, "started_at")
         submitted = self._now() if submitted_at is None else _aware(submitted_at, "submitted_at")
@@ -891,6 +918,7 @@ class Store(ThemeLibrary, ResultsLayoutLibrary, PanelProfiles):  # mixins (one m
                     answers_key_id=kid,
                     started_at=started_at,
                     submitted_at=submitted,
+                    outcome=outcome,
                 )
             )
             return self._response(

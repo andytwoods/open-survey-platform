@@ -128,6 +128,8 @@ describe('ResultsView', () => {
 		const stats = within(fruit).getByRole('table', { name: 'Statistics' });
 		expect(within(stats).getByRole('row', { name: /Mode/ }).textContent).toContain('Apple');
 		expect(screen.getByTestId('results-count').textContent).toContain('5 responses');
+		// EN4: the header's per-outcome line comes from the server's outcome column.
+		expect(screen.getByTestId('results-outcomes').textContent?.trim()).toBe('By outcome: 5 outcome unknown');
 		expect([...screen.getByTestId('active-filters').querySelectorAll('li')].map((l) => l.textContent)).toEqual([
 			'Version 1',
 			'Complete responses only',

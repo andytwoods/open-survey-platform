@@ -48,8 +48,10 @@ test('the top bar opens Results; cards, Table view, filters, split, denominator 
 	await expect(banner(page).getByRole('button', { name: 'Results' })).toHaveAttribute('aria-current', 'page');
 	await expect(page).toHaveTitle(/^Results · /);
 
-	// One card per question, in survey order, with the server's counts.
+	// One card per question, in survey order, with the server's counts. The fixture rows
+	// are stored without an engine record, so their outcome column is empty (EN4).
 	await expect(page.getByTestId('results-count')).toHaveText('5 responses');
+	await expect(page.getByTestId('results-outcomes')).toHaveText('By outcome: 5 outcome unknown');
 	const titles = await page.getByRole('list', { name: 'Questions' }).getByRole('heading', { level: 3 }).allTextContents();
 	expect(titles).toEqual(['Fruit?', 'Satisfied?', 'Colours?', 'Age?', 'Price?', 'Slide', 'Big slide', 'When?', 'Why?', 'Grid']);
 	const fruit = card(page, 'Fruit?');

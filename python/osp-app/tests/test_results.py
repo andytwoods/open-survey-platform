@@ -311,9 +311,18 @@ def test_completion_status_and_languages(env):
                  record={"end": "screened_out", "language": "cy"})  # fmt: skip
     add_response(env.store, env.ctx, env.v1.id, {"fruit": A("cherry")},
                  record={"end": "complete", "language": "cy"})  # fmt: skip
-    assert env.q(cards=[{"question": "fruit"}])["responses"] == 6  # 5 row-only + 1 complete
+    out = env.q(cards=[{"question": "fruit"}])
+    assert out["responses"] == 6  # 5 row-only (no outcome) + 1 complete
+    # The header's per-outcome counts come from the column, before any filter (EN4).
+    expected = [
+        {"outcome": "complete", "responses": 1},
+        {"outcome": "screened_out", "responses": 1},
+        {"outcome": None, "responses": 5},
+    ]
+    assert out["outcomes"] == expected
     out = env.q(cards=[{"question": "fruit"}], status="all", language="cy")
     assert out["responses"] == 7 and out["language"] == "cy"
+    assert out["outcomes"] == expected
     c = out["cards"][0]
     assert c["label"] == "Ffrwyth?" and c["categories"][0]["label"] == "Afal"
     assert cells(c["groups"][0])["cherry"][0] == 2  # aggregated by id, whatever language

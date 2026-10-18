@@ -3439,6 +3439,33 @@
         "title": "OsfUploadedFile",
         "type": "object"
       },
+      "OutcomeCount": {
+        "description": "Submitted responses of the versions used that ended with one outcome (task EN4):\ncounted from the stored outcome column, before any filter.",
+        "properties": {
+          "outcome": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "description": "The end outcome ('complete', 'screened_out', 'quota_full', ...); null for responses with no recorded outcome (counted as complete by the status filter)",
+            "title": "Outcome"
+          },
+          "responses": {
+            "title": "Responses",
+            "type": "integer"
+          }
+        },
+        "required": [
+          "outcome",
+          "responses"
+        ],
+        "title": "OutcomeCount",
+        "type": "object"
+      },
       "OutcomeKey": {
         "maxLength": 64,
         "minLength": 1,
@@ -4414,7 +4441,7 @@
           },
           "status": {
             "default": "complete",
-            "description": "complete: responses whose end outcome is 'complete' (or that carry no outcome at all); all: every submitted response",
+            "description": "complete: responses whose stored end outcome is 'complete' (or that carry no outcome at all); all: every submitted response",
             "enum": [
               "complete",
               "all"
@@ -4505,6 +4532,14 @@
               "type": "string"
             },
             "title": "Languages",
+            "type": "array"
+          },
+          "outcomes": {
+            "description": "Every submitted response of the versions used, by end outcome, before any filter: 'complete' first, then by count. Empty when nothing was submitted.",
+            "items": {
+              "$ref": "#/components/schemas/OutcomeCount"
+            },
+            "title": "Outcomes",
             "type": "array"
           },
           "queryHash": {

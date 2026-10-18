@@ -114,6 +114,9 @@ class Response:
     answers: dict[str, dict[str, Any]]  # {var: {"state": ..., "value": ...}}
     started_at: datetime | None
     submitted_at: datetime
+    # The end outcome copied out of the record at submit (migration 0011); None when the
+    # response has no record or was stored before the column existed (not backfilled).
+    outcome: str | None = None
 
 
 @dataclass(frozen=True, slots=True)

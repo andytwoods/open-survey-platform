@@ -605,6 +605,15 @@ database, run the migration once as a release step, before the new containers st
 `docker run --rm <same env> osp-api init` (Dokku: `app.json` `scripts.dokku.predeploy`;
 Heroku: a `release` process). `init` migrates and exits.
 
+One migration needs a follow-up: `0011_response_outcome` adds the end outcome of each
+response as a plain column (the Results page's "By outcome" counts and its *Complete only*
+filter read it). Responses stored before it have no value there until you run, once, after
+the upgrade, with the same environment as the server:
+`docker run --rm <same env> osp-api osp-cli backfill-outcomes`. It decrypts each older
+record once, fills the column, prints `{"scanned": n, "updated": n}` and writes one audit
+row; running it again does nothing. Until then, those responses show as "outcome unknown"
+and count as complete, as they did before.
+
 **Volumes.** With Postgres the container keeps no state, and `/data` can stay empty. For a
 single machine without Postgres, use SQLite on the volume:
 `-v osp-data:/data -e OSP_DATABASE_URL=sqlite:////data/osp.db`, with one container only.

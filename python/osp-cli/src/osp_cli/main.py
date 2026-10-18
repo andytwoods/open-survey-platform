@@ -17,6 +17,10 @@ Commands
   (dev only, ``OSP_ENV=dev``; ``fake_responses.py``): invented, realistic responses made by
   the real engine and stored through the participant session service. ``--dev-seeded``
   takes the surveys from ``<data-dir>/dev-seed.json`` (``make dev-fake N=200``).
+- ``backfill-outcomes``: one-off after migration 0011 (task EN4): give every stored
+  response without an ``outcome`` column the end outcome inside its record, so the results
+  page counts per outcome without decrypting. Reads each such record once; re-running is a
+  no-op. Prints ``{"scanned": n, "updated": n}``.
 
 There are no accounts or passwords (plan P): the host owns sign-in.
 
@@ -40,8 +44,10 @@ from osp_app.identity import DEV_LAB_ID, DEV_USER_ID, check_tenant_id
 from osp_store import (
     DatabaseUrlError,
     Keyring,
+    ParticipantStore,
     Store,
     StoreError,
+    SystemContext,
     create_engine,
     generate_key,
     migrate,
@@ -292,6 +298,12 @@ def _parser() -> argparse.ArgumentParser:
     f.add_argument("--lab", default=DEV_LAB_ID, help="lab of the survey ids")
     f.add_argument("--db", default=os.environ.get("OSP_DATABASE_URL"), help="database URL")
     f.add_argument("--data-dir", type=Path, default=Path(os.environ.get("OSP_DATA_DIR") or ".data"))
+    b = sub.add_parser(
+        "backfill-outcomes",
+        help="one-off after migration 0011: fill responses.outcome from each stored record",
+    )
+    b.add_argument("--db", default=os.environ.get("OSP_DATABASE_URL"), help="database URL")
+    b.add_argument("--batch", type=int, default=500, help="records decrypted per batch (500)")
     return p
 
 
@@ -302,10 +314,10 @@ def store_factory(db_url: str, environ: Mapping[str, str] | None = None) -> Call
         raise CliError("OSP_STORE_KEYS is not set: run `osp-cli gen-key` and export its output")
     keyring = Keyring.from_env(env)
 
-    def open_store(clock: Callable[[], Any]) -> Store:
+    def open_store(clock: Callable[[], Any] | None = None) -> Store:
         engine = create_engine(db_url)
         migrate(engine)
-        return Store(engine, keyring, clock)
+        return Store(engine, keyring) if clock is None else Store(engine, keyring, clock)
 
     return open_store
 
@@ -317,6 +329,18 @@ def _dev_targets(data_dir: Path) -> list[str]:
         return [str(s["surveyId"]) for s in state["surveys"]]
     except (OSError, ValueError, KeyError, TypeError) as exc:
         raise CliError(f"can't read {path} ({exc}); run `make dev` first") from exc
+
+
+def run_backfill(args: argparse.Namespace) -> int:
+    """``backfill-outcomes``: migrate, then fill ``responses.outcome`` from the records."""
+    if args.batch < 1:
+        raise CliError("--batch must be at least 1")
+    store = store_factory(args.db)()
+    report = ParticipantStore(store).backfill_outcomes(
+        SystemContext("system:backfill"), batch=args.batch
+    )
+    print(json.dumps({"scanned": report.scanned, "updated": report.updated}))
+    return 0
 
 
 def run_fake(args: argparse.Namespace) -> int:
@@ -356,6 +380,8 @@ def main(argv: Sequence[str] | None = None) -> int:
             return 0
         if args.command == "fake-responses":
             return run_fake(args)
+        if args.command == "backfill-outcomes":
+            return run_backfill(args)
         if args.command == "dev-seed":
             count = dev_fake_count()
             fake = None

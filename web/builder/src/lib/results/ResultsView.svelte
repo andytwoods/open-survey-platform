@@ -16,7 +16,7 @@
 	import { suppressCard } from './export/model';
 	import FilterBar from './FilterBar.svelte';
 	import { IDLE_AFTER_MS, liveIn, liveModeIn, pendingText, presentFooter, statusText, withLive, type PresentRefresh } from './live';
-	import { conditionVariables } from './model';
+	import { conditionVariables, describeOutcomes } from './model';
 	import { layoutIn, presentIn, withPresent } from './presentation';
 	import { presentation } from './presentation.svelte';
 	import PresentDialog from './PresentDialog.svelte';
@@ -316,6 +316,16 @@
 							? ` · ${response.split.groups.map((g) => `${g.label}: ${g.responses}`).join(', ')}`
 							: ''}
 					</p>
+					{#if response.outcomes?.length}
+						<!-- Every submitted response of the versions used, by how it ended (EN4): before any filter. -->
+						<p
+							class="count outcomes"
+							data-testid="results-outcomes"
+							title="Every submitted response of the versions used, by how the session ended, before filters"
+						>
+							By outcome: {describeOutcomes(response.outcomes)}
+						</p>
+					{/if}
 				{/if}
 				{#if live}
 					<div class="live-bar" data-testid="live-bar">
@@ -522,6 +532,9 @@
 		margin: var(--space-1) 0 0;
 		color: var(--color-text-muted);
 		font-size: var(--text-sm);
+	}
+	.outcomes {
+		margin-top: 0;
 	}
 	.empty {
 		padding: var(--space-4);

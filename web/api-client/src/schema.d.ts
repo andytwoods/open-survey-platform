@@ -2449,6 +2449,20 @@ export interface components {
             /** Url */
             url?: string | null;
         };
+        /**
+         * OutcomeCount
+         * @description Submitted responses of the versions used that ended with one outcome (task EN4):
+         *     counted from the stored outcome column, before any filter.
+         */
+        OutcomeCount: {
+            /**
+             * Outcome
+             * @description The end outcome ('complete', 'screened_out', 'quota_full', ...); null for responses with no recorded outcome (counted as complete by the status filter)
+             */
+            outcome: string | null;
+            /** Responses */
+            responses: number;
+        };
         OutcomeKey: string;
         /** PanelProfileOut */
         PanelProfileOut: {
@@ -2859,7 +2873,7 @@ export interface components {
             split?: components["schemas"]["SplitSpec"] | null;
             /**
              * Status
-             * @description complete: responses whose end outcome is 'complete' (or that carry no outcome at all); all: every submitted response
+             * @description complete: responses whose stored end outcome is 'complete' (or that carry no outcome at all); all: every submitted response
              * @default complete
              * @enum {string}
              */
@@ -2900,6 +2914,11 @@ export interface components {
             language: string;
             /** Languages */
             languages: string[];
+            /**
+             * Outcomes
+             * @description Every submitted response of the versions used, by end outcome, before any filter: 'complete' first, then by count. Empty when nothing was submitted.
+             */
+            outcomes?: components["schemas"]["OutcomeCount"][];
             /**
              * Queryhash
              * @description Hash of the normalised query (versions resolved)
