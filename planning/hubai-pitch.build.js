@@ -93,7 +93,7 @@ async function icon(Comp, color, size = 256) {
   s.addText("?", { x: 9.55, y: 2.3, w: 0.8, h: 1.0, fontSize: 48, bold: true, color: C.accent6, align: "center", isTextBox: true, objectName: "clash-1" });
   s.addText("?", { x: 8.55, y: 3.65, w: 0.6, h: 0.7, fontSize: 36, bold: true, color: C.accent6, align: "center", isTextBox: true, objectName: "clash-2" });
   s.addText("?", { x: 10.85, y: 3.65, w: 0.6, h: 0.7, fontSize: 36, bold: true, color: C.accent6, align: "center", isTextBox: true, objectName: "clash-3" });
-  s.addText("Planning began Friday daytime; first commit 17:46", { x: 0.6, y: 6.8, w: 8, h: 0.4, fontSize: 11, color: C.accent5, italic: true, isTextBox: true, margin: 0, objectName: "footer-note" });
+  s.addText("HubAI: first commit Saturday 10:37; built during the hackathon", { x: 0.6, y: 6.8, w: 8, h: 0.4, fontSize: 11, color: C.accent5, italic: true, isTextBox: true, margin: 0, objectName: "footer-note" });
   s.addNotes(
     "About 25 seconds.\n" +
       "Scientists increasingly build their own research software, and more and more of it is written by AI coding agents.\n" +

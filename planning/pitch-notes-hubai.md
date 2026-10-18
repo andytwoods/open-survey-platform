@@ -8,7 +8,7 @@ Strict 3 min + 2 min questions. Organisers' structure: problem → old way → r
 - One person can run many agents at once
 - A lab or hackathon team runs many more
 - But agents can't see each other; work collides
-- Footer: "Planning began Friday daytime; first commit 17:46"
+- Footer: "HubAI: first commit Saturday 10:37; built during the hackathon"
 
 ## 2. The old way (~35 s): one screenshot slide
 - Kanban apps for agents: Vibe Kanban, Kanbots, Kanban Code
