@@ -121,7 +121,13 @@ export async function fillRich(page: Page, field: Locator, text: string): Promis
 
 /** Put the caret at the end of an open editor's text (keyboard End differs per platform). */
 export async function caretToEnd(field: Locator): Promise<void> {
-	await field.evaluate((el) => (el as HTMLElement & { editor: { commands: { focus(where: string): void } } }).editor.commands.focus('end'));
+	// Tiptap's focus command calls view.focus() again on the next animation frame, which
+	// writes the editor's selection back to the DOM: a key pressed before that frame (whose
+	// DOM selection change ProseMirror has not read yet) would be undone. Wait it out.
+	await field.evaluate(async (el) => {
+		(el as HTMLElement & { editor: { commands: { focus(where: string): void } } }).editor.commands.focus('end');
+		await new Promise((done) => requestAnimationFrame(() => requestAnimationFrame(done)));
+	});
 	await expect(field).toBeFocused();
 }
 

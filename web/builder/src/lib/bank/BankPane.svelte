@@ -291,6 +291,10 @@
 		gap: var(--space-2);
 		padding: 0 var(--space-2) var(--space-2);
 	}
+	/* `display: flex` above would otherwise override the `hidden` attribute (collapsed). */
+	.body[hidden] {
+		display: none;
+	}
 	.hint,
 	.status {
 		margin: 0 var(--space-1);

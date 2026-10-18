@@ -111,6 +111,8 @@ test('keyboard only: context menu on an outline row renames and duplicates; pale
 	await expect(menu(page)).toBeHidden();
 	const title = titleField(page);
 	await expect(title).toBeFocused();
+	// The rich-text title (RT3) loads its editor on focus: keys sent before it is editable are lost.
+	await expect(title).toHaveAttribute('contenteditable', 'true');
 	await page.keyboard.press('ControlOrMeta+a');
 	await page.keyboard.type('Two');
 	await expect(item(page, 'Two')).toBeVisible();
@@ -125,6 +127,9 @@ test('keyboard only: context menu on an outline row renames and duplicates; pale
 	// Duplicate: the copy follows the original and takes focus.
 	await page.keyboard.press('Shift+F10');
 	await page.keyboard.press('End');
+	await expect(menu(page).getByRole('menuitem', { name: 'Delete…' })).toBeFocused();
+	await page.keyboard.press('ArrowUp'); // past "Save to bank…" (QB5)
+	await expect(menu(page).getByRole('menuitem', { name: 'Save to bank…' })).toBeFocused();
 	await page.keyboard.press('ArrowUp');
 	await expect(menu(page).getByRole('menuitem', { name: 'Duplicate' })).toBeFocused();
 	await page.keyboard.press('Enter');
