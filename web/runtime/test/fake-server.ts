@@ -157,6 +157,18 @@ export class FakeServer {
 				}
 				s.submitted = body;
 				return { responseId: `r-${s.id}`, submittedAt: '2026-01-01T00:00:00Z', replay: false, late: false };
+			}),
+		externalHandoff: (sid, token, nodeId) =>
+			this.io('externalHandoff', () => {
+				const s = this.auth(token, sid);
+				return { returnToken: `rt:${s.id}:${nodeId}`, expiresAt: '2026-01-01T06:00:00Z' };
+			}),
+		externalReturn: (sid, token, nodeId, returnToken) =>
+			this.io('externalReturn', () => {
+				const s = this.auth(token, sid);
+				// Minted and bound to this session and node (task EX2): anything else is rejected.
+				if (returnToken !== `rt:${s.id}:${nodeId}`) throw new HttpError(403, 'external.token_invalid', {});
+				return { ok: true, nodeId };
 			})
 	};
 }

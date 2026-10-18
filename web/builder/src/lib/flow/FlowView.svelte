@@ -31,6 +31,7 @@
 		parseGap,
 		nodeLabel,
 		quotas,
+		redirectTemplateIds,
 		TYPE_LABEL,
 		unavailable,
 		unusedBlocks,
@@ -262,6 +263,7 @@
 	const blockList = $derived(blocks(survey));
 	const varList = $derived(assignedVariables(survey));
 	const quotaList = $derived(quotas(survey));
+	const templateList = $derived(redirectTemplateIds(survey));
 </script>
 
 <div class="flow-view">
@@ -361,6 +363,14 @@
 					{#each quotaList as q (q.id)}<option value={q.id}>{q.id} (limit {q.limit ?? '?'})</option>{/each}
 				</select>
 			</div>
+		{:else if form.type === 'externalTask'}
+			<div class="field">
+				<label for="{uid}-f8">Task URL template</label>
+				<select id="{uid}-f8" bind:value={form.template}>
+					{#each templateList as tmpl (tmpl)}<option value={tmpl}>{tmpl}</option>{/each}
+				</select>
+			</div>
+			<p class="muted">Sends the participant to the task and resumes here. Edit the parameters sent and the captured values in the JSON view.</p>
 		{:else if form.type === 'end'}
 			<div class="field">
 				<label for="{uid}-f6">Outcome</label>
