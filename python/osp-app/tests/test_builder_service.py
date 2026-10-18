@@ -142,6 +142,12 @@ def test_every_command_fails_closed_for_non_members(env, command_id, who):
         "survey.apply_ops": {"survey_id": sid, "ops": [], "base_revision": 0},
         "survey.undo": {"survey_id": sid, "transaction_id": "t", "base_revision": 0},
         "survey.redo": {"survey_id": sid, "transaction_id": "u:t", "base_revision": 0},
+        "survey.save_draft": {
+            "survey_id": sid,
+            "base_revision": 0,
+            "patch": [],
+            "transaction_id": "t",
+        },
         "theme.list": {},
         "theme.get": {"theme_id": "t"},
         "theme.create": {"name": "x", "theme": {}},

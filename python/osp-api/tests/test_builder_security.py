@@ -24,6 +24,7 @@ ROUTES: list[tuple[str, str, dict | None]] = [
     ("POST", f"/api/surveys/{SID}/ops", {"ops": [], "baseRevision": 0}),
     ("POST", f"/api/surveys/{SID}/undo", {"transactionId": "t", "baseRevision": 0}),
     ("POST", f"/api/surveys/{SID}/redo", {"transactionId": "u:t", "baseRevision": 0}),
+    ("PUT", f"/api/surveys/{SID}/draft", {"baseRevision": 0, "patch": [], "transactionId": "t"}),
     ("POST", f"/api/surveys/{SID}/publish", {}),
     ("GET", f"/api/surveys/{SID}/export/xlsform", None),
     ("GET", f"/api/surveys/{SID}/export/lss", None),
