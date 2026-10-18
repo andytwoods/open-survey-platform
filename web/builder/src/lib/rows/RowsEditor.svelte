@@ -4,8 +4,9 @@
 	import Trash from '@lucide/svelte/icons/trash';
 	import { Button, IconButton, announce } from '@osp/ui-components';
 	import { tick, untrack } from 'svelte';
-	import { labelFallback, labelIn, splitDiagnostics } from '../choices/model';
+	import { labelFallback, labelIn, labelValueIn, splitDiagnostics } from '../choices/model';
 	import { dropIndex, dropSlot, keyMoveTarget } from '../choices/reorder';
+	import { pipeProblems, RichTextEditor, type PipeCandidate, type RichValue } from '../richtext';
 	import RowDeleteDialog from './RowDeleteDialog.svelte';
 	import {
 		addRowOps,
@@ -20,14 +21,16 @@
 		type RowOp,
 		type RowsOutcome,
 		type RowsQuestion,
-		type RowsSubmit
+		type RowsSubmit,
+		type SpecMatrixRow
 	} from './model';
 
 	/**
 	 * Grid (matrix) rows editor (task B15): labels in the editing language, reorder by drag
 	 * or Alt+↑/↓, add, delete, and a per-row required switch. Holds no survey state: it
-	 * shows `question` and sends each gesture as one transaction through `submit`. Typed
-	 * labels are buffered and sent on blur or Enter. Row ids never change (each row is the
+	 * shows `question` and sends each gesture as one transaction through `submit`. Labels
+	 * are inline rich text (planning/rich-text.md RT5): each row is a read-only textbox until
+	 * focused, buffered and sent on blur or Enter. Row ids never change (each row is the
 	 * variable `<grid id>_<row id>`). Deleting a row that conditions or piping use asks
 	 * first, then deletes with `force`.
 	 */
@@ -38,6 +41,7 @@
 		diagnostics = [],
 		pointer,
 		survey = null,
+		pipes = null,
 		submit
 	}: {
 		question: RowsQuestion;
@@ -50,6 +54,8 @@
 		pointer?: string;
 		/** The survey, to name the places that refer to a row being deleted. */
 		survey?: unknown;
+		/** Pipe candidates for the labels' picker (`pipeCandidates`); null offers no chips. */
+		pipes?: readonly PipeCandidate[] | null;
 		submit: RowsSubmit;
 	} = $props();
 
@@ -57,20 +63,16 @@
 	const rows = $derived(question.rows);
 	const editLang = $derived(lang ?? defaultLanguage);
 
-	// --- typed label buffers (keyed by row id: ids are stable) --------------------------------
+	// --- labels (buffered inside their rich-text fields, keyed by row id: ids are stable) -----
 
-	type Draft = { value: string; sent: boolean };
-	let drafts = $state<Record<string, Draft>>({});
-	const labelText = (i: number) => drafts[rows[i]?.id]?.value ?? labelIn(rows[i]?.label, editLang);
+	/** The label fields by row id, to flush a draft before the row moves. */
+	let labelFields = $state<Record<string, RichTextEditor | undefined>>({});
+	const labelText = (i: number) => labelIn(rows[i]?.label, editLang);
 	const nameOf = (i: number) => labelText(i) || `row ${rows[i]?.id ?? i + 1}`;
 	const serverDiags = $derived(splitDiagnostics(diagnostics, pointer));
-
-	$effect(() => {
-		void rows;
-		untrack(() => {
-			for (const k of Object.keys(drafts)) if (drafts[k].sent) delete drafts[k];
-		});
-	});
+	/** Server diagnostics on a row's pipe chips (planning/rich-text.md §4). */
+	const problemsOf = (r: SpecMatrixRow, i: number) =>
+		pipes && pointer ? pipeProblems(r.label, editLang ?? 'en', diagnostics ?? [], `${pointer}/${i}/label`) : undefined;
 
 	// --- focus kept across patches (builder-design §7) ---------------------------------------
 
@@ -89,7 +91,9 @@
 			if (active && active !== document.body && !root?.contains(active)) return;
 			const sel =
 				pf.field === 'add' ? '[data-field="add"]' : `[data-row][data-index="${pf.index}"] [data-field="${pf.field}"]`;
-			root?.querySelector<HTMLElement>(sel)?.focus();
+			const el = root?.querySelector<HTMLElement>(sel);
+			// A label is a rich-text field: focus its textbox (idle, or the open editor).
+			(pf.field === 'label' ? el?.querySelector<HTMLElement>('[role="textbox"]') : el)?.focus();
 		});
 	});
 
@@ -100,24 +104,13 @@
 
 	// --- row edits -------------------------------------------------------------------------
 
-	function commitLabel(i: number) {
-		const id = rows[i]?.id;
-		const d = id ? drafts[id] : undefined;
-		if (!id || !d || d.sent) return;
-		if (send(renameRowOps(question, i, d.value, { lang, defaultLanguage }))) d.sent = true;
-		else delete drafts[id];
-	}
-
-	function onLabelKey(e: KeyboardEvent, i: number) {
-		const id = rows[i]?.id;
-		if (e.key === 'Enter') {
-			e.preventDefault();
-			commitLabel(i);
-		} else if (e.key === 'Escape' && id && drafts[id] && !drafts[id].sent) {
-			e.preventDefault();
-			e.stopPropagation();
-			delete drafts[id];
-		}
+	/**
+	 * A label field committed (after a pause, on blur, Enter or teardown). Found by row id,
+	 * not index: the row may have moved, or be gone, since the field was typed into.
+	 */
+	function commitLabel(id: string, value: RichValue) {
+		const i = rows.findIndex((r) => r.id === id);
+		if (i >= 0) send(renameRowOps(question, i, value, { lang, defaultLanguage }));
 	}
 
 	function add() {
@@ -178,8 +171,8 @@
 		if (!e.altKey || (e.key !== 'ArrowUp' && e.key !== 'ArrowDown')) return;
 		e.preventDefault();
 		const to = keyMoveTarget(e, i, rows.length);
-		const field = (e.target as HTMLElement | null)?.getAttribute('data-field') ?? 'handle';
-		if (field === 'label') commitLabel(i);
+		const field = (e.target as HTMLElement | null)?.closest('[data-field]')?.getAttribute('data-field') ?? 'handle';
+		if (field === 'label') labelFields[rows[i]?.id]?.flush();
 		if (to !== null) move(i, to, field);
 	}
 
@@ -276,18 +269,23 @@
 				>
 					<GripVertical size={16} aria-hidden="true" />
 				</button>
-				<input
-					class="label"
-					data-field="label"
-					aria-label="Label for row {i + 1}"
-					aria-invalid={rowDiags.some((d) => d.severity === 'error') ? 'true' : undefined}
-					aria-describedby={rowDiags.length ? msgId : undefined}
-					placeholder={labelFallback(r.label, editLang)}
-					value={labelText(i)}
-					oninput={(e) => (drafts[r.id] = { value: e.currentTarget.value, sent: false })}
-					onblur={() => commitLabel(i)}
-					onkeydown={(e) => onLabelKey(e, i)}
-				/>
+				<div class="label" data-field="label">
+					<RichTextEditor
+						bind:this={labelFields[r.id]}
+						id="{uid}-label-{r.id}"
+						value={labelValueIn(r.label, editLang)}
+						level="inline"
+						{pipes}
+						problems={problemsOf(r, i)}
+						label="Label for row {i + 1}"
+						placeholder={labelFallback(r.label, editLang)}
+						describedBy={rowDiags.length ? msgId : undefined}
+						invalid={rowDiags.some((d) => d.severity === 'error')}
+						compact
+						lang={editLang}
+						onCommit={(v) => commitLabel(r.id, v)}
+					/>
+				</div>
 				<IconButton
 					icon={Trash}
 					label="Delete {nameOf(i)}"
@@ -408,23 +406,9 @@
 	.rows-editor :global([data-field='add']) {
 		min-height: var(--target);
 	}
-	input {
+	.label {
+		--osp-rt-height: var(--target);
 		min-width: 0;
-		height: var(--target);
-		padding: 0 var(--space-2);
-		border: 1px solid var(--color-border-strong);
-		border-radius: var(--radius-md);
-		background: var(--color-surface-raised);
-		color: var(--color-text);
-		font: inherit;
-	}
-	input[aria-invalid='true'] {
-		border-color: var(--color-danger);
-		border-width: 2px;
-	}
-	input::placeholder {
-		color: var(--color-text-muted);
-		font-style: italic;
 	}
 	.meta {
 		grid-column: 2 / -1;

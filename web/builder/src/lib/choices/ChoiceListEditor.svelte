@@ -6,6 +6,7 @@
 	import Trash from '@lucide/svelte/icons/trash';
 	import { Button, IconButton, announce } from '@osp/ui-components';
 	import { tick, untrack } from 'svelte';
+	import { pipeProblems, RichTextEditor, type PipeCandidate, type RichValue } from '../richtext';
 	import CodeChangeDialog from './CodeChangeDialog.svelte';
 	import PastePanel from './PastePanel.svelte';
 	import SharedLists from './SharedLists.svelte';
@@ -14,8 +15,11 @@
 		codeKey,
 		labelFallback,
 		labelIn,
+		labelValueIn,
 		mixedTypes,
+		sameCode,
 		splitDiagnostics,
+		type ChoiceCode,
 		type ChoiceDiagnostic,
 		type ChoiceOp,
 		type ChoiceQuestion,
@@ -37,7 +41,9 @@
 	 * add / duplicate / delete, bulk paste, shared lists. Holds no survey state: it shows
 	 * `question` (inline choices, or its shared list from `choiceLists`) and reports every
 	 * gesture as one transaction through `onOps`. Typed text is buffered and sent on blur
-	 * or Enter; invalid codes are flagged and never sent.
+	 * or Enter; invalid codes are flagged and never sent. Labels are inline rich text
+	 * (planning/rich-text.md RT5): each row is a read-only textbox until focused, so a long
+	 * list costs one editor instance, not one per row.
 	 */
 	let {
 		question,
@@ -48,6 +54,7 @@
 		publishedVersions = 0,
 		diagnostics = [],
 		pointer,
+		pipes = null,
 		onOps
 	}: {
 		/** The single/multi question whose choices are edited. */
@@ -65,6 +72,8 @@
 		diagnostics?: readonly ChoiceDiagnostic[] | null;
 		/** RFC 6901 pointer to the shown choices (see `choicesPointer`). */
 		pointer?: string;
+		/** Pipe candidates for the labels' picker (`pipeCandidates`); null offers no chips. */
+		pipes?: readonly PipeCandidate[] | null;
 		onOps: (ops: ChoiceOp[]) => void;
 	} = $props();
 
@@ -92,23 +101,29 @@
 	});
 
 	// --- typed text buffers ----------------------------------------------------------------
+	// Codes are buffered here; labels inside their rich-text fields (the same contract:
+	// debounce, blur, Enter, Escape reverts), which hand back the committed value.
 
 	type Draft = { value: string; sent: boolean };
 	let codeDrafts = $state<Record<string, Draft>>({});
-	let labelDrafts = $state<Record<string, Draft>>({});
+	/** The label fields by row key, to flush a draft before the row moves. */
+	let labelFields = $state<Record<string, RichTextEditor | undefined>>({});
 
 	const codeText = (i: number) => codeDrafts[keys[i]]?.value ?? codeKey(choices[i]?.value);
-	const labelText = (i: number) => labelDrafts[keys[i]]?.value ?? labelIn(choices[i]?.label, editLang);
+	const labelText = (i: number) => labelIn(choices[i]?.label, editLang);
 
 	const errors = $derived(codeErrors(choices.map((_, i) => codeText(i))));
 	const serverDiags = $derived(splitDiagnostics(diagnostics, pointer));
 	const mixed = $derived(mixedTypes(choices.map((c) => c.value)));
+	/** Server diagnostics on a row's pipe chips (planning/rich-text.md §4). */
+	const problemsOf = (c: SpecChoice, i: number) =>
+		pipes && pointer ? pipeProblems(c.label, editLang ?? 'en', diagnostics ?? [], `${pointer}/${i}/label`) : undefined;
 
 	// New props (the server applied something): drop buffers that were sent.
 	$effect(() => {
 		void choices;
 		untrack(() => {
-			for (const m of [codeDrafts, labelDrafts]) for (const k of Object.keys(m)) if (m[k].sent) delete m[k];
+			for (const k of Object.keys(codeDrafts)) if (codeDrafts[k].sent) delete codeDrafts[k];
 		});
 	});
 
@@ -134,7 +149,12 @@
 				pf.field === 'add'
 					? '[data-field="add"]'
 					: `[data-row][data-index="${pf.index}"] [data-field="${pf.field}"]`;
-			root?.querySelector<HTMLElement>(sel)?.focus();
+			const el = root?.querySelector<HTMLElement>(sel);
+			// A label is a rich-text field: focus its textbox (idle, or the open editor).
+			(el?.hasAttribute('data-field') && el.getAttribute('data-field') === 'label'
+				? el.querySelector<HTMLElement>('[role="textbox"]')
+				: el
+			)?.focus();
 		});
 	});
 
@@ -188,24 +208,23 @@
 		else delete codeDrafts[c.key];
 	}
 
-	function commitLabel(i: number) {
-		const k = keys[i];
-		const d = labelDrafts[k];
-		if (!d || d.sent) return;
-		if (send(setLabelOps(owner, choices, i, d.value, { lang, defaultLanguage }))) d.sent = true;
-		else delete labelDrafts[k];
+	/**
+	 * A label field committed (after a pause, on blur, Enter or teardown). Found by code,
+	 * not index: the row may have moved, or be gone, since the field was typed into.
+	 */
+	function commitLabel(code: ChoiceCode, value: RichValue) {
+		const i = choices.findIndex((c) => sameCode(c.value, code));
+		if (i >= 0) send(setLabelOps(owner, choices, i, value, { lang, defaultLanguage }));
 	}
 
-	function onInputKey(e: KeyboardEvent, i: number, field: 'code' | 'label') {
-		const drafts = field === 'code' ? codeDrafts : labelDrafts;
+	function onInputKey(e: KeyboardEvent, i: number) {
 		if (e.key === 'Enter') {
 			e.preventDefault();
-			if (field === 'code') commitCode(i);
-			else commitLabel(i);
-		} else if (e.key === 'Escape' && drafts[keys[i]] && !drafts[keys[i]].sent) {
+			commitCode(i);
+		} else if (e.key === 'Escape' && codeDrafts[keys[i]] && !codeDrafts[keys[i]].sent) {
 			e.preventDefault();
 			e.stopPropagation();
-			delete drafts[keys[i]];
+			delete codeDrafts[keys[i]];
 		}
 	}
 
@@ -236,9 +255,9 @@
 		if (!e.altKey || (e.key !== 'ArrowUp' && e.key !== 'ArrowDown')) return;
 		e.preventDefault();
 		const to = keyMoveTarget(e, i, choices.length);
-		const field = (e.target as HTMLElement | null)?.getAttribute('data-field') ?? 'handle';
+		const field = (e.target as HTMLElement | null)?.closest('[data-field]')?.getAttribute('data-field') ?? 'handle';
 		if (field === 'code') commitCode(i);
-		if (field === 'label') commitLabel(i);
+		if (field === 'label') labelFields[keys[i]]?.flush();
 		if (to !== null) move(i, to, field);
 	}
 
@@ -352,18 +371,25 @@
 					value={codeText(i)}
 					oninput={(e) => (codeDrafts[keys[i]] = { value: e.currentTarget.value, sent: false })}
 					onblur={() => commitCode(i)}
-					onkeydown={(e) => onInputKey(e, i, 'code')}
+					onkeydown={(e) => onInputKey(e, i)}
 				/>
-				<input
-					class="label"
-					data-field="label"
-					aria-label="Label for choice {i + 1}"
-					placeholder={labelFallback(c.label, editLang)}
-					value={labelText(i)}
-					oninput={(e) => (labelDrafts[keys[i]] = { value: e.currentTarget.value, sent: false })}
-					onblur={() => commitLabel(i)}
-					onkeydown={(e) => onInputKey(e, i, 'label')}
-				/>
+				<div class="label" data-field="label">
+					<RichTextEditor
+						bind:this={labelFields[keys[i]]}
+						id="{uid}-label-{keys[i]}"
+						value={labelValueIn(c.label, editLang)}
+						level="inline"
+						{pipes}
+						problems={problemsOf(c, i)}
+						label="Label for choice {i + 1}"
+						placeholder={labelFallback(c.label, editLang)}
+						describedBy={rowDiags.length ? errId : undefined}
+						invalid={rowDiags.some((d) => d.severity === 'error')}
+						compact
+						lang={editLang}
+						onCommit={(v) => commitLabel(c.value, v)}
+					/>
+				</div>
 				<IconButton icon={Copy} label="Duplicate {nameOf(i)}" data-field="duplicate" onclick={() => duplicate(i)} />
 				<IconButton
 					icon={Trash}
@@ -501,6 +527,9 @@
 	}
 	input.code {
 		font-family: var(--font-mono, ui-monospace, monospace);
+	}
+	.label {
+		min-width: 0;
 	}
 	input[aria-invalid='true'] {
 		border-color: var(--color-danger);

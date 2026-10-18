@@ -143,9 +143,12 @@ drops the rest (colours, fonts, images, tables become their text, underline, nes
 lists); a line under the field says what was simplified. Underline is never offered: on the
 web it reads as a link.
 
-Choice and matrix row labels, and the translations of a text, are still edited as plain
-text in their own dialogs (tasks RT5 and RT6). The JSON view shows and accepts the stored
-form:
+Choice labels and matrix row labels (in the *Edit choices…* and *Edit rows…* dialogs) are
+one-line fields with the same editor: bold, italic, links and *Insert answer*, but no
+lists, headings or line breaks, and ++enter++ saves the row instead of starting a new
+line. A row shows its character count (of 500) only while you are editing it. The
+translations of a text are still edited as plain text (task RT6). The JSON view shows and
+accepts the stored form:
 
 A plain string stays a plain string. A formatted value is `{"type": "rich", "blocks":
 [...]}`, where each block is a paragraph `{"type": "p", "content": [...]}`, a heading

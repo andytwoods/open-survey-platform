@@ -30,11 +30,13 @@
 		pipes = null,
 		problems = new Map<string, string>(),
 		placeholder = '',
+		label,
 		labelledBy,
 		describedBy,
 		required = false,
 		invalid = false,
 		readonly = false,
+		compact = false,
 		lang,
 		delay = TEXT_DEBOUNCE_MS,
 		onCommit,
@@ -49,11 +51,15 @@
 		/** Server diagnostics by pipe id, shown on the chips. */
 		problems?: ReadonlyMap<string, string>;
 		placeholder?: string;
+		/** The accessible name, when no visible label element names the field (`aria-label`). */
+		label?: string;
 		labelledBy?: string;
 		describedBy?: string;
 		required?: boolean;
 		invalid?: boolean;
 		readonly?: boolean;
+		/** A row in a list (RT5): the count and status show only while editing or over the limit. */
+		compact?: boolean;
 		lang?: string;
 		delay?: number;
 		onCommit: (value: RichValue) => void;
@@ -94,7 +100,11 @@
 	const near = $derived(count >= limit * 0.9);
 	const countId = $derived(`${id}-count`);
 	const statusId = $derived(`${id}-status`);
-	const describes = $derived([describedBy, countId, status ? statusId : ''].filter(Boolean).join(' '));
+	/** Compact fields draw the foot (count, status) only while editing or over the limit. */
+	const foot = $derived(!compact || active || over || !!status);
+	const describes = $derived(
+		[describedBy, foot ? countId : '', foot && status ? statusId : ''].filter(Boolean).join(' ') || undefined
+	);
 	const empty = $derived(isEmptyValue(draft));
 
 	const attrs = (): Record<string, string> => {
@@ -102,9 +112,10 @@
 			id,
 			class: 'osp-rt-content',
 			role: 'textbox',
-			'aria-multiline': level === 'inline' ? 'false' : 'true',
-			'aria-describedby': describes
+			'aria-multiline': level === 'inline' ? 'false' : 'true'
 		};
+		if (describes) a['aria-describedby'] = describes;
+		if (label) a['aria-label'] = label;
 		if (labelledBy) a['aria-labelledby'] = labelledBy;
 		if (placeholder) a['aria-placeholder'] = placeholder;
 		if (required) a['aria-required'] = 'true';
@@ -370,6 +381,7 @@
 				role="textbox"
 				tabindex={readonly ? -1 : 0}
 				aria-multiline={level !== 'inline'}
+				aria-label={label}
 				aria-labelledby={labelledBy}
 				aria-describedby={describes}
 				aria-placeholder={placeholder || undefined}
@@ -384,13 +396,15 @@
 			</div>
 		{/if}
 	</div>
-	<div class="osp-rt-foot">
-		{#if status}<p class="osp-rt-status" id={statusId}>{status}</p>{/if}
-		<p class="osp-rt-count" id={countId} aria-live={near ? 'polite' : 'off'} data-over={over || undefined}>
-			<span class="osp-visually-hidden">Length:</span>
-			{count.toLocaleString()} / {limit.toLocaleString()}{#if over}<span class="osp-rt-too-long"> – too long</span>{/if}
-		</p>
-	</div>
+	{#if foot}
+		<div class="osp-rt-foot">
+			{#if status}<p class="osp-rt-status" id={statusId}>{status}</p>{/if}
+			<p class="osp-rt-count" id={countId} aria-live={near ? 'polite' : 'off'} data-over={over || undefined}>
+				<span class="osp-visually-hidden">Length:</span>
+				{count.toLocaleString()} / {limit.toLocaleString()}{#if over}<span class="osp-rt-too-long"> – too long</span>{/if}
+			</p>
+		</div>
+	{/if}
 </div>
 
 {#if pipes}
@@ -446,10 +460,11 @@
 	.osp-rt-idle {
 		cursor: text;
 	}
+	/* A list of rows may ask for taller lines (`--osp-rt-height`: 44 px targets). */
 	.osp-rt[data-level='inline'] .osp-rt-idle,
 	.osp-rt[data-level='inline'] .osp-rt-host :global(.osp-rt-content) {
-		min-height: var(--control-height);
-		padding-block: calc((var(--control-height) - 1.4em) / 2);
+		min-height: var(--osp-rt-height, var(--control-height));
+		padding-block: calc((var(--osp-rt-height, var(--control-height)) - 1.4em) / 2);
 	}
 	.osp-rt[data-level='stem'] .osp-rt-idle,
 	.osp-rt[data-level='stem'] .osp-rt-host :global(.osp-rt-content) {

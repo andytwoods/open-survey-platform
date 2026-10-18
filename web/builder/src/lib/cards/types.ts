@@ -5,11 +5,15 @@
  * Shapes mirror `osp-spec` (model.py, properties/*.yaml) loosely and every field is
  * optional, because a card must render *something* for any input (golden rule 3).
  */
+import type { RichText } from '@osp/engine';
 import type { Snippet } from 'svelte';
 import type { HTMLButtonAttributes } from 'svelte/elements';
 
-/** Translatable text: a plain string or a `{language: string}` map (osp-spec `Text`). */
-export type SpecText = string | Readonly<Record<string, string>>;
+/**
+ * Translatable text (osp-spec `Text`): a plain string, a rich tree (planning/rich-text.md
+ * §3) or a `{language: value}` map of either.
+ */
+export type SpecText = string | RichText | Readonly<Record<string, string | RichText>>;
 
 /** One `osp-expr` AST node (JSON, `kind` discriminator). Unknown kinds are tolerated. */
 export interface ExprNode {

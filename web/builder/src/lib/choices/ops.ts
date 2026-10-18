@@ -4,16 +4,19 @@
  * "nothing to send" (a no-op or an invalid edit). Params follow `osp-ops` choice_ops.py
  * and choice_list_ops.py.
  */
+import { isRichText } from '@osp/engine';
 import {
 	codeShapeError,
-	labelIn,
+	labelValueIn,
 	parseCode,
 	sameCode,
+	sameLabel,
 	withLabel,
 	LIST_ID,
 	type ChoiceCode,
 	type ChoiceOp,
 	type ChoiceQuestion,
+	type LabelValue,
 	type SpecChoice
 } from './model';
 
@@ -67,12 +70,15 @@ export function setCodeOps(owner: string, choices: readonly SpecChoice[], i: num
 	return [{ op: 'set_choice', params: { owner, value: c.value, new_value: next } }];
 }
 
-/** Change row `i`'s label in the editing language. Nothing when the text is unchanged. */
+/**
+ * Change row `i`'s label in the editing language (plain or rich: the server normalises a
+ * formatting-free tree to a string). Nothing when the value is unchanged.
+ */
 export function setLabelOps(
 	owner: string,
 	choices: readonly SpecChoice[],
 	i: number,
-	text: string,
+	value: LabelValue,
 	ctx: LabelContext = {}
 ): ChoiceOp[] {
 	const c = choices[i];
@@ -80,10 +86,11 @@ export function setLabelOps(
 	const key = ctx.lang ?? ctx.defaultLanguage;
 	const has =
 		typeof c.label === 'string' ||
+		isRichText(c.label) ||
 		(key !== undefined && !!c.label && typeof c.label === 'object' && Object.hasOwn(c.label, key));
-	if (has && labelIn(c.label, key) === text) return [];
+	if (has && sameLabel(labelValueIn(c.label, key), value)) return [];
 	return [
-		{ op: 'set_choice', params: { owner, value: c.value, label: withLabel(c.label, text, ctx.lang, ctx.defaultLanguage) } }
+		{ op: 'set_choice', params: { owner, value: c.value, label: withLabel(c.label, clone(value), ctx.lang, ctx.defaultLanguage) } }
 	];
 }
 

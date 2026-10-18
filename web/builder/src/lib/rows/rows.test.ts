@@ -93,6 +93,16 @@ describe('op builders', () => {
 		expect(fr[0].params.label).toEqual({ en: 'Coffee', de: 'Kaffee', fr: '' });
 	});
 
+	it('rename carries a rich value, copied, and nothing when the tree is the same (RT5)', () => {
+		const rich = { type: 'rich' as const, blocks: [{ type: 'p' as const, content: [{ text: 'Green ' }, { text: 'tea', marks: ['i' as const] }] }] };
+		const [op] = renameRowOps(Q, 0, rich);
+		expect(op.params).toEqual({ question: 'taste', row: 'tea', label: rich });
+		expect(op.params.label).not.toBe(rich);
+		const q = { ...Q, rows: [{ id: 'tea', label: rich }] };
+		expect(renameRowOps(q, 0, JSON.parse(JSON.stringify(rich)))).toEqual([]);
+		expect(renameRowOps(q, 0, 'Tee', { lang: 'de', defaultLanguage: 'en' })[0].params.label).toEqual({ en: rich, de: 'Tee' });
+	});
+
 	it('required matching the grid goes back to following it', () => {
 		expect(setRequiredOps(Q, 0, false)[0].params).toEqual({ question: 'taste', row: 'tea', required: false });
 		expect(setRequiredOps(Q, 0, true)).toEqual([]);
