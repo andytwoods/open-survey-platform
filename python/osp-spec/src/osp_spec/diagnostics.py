@@ -83,6 +83,13 @@ CODES: dict[str, Severity] = {
     "redirect.param_literal": "error",  # a literal value that can never pass its pattern
     "redirect.param_question": "warning",  # a piped answer leaves for a third party (data export)
     "redirect.immediate": "warning",  # delay 0: the ending's text is never seen
+    # External task step (task EX2, planning/external-tasks.md)
+    "external.unknown_template": "error",  # the node names a template nothing declares
+    "external.params": "error",  # params and the template's placeholders differ
+    "external.param_literal": "error",  # a literal param value that can never pass its pattern
+    "external.param_question": "warning",  # a piped answer leaves for the external task (export)
+    "external.reserved_param": "error",  # a template placeholder uses osp_return / osp_token
+    "external.return_target": "error",  # a `returns` id is not an embedded URL variable
     # Researcher hooks (runtime-design.md §7a; osp_spec.hooks.check_hooks)
     "hooks.unknown_ref": "error",  # a handler reads an id that is not a question or variable
     "hooks.write_target": "error",  # a handler writes something that is not a hook variable

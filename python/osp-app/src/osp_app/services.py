@@ -86,10 +86,16 @@ class AppServices:
 
 
 def build_services(
-    store: Store, *, clock: Clock | None = None, auto_create_labs: bool = True
+    store: Store,
+    *,
+    clock: Clock | None = None,
+    auto_create_labs: bool = True,
+    external_token_key: bytes | None = None,
 ) -> AppServices:
     sessions = SessionService(
-        StoreParticipantRepo(store), **({"clock": clock.now} if clock is not None else {})
+        StoreParticipantRepo(store),
+        return_secret=external_token_key,
+        **({"clock": clock.now} if clock is not None else {}),
     )
     return AppServices(
         store=store,

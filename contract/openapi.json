@@ -1862,6 +1862,61 @@
         ],
         "type": "string"
       },
+      "ExternalHandoffResponse": {
+        "description": "A signed, expiring return token for an external-task hop (task EX2). The app appends\nit as `osp_token` and its own return URL as `osp_return` to the outbound task URL.",
+        "properties": {
+          "expiresAt": {
+            "format": "date-time",
+            "title": "Expiresat",
+            "type": "string"
+          },
+          "returnToken": {
+            "title": "Returntoken",
+            "type": "string"
+          }
+        },
+        "required": [
+          "returnToken",
+          "expiresAt"
+        ],
+        "title": "ExternalHandoffResponse",
+        "type": "object"
+      },
+      "ExternalReturnRequest": {
+        "additionalProperties": false,
+        "properties": {
+          "returnToken": {
+            "description": "The `osp_token` the external task echoed back in the return URL.",
+            "maxLength": 1024,
+            "title": "Returntoken",
+            "type": "string"
+          }
+        },
+        "required": [
+          "returnToken"
+        ],
+        "title": "ExternalReturnRequest",
+        "type": "object"
+      },
+      "ExternalReturnResponse": {
+        "properties": {
+          "nodeId": {
+            "title": "Nodeid",
+            "type": "string"
+          },
+          "ok": {
+            "const": true,
+            "title": "Ok",
+            "type": "boolean"
+          }
+        },
+        "required": [
+          "ok",
+          "nodeId"
+        ],
+        "title": "ExternalReturnResponse",
+        "type": "object"
+      },
       "Facet": {
         "properties": {
           "binEdges": {
@@ -8132,6 +8187,210 @@
           }
         ],
         "summary": "Decline",
+        "tags": [
+          "participant"
+        ]
+      }
+    },
+    "/api/sessions/{session_id}/external/{node_id}/handoff": {
+      "post": {
+        "description": "Mint a return token before sending the participant to an external task (task EX2).\nThe node must be an `externalTask` node of this survey.",
+        "operationId": "externalHandoff",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "session_id",
+            "required": true,
+            "schema": {
+              "title": "Session Id",
+              "type": "string"
+            }
+          },
+          {
+            "in": "path",
+            "name": "node_id",
+            "required": true,
+            "schema": {
+              "title": "Node Id",
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ExternalHandoffResponse"
+                }
+              }
+            },
+            "description": "Successful Response"
+          },
+          "401": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorBody"
+                }
+              }
+            },
+            "description": "Unauthorized"
+          },
+          "403": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorBody"
+                }
+              }
+            },
+            "description": "Forbidden"
+          },
+          "404": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorBody"
+                }
+              }
+            },
+            "description": "Not Found"
+          },
+          "410": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorBody"
+                }
+              }
+            },
+            "description": "Gone"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            },
+            "description": "Validation Error"
+          }
+        },
+        "security": [
+          {
+            "HTTPBearer": []
+          }
+        ],
+        "summary": "External Handoff",
+        "tags": [
+          "participant"
+        ]
+      }
+    },
+    "/api/sessions/{session_id}/external/{node_id}/return": {
+      "post": {
+        "description": "Verify the return token when the participant comes back from an external task\n(task EX2): signature, expiry and binding to this session and node. Stores nothing;\nthe app resolves the engine's external effect with the (untrusted) return values.",
+        "operationId": "externalReturn",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "session_id",
+            "required": true,
+            "schema": {
+              "title": "Session Id",
+              "type": "string"
+            }
+          },
+          {
+            "in": "path",
+            "name": "node_id",
+            "required": true,
+            "schema": {
+              "title": "Node Id",
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/ExternalReturnRequest"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ExternalReturnResponse"
+                }
+              }
+            },
+            "description": "Successful Response"
+          },
+          "401": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorBody"
+                }
+              }
+            },
+            "description": "Unauthorized"
+          },
+          "403": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorBody"
+                }
+              }
+            },
+            "description": "Forbidden"
+          },
+          "404": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorBody"
+                }
+              }
+            },
+            "description": "Not Found"
+          },
+          "410": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorBody"
+                }
+              }
+            },
+            "description": "Gone"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorBody"
+                }
+              }
+            },
+            "description": "Unprocessable Content"
+          }
+        },
+        "security": [
+          {
+            "HTTPBearer": []
+          }
+        ],
+        "summary": "External Return",
         "tags": [
           "participant"
         ]

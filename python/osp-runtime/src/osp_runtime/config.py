@@ -84,6 +84,8 @@ class RuntimeConfig:
     quotas: tuple[QuotaNode, ...] = ()
     resume_expiry_days: int | None = None
     consent: ConsentConfig | None = None
+    # externalTask flow node ids (task EX2): the server mints a return token only for these.
+    external: tuple[str, ...] = ()
 
     @property
     def quota_by_node(self) -> dict[str, QuotaNode]:
@@ -184,6 +186,11 @@ class RuntimeConfig:
             consent = ConsentConfig(
                 _str(raw.get("version"), "consent version", 80), raw.get("countDeclines", False)
             )
+        external: list[str] = []
+        for node in data.get("external") or []:
+            external.append(_str(node, "external node id"))
+        if len(set(external)) != len(external):
+            raise InvalidPayload("external node ids are repeated", "config.invalid")
         return cls(
             _str(data.get("surveyVersion"), "surveyVersion"),
             save_mode,
@@ -191,6 +198,7 @@ class RuntimeConfig:
             tuple(quotas),
             expiry,
             consent,
+            tuple(external),
         )
 
     def to_json(self) -> dict[str, Any]:
@@ -223,4 +231,5 @@ class RuntimeConfig:
                 if self.consent is not None
                 else {}
             ),
+            **({"external": list(self.external)} if self.external else {}),
         }

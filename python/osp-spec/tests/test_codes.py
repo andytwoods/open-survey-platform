@@ -304,6 +304,41 @@ def m_redirect_builtins_elsewhere(s: dict) -> None:
     _items(s)[0]["label"] = "Id ${$response.id}"
 
 
+# --- External task step (task EX2) -----------------------------------------------------
+JSPSYCH = {"url": "https://run.pavlovia.org/lab/exp?pid={pid}", "params": {"pid": {}}}
+
+
+def _external(s: dict, node: dict, template: dict | None = JSPSYCH) -> None:
+    if template is not None:
+        s.setdefault("settings", {})["redirectTemplates"] = {"task": template}
+    s["flow"].append({"type": "externalTask", "id": "et1", **node})
+
+
+def m_external_unknown_template(s: dict) -> None:
+    _external(s, {"template": "nope", "params": {}}, template=None)
+
+
+def m_external_params(s: dict) -> None:
+    _external(s, {"template": "task", "params": {}})
+
+
+def m_external_param_literal(s: dict) -> None:
+    _external(s, {"template": "task", "params": {"pid": "bad value"}})
+
+
+def m_external_param_question(s: dict) -> None:
+    _external(s, {"template": "task", "params": {"pid": "${q1}"}})
+
+
+def m_external_reserved(s: dict) -> None:
+    tmpl = {"url": "https://run.pavlovia.org/e?t={osp_token}", "params": {"osp_token": {}}}
+    _external(s, {"template": "task", "params": {"osp_token": "x"}}, template=tmpl)
+
+
+def m_external_return_target(s: dict) -> None:
+    _external(s, {"template": "task", "params": {"pid": "p"}, "returns": ["q1"]})
+
+
 def _matrix(rows: list[dict] | None = None) -> dict:
     rows = rows if rows is not None else [{"id": "a", "label": "A"}, {"id": "b", "label": "B"}]
     return {"id": "m", "type": "matrix", "label": "M", "rows": rows,
@@ -452,6 +487,12 @@ TABLE: list[tuple[Callable[[dict], None], list[tuple[str, str]]]] = [
     ),
     (m_redirect_immediate, [("redirect.immediate", "/settings/endings/complete/redirect/delay")]),
     (m_redirect_builtins_elsewhere, [("pipe.invalid", f"{P0}/0/label")]),
+    (m_external_unknown_template, [("external.unknown_template", "/flow/1/template")]),
+    (m_external_params, [("external.params", "/flow/1/params")]),
+    (m_external_param_literal, [("external.param_literal", "/flow/1/params/pid")]),
+    (m_external_param_question, [("external.param_question", "/flow/1/params/pid")]),
+    (m_external_reserved, [("external.reserved_param", "/flow/1/template")]),
+    (m_external_return_target, [("external.return_target", "/flow/1/returns/0")]),
     (m_matrix_duplicate_row, [("matrix.duplicate_row", f"{P0}/1/rows/1/id")]),
     (m_matrix_row_id, [("matrix.row_id", f"{P0}/1/rows/0/id")]),
     (m_matrix_row_clash, [("id.duplicate", f"{P0}/1/rows/0/id")]),

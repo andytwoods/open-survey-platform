@@ -218,12 +218,27 @@ export interface EndNode {
 	outcome: Id;
 	message?: Text;
 }
+/**
+ * An external-task hop (task EX2, planning/external-tasks.md): the participant goes to
+ * `template` filled with `params` (the redirect-template machinery) plus the platform's
+ * `osp_return` and `osp_token`, does the task, and returns. The values named in `returns`
+ * are captured into the session's URL parameters (each into the embedded variable whose
+ * `param` matches), exactly as a start-time URL parameter is.
+ */
+export interface ExternalTaskNode {
+	type: 'externalTask';
+	id: Id;
+	template: string;
+	params: Record<string, Segment[]>;
+	returns: Array<{ variable: Id; param: string }>;
+}
 export type FlowNode =
 	| BlockNode
 	| BranchNode
 	| RandomiserNode
 	| AssignNode
 	| QuotaCheckNode
+	| ExternalTaskNode
 	| EndNode;
 
 /**

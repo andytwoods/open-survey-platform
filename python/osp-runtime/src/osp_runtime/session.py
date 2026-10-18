@@ -43,10 +43,12 @@ from __future__ import annotations
 
 import base64
 import hashlib
+import hmac
 import json
+import secrets
 from collections.abc import Callable, Mapping
 from dataclasses import dataclass
-from datetime import datetime, timedelta
+from datetime import UTC, datetime, timedelta
 from typing import Any, Literal, Protocol
 
 from osp_engine.random import MAX_SEED, assign, node_seed
@@ -54,6 +56,8 @@ from osp_engine.random import MAX_SEED, assign, node_seed
 from .config import RuntimeConfig, SaveMode
 from .errors import (
     ConsentRequired,
+    ExternalTokenExpired,
+    ExternalTokenInvalid,
     InvalidPayload,
     InvalidToken,
     NotFoundError,
@@ -238,6 +242,24 @@ class ConsentAck:
     replay: bool
 
 
+@dataclass(frozen=True, slots=True)
+class ExternalHandoff:
+    """What the app needs to send the participant to an external task (task EX2): the signed
+    return token and when it expires. The app appends it as ``osp_token`` and ``osp_return``
+    to the outbound URL it builds from the node's template."""
+
+    return_token: str
+    expires_at: datetime
+
+
+@dataclass(frozen=True, slots=True)
+class ExternalReturnAck:
+    """The server verified the return token (task EX2). It stores nothing itself; the app
+    resolves the engine's external effect with the (untrusted) return values."""
+
+    node_id: str
+
+
 @dataclass(frozen=True)
 class SessionPolicy:
     resume_expiry: timedelta = timedelta(days=30)  # token stops working (S-1)
@@ -246,6 +268,7 @@ class SessionPolicy:
     max_record_bytes: int = 5_000_000
     max_url_params: int = 50
     max_url_param_chars: int = 1000
+    external_token_ttl: timedelta = timedelta(hours=6)  # external-task return token life (EX2)
 
 
 def canonical_json(value: object) -> str:
@@ -337,11 +360,16 @@ class SessionService:
         policy: SessionPolicy | None = None,
         start_limiter: TokenBucket | None = None,
         resume_limiter: TokenBucket | None = None,
+        return_secret: bytes | None = None,
     ) -> None:
         self._repo = repo
         self._clock = clock
         self._rng = rng or SystemRandom()
         self.policy = policy or SessionPolicy()
+        # Key that signs external-task return tokens (task EX2). A per-process random default
+        # is fine for one dev process; production passes an explicit secret so every worker
+        # (and a restart) verifies the same tokens (osp-api serve: OSP_EXTERNAL_TOKEN_KEY).
+        self._return_secret = return_secret or secrets.token_bytes(32)
         # Defaults: bursts of 30 starts per survey link, refilling 5 a second, and 10
         # per client, refilling one every 6 s.
         self._start_limiter = start_limiter or TokenBucket(30, 5, clock)
@@ -591,6 +619,72 @@ class SessionService:
                 raise SessionSubmitted("this session was submitted")
             case _:
                 raise SessionExpired("this session expired after inactivity")
+
+    # -- external task (task EX2, planning/external-tasks.md) ------------------------
+
+    def _sign_return(self, session_id: str, node_id: str, exp: int) -> str:
+        """A return token: ``base64url(payload).hmac_hex`` over ``{v,sid,node,exp}``. The
+        signature binds it to this session and node, and ``exp`` bounds its life."""
+        payload = {"v": 1, "sid": session_id, "node": node_id, "exp": exp}
+        body = (
+            base64.urlsafe_b64encode(canonical_json(payload).encode("utf-8")).decode().rstrip("=")
+        )
+        sig = hmac.new(self._return_secret, body.encode("utf-8"), hashlib.sha256).hexdigest()
+        return f"{body}.{sig}"
+
+    def _verify_return(self, token: object, session_id: str, node_id: str) -> None:
+        """Raise unless ``token`` is a valid, unexpired return token for this session/node."""
+        if not isinstance(token, str) or token.count(".") != 1 or not 0 < len(token) <= 1024:
+            raise ExternalTokenInvalid("the return token is missing or malformed")
+        body, sig = token.split(".", 1)
+        expected = hmac.new(self._return_secret, body.encode("utf-8"), hashlib.sha256).hexdigest()
+        if not hmac.compare_digest(expected, sig):
+            raise ExternalTokenInvalid("the return token's signature does not verify")
+        try:
+            raw = base64.urlsafe_b64decode(body + "=" * (-len(body) % 4))
+            payload = json.loads(raw)
+        except ValueError, TypeError:
+            raise ExternalTokenInvalid("the return token is not readable") from None
+        if not isinstance(payload, dict) or payload.get("v") != 1:
+            raise ExternalTokenInvalid("the return token is of an unknown version")
+        if payload.get("sid") != session_id or payload.get("node") != node_id:
+            raise ExternalTokenInvalid("the return token is for another session or task")
+        exp = payload.get("exp")
+        if isinstance(exp, bool) or not isinstance(exp, int):
+            raise ExternalTokenInvalid("the return token has no expiry")
+        if int(self._clock().timestamp()) >= exp:
+            raise ExternalTokenExpired("the return token has expired")
+
+    def external_handoff(self, session_id: str, token: object, node_id: str) -> ExternalHandoff:
+        """Mint a signed, expiring return token for an ``externalTask`` node (task EX2). The
+        app appends it (``osp_token``) and the survey's return URL (``osp_return``) to the
+        outbound URL it builds from the node's template, then navigates. The node must be one
+        of the published survey's external-task nodes."""
+        cred = self._auth(token, session_id)
+        cfg = self._config(cred)
+        self._require_consent(cfg, cred)
+        if node_id not in cfg.external:
+            raise NotFoundError(f"no externalTask node {node_id!r} in this survey")
+        exp = int(self._clock().timestamp()) + int(self.policy.external_token_ttl.total_seconds())
+        return ExternalHandoff(
+            self._sign_return(session_id, node_id, exp), datetime.fromtimestamp(exp, tz=UTC)
+        )
+
+    def external_return(
+        self, session_id: str, token: object, node_id: str, return_token: object
+    ) -> ExternalReturnAck:
+        """Verify an external-task return token (task EX2): signature (tamper), expiry, and
+        that it is bound to this session and node (cross-context replay). Stores nothing; the
+        app resolves the engine's external effect with the (untrusted) return values. A second
+        return with the same token is harmless: the engine already recorded the node's result,
+        so it changes nothing (same-context replay)."""
+        cred = self._auth(token, session_id)
+        cfg = self._config(cred)
+        self._require_consent(cfg, cred)
+        if node_id not in cfg.external:
+            raise NotFoundError(f"no externalTask node {node_id!r} in this survey")
+        self._verify_return(return_token, session_id, node_id)
+        return ExternalReturnAck(node_id)
 
     # -- submit ----------------------------------------------------------------------
 

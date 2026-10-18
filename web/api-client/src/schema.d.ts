@@ -331,6 +331,49 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
+    "/api/sessions/{session_id}/external/{node_id}/handoff": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /**
+         * External Handoff
+         * @description Mint a return token before sending the participant to an external task (task EX2).
+         *     The node must be an `externalTask` node of this survey.
+         */
+        post: operations["externalHandoff"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/sessions/{session_id}/external/{node_id}/return": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /**
+         * External Return
+         * @description Verify the return token when the participant comes back from an external task
+         *     (task EX2): signature, expiry and binding to this session and node. Stores nothing;
+         *     the app resolves the engine's external effect with the (untrusted) return values.
+         */
+        post: operations["externalReturn"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
     "/api/sessions/{session_id}/quota/{node_id}": {
         parameters: {
             query?: never;
@@ -1777,6 +1820,38 @@ export interface components {
         };
         /** @enum {string} */
         ExprField: "showIf" | "constraint" | "if" | "when" | "expr";
+        /**
+         * ExternalHandoffResponse
+         * @description A signed, expiring return token for an external-task hop (task EX2). The app appends
+         *     it as `osp_token` and its own return URL as `osp_return` to the outbound task URL.
+         */
+        ExternalHandoffResponse: {
+            /**
+             * Expiresat
+             * Format: date-time
+             */
+            expiresAt: string;
+            /** Returntoken */
+            returnToken: string;
+        };
+        /** ExternalReturnRequest */
+        ExternalReturnRequest: {
+            /**
+             * Returntoken
+             * @description The `osp_token` the external task echoed back in the return URL.
+             */
+            returnToken: string;
+        };
+        /** ExternalReturnResponse */
+        ExternalReturnResponse: {
+            /** Nodeid */
+            nodeId: string;
+            /**
+             * Ok
+             * @constant
+             */
+            ok: true;
+        };
         /** Facet */
         Facet: {
             /**
@@ -4740,6 +4815,146 @@ export interface operations {
             };
             /** @description Not Found */
             404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorBody"];
+                };
+            };
+            /** @description Unprocessable Content */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorBody"];
+                };
+            };
+        };
+    };
+    externalHandoff: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                session_id: string;
+                node_id: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ExternalHandoffResponse"];
+                };
+            };
+            /** @description Unauthorized */
+            401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorBody"];
+                };
+            };
+            /** @description Forbidden */
+            403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorBody"];
+                };
+            };
+            /** @description Not Found */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorBody"];
+                };
+            };
+            /** @description Gone */
+            410: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorBody"];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    externalReturn: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                session_id: string;
+                node_id: string;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["ExternalReturnRequest"];
+            };
+        };
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ExternalReturnResponse"];
+                };
+            };
+            /** @description Unauthorized */
+            401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorBody"];
+                };
+            };
+            /** @description Forbidden */
+            403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorBody"];
+                };
+            };
+            /** @description Not Found */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorBody"];
+                };
+            };
+            /** @description Gone */
+            410: {
                 headers: {
                     [name: string]: unknown;
                 };

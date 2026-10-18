@@ -90,3 +90,16 @@ class PayloadTooLarge(SessionError):
 
 class RateLimited(SessionError):
     code = "rate_limited"  # 429
+
+
+class ExternalTokenInvalid(SessionError):
+    """The external-task return token is missing, malformed, tampered with, or bound to a
+    different session or node (403, task EX2)."""
+
+    code = "external.token_invalid"
+
+
+class ExternalTokenExpired(SessionError):
+    """The external-task return token is past its expiry (410, task EX2)."""
+
+    code = "external.token_expired"

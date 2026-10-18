@@ -1526,6 +1526,47 @@
         }
       ]
     },
+    "ExternalTaskNode": {
+      "additionalProperties": false,
+      "description": "A flow node that sends the participant to an external task (a jsPsych/PsychoJS/Gorilla\nexperiment, or the lab's own page) and resumes the survey when they return (task EX2,\nplanning/external-tasks.md).\n\n- `template`: a key of `settings.redirectTemplates` (or `hooks.redirects`): the external\n  task's https URL, filled and checked exactly as an end redirect is (EN2).\n- `params`: one entry per placeholder, a literal or a piped `${…}` value (a question,\n  a variable or a built-in incl. `${$session.id}`). A piped answer is a data export.\n- `returns`: embedded variables (`source: \"url\"`) the external task sends back in the\n  return URL. On return each is captured into the session's URL parameters, like a\n  start-time URL parameter: recorded, never trusted (the return URL is participant-visible).\n\nThe platform appends `osp_return` and `osp_token` (a signed, expiring, context-bound\nreturn token) to the outbound URL; the external task echoes them to send the participant\nback. A template placeholder may not be named `osp_return` or `osp_token`.",
+      "properties": {
+        "id": {
+          "$ref": "#/$defs/Identifier"
+        },
+        "params": {
+          "additionalProperties": {
+            "$ref": "#/$defs/RedirectValue"
+          },
+          "propertyNames": {
+            "$ref": "#/$defs/Name"
+          },
+          "title": "Params",
+          "type": "object"
+        },
+        "returns": {
+          "items": {
+            "$ref": "#/$defs/Identifier"
+          },
+          "title": "Returns",
+          "type": "array"
+        },
+        "template": {
+          "$ref": "#/$defs/Name"
+        },
+        "type": {
+          "const": "externalTask",
+          "title": "Type",
+          "type": "string"
+        }
+      },
+      "required": [
+        "type",
+        "id",
+        "template"
+      ],
+      "title": "ExternalTaskNode",
+      "type": "object"
+    },
     "FlowNode": {
       "discriminator": {
         "mapping": {
@@ -1533,6 +1574,7 @@
           "block": "#/$defs/BlockNode",
           "branch": "#/$defs/BranchNode",
           "end": "#/$defs/EndNode",
+          "externalTask": "#/$defs/ExternalTaskNode",
           "quotaCheck": "#/$defs/QuotaCheckNode",
           "randomiser": "#/$defs/RandomiserNode"
         },
@@ -1553,6 +1595,9 @@
         },
         {
           "$ref": "#/$defs/QuotaCheckNode"
+        },
+        {
+          "$ref": "#/$defs/ExternalTaskNode"
         },
         {
           "$ref": "#/$defs/EndNode"

@@ -22,6 +22,8 @@ from fastapi.responses import JSONResponse
 from fastapi.security import HTTPAuthorizationCredentials, HTTPBearer
 from osp_runtime import (
     ConsentRequired,
+    ExternalTokenExpired,
+    ExternalTokenInvalid,
     InvalidPayload,
     InvalidToken,
     NotFoundError,
@@ -49,6 +51,8 @@ STATUS: dict[type[SessionError], int] = {
     SessionSubmitted: 409,
     SaveModeForbidden: 403,
     ConsentRequired: 403,
+    ExternalTokenInvalid: 403,
+    ExternalTokenExpired: 410,
     StaleRevision: 409,
     SubmitMismatch: 409,
     InvalidPayload: 422,
@@ -161,6 +165,27 @@ class SubmitResponse(BaseModel):
             "expired. Accepted, flagged, and not counted toward quotas."
         ),
     )
+
+
+class ExternalHandoffResponse(BaseModel):
+    """A signed, expiring return token for an external-task hop (task EX2). The app appends
+    it as `osp_token` and its own return URL as `osp_return` to the outbound task URL."""
+
+    returnToken: str
+    expiresAt: datetime
+
+
+class ExternalReturnRequest(BaseModel):
+    model_config = ConfigDict(extra="forbid")
+    returnToken: str = Field(
+        max_length=1024,
+        description="The `osp_token` the external task echoed back in the return URL.",
+    )
+
+
+class ExternalReturnResponse(BaseModel):
+    ok: Literal[True]
+    nodeId: str
 
 
 class ConsentRequest(BaseModel):
@@ -327,6 +352,33 @@ def install(app: FastAPI, service: SessionService | None) -> None:
             replay=ack.replay,
             late=ack.late,
         )
+
+    @r.post(
+        "/sessions/{session_id}/external/{node_id}/handoff",
+        operation_id="externalHandoff",
+        responses=_errors(401, 403, 404, 410),
+    )
+    def external_handoff(
+        session_id: str, node_id: str, s: Svc, token: Token
+    ) -> ExternalHandoffResponse:
+        """Mint a return token before sending the participant to an external task (task EX2).
+        The node must be an `externalTask` node of this survey."""
+        h = s.external_handoff(session_id, _token(token), node_id)
+        return ExternalHandoffResponse(returnToken=h.return_token, expiresAt=h.expires_at)
+
+    @r.post(
+        "/sessions/{session_id}/external/{node_id}/return",
+        operation_id="externalReturn",
+        responses=_errors(401, 403, 404, 410, 422),
+    )
+    def external_return(
+        session_id: str, node_id: str, body: ExternalReturnRequest, s: Svc, token: Token
+    ) -> ExternalReturnResponse:
+        """Verify the return token when the participant comes back from an external task
+        (task EX2): signature, expiry and binding to this session and node. Stores nothing;
+        the app resolves the engine's external effect with the (untrusted) return values."""
+        ack = s.external_return(session_id, _token(token), node_id, body.returnToken)
+        return ExternalReturnResponse(ok=True, nodeId=ack.node_id)
 
     @r.post(
         "/sessions/{session_id}/consent",
