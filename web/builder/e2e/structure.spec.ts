@@ -93,7 +93,9 @@ test('Add block from the outline: a block with one page, after the selected one,
 	await titleField(page).fill('Middle block');
 	await expect(item(page, 'Middle block')).toBeVisible();
 	expect(await axe(page)).toEqual([]);
+	// The palette runs its command after it closes (a timer): wait for each undo to show.
 	await runFromPalette(page, 'undo', /^Undo/);
+	await expect(item(page, 'block1')).toBeVisible();
 	await runFromPalette(page, 'undo', /^Undo/);
 	await expect(item(page, 'block1')).toBeHidden();
 	await expect(saved(page)).toHaveText(/All changes saved/);
@@ -148,6 +150,9 @@ test('keyboard only: context menu on an outline row renames and duplicates; pale
 	await expect(saved(page)).toHaveText(/All changes saved/);
 	expect((await pageIds(page))[0]).toEqual(['p1', 'p2', 'p2_copy', 'page1']);
 	await runFromPalette(page, 'delete', /^Delete…/);
+	// The palette runs its command after it closes (a timer), so "All changes saved" can
+	// still be the add's: wait for the row to go first.
+	await expect(tree(page).locator('#outline-page1')).toHaveCount(0);
 	await expect(saved(page)).toHaveText(/All changes saved/);
 	expect((await pageIds(page))[0]).toEqual(['p1', 'p2', 'p2_copy']);
 });
@@ -206,6 +211,8 @@ test('Add block in the Flow view: a new block node at the end of the flow, focus
 	await expect(page.locator('[data-flow-handle="n_block1"]')).toBeFocused();
 	expect(await axe(page)).toEqual([]);
 	await runFromPalette(page, 'add block', /^Add block$/);
+	// Run after the palette closes (a timer): wait for the new node before "saved".
+	await expect(page.locator('[data-flow-handle="n_block2"]')).toHaveCount(1);
 	await expect(saved(page)).toHaveText(/All changes saved/);
 	expect(await flowBlocks(page)).toEqual(['b1', 'b2', 'block1', 'block2']);
 });
