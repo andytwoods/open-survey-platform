@@ -55,9 +55,10 @@ it unless `OSP_ENV=dev` and the bind is loopback.
 
 ## 2. Serving a builder page
 
-There are eight pages: `list`, `editor`, `flow`, `settings`, `appearance` (one survey's
+There are ten pages: `list`, `editor`, `flow`, `settings`, `appearance` (one survey's
 theme), `results` (one survey's results, a card per question), `themes` (the lab's theme
-library) and `preview-frame`. You choose their URLs.
+library), `profile` (the lab's property panel profile), `bank` (the lab's question bank)
+and `preview-frame`. You choose their URLs.
 
 1. Serve `web/builder/build/` as static files, for example under `/static/osp/`. Keep its
    folder layout: the files load each other by relative path.
@@ -100,6 +101,7 @@ interface OspPageConfig {
     appearance: string; themes: string; previewFrame: string;
     results?: string;              // optional: without it the Results link is hidden
     profile?: string;              // optional: the lab's property panel profile page
+    bank?: string;                 // optional: the lab's question bank page
   };
   csrf?: { header: string; token?: string; cookie?: string }; // sent on POST/PUT/PATCH/DELETE
   onUnauthenticated?: { redirect: string } | 'reload';        // after a 401; default 'reload'
@@ -108,9 +110,10 @@ interface OspPageConfig {
 }
 ```
 
-- **`links`**: the first seven are required; `results` and `profile` are optional (without
-  them the editor shows no Results link and no way to the panel profile page, so a config
-  written before those pages still works).
+- **`links`**: the first seven are required; `results`, `profile` and `bank` are optional
+  (without them the editor shows no Results link and no way to the panel profile or bank
+  pages, so a config written before those pages still works; the editor's Bank section
+  works without the `bank` page).
   `editor`, `flow`, `settings`, `appearance` and `results` must contain `{id}`; the page
   puts the survey id there. The Results page needs the `survey.export` role (owner or
   editor); a viewer sees a "no access" message. Moving between pages is a normal full
@@ -450,6 +453,7 @@ LINKS = {
     "results": "/research/surveys/{id}/results/",
     "themes": "/research/appearance/",
     "profile": "/research/profile/",
+    "bank": "/research/bank/",
     "previewFrame": "/research/preview-frame/",
 }
 REQUEST_HEADERS = ("content-type", "accept", "origin", "sec-fetch-site")
@@ -524,6 +528,7 @@ urlpatterns = [
     path("research/surveys/<str:survey_id>/results/", views.osp_page, {"page": "results"}),
     path("research/appearance/", views.osp_page, {"page": "themes"}),
     path("research/profile/", views.osp_page, {"page": "profile"}),
+    path("research/bank/", views.osp_page, {"page": "bank"}),
     path("research/preview-frame/", views.osp_page, {"page": "preview-frame"}),
     path("osp/api/<path:rest>", views.osp_api_proxy),
 ]

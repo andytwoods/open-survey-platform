@@ -113,6 +113,9 @@ Three ways:
    ++shift+enter++ on a type to pick the page and position from a dialog.
 3. From the command palette: **Add question…**, or **Add text question**, **Add grid
    question** and so on.
+4. From the **Bank** section under the outline: a saved question, page or block, or a
+   bundled instrument such as the PHQ-9, inserted whole with its scoring. See
+   [the question bank](question-bank.md).
 
 <figure markdown="span">
   ![The type picker](assets/screenshots/type-picker.png){ loading=lazy }

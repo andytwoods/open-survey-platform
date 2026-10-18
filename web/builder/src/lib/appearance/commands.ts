@@ -5,7 +5,7 @@
  */
 import type { Command } from '../commands/registry';
 
-export type BuilderView = 'editor' | 'appearance' | 'flow' | 'settings' | 'results' | 'profile';
+export type BuilderView = 'editor' | 'appearance' | 'flow' | 'settings' | 'results' | 'profile' | 'bank';
 
 export function appearanceCommands(a: {
 	view: () => BuilderView;

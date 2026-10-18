@@ -17,6 +17,7 @@ no sign-in UI here: the host owns accounts, sessions and sign-out.
 | `results` | `src/pages/results.ts` | `/surveys/{id}/results` | Results: filters, a card per question, Table view (`src/lib/results/`; the view is a lazy chunk) |
 | `themes` | `src/pages/themes.ts` | `/appearance` | The lab's theme library |
 | `profile` | `src/pages/profile.ts` | `/profile` | The lab's property panel profile (optional host link) |
+| `bank` | `src/pages/bank.ts` | `/bank` | The lab's question bank: items, versions, sharing, import/export, the bundled library, licensed copies (optional host link) |
 | `preview-frame` | `src/pages/preview-frame.ts` | `/preview-frame` | One preview device frame (iframe only) |
 
 Dev-only entries (`src/pages/dev/*`, not in the production build): `/?mock` (the shell over
@@ -48,6 +49,8 @@ interface OspPageConfig {
     list: string; editor: string; flow: string; settings: string;
     appearance: string; themes: string; previewFrame: string;
     results?: string;              // optional: without it the Results link is hidden
+    profile?: string;              // optional: the lab's property panel profile page
+    bank?: string;                 // optional: the lab's question bank page
   };
   csrf?: { header: string; token?: string; cookie?: string }; // sent on POST/PUT/PATCH/DELETE
   onUnauthenticated?: { redirect: string } | 'reload';        // after a 401; default 'reload'
@@ -92,7 +95,7 @@ chunks under `assets/`, and `build/manifest.json`:
 Paths are relative to `build/` (the build uses `base: './'`, so it can live under any
 static URL). For each page write its `css` as stylesheets, its `preload` as
 `modulepreload` links and its `js` as a module script. `scripts/check-build.mjs` (run by
-`make web-build`) fails unless the manifest lists exactly the eight pages, every file
+`make web-build`) fails unless the manifest lists exactly the ten pages, every file
 exists and each entry exports `mount`. `OSP_DEV_PAGES=1 vite build` adds the dev pages
 (the e2e tests use it).
 

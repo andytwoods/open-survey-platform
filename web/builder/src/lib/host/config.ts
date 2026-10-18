@@ -15,9 +15,10 @@ export const REQUIRED_LINK_NAMES = ['list', 'editor', 'flow', 'settings', 'appea
 /**
  * Links a host may leave out (pages added after the first host contract): without one,
  * the builder hides its way to that page. `results`: the Results page (task V2);
- * `profile`: the lab's property panel profile (task B21).
+ * `profile`: the lab's property panel profile (task B21); `bank`: the lab's question bank
+ * page (task QB5).
  */
-export const OPTIONAL_LINK_NAMES = ['results', 'profile'] as const;
+export const OPTIONAL_LINK_NAMES = ['results', 'profile', 'bank'] as const;
 export const LINK_NAMES = [...REQUIRED_LINK_NAMES, ...OPTIONAL_LINK_NAMES] as const;
 export type RequiredLinkName = (typeof REQUIRED_LINK_NAMES)[number];
 export type OptionalLinkName = (typeof OPTIONAL_LINK_NAMES)[number];
@@ -34,6 +35,7 @@ export const DEFAULT_LINKS: Readonly<Record<LinkName, string>> = {
 	results: '/surveys/{id}/results',
 	themes: '/appearance',
 	profile: '/profile',
+	bank: '/bank',
 	previewFrame: '/preview-frame'
 };
 /** Links that point at one survey: their template must contain `{id}`. */

@@ -51,6 +51,14 @@ describe('parseConfig', () => {
 		expect(errorsOf(good({ links: { ...links, profile: 7 } }))).toEqual(['links.profile: must be a string']);
 	});
 
+	it('takes the optional bank link (no {id}: it is a lab page)', () => {
+		const links = good().links as Record<string, string>;
+		expect(parseConfig(good({ links: { ...links, bank: '/osp/bank/' } }), ORIGIN).ok).toBe(true);
+		expect(errorsOf(good({ links: { ...links, bank: 'https://evil.example/b' } }))).toEqual([
+			'links.bank: must be same-origin (or an origin in allowedOrigins)'
+		]);
+	});
+
 	it('takes the optional results link, checked like the others', () => {
 		const links = good().links as Record<string, string>;
 		expect(parseConfig(good({ links: { ...links, results: '/osp/surveys/{id}/results/' } }), ORIGIN).ok).toBe(true);

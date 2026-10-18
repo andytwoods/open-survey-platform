@@ -1487,7 +1487,7 @@
             "title": "Description"
           },
           "items": {
-            "description": "One line per item: `text` or `text | option | option …` (per-item wording)",
+            "description": "One line per item: `text` or `text | option | option ...` (per-item wording)",
             "items": {
               "type": "string"
             },
@@ -9121,7 +9121,7 @@
     },
     "/api/bank/stubs": {
       "get": {
-        "description": "Instrument stubs for \"Add a licensed instrument privately\": metadata, response\nformat and scoring recipe, no item text (planning/question-bank.md §1.7).",
+        "description": "Instrument stubs for \"Add a licensed instrument privately\": metadata, response\nformat and scoring recipe, no item text (planning/question-bank.md section 1.7).",
         "operationId": "getBankStubs",
         "responses": {
           "200": {

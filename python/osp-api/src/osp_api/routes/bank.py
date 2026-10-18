@@ -266,7 +266,7 @@ class ComposeLicensedRequest(BaseModel):
     items: list[str] = Field(
         min_length=1,
         max_length=200,
-        description="One line per item: `text` or `text | option | option …` (per-item wording)",
+        description="One line per item: `text` or `text | option | option ...` (per-item wording)",
     )
     attest: bool = Field(
         description="Owner's attestation: the lab holds a licence; the item stays private"
@@ -389,7 +389,7 @@ def get_library(auth: Auth, services: Services) -> list[BankSummaryOut]:
 @router.get("/stubs", operation_id="getBankStubs", responses=errors(401, 403))
 def get_stubs(auth: Auth, services: Services) -> list[InstrumentStubOut]:
     """Instrument stubs for "Add a licensed instrument privately": metadata, response
-    format and scoring recipe, no item text (planning/question-bank.md §1.7)."""
+    format and scoring recipe, no item text (planning/question-bank.md section 1.7)."""
     return [
         InstrumentStubOut.model_validate(s) for s in services.builder.run("bank.stubs", auth.actor)
     ]

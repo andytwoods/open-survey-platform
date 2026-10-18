@@ -20,6 +20,27 @@
 	import SettingsView from '../settings/SettingsView.svelte';
 	import { profileCommands } from '../profile/commands';
 	import ProfileView from '../profile/ProfileView.svelte';
+	import BankPane from '../bank/BankPane.svelte';
+	import BankView from '../bank/BankView.svelte';
+	import { bankCommands } from '../bank/commands';
+	import { bank } from '../bank/library.svelte';
+	import {
+		addedObjectId,
+		destinationAtSelection,
+		destinationFromGap,
+		destinationReplacing,
+		insertNotice,
+		insertOp,
+		noticeShownOnce,
+		type BankDestination,
+		type BankItemOut,
+		type BankSummary,
+		type SourceRef
+	} from '../bank/logic';
+	import { ProvenanceIndex } from '../bank/provenance.svelte';
+	import ProvenanceDialog from '../bank/ProvenanceDialog.svelte';
+	import SaveToBankDialog, { type SaveRequest } from '../bank/SaveToBankDialog.svelte';
+	import { deletePlan, placeOf } from '../structure/ops';
 	import { onDestroy, onMount, tick, untrack } from 'svelte';
 	import { CommandRegistry } from '../commands/registry';
 	import { detectMac } from '../commands/shortcut';
@@ -86,7 +107,9 @@
 			insertAtOpen ||
 			!!typeChange ||
 			!!menuTarget ||
-			!!structure.deleteRequest
+			!!structure.deleteRequest ||
+			!!saveRequest ||
+			!!provenanceRequest
 	});
 	const mockPages = MOCK_SURVEY.children ?? [];
 	// Outline moves show at once (optimistic) and are reconciled with the server's reply.
@@ -215,23 +238,108 @@
 	let insertAtReturnId = $state<string | null>(null);
 
 	// Narrow screens (B19): the outline overlay covers the canvas, so a tap on a type picks
-	// it up instead and the canvas shows a "Place here" button in every gap.
+	// it up instead and the canvas shows a "Place here" button in every gap. A bank item
+	// (QB5) is placed the same way.
 	let placingType = $state<QuestionTypeId | null>(null);
+	let placingBank = $state<{ summary: BankSummary; item: BankItemOut } | null>(null);
 	function startPlacing(type: QuestionTypeId) {
 		placingType = type;
+		placingBank = null;
 		outlineOpen = false;
 		canvasTab = 'canvas';
 		const name = questionTypeInfo(type)?.name ?? type;
 		announce(`Placing ${name}. Choose Place here where it should go, or Cancel.`);
 	}
+	function startPlacingBank(summary: BankSummary, item: BankItemOut) {
+		placingBank = { summary, item };
+		placingType = null;
+		outlineOpen = false;
+		canvasTab = 'canvas';
+		announce(`Placing ${summary.title}. Choose Place here where it should go, or Cancel.`);
+	}
 	function place(target: DropTarget) {
 		const t = placingType;
+		const b = placingBank;
 		placingType = null;
+		placingBank = null;
 		if (t) void addQuestionOfType(t, target.parent ?? undefined, target.slot);
+		else if (b) insertBankAtGap(b.summary, b.item, target);
 	}
 	function cancelPlacing() {
 		placingType = null;
+		placingBank = null;
 		announce('Not added.');
+	}
+	const placingLabel = $derived(
+		placingType ? (questionTypeInfo(placingType)?.name ?? placingType) : placingBank ? (placingBank.summary.abbreviation || placingBank.summary.title) : null
+	);
+
+	// -- the question bank (QB5): insert, save, provenance ---------------------------------
+	let bankCollapsed = $state(true);
+	// The two sections under the outline share the room: opening one folds the other.
+	$effect(() => {
+		if (!bankCollapsed) untrack(() => (toolboxCollapsed = true));
+	});
+	$effect(() => {
+		if (!toolboxCollapsed) untrack(() => (bankCollapsed = true));
+	});
+	let saveRequest = $state<SaveRequest | null>(null);
+	let provenanceRequest = $state<{ id: string; source: SourceRef } | null>(null);
+	const provenance = new ProvenanceIndex();
+	$effect(() => {
+		if (store) provenance.refresh(store.survey);
+	});
+
+	async function insertBank(summary: BankSummary, item: BankItemOut, d: BankDestination) {
+		if (!store) return;
+		const s = store;
+		const out = await s.submit([insertOp(summary, item, d)]);
+		if (out.status !== 'applied') return;
+		const id = addedObjectId(out.result.patch, summary.kind);
+		announce(`${summary.abbreviation || summary.title} inserted. Undo removes it.`);
+		const notice = insertNotice(summary, item.document);
+		if (notice && !noticeShownOnce(s.surveyId, summary.licenceClass)) toast(notice, { timeout: 15000 });
+		canvasTab = 'canvas';
+		if (id) await focusItem(id);
+	}
+	function insertBankAtSelection(summary: BankSummary, item: BankItemOut) {
+		const d = destinationAtSelection(summary.kind, pages, store?.survey, selection.id);
+		if (!d) return toast(summary.kind === 'question' ? 'Add a page first.' : 'Add a block first.');
+		void insertBank(summary, item, d);
+	}
+	function insertBankAtGap(summary: BankSummary, item: BankItemOut, target: DropTarget) {
+		const d = destinationFromGap(summary.kind, pages, store?.survey, target);
+		if (!d) return announce('Not inserted: nowhere to put it there.');
+		void insertBank(summary, item, d);
+	}
+	async function detachSource(id: string) {
+		if (!store) return;
+		const out = await store.submit([{ op: 'clear_source', params: { target: id } }]);
+		if (out.status === 'applied') announce('Detached from the bank item. Undo puts it back.');
+	}
+	/** Replace an inserted object with version `version` of its bank item, in one transaction. */
+	async function replaceSource(id: string, source: SourceRef, version: number) {
+		if (!store) return;
+		const s = store;
+		const at = placeOf(pages, id);
+		if (!at) return;
+		const r = await bank.get(source.bank, version);
+		if (!r.ok) return toast(r.message, { kind: 'error' });
+		if (r.data.summary.kind !== at.type) return toast('The bank item is now a different kind of thing; insert it from the bank instead.');
+		const plan = deletePlan(s.survey, pages, id, false);
+		if (!plan) return;
+		if ('refused' in plan) return toast(plan.refused);
+		const d = destinationReplacing(pages, s.survey, at);
+		const out = await s.submit([...plan.ops, insertOp(r.data.summary, r.data, d)], { quiet: ['op.dangling_ref'] });
+		if (out.status === 'rejected' && out.diagnostics[0]?.code === 'op.dangling_ref') {
+			return toast('Conditions or piping elsewhere still refer to the old version. Change them first, or detach and edit in place.', {
+				kind: 'error'
+			});
+		}
+		if (out.status !== 'applied') return;
+		const newId = addedObjectId(out.result.patch, at.type);
+		announce(`Replaced with version ${version}. Undo brings the old one back.`);
+		if (newId) await focusItem(newId);
 	}
 
 	function chooseWhere(type: QuestionTypeId) {
@@ -315,7 +423,8 @@
 		roots: () => pages,
 		edit: (id, type, properties) => goTo({ id, type, properties }),
 		focus: focusItem,
-		language: () => defaultLanguage(store?.survey)
+		language: () => defaultLanguage(store?.survey),
+		saveToBank: (id, type, name) => (saveRequest = { id, type, name })
 	});
 
 	function openMenu(id: string, anchor: HTMLElement | null, point?: { x: number; y: number }) {
@@ -336,6 +445,7 @@
 	const routeOf = (v: BuilderView, hash?: string) => {
 		// The lab's panel profile page is survey-less; the host may not serve it.
 		if (v === 'profile') return optionalLink('profile') ?? link('list');
+		if (v === 'bank') return optionalLink('bank') ?? link('list');
 		if (store) {
 			const id = store.surveyId;
 			if (v === 'results') return optionalLink('results', { id }, { hash }) ?? link('editor', { id });
@@ -472,6 +582,23 @@
 			open: () => goto(routeOf('profile'))
 		})
 	);
+	// The lab's question bank page (QB5), when the host serves it; and the bank in the editor.
+	const hasBank = optionalLink('bank') !== null;
+	const offBank = registry.registerAll(
+		bankCommands({
+			inBank: () => view === 'bank',
+			canOpen: () => hasBank,
+			open: () => goto(routeOf('bank')),
+			canSave: () => editing && !!store && !!structure.typeOf(selection.id),
+			saveToBank: () => selection.id && structure.saveToBank(selection.id),
+			canShowBank: () => editing && !!store,
+			showBank: () => {
+				bankCollapsed = false;
+				if (outlineCollapsible) outlineOpen = true;
+				void tick().then(() => document.querySelector<HTMLElement>('[data-testid="bank-pane"] input[type="search"]')?.focus());
+			}
+		})
+	);
 	// Loaded only on the Results page, so the editor's pages never fetch its code.
 	const resultsView = $derived(view === 'results' && store ? import('../results/ResultsView.svelte') : null);
 	/** Presentation mode (V6): the Results page shows only its cards and the shell hides its chrome. */
@@ -498,6 +625,7 @@
 	}
 
 	onDestroy(() => {
+		offBank();
 		offProfile();
 		offResults();
 		offSettings();
@@ -551,6 +679,7 @@
 			viewTabs={!!store}
 			results={hasResults}
 			profile={hasProfile}
+			bank={hasBank}
 			{registry}
 			health={health.state}
 			{outlineCollapsible}
@@ -578,6 +707,10 @@
 	{:else if view === 'profile'}
 		<main id="pane-profile" class="flow" aria-labelledby="profile-heading">
 			<ProfileView />
+		</main>
+	{:else if view === 'bank'}
+		<main id="pane-bank" class="flow" aria-labelledby="bank-heading">
+			<BankView />
 		</main>
 	{:else if view === 'results' && store}
 		<main id="pane-results" class="flow" aria-labelledby="results-heading">
@@ -643,6 +776,18 @@
 							oninsert={(t, target) => void addQuestionOfType(t, target.parent ?? undefined, target.slot)}
 							onchoosewhere={chooseWhere}
 						/>
+						<BankPane
+							drag={typeDrag}
+							roots={pages}
+							survey={store.survey}
+							bind:collapsed={bankCollapsed}
+							tapToPlace={outlineCollapsible}
+							lang={defaultLanguage(store.survey)}
+							bankPageUrl={optionalLink('bank')}
+							oninsert={insertBankAtSelection}
+							ondrop={insertBankAtGap}
+							onplace={startPlacingBank}
+						/>
 					{/if}
 				</div>
 				{#if !outlineCollapsible}
@@ -678,10 +823,19 @@
 					onDiagnostic={store ? (d) => void goTo(ownerOf(store.survey, d.pointer)) : undefined}
 					typeDrag={store && editing ? typeDrag : undefined}
 					onMove={store && editing ? moveItems : undefined}
-					placing={placingType ? (questionTypeInfo(placingType)?.name ?? placingType) : null}
-					placeDefault={placingType ? (targetPage(pages, selection.id) ?? null) : null}
+					placing={placingLabel}
+					placingKind={placingBank ? placingBank.summary.kind : 'question'}
+					placeDefault={placingLabel ? (targetPage(pages, selection.id) ?? null) : null}
 					onPlace={place}
 					onCancelPlace={cancelPlacing}
+					provenance={store ? provenance : undefined}
+					onProvenance={store && editing
+						? {
+								details: (id, source) => (provenanceRequest = { id, source }),
+								replace: (id, source, version) => void replaceSource(id, source, version),
+								detach: (id) => void detachSource(id)
+							}
+						: undefined}
 				/>
 			{/snippet}
 			{#snippet jsonView()}
@@ -771,6 +925,14 @@
 	<TypeChangeDialog request={typeChange} onresolve={onTypeChangeResolved} />
 	<StructureDeleteDialog request={structure.deleteRequest} onresolve={(ok) => structure.resolveDelete(ok)} />
 	<MoveToDialog bind:open={moveToOpen} roots={pages} ids={outlineSelection.ids} onMove={(ids, t) => void moveItems(ids, t)} />
+	<SaveToBankDialog request={saveRequest} {store} canLicense={bank.canShare} onclose={() => (saveRequest = null)} />
+	<ProvenanceDialog
+		request={provenanceRequest}
+		lang={defaultLanguage(store.survey)}
+		onreplace={(id, source, version) => void replaceSource(id, source, version)}
+		ondetach={(id) => void detachSource(id)}
+		onclose={() => (provenanceRequest = null)}
+	/>
 {/if}
 
 {#if !store}

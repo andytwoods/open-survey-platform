@@ -121,7 +121,7 @@ export interface paths {
         /**
          * Get Stubs
          * @description Instrument stubs for "Add a licensed instrument privately": metadata, response
-         *     format and scoring recipe, no item text (planning/question-bank.md §1.7).
+         *     format and scoring recipe, no item text (planning/question-bank.md section 1.7).
          */
         get: operations["getBankStubs"];
         put?: never;
@@ -1851,7 +1851,7 @@ export interface components {
             description?: string | null;
             /**
              * Items
-             * @description One line per item: `text` or `text | option | option …` (per-item wording)
+             * @description One line per item: `text` or `text | option | option ...` (per-item wording)
              */
             items: string[];
             /**
