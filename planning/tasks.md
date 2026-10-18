@@ -211,4 +211,5 @@ Plan V: `planning/results-viewer.md` (decisions V-D1–V-D10). V1 publishes the 
 | RT5 | Rich text: choice and row editors | RT3 | RT5 | todo |
 | RT6 | Rich text: translations pane | RT3 | RT6 | todo |
 | F5 | Flaky (residual): results-layouts.spec "drag a card by its handle to reorder" still fails ~1 per full `make web-e2e` run on a loaded Mac (passes 8/8 alone) after CI2's fix | CI2 | Root-cause the remaining race (native HTML5 drag under load: dragstart/dragover timing, or Save racing the reorder), fix without retries; 30 repeats in a full parallel run green | done |
+| RT7 | Rich-text fields lose the first keystrokes typed right after focus (the Tiptap chunk loads on focus) | RT3 | Preload the editor chunk when the builder becomes idle (or on hover/pointerdown), and buffer keys typed before the editor is ready so nothing is lost; e2e that types immediately after focusing a title field on a cold page; no visual change | todo |
 
