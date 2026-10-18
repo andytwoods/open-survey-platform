@@ -66,7 +66,7 @@ _DANGLING_CODES = frozenset(
 # Rich-text rules (planning/rich-text.md §3.2) an op may not newly break, whole-document
 # ops included: the server validates every written text, which is what "validated on
 # write" means. A problem that was already in the survey is reported, not blocking.
-_TEXT_CODES = frozenset(
+TEXT_CODES = frozenset(
     {
         "text.too_long",
         "text.too_many_blocks",
@@ -267,7 +267,7 @@ def _execute_unguarded(
             [diag("op.invalid_result", "the edit would make the survey invalid"), *after],
         )
 
-    guarded = set(_TEXT_CODES)
+    guarded = set(TEXT_CODES)
     if not spec.whole_document:
         guarded |= _DUPLICATE_CODES
         if ctx.check_dangling:
@@ -277,7 +277,7 @@ def _execute_unguarded(
         first = new[0].code
         if first in _DUPLICATE_CODES:
             code = "op.duplicate_id"
-        elif first in _TEXT_CODES:
+        elif first in TEXT_CODES:
             code = "op.invalid_text"
         else:
             code = "op.dangling_ref"

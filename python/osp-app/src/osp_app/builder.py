@@ -30,6 +30,7 @@ from typing import Any
 from osp_instruments import lookup as bundled_instrument
 from osp_ops import Draft as OpsDraft
 from osp_ops import Invocation, apply_transaction
+from osp_ops.registry import TEXT_CODES
 from osp_runtime import InvalidPayload, RuntimeConfig, SessionService
 from osp_runtime.config import SAVE_MODES
 from osp_runtime.plan import (
@@ -437,6 +438,13 @@ class Builder:
         model, diagnostics = parse(body)
         if model is None:
             raise Rejected("The survey is not structurally valid.", diagnostics)
+        # Rich text is validated on every write (planning/rich-text.md §3.2): a survey given
+        # whole (import, JSON) may not carry text the ops would refuse either.
+        bad_text = [d for d in diagnostics if d.code in TEXT_CODES]
+        if bad_text:
+            raise Rejected(
+                "The survey holds text the model refuses (link, length, level).", bad_text
+            )
         ctx = TenantContext(tenant_id, actor.user_id)
         s, draft = self.store.create_survey(ctx, title, body)
         return SurveyView(s, draft)
