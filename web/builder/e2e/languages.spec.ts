@@ -135,12 +135,14 @@ test('the properties pane edits one language at a time: reference, copy, counts,
 	// plain-string label counts for every language, as the validator sees it).
 	await page.getByRole('button', { name: 'Edit choices…' }).click();
 	const dialog = page.getByRole('dialog', { name: 'Edit choices' });
-	const yes = dialog.getByLabel('Label for choice 1');
-	await expect(yes).toHaveValue('');
-	await expect(yes).toHaveAttribute('placeholder', 'Yes');
-	await expect(dialog.getByLabel('Label for choice 2')).toHaveValue('No');
-	await yes.fill('Ja');
-	await yes.press('Enter');
+	// Choice labels are one-line rich-text fields (RT5): empty in German, with the default
+	// text as the placeholder; a plain label counts for every language.
+	const yes = dialog.getByRole('textbox', { name: 'Label for choice 1', exact: true });
+	await expect(yes).toHaveAttribute('aria-placeholder', 'Yes');
+	await expect(yes.locator('.osp-rt-placeholder')).toHaveText('Yes');
+	await expect(dialog.getByRole('textbox', { name: 'Label for choice 2', exact: true })).toHaveText('No');
+	await fillRich(page, yes, 'Ja');
+	await page.keyboard.press('Enter');
 	await expect(saved(page)).toHaveText(/All changes saved/);
 	await dialog.getByRole('button', { name: 'Done' }).click();
 
