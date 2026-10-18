@@ -119,6 +119,8 @@ GOOD = {
 def test_validate_record_accepts_a_good_record():
     answers, orders, engine = validate_record({**GOOD, "engineVersion": "0.1"}, SESS, PUB)
     assert answers == GOOD["answers"] and orders == {} and engine == "0.1"
+    for end in (None, "complete", "screened_out", "hook-failed"):
+        validate_record({**GOOD, "end": end}, SESS, PUB)
 
 
 @pytest.mark.parametrize(
@@ -132,6 +134,9 @@ def test_validate_record_accepts_a_good_record():
         ({"orders": []}, "payload.invalid"),
         ({"events": {}}, "payload.invalid"),
         ({"engineVersion": 5}, "payload.invalid"),
+        ({"end": 5}, "payload.invalid"),
+        ({"end": ""}, "payload.invalid"),
+        ({"end": "x" * 81}, "payload.invalid"),
     ],
 )
 def test_validate_record_rejects(patch, code):

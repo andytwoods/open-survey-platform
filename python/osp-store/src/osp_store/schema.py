@@ -206,9 +206,15 @@ responses = Table(
     Column("answers_key_id", String(32), nullable=False),
     _ts("started_at", nullable=True),
     _ts("submitted_at"),
+    # The end outcome (`complete`, `screened_out`, ...) copied out of the record at submit
+    # (migration 0011, end-of-survey plan §4.5), so the results page counts per outcome
+    # without decrypting. NULL: no record, or recorded before 0011 and not yet backfilled
+    # (`osp-cli backfill-outcomes`). The record stays the source of truth.
+    Column("outcome", String(80), nullable=True),
     ForeignKeyConstraint(["tenant_id", "version_id"], ["versions.tenant_id", "versions.id"]),
     CheckConstraint("allocation_mode IN ('server', 'limesurvey-native')", name="allocation_mode"),
     CheckConstraint("session_seed IS NULL OR session_seed > 0", name="seed_positive"),
+    Index("ix_responses_version_outcome", "version_id", "outcome"),
 )
 
 audit_log = Table(

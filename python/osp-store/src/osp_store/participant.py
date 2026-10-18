@@ -20,6 +20,15 @@ Holds and late submits (semantics decisions S-1, S-2, C3a-3, 16 Oct 2026)
   Such a submit is ``late``; a late submit is not counted toward quotas: any holds it
   still has are released at submit, as the release job would.
 
+Outcomes (lead decision 5, 17 Oct 2026; end-of-survey plan §4.5, task EN4)
+- ``submit`` copies the record's end outcome into ``responses.outcome`` (migration 0011),
+  so results count per outcome without decrypting; ``backfill_outcomes`` fills older rows.
+- Quota places count completes only: a submit whose outcome is anything but ``complete``
+  (screened out, quota full elsewhere, ``hook-failed``...) gives back the places the
+  session held, in the same transaction. Balanced-assignment counts are not touched: they
+  are counted at start (semantics §7). A submitted *complete* response that is withdrawn
+  later keeps its place (C-1).
+
 Expected outcomes (a stale write, a repeated submit, a full quota) come back as
 ``status`` values, not exceptions, so ``osp-runtime`` (same layer, cannot import
 this package) can act on them. Misuse (bad context, a row in another tenant, bad
@@ -49,7 +58,7 @@ from .context import SystemContext, TenantContext, require_ctx, require_system
 from .crypto import canonical_json
 from .errors import Conflict, InvalidInput, NotFound
 from .records import Response
-from .store import Store, _answers, _id, _json, _seed
+from .store import Store, _answers, _id, _json, _seed, outcome_of
 
 SaveMode = Literal["every-page", "end-only"]
 SAVE_MODES = frozenset({"every-page", "end-only"})
@@ -151,6 +160,15 @@ class ReleaseReport:
     sessions_expired: int
     quota_slots_released: int
     assignment_slots_released: int
+
+
+@dataclass(frozen=True, slots=True)
+class BackfillReport:
+    """What ``backfill_outcomes`` did: rows without an outcome that have a record
+    (``scanned``), how many got one (``updated``); the rest had no usable ``end``."""
+
+    scanned: int
+    updated: int
 
 
 @dataclass(frozen=True, slots=True)
@@ -521,30 +539,10 @@ class ParticipantStore:
     ) -> tuple[int, int]:
         """Give back the session's held quota places and balanced counts and set
         ``expired_at``. The caller holds the session row. Returns (quota, assignment)."""
-        ps, cl = t.participant_sessions.c, t.quota_claims.c
+        ps = t.participant_sessions.c
         conn.execute(update(t.participant_sessions).where(ps.id == sid).values(expired_at=now))
         row = conn.execute(select(ps.publication_id, ps.balanced).where(ps.id == sid)).one()
-        claims = conn.execute(
-            select(cl.node_id, cl.quota_id).where(
-                (cl.session_id == sid) & (cl.result == "admitted") & cl.released_at.is_(None)
-            )
-        ).all()
-        qc = t.quota_counters.c
-        for node_id, quota_id in claims:
-            conn.execute(
-                update(t.quota_counters)
-                .where(
-                    (qc.publication_id == row.publication_id)
-                    & (qc.quota_id == quota_id)
-                    & (qc.used > 0)
-                )
-                .values(used=qc.used - 1)
-            )
-            conn.execute(
-                update(t.quota_claims)
-                .where((cl.session_id == sid) & (cl.node_id == node_id))
-                .values(released_at=now)
-            )
+        quota = self._release_quota(conn, sid, row.publication_id, now)
         assignment = 0
         ac = t.assignment_counters.c
         for variable, key in (row.balanced or {}).items():
@@ -560,9 +558,36 @@ class ParticipantStore:
             ).rowcount
         if audit:
             self._s._audit(
-                conn, tenant_id, actor, action, "session", sid, {"quota_released": len(claims)}
+                conn, tenant_id, actor, action, "session", sid, {"quota_released": quota}
             )
-        return len(claims), assignment
+        return quota, assignment
+
+    def _release_quota(self, conn: Connection, sid: str, publication_id: str, now: datetime) -> int:
+        """Give back every quota place the session still holds (admitted, not released)
+        and mark those claims released. Returns how many. The caller holds the session
+        row and owns the transaction."""
+        cl, qc = t.quota_claims.c, t.quota_counters.c
+        claims = conn.execute(
+            select(cl.node_id, cl.quota_id).where(
+                (cl.session_id == sid) & (cl.result == "admitted") & cl.released_at.is_(None)
+            )
+        ).all()
+        for node_id, quota_id in claims:
+            conn.execute(
+                update(t.quota_counters)
+                .where(
+                    (qc.publication_id == publication_id)
+                    & (qc.quota_id == quota_id)
+                    & (qc.used > 0)
+                )
+                .values(used=qc.used - 1)
+            )
+            conn.execute(
+                update(t.quota_claims)
+                .where((cl.session_id == sid) & (cl.node_id == node_id))
+                .values(released_at=now)
+            )
+        return len(claims)
 
     def _reacquire(self, conn: Connection, ctx: TenantContext, sid: str) -> bool:
         """A session whose holds were released is active again: take its quota places
@@ -971,7 +996,11 @@ class ParticipantStore:
         is ``late`` if they were, or if the caller says so (``late=True``: the resume
         token had expired). A late submit is not counted toward quotas, so any holds the
         session still has are released now. If ``record`` is an object with a
-        ``server`` object, its ``late`` field is set to the final flag."""
+        ``server`` object, its ``late`` field is set to the final flag.
+
+        The record's end outcome (``record.record.end``) is copied into
+        ``responses.outcome``. An outcome other than ``complete`` gives back the quota
+        places the session holds (lead decision 5): quota places count completes only."""
         ctx = require_ctx(ctx)
         sid = _id(session_id)
         ans = _answers(answers)
@@ -980,6 +1009,7 @@ class ParticipantStore:
         record_checksum = _name(record_checksum, "record_checksum", 64)
         if engine_version is not None:
             engine_version = _name(engine_version, "engine_version", 64)
+        outcome = outcome_of(rec)
         rid, now = str(uuid.uuid4()), self._s._now()
         with self._s._tx() as conn:
             ps = t.participant_sessions.c
@@ -1007,10 +1037,17 @@ class ParticipantStore:
                     cur["submitted_at"],
                     cur["expired_at"] is not None,
                 )
-            released = conn.execute(select(ps.expired_at).where(ps.id == sid)).scalar_one()
+            released, pub_id = conn.execute(
+                select(ps.expired_at, ps.publication_id).where(ps.id == sid)
+            ).one()
             late = bool(late) or released is not None
+            quota_released = 0
             if late and released is None:
                 self._release(conn, ctx.tenant_id, ctx.actor, sid, now, "session.late_submit")
+            elif not late and outcome is not None and outcome != "complete":
+                # Quota places count completes only (lead decision 5): a screened-out,
+                # quota-full or otherwise non-complete ending frees the place at once.
+                quota_released = self._release_quota(conn, sid, pub_id, now)
             if isinstance(rec, dict) and isinstance(rec.get("server"), dict):
                 rec = {**rec, "server": {**rec["server"], "late": late}}
             srow = self._s._one(conn, select(t.sessions).where(self._s._session_where(ctx, sid)))
@@ -1037,6 +1074,7 @@ class ParticipantStore:
                     answers_key_id=kid,
                     started_at=srow["started_at"],
                     submitted_at=now,
+                    outcome=outcome,
                 )
             )
             blob, kid = self._s._enc(rec, "response_records", "record", rid)
@@ -1056,7 +1094,13 @@ class ParticipantStore:
                 )
             )
             self._s._audit(
-                conn, ctx.tenant_id, ctx.actor, "response.submit", "response", rid, {"session": sid}
+                conn,
+                ctx.tenant_id,
+                ctx.actor,
+                "response.submit",
+                "response",
+                rid,
+                {"session": sid, "outcome": outcome, "quota_released": quota_released},
             )
             return SubmitResult("ok", rid, now, late)
 
@@ -1089,16 +1133,40 @@ class ParticipantStore:
             ).one()
         return int(n), "" if newest is None else str(newest)
 
+    def outcome_counts(self, ctx: TenantContext, version_id: str) -> dict[str | None, int]:
+        """``{outcome: responses}`` of one version from the ``outcome`` column alone: no
+        answer is read and nothing is audited. ``None`` counts the rows without an
+        outcome (no record, or stored before migration 0011 and not backfilled)."""
+        ctx = require_ctx(ctx)
+        r = t.responses.c
+        with self._s.engine.connect() as conn:
+            rows = conn.execute(
+                select(r.outcome, func.count())
+                .where((r.tenant_id == ctx.tenant_id) & (r.version_id == _id(version_id)))
+                .group_by(r.outcome)
+            ).all()
+        return {outcome: int(n) for outcome, n in rows}
+
     def stream_responses(
-        self, ctx: TenantContext, version_id: str, purpose: str = "results"
+        self,
+        ctx: TenantContext,
+        version_id: str,
+        purpose: str = "results",
+        *,
+        complete_only: bool = False,
     ) -> Iterator[tuple[Response, Any]]:
         """Every response of one version with its full record (or None), decrypted one at
         a time in submission order: one pass, constant memory. Audited up front as one
-        ``responses.read`` (count + purpose), like ``Store.list_responses``."""
+        ``responses.read`` (count + purpose), like ``Store.list_responses``.
+
+        ``complete_only`` keeps the responses whose ``outcome`` column is ``complete`` or
+        NULL (no outcome recorded at all), filtered in SQL before anything is decrypted."""
         ctx = require_ctx(ctx)
         vid = _id(version_id)
         r, rr = t.responses.c, t.response_records.c
         where = (r.tenant_id == ctx.tenant_id) & (r.version_id == vid)
+        if complete_only:
+            where = where & ((r.outcome == "complete") | r.outcome.is_(None))
         with self._s._tx() as conn:
             self._s._one(conn, select(t.versions.c.id).where(self._s._version_where(ctx, vid)))
             n = conn.execute(select(func.count()).where(where)).scalar_one()
@@ -1133,6 +1201,62 @@ class ParticipantStore:
                         row["id"],
                     )
                 yield self._s._response(row), record
+
+    # -- outcome backfill (migration 0011, task EN4) ----------------------------------
+
+    def backfill_outcomes(self, sys: SystemContext, batch: int = 500) -> BackfillReport:
+        """One-off after migration 0011: give every response without an ``outcome`` that
+        has a record the record's end outcome. Rows without a record, or whose record has
+        no usable ``end``, stay NULL. Re-running is a no-op. One system audit row
+        (``responses.backfill_outcome``) with the counts, never a value."""
+        sys = require_system(sys)
+        if isinstance(batch, bool) or not isinstance(batch, int) or batch < 1:
+            raise InvalidInput("batch must be a positive integer")
+        r, rr = t.responses.c, t.response_records.c
+        pending = (
+            select(r.id, rr.record_ct, rr.record_key_id)
+            .select_from(t.responses.join(t.response_records, rr.id == r.id))
+            .where(r.outcome.is_(None))
+            .order_by(r.id)
+        )
+        scanned = updated = 0
+        after: str | None = None
+        while True:
+            stmt = pending if after is None else pending.where(r.id > after)
+            stmt = stmt.limit(batch)
+            with self._s.engine.connect() as conn:
+                rows = conn.execute(stmt).all()
+            if not rows:
+                break
+            found: list[tuple[str, str]] = []
+            for rid, blob, kid in rows:
+                scanned += 1
+                after = rid
+                stored = self._s._dec(blob, kid, "response_records", "record", rid)
+                outcome = outcome_of(stored)
+                if outcome is not None:
+                    found.append((rid, outcome))
+            if found:
+                with self._s._tx() as conn:
+                    for rid, outcome in found:
+                        updated += conn.execute(
+                            update(t.responses)
+                            .where((r.id == rid) & r.outcome.is_(None))
+                            .values(outcome=outcome)
+                        ).rowcount
+            if len(rows) < batch:
+                break
+        with self._s._tx() as conn:
+            self._s._audit(
+                conn,
+                None,
+                sys.actor,
+                "responses.backfill_outcome",
+                None,
+                None,
+                {"scanned": scanned, "updated": updated},
+            )
+        return BackfillReport(scanned, updated)
 
     # -- inactivity release (decision R-3) -------------------------------------------
 

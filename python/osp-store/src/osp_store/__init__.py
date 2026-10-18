@@ -19,6 +19,7 @@ from .errors import (
 from .nonces import NonceLedger
 from .panel_profiles import StoredPanelProfile
 from .participant import (
+    BackfillReport,
     ConsentRecord,
     ParticipantSession,
     ParticipantStore,
@@ -44,12 +45,13 @@ from .records import (
 )
 from .results_layouts import StoredResultsLayout
 from .retention import RetentionPlan, RetentionPolicy, plan_retention
-from .store import Store, checksum
+from .store import Store, checksum, outcome_of
 from .themes import StoredTheme
 
 __all__ = [
     "AccessDenied",
     "AuditEntry",
+    "BackfillReport",
     "Conflict",
     "ConsentRecord",
     "CryptoError",
@@ -93,5 +95,6 @@ __all__ = [
     "generate_key",
     "migrate",
     "normalise_database_url",
+    "outcome_of",
     "plan_retention",
 ]

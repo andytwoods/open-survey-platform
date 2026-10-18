@@ -26,7 +26,12 @@ clears it.
 | **Show 95 % intervals** | Wilson intervals for proportions, *t* intervals for means. |
 | **Labels in** | Which language's labels to show. |
 
-The active filters are shown in words above the cards, with the number of responses.
+The active filters are shown in words above the cards, with the number of responses. A
+second line, **By outcome**, counts every submitted response of the versions shown by how
+the session ended ("12 complete · 3 screened out · 1 quota full"), before any filter. The
+outcomes are the survey's own End node names (see [Logic](logic.md#flow)); "outcome
+unknown" counts responses stored without one, which the *Complete only* filter keeps.
+These counts are read from a plain column, never from the encrypted answers.
 
 ## Cards
 

@@ -97,13 +97,14 @@ participant sees. Open it from the top bar (**Flow**) or the command palette.
 | **Branch** | An *if* condition with a *then* list and an *else* list of nodes. There is no "go to": the flow is a tree with no cycles, so every session ends. |
 | **Randomiser** | Shows its children in a seeded random order. With **pick** set to N, each participant gets N of the children, drawn without replacement. |
 | **Assign** | Draws a value for one or more *assigned* variables (conditions), uniformly at random per variable. The draw is recorded with the response and is available to conditions and piping once the node is reached. |
-| **Quota check** | Asks the server whether a quota still has room. A place is held at the check, used up on completion, and released after 24 hours without activity. When the quota is full, an optional block is shown (a thank-you or screen-out message), then the session ends with the quota's outcome. |
+| **Quota check** | Asks the server whether a quota still has room. A place is held at the check and used up only when the session ends with the outcome `complete`; it is given back when the session ends with any other outcome (screened out, another quota full), is withdrawn before submitting, or goes 24 hours without activity. A completed response that is withdrawn later keeps its place. When the quota is full, an optional block is shown (a thank-you or screen-out message), then the session ends with the quota's outcome. |
 | **External task** | Sends the participant to a task hosted elsewhere (a jsPsych/PsychoJS/Gorilla experiment, or the lab's own page) and resumes the survey when they come back. See [External task step](#external-task-step) below. |
 | **End** | Ends the session with an **outcome** (default `complete`) and an optional message. Reaching the end of the flow without an End node counts as `complete`. |
 
 Outcomes are plain identifiers such as `complete`, `declined` (the consent page's default)
-or `quota_full`. The export records each response's outcome in the `_end` column, so a
-"screened out" outcome is simply an End node with that name.
+or `quota_full`. The export records each response's outcome in the `_end` column, and the
+[Results](results.md#filters) page counts responses by it, so a "screened out" outcome is
+simply an End node with that name.
 
 ### Endings
 

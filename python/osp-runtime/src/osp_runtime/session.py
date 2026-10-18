@@ -801,4 +801,9 @@ def validate_record(
     engine = record.get("engineVersion")
     if engine is not None and (not isinstance(engine, str) or not engine or len(engine) > 64):
         raise InvalidPayload("engineVersion must be a string of at most 64 characters")
+    # The outcome the store copies into responses.outcome (end-of-survey plan §4.5): an
+    # identifier such as `complete` or `screened_out`, or null (never reached an end).
+    end = record.get("end")
+    if end is not None and (not isinstance(end, str) or not end or len(end) > 80):
+        raise InvalidPayload("end must be an outcome identifier of at most 80 characters")
     return answers, orders, engine

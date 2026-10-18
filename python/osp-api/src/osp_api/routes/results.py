@@ -108,8 +108,8 @@ class ResultsQuery(_In):
     )
     status: Literal["complete", "all"] = Field(
         "complete",
-        description="complete: responses whose end outcome is 'complete' (or that carry "
-        "no outcome at all); all: every submitted response",
+        description="complete: responses whose stored end outcome is 'complete' (or that "
+        "carry no outcome at all); all: every submitted response",
     )
     submittedFrom: datetime | None = Field(None, description="Inclusive; naive is UTC")
     submittedTo: datetime | None = Field(None, description="Exclusive; naive is UTC")
@@ -284,6 +284,17 @@ class SplitInfo(BaseModel):
     groups: list[SplitGroup]
 
 
+class OutcomeCount(BaseModel):
+    """Submitted responses of the versions used that ended with one outcome (task EN4):
+    counted from the stored outcome column, before any filter."""
+
+    outcome: str | None = Field(
+        description="The end outcome ('complete', 'screened_out', 'quota_full', ...); null "
+        "for responses with no recorded outcome (counted as complete by the status filter)"
+    )
+    responses: int
+
+
 class ResultsResponse(BaseModel):
     surveyId: str
     queryHash: str = Field(description="Hash of the normalised query (versions resolved)")
@@ -295,6 +306,11 @@ class ResultsResponse(BaseModel):
     languages: list[str]
     denominator: Literal["answered", "shown"]
     responses: int = Field(description="Responses after status, date and answer filters")
+    outcomes: list[OutcomeCount] = Field(
+        default_factory=list,
+        description="Every submitted response of the versions used, by end outcome, before "
+        "any filter: 'complete' first, then by count. Empty when nothing was submitted.",
+    )
     split: SplitInfo | None = None
     cards: list[Card]
     warnings: list[ResultWarning] = Field(default_factory=list)

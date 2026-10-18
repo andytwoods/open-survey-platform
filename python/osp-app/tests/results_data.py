@@ -158,7 +158,9 @@ def add_response(
     record: dict[str, Any] | None = None,
 ) -> str:
     """One response row; with ``record`` also its full engine record (as the participant
-    runtime stores it: ``{"record": ..., "server": ...}``)."""
+    runtime stores it: ``{"record": ..., "server": ...}``) and its ``end`` as the row's
+    outcome column (as the runtime's submit writes it)."""
+    end = record.get("end") if record is not None else None
     r = store.record_response(
         ctx,
         version_id,
@@ -166,6 +168,7 @@ def add_response(
         session_seed=1,
         assigned_conditions=assigned or {},
         submitted_at=at,
+        outcome=end if isinstance(end, str) else None,
     )
     if record is not None:
         full = {"record": {"answers": answers, **record}, "server": {}}

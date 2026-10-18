@@ -7,6 +7,7 @@ import {
 	conditionVariables,
 	defaultFilters,
 	describeFilters,
+	describeOutcomes,
 	endExclusive,
 	filterProblems,
 	NOT_AVAILABLE,
@@ -76,6 +77,19 @@ describe('filters → query', () => {
 			condition: 'arm',
 			excludeMissing: false
 		});
+	});
+
+	it('names the per-outcome counts for the header (EN4)', () => {
+		expect(
+			describeOutcomes([
+				{ outcome: 'complete', responses: 6 },
+				{ outcome: 'screened_out', responses: 1 },
+				{ outcome: 'hook-failed', responses: 0 },
+				{ outcome: null, responses: 2 }
+			])
+		).toBe('6 complete · 1 screened out · 2 outcome unknown');
+		expect(describeOutcomes([])).toBe('');
+		expect(describeOutcomes(plain.outcomes)).toBe('5 outcome unknown');
 	});
 
 	it('gives the end of a day across month and year ends', () => {

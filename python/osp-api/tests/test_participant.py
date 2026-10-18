@@ -496,6 +496,49 @@ def test_on_time_submit_is_not_late_and_counts(env):
     assert usage == {"women": (1, 2)}
 
 
+def test_non_complete_outcome_releases_the_quota_place_and_is_stored(env):
+    """Lead decision 5 (end-of-survey plan §4.5, task EN4): quota places count completes
+    only. A session that passed the check and ends screened out frees its place at
+    submit; a complete one keeps it, and the outcome is a column on the response."""
+    pub_id = env.repo.find_publication("demo").id
+    ps, ctx = env.repo.ps, env.tenants[0]
+    screened = env.start()
+    sid = screened["sessionId"]
+    assert (
+        env.client.post(f"/api/sessions/{sid}/quota/qc1", headers=auth(screened)).json()["result"]
+        == "open"
+    )
+    assert ps.quota_usage(ctx, pub_id) == {"women": (1, 2)}
+    url = f"/api/sessions/{sid}/submit"
+    r = env.client.post(url, json=record(screened, end="screened_out"), headers=auth(screened))
+    assert r.status_code == 200 and r.json()["late"] is False
+    assert ps.quota_usage(ctx, pub_id) == {"women": (0, 2)}
+    assert env.store.get_response(ctx, r.json()["responseId"]).outcome == "screened_out"
+    # Complete: the place stays used, as before.
+    done = env.start()
+    did = done["sessionId"]
+    env.client.post(f"/api/sessions/{did}/quota/qc1", headers=auth(done))
+    url = f"/api/sessions/{did}/submit"
+    r = env.client.post(url, json=record(done, end="complete"), headers=auth(done))
+    assert r.status_code == 200
+    assert ps.quota_usage(ctx, pub_id) == {"women": (1, 2)}
+    assert env.store.get_response(ctx, r.json()["responseId"]).outcome == "complete"
+    assert ps.outcome_counts(ctx, env.store.list_versions(ctx, _survey_id(env, ctx))[0].id) == {
+        "screened_out": 1,
+        "complete": 1,
+    }
+    # A malformed outcome is refused like any other bad record field.
+    bad = env.start()
+    r = env.client.post(
+        f"/api/sessions/{bad['sessionId']}/submit", json=record(bad, end=7), headers=auth(bad)
+    )
+    assert r.status_code == 422
+
+
+def _survey_id(env, ctx) -> str:
+    return env.store.list_surveys(ctx)[0].id
+
+
 def test_session_start_is_rate_limited(tmp_path):
     env = Env(tmp_path, start_burst=3)
     env.publish("demo")

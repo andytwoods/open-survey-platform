@@ -1172,9 +1172,10 @@ def _check_filters(q: Query, versions: Sequence[VersionInfo]) -> None:
         raise InvalidRequest(f"condition variable {q.condition[0]!r} not found")
 
 
-def _keep(view: ResponseView, resp: Any, has_record: bool, q: Query) -> bool:
-    if q.status == "complete" and has_record and view.meta("_end") != "complete":
-        return False
+def _keep(view: ResponseView, resp: Any, q: Query) -> bool:
+    """Date, condition and answer filters. The status filter is not here: it is the
+    ``outcome`` column, applied in SQL by ``stream_responses(complete_only=...)`` before
+    anything is decrypted (end-of-survey plan §4.5, task EN4)."""
     at = resp.submitted_at
     if at is not None and at.tzinfo is None:
         at = at.replace(tzinfo=UTC)
@@ -1248,7 +1249,10 @@ def scan(
                 pairs.append((vid, info, kind, allowed))
             work.append((unit, pairs))
         text_info = vi.vars.get(text.question) if text is not None else None
-        for resp, full in participants.stream_responses(ctx, vi.version.id, "results"):
+        stream = participants.stream_responses(
+            ctx, vi.version.id, "results", complete_only=q.status == "complete"
+        )
+        for resp, full in stream:
             full = full if isinstance(full, Mapping) else None
             record = full.get("record") if full else None
             record = record if isinstance(record, Mapping) else None
@@ -1263,7 +1267,7 @@ def scan(
                 vi.layout,
                 None,
             )
-            if not _keep(view, resp, record is not None, q):
+            if not _keep(view, resp, q):
                 continue
             g = split.key(view) if split is not None else ALL
             if g == MISSING and split is not None and split.exclude_missing:
@@ -1443,6 +1447,28 @@ def choose_versions(
     if missing:
         raise NotFoundError(f"No such published version: {missing[0]}.")
     return ctx, [by[n] for n in sorted(numbers)]
+
+
+def outcome_counts(
+    builder: Builder, ctx: TenantContext, versions: Sequence[VersionInfo]
+) -> list[dict[str, Any]]:
+    """Every submitted response of the versions by end outcome, from the ``outcome``
+    column (one ``GROUP BY`` per version; nothing decrypted, nothing audited): the
+    results header's "N complete · N screened out · ...". ``complete`` first, then by
+    count, then by name; rows without an outcome (no record, or stored before migration
+    0011 and not backfilled) last as ``None``."""
+    participants = ParticipantStore(builder.store)
+    totals: dict[str | None, int] = {}
+    for vi in versions:
+        for outcome, n in participants.outcome_counts(ctx, vi.version.id).items():
+            totals[outcome] = totals.get(outcome, 0) + n
+
+    def order(item: tuple[str | None, int]) -> tuple[int, int, str]:
+        outcome, n = item
+        rank = 0 if outcome == "complete" else 2 if outcome is None else 1
+        return rank, -n, outcome or ""
+
+    return [{"outcome": k, "responses": n} for k, n in sorted(totals.items(), key=order)]
 
 
 def watermark_of(
@@ -1704,6 +1730,7 @@ def _compute(
         "languages": list(versions[-1].layout.languages),
         "denominator": q.denominator,
         "responses": res.responses,
+        "outcomes": outcome_counts(builder, loaded.ctx, versions),
         "split": (
             {
                 "question": split.question,
