@@ -104,8 +104,8 @@ describe('web boundaries (dependency-cruiser)', () => {
 			"import { z } from 'no-such-package-anywhere';\nexport const b = z;\n"
 		],
 		[
-			// @osp/ops is pure: the engine only (planning/client-edits.md).
-			'ops-imports-only-engine',
+			// @osp/ops is pure: the engine and the validator only (planning/client-edits.md).
+			'ops-imports-only-engine-and-spec',
 			'ops/src/bad.ts',
 			"import { ok } from '../../ui-components/src/index.ts';\nexport const b = ok;\n"
 		],

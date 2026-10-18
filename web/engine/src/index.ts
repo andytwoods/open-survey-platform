@@ -77,3 +77,35 @@ export {
 	type Stored
 } from './values.ts';
 export { DECIMAL_PRECISION } from './decimal.ts';
+// Plan compile in the browser (task CE3): byte-identical to osp_runtime.plan.
+export {
+	blocks,
+	checksum,
+	compilePlan,
+	compileSurvey,
+	consentVersion,
+	embedTheme,
+	exprJson,
+	PlanError,
+	pyDecimalText,
+	runtimeConfig,
+	seedNode,
+	seedVersion,
+	segments,
+	type CompileOptions,
+	type PlanDiagnostic,
+	type RuntimeConfigJson,
+	type SurveyValidator
+} from './compile.ts';
+// Expression text syntax (task CE1): identical to osp_expr.syntax.
+export {
+	codePointToUtf16,
+	EXPR_FUNCTIONS,
+	EXPR_KEYWORDS,
+	EXPR_MAX_DEPTH,
+	EXPR_MAX_INT_DIGITS,
+	exprToText,
+	parseExpr,
+	type ParseResult,
+	type SyntaxDiagnostic
+} from './syntax.ts';

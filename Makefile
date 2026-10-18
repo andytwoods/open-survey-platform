@@ -20,7 +20,7 @@ PNPM := pnpm
 # them in the console code page (cp1252) and fail on the first non-ASCII character.
 export PYTHONUTF8 := 1
 
-CHECKS := py-test py-layers py-lint web-check web-test web-build contract-check licence-check harness-quick engine-test hooks-test sim-test docs-check ops-parity
+CHECKS := py-test py-layers py-lint web-check web-test web-build contract-check licence-check harness-quick engine-test hooks-test sim-test spec-test docs-check ops-parity
 
 # `make check CHECK_SKIP="harness-quick"` leaves targets out: CI runs the browser suites as
 # their own jobs (.github/workflows/ci.yml), and the Windows job skips what needs a POSIX
@@ -157,10 +157,13 @@ web-e2e: sim-build
 # Participant engine (task R1). Python compiles every fixture survey to a runtime plan and
 # writes the Python/TS parity vectors into web/engine/.build/ (gitignored); vitest then runs
 # every fixture script, the parity checks and the property tests. Report of realised
-# "<engine>" values: web/engine/.build/fixture-report.json.
+# "<engine>" values: web/engine/.build/fixture-report.json. build_syntax_vectors.py writes the
+# expression text-syntax vectors (.build/syntax.json) for src/syntax.ts (task CE1).
 .PHONY: engine-fixtures engine-test engine-size
 engine-fixtures:
 	$(UV_RUN) python web/engine/scripts/build_fixtures.py
+	$(UV_RUN) python web/engine/scripts/build_plan_vectors.py
+	$(UV_RUN) python web/engine/scripts/build_syntax_vectors.py
 
 engine-test: engine-fixtures
 	$(PNPM) -C web/engine exec vitest run
@@ -220,6 +223,22 @@ runtime-e2e:
 runtime-size:
 	$(PNPM) -C web/runtime exec vite build --logLevel warn
 	$(PNPM) -C web/runtime exec node scripts/size.mjs
+
+# Validator in TypeScript (task CE4, web/spec): Python writes every fixture, every osp-spec
+# test input and a few thousand seeded mutations with osp_spec.validate's diagnostics into
+# web/spec/.build/vectors.json (gitignored); vitest asserts @osp/spec gives identical
+# diagnostics. `spec-harvest` re-records the osp-spec test suite's validator inputs into
+# web/spec/test/vectors/spec-test-inputs.json (committed; rerun after adding validator tests).
+# A longer soak: OSP_SPEC_SEED=7 OSP_SPEC_MUTANTS=50000 make spec-test.
+.PHONY: spec-vectors spec-test spec-harvest
+spec-vectors:
+	$(UV_RUN) python web/spec/scripts/build_vectors.py
+
+spec-test: spec-vectors
+	$(PNPM) -C web/spec exec vitest run
+
+spec-harvest:
+	$(UV_RUN) python web/spec/scripts/harvest_spec_tests.py
 
 # Researcher hooks (task R7, runtime-design.md §7a). `hooks-test` (in `make check`): manifest,
 # action validation and engine integration in node. `hooks-e2e`: the adversarial gate in real

@@ -3,6 +3,7 @@ packages:
   - api-client
   - ui-components
   - engine
+  - spec
   - engine-sim
   - ops
   - runtime

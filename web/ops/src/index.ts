@@ -44,6 +44,7 @@ export {
 	type Severity,
 	type Validator
 } from './registry.ts';
+export { SPEC_VALIDATOR, checkFragment } from './validator.ts';
 export { applyTransaction, MAX_OPS, type Draft, type TransactionResult } from './transaction.ts';
 export { PatchError, apply as applyPatch, diff as diffPatch, toPointer, fromPointer, type Patch, type PatchOp } from './patch.ts';
 export { same, deepCopy, type Json, type JsonObject } from './py.ts';

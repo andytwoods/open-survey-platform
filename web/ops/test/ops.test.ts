@@ -1,18 +1,18 @@
 /**
- * The package without a validator (NO_VALIDATOR): what the builder gets before CE4's
- * validator is injected. Parity with Python is parity.test.ts; these are the basics.
+ * The basics with the default env (the ported validator) and with NO_VALIDATOR. Parity with
+ * Python is parity.test.ts.
  */
 
 import { readFileSync } from 'node:fs';
 import { join } from 'node:path';
 import { describe, expect, it } from 'vitest';
-import { applyPatch, applyTransaction, enabled, opIds, run, same, type Json, type JsonObject } from '../src/index.ts';
+import { NO_VALIDATOR, applyPatch, applyTransaction, enabled, opIds, run, same, type Json, type JsonObject } from '../src/index.ts';
 
 const BASE = JSON.parse(
 	readFileSync(join(import.meta.dirname, '..', '..', '..', 'python', 'osp-ops', 'tests', 'base_survey.json'), 'utf8')
 ) as JsonObject;
 
-describe('ops without a validator', () => {
+describe('ops', () => {
 	it('registers every op of osp-ops', () => {
 		expect(opIds()).toHaveLength(46);
 		expect(opIds()).toContain('insert_bank_item');
@@ -56,9 +56,14 @@ describe('ops without a validator', () => {
 		expect(applyTransaction(draft, ops, 3).status).toBe('conflict');
 	});
 
-	it('refuses condition text without an expression parser, but takes the AST', () => {
-		expect(run('set_condition', BASE, { target: 'rating', condition: 'age > 3' }).diagnostics[0]!.code).toBe('op.expr_syntax');
+	it('parses condition text by default; without a parser it takes only the AST', () => {
+		const text = run('set_condition', BASE, { target: 'rating', condition: 'age > 3' });
+		expect(text.ok).toBe(true);
+		expect(run('set_condition', BASE, { target: 'rating', condition: 'age >' }).diagnostics[0]!.code).toBe('op.expr_syntax');
+		const bare = { validator: NO_VALIDATOR };
+		expect(run('set_condition', BASE, { target: 'rating', condition: 'age > 3' }, bare).diagnostics[0]!.code).toBe('op.expr_syntax');
 		const ast = { kind: 'compare', op: '>', left: { kind: 'ref', id: 'age' }, right: { kind: 'int', value: 3 } };
-		expect(run('set_condition', BASE, { target: 'rating', condition: ast }).ok).toBe(true);
+		const viaAst = run('set_condition', BASE, { target: 'rating', condition: ast }, bare);
+		expect(viaAst.ok && same(viaAst.survey, text.survey)).toBe(true);
 	});
 });

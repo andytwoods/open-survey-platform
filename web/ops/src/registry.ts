@@ -9,76 +9,32 @@
  *   text the model refuses (`TEXT_CODES`), judged by the validator's errors before/after.
  * - Nothing throws: bad params, a bad survey or a bug become `op.*` diagnostics.
  *
- * The survey validator (`osp_spec.parse` / `validate`) is injected (`OpsEnv.validator`):
- * the TypeScript validator is a separate task (CE4). Without one every document counts as
- * structurally valid with no diagnostics, so the validator-backed guards do nothing.
+ * The survey validator (`osp_spec.parse` / `validate`, `bank.check_fragment`) and the
+ * expression parser come from `OpsEnv.validator`; the default is `SPEC_VALIDATOR`
+ * (@osp/spec's `parse`/`validate` and @osp/engine's `parseExpr`).
  */
 
 import * as jp from './patch.ts';
 import { attrs, validate as pydValidate, type ModelSchema, type PydError } from './pyd.ts';
 import { isObj, has, reprStr, slice, str as pyStr, deepCopy, type Json, type JsonObject } from './py.ts';
 import type { Loc as DocLoc } from './loc.ts';
+import type { Diagnostic, Invocation, OpResult, OpsEnv } from './types.ts';
+import { SPEC_VALIDATOR } from './validator.ts';
 
-export type Severity = 'error' | 'warning' | 'info';
+export {
+	NO_VALIDATOR,
+	type Diagnostic,
+	type ExprDiagnostic,
+	type Invocation,
+	type OpResult,
+	type OpsEnv,
+	type ParsedExpression,
+	type Severity,
+	type Validator
+} from './types.ts';
 
-export interface Diagnostic {
-	severity: Severity;
-	code: string;
-	message: string;
-	pointer: string;
-}
-
-export interface Invocation {
-	op: string;
-	params: JsonObject;
-}
-
-export interface OpResult {
-	ok: boolean;
-	/** survey' when `ok`, else the unchanged input. */
-	survey: Json;
-	/** Undoes the op exactly (survey' -> survey). */
-	inverse: Invocation | null;
-	/** RFC 6902 from survey to survey'. */
-	patch: jp.Patch;
-	diagnostics: Diagnostic[];
-}
-
-/** One expression-parser diagnostic (`osp_expr.parse`): code, message, span. */
-export interface ExprDiagnostic {
-	code: string;
-	message: string;
-	start: number;
-	end: number;
-}
-
-export type ParsedExpression = { expr: Json } | { expr: null; diagnostics: ExprDiagnostic[] };
-
-/**
- * What the ops need from the survey validator (`osp-spec`) and the expression parser
- * (`osp-expr`). Each is optional; see `NO_VALIDATOR` for what an absent one means.
- */
-export interface Validator {
-	/** `osp_spec.parse`: whether the document is structurally valid, and its diagnostics. */
-	parse(doc: Json): { valid: boolean; diagnostics: Diagnostic[] };
-	/** `osp_spec.validate` (default: `parse(doc).diagnostics`). */
-	validate?(doc: Json): Diagnostic[];
-	/** `osp_spec.bank.check_fragment` (default: only "exactly one of question, page, block"). */
-	checkFragment?(fragment: Json): Diagnostic[];
-	/** `osp_expr.parse` for condition text (default: text conditions are refused). */
-	parseExpression?(text: string): ParsedExpression;
-}
-
-/** Every document is valid and has no diagnostics. */
-export const NO_VALIDATOR: Validator = {
-	parse: () => ({ valid: true, diagnostics: [] })
-};
-
-export interface OpsEnv {
-	validator: Validator;
-}
-
-export const DEFAULT_ENV: OpsEnv = { validator: NO_VALIDATOR };
+/** The ported validator (@osp/spec), the expression parser (@osp/engine) and check_fragment. */
+export const DEFAULT_ENV: OpsEnv = { validator: SPEC_VALIDATOR };
 
 // Codes osp-ops reports itself (all errors). Validator codes come from osp-spec.
 export const OP_CODES: Record<string, string> = {

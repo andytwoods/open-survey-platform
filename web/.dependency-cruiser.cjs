@@ -5,7 +5,7 @@
  *   ui-components  must not import api-client (or builder)
  *   api-client     imports neither ui-components nor builder
  *   nothing        imports builder
- *   ops            imports only engine (the builder's editing engine, pure TS)
+ *   ops            imports only engine and spec (the builder's editing engine, pure TS)
  *   nothing        reaches outside web/ (python/, spikes/, ...)
  *
  * tooling/boundaries.test.ts proves each rule fails on a deliberate violation.
@@ -35,9 +35,9 @@ module.exports = {
 			to: { path: '^(ui-components|builder)/' }
 		},
 		{
-			name: 'ops-imports-only-engine',
+			name: 'ops-imports-only-engine-and-spec',
 			severity: 'error',
-			comment: '@osp/ops is pure (planning/client-edits.md): it may use @osp/engine and nothing else in the workspace.',
+			comment: '@osp/ops is pure (planning/client-edits.md): it may use @osp/engine and @osp/spec and nothing else in the workspace.',
 			from: { path: '^ops/' },
 			to: { path: '^(builder|ui-components|api-client|runtime|harness|hooks-sandbox|engine-sim)/' }
 		},

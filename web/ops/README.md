@@ -4,41 +4,46 @@ Every survey edit op of `python/osp-ops` in TypeScript (task CE2, `planning/clie
 the same op names, params, error codes and messages, resulting documents, JSON Patches,
 inverses and transaction semantics. The builder will apply its edits with this package and
 send the patch to the server, which validates and stores it (CE5). Pure: no DOM, no I/O,
-no clock, no randomness. Imports only `@osp/engine` (its canonical JSON and SHA-256).
+no clock, no randomness. Imports only `@osp/engine` (canonical JSON, SHA-256, `parseExpr`)
+and `@osp/spec` (the validator).
 
 ```ts
-import { run, applyTransaction, type OpsEnv } from '@osp/ops';
+import { run, applyTransaction } from '@osp/ops';
 
-const env: OpsEnv = { validator };   // see "The validator" below
-const res = run('set_property', survey, { target: 'q12', property: 'required', value: true }, env);
+const res = run('set_property', survey, { target: 'q12', property: 'required', value: true });
 res.ok, res.survey, res.inverse, res.patch, res.diagnostics
 
-const tx = applyTransaction({ survey, revision: 7 }, [op1, op2], 7, env);
+const tx = applyTransaction({ survey, revision: 7 }, [op1, op2], 7);
 tx.status /* ok | rejected | conflict */, tx.failedIndex, tx.draft, tx.patch, tx.inverse
-// undo: applyTransaction(tx.draft, tx.inverse, tx.draft.revision, env); its .inverse is the redo
+// undo: applyTransaction(tx.draft, tx.inverse, tx.draft.revision); its .inverse is the redo
+// every call takes an optional last `env: OpsEnv` (see "The validator")
 ```
 
 Also exported: `enabled`, `invoke`, `REGISTRY`, `opIds`, `opCatalogue`, `OP_CODES`,
 `applyPatch` / `diffPatch` (RFC 6902, as `osp_ops.patch`), `same`, `deepCopy`,
 `canonicalJson`, `normaliseText`, `isRich`, `pipesOf`, `fragmentChecksum`, `RESERVED_NAMES`,
-`KEYWORDS`, `NO_VALIDATOR`.
+`KEYWORDS`, `SPEC_VALIDATOR`, `checkFragment`, `NO_VALIDATOR`.
 
-## The validator (injected)
+## The validator
 
 The Python ops call the survey validator (`osp_spec.parse` / `validate`, the bank's
-`check_fragment`) and the expression parser (`osp_expr.parse`). Those are separate tasks
-in TypeScript (CE4, CE1), so `OpsEnv.validator` supplies them:
+`check_fragment`) and the expression parser (`osp_expr.parse`). Here they come from
+`OpsEnv.validator`; the default (`DEFAULT_ENV`, `SPEC_VALIDATOR`) is the ported stack:
+`@osp/spec`'s `parse` / `validate` (CE4), a port of `check_fragment` on top of them
+(`src/validator.ts`, using `@osp/spec`'s `Fragment` model) and `@osp/engine`'s `parseExpr`
+(CE1) for condition text. Another validator can be injected:
 
-| hook | used for | without it |
+| hook | used for | absent |
 |---|---|---|
-| `parse(doc) -> {valid, diagnostics}` | input/output structural check, the duplicate-id, dangling-reference and rich-text guards, every result's `diagnostics` | every document is valid, no diagnostics, so those guards never fire |
-| `validate(doc)` (default `parse(doc).diagnostics`) | `change_question_type`'s conflict check | no conflicts are found |
+| `parse(doc) -> {valid, diagnostics}` | input/output structural check, the duplicate-id, dangling-reference and rich-text guards, every result's `diagnostics` | (required) |
+| `validate(doc)` | `change_question_type`'s conflict check | `parse(doc).diagnostics` |
 | `checkFragment(fragment)` | `insert_bank_item` | only "exactly one of question, page, block" and the 200-item limit |
 | `parseExpression(text)` | `set_condition` with text | text is refused (`op.expr_syntax`); an AST is accepted |
 
-`DEFAULT_ENV` uses `NO_VALIDATOR`. Everything else the ops validate themselves is ported:
-the params models, `Ending`, `RedirectTemplate`, `Source`, the hook manifest, the theme and
-the expression AST, with pydantic's error types, locations and messages (`src/pyd.ts`,
+`NO_VALIDATOR` (every document valid, no diagnostics) is there for tests and tools that
+want the bare ops. Everything else the ops validate themselves is ported here: the params
+models, `Ending`, `RedirectTemplate`, `Source`, the hook manifest, the theme and the
+expression AST, with pydantic's error types, locations and messages (`src/pyd.ts`,
 `src/models.ts`).
 
 ## Parity (`make ops-parity`, part of `make check`)
@@ -56,10 +61,11 @@ order) for every document, patch, inverse and diagnostic:
 - pydantic vectors for every params model and the models above; Python's `repr`, `strip`,
   `splitlines`, `Decimal` and float text.
 
-The validator in the replay is an oracle: what Python's validator answered for each
-document (keyed by the SHA-256 of its JSON). Asking about a document Python never
-validated fails the test, so a TS op that builds a different document is caught even
-before the hashes are compared. The vectors are rebuilt only when osp-ops, osp-spec,
+Every replay runs twice: once with an oracle validator (what Python's validator answered
+for each document, keyed by the SHA-256 of its JSON; asking about a document Python never
+validated fails, so the ops' own logic is checked alone) and once with the default env
+(@osp/spec, the `check_fragment` port, @osp/engine's parser), so the whole TypeScript stack
+must give Python's results. The vectors are rebuilt only when osp-ops, osp-spec,
 osp-expr, their tests, the fixtures or the script change (`.build/stamp.txt`).
 
 ## What cannot match
@@ -91,6 +97,7 @@ osp-expr, their tests, the fixtures or the script change (`.build/stamp.txt`).
 | `patch.py` | `patch.ts` |
 | `transaction.py` | `transaction.ts` |
 | `doc.py` | `doc.ts`, `loc.ts` |
+| `osp_spec.bank.check_fragment`, the validator seam | `validator.ts`, `types.ts` |
 | `question_ops.py` | `ops/question.ts` |
 | `page_ops.py` | `ops/page.ts` |
 | `property_ops.py` | `ops/property.ts` |

@@ -12,7 +12,7 @@
     "build": "pnpm --filter @osp/builder build",
     "check": "pnpm -r --if-present check && pnpm lint && pnpm depcruise",
     "lint": "eslint .",
-    "depcruise": "depcruise builder/src ui-components/src api-client/src ops/src --config .dependency-cruiser.cjs",
+    "depcruise": "depcruise builder/src ui-components/src api-client/src spec/src ops/src --config .dependency-cruiser.cjs",
     "test": "vitest run"
   },
   "devDependencies": {

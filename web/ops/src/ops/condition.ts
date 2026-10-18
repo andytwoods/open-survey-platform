@@ -28,7 +28,8 @@ export function toAst(ctx: Ctx, condition: Json): Json {
 		const res = parse(condition);
 		if (res.expr === null) {
 			const errs = 'diagnostics' in res ? res.diagnostics : [];
-			const ds = errs.map((d) => diag('op.expr_syntax', `${d.message} [${d.code}] at ${d.start}-${d.end}`, '/condition'));
+			const at = (n: number | null): string => (n === null ? 'None' : String(n));
+			const ds = errs.map((d) => diag('op.expr_syntax', `${d.message} [${d.code}] at ${at(d.start)}-${at(d.end)}`, '/condition'));
 			if (!ds.length) ds.push(diag('op.expr_syntax', 'condition does not parse', '/condition'));
 			throw new OpError(ds[0]!.code, ds[0]!.message, ds[0]!.pointer, ...ds.slice(1));
 		}

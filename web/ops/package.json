@@ -17,7 +17,8 @@
 		"check": "tsc -p tsconfig.json"
 	},
 	"dependencies": {
-		"@osp/engine": "workspace:*"
+		"@osp/engine": "workspace:*",
+		"@osp/spec": "workspace:*"
 	},
 	"devDependencies": {
 		"@types/node": "^24.19.2",
