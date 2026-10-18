@@ -1,11 +1,11 @@
 import { readFileSync } from 'node:fs';
 import { expect, test, type Page } from '@playwright/test';
-import { withChecksum, type Plan } from '@osp/engine';
+import { compileSurvey, withChecksum, type Plan } from '@osp/engine';
 import { axe, signIn, writeHeaders } from './fixtures';
 
-// Researcher hooks in the builder Preview (task R10, runtime-design §7a). osp-survey/0.1 has
-// no hooks field yet, so (as in web/runtime/e2e/server.py) the manifest is put into the plan
-// the real osp-api compiled, with its checksum recomputed, on the way to the builder.
+// Researcher hooks in the builder Preview (task R10, runtime-design §7a). The manifest is the
+// survey's own `hooks` (set_hooks); the preview compiles it in the browser (CE5), so no
+// request goes to /preview-plan.
 
 const FIXTURE = '05-showif-null';
 const survey = () => JSON.parse(readFileSync(new URL(`../../../fixtures/${FIXTURE}/survey.json`, import.meta.url), 'utf8'));
@@ -27,21 +27,20 @@ const HOOKS = {
 	}
 };
 
+let planRequests = 0;
+
 async function openPreview(page: Page) {
+	planRequests = 0;
 	await signIn(page);
 	const res = await page.request.post('/api/surveys', {
 		headers: await writeHeaders(page),
-		data: { title: `Preview hooks ${FIXTURE}`, survey: survey() }
+		data: { title: `Preview hooks ${FIXTURE}`, survey: { ...survey(), hooks: HOOKS } }
 	});
 	expect(res.status()).toBe(201);
 	const { id } = await res.json();
-	await page.route('**/api/surveys/*/preview-plan', async (route) => {
-		const r = await route.fetch();
-		const body = await r.json();
-		const { checksum: _old, ...plan } = body.plan as Plan;
-		void _old;
-		body.plan = withChecksum({ ...plan, hooks: HOOKS } as unknown as Plan);
-		await route.fulfill({ response: r, json: body });
+	await page.route('**/api/surveys/*/preview-plan', (route) => {
+		planRequests++;
+		return route.abort();
 	});
 	await page.goto(`/surveys/${id}`);
 	await page.getByRole('banner').getByRole('button', { name: 'Preview' }).click();
@@ -121,26 +120,52 @@ test('preview runs the survey hooks in the participant sandbox; the debugger sho
 	await axe(page, 'preview with hooks');
 
 	expect(frameRequests.filter((u) => new URL(u).pathname.startsWith('/api'))).toEqual([]);
+	expect(planRequests).toBe(0);
 });
 
 test('a hook manifest the runtime refuses shows in the debugger, not just in the frame', async ({ page }) => {
+	// The builder's validator never lets such a manifest into a plan (hooks.write_target), so
+	// the frame is handed one directly: the plan it is sent is swapped on the way (as a plan
+	// from elsewhere could be). A hook may never write a question (§7a): the runner refuses it.
+	const { plan } = compileSurvey({ ...survey(), version: null });
+	expect(plan).not.toBeNull();
+	const { checksum: _old, ...rest } = plan as Plan;
+	void _old;
+	const bad = { ...HOOKS, handlers: { onStart: { reads: [], writes: ['a'] } } };
+	const planJson = JSON.stringify(withChecksum({ ...rest, hooks: bad } as unknown as Plan));
+	await page.addInitScript((json: string) => {
+		// The builder hands each frame its plan as `JSON.stringify(plan)`: hand over this one.
+		const stringify = JSON.stringify;
+		JSON.stringify = function (value: unknown, ...rest: unknown[]) {
+			const v = value as Record<string, unknown> | null;
+			if (v && typeof v === 'object' && 'checksum' in v && 'flow' in v && 'items' in v && 'hooks' in v) return json;
+			return (stringify as (...a: unknown[]) => string)(value, ...rest);
+		} as typeof JSON.stringify;
+	}, planJson);
 	await signIn(page);
 	const res = await page.request.post('/api/surveys', {
 		headers: await writeHeaders(page),
-		data: { title: 'Preview bad hooks', survey: survey() }
+		data: { title: 'Preview bad hooks', survey: { ...survey(), hooks: HOOKS } }
 	});
+	expect(res.status()).toBe(201);
 	const { id } = await res.json();
-	await page.route('**/api/surveys/*/preview-plan', async (route) => {
-		const r = await route.fetch();
-		const body = await r.json();
-		const { checksum: _old, ...plan } = body.plan as Plan;
-		void _old;
-		// A hook may never write a question (§7a): the runner refuses the manifest.
-		const bad = { ...HOOKS, handlers: { onStart: { reads: [], writes: ['a'] } } };
-		body.plan = withChecksum({ ...plan, hooks: bad } as unknown as Plan);
-		await route.fulfill({ response: r, json: body });
-	});
 	await page.goto(`/surveys/${id}`);
 	await page.getByRole('banner').getByRole('button', { name: 'Preview' }).click();
 	await expect(page.getByTestId('dbg-hook-log').first()).toContainText('hook manifest refused');
+});
+
+test('a manifest the validator refuses is listed to fix, and the preview does not run', async ({ page }) => {
+	await signIn(page);
+	const bad = { ...HOOKS, handlers: { onStart: { reads: [], writes: ['a'] } } };
+	const res = await page.request.post('/api/surveys', {
+		headers: await writeHeaders(page),
+		data: { title: 'Preview refused hooks', survey: { ...survey(), hooks: bad } }
+	});
+	expect(res.status()).toBe(201);
+	const { id } = await res.json();
+	await page.goto(`/surveys/${id}`);
+	await page.getByRole('banner').getByRole('button', { name: 'Preview' }).click();
+	const problems = page.getByRole('alert').filter({ hasText: "The preview can't run until these are fixed" });
+	await expect(problems).toContainText('is not a hook variable');
+	await expect(page.getByTestId('preview-frame-phone')).toHaveCount(0);
 });

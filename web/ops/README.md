@@ -2,8 +2,8 @@
 
 Every survey edit op of `python/osp-ops` in TypeScript (task CE2, `planning/client-edits.md`):
 the same op names, params, error codes and messages, resulting documents, JSON Patches,
-inverses and transaction semantics. The builder will apply its edits with this package and
-send the patch to the server, which validates and stores it (CE5). Pure: no DOM, no I/O,
+inverses and transaction semantics. The builder applies its edits with this package and
+sends the patch to the server, which validates and stores it (CE5). Pure: no DOM, no I/O,
 no clock, no randomness. Imports only `@osp/engine` (canonical JSON, SHA-256, `parseExpr`)
 and `@osp/spec` (the validator).
 
@@ -22,7 +22,8 @@ tx.status /* ok | rejected | conflict */, tx.failedIndex, tx.draft, tx.patch, tx
 Also exported: `enabled`, `invoke`, `REGISTRY`, `opIds`, `opCatalogue`, `OP_CODES`,
 `applyPatch` / `diffPatch` (RFC 6902, as `osp_ops.patch`), `same`, `deepCopy`,
 `canonicalJson`, `normaliseText`, `isRich`, `pipesOf`, `fragmentChecksum`, `RESERVED_NAMES`,
-`KEYWORDS`, `SPEC_VALIDATOR`, `checkFragment`, `NO_VALIDATOR`.
+`KEYWORDS`, `SPEC_VALIDATOR`, `checkFragment`, `NO_VALIDATOR`, and for the builder's
+condition editor `buildIndex`, `CONDITION_FIELDS`, `TEXT_CODES` and `exprAstProblem`.
 
 ## The validator
 

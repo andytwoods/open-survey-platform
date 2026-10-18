@@ -1,11 +1,12 @@
 import AxeBuilder from '@axe-core/playwright';
 import { readFileSync } from 'node:fs';
 import { expect, test, type FrameLocator, type Page } from '@playwright/test';
-import { axe, signIn, writeHeaders } from './fixtures';
+import { axe, fillRich, saveStatus, signIn, writeHeaders } from './fixtures';
 
 // Preview + debugger (task B11) end to end against a real osp-api (e2e/api_server.py): the
-// draft is compiled by POST /preview-plan, the device frames run web/runtime in preview
-// mode, and the debugger's states are compared with the fixture's expected trace.
+// draft is compiled in the browser (@osp/engine, CE5; POST /preview-plan is never called),
+// the device frames run web/runtime in preview mode, and the debugger's states are compared
+// with the fixture's expected trace.
 
 const FIXTURE = '05-showif-null';
 const SCRIPT = 'a3-b3';
@@ -20,7 +21,15 @@ const expected = () => JSON.parse(expectedText()) as { steps: Array<Record<strin
 const KEYS = ['page', 'visible', 'errors', 'nav', 'questions', 'orders', 'conditions', 'end'];
 const pick = (o: Record<string, unknown>) => Object.fromEntries(KEYS.map((k) => [k, o[k]]));
 
+/** Requests to POST /preview-plan in this test (there must be none: CE5). */
+let planCalls = 0;
+
 async function openPreview(page: Page) {
+	planCalls = 0;
+	await page.route('**/api/surveys/*/preview-plan', (route) => {
+		planCalls++;
+		return route.abort();
+	});
 	await signIn(page);
 	const res = await page.request.post('/api/surveys', {
 		headers: await writeHeaders(page),
@@ -87,8 +96,27 @@ test('preview on phone and desktop follows the fixture trace, and the debugger e
 	await expect(desktop.getByTestId('thanks')).toBeVisible();
 	await traceIs(page, steps[2]!);
 
-	// Nothing reached the server: no participant session, no publish.
+	// Nothing reached the server: no participant session, no publish, no plan compiled there.
 	await expect(page.getByTestId('preview')).toBeVisible();
+	expect(planCalls).toBe(0);
+});
+
+test('preview shows unsaved edits: it compiles the draft as edited here, without /preview-plan', async ({ page }) => {
+	const id = await openPreview(page);
+	await page.getByRole('button', { name: 'Back to editor' }).click();
+	// Hold the save back: the preview must still show the new title.
+	await page.route('**/api/surveys/*/draft', async (route) => {
+		await new Promise((r) => setTimeout(r, 60_000));
+		await route.continue().catch(() => {});
+	});
+	await page.getByRole('treeitem', { name: 'Pick any whole number (optional).', exact: true }).click();
+	await fillRich(page, page.getByLabel('Question text'), 'An unsaved label');
+	await page.keyboard.press('Tab');
+	await expect(saveStatus(page)).toHaveAttribute('data-state', 'saving');
+	await page.getByRole('banner').getByRole('button', { name: 'Preview' }).click();
+	await expect(frame(page, 'phone').getByLabel('An unsaved label')).toBeVisible();
+	expect(planCalls).toBe(0);
+	expect((await (await page.request.get(`/api/surveys/${id}`)).json()).revision).toBe(0);
 });
 
 test('a fixture script loaded into the debugger matches the expected trace at every step', async ({ page }) => {

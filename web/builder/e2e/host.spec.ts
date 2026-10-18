@@ -203,7 +203,7 @@ test('after a 401 the editor stops sending writes and keeps the edit queued', as
 	await expect(page.getByRole('tree', { name: 'Survey outline' })).toBeVisible();
 
 	let sent = 0;
-	await page.route('**/api/surveys/*/ops', (route) => {
+	await page.route('**/api/surveys/*/draft', (route) => {
 		sent++;
 		return route.fulfill({ status: 401, json: { code: 'auth', message: 'Sign in first.' } });
 	});

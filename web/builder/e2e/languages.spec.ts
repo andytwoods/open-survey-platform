@@ -24,7 +24,7 @@ test('two quick adds, then two quick removes, all land', async ({ page }) => {
 	const first = (await tags(page).first().locator('span[lang]').textContent())!;
 
 	// Hold each op back, so the second click is made while the first is still in flight.
-	await page.route('**/api/surveys/*/ops', async (route) => {
+	await page.route('**/api/surveys/*/draft', async (route) => {
 		await new Promise((r) => setTimeout(r, 400));
 		await route.continue();
 	});
