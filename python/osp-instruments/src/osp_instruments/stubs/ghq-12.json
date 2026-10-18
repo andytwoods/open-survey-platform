@@ -1,0 +1,37 @@
+{
+  "stubVersion": "osp-instrument-stub/0.1",
+  "id": "ghq-12",
+  "title": "General Health Questionnaire, 12-item",
+  "abbreviation": "GHQ-12",
+  "description": "12 items about recent general health, each with its own four options; Likert scoring 0–3.",
+  "tags": [
+    "distress",
+    "mental-health",
+    "screener"
+  ],
+  "terms": "licensed",
+  "holder": {
+    "name": "GL Assessment",
+    "url": "https://www.gl-assessment.co.uk/"
+  },
+  "citation": {
+    "text": "Goldberg DP, Williams P (1988). A User's Guide to the General Health Questionnaire. Windsor: NFER-Nelson.",
+    "doi": null
+  },
+  "itemCount": 12,
+  "response": {
+    "kind": "per-item",
+    "min": 0,
+    "max": 3
+  },
+  "scoring": {
+    "aggregate": "sum",
+    "reversed": [],
+    "subscales": {},
+    "total": true,
+    "offset": 0,
+    "factor": null,
+    "text": "Likert scoring: sum of the 12 items (0–36). The GHQ method (options 0-0-1-1, total 0–12) can be added as a further computed variable. Scoring here follows the published literature; check it against the manual or form your lab holds before publishing."
+  },
+  "note": "Enter each item's four options in score order (0 first)."
+}

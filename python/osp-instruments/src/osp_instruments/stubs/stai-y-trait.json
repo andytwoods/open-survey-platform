@@ -1,0 +1,47 @@
+{
+  "stubVersion": "osp-instrument-stub/0.1",
+  "id": "stai-y-trait",
+  "title": "State-Trait Anxiety Inventory, Form Y, Trait scale",
+  "abbreviation": "STAI-T",
+  "description": "20 statements about how the respondent generally feels, each rated 1–4.",
+  "tags": [
+    "anxiety",
+    "trait",
+    "personality"
+  ],
+  "terms": "licensed",
+  "holder": {
+    "name": "Mind Garden, Inc.",
+    "url": "https://www.mindgarden.com/"
+  },
+  "citation": {
+    "text": "Spielberger CD, Gorsuch RL, Lushene R, Vagg PR, Jacobs GA (1983). Manual for the State-Trait Anxiety Inventory. Palo Alto, CA: Consulting Psychologists Press.",
+    "doi": null
+  },
+  "itemCount": 20,
+  "response": {
+    "kind": "shared",
+    "min": 1,
+    "max": 4
+  },
+  "scoring": {
+    "aggregate": "sum",
+    "reversed": [
+      1,
+      3,
+      6,
+      7,
+      10,
+      13,
+      14,
+      16,
+      19
+    ],
+    "subscales": {},
+    "total": true,
+    "offset": 0,
+    "factor": null,
+    "text": "Sum of the 20 items (20–80) after reversing the anxiety-absent items 1, 3, 6, 7, 10, 13, 14, 16 and 19. Scoring here follows the published literature; check it against the manual or form your lab holds before publishing."
+  },
+  "note": null
+}

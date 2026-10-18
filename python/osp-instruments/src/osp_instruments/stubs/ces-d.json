@@ -1,0 +1,41 @@
+{
+  "stubVersion": "osp-instrument-stub/0.1",
+  "id": "ces-d",
+  "title": "Center for Epidemiologic Studies Depression Scale",
+  "abbreviation": "CES-D",
+  "description": "20 items about the past week rated 0–3 by frequency.",
+  "tags": [
+    "depression",
+    "screener"
+  ],
+  "terms": "ask",
+  "holder": {
+    "name": "Lenore Sawyer Radloff / National Institute of Mental Health (no first-party terms page found)",
+    "url": null
+  },
+  "citation": {
+    "text": "Radloff LS (1977). The CES-D Scale: a self-report depression scale for research in the general population. Applied Psychological Measurement 1(3):385–401.",
+    "doi": "10.1177/014662167700100306"
+  },
+  "itemCount": 20,
+  "response": {
+    "kind": "shared",
+    "min": 0,
+    "max": 3
+  },
+  "scoring": {
+    "aggregate": "sum",
+    "reversed": [
+      4,
+      8,
+      12,
+      16
+    ],
+    "subscales": {},
+    "total": true,
+    "offset": 0,
+    "factor": null,
+    "text": "Sum of the 20 items (0–60) after reversing the positive items 4, 8, 12 and 16; 16 or more is the usual cut-off. Scoring here follows the published literature; check it against the manual or form your lab holds before publishing."
+  },
+  "note": null
+}

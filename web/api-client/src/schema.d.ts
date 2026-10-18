@@ -66,6 +66,72 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
+    "/api/bank/licensed": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /**
+         * Compose Licensed
+         * @description Owner only. The lab's own copy of an instrument (pasted items) becomes a private
+         *     `licensed-to-lab` bank item with the stub's scoring recipe; `attest` must be true
+         *     (422 `bank.licensed_attestation` otherwise). Item lines must match the stub's count
+         *     (422 `bank.stub_items`).
+         */
+        post: operations["composeLicensedBankItem"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/bank/preview": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /**
+         * Preview Save
+         * @description What saving a question, page or block to the bank would keep (shared choice lists,
+         *     scoring variables) and cut (references outside it). Nothing is saved. 422 with
+         *     `bank.*` diagnostics when the part can't be cut out.
+         */
+        post: operations["previewBankSave"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/bank/stubs": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /**
+         * Get Stubs
+         * @description Instrument stubs for "Add a licensed instrument privately": metadata, response
+         *     format and scoring recipe, no item text (planning/question-bank.md §1.7).
+         */
+        get: operations["getBankStubs"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
     "/api/bank/{item_id}": {
         parameters: {
             query?: never;
@@ -1444,6 +1510,43 @@ export interface components {
             /** Total */
             total: number;
         };
+        /** BankPreviewOut */
+        BankPreviewOut: {
+            /**
+             * Choicelists
+             * @description Shared choice lists that travel with it
+             */
+            choiceLists: string[];
+            /**
+             * Diagnostics
+             * @description Warnings: references outside the saved part that would be cut
+             */
+            diagnostics: components["schemas"]["Diagnostic"][];
+            /** Itemcount */
+            itemCount: number;
+            /**
+             * Kind
+             * @enum {string}
+             */
+            kind: "question" | "page" | "block";
+            /** Languages */
+            languages: string[];
+            /**
+             * Variables
+             * @description Computed (scoring) variables that travel with it
+             */
+            variables: string[];
+        };
+        /** BankPreviewRequest */
+        BankPreviewRequest: {
+            /** Surveyid */
+            surveyId: string;
+            /**
+             * Targetid
+             * @description The question, page or block id that would be saved
+             */
+            targetId: string;
+        };
         /** BankSaveOut */
         BankSaveOut: {
             /**
@@ -1734,6 +1837,64 @@ export interface components {
         ClearSourceParams: {
             /** Target */
             target: string;
+        };
+        /** ComposeLicensedRequest */
+        ComposeLicensedRequest: {
+            /** Abbreviation */
+            abbreviation?: string | null;
+            /**
+             * Attest
+             * @description Owner's attestation: the lab holds a licence; the item stays private
+             */
+            attest: boolean;
+            /** Description */
+            description?: string | null;
+            /**
+             * Items
+             * @description One line per item: `text` or `text | option | option …` (per-item wording)
+             */
+            items: string[];
+            /**
+             * Labels
+             * @description One per scale point
+             */
+            labels?: string[] | null;
+            /**
+             * Language
+             * @description Store texts as {lang: text}
+             */
+            language?: string | null;
+            /**
+             * Layout
+             * @default matrix
+             * @enum {string}
+             */
+            layout: "matrix" | "single";
+            /**
+             * Prefix
+             * @description Id prefix (default: from the abbreviation)
+             */
+            prefix?: string | null;
+            /** @description Required without a stub */
+            scale?: components["schemas"]["ScaleIn"] | null;
+            /** @description Without a stub; default: a plain sum */
+            scoring?: components["schemas"]["ScoringIn"] | null;
+            /**
+             * Stem
+             * @description The instruction above the items
+             */
+            stem?: string | null;
+            /** Stubid */
+            stubId?: string | null;
+            /** Tags */
+            tags?: string[] | null;
+            /**
+             * Tenantid
+             * @description The lab; needed only if you belong to several labs
+             */
+            tenantId?: string | null;
+            /** Title */
+            title?: string | null;
         };
         /** ConditionFilter */
         ConditionFilter: {
@@ -2482,6 +2643,39 @@ export interface components {
              * @default null
              */
             parent: string | null;
+        };
+        /**
+         * InstrumentStubOut
+         * @description An instrument the project may not bundle: metadata, response format and scoring
+         *     recipe for the lab's own licensed copy. Never any item text.
+         */
+        InstrumentStubOut: {
+            /** Abbreviation */
+            abbreviation: string;
+            citation: components["schemas"]["StubCitationOut"];
+            /** Description */
+            description: string;
+            holder: components["schemas"]["StubHolderOut"];
+            /** Id */
+            id: string;
+            /** Itemcount */
+            itemCount: number;
+            /** Note */
+            note: string | null;
+            response: components["schemas"]["StubResponseOut"];
+            scoring: components["schemas"]["StubScoringOut"];
+            /** Stubversion */
+            stubVersion: string;
+            /** Tags */
+            tags: string[];
+            /**
+             * Terms
+             * @description ask: free for research, redistribution not granted; licensed: proprietary
+             * @enum {string}
+             */
+            terms: "ask" | "licensed";
+            /** Title */
+            title: string;
         };
         /**
          * Invocation
@@ -3502,6 +3696,39 @@ export interface components {
             /** Title */
             title: string;
         };
+        /** ScaleIn */
+        ScaleIn: {
+            /** Max */
+            max: number;
+            /** Min */
+            min: number;
+        };
+        /** ScoringIn */
+        ScoringIn: {
+            /**
+             * Aggregate
+             * @default sum
+             */
+            aggregate: ("sum" | "mean") | null;
+            /** Factor */
+            factor?: string | null;
+            /**
+             * Offset
+             * @default 0
+             */
+            offset: number;
+            /** Reversed */
+            reversed?: number[];
+            /** Subscales */
+            subscales?: {
+                [key: string]: number[];
+            };
+            /**
+             * Total
+             * @default true
+             */
+            total: boolean;
+        };
         /** SetChoice */
         SetChoiceParams: {
             /**
@@ -4230,6 +4457,55 @@ export interface components {
              */
             top2?: number | null;
         };
+        /** StubCitationOut */
+        StubCitationOut: {
+            /** Doi */
+            doi: string | null;
+            /** Text */
+            text: string;
+        };
+        /** StubHolderOut */
+        StubHolderOut: {
+            /** Name */
+            name: string;
+            /** Url */
+            url: string | null;
+        };
+        /** StubResponseOut */
+        StubResponseOut: {
+            /**
+             * Kind
+             * @description shared: one scale for every item; per-item: each item has its own options
+             * @enum {string}
+             */
+            kind: "shared" | "per-item";
+            /** Max */
+            max: number;
+            /** Min */
+            min: number;
+        };
+        /** StubScoringOut */
+        StubScoringOut: {
+            /** Aggregate */
+            aggregate: ("sum" | "mean") | null;
+            /** Factor */
+            factor: string | null;
+            /** Offset */
+            offset: number;
+            /**
+             * Reversed
+             * @description 1-based item numbers scored (min + max - value)
+             */
+            reversed: number[];
+            /** Subscales */
+            subscales: {
+                [key: string]: number[];
+            };
+            /** Text */
+            text: string;
+            /** Total */
+            total: boolean;
+        };
         /** SubmitResponse */
         SubmitResponse: {
             /**
@@ -4667,6 +4943,155 @@ export interface operations {
                 };
                 content: {
                     "application/json": components["schemas"]["BankSummaryOut"][];
+                };
+            };
+            /** @description Unauthorized */
+            401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorBody"];
+                };
+            };
+            /** @description Forbidden */
+            403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorBody"];
+                };
+            };
+        };
+    };
+    composeLicensedBankItem: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["ComposeLicensedRequest"];
+            };
+        };
+        responses: {
+            /** @description Successful Response */
+            201: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["BankItemOut"];
+                };
+            };
+            /** @description Unauthorized */
+            401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorBody"];
+                };
+            };
+            /** @description Forbidden */
+            403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorBody"];
+                };
+            };
+            /** @description Unprocessable Content */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["RejectedBody"];
+                };
+            };
+        };
+    };
+    previewBankSave: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["BankPreviewRequest"];
+            };
+        };
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["BankPreviewOut"];
+                };
+            };
+            /** @description Unauthorized */
+            401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorBody"];
+                };
+            };
+            /** @description Forbidden */
+            403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorBody"];
+                };
+            };
+            /** @description Not Found */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorBody"];
+                };
+            };
+            /** @description Unprocessable Content */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["RejectedBody"];
+                };
+            };
+        };
+    };
+    getBankStubs: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["InstrumentStubOut"][];
                 };
             };
             /** @description Unauthorized */

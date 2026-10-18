@@ -7,6 +7,9 @@ the host and relicense. Inserting an item into a survey is a survey op (QB3).
 
 - ``GET    /api/bank``                      search: lab + host-shared + bundled, one list
 - ``GET    /api/bank/library``              the bundled instruments
+- ``GET    /api/bank/stubs``                instrument stubs for the licensed-copy wizard (QB5)
+- ``POST   /api/bank/preview``              what a save would keep and cut (QB5)
+- ``POST   /api/bank/licensed``             a private licensed-to-lab item from pasted items (QB5)
 - ``POST   /api/bank``                      save from a survey target (201)
 - ``POST   /api/bank/import``               a ``*.osp-bank.json`` file (201)
 - ``GET    /api/bank/{id}?version=``        one version's document
@@ -29,6 +32,7 @@ from osp_app import (
     BankImportResult,
     BankItemView,
     BankListView,
+    BankPreview,
     BankSaveResult,
     BankSummary,
     BankVersionInfo,
@@ -172,6 +176,118 @@ class CopyBankItemRequest(BaseModel):
     tenantId: str | None = _TENANT
 
 
+# -- QB5: preview, stubs, licensed copies -------------------------------------------------
+
+
+class BankPreviewRequest(BaseModel):
+    model_config = ConfigDict(extra="forbid")
+    surveyId: str
+    targetId: str = Field(description="The question, page or block id that would be saved")
+
+
+class BankPreviewOut(BaseModel):
+    kind: Kind
+    itemCount: int
+    languages: list[str]
+    choiceLists: list[str] = Field(description="Shared choice lists that travel with it")
+    variables: list[str] = Field(description="Computed (scoring) variables that travel with it")
+    diagnostics: list[Diagnostic] = Field(
+        description="Warnings: references outside the saved part that would be cut"
+    )
+
+
+class StubHolderOut(BaseModel):
+    name: str
+    url: str | None
+
+
+class StubCitationOut(BaseModel):
+    text: str
+    doi: str | None
+
+
+class StubResponseOut(BaseModel):
+    kind: Literal["shared", "per-item"] = Field(
+        description="shared: one scale for every item; per-item: each item has its own options"
+    )
+    min: int
+    max: int
+
+
+class StubScoringOut(BaseModel):
+    aggregate: Literal["sum", "mean"] | None
+    reversed: list[int] = Field(description="1-based item numbers scored (min + max - value)")
+    subscales: dict[str, list[int]]
+    total: bool
+    offset: int
+    factor: str | None
+    text: str
+
+
+class InstrumentStubOut(BaseModel):
+    """An instrument the project may not bundle: metadata, response format and scoring
+    recipe for the lab's own licensed copy. Never any item text."""
+
+    stubVersion: str
+    id: str
+    title: str
+    abbreviation: str
+    description: str
+    tags: list[str]
+    terms: Literal["ask", "licensed"] = Field(
+        description="ask: free for research, redistribution not granted; licensed: proprietary"
+    )
+    holder: StubHolderOut
+    citation: StubCitationOut
+    itemCount: int
+    response: StubResponseOut
+    scoring: StubScoringOut
+    note: str | None
+
+
+class ScaleIn(BaseModel):
+    model_config = ConfigDict(extra="forbid")
+    min: int
+    max: int
+
+
+class ScoringIn(BaseModel):
+    model_config = ConfigDict(extra="forbid")
+    aggregate: Literal["sum", "mean"] | None = "sum"
+    reversed: list[int] = Field(default_factory=list, max_length=200)
+    subscales: dict[str, list[int]] = Field(default_factory=dict)
+    total: bool = True
+    offset: int = 0
+    factor: str | None = Field(None, max_length=20)
+
+
+class ComposeLicensedRequest(BaseModel):
+    model_config = ConfigDict(extra="forbid")
+    items: list[str] = Field(
+        min_length=1,
+        max_length=200,
+        description="One line per item: `text` or `text | option | option …` (per-item wording)",
+    )
+    attest: bool = Field(
+        description="Owner's attestation: the lab holds a licence; the item stays private"
+    )
+    stubId: str | None = Field(None, max_length=64)
+    title: str | None = Field(None, max_length=200)
+    abbreviation: str | None = Field(None, max_length=40)
+    prefix: str | None = Field(
+        None, max_length=40, description="Id prefix (default: from the abbreviation)"
+    )
+    layout: Literal["matrix", "single"] = "matrix"
+    stem: str | None = Field(None, max_length=2000, description="The instruction above the items")
+    labels: list[str] | None = Field(None, max_length=21, description="One per scale point")
+    scale: ScaleIn | None = Field(None, description="Required without a stub")
+    scoring: ScoringIn | None = Field(None, description="Without a stub; default: a plain sum")
+    description: str | None = None
+    tags: list[str] | None = Field(None, max_length=20)
+    language: str | None = Field(None, max_length=12, description="Store texts as {lang: text}")
+    tenantId: str | None = _TENANT
+
+
 def _summary(s: BankSummary) -> BankSummaryOut:
     return BankSummaryOut(
         id=s.id,
@@ -268,6 +384,67 @@ def search_bank(
 def get_library(auth: Auth, services: Services) -> list[BankSummaryOut]:
     """The bundled instruments (read-only; `GET /api/bank/{id}` gives the document)."""
     return [_summary(s) for s in services.builder.run("bank.library", auth.actor)]
+
+
+@router.get("/stubs", operation_id="getBankStubs", responses=errors(401, 403))
+def get_stubs(auth: Auth, services: Services) -> list[InstrumentStubOut]:
+    """Instrument stubs for "Add a licensed instrument privately": metadata, response
+    format and scoring recipe, no item text (planning/question-bank.md §1.7)."""
+    return [
+        InstrumentStubOut.model_validate(s) for s in services.builder.run("bank.stubs", auth.actor)
+    ]
+
+
+@router.post("/preview", operation_id="previewBankSave", responses=errors(401, 403, 404, 422))
+def preview_save(body: BankPreviewRequest, auth: Auth, services: Services) -> BankPreviewOut:
+    """What saving a question, page or block to the bank would keep (shared choice lists,
+    scoring variables) and cut (references outside it). Nothing is saved. 422 with
+    `bank.*` diagnostics when the part can't be cut out."""
+    p: BankPreview = services.builder.run(
+        "bank.preview", auth.actor, survey_id=body.surveyId, target_id=body.targetId
+    )
+    return BankPreviewOut(
+        kind=p.kind,  # type: ignore[arg-type]
+        itemCount=p.item_count,
+        languages=p.languages,
+        choiceLists=p.choice_lists,
+        variables=p.variables,
+        diagnostics=p.diagnostics,
+    )
+
+
+@router.post(
+    "/licensed",
+    operation_id="composeLicensedBankItem",
+    status_code=201,
+    responses=errors(401, 403, 422),
+)
+def compose_licensed(body: ComposeLicensedRequest, auth: Auth, services: Services) -> BankItemOut:
+    """Owner only. The lab's own copy of an instrument (pasted items) becomes a private
+    `licensed-to-lab` bank item with the stub's scoring recipe; `attest` must be true
+    (422 `bank.licensed_attestation` otherwise). Item lines must match the stub's count
+    (422 `bank.stub_items`)."""
+    return _item(
+        services.builder.run(
+            "bank.compose_licensed",
+            auth.actor,
+            items=body.items,
+            attest=body.attest,
+            stub_id=body.stubId,
+            title=body.title,
+            abbreviation=body.abbreviation,
+            prefix=body.prefix,
+            layout=body.layout,
+            stem=body.stem,
+            labels=body.labels,
+            scale=None if body.scale is None else body.scale.model_dump(),
+            scoring=None if body.scoring is None else body.scoring.model_dump(),
+            description=body.description,
+            tags=body.tags,
+            language=body.language,
+            tenant_id=body.tenantId,
+        )
+    )
 
 
 @router.post("", operation_id="saveBankItem", status_code=201, responses=errors(401, 403, 404, 422))

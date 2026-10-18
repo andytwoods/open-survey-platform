@@ -489,7 +489,7 @@ def test_bundled_library(benv):
     gad2 = next(i for i in lib.json() if i["id"] == "gad2")
     assert gad2["source"] == "bundled" and gad2["licenceClass"] == "public-domain"
     assert gad2["visibility"] is None and gad2["labId"] is None and gad2["canEdit"] is False
-    assert gad2["itemCount"] == 1 and gad2["kind"] == "block" and gad2["createdAt"] is None
+    assert gad2["itemCount"] == 2 and gad2["kind"] == "block" and gad2["createdAt"] is None
     got = c.get("/api/bank/gad2")
     assert got.status_code == 200
     assert got.json()["document"] == load_document("gad2") and got.json()["checksum"] is None

@@ -194,8 +194,13 @@ def _questions(fragment: Mapping[str, Any]) -> Iterator[Mapping[str, Any]]:
 
 
 def item_count(fragment: Mapping[str, Any]) -> int:
-    """How many items (questions and notes) the fragment holds."""
-    return sum(1 for _ in _questions(fragment))
+    """How many items the fragment holds: a matrix counts its rows (each is a variable),
+    every other question or note counts one (QB5: the audit tables count that way)."""
+    n = 0
+    for q in _questions(fragment):
+        rows = q.get("rows") if q.get("type") == "matrix" else None
+        n += len(rows) if isinstance(rows, list) and rows else 1
+    return n
 
 
 def _texts(node: Any) -> Iterator[str]:

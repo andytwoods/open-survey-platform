@@ -19,6 +19,9 @@ from typing import Any
 from osp_spec import Source
 from osp_spec.bank import BankItem, instrument_entry
 
+from .compose import ComposeRequest, compose_fragment, parse_items, prefix_from, request_from_stub
+from .stubs import InstrumentStub, load_stub, load_stub_document, load_stubs, stub_ids
+
 LIBRARY = "library"
 
 
@@ -104,9 +107,19 @@ def licences_markdown() -> str:
 
 
 __all__ = [
+    "ComposeRequest",
+    "InstrumentStub",
+    "compose_fragment",
     "library_ids",
     "licences_markdown",
     "load_document",
     "load_library",
+    "load_stub",
+    "load_stub_document",
+    "load_stubs",
     "lookup",
+    "parse_items",
+    "prefix_from",
+    "request_from_stub",
+    "stub_ids",
 ]

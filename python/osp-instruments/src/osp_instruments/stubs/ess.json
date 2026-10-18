@@ -1,0 +1,37 @@
+{
+  "stubVersion": "osp-instrument-stub/0.1",
+  "id": "ess",
+  "title": "Epworth Sleepiness Scale",
+  "abbreviation": "ESS",
+  "description": "8 everyday situations, each rated 0–3 for the chance of dozing.",
+  "tags": [
+    "sleep",
+    "sleepiness",
+    "clinical"
+  ],
+  "terms": "licensed",
+  "holder": {
+    "name": "Murray W. Johns (licensed through Mapi Research Trust)",
+    "url": "https://eprovide.mapi-trust.org/"
+  },
+  "citation": {
+    "text": "Johns MW (1991). A new method for measuring daytime sleepiness: the Epworth sleepiness scale. Sleep 14(6):540–545.",
+    "doi": "10.1093/sleep/14.6.540"
+  },
+  "itemCount": 8,
+  "response": {
+    "kind": "shared",
+    "min": 0,
+    "max": 3
+  },
+  "scoring": {
+    "aggregate": "sum",
+    "reversed": [],
+    "subscales": {},
+    "total": true,
+    "offset": 0,
+    "factor": null,
+    "text": "Sum of the 8 items (0–24); above 10 suggests excessive daytime sleepiness. Scoring here follows the published literature; check it against the manual or form your lab holds before publishing."
+  },
+  "note": null
+}

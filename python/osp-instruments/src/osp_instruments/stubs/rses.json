@@ -1,0 +1,42 @@
+{
+  "stubVersion": "osp-instrument-stub/0.1",
+  "id": "rses",
+  "title": "Rosenberg Self-Esteem Scale",
+  "abbreviation": "RSES",
+  "description": "10 statements of global self-worth on a 4-point agreement scale.",
+  "tags": [
+    "self-esteem",
+    "personality"
+  ],
+  "terms": "ask",
+  "holder": {
+    "name": "Morris Rosenberg Foundation (University of Maryland, Department of Sociology)",
+    "url": "https://socy.umd.edu/about-us/rosenberg-self-esteem-scale"
+  },
+  "citation": {
+    "text": "Rosenberg M (1965). Society and the Adolescent Self-Image. Princeton, NJ: Princeton University Press.",
+    "doi": null
+  },
+  "itemCount": 10,
+  "response": {
+    "kind": "shared",
+    "min": 0,
+    "max": 3
+  },
+  "scoring": {
+    "aggregate": "sum",
+    "reversed": [
+      2,
+      5,
+      6,
+      8,
+      9
+    ],
+    "subscales": {},
+    "total": true,
+    "offset": 0,
+    "factor": null,
+    "text": "Sum of the 10 items (0–30) after reversing the negatively worded items 2, 5, 6, 8 and 9. Scoring here follows the published literature; check it against the manual or form your lab holds before publishing."
+  },
+  "note": null
+}

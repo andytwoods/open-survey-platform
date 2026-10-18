@@ -1,0 +1,36 @@
+{
+  "stubVersion": "osp-instrument-stub/0.1",
+  "id": "cd-risc-10",
+  "title": "Connor-Davidson Resilience Scale, 10-item",
+  "abbreviation": "CD-RISC-10",
+  "description": "10 statements about the past month, each rated 0–4.",
+  "tags": [
+    "resilience",
+    "coping"
+  ],
+  "terms": "licensed",
+  "holder": {
+    "name": "Kathryn M. Connor and Jonathan R.T. Davidson",
+    "url": "https://www.cd-risc.com/"
+  },
+  "citation": {
+    "text": "Campbell-Sills L, Stein MB (2007). Psychometric analysis and refinement of the Connor-Davidson Resilience Scale (CD-RISC): validation of a 10-item measure of resilience. Journal of Traumatic Stress 20(6):1019–1028.",
+    "doi": "10.1002/jts.20271"
+  },
+  "itemCount": 10,
+  "response": {
+    "kind": "shared",
+    "min": 0,
+    "max": 4
+  },
+  "scoring": {
+    "aggregate": "sum",
+    "reversed": [],
+    "subscales": {},
+    "total": true,
+    "offset": 0,
+    "factor": null,
+    "text": "Sum of the 10 items (0–40); higher is more resilient. Scoring here follows the published literature; check it against the manual or form your lab holds before publishing."
+  },
+  "note": null
+}

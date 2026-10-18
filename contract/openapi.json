@@ -574,6 +574,84 @@
         "title": "BankList",
         "type": "object"
       },
+      "BankPreviewOut": {
+        "properties": {
+          "choiceLists": {
+            "description": "Shared choice lists that travel with it",
+            "items": {
+              "type": "string"
+            },
+            "title": "Choicelists",
+            "type": "array"
+          },
+          "diagnostics": {
+            "description": "Warnings: references outside the saved part that would be cut",
+            "items": {
+              "$ref": "#/components/schemas/Diagnostic"
+            },
+            "title": "Diagnostics",
+            "type": "array"
+          },
+          "itemCount": {
+            "title": "Itemcount",
+            "type": "integer"
+          },
+          "kind": {
+            "enum": [
+              "question",
+              "page",
+              "block"
+            ],
+            "title": "Kind",
+            "type": "string"
+          },
+          "languages": {
+            "items": {
+              "type": "string"
+            },
+            "title": "Languages",
+            "type": "array"
+          },
+          "variables": {
+            "description": "Computed (scoring) variables that travel with it",
+            "items": {
+              "type": "string"
+            },
+            "title": "Variables",
+            "type": "array"
+          }
+        },
+        "required": [
+          "kind",
+          "itemCount",
+          "languages",
+          "choiceLists",
+          "variables",
+          "diagnostics"
+        ],
+        "title": "BankPreviewOut",
+        "type": "object"
+      },
+      "BankPreviewRequest": {
+        "additionalProperties": false,
+        "properties": {
+          "surveyId": {
+            "title": "Surveyid",
+            "type": "string"
+          },
+          "targetId": {
+            "description": "The question, page or block id that would be saved",
+            "title": "Targetid",
+            "type": "string"
+          }
+        },
+        "required": [
+          "surveyId",
+          "targetId"
+        ],
+        "title": "BankPreviewRequest",
+        "type": "object"
+      },
       "BankSaveOut": {
         "properties": {
           "diagnostics": {
@@ -1375,6 +1453,192 @@
           "target"
         ],
         "title": "ClearSource",
+        "type": "object"
+      },
+      "ComposeLicensedRequest": {
+        "additionalProperties": false,
+        "properties": {
+          "abbreviation": {
+            "anyOf": [
+              {
+                "maxLength": 40,
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Abbreviation"
+          },
+          "attest": {
+            "description": "Owner's attestation: the lab holds a licence; the item stays private",
+            "title": "Attest",
+            "type": "boolean"
+          },
+          "description": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Description"
+          },
+          "items": {
+            "description": "One line per item: `text` or `text | option | option …` (per-item wording)",
+            "items": {
+              "type": "string"
+            },
+            "maxItems": 200,
+            "minItems": 1,
+            "title": "Items",
+            "type": "array"
+          },
+          "labels": {
+            "anyOf": [
+              {
+                "items": {
+                  "type": "string"
+                },
+                "maxItems": 21,
+                "type": "array"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "description": "One per scale point",
+            "title": "Labels"
+          },
+          "language": {
+            "anyOf": [
+              {
+                "maxLength": 12,
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "description": "Store texts as {lang: text}",
+            "title": "Language"
+          },
+          "layout": {
+            "default": "matrix",
+            "enum": [
+              "matrix",
+              "single"
+            ],
+            "title": "Layout",
+            "type": "string"
+          },
+          "prefix": {
+            "anyOf": [
+              {
+                "maxLength": 40,
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "description": "Id prefix (default: from the abbreviation)",
+            "title": "Prefix"
+          },
+          "scale": {
+            "anyOf": [
+              {
+                "$ref": "#/components/schemas/ScaleIn"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "description": "Required without a stub"
+          },
+          "scoring": {
+            "anyOf": [
+              {
+                "$ref": "#/components/schemas/ScoringIn"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "description": "Without a stub; default: a plain sum"
+          },
+          "stem": {
+            "anyOf": [
+              {
+                "maxLength": 2000,
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "description": "The instruction above the items",
+            "title": "Stem"
+          },
+          "stubId": {
+            "anyOf": [
+              {
+                "maxLength": 64,
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Stubid"
+          },
+          "tags": {
+            "anyOf": [
+              {
+                "items": {
+                  "type": "string"
+                },
+                "maxItems": 20,
+                "type": "array"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Tags"
+          },
+          "tenantId": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "description": "The lab; needed only if you belong to several labs",
+            "title": "Tenantid"
+          },
+          "title": {
+            "anyOf": [
+              {
+                "maxLength": 200,
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Title"
+          }
+        },
+        "required": [
+          "items",
+          "attest"
+        ],
+        "title": "ComposeLicensedRequest",
         "type": "object"
       },
       "ConditionFilter": {
@@ -3058,6 +3322,91 @@
           "node"
         ],
         "title": "InsertFlowNode",
+        "type": "object"
+      },
+      "InstrumentStubOut": {
+        "description": "An instrument the project may not bundle: metadata, response format and scoring\nrecipe for the lab's own licensed copy. Never any item text.",
+        "properties": {
+          "abbreviation": {
+            "title": "Abbreviation",
+            "type": "string"
+          },
+          "citation": {
+            "$ref": "#/components/schemas/StubCitationOut"
+          },
+          "description": {
+            "title": "Description",
+            "type": "string"
+          },
+          "holder": {
+            "$ref": "#/components/schemas/StubHolderOut"
+          },
+          "id": {
+            "title": "Id",
+            "type": "string"
+          },
+          "itemCount": {
+            "title": "Itemcount",
+            "type": "integer"
+          },
+          "note": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Note"
+          },
+          "response": {
+            "$ref": "#/components/schemas/StubResponseOut"
+          },
+          "scoring": {
+            "$ref": "#/components/schemas/StubScoringOut"
+          },
+          "stubVersion": {
+            "title": "Stubversion",
+            "type": "string"
+          },
+          "tags": {
+            "items": {
+              "type": "string"
+            },
+            "title": "Tags",
+            "type": "array"
+          },
+          "terms": {
+            "description": "ask: free for research, redistribution not granted; licensed: proprietary",
+            "enum": [
+              "ask",
+              "licensed"
+            ],
+            "title": "Terms",
+            "type": "string"
+          },
+          "title": {
+            "title": "Title",
+            "type": "string"
+          }
+        },
+        "required": [
+          "stubVersion",
+          "id",
+          "title",
+          "abbreviation",
+          "description",
+          "tags",
+          "terms",
+          "holder",
+          "citation",
+          "itemCount",
+          "response",
+          "scoring",
+          "note"
+        ],
+        "title": "InstrumentStubOut",
         "type": "object"
       },
       "Invocation": {
@@ -5595,6 +5944,88 @@
         "title": "SaveBankItemRequest",
         "type": "object"
       },
+      "ScaleIn": {
+        "additionalProperties": false,
+        "properties": {
+          "max": {
+            "title": "Max",
+            "type": "integer"
+          },
+          "min": {
+            "title": "Min",
+            "type": "integer"
+          }
+        },
+        "required": [
+          "min",
+          "max"
+        ],
+        "title": "ScaleIn",
+        "type": "object"
+      },
+      "ScoringIn": {
+        "additionalProperties": false,
+        "properties": {
+          "aggregate": {
+            "anyOf": [
+              {
+                "enum": [
+                  "sum",
+                  "mean"
+                ],
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "default": "sum",
+            "title": "Aggregate"
+          },
+          "factor": {
+            "anyOf": [
+              {
+                "maxLength": 20,
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Factor"
+          },
+          "offset": {
+            "default": 0,
+            "title": "Offset",
+            "type": "integer"
+          },
+          "reversed": {
+            "items": {
+              "type": "integer"
+            },
+            "maxItems": 200,
+            "title": "Reversed",
+            "type": "array"
+          },
+          "subscales": {
+            "additionalProperties": {
+              "items": {
+                "type": "integer"
+              },
+              "type": "array"
+            },
+            "title": "Subscales",
+            "type": "object"
+          },
+          "total": {
+            "default": true,
+            "title": "Total",
+            "type": "boolean"
+          }
+        },
+        "title": "ScoringIn",
+        "type": "object"
+      },
       "SetChoiceParams": {
         "additionalProperties": false,
         "properties": {
@@ -7393,6 +7824,155 @@
         "title": "Stats",
         "type": "object"
       },
+      "StubCitationOut": {
+        "properties": {
+          "doi": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Doi"
+          },
+          "text": {
+            "title": "Text",
+            "type": "string"
+          }
+        },
+        "required": [
+          "text",
+          "doi"
+        ],
+        "title": "StubCitationOut",
+        "type": "object"
+      },
+      "StubHolderOut": {
+        "properties": {
+          "name": {
+            "title": "Name",
+            "type": "string"
+          },
+          "url": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Url"
+          }
+        },
+        "required": [
+          "name",
+          "url"
+        ],
+        "title": "StubHolderOut",
+        "type": "object"
+      },
+      "StubResponseOut": {
+        "properties": {
+          "kind": {
+            "description": "shared: one scale for every item; per-item: each item has its own options",
+            "enum": [
+              "shared",
+              "per-item"
+            ],
+            "title": "Kind",
+            "type": "string"
+          },
+          "max": {
+            "title": "Max",
+            "type": "integer"
+          },
+          "min": {
+            "title": "Min",
+            "type": "integer"
+          }
+        },
+        "required": [
+          "kind",
+          "min",
+          "max"
+        ],
+        "title": "StubResponseOut",
+        "type": "object"
+      },
+      "StubScoringOut": {
+        "properties": {
+          "aggregate": {
+            "anyOf": [
+              {
+                "enum": [
+                  "sum",
+                  "mean"
+                ],
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Aggregate"
+          },
+          "factor": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Factor"
+          },
+          "offset": {
+            "title": "Offset",
+            "type": "integer"
+          },
+          "reversed": {
+            "description": "1-based item numbers scored (min + max - value)",
+            "items": {
+              "type": "integer"
+            },
+            "title": "Reversed",
+            "type": "array"
+          },
+          "subscales": {
+            "additionalProperties": {
+              "items": {
+                "type": "integer"
+              },
+              "type": "array"
+            },
+            "title": "Subscales",
+            "type": "object"
+          },
+          "text": {
+            "title": "Text",
+            "type": "string"
+          },
+          "total": {
+            "title": "Total",
+            "type": "boolean"
+          }
+        },
+        "required": [
+          "aggregate",
+          "reversed",
+          "subscales",
+          "total",
+          "offset",
+          "factor",
+          "text"
+        ],
+        "title": "StubScoringOut",
+        "type": "object"
+      },
       "SubmitResponse": {
         "properties": {
           "late": {
@@ -8400,6 +8980,186 @@
           }
         },
         "summary": "Get Library",
+        "tags": [
+          "bank"
+        ]
+      }
+    },
+    "/api/bank/licensed": {
+      "post": {
+        "description": "Owner only. The lab's own copy of an instrument (pasted items) becomes a private\n`licensed-to-lab` bank item with the stub's scoring recipe; `attest` must be true\n(422 `bank.licensed_attestation` otherwise). Item lines must match the stub's count\n(422 `bank.stub_items`).",
+        "operationId": "composeLicensedBankItem",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/ComposeLicensedRequest"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "201": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/BankItemOut"
+                }
+              }
+            },
+            "description": "Successful Response"
+          },
+          "401": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorBody"
+                }
+              }
+            },
+            "description": "Unauthorized"
+          },
+          "403": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorBody"
+                }
+              }
+            },
+            "description": "Forbidden"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/RejectedBody"
+                }
+              }
+            },
+            "description": "Unprocessable Content"
+          }
+        },
+        "summary": "Compose Licensed",
+        "tags": [
+          "bank"
+        ]
+      }
+    },
+    "/api/bank/preview": {
+      "post": {
+        "description": "What saving a question, page or block to the bank would keep (shared choice lists,\nscoring variables) and cut (references outside it). Nothing is saved. 422 with\n`bank.*` diagnostics when the part can't be cut out.",
+        "operationId": "previewBankSave",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/BankPreviewRequest"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/BankPreviewOut"
+                }
+              }
+            },
+            "description": "Successful Response"
+          },
+          "401": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorBody"
+                }
+              }
+            },
+            "description": "Unauthorized"
+          },
+          "403": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorBody"
+                }
+              }
+            },
+            "description": "Forbidden"
+          },
+          "404": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorBody"
+                }
+              }
+            },
+            "description": "Not Found"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/RejectedBody"
+                }
+              }
+            },
+            "description": "Unprocessable Content"
+          }
+        },
+        "summary": "Preview Save",
+        "tags": [
+          "bank"
+        ]
+      }
+    },
+    "/api/bank/stubs": {
+      "get": {
+        "description": "Instrument stubs for \"Add a licensed instrument privately\": metadata, response\nformat and scoring recipe, no item text (planning/question-bank.md §1.7).",
+        "operationId": "getBankStubs",
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "items": {
+                    "$ref": "#/components/schemas/InstrumentStubOut"
+                  },
+                  "title": "Response Getbankstubs",
+                  "type": "array"
+                }
+              }
+            },
+            "description": "Successful Response"
+          },
+          "401": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorBody"
+                }
+              }
+            },
+            "description": "Unauthorized"
+          },
+          "403": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorBody"
+                }
+              }
+            },
+            "description": "Forbidden"
+          }
+        },
+        "summary": "Get Stubs",
         "tags": [
           "bank"
         ]

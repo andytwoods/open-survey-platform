@@ -1,0 +1,37 @@
+{
+  "stubVersion": "osp-instrument-stub/0.1",
+  "id": "bdi-ii",
+  "title": "Beck Depression Inventory-II",
+  "abbreviation": "BDI-II",
+  "description": "21 groups of four statements about the past two weeks, each scored 0–3.",
+  "tags": [
+    "depression",
+    "clinical",
+    "screener"
+  ],
+  "terms": "licensed",
+  "holder": {
+    "name": "Pearson Clinical Assessment",
+    "url": "https://www.pearsonassessments.com/"
+  },
+  "citation": {
+    "text": "Beck AT, Steer RA, Brown GK (1996). Manual for the Beck Depression Inventory-II. San Antonio, TX: Psychological Corporation.",
+    "doi": null
+  },
+  "itemCount": 21,
+  "response": {
+    "kind": "per-item",
+    "min": 0,
+    "max": 3
+  },
+  "scoring": {
+    "aggregate": "sum",
+    "reversed": [],
+    "subscales": {},
+    "total": true,
+    "offset": 0,
+    "factor": null,
+    "text": "Sum of the 21 items (0–63): 0–13 minimal, 14–19 mild, 20–28 moderate, 29–63 severe. Scoring here follows the published literature; check it against the manual or form your lab holds before publishing."
+  },
+  "note": "Each item has its own four statements: enter them after the item name as `Item 1 | statement 0 | statement 1 | statement 2 | statement 3`. Item 9 (suicidal thoughts) is a safety item: plan how your study responds to a non-zero answer."
+}
