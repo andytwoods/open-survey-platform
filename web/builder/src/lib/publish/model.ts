@@ -65,7 +65,9 @@ export function exportLinks(
 	const id = encodeURIComponent(surveyId);
 	return [
 		{ label: 'XLSForm (.xlsx)', href: apiPath(apiBase, `/api/surveys/${id}/export/xlsform`), description: 'For ODK / Enketo / KoboToolbox' },
-		{ label: 'LimeSurvey (.lss)', href: apiPath(apiBase, `/api/surveys/${id}/export/lss`), description: 'Import into LimeSurvey' }
+		{ label: 'LimeSurvey (.lss)', href: apiPath(apiBase, `/api/surveys/${id}/export/lss`), description: 'Import into LimeSurvey' },
+		{ label: 'Qualtrics (.qsf)', href: apiPath(apiBase, `/api/surveys/${id}/export/qsf`), description: 'Import into Qualtrics' },
+		{ label: 'SurveyJS (.json)', href: apiPath(apiBase, `/api/surveys/${id}/export/surveyjs`), description: 'Load into SurveyJS Creator or Form Library' }
 	];
 }
 

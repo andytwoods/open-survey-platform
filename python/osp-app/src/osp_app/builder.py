@@ -54,7 +54,13 @@ from osp_store import (
     Survey,
     TenantContext,
 )
-from osp_targets import ExportDiagnostic, export_lss, export_xlsform
+from osp_targets import (
+    ExportDiagnostic,
+    export_lss,
+    export_qsf,
+    export_surveyjs,
+    export_xlsform,
+)
 
 from .auth.permissions import Action, Actor, Resource, ResourceKind, can
 from .commands import command, dispatch
@@ -719,3 +725,23 @@ class Builder:
         if not content:
             raise Rejected("The survey can't be exported to LimeSurvey.", diagnostics)
         return ExportResult(content, f"survey-{survey_id[:8]}-r{draft.revision}.lss", diagnostics)
+
+    @command("survey.export_qsf", label="Export Qualtrics (.qsf)", action=Action.SURVEY_EXPORT)
+    def export_qsf(self, actor: Actor, *, survey_id: str) -> ExportResult:
+        ctx = self._locate(actor, survey_id, Action.SURVEY_EXPORT)
+        draft = self._draft(ctx, survey_id)
+        content, diagnostics = export_qsf(draft.body)
+        if not content:
+            raise Rejected("The survey can't be exported to Qualtrics.", diagnostics)
+        return ExportResult(content, f"survey-{survey_id[:8]}-r{draft.revision}.qsf", diagnostics)
+
+    @command("survey.export_surveyjs", label="Export SurveyJS (.json)", action=Action.SURVEY_EXPORT)
+    def export_surveyjs(self, actor: Actor, *, survey_id: str) -> ExportResult:
+        ctx = self._locate(actor, survey_id, Action.SURVEY_EXPORT)
+        draft = self._draft(ctx, survey_id)
+        content, diagnostics = export_surveyjs(draft.body)
+        if not content:
+            raise Rejected("The survey can't be exported to SurveyJS.", diagnostics)
+        return ExportResult(
+            content, f"survey-{survey_id[:8]}-r{draft.revision}.surveyjs.json", diagnostics
+        )

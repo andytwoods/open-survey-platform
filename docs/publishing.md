@@ -43,7 +43,8 @@ with:
 
 - the **Participant link**, with **Copy link** and **Open**;
 - any remaining warnings;
-- **Exports and records**: **XLSForm (.xlsx)**, **LimeSurvey (.lss)**, the
+- **Exports and records**: **XLSForm (.xlsx)**, **LimeSurvey (.lss)**, **Qualtrics
+  (.qsf)**, **SurveyJS (.json)**, the
   **Reproducibility package** for this version (all below) and the
   **Preregistration bundle** and summary ([Preregistration](preregistration.md)), with
   an optional upload to an OSF project.
@@ -127,7 +128,7 @@ them as formulas.
 
 ## Exporting the survey itself
 
-The platform can write the survey for other tools. Both exports take the **draft**, and
+The platform can write the survey for other tools. Every export takes the **draft**, and
 each has a **capability table** that says, feature by feature, whether the target represents
 it natively, lowers it, approximates it or cannot carry it. Choose an **Export target** in
 the editor's diagnostics strip to see them before exporting: as a list, and as badges on

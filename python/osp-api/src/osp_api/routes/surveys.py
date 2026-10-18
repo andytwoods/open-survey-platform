@@ -19,6 +19,7 @@ from .common import Auth, Services, errors
 
 XLSX = "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet"
 LSS = "application/xml"
+JSON_FILE = "application/json"
 
 
 class SurveySummary(BaseModel):
@@ -239,6 +240,56 @@ def export_lss(survey_id: str, auth: Auth, services: Services) -> Response:
     return Response(
         r.content,
         media_type=LSS,
+        headers={
+            "Content-Disposition": f'attachment; filename="{r.filename}"',
+            "Cache-Control": "no-store",
+        },
+    )
+
+
+
+@router.get(
+    "/{survey_id}/export/qsf",
+    operation_id="exportQsf",
+    response_class=Response,
+    responses={
+        200: {
+            "content": {JSON_FILE: {"schema": {"type": "string", "format": "binary"}}},
+            "description": "Qualtrics survey file (.qsf)",
+        },
+        **errors(401, 403, 404, 422),
+    },
+)
+def export_qsf(survey_id: str, auth: Auth, services: Services) -> Response:
+    r = services.builder.run("survey.export_qsf", auth.actor, survey_id=survey_id)
+    return Response(
+        r.content,
+        media_type=JSON_FILE,
+        headers={
+            "Content-Disposition": f'attachment; filename="{r.filename}"',
+            "Cache-Control": "no-store",
+        },
+    )
+
+
+
+@router.get(
+    "/{survey_id}/export/surveyjs",
+    operation_id="exportSurveyjs",
+    response_class=Response,
+    responses={
+        200: {
+            "content": {JSON_FILE: {"schema": {"type": "string", "format": "binary"}}},
+            "description": "SurveyJS survey JSON",
+        },
+        **errors(401, 403, 404, 422),
+    },
+)
+def export_surveyjs(survey_id: str, auth: Auth, services: Services) -> Response:
+    r = services.builder.run("survey.export_surveyjs", auth.actor, survey_id=survey_id)
+    return Response(
+        r.content,
+        media_type=JSON_FILE,
         headers={
             "Content-Disposition": f'attachment; filename="{r.filename}"',
             "Cache-Control": "no-store",
