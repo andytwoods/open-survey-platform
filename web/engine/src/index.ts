@@ -77,3 +77,23 @@ export {
 	type Stored
 } from './values.ts';
 export { DECIMAL_PRECISION } from './decimal.ts';
+// Plan compile in the browser (task CE3): byte-identical to osp_runtime.plan.
+export {
+	blocks,
+	checksum,
+	compilePlan,
+	compileSurvey,
+	consentVersion,
+	embedTheme,
+	exprJson,
+	PlanError,
+	pyDecimalText,
+	runtimeConfig,
+	seedNode,
+	seedVersion,
+	segments,
+	type CompileOptions,
+	type PlanDiagnostic,
+	type RuntimeConfigJson,
+	type SurveyValidator
+} from './compile.ts';
