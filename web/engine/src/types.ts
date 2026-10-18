@@ -53,8 +53,17 @@ export type PageError =
  * is a JSON pointer into its AST.
  */
 export interface RuntimeDiagnostic {
-	/** `redirect.param_rejected`: an ending's redirect value failed its pattern (EN2), so no redirect. */
-	code: 'type-mismatch' | 'division-by-zero' | 'embedded.malformed' | 'redirect.param_rejected';
+	/**
+	 * `redirect.param_rejected`: an ending's redirect value failed its pattern (EN2), so no redirect.
+	 * `external.param_rejected`: an external-task outbound URL could not be built (a rejected or
+	 * missing piped param, EX2), so the hop is skipped rather than stranding the participant.
+	 */
+	code:
+		| 'type-mismatch'
+		| 'division-by-zero'
+		| 'embedded.malformed'
+		| 'redirect.param_rejected'
+		| 'external.param_rejected';
 	site: string;
 	path: string;
 }
@@ -69,6 +78,23 @@ export interface EndEffect {
 	kind: 'end';
 	outcome: Id;
 	nodeId: Id | null;
+}
+/**
+ * An external-task hop (task EX2). The runtime mints a return token, appends `osp_return` and
+ * `osp_token` to `url`, and navigates; on return it resolves this effect with the captured
+ * values. Idempotent per (session, node), like a quota check: a second return changes nothing.
+ */
+export interface ExternalEffect {
+	kind: 'external';
+	nodeId: Id;
+	/** The outbound task URL, template filled with piped params; null when a param was rejected. */
+	url: string | null;
+	/** The placeholder a rejected value failed on, or null. A rejected hop is skipped. */
+	rejected: string | null;
+	/** The template's host, for the "taking you to {host}" line. */
+	host: string;
+	/** Return query-param names, each mapped to the embedded variable that stores it. */
+	returns: Array<{ variable: Id; param: string }>;
 }
 /**
  * A researcher hook call (task R7, runtime-design.md §7a): an effect with an invocation id
@@ -115,7 +141,7 @@ export interface HookData {
 	parentMessages: number;
 }
 
-export type Effect = QuotaEffect | EndEffect | HookEffect;
+export type Effect = QuotaEffect | EndEffect | HookEffect | ExternalEffect;
 
 export interface HistoryEntry {
 	page: Id;
@@ -124,7 +150,7 @@ export interface HistoryEntry {
 }
 
 export interface Pending {
-	effect: QuotaEffect;
+	effect: QuotaEffect | ExternalEffect;
 	cursor: Frame[];
 }
 
@@ -200,6 +226,12 @@ export interface Data {
 	orders: Orders;
 	/** quotaCheck node id → recorded server result. */
 	quotas: Record<Id, QuotaResult>;
+	/**
+	 * externalTask node id → its recorded result (the captured return values), once the
+	 * participant has come back (task EX2). Reused on back, refresh and replay, so the task
+	 * runs once. Absent until the first external hop resolves.
+	 */
+	external?: Record<Id, { returned: Record<string, string> }>;
 	/** Shown pages on the current path; the last one is the current page. */
 	history: HistoryEntry[];
 	pending: Pending | null;

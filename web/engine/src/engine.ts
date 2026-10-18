@@ -67,6 +67,7 @@ import {
 	type Effect,
 	type EndView,
 	type EngineEvent,
+	type ExternalEffect,
 	type HookAction,
 	type HookData,
 	type HookEffect,
@@ -500,6 +501,21 @@ function walk(plan: Plan, d: Data, cursor: Frame[], t: number, entered?: Set<Id>
 				}
 				break;
 			}
+			case 'externalTask': {
+				// Task EX2: like a quota check, the hop runs once. Its recorded result (the
+				// captured return values) is reused on back, refresh and replay. Until then it
+				// is an effect: the runtime mints a return token, sends the participant out and
+				// resolves on return (or at once with no values when the URL cannot be built).
+				if (d.external?.[node.id]) {
+					top.i++;
+					break;
+				}
+				d.pending = {
+					effect: externalEffect(plan, d, new Env(plan, d, cursor), node),
+					cursor: clone(cursor)
+				};
+				return { kind: 'effect' };
+			}
 			case 'end':
 				d.ended = { outcome: node.outcome, nodeId: node.id, at: t };
 				return { kind: 'end' };
@@ -598,7 +614,11 @@ function offPathFixpoint(plan: Plan, d: Data): Record<Id, true> {
 			const out = walk(plan, dd, cursor, 0, seen);
 			if (out.kind === 'end') break;
 			if (out.kind === 'effect') {
-				dd.quotas[dd.pending!.effect.nodeId] = 'open';
+				{
+						const eff = dd.pending!.effect;
+						if (eff.kind === 'quota') dd.quotas[eff.nodeId] = 'open';
+						else (dd.external ??= {})[eff.nodeId] = { returned: {} };
+					}
 				cursor = dd.pending!.cursor;
 				dd.pending = null;
 				continue;
@@ -759,6 +779,7 @@ function applyEvent(plan: Plan, d: Data, ev: EngineEvent): StepResult | undefine
 			return undefined;
 		case 'resolve': {
 			if (ev.effect.kind === 'hook') return applyHook(plan, d, ev.effect.event ?? '', ev.value as HookResolution, ev.t);
+			if (ev.effect.kind === 'external') return applyExternal(plan, d, ev);
 			const p = d.pending;
 			if (!p || ev.effect.kind !== 'quota') return undefined;
 			d.quotas[p.effect.nodeId] = ev.value as QuotaResult;
@@ -1146,12 +1167,50 @@ export function tryResolve(state: State, effect: Effect, value: unknown): { stat
 				? { kind: 'hook', invocationId: effect.invocationId }
 				: { kind: String(effect?.kind) };
 	if (effect?.kind === 'hook') return tryResolveHook(state, effect, value, t);
+	if (effect?.kind === 'external') return tryResolveExternal(state, effect, value, t);
 	let rejected: Rejection | undefined;
 	if (effect?.kind !== 'quota') rejected = 'unsupported';
 	else if (!d.pending || d.pending.effect.nodeId !== effect.nodeId) rejected = 'stale';
 	else if (value !== 'open' && value !== 'full') rejected = 'bad-result';
 	const safeValue = typeof value === 'string' ? value.slice(0, 64) : null;
 	const out = commit(state, { type: 'resolve', t, effect: desc, value: safeValue, ...(rejected ? { rejected } : {}) });
+	return { state: out.state, rejected };
+}
+
+/** The whitelisted return values for an external resolve: string→string, length-capped. */
+function sanitizeReturnValue(value: unknown): { params: Record<string, string> } {
+	const out: Record<string, string> = {};
+	const params = (value as { params?: unknown } | null)?.params;
+	if (params && typeof params === 'object' && !Array.isArray(params)) {
+		for (const [k, v] of Object.entries(params as Record<string, unknown>)) {
+			if (typeof v === 'string' && k.length <= 100 && v.length <= 2000) out[k] = v;
+		}
+	}
+	return { params: out };
+}
+
+/**
+ * Record an external-task return (task EX2). Refused as `stale` when the state has moved on
+ * since the hop was pending (a second return then changes nothing: same-context replay). The
+ * engine filters the values to the node's declared `returns` when applying the event.
+ */
+function tryResolveExternal(
+	state: State,
+	effect: ExternalEffect,
+	value: unknown,
+	t: number
+): { state: State; rejected?: Rejection } {
+	const d = state.data;
+	const desc = { kind: 'external', nodeId: effect.nodeId };
+	const stale = !d.pending || d.pending.effect.kind !== 'external' || d.pending.effect.nodeId !== effect.nodeId;
+	const rejected: Rejection | undefined = stale ? 'stale' : undefined;
+	const out = commit(state, {
+		type: 'resolve',
+		t,
+		effect: desc,
+		value: rejected ? null : sanitizeReturnValue(value),
+		...(rejected ? { rejected } : {})
+	});
 	return { state: out.state, rejected };
 }
 
@@ -1261,6 +1320,54 @@ export function toHtml(text: RenderedText | null): string {
 
 export function toPlain(text: RenderedText | null): string {
 	return text ? text.map((p) => p.text).join('') : '';
+}
+
+// --- External task (task EX2, planning/external-tasks.md) ------------------------------
+
+/** The pending external effect for a node: the outbound URL filled like a redirect. */
+function externalEffect(
+	plan: Plan,
+	d: Data,
+	env: Env,
+	node: Extract<FlowNode, { type: 'externalTask' }>
+): ExternalEffect {
+	const returns = node.returns ?? [];
+	const t = Object.prototype.hasOwnProperty.call(plan.redirectTemplates ?? {}, node.template)
+		? plan.redirectTemplates![node.template]
+		: undefined;
+	if (!t) return { kind: 'external', nodeId: node.id, url: null, rejected: '$template', host: '', returns };
+	const values: Record<string, string> = {};
+	for (const [name, segs] of Object.entries(node.params)) {
+		values[name] = segs.map((s) => (typeof s === 'string' ? s : pipeText(plan, d, env, s.pipe))).join('');
+	}
+	const filled = fillRedirect(t, values);
+	return { kind: 'external', nodeId: node.id, url: filled.url, rejected: filled.rejected, host: templateHost(t.url), returns };
+}
+
+/**
+ * Record an external-task return (task EX2): capture the whitelisted values into the
+ * session's URL parameters (each into the matching embedded variable), mark the node
+ * resolved so it never runs twice, note a rejected outbound URL, then walk on.
+ */
+function applyExternal(plan: Plan, d: Data, ev: Extract<EngineEvent, { type: 'resolve' }>): StepResult | undefined {
+	const p = d.pending;
+	if (!p || p.effect.kind !== 'external') return undefined;
+	const node = index(plan).nodes.get(p.effect.nodeId);
+	const returns = node?.type === 'externalTask' ? node.returns : [];
+	const incoming = (ev.value as { params?: Record<string, string> } | null)?.params ?? {};
+	const captured: Record<string, string> = {};
+	for (const r of returns) {
+		if (Object.prototype.hasOwnProperty.call(incoming, r.param) && typeof incoming[r.param] === 'string') {
+			captured[r.param] = incoming[r.param]!;
+			d.urlParams[r.param] = incoming[r.param]!; // the embedded variable reads it (semantics §1)
+		}
+	}
+	(d.external ??= {})[p.effect.nodeId] = { returned: captured };
+	if (p.effect.rejected) {
+		logDiagnostic({ code: 'external.param_rejected', site: `flow.${p.effect.nodeId}`, path: `/${p.effect.rejected}` });
+	}
+	d.pending = null;
+	return pageChanged(plan, d, finishWalk(d, walk(plan, d, clone(p.cursor), ev.t), ev.t));
 }
 
 /**
@@ -1670,7 +1777,11 @@ function estimatePages(state: State): number {
 		const out = walk(plan, d, cursor, 0);
 		if (out.kind === 'end') break;
 		if (out.kind === 'effect') {
-			d.quotas[d.pending!.effect.nodeId] = 'open';
+			{
+					const eff = d.pending!.effect;
+					if (eff.kind === 'quota') d.quotas[eff.nodeId] = 'open';
+					else (d.external ??= {})[eff.nodeId] = { returned: {} };
+				}
 			cursor = d.pending!.cursor;
 			d.pending = null;
 			continue;

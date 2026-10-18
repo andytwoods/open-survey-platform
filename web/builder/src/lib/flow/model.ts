@@ -6,7 +6,7 @@
  */
 import { exprToText, textFor } from '../cards/logic';
 
-export const NODE_TYPES = ['block', 'branch', 'randomiser', 'assign', 'quotaCheck', 'end'] as const;
+export const NODE_TYPES = ['block', 'branch', 'randomiser', 'assign', 'quotaCheck', 'externalTask', 'end'] as const;
 export type FlowNodeType = (typeof NODE_TYPES)[number];
 export type ArmName = 'then' | 'else' | 'children';
 
@@ -16,6 +16,7 @@ export const TYPE_LABEL: Readonly<Record<FlowNodeType, string>> = {
 	randomiser: 'Randomiser',
 	assign: 'Assign',
 	quotaCheck: 'Quota check',
+	externalTask: 'External task',
 	end: 'End'
 };
 
@@ -225,6 +226,23 @@ export interface QuotaInfo {
 	onFull: string;
 }
 
+/** Redirect template names an external task (or an ending redirect) may use (EN2/EX2). */
+export function redirectTemplateIds(survey: unknown): string[] {
+	if (!isObj(survey)) return [];
+	const out = new Set<string>();
+	const s = isObj(survey.settings) ? survey.settings : {};
+	if (isObj(s.redirectTemplates)) for (const k of Object.keys(s.redirectTemplates)) out.add(k);
+	const h = isObj(survey.hooks) ? survey.hooks : {};
+	if (isObj(h.redirects)) for (const k of Object.keys(h.redirects)) out.add(k);
+	return [...out];
+}
+
+/** Embedded (URL) variables an external task can capture on return (EX2). */
+export function embeddedVariables(survey: unknown): string[] {
+	if (!isObj(survey)) return [];
+	return list(survey.variables).flatMap((v) => (isObj(v) && v.kind === 'embedded' && typeof v.id === 'string' ? [v.id] : []));
+}
+
 export function quotas(survey: unknown): QuotaInfo[] {
 	if (!isObj(survey)) return [];
 	return list(survey.quotas).flatMap((q) => {
@@ -291,6 +309,8 @@ export function nodeLabel(node: unknown, survey?: unknown): string {
 			return `Assign: ${list(node.variables).map(String).join(', ') || '(none)'}`;
 		case 'quotaCheck':
 			return `Quota check: ${str(node.quota) || '(none)'}`;
+		case 'externalTask':
+			return `External task: ${str(node.template) || '(none)'}`;
 		case 'end':
 			return `End: ${str(node.outcome) || 'complete'}`;
 		default:
@@ -365,6 +385,7 @@ export interface NewNodeForm {
 	randomiserBlock: string;
 	variables: string[];
 	quota: string;
+	template: string;
 	outcome: string;
 	message: string;
 }
@@ -386,6 +407,7 @@ export function emptyForm(survey: unknown, type: FlowNodeType = 'block'): NewNod
 			.map((v) => v.id)
 			.filter((v) => !assigned.has(v)),
 		quota: quotas(survey)[0]?.id ?? '',
+		template: redirectTemplateIds(survey)[0] ?? '',
 		outcome: 'complete',
 		message: ''
 	};
@@ -396,6 +418,7 @@ export function unavailable(survey: unknown, type: FlowNodeType): string | null 
 	if ((type === 'block' || type === 'randomiser') && !blocks(survey).length) return 'Add a block to the survey first.';
 	if (type === 'assign' && !assignedVariables(survey).length) return 'Add an assigned variable (a between-subjects condition) first.';
 	if (type === 'quotaCheck' && !quotas(survey).length) return 'Define a quota first.';
+	if (type === 'externalTask' && !redirectTemplateIds(survey).length) return 'Add a redirect template (Settings → redirects) for the task URL first.';
 	return null;
 }
 
@@ -406,6 +429,7 @@ export function formError(f: NewNodeForm): string | null {
 	if (f.type === 'randomiser' && !f.randomiserBlock) return 'Choose a first block for the randomiser.';
 	if (f.type === 'assign' && !f.variables.length) return 'Choose at least one variable.';
 	if (f.type === 'quotaCheck' && !f.quota) return 'Choose a quota.';
+	if (f.type === 'externalTask' && !f.template) return 'Choose a redirect template for the task URL.';
 	if (f.type === 'end' && f.outcome.trim() && !/^[A-Za-z_][A-Za-z0-9_]*$/.test(f.outcome.trim())) {
 		return 'Outcome must be a name: letters, digits and _, not starting with a digit.';
 	}
@@ -442,6 +466,9 @@ export function insertOps(survey: unknown, f: NewNodeForm, at: ListRef & { index
 			break;
 		case 'quotaCheck':
 			node = { type: 'quotaCheck', id, quota: f.quota };
+			break;
+		case 'externalTask':
+			node = { type: 'externalTask', id, template: f.template, params: {}, returns: [] };
 			break;
 		case 'end':
 			node = { type: 'end', id };

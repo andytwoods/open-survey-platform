@@ -43,7 +43,7 @@ import { HttpError, retryable, type Api, type ResumeResponse, type SaveMode } fr
 import { fill, negotiateLanguage, ui } from './messages';
 import { MemoryStore, type LocalRecord, type LocalStore, type SessionPointer, type SyncBackup } from './storage';
 
-export type Phase = 'page' | 'pending' | 'hook' | 'submitting' | 'done' | 'fatal';
+export type Phase = 'page' | 'pending' | 'hook' | 'submitting' | 'external' | 'done' | 'fatal';
 /** Quiet save indicator. `local`: end-only (kept on this device until submit). */
 export type NetStatus = 'saved' | 'saving' | 'offline' | 'local';
 /**
@@ -94,6 +94,10 @@ export interface Env {
 	devicePointer?: SessionPointer | null;
 	/** Researcher hooks: only used when the plan declares them. */
 	hooks?: HookFactory;
+	/** Send the whole tab to an external task (task EX2). Default: `location.assign`. */
+	navigate?: (url: string) => void;
+	/** The absolute URL an external task returns the participant to. Default: the current URL. */
+	returnUrl?: () => string;
 	log?: (msg: string, detail?: unknown) => void;
 }
 
@@ -207,6 +211,12 @@ export class Session {
 	private fresh: boolean;
 	/** This tab's own submit (or decline) was acknowledged: the one time a redirect may fire. */
 	private acked = false;
+	/**
+	 * A return from an external task (task EX2): the `osp_token` the task echoed back and the
+	 * query values it carried. Set by the app from the URL before `run()`; consumed once by the
+	 * pending external effect. The values are untrusted (the engine whitelists them by `returns`).
+	 */
+	externalReturn: { token: string; values: Record<string, string> } | null = null;
 
 	constructor(env: Env, rec: LocalRecord, plan: Plan, state: State, reconciled: boolean, fresh = false) {
 		this.env = env;
@@ -791,6 +801,11 @@ export class Session {
 					if (!ok) return;
 					continue;
 				}
+				if (v.status === 'pending' && v.effect?.kind === 'external') {
+					const handedOff = await this.runExternal(v.effect);
+					if (handedOff) return; // the tab is navigating to the external task
+					continue; // resolved (a return, a skip, or no handoff available): keep going
+				}
 				if (v.status === 'ended') {
 					// §11: a declined session records no response; never submit it.
 					if (E.declinedConsent(this.state)) await this.finish();
@@ -834,6 +849,80 @@ export class Session {
 				this.setNet('offline');
 				await this.sleep(this.backoff());
 			}
+		}
+	}
+
+	/**
+	 * An external-task hop (task EX2). Returns true when the tab is navigating away to the task;
+	 * false when the hop resolved in place (a return came back, the URL could not be built, or no
+	 * handoff endpoint is available) and the flow should continue.
+	 */
+	private async runExternal(effect: Extract<Effect, { kind: 'external' }>): Promise<boolean> {
+		const api = this.env.api;
+		// A return just came back: verify the token, then resolve with its (untrusted) values.
+		const ret = this.externalReturn;
+		if (ret) {
+			this.externalReturn = null;
+			try {
+				await api.externalReturn?.(this.rec.sessionId, this.rec.resumeToken, effect.nodeId, ret.token);
+				await this.resolveExternal(effect, ret.values);
+				return false;
+			} catch (e) {
+				// A bad or expired token: do not trust the URL; send them to the task again.
+				this.log('external return rejected; handing off again', e);
+			}
+		}
+		// The outbound URL could not be built (a rejected or missing piped param): skip the hop
+		// rather than strand the participant (lead decision E-1). The engine records the reason.
+		if (!effect.url || !api.externalHandoff) {
+			await this.resolveExternal(effect, {});
+			return false;
+		}
+		let handoff;
+		try {
+			handoff = await api.externalHandoff(this.rec.sessionId, this.rec.resumeToken, effect.nodeId);
+		} catch (e) {
+			if (e instanceof HttpError && (e.status === 401 || e.status === 410)) {
+				this.fail(ui.expiredSubmit);
+				return true;
+			}
+			if (!retryable(e)) {
+				this.fail(ui.submitFailed);
+				return true;
+			}
+			this.setNet('offline');
+			await this.sleep(this.backoff());
+			return this.runExternal(effect);
+		}
+		// Persist the paused state so the return (a fresh page load) resumes exactly here.
+		await this.flushForHandoff();
+		if (this.closed) return true;
+		const url = new URL(effect.url);
+		url.searchParams.set('osp_return', this.env.returnUrl ? this.env.returnUrl() : location.href);
+		url.searchParams.set('osp_token', handoff.returnToken);
+		this.phase = 'external';
+		this.emit();
+		(this.env.navigate ?? ((u: string) => location.assign(u)))(url.toString());
+		return true;
+	}
+
+	private async resolveExternal(effect: Extract<Effect, { kind: 'external' }>, values: Record<string, string>) {
+		const before = this.where();
+		const next = E.resolve(this.state, effect, { params: values });
+		await this.commit(next, 'now');
+		this.moved(before);
+		if (this.hooks) {
+			this.hooks.setState(next);
+			this.afterHook(await this.hooks.arrive());
+		}
+	}
+
+	/** Drive saves until the server holds the paused state (every-page), so a return resumes it. */
+	private async flushForHandoff(): Promise<void> {
+		if (this.saveMode !== 'every-page') return;
+		this.saveNow();
+		for (let i = 0; i < 60 && this.dirty() && this.net !== 'offline' && !this.closed; i++) {
+			await new Promise<void>((r) => this.env.setTimer(() => r(), 50));
 		}
 	}
 

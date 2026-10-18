@@ -42,6 +42,7 @@ from . import expr as ex
 from .diagnostics import Diagnostic, make, pointer
 from .hooks import DEFAULT_PARAM_PATTERN, _pattern_ok, check_hooks, placeholders, redirect_problem
 from .model import (
+    RESERVED_EXTERNAL_PARAMS,
     SPEC_VERSION,
     AssignedVariable,
     AssignNode,
@@ -53,6 +54,7 @@ from .model import (
     EmbeddedVariable,
     EndNode,
     EndRedirect,
+    ExternalTaskNode,
     FlowNode,
     IntegerQuestion,
     MatrixQuestion,
@@ -615,10 +617,84 @@ class _Checker:
                     blk, pointer("quotas", i, "onFull", "block"), (*path, ("quota", node.id, 1))
                 )
             return False
+        if isinstance(node, ExternalTaskNode):
+            self._external_node(node, ptr, path)
+            return False
         assert isinstance(node, EndNode)
         if node.message is not None:
             self._text(node.message, ptr + "/message", _Site(ptr, [], self.counter, path))
         return True
+
+    def _external_node(self, node: ExternalTaskNode, ptr: str, path: tuple[PathElem, ...]) -> None:
+        """An external-task node (task EX2): its outbound template and params follow the EN2
+        redirect rules, and each `returns` id must be an embedded URL variable that captures a
+        value on return. Param pipes sit at the node's flow position, so they may refer only to
+        earlier questions (and to variables and built-ins)."""
+        templates = redirect_templates(self.s)
+        t = templates.get(node.template)
+        if t is None:
+            self.emit(
+                "external.unknown_template",
+                ptr + "/template",
+                f"no redirect template '{node.template}' in settings.redirectTemplates "
+                "(or hooks.redirects)",
+            )
+        else:
+            names = placeholders(t.url)
+            reserved = [n for n in names if n in RESERVED_EXTERNAL_PARAMS]
+            if reserved:
+                self.emit(
+                    "external.reserved_param",
+                    ptr + "/template",
+                    f"the template reserves {', '.join(sorted(RESERVED_EXTERNAL_PARAMS))} "
+                    f"for the platform; rename the placeholder(s): {', '.join(reserved)}",
+                )
+            if sorted(node.params) != sorted(names):
+                want = ", ".join(names) or "none"
+                self.emit(
+                    "external.params",
+                    ptr + "/params",
+                    f"the template's placeholders are: {want}; give exactly those",
+                )
+            pipes = BUILTIN_PIPES | ENDING_PIPES
+            for name, value in node.params.items():
+                vptr = ptr + pointer("params", name)
+                if not _PIPE.search(value):
+                    pattern = (t.params.get(name).pattern if name in t.params else None) or None
+                    pattern = pattern or DEFAULT_PARAM_PATTERN
+                    if _pattern_ok(pattern) and not re.fullmatch(f"(?:{pattern})", value):
+                        self.emit(
+                            "external.param_literal",
+                            vptr,
+                            f"'{value[:40]}' does not match the pattern {pattern!r}, "
+                            "so the external task would never be reached",
+                        )
+                    elif value in (".", ".."):
+                        self.emit(
+                            "external.param_literal",
+                            vptr,
+                            f"'{value}' would be read as a path segment, so it is refused",
+                        )
+                    continue
+                refs = self._text(value, vptr, _Site(ptr, [], self.counter, path), pipes)
+                for ref in refs:
+                    if ref in self.questions and ref not in self.variables:
+                        self.emit(
+                            "external.param_question",
+                            vptr,
+                            f"'{ref}' is an answer: it is sent to the external task "
+                            "(a data export the owner confirms; listed in the codebook)",
+                        )
+                        break
+        for k, vid in enumerate(node.returns):
+            vi = self.variables.get(vid)
+            if vi is None or not isinstance(vi.v, EmbeddedVariable):
+                self.emit(
+                    "external.return_target",
+                    ptr + pointer("returns", k),
+                    f"'{vid}' is not an embedded variable; a returned value is captured like a "
+                    "URL parameter, so it needs an embedded variable (source: url) to store it",
+                )
 
     def _place_block(self, bid: str, ptr: str, path: tuple[PathElem, ...]) -> None:
         if bid not in self.blocks:

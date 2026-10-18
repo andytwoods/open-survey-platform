@@ -48,8 +48,9 @@ def test_lss_summary_is_stable() -> None:
     """Counts per level, so a change of level is a visible, reviewed diff."""
     counts = Counter(cap.level for cap in LSS.values())
     # EN2 moved the redirect template rows (HookRedirect* → RedirectTemplate*/RedirectParam)
-    # and added Settings.redirectTemplates, Ending.redirect and EndRedirect.*.
-    assert dict(counts) == {"native": 142, "lowered": 58, "approximated": 28, "unsupported": 115}
+    # and added Settings.redirectTemplates, Ending.redirect and EndRedirect.*. EX2 added the
+    # ExternalTaskNode rows (id native; type/template/params/returns unsupported).
+    assert dict(counts) == {"native": 143, "lowered": 58, "approximated": 28, "unsupported": 119}
     assert LSS["MatrixQuestion.type"].level == "native"
     assert LSS["SliderQuestion.type"].level == "approximated"
     assert LSS["Survey.quotas"].level == "lowered"

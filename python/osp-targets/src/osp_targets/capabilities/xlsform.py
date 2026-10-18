@@ -341,7 +341,15 @@ for _f in ("block", "outcome"):
     _row(f"QuotaFull.{_f}", "unsupported", "XLSForm has no quotas; the screen-out is dropped.")
 
 # --- Flow --------------------------------------------------------------------------------
-for _d in ("BlockNode", "BranchNode", "RandomiserNode", "AssignNode", "QuotaCheckNode", "EndNode"):
+for _d in (
+    "BlockNode",
+    "BranchNode",
+    "RandomiserNode",
+    "AssignNode",
+    "QuotaCheckNode",
+    "ExternalTaskNode",
+    "EndNode",
+):
     _row(f"{_d}.id", "native", "Only used to name generated fields.")
 _row("BlockNode.type", "lowered", "The block group's `relevant` is the flow path to the node.")
 _row("BlockNode.block", "native", "The referenced block is emitted at this point of the flow.")
@@ -365,6 +373,12 @@ _row("AssignNode.type", "lowered", "See AssignedVariable.kind.")
 _row("AssignNode.variables", "lowered", "Each listed variable gets its seed and level calculates.")
 _row("QuotaCheckNode.type", "unsupported", "XLSForm has no quotas; the check is dropped.")
 _row("QuotaCheckNode.quota", "unsupported", "XLSForm has no quotas; the check is dropped.")
+for _f in ("type", "template", "params", "returns"):
+    _row(
+        f"ExternalTaskNode.{_f}",
+        "unsupported",
+        "XLSForm cannot leave the form to run an external task; the hop is dropped.",
+    )
 _row(
     "EndNode.type",
     "approximated",

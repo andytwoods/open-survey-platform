@@ -98,6 +98,7 @@ participant sees. Open it from the top bar (**Flow**) or the command palette.
 | **Randomiser** | Shows its children in a seeded random order. With **pick** set to N, each participant gets N of the children, drawn without replacement. |
 | **Assign** | Draws a value for one or more *assigned* variables (conditions), uniformly at random per variable. The draw is recorded with the response and is available to conditions and piping once the node is reached. |
 | **Quota check** | Asks the server whether a quota still has room. A place is held at the check, used up on completion, and released after 24 hours without activity. When the quota is full, an optional block is shown (a thank-you or screen-out message), then the session ends with the quota's outcome. |
+| **External task** | Sends the participant to a task hosted elsewhere (a jsPsych/PsychoJS/Gorilla experiment, or the lab's own page) and resumes the survey when they come back. See [External task step](#external-task-step) below. |
 | **End** | Ends the session with an **outcome** (default `complete`) and an optional message. Reaching the end of the flow without an End node counts as `complete`. |
 
 Outcomes are plain identifiers such as `complete`, `declined` (the consent page's default)
@@ -122,6 +123,32 @@ An ending can also send participants on afterwards, for example back to Prolific
 completion code, automatically after a countdown or by a button; see
 [Redirects](settings.md#redirects). Because the ending is keyed by outcome, a screened-out
 participant can get a different code (or no redirect) from a completer.
+
+### External task step
+
+An **External task** node hands the participant to a task hosted elsewhere in the middle of
+the survey, then brings them back to carry on. The destination is a **redirect template**
+(the same declared, checked https templates the endings use): you pick the template and fill
+its placeholders with literals or piped values, exactly as for a redirect. When the
+participant reaches the node, the platform sends them there with the template's values plus
+two parameters it adds itself:
+
+- `osp_return` — the address to send the participant back to, and
+- `osp_token` — a **signed, expiring return token** tied to this session and this node.
+
+The external task must send the participant back to `osp_return`, echoing `osp_token`. On
+return the server checks the token (a tampered, expired or wrong-session token is refused and
+the participant is simply sent to the task again), and any values the task added to the
+return URL are captured into the node's **returned variables**. A returned value is treated
+exactly like a URL parameter: recorded with the response, but **never trusted** (anyone can
+edit a URL), so the authoritative task data stays on the task platform and is joined later on
+the Prolific id or `${$session.id}`. Declare each returned variable as an embedded (URL)
+variable whose parameter name matches, and list it under the node's **returns**.
+
+The return token expires (6 hours by default), so a task should not keep the participant
+longer than that. A participant who returns on a different device needs the resume link, as
+for any resume. Exports (XLSForm, LimeSurvey) cannot leave and re-enter the survey, so the
+hop is reported as not carried over.
 
 ### Randomisation is reproducible
 

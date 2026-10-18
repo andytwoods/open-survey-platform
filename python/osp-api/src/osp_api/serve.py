@@ -300,7 +300,17 @@ def build_app(
 
     store = prepare(settings, environ)
     identity = identity_provider(settings, host or settings.host, environ, store.engine)
-    services = build_services(store, auto_create_labs=settings.auto_create_labs)
+    env = os.environ if environ is None else environ
+    # OSP_EXTERNAL_TOKEN_KEY signs external-task return tokens (task EX2). Optional: without
+    # it the service uses a per-process random key, fine for one dev process; set it so every
+    # worker and a restart verify the same tokens.
+    raw_key = (env.get("OSP_EXTERNAL_TOKEN_KEY") or "").strip()
+    external_token_key = raw_key.encode("utf-8") if raw_key else None
+    services = build_services(
+        store,
+        auto_create_labs=settings.auto_create_labs,
+        external_token_key=external_token_key,
+    )
     app = create_app(
         builder=services,
         identity=identity,

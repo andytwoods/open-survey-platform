@@ -442,7 +442,15 @@ _row(
 )
 
 # --- Flow --------------------------------------------------------------------------------
-for _d in ("BlockNode", "BranchNode", "RandomiserNode", "AssignNode", "QuotaCheckNode", "EndNode"):
+for _d in (
+    "BlockNode",
+    "BranchNode",
+    "RandomiserNode",
+    "AssignNode",
+    "QuotaCheckNode",
+    "ExternalTaskNode",
+    "EndNode",
+):
     _row(f"{_d}.id", "native", "Only used to name generated questions and groups.")
 _row("BlockNode.type", "lowered", "Group relevance is the flow path to the node.")
 _row("BlockNode.block", "native", "The referenced block's groups are emitted at this point.")
@@ -472,6 +480,13 @@ _row(
     "of the flow.",
 )
 _row("QuotaCheckNode.quota", "approximated", "See QuotaCheckNode.type.")
+for _f in ("type", "template", "params", "returns"):
+    _row(
+        f"ExternalTaskNode.{_f}",
+        "unsupported",
+        "LimeSurvey cannot leave the survey to run an external task and resume; the hop is "
+        "dropped (an external URL field is not the same as a mid-survey return).",
+    )
 _row(
     "EndNode.type",
     "approximated",

@@ -588,11 +588,57 @@ class EndNode(Model):
     message: Text | None = None
 
 
+# Reserved query parameters the platform appends to an external-task handoff URL and reads
+# on return (planning/external-tasks.md §2). A template placeholder may not use these names.
+EXTERNAL_RETURN_PARAM = "osp_return"
+EXTERNAL_TOKEN_PARAM = "osp_token"
+RESERVED_EXTERNAL_PARAMS = frozenset({EXTERNAL_RETURN_PARAM, EXTERNAL_TOKEN_PARAM})
+
+
+class ExternalTaskNode(Model):
+    """A flow node that sends the participant to an external task (a jsPsych/PsychoJS/Gorilla
+    experiment, or the lab's own page) and resumes the survey when they return (task EX2,
+    planning/external-tasks.md).
+
+    - `template`: a key of `settings.redirectTemplates` (or `hooks.redirects`): the external
+      task's https URL, filled and checked exactly as an end redirect is (EN2).
+    - `params`: one entry per placeholder, a literal or a piped `${…}` value (a question,
+      a variable or a built-in incl. `${$session.id}`). A piped answer is a data export.
+    - `returns`: embedded variables (`source: "url"`) the external task sends back in the
+      return URL. On return each is captured into the session's URL parameters, like a
+      start-time URL parameter: recorded, never trusted (the return URL is participant-visible).
+
+    The platform appends `osp_return` and `osp_token` (a signed, expiring, context-bound
+    return token) to the outbound URL; the external task echoes them to send the participant
+    back. A template placeholder may not be named `osp_return` or `osp_token`.
+    """
+
+    type: Literal["externalTask"]
+    id: Identifier
+    template: Name
+    params: dict[Name, RedirectValue] = Field(default_factory=dict)
+    returns: list[Identifier] = Field(default_factory=list)
+
+
 type FlowNode = Annotated[
-    BlockNode | BranchNode | RandomiserNode | AssignNode | QuotaCheckNode | EndNode,
+    BlockNode
+    | BranchNode
+    | RandomiserNode
+    | AssignNode
+    | QuotaCheckNode
+    | ExternalTaskNode
+    | EndNode,
     Field(discriminator="type"),
 ]
-FLOW_NODE_TYPES = ("block", "branch", "randomiser", "assign", "quotaCheck", "end")
+FLOW_NODE_TYPES = (
+    "block",
+    "branch",
+    "randomiser",
+    "assign",
+    "quotaCheck",
+    "externalTask",
+    "end",
+)
 
 
 # --- Survey -----------------------------------------------------------------------------

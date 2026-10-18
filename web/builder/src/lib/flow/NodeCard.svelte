@@ -2,6 +2,7 @@
 	import ChevronDown from '@lucide/svelte/icons/chevron-down';
 	import ChevronRight from '@lucide/svelte/icons/chevron-right';
 	import CircleStop from '@lucide/svelte/icons/circle-stop';
+	import ExternalLink from '@lucide/svelte/icons/external-link';
 	import Gauge from '@lucide/svelte/icons/gauge';
 	import GitBranch from '@lucide/svelte/icons/git-branch';
 	import GripVertical from '@lucide/svelte/icons/grip-vertical';
@@ -26,6 +27,7 @@
 		flagFor,
 		nodeLabel,
 		quotas,
+		redirectTemplateIds,
 		setProp,
 		TYPE_LABEL,
 		type FlowNodeType,
@@ -48,7 +50,7 @@
 	const arms = $derived(armsOf(type));
 	const collapsed = $derived(ctx.isCollapsed(id));
 	const level = $derived(Math.min(6, 3 + depth));
-	const ICONS = { block: Layers, branch: GitBranch, randomiser: Shuffle, assign: Users, quotaCheck: Gauge, end: CircleStop };
+	const ICONS = { block: Layers, branch: GitBranch, randomiser: Shuffle, assign: Users, quotaCheck: Gauge, externalTask: ExternalLink, end: CircleStop };
 	const Icon = $derived(ICONS[type]);
 
 	// EN1: every End node with this outcome shares the outcome's ending (Survey settings).
@@ -103,6 +105,8 @@
 	const chosen = $derived(Array.isArray(node.variables) ? node.variables.map(String) : []);
 	const quotaList = $derived(type === 'quotaCheck' ? quotas(ctx.survey) : []);
 	const quota = $derived(quotaList.find((q) => q.id === node.quota));
+	const templateList = $derived(type === 'externalTask' ? redirectTemplateIds(ctx.survey) : []);
+	const returnsCount = $derived(Array.isArray(node.returns) ? node.returns.length : 0);
 
 	function toggleVariable(v: string, on: boolean) {
 		const next = on ? [...chosen, v] : chosen.filter((x) => x !== v);
@@ -234,6 +238,18 @@
 					Limit {quota.limit ?? '?'} · counts when <code>{quota.when}</code> · when full: {quota.onFull}
 				</p>
 			{/if}
+		{:else if type === 'externalTask'}
+			<div class="field">
+				<label for="{uid}-et">Task URL template</label>
+				<select id="{uid}-et" value={String(node.template ?? '')} onchange={(e) => void set('template', e.currentTarget.value)}>
+					{#each templateList as tmpl (tmpl)}<option value={tmpl}>{tmpl}</option>{/each}
+				</select>
+			</div>
+			<p class="muted hint">
+				Sends the participant to the task with a signed, expiring return token, then resumes here.
+				{returnsCount} returned {returnsCount === 1 ? 'value' : 'values'} captured. Parameters sent and
+				the captured variables are edited in the JSON view.
+			</p>
 		{:else if type === 'end'}
 			<div class="row">
 				<BufferedTextField

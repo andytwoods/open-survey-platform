@@ -3,6 +3,8 @@
 from .config import Assignment, QuotaNode, RuntimeConfig
 from .errors import (
     ConsentRequired,
+    ExternalTokenExpired,
+    ExternalTokenInvalid,
     InvalidPayload,
     InvalidToken,
     NotFoundError,
@@ -20,6 +22,8 @@ from .limiter import TokenBucket
 from .ports import Clock, RandomSource, SystemRandom, system_clock
 from .session import (
     ConsentAck,
+    ExternalHandoff,
+    ExternalReturnAck,
     ParticipantRepo,
     QuotaOutcome,
     Resumed,
@@ -37,6 +41,10 @@ __all__ = [
     "Clock",
     "ConsentAck",
     "ConsentRequired",
+    "ExternalHandoff",
+    "ExternalReturnAck",
+    "ExternalTokenExpired",
+    "ExternalTokenInvalid",
     "InvalidPayload",
     "InvalidToken",
     "NotFoundError",

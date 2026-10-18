@@ -712,6 +712,32 @@
         {
           "type": "object",
           "additionalProperties": false,
+          "required": ["type", "id", "template", "params", "returns"],
+          "properties": {
+            "type": { "const": "externalTask" },
+            "id": { "$ref": "#/$defs/id" },
+            "template": { "type": "string" },
+            "params": {
+              "type": "object",
+              "additionalProperties": { "type": "array", "items": { "$ref": "#/$defs/segment" } }
+            },
+            "returns": {
+              "type": "array",
+              "items": {
+                "type": "object",
+                "additionalProperties": false,
+                "required": ["variable", "param"],
+                "properties": {
+                  "variable": { "$ref": "#/$defs/id" },
+                  "param": { "type": "string" }
+                }
+              }
+            }
+          }
+        },
+        {
+          "type": "object",
+          "additionalProperties": false,
           "required": ["type", "id", "outcome"],
           "properties": {
             "type": { "const": "end" },

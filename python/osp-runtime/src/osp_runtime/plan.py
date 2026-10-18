@@ -57,6 +57,7 @@ from osp_spec.model import (
     ComputedVariable,
     EmbeddedVariable,
     EndNode,
+    ExternalTaskNode,
     FlowNode,
     MatrixQuestion,
     MultiQuestion,
@@ -173,12 +174,15 @@ def runtime_config(plan: Json, *, save_mode: str | None = None) -> Json:
     settings (semantics.md §5); `save_mode` overrides the save mode if given.
     """
     quotas = []
+    external: list[str] = []
 
     def walk(nodes: list[Json]) -> None:
         for n in nodes:
             if n["type"] == "quotaCheck":
                 q = plan["quotas"].get(n["quota"], {})
                 quotas.append({"node": n["id"], "quota": n["quota"], "limit": q.get("limit", 0)})
+            elif n["type"] == "externalTask":
+                external.append(n["id"])
             elif n["type"] == "branch":
                 walk(n["then"])
                 walk(n["else"])
@@ -204,6 +208,8 @@ def runtime_config(plan: Json, *, save_mode: str | None = None) -> Json:
         "assignments": assignments,
         "quotas": quotas,
     }
+    if external:
+        out["external"] = external
     consent = plan.get("consent")
     if consent:
         # semantics.md §11: the server refuses response data before this version is agreed.
@@ -399,6 +405,22 @@ class _Compiler:
                 return {"type": "assign", "id": n.id, "variables": list(n.variables)}
             case QuotaCheckNode():
                 return {"type": "quotaCheck", "id": n.id, "quota": n.quota}
+            case ExternalTaskNode():
+                # The engine fills `params` like a redirect and captures the return values
+                # named in `returns` into the session's URL parameters, under each embedded
+                # variable's `param` (task EX2, planning/external-tasks.md).
+                returns: list[Json] = []
+                for vid in n.returns:
+                    var = next((v for v in self.s.variables if v.id == vid), None)
+                    if isinstance(var, EmbeddedVariable):
+                        returns.append({"variable": vid, "param": var.param})
+                return {
+                    "type": "externalTask",
+                    "id": n.id,
+                    "template": n.template,
+                    "params": {k: segments(v) for k, v in sorted(n.params.items())},
+                    "returns": returns,
+                }
             case EndNode():
                 out = {"type": "end", "id": n.id, "outcome": n.outcome}
                 if n.message is not None:
