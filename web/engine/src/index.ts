@@ -77,3 +77,14 @@ export {
 	type Stored
 } from './values.ts';
 export { DECIMAL_PRECISION } from './decimal.ts';
+export {
+	codePointToUtf16,
+	EXPR_FUNCTIONS,
+	EXPR_KEYWORDS,
+	EXPR_MAX_DEPTH,
+	EXPR_MAX_INT_DIGITS,
+	exprToText,
+	parseExpr,
+	type ParseResult,
+	type SyntaxDiagnostic
+} from './syntax.ts';

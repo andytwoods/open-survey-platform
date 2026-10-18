@@ -157,10 +157,12 @@ web-e2e: sim-build
 # Participant engine (task R1). Python compiles every fixture survey to a runtime plan and
 # writes the Python/TS parity vectors into web/engine/.build/ (gitignored); vitest then runs
 # every fixture script, the parity checks and the property tests. Report of realised
-# "<engine>" values: web/engine/.build/fixture-report.json.
+# "<engine>" values: web/engine/.build/fixture-report.json. build_syntax_vectors.py writes the
+# expression text-syntax vectors (.build/syntax.json) for src/syntax.ts (task CE1).
 .PHONY: engine-fixtures engine-test engine-size
 engine-fixtures:
 	$(UV_RUN) python web/engine/scripts/build_fixtures.py
+	$(UV_RUN) python web/engine/scripts/build_syntax_vectors.py
 
 engine-test: engine-fixtures
 	$(PNPM) -C web/engine exec vitest run
