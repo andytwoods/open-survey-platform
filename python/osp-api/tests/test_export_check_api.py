@@ -25,8 +25,9 @@ def test_targets_listed_with_capability_tables(benv):
     r = benv.login("viewer@a.example").get("/api/meta/targets")
     assert r.status_code == 200
     targets = {t["id"]: t for t in r.json()}
-    assert set(targets) == {"xlsform", "lss"}
+    assert set(targets) == {"xlsform", "lss", "qsf", "surveyjs"}
     assert targets["lss"]["label"] == "LimeSurvey"
+    assert targets["qsf"]["label"] == "Qualtrics" and targets["surveyjs"]["label"] == "SurveyJS"
     row = targets["xlsform"]["capabilities"]["Settings.backNavigation=false"]
     assert row["level"] == "unsupported" and row["note"]
 
@@ -79,7 +80,7 @@ def test_viewer_may_check_other_lab_may_not(benv):
 def test_bad_target_and_unknown_survey(benv):
     c = benv.login("editor@a.example")
     s = _create(c)
-    assert _check(c, s["id"], "qsf").status_code == 422
+    assert _check(c, s["id"], "spss").status_code == 422
     assert c.get(f"/api/surveys/{s['id']}/export-check").status_code == 422
     assert _check(c, "nope", "xlsform").status_code == 404
 
