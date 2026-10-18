@@ -2,8 +2,8 @@
  * The Tiptap 3 editor behind RichTextEditor.svelte (planning/rich-text.md §2, §9): a
  * schema that can hold exactly the survey model's rich tree for a level (so the editor
  * cannot produce what the spec cannot store), the pipe chip node, our own https-only link
- * mark, the paste pass and the keyboard contract. Loaded as a lazy chunk on the first focus
- * of a text field; the only module outside this folder that `@tiptap/*` may be imported
+ * mark, the paste pass and the keyboard contract. A lazy chunk (./load.ts), preloaded when
+ * the builder is idle; the only module outside this folder that `@tiptap/*` may be imported
  * from is nowhere (dependency-cruiser rule `tiptap-stays-in-richtext`).
  *
  * Clean-room: Tiptap's API is learnt from its documentation (MIT code we depend on).

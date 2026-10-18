@@ -1,24 +1,3 @@
-<script lang="ts" module>
-	type EditorModule = typeof import('./tiptap');
-	/** The editor chunk, shared by every field; a failed fetch is retried on the next focus. */
-	let modulePromise: Promise<EditorModule> | null = null;
-	const loadEditor = () =>
-		(modulePromise ??= import('./tiptap').catch((e: unknown) => {
-			modulePromise = null;
-			throw e;
-		}));
-	const preload = () => void loadEditor().catch(() => {});
-	let preloadQueued = false;
-
-	/** Fetch the chunk once the page is idle, so a first focus seldom waits for it (RT7). */
-	function preloadWhenIdle() {
-		if (preloadQueued) return;
-		preloadQueued = true;
-		if (typeof requestIdleCallback === 'function') requestIdleCallback(preload, { timeout: 2000 });
-		else setTimeout(preload, 200);
-	}
-</script>
-
 <script lang="ts">
 	import { charCount } from '@osp/engine';
 	import { announce } from '@osp/ui-components';
@@ -28,6 +7,7 @@
 	import { fromDoc, isEmptyValue, normalForm, sameValue, toDoc, type PmNode, type RichValue } from './convert';
 	import type { Editor, Range, ToolbarState } from './tiptap';
 	import { LIMITS, type Level } from './levels';
+	import { loadEditor, preloadEditor, preloadEditorWhenIdle, type EditorModule } from './load';
 	import LinkDialog from './LinkDialog.svelte';
 	import { describeReport } from './paste';
 	import PipePicker from './PipePicker.svelte';
@@ -210,7 +190,7 @@
 	const handle = { flush };
 	onMount(() => {
 		registry?.add(handle);
-		if (!readonly) preloadWhenIdle();
+		if (!readonly) preloadEditorWhenIdle();
 	});
 	onDestroy(() => {
 		registry?.delete(handle);
@@ -440,7 +420,7 @@
 				aria-readonly={readonly || undefined}
 				{lang}
 				onfocus={() => void activate()}
-				onpointerdown={readonly ? undefined : preload}
+				onpointerdown={readonly ? undefined : preloadEditor}
 				onmousedown={(e) => (point = { x: e.clientX, y: e.clientY })}
 			>
 				{#if empty}<span class="osp-rt-placeholder">{placeholder}</span>{:else}<RichView value={draft} inline={level === 'inline'} />{/if}
