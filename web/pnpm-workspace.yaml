@@ -4,6 +4,7 @@ packages:
   - ui-components
   - engine
   - engine-sim
+  - ops
   - runtime
   - hooks-sandbox
   - harness
