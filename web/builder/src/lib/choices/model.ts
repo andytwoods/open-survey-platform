@@ -7,9 +7,12 @@
  * Codes follow semantics.md C2-8: `1` and `"1"` are the same code, and a code may not be
  * empty or contain whitespace (XForms stores multi answers space-separated).
  */
+import { isRichText, plainTextOf, type RichText } from '@osp/engine';
 import type { SpecChoice, SpecChoiceList, SpecText } from '../cards/types';
 
 export type { SpecChoice, SpecChoiceList, SpecText };
+/** A label in one language: plain or rich (the editor's `RichValue`). */
+export type LabelValue = string | RichText;
 export type ChoiceCode = string | number;
 
 /** One op invocation, as the op client sends it (`{ op, params }`). */
@@ -89,37 +92,56 @@ export function nextCode(choices: readonly { value: unknown }[]): number {
 	return max + 1;
 }
 
-/** A label's text in exactly `lang` ('' when missing). A plain string is any language's. */
-export function labelIn(label: unknown, lang?: string): string {
-	if (typeof label === 'string') return label;
+const isValue = (v: unknown): v is LabelValue => typeof v === 'string' || isRichText(v);
+
+/**
+ * A label's value in exactly `lang` ('' when missing), plain or rich. A value on its own
+ * (a string or a tree) is any language's.
+ */
+export function labelValueIn(label: unknown, lang?: string): LabelValue {
+	if (isValue(label)) return label;
 	if (!label || typeof label !== 'object' || Array.isArray(label)) return '';
 	const map = label as Record<string, unknown>;
 	const key = lang ?? Object.keys(map)[0];
-	return key !== undefined && typeof map[key] === 'string' ? (map[key] as string) : '';
+	const v = key !== undefined ? map[key] : undefined;
+	return isValue(v) ? v : '';
+}
+
+/** `labelValueIn` as words (a rich value flattened): for names, descriptions, summaries. */
+export function labelIn(label: unknown, lang?: string): string {
+	return plainTextOf(labelValueIn(label, lang));
 }
 
 /** Some other language's text, shown as a placeholder when `lang` has none yet. */
 export function labelFallback(label: unknown, lang?: string): string {
-	if (typeof label === 'string' || !label || typeof label !== 'object') return '';
+	if (isValue(label) || !label || typeof label !== 'object') return '';
 	for (const [k, v] of Object.entries(label as Record<string, unknown>)) {
-		if (k !== lang && typeof v === 'string' && v) return v;
+		if (k === lang || !isValue(v)) continue;
+		const text = plainTextOf(v);
+		if (text) return text;
 	}
 	return '';
 }
 
 /**
- * `old` with its `lang` text replaced. A plain string stays plain in the default language
- * (or when no language is given); editing another language turns it into a map that keeps
- * the plain text under the default language.
+ * `old` with its `lang` value replaced (plain or rich). A value on its own stays so in the
+ * default language (or when no language is given); editing another language turns it into
+ * a map that keeps the old value under the default language. Other languages' values,
+ * rich ones included, are kept.
  */
-export function withLabel(old: unknown, text: string, lang?: string, defaultLanguage?: string): SpecText {
-	if (old && typeof old === 'object' && !Array.isArray(old)) {
-		const map = old as Record<string, string>;
+export function withLabel(old: unknown, value: LabelValue, lang?: string, defaultLanguage?: string): SpecText {
+	if (old && typeof old === 'object' && !Array.isArray(old) && !isRichText(old)) {
+		const map = old as Record<string, string | RichText>;
 		const key = lang ?? defaultLanguage ?? Object.keys(map)[0] ?? 'en';
-		return { ...map, [key]: text };
+		return { ...map, [key]: value };
 	}
-	if (!lang || !defaultLanguage || lang === defaultLanguage) return text;
-	return { [defaultLanguage]: typeof old === 'string' ? old : '', [lang]: text };
+	if (!lang || !defaultLanguage || lang === defaultLanguage) return value;
+	return { [defaultLanguage]: isValue(old) ? old : '', [lang]: value };
+}
+
+/** Whether two label values are the same text (canonical JSON; `""` and unset agree). */
+export function sameLabel(a: unknown, b: unknown): boolean {
+	return JSON.stringify(a ?? '') === JSON.stringify(b ?? '');
 }
 
 // --- reading the editor's inputs out of a survey document ----------------------------

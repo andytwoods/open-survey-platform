@@ -1,8 +1,9 @@
 import { expect, test, type Locator, type Page } from '@playwright/test';
-import { axe } from './fixtures';
+import { axe, fillRich, openRich } from './fixtures';
 
 // Choice list editor sandbox (/dev/choices, task B6): reorder by mouse and keyboard, bulk
-// paste, validation, shared lists, the published-code warning, axe in both themes.
+// paste, validation, shared lists, the published-code warning, axe in both themes. Labels
+// are inline rich-text fields (RT5): a read-only textbox per row until it is focused.
 
 async function open(page: Page) {
 	await page.goto('/dev/choices');
@@ -12,9 +13,18 @@ async function open(page: Page) {
 
 const codes = (editor: Locator) => editor.locator('[data-row]').evaluateAll((rows) => rows.map((r) => r.getAttribute('data-code')));
 const labelsOf = (editor: Locator) =>
-	editor.locator('[data-row] input[data-field="label"]').evaluateAll((els) => els.map((e) => (e as HTMLInputElement).value));
+	editor.locator('[data-row] [data-field="label"] [role="textbox"]').evaluateAll((els) => els.map((e) => e.textContent ?? ''));
 const lastTxn = (page: Page) => page.getByTestId('op-log').locator('li').last();
 const txnCount = (page: Page) => page.getByTestId('op-log').locator('li').count();
+const toolbar = (page: Page) => page.getByRole('toolbar', { name: 'Text formatting' });
+/** A row's label field: the idle textbox, or the open editor (the same accessible name). */
+const labelField = (editor: Locator, n: number) => editor.getByRole('textbox', { name: `Label for choice ${n}`, exact: true });
+/** Focus a label and wait for its editor, so typed keys are not lost to the swap. */
+async function focusLabel(page: Page, field: Locator) {
+	await field.focus();
+	await expect(field).toHaveAttribute('contenteditable', 'true');
+	await expect(field).toBeFocused();
+}
 
 for (const scheme of ['light', 'dark'] as const) {
 	test(`axe-clean, ${scheme}`, async ({ page }) => {
@@ -66,14 +76,13 @@ test('Escape cancels a drag', async ({ page }) => {
 
 test('Alt+↑/↓ reorders from the keyboard and keeps focus', async ({ page }) => {
 	const editor = await open(page);
-	const label = editor.getByLabel('Label for choice 1');
-	await label.focus();
+	await focusLabel(page, labelField(editor, 1));
 	await page.keyboard.press('Alt+ArrowDown');
 	expect(await labelsOf(editor)).toEqual(['Okay', 'Good', 'Bad']);
-	await expect(editor.getByLabel('Label for choice 2')).toBeFocused();
+	await expect(labelField(editor, 2)).toBeFocused();
 	await page.keyboard.press('Alt+ArrowDown');
 	expect(await labelsOf(editor)).toEqual(['Okay', 'Bad', 'Good']);
-	await expect(editor.getByLabel('Label for choice 3')).toBeFocused();
+	await expect(labelField(editor, 3)).toBeFocused();
 	// At the bottom edge: nothing is sent.
 	await page.keyboard.press('Alt+ArrowDown');
 	expect(await txnCount(page)).toBe(2);
@@ -157,24 +166,103 @@ test('add, duplicate and label edits', async ({ page }) => {
 	const editor = await open(page);
 	await editor.getByRole('button', { name: 'Duplicate Good' }).click();
 	expect(await codes(editor)).toEqual(['1', '4', '2', '3']);
-	await expect(editor.getByLabel('Label for choice 2')).toBeFocused();
+	await expect(labelField(editor, 2)).toBeFocused();
 	await editor.getByRole('button', { name: 'Add choice' }).click();
-	await expect(editor.getByLabel('Label for choice 5')).toBeFocused();
+	const added = labelField(editor, 5);
+	await expect(added).toBeFocused();
+	// Focus opens the editor: wait for it before typing.
+	await expect(added).toHaveAttribute('contenteditable', 'true');
 	await page.keyboard.type('Unsure');
 	await page.keyboard.press('Enter');
 	expect(JSON.parse((await lastTxn(page).textContent())!)).toEqual([
 		{ op: 'set_choice', params: { owner: 'q_mood', value: 5, label: 'Unsure' } }
 	]);
 	expect(await labelsOf(editor)).toEqual(['Good', 'Good', 'Okay', 'Bad', 'Unsure']);
+	// Enter never split the line: the label is one inline field.
+	await expect(added).toHaveText('Unsure');
+	await expect(added).toBeFocused();
 });
+
+test('labels are rich: bold, a chip and a count while editing; plain at rest (RT5)', async ({ page }) => {
+	const editor = await open(page);
+	const field = labelField(editor, 1);
+	await expect(field).toHaveAttribute('aria-multiline', 'false');
+	await expect(editor.locator('.osp-rt-count')).toHaveCount(0);
+	await fillRich(page, field, 'Very good');
+	// An inline toolbar: no lists, breaks or headings; a count only while editing.
+	const tb = toolbar(page);
+	await expect(tb.getByRole('button', { name: 'Bulleted list' })).toHaveCount(0);
+	await expect(tb.getByRole('button', { name: 'Line break' })).toHaveCount(0);
+	await expect(editor.locator('.osp-rt-count')).toHaveText(/9 \/ 500/);
+	await page.keyboard.press('Shift+ControlOrMeta+ArrowLeft');
+	await page.waitForTimeout(100);
+	await page.keyboard.press('ControlOrMeta+b');
+	await expect(tb.getByRole('button', { name: 'Bold' })).toHaveAttribute('aria-pressed', 'true');
+	await page.keyboard.press('Enter');
+	expect(JSON.parse((await lastTxn(page).textContent())!)).toEqual([
+		{
+			op: 'set_choice',
+			params: { owner: 'q_mood', value: 1, label: { type: 'rich', blocks: [{ type: 'p', content: [{ text: 'Very ' }, { text: 'good', marks: ['b'] }] }] } }
+		}
+	]);
+	// Leaving the row: the read-only view keeps the formatting, the count goes away.
+	await page.keyboard.press('Tab');
+	await expect(field).not.toHaveAttribute('contenteditable', 'true');
+	await expect(field.locator('strong')).toHaveText('good');
+	await expect(editor.locator('.osp-rt-count')).toHaveCount(0);
+	await expect(editor.getByRole('button', { name: 'Move Very good' })).toBeVisible();
+
+	// A chip from the picker (the first question has no earlier answers: built-ins only).
+	const second = labelField(editor, 2);
+	await openRich(page, second);
+	await page.keyboard.press('End');
+	await page.keyboard.type(' ');
+	await tb.getByRole('button', { name: 'Insert answer' }).click();
+	const picker = page.getByRole('dialog', { name: 'Insert answer' });
+	await picker.getByRole('combobox').fill('$language');
+	await expect(picker.getByRole('option')).toHaveCount(1);
+	await page.keyboard.press('Enter');
+	await expect(picker).toBeHidden();
+	await expect(second.locator('.osp-rt-chip')).toHaveText('${$language}');
+	await page.keyboard.press('Enter');
+	expect(JSON.parse((await lastTxn(page).textContent())!)).toEqual([
+		{ op: 'set_choice', params: { owner: 'q_mood', value: 2, label: 'Okay ${$language}' } }
+	]);
+	// Escape with nothing to revert closes nothing here; with a draft it reverts and stays.
+	await page.keyboard.type(' more');
+	await page.keyboard.press('Escape');
+	await expect(second).toHaveText('Okay ${$language}');
+	await expect(second).toBeFocused();
+	expect(await axe(page)).toEqual([]);
+});
+
+for (const scheme of ['light', 'dark'] as const) {
+	test.describe(`choice labels, ${scheme}`, () => {
+		test.use({ colorScheme: scheme });
+		for (const width of [320, 375, 1440]) {
+			test(`snapshot at ${width}`, async ({ page }) => {
+				await page.setViewportSize({ width, height: 900 });
+				const editor = await open(page);
+				await fillRich(page, labelField(editor, 2), 'Okay, ');
+				await page.keyboard.press('ControlOrMeta+i');
+				await page.keyboard.type('mostly');
+				await page.keyboard.press('ControlOrMeta+i');
+				await page.keyboard.press('Enter');
+				await expect(labelField(editor, 2).locator('em')).toHaveText('mostly');
+				await expect(page.getByTestId('op-log').locator('li')).toHaveCount(1);
+				await expect(page.locator('[data-testid="choice-editor"] .rows')).toHaveScreenshot(`choices-${width}-${scheme}.png`);
+			});
+		}
+	});
+}
 
 test('shared lists: usage, switch, make shared, separate copy', async ({ page }) => {
 	const editor = await open(page);
 	await page.getByRole('radio', { name: 'q_work' }).check();
 	await expect(editor.getByTestId('shared-status')).toContainText('Shared list agree5, used by 2 questions');
 	// An edit to a shared list targets the list.
-	await editor.getByLabel('Label for choice 3').fill('Neutral');
-	await editor.getByLabel('Label for choice 3').press('Enter');
+	await fillRich(page, labelField(editor, 3), 'Neutral');
+	await page.keyboard.press('Enter');
 	expect(JSON.parse((await lastTxn(page).textContent())!)[0].params.owner).toBe('agree5');
 
 	await editor.getByRole('button', { name: 'Use a separate copy' }).click();
@@ -221,8 +309,8 @@ test('changing a code on a published survey asks first', async ({ page }) => {
 	expect(await codes(editor)).toEqual(['10', '2', '3']);
 	expect(await txnCount(page)).toBe(1);
 	// Labels never ask.
-	await editor.getByLabel('Label for choice 2').fill('Fine');
-	await editor.getByLabel('Label for choice 2').press('Enter');
+	await fillRich(page, labelField(editor, 2), 'Fine');
+	await page.keyboard.press('Enter');
 	await expect(dialog).toBeHidden();
 	expect(await txnCount(page)).toBe(2);
 });
@@ -233,10 +321,17 @@ test('dialog wrapper opens from "Edit choices…" and is axe-clean', async ({ pa
 	const dialog = page.getByRole('dialog', { name: 'Edit choices' });
 	await expect(dialog).toBeVisible();
 	await expect(dialog).toContainText('How do you feel today?');
-	await dialog.getByLabel('Label for choice 1').focus();
+	await focusLabel(page, labelField(dialog, 1));
 	await page.keyboard.press('Alt+ArrowDown');
-	await expect(dialog.getByLabel('Label for choice 1')).toHaveValue('Okay');
+	await expect(labelField(dialog, 1)).toHaveText('Okay');
+	await expect(labelField(dialog, 2)).toBeFocused();
 	expect(await axe(page)).toEqual([]);
+	// Escape in a clean field closes nothing but the editor's own state: the dialog stays
+	// for a second Escape (the field keeps a reverting Escape to itself).
+	await page.keyboard.type(' x');
+	await page.keyboard.press('Escape');
+	await expect(dialog).toBeVisible();
+	await expect(labelField(dialog, 2)).toHaveText('Good');
 	await dialog.getByRole('button', { name: 'Done' }).click();
 	await expect(dialog).toBeHidden();
 	await expect(page.getByRole('button', { name: 'Edit choices…' })).toBeFocused();

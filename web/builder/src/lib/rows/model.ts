@@ -8,8 +8,17 @@
  * row id never changes: renaming edits the label only. Params follow `osp-ops`
  * matrix_row_ops.py.
  */
+import { isRichText } from '@osp/engine';
 import type { SpecMatrixRow, SpecText } from '../cards/types';
-import { labelIn, withLabel, type ChoiceDiagnostic, type ChoiceOp } from '../choices/model';
+import {
+	labelIn,
+	labelValueIn,
+	sameLabel,
+	withLabel,
+	type ChoiceDiagnostic,
+	type ChoiceOp,
+	type LabelValue
+} from '../choices/model';
 import type { LabelContext } from '../choices/ops';
 
 export type { SpecMatrixRow };
@@ -126,17 +135,23 @@ export function moveRowOps(q: RowsQuestion, from: number, to: number): RowOp[] {
 	return [{ op: 'move_matrix_row', params: { question: q.id, row: r.id, index: to } }];
 }
 
-/** Change row `i`'s label in the editing language. Nothing when the text is unchanged. */
-export function renameRowOps(q: RowsQuestion, i: number, text: string, ctx: LabelContext = {}): RowOp[] {
+/**
+ * Change row `i`'s label in the editing language (plain or rich: the server normalises a
+ * formatting-free tree to a string). Nothing when the value is unchanged.
+ */
+export function renameRowOps(q: RowsQuestion, i: number, value: LabelValue, ctx: LabelContext = {}): RowOp[] {
 	const r = q.rows[i];
 	if (!r) return [];
 	const key = ctx.lang ?? ctx.defaultLanguage;
-	const has = typeof r.label === 'string' || (key !== undefined && isObj(r.label) && Object.hasOwn(r.label, key));
-	if (has && labelIn(r.label, key) === text) return [];
+	const has =
+		typeof r.label === 'string' ||
+		isRichText(r.label) ||
+		(key !== undefined && isObj(r.label) && Object.hasOwn(r.label, key));
+	if (has && sameLabel(labelValueIn(r.label, key), value)) return [];
 	return [
 		{
 			op: 'rename_matrix_row',
-			params: { question: q.id, row: r.id, label: withLabel(r.label, text, ctx.lang, ctx.defaultLanguage) }
+			params: { question: q.id, row: r.id, label: withLabel(r.label, clone(value), ctx.lang, ctx.defaultLanguage) }
 		}
 	];
 }

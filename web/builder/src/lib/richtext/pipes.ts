@@ -124,14 +124,14 @@ function unescape(seg: string): string {
 export function pipeProblems(
 	raw: unknown,
 	language: string,
-	diagnostics: readonly PanelDiagnostic[] | undefined,
+	diagnostics: readonly Pick<PanelDiagnostic, 'code' | 'message'>[] | readonly PanelDiagnostic[] | undefined,
 	fieldPointer: string
 ): Map<string, string> {
 	const out = new Map<string, string>();
 	const ids = new Set<string>();
 	for (const v of [raw, obj(raw)?.[language]]) if (typeof v === 'string' || obj(v)) for (const id of pipesOf(v as RichValue)) ids.add(id);
-	for (const d of diagnostics ?? []) {
-		if (!d || typeof d.pointer !== 'string') continue;
+	for (const d of (diagnostics ?? []) as readonly Partial<PanelDiagnostic>[]) {
+		if (!d || typeof d.pointer !== 'string' || typeof d.code !== 'string' || typeof d.message !== 'string') continue;
 		if (!(d.code.startsWith('ref.') || d.code.startsWith('pipe.') || d.code === 'consent.pipe')) continue;
 		if (d.pointer !== fieldPointer && !d.pointer.startsWith(fieldPointer + '/')) continue;
 		const rel = d.pointer.slice(fieldPointer.length).split('/').filter(Boolean).map(unescape);

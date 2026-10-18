@@ -95,8 +95,8 @@ test('edits in the properties panel update the card at once', async ({ page }) =
 	await props.getByRole('button', { name: /Edit choices/ }).click();
 	const dialog = page.getByRole('dialog', { name: 'Edit choices' });
 	await expect(dialog).toBeVisible();
-	await dialog.getByLabel('Label for choice 1').fill('Awful');
-	await dialog.getByLabel('Label for choice 1').press('Tab');
+	await fillRich(page, dialog.getByRole('textbox', { name: 'Label for choice 1', exact: true }), 'Awful');
+	await page.keyboard.press('Tab');
 	await expect(saved(page)).toHaveText(/All changes saved/);
 	await dialog.getByRole('button', { name: 'Done' }).click();
 	await expect(card(page, 'taste')).toContainText('Awful');

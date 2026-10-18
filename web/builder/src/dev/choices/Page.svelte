@@ -1,6 +1,7 @@
 <script lang="ts">
 	import { Announcer, Button, theme } from '@osp/ui-components';
 	import { ChoiceListDialog, ChoiceListEditor, editorInputs, type ChoiceDiagnostic, type ChoiceOp } from '#lib/choices/index.js';
+	import { pipeCandidates } from '#lib/richtext/index.js';
 	import { onMount } from 'svelte';
 	import { SURVEY, applyOps } from './mock-server';
 
@@ -16,6 +17,7 @@
 	let dialogOpen = $state(false);
 
 	const inputs = $derived(editorInputs(survey, questionId));
+	const pipes = $derived(pipeCandidates(survey, { before: questionId }));
 	const QUESTIONS = ['q_mood', 'q_work', 'q_team', 'q_pets'];
 
 	function onOps(ops: ChoiceOp[]) {
@@ -54,6 +56,7 @@
 					defaultLanguage={inputs.defaultLanguage}
 					publishedVersions={published ? 2 : 0}
 					{diagnostics}
+					{pipes}
 					{onOps}
 				/>
 			{/key}
@@ -67,6 +70,7 @@
 			defaultLanguage={inputs.defaultLanguage}
 			publishedVersions={published ? 2 : 0}
 			{diagnostics}
+			{pipes}
 			{onOps}
 		/>
 	{/if}

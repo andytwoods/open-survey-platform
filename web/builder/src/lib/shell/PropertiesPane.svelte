@@ -21,6 +21,7 @@
 	import { fetchPropertySchemas, propertySchemas, schemaFor } from '../properties/schemas.svelte';
 	import type { OpenEditorRequest } from '../properties/types';
 	import { ChoiceListDialog, editorInputs } from '../choices';
+	import { pipeCandidates } from '../richtext';
 	import { RowsDialog, rowsEditorInputs } from '../rows';
 	import { ConditionDialog, apiExpressionService, questionsFromSurvey, type ConditionField, type ExprNode } from '../conditions';
 	import { questionTypeInfo } from '../question-types/catalogue';
@@ -157,6 +158,9 @@
 
 	const choiceInputs = $derived(store && choicesFor ? editorInputs(store.survey, choicesFor) : null);
 	const rowsInputs = $derived(store && rowsFor ? rowsEditorInputs(store.survey, rowsFor) : null);
+	// Chips in choice and row labels may pipe answers from before the question (RT5).
+	const choicePipes = $derived(store && choicesFor ? pipeCandidates(store.survey, { before: choicesFor, lang }) : null);
+	const rowPipes = $derived(store && rowsFor ? pipeCandidates(store.survey, { before: rowsFor, lang }) : null);
 	const allDiagnostics = $derived(store ? [...store.diagnostics, ...(store.rejection?.diagnostics ?? [])] : []);
 
 	const nodeDiagnostics = $derived.by(() => {
@@ -278,6 +282,7 @@
 		{lang}
 		defaultLanguage={choiceInputs.defaultLanguage}
 		diagnostics={allDiagnostics}
+		pipes={choicePipes}
 		onOps={(ops) => void store?.submit(ops)}
 	/>
 {/if}
@@ -291,6 +296,7 @@
 		defaultLanguage={rowsInputs.defaultLanguage}
 		survey={store.survey}
 		diagnostics={allDiagnostics}
+		pipes={rowPipes}
 		submit={(ops, options) => store?.submit(ops, options)}
 	/>
 {/if}

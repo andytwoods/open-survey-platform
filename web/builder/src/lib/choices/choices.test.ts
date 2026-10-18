@@ -1,3 +1,4 @@
+import type { RichText } from '@osp/engine';
 import { describe, expect, it } from 'vitest';
 import {
 	choicesPointer,
@@ -6,9 +7,11 @@ import {
 	editorInputs,
 	labelFallback,
 	labelIn,
+	labelValueIn,
 	listUsage,
 	nextCode,
 	parseCode,
+	sameLabel,
 	splitDiagnostics,
 	suggestListId,
 	withLabel
@@ -66,6 +69,8 @@ describe('codes', () => {
 	});
 });
 
+const RICH: RichText = { type: 'rich', blocks: [{ type: 'p', content: [{ text: 'Very ' }, { text: 'good', marks: ['b'] }] }] };
+
 describe('labels', () => {
 	it('reads exactly one language, with a fallback for placeholders', () => {
 		expect(labelIn('Hi', 'fr')).toBe('Hi');
@@ -76,12 +81,33 @@ describe('labels', () => {
 		expect(labelIn(42 as unknown)).toBe('');
 	});
 
+	it('reads rich values as they are, and as words for names and placeholders (RT5)', () => {
+		expect(labelValueIn(RICH, 'fr')).toBe(RICH);
+		expect(labelValueIn({ en: RICH, fr: 'Très bien' }, 'en')).toBe(RICH);
+		expect(labelValueIn({ en: RICH }, 'fr')).toBe('');
+		expect(labelValueIn({ en: 7 }, 'en')).toBe('');
+		expect(labelIn(RICH)).toBe('Very good');
+		expect(labelIn({ en: RICH }, 'en')).toBe('Very good');
+		expect(labelFallback({ en: RICH }, 'fr')).toBe('Very good');
+		expect(labelFallback({ en: RICH, fr: 'x' }, 'en')).toBe('x');
+	});
+
 	it('keeps plain labels plain in the default language and maps other languages', () => {
 		expect(withLabel('Hi', 'Hello')).toBe('Hello');
 		expect(withLabel('Hi', 'Hello', 'en', 'en')).toBe('Hello');
 		expect(withLabel('Hi', 'Salut', 'fr', 'en')).toEqual({ en: 'Hi', fr: 'Salut' });
 		expect(withLabel({ en: 'Hi' }, 'Salut', 'fr', 'en')).toEqual({ en: 'Hi', fr: 'Salut' });
 		expect(withLabel({ en: 'Hi', fr: 'x' }, 'Hello', undefined, 'en')).toEqual({ en: 'Hello', fr: 'x' });
+	});
+
+	it('writes rich values the same way, keeping other languages formatting', () => {
+		expect(withLabel('Hi', RICH, 'en', 'en')).toBe(RICH);
+		expect(withLabel(RICH, 'Salut', 'fr', 'en')).toEqual({ en: RICH, fr: 'Salut' });
+		expect(withLabel({ en: RICH, fr: 'x' }, 'Hello', 'en', 'en')).toEqual({ en: 'Hello', fr: 'x' });
+		expect(withLabel({ en: 'Hi', fr: RICH }, 'Hello', 'en', 'en')).toEqual({ en: 'Hello', fr: RICH });
+		expect(sameLabel(RICH, JSON.parse(JSON.stringify(RICH)))).toBe(true);
+		expect(sameLabel('', undefined)).toBe(true);
+		expect(sameLabel(RICH, 'Very good')).toBe(false);
 	});
 });
 
@@ -130,6 +156,18 @@ describe('op generation', () => {
 		const t = [{ value: 1, label: { en: 'Good' } }];
 		expect(setLabelOps('q1', t, 0, '', { lang: 'fr', defaultLanguage: 'en' })).toHaveLength(1);
 		expect(setLabelOps('q1', t, 0, 'Good', { lang: 'en' })).toEqual([]);
+	});
+
+	it('label changes carry a rich value, copied, and nothing when the tree is the same (RT5)', () => {
+		const [op] = setLabelOps('q1', C, 0, RICH);
+		expect(op).toEqual({ op: 'set_choice', params: { owner: 'q1', value: 1, label: RICH } });
+		expect(op.params.label).not.toBe(RICH);
+		const r = [{ value: 1, label: RICH }];
+		expect(setLabelOps('q1', r, 0, JSON.parse(JSON.stringify(RICH)))).toEqual([]);
+		expect(setLabelOps('q1', r, 0, 'Very good')).toEqual([{ op: 'set_choice', params: { owner: 'q1', value: 1, label: 'Very good' } }]);
+		expect(setLabelOps('q1', r, 0, 'Sehr gut', { lang: 'de', defaultLanguage: 'en' })).toEqual([
+			{ op: 'set_choice', params: { owner: 'q1', value: 1, label: { en: RICH, de: 'Sehr gut' } } }
+		]);
 	});
 
 	it('shared lists: use, make shared, detach', () => {

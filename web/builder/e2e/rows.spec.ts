@@ -1,11 +1,12 @@
 import { readFileSync } from 'node:fs';
-import { expect, test, type Page } from '@playwright/test';
-import { axe, signIn, writeHeaders } from './fixtures';
+import { expect, test, type Locator, type Page } from '@playwright/test';
+import { axe, fillRich, openRich, signIn, writeHeaders } from './fixtures';
 
 // Grid rows editor (task B15), against a real osp-api on SQLite with fixture 38-matrix
 // (grid `taste`: rows tea, coffee, cocoa; `cups` shows when taste_tea == 3 and pipes it):
 // add, rename, reorder by keyboard and mouse, required, delete, undo, the "still used"
-// warning, the canvas card following along; 320 px and axe in light and dark.
+// warning, the canvas card following along; 320 px and axe in light and dark. Labels are
+// inline rich-text fields (RT5): a read-only textbox per row until it is focused.
 
 type Survey = { blocks: unknown[]; flow: unknown[]; choiceLists?: unknown[]; [k: string]: unknown };
 const FIXTURE = JSON.parse(
@@ -49,8 +50,10 @@ async function openRows(page: Page) {
 
 const labels = (page: Page) =>
 	dialogOf(page)
-		.locator('[data-row] input[data-field="label"]')
-		.evaluateAll((els) => els.map((e) => (e as HTMLInputElement).value));
+		.locator('[data-row] [data-field="label"] [role="textbox"]')
+		.evaluateAll((els) => els.map((e) => e.textContent ?? ''));
+/** A row's label field: the idle textbox, or the open editor (the same accessible name). */
+const labelField = (dialog: Locator, n: number) => dialog.getByRole('textbox', { name: `Label for row ${n}`, exact: true });
 const rowIds = (page: Page) =>
 	dialogOf(page)
 		.locator('[data-row]')
@@ -69,10 +72,11 @@ test('add, rename, reorder (keyboard and mouse), required: the card follows', as
 	expect(await labels(page)).toEqual(['Tea', 'Coffee', 'Cocoa (optional)']);
 	await expect(dialog).toContainText('taste_coffee');
 
-	// Add: focus lands on the new row's label; type and Enter renames it.
+	// Add: focus lands on the new row's label (which opens its editor); type and Enter renames it.
 	await dialog.getByRole('button', { name: 'Add row' }).click();
-	const added = dialog.getByLabel('Label for row 4');
+	const added = labelField(dialog, 4);
 	await expect(added).toBeFocused();
+	await expect(added).toHaveAttribute('contenteditable', 'true');
 	await page.keyboard.type('Juice');
 	await page.keyboard.press('Enter');
 	await expect(saved(page)).toHaveText(/All changes saved/);
@@ -80,18 +84,17 @@ test('add, rename, reorder (keyboard and mouse), required: the card follows', as
 	expect(await rowIds(page)).toEqual(['tea', 'coffee', 'cocoa', 'r4']);
 
 	// Rename keeps the id (and so the variable).
-	const coffee = dialog.getByLabel('Label for row 2');
-	await coffee.fill('Filter coffee');
-	await coffee.press('Tab');
+	await fillRich(page, labelField(dialog, 2), 'Filter coffee');
+	await page.keyboard.press('Tab');
 	await expect(card(page)).toContainText('Filter coffee');
 	expect(await rowIds(page)).toEqual(['tea', 'coffee', 'cocoa', 'r4']);
 
 	// Keyboard reorder keeps focus on the moved row.
-	await dialog.getByLabel('Label for row 1').focus();
+	await openRich(page, labelField(dialog, 1));
 	await page.keyboard.press('Alt+ArrowDown');
 	await expect.poll(() => rowIds(page)).toEqual(['coffee', 'tea', 'cocoa', 'r4']);
-	await expect(dialog.getByLabel('Label for row 2')).toBeFocused();
-	await expect(dialog.getByLabel('Label for row 2')).toHaveValue('Tea');
+	await expect(labelField(dialog, 2)).toBeFocused();
+	await expect(labelField(dialog, 2)).toHaveText('Tea');
 
 	// Mouse drag: Juice (last) to the top.
 	const handle = dialog.getByRole('button', { name: 'Move Juice' });
@@ -130,6 +133,42 @@ test('add, rename, reorder (keyboard and mouse), required: the card follows', as
 	const text = (await card(page).textContent()) ?? '';
 	const order = ['Juice', 'Filter coffee', 'Tea', 'Cocoa'].map((s) => text.indexOf(s));
 	expect(order.every((n, i) => n >= 0 && (i === 0 || n > order[i - 1]))).toBe(true);
+});
+
+test('a formatted row label is stored as a tree, shown on the card and in the dialog (RT5)', async ({ page }) => {
+	const id = await openGrid(page);
+	const dialog = await openRows(page);
+	const tea = labelField(dialog, 1);
+	await expect(tea).toHaveAttribute('aria-multiline', 'false');
+	await expect(dialog.locator('.osp-rt-count')).toHaveCount(0);
+	await fillRich(page, tea, 'Green ');
+	await expect(dialog.locator('.osp-rt-count')).toHaveText(/6 \/ 500/);
+	const tb = page.getByRole('toolbar', { name: 'Text formatting' });
+	await expect(tb.getByRole('button', { name: 'Bulleted list' })).toHaveCount(0);
+	await tb.getByRole('button', { name: 'Italic' }).click();
+	await page.keyboard.type('tea');
+	await page.keyboard.press('Enter');
+	await expect(saved(page)).toHaveText(/All changes saved/);
+	expect(await axe(page)).toEqual([]);
+	await page.keyboard.press('Tab');
+	await expect(tea).not.toHaveAttribute('contenteditable', 'true');
+	await expect(tea.locator('em')).toHaveText('tea');
+	await expect(dialog.getByRole('button', { name: 'Move Green tea' })).toBeVisible();
+	// The canvas card shows row labels as words (its rows are a preview, not the renderer).
+	await expect(card(page)).toContainText('Green tea');
+	const rows = await serverRows(page, id);
+	expect(rows[0]).toEqual({
+		id: 'tea',
+		label: { type: 'rich', blocks: [{ type: 'p', content: [{ text: 'Green ' }, { text: 'tea', marks: ['i'] }] }] }
+	});
+	// Escape with a draft reverts it and keeps the dialog open.
+	await openRich(page, tea);
+	await page.keyboard.press('End');
+	await page.keyboard.type(' oops');
+	await page.keyboard.press('Escape');
+	await expect(dialog).toBeVisible();
+	await expect(tea).toHaveText('Green tea');
+	await expect(tea).toBeFocused();
 });
 
 test('delete an unused row, then undo it', async ({ page }) => {
@@ -205,7 +244,7 @@ test('320 px: no horizontal scroll, 44 px targets', async ({ page }) => {
 	expect(box.x).toBeGreaterThanOrEqual(0);
 	expect(box.x + box.width).toBeLessThanOrEqual(320);
 	const sizes = await dialog
-		.locator('[data-testid="rows-editor"] :is(button, input)')
+		.locator('[data-testid="rows-editor"] :is(button, input, [role="textbox"])')
 		.evaluateAll((els) => els.map((e) => {
 			const r = e.getBoundingClientRect();
 			return { name: e.getAttribute('aria-label') ?? e.textContent?.trim(), w: r.width, h: r.height };
