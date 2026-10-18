@@ -20,7 +20,7 @@ PNPM := pnpm
 # them in the console code page (cp1252) and fail on the first non-ASCII character.
 export PYTHONUTF8 := 1
 
-CHECKS := py-test py-layers py-lint web-check web-test web-build contract-check licence-check harness-quick engine-test hooks-test sim-test docs-check
+CHECKS := py-test py-layers py-lint web-check web-test web-build contract-check licence-check harness-quick engine-test hooks-test sim-test spec-test docs-check
 
 # `make check CHECK_SKIP="harness-quick"` leaves targets out: CI runs the browser suites as
 # their own jobs (.github/workflows/ci.yml), and the Windows job skips what needs a POSIX
@@ -207,6 +207,22 @@ runtime-e2e:
 runtime-size:
 	$(PNPM) -C web/runtime exec vite build --logLevel warn
 	$(PNPM) -C web/runtime exec node scripts/size.mjs
+
+# Validator in TypeScript (task CE4, web/spec): Python writes every fixture, every osp-spec
+# test input and a few thousand seeded mutations with osp_spec.validate's diagnostics into
+# web/spec/.build/vectors.json (gitignored); vitest asserts @osp/spec gives identical
+# diagnostics. `spec-harvest` re-records the osp-spec test suite's validator inputs into
+# web/spec/test/vectors/spec-test-inputs.json (committed; rerun after adding validator tests).
+# A longer soak: OSP_SPEC_SEED=7 OSP_SPEC_MUTANTS=50000 make spec-test.
+.PHONY: spec-vectors spec-test spec-harvest
+spec-vectors:
+	$(UV_RUN) python web/spec/scripts/build_vectors.py
+
+spec-test: spec-vectors
+	$(PNPM) -C web/spec exec vitest run
+
+spec-harvest:
+	$(UV_RUN) python web/spec/scripts/harvest_spec_tests.py
 
 # Researcher hooks (task R7, runtime-design.md §7a). `hooks-test` (in `make check`): manifest,
 # action validation and engine integration in node. `hooks-e2e`: the adversarial gate in real
