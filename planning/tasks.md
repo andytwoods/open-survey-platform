@@ -191,7 +191,7 @@ Plan V: `planning/results-viewer.md` (decisions V-D1–V-D10). V1 publishes the 
 | EN1 | Endings per outcome: spec, engine view, participant screen | EX1 | See `planning/end-of-survey.md` §6 EN1 | done |
 | EN2 | Declarative end redirects with an accessible delay | EN1 | §6 EN2 (security tests mandatory) | done |
 | EN3 | Closing, availability windows and response limit | EX1 | §6 EN3 | todo |
-| EN4 | Outcome column + quota place release on non-complete outcomes | EN1 | §6 EN4, with lead decision 5 (branch agent/EN4: migration 0011 `responses.outcome` + `osp-cli backfill-outcomes`, submit releases quota places on non-complete outcomes, results `outcomes` counts + "By outcome" header, status filter in SQL) | review |
+| EN4 | Outcome column + quota place release on non-complete outcomes | EN1 | §6 EN4, with lead decision 5 (branch agent/EN4: migration 0011 `responses.outcome` + `osp-cli backfill-outcomes`, submit releases quota places on non-complete outcomes, results `outcomes` counts + "By outcome" header, status filter in SQL) | done |
 | EN5 | Show the participant's answers after submit | EN1 | §6 EN5 | todo |
 | EN6 | Quota editor in the builder | — | §6 EN6 | todo |
 | QB2 | Question bank: spec, `source`, `metadata.instruments`, osp-instruments package + verified bundle | QB1 | `planning/question-bank.md` §8 item 1 + lead decision 7 (verify every class A/B row online, URL + date; draft letter for the owner) | done |
