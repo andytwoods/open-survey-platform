@@ -1,0 +1,37 @@
+{
+  "stubVersion": "osp-instrument-stub/0.1",
+  "id": "k6",
+  "title": "Kessler Psychological Distress Scale, 6-item",
+  "abbreviation": "K6",
+  "description": "6 questions about the past 30 days, each rated 0–4 (none of the time to all of the time).",
+  "tags": [
+    "distress",
+    "mental-health",
+    "screener"
+  ],
+  "terms": "ask",
+  "holder": {
+    "name": "Ronald C. Kessler (Harvard Medical School)",
+    "url": "https://www.hcp.med.harvard.edu/ncs/k6_scales.php"
+  },
+  "citation": {
+    "text": "Kessler RC, Barker PR, Colpe LJ, Epstein JF, Gfroerer JC, Hiripi E, Howes MJ, Normand SLT, Manderscheid RW, Walters EE, Zaslavsky AM (2003). Screening for serious mental illness in the general population. Archives of General Psychiatry 60(2):184–189.",
+    "doi": "10.1001/archpsyc.60.2.184"
+  },
+  "itemCount": 6,
+  "response": {
+    "kind": "shared",
+    "min": 0,
+    "max": 4
+  },
+  "scoring": {
+    "aggregate": "sum",
+    "reversed": [],
+    "subscales": {},
+    "total": true,
+    "offset": 0,
+    "factor": null,
+    "text": "Sum of the 6 items (0–24); 13 or more indicates serious psychological distress. Scoring here follows the published literature; check it against the manual or form your lab holds before publishing."
+  },
+  "note": null
+}

@@ -25,6 +25,8 @@ export interface StructureDeps {
 	/** Select an item and put focus on it (its outline row, else its card). */
 	focus: (id: string) => Promise<void> | void;
 	language: () => string;
+	/** "Save to bank…" (QB5): opens the save dialog for a block, page or question. */
+	saveToBank?: (id: string, type: StructureType, name: string) => void;
 }
 
 const TITLE: Record<StructureType, string[]> = { block: ['title'], page: ['title'], question: ['label'] };
@@ -66,6 +68,16 @@ export class StructureActions {
 	rename(id: string) {
 		const type = this.typeOf(id);
 		if (type) void this.#d.edit(id, type, TITLE[type]);
+	}
+
+	/** The menu shows "Save to bank…" when the shell wired it. */
+	get canSaveToBank(): boolean {
+		return !!this.#d.saveToBank;
+	}
+
+	saveToBank(id: string) {
+		const at = placeOf(this.#d.roots(), id);
+		if (at && this.#d.saveToBank) this.#d.saveToBank(id, at.type, at.node.label);
 	}
 
 	async duplicate(id: string) {

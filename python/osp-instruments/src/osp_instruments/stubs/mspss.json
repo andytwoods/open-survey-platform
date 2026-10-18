@@ -1,0 +1,55 @@
+{
+  "stubVersion": "osp-instrument-stub/0.1",
+  "id": "mspss",
+  "title": "Multidimensional Scale of Perceived Social Support",
+  "abbreviation": "MSPSS",
+  "description": "12 statements rated 1–7 on agreement; significant other, family and friends.",
+  "tags": [
+    "social-support",
+    "wellbeing"
+  ],
+  "terms": "ask",
+  "holder": {
+    "name": "Gregory D. Zimet",
+    "url": "https://gzimet.wixsite.com/mspss"
+  },
+  "citation": {
+    "text": "Zimet GD, Dahlem NW, Zimet SG, Farley GK (1988). The Multidimensional Scale of Perceived Social Support. Journal of Personality Assessment 52(1):30–41.",
+    "doi": "10.1207/s15327752jpa5201_2"
+  },
+  "itemCount": 12,
+  "response": {
+    "kind": "shared",
+    "min": 1,
+    "max": 7
+  },
+  "scoring": {
+    "aggregate": "mean",
+    "reversed": [],
+    "subscales": {
+      "significant_other": [
+        1,
+        2,
+        5,
+        10
+      ],
+      "family": [
+        3,
+        4,
+        8,
+        11
+      ],
+      "friends": [
+        6,
+        7,
+        9,
+        12
+      ]
+    },
+    "total": true,
+    "offset": 0,
+    "factor": null,
+    "text": "Means (1–7): significant other = items 1, 2, 5, 10; family = 3, 4, 8, 11; friends = 6, 7, 9, 12; total = all 12. Scoring here follows the published literature; check it against the manual or form your lab holds before publishing."
+  },
+  "note": null
+}

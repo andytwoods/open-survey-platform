@@ -1,0 +1,37 @@
+{
+  "stubVersion": "osp-instrument-stub/0.1",
+  "id": "isi",
+  "title": "Insomnia Severity Index",
+  "abbreviation": "ISI",
+  "description": "7 items about sleep over the past two weeks, each rated 0–4 with item-specific options.",
+  "tags": [
+    "sleep",
+    "insomnia",
+    "clinical"
+  ],
+  "terms": "licensed",
+  "holder": {
+    "name": "Charles M. Morin (licensed through Mapi Research Trust)",
+    "url": "https://eprovide.mapi-trust.org/"
+  },
+  "citation": {
+    "text": "Bastien CH, Vallières A, Morin CM (2001). Validation of the Insomnia Severity Index as an outcome measure for insomnia research. Sleep Medicine 2(4):297–307.",
+    "doi": "10.1016/S1389-9457(00)00065-4"
+  },
+  "itemCount": 7,
+  "response": {
+    "kind": "per-item",
+    "min": 0,
+    "max": 4
+  },
+  "scoring": {
+    "aggregate": "sum",
+    "reversed": [],
+    "subscales": {},
+    "total": true,
+    "offset": 0,
+    "factor": null,
+    "text": "Sum of the 7 items (0–28): 0–7 no clinically significant insomnia, 8–14 subthreshold, 15–21 moderate, 22–28 severe. Scoring here follows the published literature; check it against the manual or form your lab holds before publishing."
+  },
+  "note": null
+}

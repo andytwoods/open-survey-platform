@@ -1,0 +1,41 @@
+{
+  "stubVersion": "osp-instrument-stub/0.1",
+  "id": "pss-10",
+  "title": "Perceived Stress Scale, 10-item",
+  "abbreviation": "PSS-10",
+  "description": "10 items about feelings and thoughts during the last month, each rated 0–4.",
+  "tags": [
+    "stress",
+    "coping"
+  ],
+  "terms": "ask",
+  "holder": {
+    "name": "Sheldon Cohen (Carnegie Mellon University)",
+    "url": "https://www.cmu.edu/dietrich/psychology/stress-immunity-disease-lab/scales/"
+  },
+  "citation": {
+    "text": "Cohen S, Kamarck T, Mermelstein R (1983). A global measure of perceived stress. Journal of Health and Social Behavior 24(4):385–396.",
+    "doi": "10.2307/2136404"
+  },
+  "itemCount": 10,
+  "response": {
+    "kind": "shared",
+    "min": 0,
+    "max": 4
+  },
+  "scoring": {
+    "aggregate": "sum",
+    "reversed": [
+      4,
+      5,
+      7,
+      8
+    ],
+    "subscales": {},
+    "total": true,
+    "offset": 0,
+    "factor": null,
+    "text": "Sum of the 10 items (0–40) after reversing the positively stated items 4, 5, 7 and 8. Scoring here follows the published literature; check it against the manual or form your lab holds before publishing."
+  },
+  "note": null
+}

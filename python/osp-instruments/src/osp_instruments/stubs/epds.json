@@ -1,0 +1,37 @@
+{
+  "stubVersion": "osp-instrument-stub/0.1",
+  "id": "epds",
+  "title": "Edinburgh Postnatal Depression Scale",
+  "abbreviation": "EPDS",
+  "description": "10 items about the past seven days, each with its own four options scored 0–3.",
+  "tags": [
+    "depression",
+    "perinatal",
+    "screener"
+  ],
+  "terms": "licensed",
+  "holder": {
+    "name": "Royal College of Psychiatrists",
+    "url": "https://www.rcpsych.ac.uk/"
+  },
+  "citation": {
+    "text": "Cox JL, Holden JM, Sagovsky R (1987). Detection of postnatal depression: development of the 10-item Edinburgh Postnatal Depression Scale. British Journal of Psychiatry 150:782–786.",
+    "doi": "10.1192/bjp.150.6.782"
+  },
+  "itemCount": 10,
+  "response": {
+    "kind": "per-item",
+    "min": 0,
+    "max": 3
+  },
+  "scoring": {
+    "aggregate": "sum",
+    "reversed": [],
+    "subscales": {},
+    "total": true,
+    "offset": 0,
+    "factor": null,
+    "text": "Sum of the 10 items (0–30); cut-offs of 10 and 13 are common. Scoring here follows the published literature; check it against the manual or form your lab holds before publishing."
+  },
+  "note": "Enter each item's four options in score order (0 first); on the printed form items 3 and 5–10 run the other way. Item 10 (self-harm) is a safety item."
+}

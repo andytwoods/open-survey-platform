@@ -1,0 +1,50 @@
+{
+  "stubVersion": "osp-instrument-stub/0.1",
+  "id": "ueq-s",
+  "title": "User Experience Questionnaire, short version",
+  "abbreviation": "UEQ-S",
+  "description": "8 bipolar word pairs rated on a 7-point scale (−3 to +3); pragmatic and hedonic quality.",
+  "tags": [
+    "usability",
+    "user-experience",
+    "hci"
+  ],
+  "terms": "licensed",
+  "holder": {
+    "name": "Martin Schrepp (ueq-online.org)",
+    "url": "https://www.ueq-online.org/"
+  },
+  "citation": {
+    "text": "Schrepp M, Hinderks A, Thomaschewski J (2017). Design and evaluation of a short version of the User Experience Questionnaire (UEQ-S). International Journal of Interactive Multimedia and Artificial Intelligence 4(6):103–108.",
+    "doi": "10.9781/ijimai.2017.09.001"
+  },
+  "itemCount": 8,
+  "response": {
+    "kind": "shared",
+    "min": -3,
+    "max": 3
+  },
+  "scoring": {
+    "aggregate": "mean",
+    "reversed": [],
+    "subscales": {
+      "pragmatic": [
+        1,
+        2,
+        3,
+        4
+      ],
+      "hedonic": [
+        5,
+        6,
+        7,
+        8
+      ]
+    },
+    "total": true,
+    "offset": 0,
+    "factor": null,
+    "text": "Means: pragmatic quality = items 1–4, hedonic quality = items 5–8, overall = all 8. Scoring here follows the published literature; check it against the manual or form your lab holds before publishing."
+  },
+  "note": "Enter each pair as `negative pole – positive pole` so that +3 is the positive pole."
+}

@@ -1,0 +1,36 @@
+{
+  "stubVersion": "osp-instrument-stub/0.1",
+  "id": "swemwbs",
+  "title": "Short Warwick-Edinburgh Mental Wellbeing Scale",
+  "abbreviation": "SWEMWBS",
+  "description": "7 positively worded statements about the past two weeks, each rated 1–5.",
+  "tags": [
+    "wellbeing",
+    "mental-health"
+  ],
+  "terms": "licensed",
+  "holder": {
+    "name": "University of Warwick (Warwick Medical School)",
+    "url": "https://warwick.ac.uk/fac/sci/med/research/platform/wemwbs/"
+  },
+  "citation": {
+    "text": "Stewart-Brown S, Tennant A, Tennant R, Platt S, Parkinson J, Weich S (2009). Internal construct validity of the Warwick-Edinburgh Mental Well-being Scale (WEMWBS): a Rasch analysis using data from the Scottish Health Education Population Survey. Health and Quality of Life Outcomes 7:15.",
+    "doi": "10.1186/1477-7525-7-15"
+  },
+  "itemCount": 7,
+  "response": {
+    "kind": "shared",
+    "min": 1,
+    "max": 5
+  },
+  "scoring": {
+    "aggregate": "sum",
+    "reversed": [],
+    "subscales": {},
+    "total": true,
+    "offset": 0,
+    "factor": null,
+    "text": "Raw sum of the 7 items (7–35), then the published metric conversion table. Scoring here follows the published literature; check it against the manual or form your lab holds before publishing."
+  },
+  "note": null
+}

@@ -40,9 +40,10 @@
 		}
 		out.push(
 			{ id: 'rename', label: type === 'question' ? 'Edit text…' : 'Rename…', run: (id) => actions.rename(id) },
-			{ id: 'duplicate', label: 'Duplicate', run: (id) => void actions.duplicate(id) },
-			{ id: 'delete', label: 'Delete…', danger: true, run: (id) => void actions.remove(id) }
+			{ id: 'duplicate', label: 'Duplicate', run: (id) => void actions.duplicate(id) }
 		);
+		if (actions.canSaveToBank) out.push({ id: 'save-bank', label: 'Save to bank…', run: (id) => actions.saveToBank(id) });
+		out.push({ id: 'delete', label: 'Delete…', danger: true, run: (id) => void actions.remove(id) });
 		return out;
 	}
 

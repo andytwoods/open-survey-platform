@@ -1,0 +1,37 @@
+{
+  "stubVersion": "osp-instrument-stub/0.1",
+  "id": "bai",
+  "title": "Beck Anxiety Inventory",
+  "abbreviation": "BAI",
+  "description": "21 anxiety symptoms over the past month, each rated 0–3.",
+  "tags": [
+    "anxiety",
+    "clinical",
+    "screener"
+  ],
+  "terms": "licensed",
+  "holder": {
+    "name": "Pearson Clinical Assessment",
+    "url": "https://www.pearsonassessments.com/"
+  },
+  "citation": {
+    "text": "Beck AT, Epstein N, Brown G, Steer RA (1988). An inventory for measuring clinical anxiety: psychometric properties. Journal of Consulting and Clinical Psychology 56(6):893–897.",
+    "doi": "10.1037/0022-006X.56.6.893"
+  },
+  "itemCount": 21,
+  "response": {
+    "kind": "shared",
+    "min": 0,
+    "max": 3
+  },
+  "scoring": {
+    "aggregate": "sum",
+    "reversed": [],
+    "subscales": {},
+    "total": true,
+    "offset": 0,
+    "factor": null,
+    "text": "Sum of the 21 items (0–63): 0–7 minimal, 8–15 mild, 16–25 moderate, 26–63 severe. Scoring here follows the published literature; check it against the manual or form your lab holds before publishing."
+  },
+  "note": null
+}

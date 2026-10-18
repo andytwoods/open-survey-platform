@@ -1,0 +1,37 @@
+{
+  "stubVersion": "osp-instrument-stub/0.1",
+  "id": "k10",
+  "title": "Kessler Psychological Distress Scale, 10-item",
+  "abbreviation": "K10",
+  "description": "10 questions about the past 30 days, each rated 1–5 (none of the time to all of the time).",
+  "tags": [
+    "distress",
+    "mental-health",
+    "screener"
+  ],
+  "terms": "ask",
+  "holder": {
+    "name": "Ronald C. Kessler (Harvard Medical School)",
+    "url": "https://www.hcp.med.harvard.edu/ncs/k6_scales.php"
+  },
+  "citation": {
+    "text": "Kessler RC, Andrews G, Colpe LJ, Hiripi E, Mroczek DK, Normand SLT, Walters EE, Zaslavsky AM (2002). Short screening scales to monitor population prevalences and trends in non-specific psychological distress. Psychological Medicine 32(6):959–976.",
+    "doi": "10.1017/S0033291702006074"
+  },
+  "itemCount": 10,
+  "response": {
+    "kind": "shared",
+    "min": 1,
+    "max": 5
+  },
+  "scoring": {
+    "aggregate": "sum",
+    "reversed": [],
+    "subscales": {},
+    "total": true,
+    "offset": 0,
+    "factor": null,
+    "text": "Sum of the 10 items (10–50): 10–19 likely well, 20–24 mild, 25–29 moderate, 30–50 severe distress. Scoring here follows the published literature; check it against the manual or form your lab holds before publishing."
+  },
+  "note": "Free to use with the citation and the copyright line; the text is not ours to redistribute, so you enter the items yourself."
+}

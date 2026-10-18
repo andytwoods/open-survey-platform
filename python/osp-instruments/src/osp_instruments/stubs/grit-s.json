@@ -1,0 +1,42 @@
+{
+  "stubVersion": "osp-instrument-stub/0.1",
+  "id": "grit-s",
+  "title": "Short Grit Scale",
+  "abbreviation": "Grit-S",
+  "description": "8 statements rated 1–5 (very much like me to not like me at all).",
+  "tags": [
+    "grit",
+    "perseverance",
+    "personality"
+  ],
+  "terms": "ask",
+  "holder": {
+    "name": "Angela Duckworth",
+    "url": "https://angeladuckworth.com/grit-scale/"
+  },
+  "citation": {
+    "text": "Duckworth AL, Quinn PD (2009). Development and validation of the Short Grit Scale (Grit-S). Journal of Personality Assessment 91(2):166–174.",
+    "doi": "10.1080/00223890802634290"
+  },
+  "itemCount": 8,
+  "response": {
+    "kind": "shared",
+    "min": 1,
+    "max": 5
+  },
+  "scoring": {
+    "aggregate": "mean",
+    "reversed": [
+      1,
+      3,
+      5,
+      6
+    ],
+    "subscales": {},
+    "total": true,
+    "offset": 0,
+    "factor": null,
+    "text": "Mean of the 8 items (1–5) after reversing the consistency-of-interest items 1, 3, 5 and 6, with 5 = very much like me. Scoring here follows the published literature; check it against the manual or form your lab holds before publishing."
+  },
+  "note": "Enter the options so that value 5 means 'very much like me' for the perseverance items; the recipe reverses items 1, 3, 5 and 6."
+}

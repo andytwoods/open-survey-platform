@@ -1,0 +1,65 @@
+{
+  "stubVersion": "osp-instrument-stub/0.1",
+  "id": "dass-21",
+  "title": "Depression Anxiety Stress Scales, 21-item",
+  "abbreviation": "DASS-21",
+  "description": "21 statements about the past week, each rated 0–3; three 7-item scales.",
+  "tags": [
+    "depression",
+    "anxiety",
+    "stress"
+  ],
+  "terms": "licensed",
+  "holder": {
+    "name": "University of New South Wales, School of Psychology (Lovibond)",
+    "url": "https://www2.psy.unsw.edu.au/dass/"
+  },
+  "citation": {
+    "text": "Lovibond PF, Lovibond SH (1995). The structure of negative emotional states: comparison of the Depression Anxiety Stress Scales (DASS) with the Beck Depression and Anxiety Inventories. Behaviour Research and Therapy 33(3):335–343.",
+    "doi": "10.1016/0005-7967(94)00075-U"
+  },
+  "itemCount": 21,
+  "response": {
+    "kind": "shared",
+    "min": 0,
+    "max": 3
+  },
+  "scoring": {
+    "aggregate": "sum",
+    "reversed": [],
+    "subscales": {
+      "depression": [
+        3,
+        5,
+        10,
+        13,
+        16,
+        17,
+        21
+      ],
+      "anxiety": [
+        2,
+        4,
+        7,
+        9,
+        15,
+        19,
+        20
+      ],
+      "stress": [
+        1,
+        6,
+        8,
+        11,
+        12,
+        14,
+        18
+      ]
+    },
+    "total": false,
+    "offset": 0,
+    "factor": null,
+    "text": "Three sums: depression = items 3, 5, 10, 13, 16, 17, 21; anxiety = 2, 4, 7, 9, 15, 19, 20; stress = 1, 6, 8, 11, 12, 14, 18. Multiply by 2 to compare with DASS-42 norms. Scoring here follows the published literature; check it against the manual or form your lab holds before publishing."
+  },
+  "note": "The DASS site forbids modification, sale and public-facing apps that show scores; the recipe here never shows a score to the participant."
+}

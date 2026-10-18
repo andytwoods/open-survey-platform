@@ -1,0 +1,36 @@
+{
+  "stubVersion": "osp-instrument-stub/0.1",
+  "id": "gse",
+  "title": "General Self-Efficacy Scale",
+  "abbreviation": "GSE",
+  "description": "10 statements rated 1–4 (not at all true to exactly true).",
+  "tags": [
+    "self-efficacy",
+    "personality"
+  ],
+  "terms": "ask",
+  "holder": {
+    "name": "Ralf Schwarzer and Matthias Jerusalem (Freie Universität Berlin)",
+    "url": "https://userpage.fu-berlin.de/~health/selfscal.htm"
+  },
+  "citation": {
+    "text": "Schwarzer R, Jerusalem M (1995). Generalized Self-Efficacy scale. In: Weinman J, Wright S, Johnston M (eds). Measures in health psychology: a user's portfolio. Causal and control beliefs. Windsor: NFER-Nelson, pp. 35–37.",
+    "doi": null
+  },
+  "itemCount": 10,
+  "response": {
+    "kind": "shared",
+    "min": 1,
+    "max": 4
+  },
+  "scoring": {
+    "aggregate": "sum",
+    "reversed": [],
+    "subscales": {},
+    "total": true,
+    "offset": 0,
+    "factor": null,
+    "text": "Sum of the 10 items (10–40). Scoring here follows the published literature; check it against the manual or form your lab holds before publishing."
+  },
+  "note": null
+}

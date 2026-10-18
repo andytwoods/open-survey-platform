@@ -1,0 +1,40 @@
+{
+  "stubVersion": "osp-instrument-stub/0.1",
+  "id": "brs",
+  "title": "Brief Resilience Scale",
+  "abbreviation": "BRS",
+  "description": "6 statements rated 1–5 on agreement.",
+  "tags": [
+    "resilience",
+    "coping"
+  ],
+  "terms": "ask",
+  "holder": {
+    "name": "Bruce W. Smith (University of New Mexico)",
+    "url": null
+  },
+  "citation": {
+    "text": "Smith BW, Dalen J, Wiggins K, Tooley E, Christopher P, Bernard J (2008). The Brief Resilience Scale: assessing the ability to bounce back. International Journal of Behavioral Medicine 15(3):194–200.",
+    "doi": "10.1080/10705500802222972"
+  },
+  "itemCount": 6,
+  "response": {
+    "kind": "shared",
+    "min": 1,
+    "max": 5
+  },
+  "scoring": {
+    "aggregate": "mean",
+    "reversed": [
+      2,
+      4,
+      6
+    ],
+    "subscales": {},
+    "total": true,
+    "offset": 0,
+    "factor": null,
+    "text": "Mean of the 6 items (1–5) after reversing items 2, 4 and 6. Scoring here follows the published literature; check it against the manual or form your lab holds before publishing."
+  },
+  "note": null
+}

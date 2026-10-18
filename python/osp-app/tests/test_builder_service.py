@@ -178,6 +178,9 @@ def test_every_command_fails_closed_for_non_members(env, command_id, who):
         "bank.export": {"item_id": "i", "tenant_id": "lab-a"},
         "bank.import": {"file": {}, "tenant_id": "lab-a"},
         "bank.copy": {"item_id": "i", "tenant_id": "lab-a"},
+        "bank.preview": {"survey_id": sid, "target_id": "b1"},
+        "bank.stubs": {},
+        "bank.compose_licensed": {"items": ["a"], "attest": True, "tenant_id": "lab-a"},
     }.get(command_id, {"survey_id": sid})
     if who is None or isinstance(who, str):
         with pytest.raises(Unauthenticated):

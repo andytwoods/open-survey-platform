@@ -1,0 +1,63 @@
+{
+  "stubVersion": "osp-instrument-stub/0.1",
+  "id": "tipi",
+  "title": "Ten-Item Personality Inventory",
+  "abbreviation": "TIPI",
+  "description": "10 trait pairs rated 1–7 on agreement; two items per Big Five domain.",
+  "tags": [
+    "personality",
+    "big-five"
+  ],
+  "terms": "ask",
+  "holder": {
+    "name": "Samuel D. Gosling (University of Texas at Austin)",
+    "url": "https://gosling.psy.utexas.edu/scales-weve-developed/ten-item-personality-measure-tipi/"
+  },
+  "citation": {
+    "text": "Gosling SD, Rentfrow PJ, Swann WB Jr (2003). A very brief measure of the Big-Five personality domains. Journal of Research in Personality 37(6):504–528.",
+    "doi": "10.1016/S0092-6566(03)00046-1"
+  },
+  "itemCount": 10,
+  "response": {
+    "kind": "shared",
+    "min": 1,
+    "max": 7
+  },
+  "scoring": {
+    "aggregate": "mean",
+    "reversed": [
+      2,
+      4,
+      6,
+      8,
+      10
+    ],
+    "subscales": {
+      "extraversion": [
+        1,
+        6
+      ],
+      "agreeableness": [
+        2,
+        7
+      ],
+      "conscientiousness": [
+        3,
+        8
+      ],
+      "emotional_stability": [
+        4,
+        9
+      ],
+      "openness": [
+        5,
+        10
+      ]
+    },
+    "total": false,
+    "offset": 0,
+    "factor": null,
+    "text": "Reverse items 2, 4, 6, 8 and 10, then average each pair: extraversion = 1, 6; agreeableness = 2, 7; conscientiousness = 3, 8; emotional stability = 4, 9; openness = 5, 10. Scoring here follows the published literature; check it against the manual or form your lab holds before publishing."
+  },
+  "note": null
+}

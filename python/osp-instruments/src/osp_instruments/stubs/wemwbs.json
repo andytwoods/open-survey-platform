@@ -1,0 +1,36 @@
+{
+  "stubVersion": "osp-instrument-stub/0.1",
+  "id": "wemwbs",
+  "title": "Warwick-Edinburgh Mental Wellbeing Scale",
+  "abbreviation": "WEMWBS",
+  "description": "14 positively worded statements about the past two weeks, each rated 1–5.",
+  "tags": [
+    "wellbeing",
+    "mental-health"
+  ],
+  "terms": "licensed",
+  "holder": {
+    "name": "University of Warwick (Warwick Medical School)",
+    "url": "https://warwick.ac.uk/fac/sci/med/research/platform/wemwbs/"
+  },
+  "citation": {
+    "text": "Tennant R, Hiller L, Fishwick R, Platt S, Joseph S, Weich S, Parkinson J, Secker J, Stewart-Brown S (2007). The Warwick-Edinburgh Mental Well-being Scale (WEMWBS): development and UK validation. Health and Quality of Life Outcomes 5:63.",
+    "doi": "10.1186/1477-7525-5-63"
+  },
+  "itemCount": 14,
+  "response": {
+    "kind": "shared",
+    "min": 1,
+    "max": 5
+  },
+  "scoring": {
+    "aggregate": "sum",
+    "reversed": [],
+    "subscales": {},
+    "total": true,
+    "offset": 0,
+    "factor": null,
+    "text": "Sum of the 14 items (14–70); higher is better wellbeing. Scoring here follows the published literature; check it against the manual or form your lab holds before publishing."
+  },
+  "note": null
+}

@@ -17,6 +17,10 @@
 	import type { SelectionStore } from '../selection.svelte';
 	import { canvasQuestions, cardSchema } from './canvas';
 	import { iconFor } from './icons';
+	import ProvenanceLine from '../bank/ProvenanceLine.svelte';
+	import type { ProvenanceIndex } from '../bank/provenance.svelte';
+	import { sourceOf, type SourceRef } from '../bank/logic';
+	import { findObject } from '../model/outline';
 
 	/**
 	 * The outline tree as cards: sections (level 1), groups (level 2), question cards.
@@ -52,7 +56,10 @@
 		placing = null,
 		onPlace,
 		onCancelPlace,
-		placeDefault = null
+		placeDefault = null,
+		placingKind = 'question',
+		provenance,
+		onProvenance
 	}: {
 		pages: OutlineNode[];
 		selection: SelectionStore;
@@ -86,7 +93,19 @@
 		onCancelPlace?: () => void;
 		/** The page whose end gets focus when placing starts (else the first gap). */
 		placeDefault?: string | null;
+		/** What is being placed: "question" (a type), or a bank item's kind. */
+		placingKind?: string;
+		/** Bank provenance (QB5): what the `source` records on blocks, pages and questions point at. */
+		provenance?: ProvenanceIndex;
+		/** The provenance line's actions (present when editing is connected). */
+		onProvenance?: {
+			details: (id: string, source: SourceRef) => void;
+			replace: (id: string, source: SourceRef, version: number) => void;
+			detach: (id: string) => void;
+		};
 	} = $props();
+
+	const srcOf = (id: string): SourceRef | null => (provenance ? sourceOf(findObject(survey, id)) : null);
 
 	let root = $state<HTMLElement | null>(null);
 	/** The scrolling pane around the canvas (the editor's canvas pane, else the nearest). */
@@ -116,7 +135,7 @@
 	// While a type is dragged, scroll near the edges and follow the pointer (the toolbox
 	// holds the pointer capture, so its moves reach the window).
 	$effect(() => {
-		if (!typeDrag?.type) return;
+		if (!typeDrag?.active) return;
 		const td = typeDrag;
 		const auto = new AutoScroller(scroller, () => {
 			if (td.refresh() && td.hit) announce(td.hit.description);
@@ -159,7 +178,7 @@
 		const card = t?.closest<HTMLElement>('[data-canvas-question]');
 		if (!card || !root.contains(card)) return;
 		// Badge buttons keep their clicks; touch drags only by the grip (else it scrolls).
-		if (t?.closest('.count-btn, .xbadges, a, input, select, textarea')) return;
+		if (t?.closest('.count-btn, .xbadges, .provenance, a, input, select, textarea')) return;
 		const grip = t?.closest('[data-drag-handle]');
 		if (e.pointerType === 'touch' && !grip) return;
 		if (grip) e.preventDefault();
@@ -255,7 +274,7 @@
 	const gap = $derived<DropTarget | null>(
 		cardDrag?.active ? (cardDrag.hit?.target ?? null) : (typeDrag?.hit?.hit.target ?? null)
 	);
-	const dragging = $derived(!!cardDrag?.active || !!typeDrag?.type);
+	const dragging = $derived(!!cardDrag?.active || !!typeDrag?.active);
 
 	/** Which edge of card `index` (of `count` on page `pageId`) shows the line, if any. */
 	function dropEdge(pageId: string, index: number, count: number): 'before' | 'after' | undefined {
@@ -334,6 +353,20 @@
 	{/if}
 {/snippet}
 
+{#snippet provenanceLine(id: string)}
+	{@const src = srcOf(id)}
+	{#if src && provenance}
+		<ProvenanceLine
+			{id}
+			source={src}
+			info={provenance.info(src)}
+			ondetails={onProvenance?.details}
+			onreplace={onProvenance?.replace}
+			ondetach={onProvenance?.detach}
+		/>
+	{/if}
+{/snippet}
+
 {#snippet placeButton(pageId: string, slot: number)}
 	{@const where = describeGap(pages, { parent: pageId, slot }, [], 'Place here')}
 	<li class="place">
@@ -373,7 +406,7 @@
 	{/if}
 	{#if placing}
 		<div class="placing" role="group" aria-label="Placing a question">
-			<p>Choose where the {placing} question goes.</p>
+			<p>Choose where the {placing} {placingKind} goes.</p>
 			<button type="button" class="cancel-place" onclick={() => onCancelPlace?.()}>Cancel</button>
 		</div>
 	{/if}
@@ -393,6 +426,7 @@
 				<span>{kind(section)}: {section.label}</span>
 			</button>
 			{@render badgeList(section)}
+			{#if provenance}<div class="head-provenance">{@render provenanceLine(section.id)}</div>{/if}
 			{#each section.children ?? [] as group (group.id)}
 				{@const GroupIcon = iconFor(group)}
 				{@const isPage = group.type === 'page'}
@@ -415,6 +449,7 @@
 						<span>{kind(group)}: {group.label}</span>
 					</button>
 					{@render badgeList(group)}
+					{#if provenance}<div class="head-provenance">{@render provenanceLine(group.id)}</div>{/if}
 					<ul class="cards">
 						{#if isPage && dragging && !count}
 							<li class="empty-drop" aria-hidden="true">Drop here: this page is empty</li>
@@ -471,6 +506,7 @@
 									</button>
 								{/if}
 								{@render badgeList(question)}
+								{#if provenance && isPage}<div class="card-provenance">{@render provenanceLine(question.id)}</div>{/if}
 							</li>
 						{/each}
 						{#if isPage && placing}{@render placeButton(group.id, count)}{/if}
@@ -501,6 +537,16 @@
 {/if}
 
 <style>
+	.head-provenance:empty,
+	.card-provenance:empty {
+		display: none;
+	}
+	.head-provenance {
+		padding: 0 var(--space-2);
+	}
+	.card-provenance {
+		padding: 0 var(--space-2);
+	}
 	.xbadges {
 		display: flex;
 		flex-wrap: wrap;

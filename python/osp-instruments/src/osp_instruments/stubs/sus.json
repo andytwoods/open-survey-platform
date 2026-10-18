@@ -1,0 +1,42 @@
+{
+  "stubVersion": "osp-instrument-stub/0.1",
+  "id": "sus",
+  "title": "System Usability Scale",
+  "abbreviation": "SUS",
+  "description": "10 alternating statements about a system rated 1–5 on agreement.",
+  "tags": [
+    "usability",
+    "hci"
+  ],
+  "terms": "ask",
+  "holder": {
+    "name": "John Brooke",
+    "url": null
+  },
+  "citation": {
+    "text": "Brooke J (1996). SUS: a 'quick and dirty' usability scale. In: Jordan PW, Thomas B, Weerdmeester BA, McClelland IL (eds). Usability Evaluation in Industry. London: Taylor & Francis, pp. 189–194.",
+    "doi": null
+  },
+  "itemCount": 10,
+  "response": {
+    "kind": "shared",
+    "min": 1,
+    "max": 5
+  },
+  "scoring": {
+    "aggregate": "sum",
+    "reversed": [
+      2,
+      4,
+      6,
+      8,
+      10
+    ],
+    "subscales": {},
+    "total": true,
+    "offset": -10,
+    "factor": "2.5",
+    "text": "Odd items contribute (score − 1), even items (5 − score); the sum is multiplied by 2.5 for a 0–100 score. The recipe reverses the even items and computes (sum − 10) × 2.5. Scoring here follows the published literature; check it against the manual or form your lab holds before publishing."
+  },
+  "note": null
+}

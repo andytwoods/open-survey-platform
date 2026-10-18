@@ -1,0 +1,56 @@
+{
+  "stubVersion": "osp-instrument-stub/0.1",
+  "id": "hads",
+  "title": "Hospital Anxiety and Depression Scale",
+  "abbreviation": "HADS",
+  "description": "14 items over the past week, each with its own four response options scored 0–3; odd items form the anxiety scale, even items the depression scale.",
+  "tags": [
+    "anxiety",
+    "depression",
+    "clinical"
+  ],
+  "terms": "licensed",
+  "holder": {
+    "name": "GL Assessment (distributed by Mapi Research Trust)",
+    "url": "https://eprovide.mapi-trust.org/"
+  },
+  "citation": {
+    "text": "Zigmond AS, Snaith RP (1983). The Hospital Anxiety and Depression Scale. Acta Psychiatrica Scandinavica 67(6):361–370.",
+    "doi": "10.1111/j.1600-0447.1983.tb09716.x"
+  },
+  "itemCount": 14,
+  "response": {
+    "kind": "per-item",
+    "min": 0,
+    "max": 3
+  },
+  "scoring": {
+    "aggregate": "sum",
+    "reversed": [],
+    "subscales": {
+      "anxiety": [
+        1,
+        3,
+        5,
+        7,
+        9,
+        11,
+        13
+      ],
+      "depression": [
+        2,
+        4,
+        6,
+        8,
+        10,
+        12,
+        14
+      ]
+    },
+    "total": false,
+    "offset": 0,
+    "factor": null,
+    "text": "Two sums of seven items (0–21 each): anxiety = items 1, 3, 5, 7, 9, 11, 13; depression = items 2, 4, 6, 8, 10, 12, 14. 0–7 normal, 8–10 borderline, 11–21 abnormal. Scoring here follows the published literature; check it against the manual or form your lab holds before publishing."
+  },
+  "note": "Enter each item's four options in score order (0 first), whatever order the printed form uses."
+}
