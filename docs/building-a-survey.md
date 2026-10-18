@@ -143,9 +143,11 @@ drops the rest (colours, fonts, images, tables become their text, underline, nes
 lists); a line under the field says what was simplified. Underline is never offered: on the
 web it reads as a link.
 
-Choice and matrix row labels, and the translations of a text, are still edited as plain
-text in their own dialogs (tasks RT5 and RT6). The JSON view shows and accepts the stored
-form:
+A survey with several languages is edited one language at a time: the **Editing language**
+select at the top of the properties panel, with the default text shown as a reference above
+each translated field ([Settings → Languages](settings.md#languages)). Choice and matrix row
+labels are still edited as plain text in their own dialogs (task RT5). The JSON view shows
+and accepts the stored form:
 
 A plain string stays a plain string. A formatted value is `{"type": "rich", "blocks":
 [...]}`, where each block is a paragraph `{"type": "p", "content": [...]}`, a heading

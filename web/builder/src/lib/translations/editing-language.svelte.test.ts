@@ -28,6 +28,8 @@ describe('editing language state', () => {
 		history.replaceState(null, '', '/surveys/s1?lang=de');
 		initEditingLanguage('s1');
 		expect(editLanguageOf(survey)).toBe('de');
+		// The URL's language is remembered, so the survey's other pages open in it.
+		expect(localStorage.getItem('osp.editing-language.s1')).toBe('de');
 		// A language the survey does not have falls back to the default.
 		expect(editLanguageOf({ metadata: { languages: ['en', 'fr'] } })).toBe('en');
 	});

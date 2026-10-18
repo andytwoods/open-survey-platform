@@ -33,10 +33,14 @@ function storage(): Storage | null {
 	}
 }
 
-/** Read the page's URL and what is remembered for this survey. Once per page. */
+/**
+ * Read the page's URL and what is remembered for this survey. Once per page. A language in
+ * the URL becomes the remembered one, so the survey's other pages open in it too.
+ */
 export function initEditingLanguage(surveyId: string): void {
 	editingLanguage.surveyId = surveyId;
 	const fromUrl = typeof location === 'undefined' ? null : langFromSearch(location.search);
+	if (fromUrl) rememberLanguage(storage(), surveyId, fromUrl);
 	editingLanguage.requested = fromUrl ?? rememberedLanguage(storage(), surveyId);
 	editingLanguage.referenceOpen = rememberedReferenceOpen(storage());
 }
