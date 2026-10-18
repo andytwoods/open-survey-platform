@@ -52,7 +52,7 @@ test.describe('question card behaviour', () => {
 	test('label shows pipes as tokens, required marker and badges', async ({ page }) => {
 		await open(page);
 		const card = page.locator('[data-question-card="q_devices"]');
-		await expect(card.locator('.pipe')).toHaveText(/\$\{q_name\}/);
+		await expect(card.locator('.osp-rt-chip')).toHaveText(/\$\{q_name\}/);
 		await expect(card.locator('.req')).toBeVisible();
 		await expect(card.locator('[data-badge="showIf"]')).toContainText('q_age >= 18');
 		await expect(card.locator('[data-badge="shuffle"]')).toBeVisible();

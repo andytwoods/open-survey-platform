@@ -89,7 +89,9 @@ test('builder and participant screenshots', async ({ page, browser }) => {
 	await page.getByRole('radio', { name: /Keep until I delete it/ }).click();
 	await expect(page.getByTestId('retention-status')).toHaveText(/Retention is set/);
 	await page.getByRole('checkbox', { name: 'Show a consent page before the first question' }).click();
-	await page.getByLabel('Consent text').fill('This invented study asks about coffee and sleep. Taking part is voluntary.');
+	await page.getByLabel('Consent text').click();
+	await expect(page.getByLabel('Consent text')).toHaveAttribute('contenteditable', 'true');
+	await page.keyboard.type('This invented study asks about coffee and sleep. Taking part is voluntary.');
 	await page.getByLabel('Agree button').fill('Yes, I take part');
 	await page.keyboard.press('Tab');
 	await expect(page.getByTestId('consent-preview')).toContainText('Yes, I take part');

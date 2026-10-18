@@ -1,5 +1,5 @@
 <script lang="ts">
-	import { theme } from '@osp/ui-components';
+	import { Announcer, theme } from '@osp/ui-components';
 	import fixture from '#lib/properties/fixtures/property-schemas.json';
 	import PropertyPanel from '#lib/properties/PropertyPanel.svelte';
 	import type { OpenEditorRequest, PanelDiagnostic, PropertySchemasDoc, PanelOp } from '#lib/properties/types.js';
@@ -25,7 +25,24 @@
 		block: { id: 'b_sleep', title: 'Sleep' },
 		survey: {
 			metadata: { title: { en: 'Sleep and study habits' }, languages: ['en', 'de'] },
-			settings: {}
+			settings: {},
+			// Enough structure for the rich editor's "Insert answer" picker: q_age comes before q_sleep.
+			variables: [{ id: 'cond', kind: 'assigned', levels: ['a', 'b'] }],
+			blocks: [
+				{
+					id: 'b_sleep',
+					pages: [
+						{
+							id: 'p_habits',
+							items: [
+								{ id: 'q_age', type: 'integer', label: { en: 'How old are you?' } },
+								{ id: 'q_sleep', type: 'single', label: { en: 'How many hours do you sleep?' } },
+								{ id: 'q_after', type: 'text', label: { en: 'Anything else?' } }
+							]
+						}
+					]
+				}
+			]
 		}
 	});
 	let objects = $state(initial());
@@ -69,6 +86,7 @@
 </script>
 
 
+<Announcer />
 <main class="page">
 	<h1>Property panel</h1>
 	<div class="controls">

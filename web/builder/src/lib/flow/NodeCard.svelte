@@ -12,9 +12,10 @@
 	import TriangleAlert from '@lucide/svelte/icons/triangle-alert';
 	import Users from '@lucide/svelte/icons/users';
 	import { Button, IconButton, Tooltip } from '@osp/ui-components';
-	import type { Snippet } from 'svelte';
+	import { onDestroy, type Snippet } from 'svelte';
 	import { withTranslation } from '../properties/logic';
 	import { textFor } from '../cards/logic';
+	import { pipeCandidates, RichTextEditor } from '../richtext';
 	import { endingOf } from '../settings/endings';
 	import BufferedTextField from '../shell/BufferedTextField.svelte';
 	import { flowCtx } from './context';
@@ -61,12 +62,20 @@
 	const send = (ops: Invocation[]) => ctx.store.submit(ops);
 	const set = (property: string, value: unknown) => send([setProp(id, property, value)]);
 
+	// The End message is rich text at block level (planning/rich-text.md RT-D5), piping any
+	// question (an End node comes after them all). Its buffer registers with the store like
+	// BufferedTextField's, so saving and leaving the page flush it.
+	let message = $state<RichTextEditor | null>(null);
+	const offBuffer = ctx.store.registerBuffer({ flush: () => message?.flush() });
+	onDestroy(offBuffer);
+	const messagePipes = $derived(type === 'end' ? pipeCandidates(ctx.survey, { lang: ctx.language }) : null);
+
 	function onkeydown(e: KeyboardEvent) {
 		if (!e.altKey || e.ctrlKey || e.metaKey || e.shiftKey) return;
 		if (e.key !== 'ArrowUp' && e.key !== 'ArrowDown') return;
 		const t = e.target as HTMLElement | null;
 		if (t?.closest('article') !== e.currentTarget) return; // a nested card handles its own
-		if (t && /^(INPUT|TEXTAREA|SELECT)$/.test(t.tagName)) return;
+		if (t && (/^(INPUT|TEXTAREA|SELECT)$/.test(t.tagName) || t.closest('.osp-rt'))) return;
 		e.preventDefault();
 		ctx.moveBy(id, e.key === 'ArrowUp' ? -1 : 1);
 	}
@@ -258,12 +267,20 @@
 					store={ctx.store}
 					commit={(t) => set('outcome', t.trim() && t.trim() !== 'complete' ? t.trim() : undefined)}
 				/>
-				<BufferedTextField
-					label="Message"
-					value={endMessage(node, ctx.language)}
-					store={ctx.store}
-					commit={(t) => set('message', withTranslation(node.message, ctx.language, ctx.language, t))}
-				/>
+				<div class="message">
+					<span class="field-label" id="{uid}-msg-label">Message</span>
+					<RichTextEditor
+						bind:this={message}
+						id="{uid}-msg"
+						value={endMessage(node, ctx.language)}
+						level="block"
+						pipes={messagePipes}
+						labelledBy="{uid}-msg-label"
+						lang={ctx.language}
+						onCommit={(v) => void set('message', withTranslation(node.message, ctx.language, ctx.language, v))}
+						onDirty={(d) => ctx.store.markDirty(d)}
+					/>
+				</div>
 			</div>
 			<p class="muted hint ending" data-testid="ending-line">
 				<span>
@@ -478,6 +495,16 @@
 	}
 	.row > :global(*) {
 		flex: 1 1 12rem;
+	}
+	.message {
+		display: flex;
+		flex-direction: column;
+		gap: var(--space-1);
+		flex-basis: 100%;
+	}
+	.field-label {
+		font-size: var(--text-sm);
+		font-weight: var(--weight-medium);
 	}
 	.arms {
 		padding: 0 var(--space-2) var(--space-2) var(--space-4);

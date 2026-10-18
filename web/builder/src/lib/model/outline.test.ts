@@ -75,6 +75,11 @@ describe('text helpers', () => {
 		expect(textIn({ de: 'b' }, 'en')).toBe('b');
 		expect(textIn('plain', 'en')).toBe('plain');
 		expect(textIn(undefined, 'en')).toBe('');
+		// Rich text (RT2) is flattened to words for the outline; other languages' trees are kept.
+		const rich = { type: 'rich', blocks: [{ type: 'p', content: [{ text: 'How ', marks: ['b'] }, { pipe: 'age' }] }] };
+		expect(textIn({ en: rich }, 'en')).toBe('How ${age}');
+		expect(textIn(rich, 'de')).toBe('How ${age}');
+		expect(withText({ en: rich, de: 'b' }, 'de', 'z')).toEqual({ en: rich, de: 'z' });
 		expect(withText({ en: 'a', de: 'b' }, 'en', 'z')).toEqual({ en: 'z', de: 'b' });
 		expect(withText('plain', 'en', 'z')).toBe('z');
 		expect(withText(undefined, 'en', 'z')).toEqual({ en: 'z' });

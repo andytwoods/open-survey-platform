@@ -1,0 +1,20 @@
+{
+  "level": "inline",
+  "report": { "images": 0, "tables": 0, "underline": 0, "links": 0, "headings": 0, "nested": 0, "styles": true, "merged": 3 },
+  "status": "Formatting simplified: colours and fonts removed; 3 line breaks kept as one line",
+  "blocks": [
+    {
+      "type": "p",
+      "content": [
+        { "text": "Strongly " },
+        { "text": "agree", "marks": ["b"] },
+        { "br": true },
+        { "text": "Somewhat agree" },
+        { "br": true },
+        { "text": "Neither" },
+        { "br": true },
+        { "text": "Disagree" }
+      ]
+    }
+  ]
+}

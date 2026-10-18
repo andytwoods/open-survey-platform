@@ -101,10 +101,23 @@ describe('web boundaries (dependency-cruiser)', () => {
 			'not-to-unresolvable',
 			'ui-components/src/bad.ts',
 			"import { z } from 'no-such-package-anywhere';\nexport const b = z;\n"
+		],
+		[
+			// The editor library is confined to builder/src/lib/richtext/ (a lazy chunk).
+			'tiptap-stays-in-richtext',
+			'builder/src/lib/cards/bad.ts',
+			"import { Editor } from '@tiptap/core';\nexport const b = Editor;\n"
 		]
 	])('violation %s (%s) fails', (rule, path, body) => {
 		const files: Files = { ...base, [path]: body };
 		if (rule === 'stay-inside-web') files['../spikes/thing.ts'] = 'export const s = 1;\n';
+		if (rule === 'tiptap-stays-in-richtext') {
+			files['node_modules/@tiptap/core/package.json'] = '{"name":"@tiptap/core","main":"index.js","types":"index.d.ts"}\n';
+			files['node_modules/@tiptap/core/index.js'] = 'export const Editor = 1;\n';
+			files['node_modules/@tiptap/core/index.d.ts'] = 'export declare const Editor: number;\n';
+			// The same import from inside richtext/ is allowed.
+			files['builder/src/lib/richtext/ok.ts'] = "import { Editor } from '@tiptap/core';\nexport const ok = Editor;\n";
+		}
 		const { status, rules } = cruise(files);
 		expect(rules).toContain(rule);
 		expect(status).not.toBe(0);

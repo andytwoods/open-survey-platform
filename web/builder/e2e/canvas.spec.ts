@@ -1,6 +1,6 @@
 import { readFileSync } from 'node:fs';
 import { expect, test, type Page } from '@playwright/test';
-import { axe, signIn, writeHeaders } from './fixtures';
+import { axe, fillRich, signIn, writeHeaders } from './fixtures';
 
 // The editor canvas shows each question as its rich per-family card (task B14 wiring B5's
 // lib/cards), against a real osp-api on SQLite: a survey with all nine types (fixtures
@@ -86,7 +86,8 @@ test('edits in the properties panel update the card at once', async ({ page }) =
 
 	// The grid's question text.
 	const text = props.getByRole('textbox', { name: 'Question text' });
-	await text.fill('Rate these hot drinks');
+	await fillRich(page, text, 'Rate these hot drinks');
+	await page.keyboard.press('Tab');
 	await expect(card(page, 'taste')).toContainText('Rate these hot drinks');
 	await expect(saved(page)).toHaveText(/All changes saved/);
 

@@ -1,0 +1,45 @@
+{
+  "level": "block",
+  "report": { "images": 1, "tables": 1, "underline": 1, "links": 2, "headings": 1, "nested": 1, "styles": true, "merged": 0 },
+  "status": "Formatting simplified: colours and fonts, 1 image, 1 table, underline, 1 heading and 1 nested list removed; 2 links removed: not https",
+  "blocks": [
+    { "type": "h", "level": 2, "content": [{ "text": "Before you start" }] },
+    {
+      "type": "p",
+      "content": [
+        { "text": "Please read the " },
+        { "text": "information sheet", "marks": ["b"] },
+        { "text": " and keep your " },
+        { "text": "participant code", "marks": ["i"] },
+        { "text": " handy. Underlined words lose their line." }
+      ]
+    },
+    { "type": "h", "level": 3, "content": [{ "text": "A small heading" }] },
+    {
+      "type": "p",
+      "content": [
+        { "text": "Bold via style", "marks": ["b"] },
+        { "text": " and " },
+        { "text": "italic via style", "marks": ["i"] },
+        { "text": " and normal." }
+      ]
+    },
+    {
+      "type": "ul",
+      "items": [[{ "text": "First item" }], [{ "text": "Second item" }], [{ "text": "Nested one" }], [{ "text": "Nested two" }], [{ "text": "Third item" }]]
+    },
+    { "type": "p", "content": [{ "text": "Cell A Cell B" }] },
+    { "type": "p", "content": [{ "text": "Cell C Cell D" }] },
+    {
+      "type": "p",
+      "content": [
+        { "text": "See " },
+        { "text": "the sheet", "href": "https://example.org/sheet" },
+        { "text": " or this or mail. Age: " },
+        { "pipe": "age" },
+        { "text": "." }
+      ]
+    },
+    { "type": "p", "content": [] }
+  ]
+}

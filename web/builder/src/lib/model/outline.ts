@@ -4,6 +4,7 @@
  * semantics. Anything malformed is skipped rather than thrown on (the server owns
  * validity). The mock tree (`?mock`) uses the same node shape.
  */
+import { isRichText, plainTextOf, type RichText } from '@osp/engine';
 import type { PatchOperation } from '../sync/json-patch';
 
 export type NodeType = 'survey' | 'block' | 'page' | 'question';
@@ -45,23 +46,32 @@ export function defaultLanguage(doc: unknown): string {
 	return 'en';
 }
 
-/** A Text value (string or {lang: string}) in `lang`, falling back to any language. */
+const isText = (v: unknown): v is string | RichText => typeof v === 'string' || isRichText(v);
+const words = (v: string | RichText): string => (typeof v === 'string' ? v : plainTextOf(v));
+
+/**
+ * A Text value (string, rich tree or {lang: string | tree}) in `lang` as words, falling
+ * back to any language. Rich text is flattened: the outline shows labels as plain text.
+ */
 export function textIn(text: unknown, lang: string): string {
-	if (typeof text === 'string') return text;
+	if (isText(text)) return words(text);
 	if (isObj(text)) {
 		const v = text[lang];
-		if (typeof v === 'string') return v;
-		const first = Object.values(text).find((x) => typeof x === 'string');
-		return typeof first === 'string' ? first : '';
+		if (isText(v)) return words(v);
+		const first = Object.values(text).find(isText);
+		return first ? words(first) : '';
 	}
 	return '';
 }
 
-/** `old` with its `lang` text replaced: keeps other languages, keeps a plain string plain. */
-export function withText(old: unknown, lang: string, value: string): string | Record<string, string> {
-	if (isObj(old)) {
-		const out: Record<string, string> = {};
-		for (const [k, v] of Object.entries(old)) if (typeof v === 'string') out[k] = v;
+/**
+ * `old` with its `lang` text replaced by a plain string: keeps other languages (rich values
+ * included), keeps a plain string plain.
+ */
+export function withText(old: unknown, lang: string, value: string): string | Record<string, string | RichText> {
+	if (isObj(old) && !isRichText(old)) {
+		const out: Record<string, string | RichText> = {};
+		for (const [k, v] of Object.entries(old)) if (isText(v)) out[k] = v;
 		out[lang] = value;
 		return out;
 	}

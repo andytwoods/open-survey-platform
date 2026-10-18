@@ -1,0 +1,24 @@
+{
+  "level": "block",
+  "report": { "images": 0, "tables": 0, "underline": 2, "links": 0, "headings": 0, "nested": 0, "styles": true, "merged": 0 },
+  "status": "Formatting simplified: colours and fonts and underline removed",
+  "blocks": [
+    { "type": "h", "level": 1, "content": [{ "text": "Study information" }] },
+    {
+      "type": "p",
+      "content": [
+        { "text": "Thinking about " },
+        { "text": "last week", "marks": ["b"] },
+        { "text": ", how often", "marks": ["i"] },
+        { "text": " did you exercise?" }
+      ]
+    },
+    {
+      "type": "ol",
+      "items": [
+        [{ "text": "First" }],
+        [{ "text": "Second with a " }, { "text": "link", "href": "https://www.google.com/url?q=https://example.org/info&sa=D" }]
+      ]
+    }
+  ]
+}

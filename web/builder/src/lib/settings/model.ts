@@ -2,11 +2,13 @@
  * Small, pure helpers the Survey settings view builds its ops from. They only shape values
  * for `set_property`, `set_languages` and `set_consent`; the server validates every op.
  */
+import { isRichText, type RichText } from '@osp/engine';
 import type { TypeSchema } from '../properties/types';
 import type { Invocation } from '../sync/transport';
 
 type Obj = Record<string, unknown>;
 const isObj = (v: unknown): v is Obj => typeof v === 'object' && v !== null && !Array.isArray(v);
+const isText = (v: unknown): v is string | RichText => typeof v === 'string' || isRichText(v);
 
 // -- retention (settings.retention, from GET /api/meta/retention) ------------------------
 
@@ -73,24 +75,39 @@ export function languagesOp(languages: string[], defaultLanguage: string | null,
 
 // -- translatable text ------------------------------------------------------------------
 
-/** The text written for exactly `lang` (no fallback). A plain string belongs to `defaultLang`. */
-export function textExact(text: unknown, lang: string, defaultLang: string): string {
-	if (typeof text === 'string') return lang === defaultLang ? text : '';
-	if (isObj(text) && typeof text[lang] === 'string') return text[lang] as string;
+/**
+ * The value written for exactly `lang` (no fallback), plain or rich (planning/rich-text.md
+ * RT2). A plain string or a rich tree on its own belongs to `defaultLang`.
+ */
+export function richExact(text: unknown, lang: string, defaultLang: string): string | RichText {
+	if (isText(text)) return lang === defaultLang ? text : '';
+	if (isObj(text) && isText(text[lang])) return text[lang];
 	return '';
 }
 
+/** Whether two text values (plain or rich) are the same text. */
+export function sameText(a: unknown, b: unknown): boolean {
+	return JSON.stringify(a ?? '') === JSON.stringify(b ?? '');
+}
+
+/** `richExact` as words only (rich values flattened away): for plain inputs. */
+export function textExact(text: unknown, lang: string, defaultLang: string): string {
+	const v = richExact(text, lang, defaultLang);
+	return typeof v === 'string' ? v : '';
+}
+
 /**
- * `old` with its `lang` text set to `value`. A plain string stays plain only for the default
- * language; another language turns it into a map. An empty value removes that language.
+ * `old` with its `lang` text set to `value` (plain or rich). A value on its own stays so
+ * only for the default language; another language turns it into a map. An empty value
+ * removes that language. Other languages' rich values are kept.
  */
-export function setText(old: unknown, lang: string, defaultLang: string, value: string): string | Obj | undefined {
-	let map: Record<string, string> = {};
-	if (typeof old === 'string') {
+export function setText(old: unknown, lang: string, defaultLang: string, value: string | RichText): string | RichText | Obj | undefined {
+	let map: Record<string, string | RichText> = {};
+	if (isText(old)) {
 		if (lang === defaultLang) return value === '' ? undefined : value;
 		map[defaultLang] = old;
 	} else if (isObj(old)) {
-		map = Object.fromEntries(Object.entries(old).filter(([, v]) => typeof v === 'string')) as Record<string, string>;
+		map = Object.fromEntries(Object.entries(old).filter(([, v]) => isText(v))) as Record<string, string | RichText>;
 	}
 	if (value === '') delete map[lang];
 	else map[lang] = value;
@@ -131,7 +148,7 @@ export function consentOp(consent: Obj | null): Invocation {
 export function missingConsentLanguages(consent: Obj | null, languages: readonly string[], defaultLang: string): string[] {
 	if (!consent) return [];
 	const written = CONSENT_TEXT_FIELDS.filter((f) => f === 'text' || consent[f] !== undefined);
-	return languages.filter((l) => written.some((f) => !textExact(consent[f], l, defaultLang)));
+	return languages.filter((l) => written.some((f) => !richExact(consent[f], l, defaultLang)));
 }
 
 // -- property schema subsets ----------------------------------------------------------

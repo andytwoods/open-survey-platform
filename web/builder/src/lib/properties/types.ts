@@ -36,6 +36,11 @@ export interface PropertySpec {
 	options?: EnumOption[];
 	/** Dotted path (from the survey root) of a list whose items are the options. */
 	optionsFrom?: string;
+	/**
+	 * text / richtext only: the rich-text level the field takes (planning/rich-text.md §3.1):
+	 * which toolbar the editor shows and the character limit. Absent for a plain field.
+	 */
+	rich?: 'block' | 'stem' | 'inline';
 }
 
 export interface TypeSchema {

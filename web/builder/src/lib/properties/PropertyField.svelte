@@ -1,5 +1,6 @@
 <script lang="ts">
 	import { untrack } from 'svelte';
+	import { isLevel, pipeCandidates, pipeProblems, RichTextEditor, type RichValue } from '../richtext';
 	import BufferedInput from './BufferedInput.svelte';
 	import {
 		editorButtonLabel,
@@ -9,6 +10,7 @@
 		isMissingTranslation,
 		localised,
 		parseNumber,
+		richIn,
 		setPropertyOp,
 		textIn,
 		textValue,
@@ -19,6 +21,8 @@
 	/**
 	 * One property: label, the field editor picked by `spec.kind`, help, translation hint
 	 * and inline diagnostics (all wired through `aria-describedby`). No per-type code.
+	 * Participant-facing text (`richtext`, or `text` with a `rich` level) gets the rich
+	 * editor at the level the schema declares (planning/rich-text.md §9).
 	 */
 	let {
 		id,
@@ -30,6 +34,7 @@
 		defaultLanguage,
 		survey,
 		diagnostics = [],
+		pointer = '',
 		onOp,
 		onOpenEditor,
 		onDirty
@@ -44,6 +49,8 @@
 		defaultLanguage: string;
 		survey: unknown;
 		diagnostics?: PanelDiagnostic[];
+		/** RFC 6901 pointer of this property in the survey document (for chip diagnostics). */
+		pointer?: string;
 		onOp: (op: PanelOp) => void;
 		onOpenEditor?: (request: OpenEditorRequest) => void;
 		onDirty?: (dirty: boolean) => void;
@@ -60,6 +67,8 @@
 	});
 
 	const kind = $derived(spec.kind);
+	/** The rich editor's level: the schema's `rich`, else stem for `richtext`; plain `text` has none. */
+	const level = $derived(isLevel(spec.rich) ? spec.rich : kind === 'richtext' ? 'stem' : null);
 	const label = $derived(localised(spec.label, language) || propertyKey);
 	const help = $derived(localised(spec.help, language));
 	const shown = $derived(raw === undefined ? spec.default : raw);
@@ -79,7 +88,7 @@
 		[
 			translatable && langId,
 			help && helpId,
-			kind === 'richtext' && pipeId,
+			level !== null && pipeId,
 			numberError && numErrId,
 			diagnostics.length > 0 && diagId
 		]
@@ -87,11 +96,16 @@
 			.join(' ') || undefined
 	);
 
+	// Pipe chips (planning/rich-text.md §4): candidates from the survey the client holds
+	// (items before this one), and the server's diagnostics on the chips they are about.
+	const pipes = $derived(level === null ? null : pipeCandidates(survey, { before: addr?.target, lang: language }));
+	const problems = $derived(level === null ? new Map<string, string>() : pipeProblems(raw, language, diagnostics, pointer));
+
 	function emit(value: unknown) {
 		if (addr) onOp(setPropertyOp(addr, value));
 	}
 
-	function commitText(text: string) {
+	function commitText(text: RichValue) {
 		emit(textValue(spec, lastRaw, language, defaultLanguage, text));
 	}
 
@@ -133,11 +147,27 @@
 		{/if}
 	</div>
 
-	{#if kind === 'text' || kind === 'richtext'}
+	{#if level !== null}
+		<RichTextEditor
+			{id}
+			value={richIn(shown, language)}
+			{level}
+			{pipes}
+			{problems}
+			placeholder={missing ? fallbackText(raw, defaultLanguage) : ''}
+			labelledBy={labelId}
+			{describedBy}
+			required={spec.required}
+			invalid={hasError}
+			{readonly}
+			lang={translatable ? language : undefined}
+			onCommit={commitText}
+			{onDirty}
+		/>
+	{:else if kind === 'text'}
 		<BufferedInput
 			{id}
 			value={textIn(shown, language)}
-			multiline={kind === 'richtext'}
 			placeholder={missing ? fallbackText(raw, defaultLanguage) : ''}
 			{describedBy}
 			required={spec.required}
@@ -223,8 +253,10 @@
 	{/if}
 
 	{#if help}<p class="help" id={helpId}>{help}</p>{/if}
-	{#if kind === 'richtext'}
-		<p class="help pipe" id={pipeId}>Insert <code>{'${id}'}</code> to pipe in an earlier answer.</p>
+	{#if level !== null}
+		<p class="help pipe" id={pipeId}>
+			Use <em>Insert answer</em> in the toolbar, or type <code>{'${'}</code>, to pipe in an earlier answer.
+		</p>
 	{/if}
 	{#if numberError}<p class="diag" data-severity="error" id={numErrId}>{numberError}</p>{/if}
 	{#if diagnostics.length}

@@ -1,5 +1,5 @@
 import { expect, test, type Page } from '@playwright/test';
-import { axe, pickQuestionType, runFromPalette, signIn, writeHeaders } from './fixtures';
+import { axe, fillRich, pickQuestionType, runFromPalette, signIn, writeHeaders } from './fixtures';
 
 // End to end against a real osp-api on SQLite (e2e/api_server.py, started by the
 // Playwright config): create a survey, edit through ops, undo/redo, reload. Sign-in is the
@@ -41,9 +41,9 @@ test('create, add, rename, undo, redo, reload', async ({ page }) => {
 
 	// Rename through the buffered text field: one set_property on blur.
 	const field = page.getByLabel('Question text');
-	await expect(field).toHaveValue('New question');
-	await field.fill('How many hours do you sleep?');
-	await field.press('Tab');
+	await expect(field).toHaveText('New question');
+	await fillRich(page, field, 'How many hours do you sleep?');
+	await page.keyboard.press('Tab');
 	await expect(question(page, 'How many hours do you sleep?')).toBeVisible();
 	await expect(saveState(page)).toHaveText(/All changes saved/);
 	expect(await axe(page)).toEqual([]);
@@ -53,7 +53,7 @@ test('create, add, rename, undo, redo, reload', async ({ page }) => {
 	const redo = page.getByRole('banner').getByRole('button', { name: 'Redo', exact: true });
 	await undo.click();
 	await expect(question(page, 'New question')).toBeVisible();
-	await expect(field).toHaveValue('New question');
+	await expect(field).toHaveText('New question');
 	await undo.click();
 	await expect(question(page, 'New question')).toHaveCount(0);
 	await redo.click();
@@ -96,8 +96,8 @@ test('add question button on the canvas, and a 409 is replayed onto the newer re
 
 	// Our stale edit gets a 409, refetches and replays: both changes land.
 	const field = page.getByLabel('Question text');
-	await field.fill('Replayed');
-	await field.press('Tab');
+	await fillRich(page, field, 'Replayed');
+	await page.keyboard.press('Tab');
 	await expect(question(page, 'Replayed')).toBeVisible();
 	await expect(tree(page).getByRole('treeitem', { name: 'Elsewhere' })).toBeVisible();
 	await expect(saveState(page)).toHaveText(/All changes saved/);

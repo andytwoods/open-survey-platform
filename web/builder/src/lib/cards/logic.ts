@@ -3,7 +3,7 @@
  * `${pipe}` tokens. Display-only; nothing here decides survey behaviour (AGENTS.md rule 8).
  * Every function accepts hostile input and never throws.
  */
-import { isRichText, plainTextOf } from '@osp/engine';
+import { isRichText, plainTextOf, type RichText } from '@osp/engine';
 import {
 	FAMILIES,
 	type Badge,
@@ -49,20 +49,26 @@ export function resolveFamily(
 
 /**
  * Pick one language from translatable text: `lang`, then English, then the first entry.
- * Rich text (planning/rich-text.md, RT2) is flattened to its words: cards show plain text
- * until RT3 renders them rich.
+ * A rich value (planning/rich-text.md, RT2) is returned as its tree: the cards render it
+ * with the rich view.
  */
-export function textFor(text: unknown, lang = 'en'): string {
+export function richFor(text: unknown, lang = 'en'): string | RichText {
 	if (typeof text === 'string') return text;
-	if (isRichText(text)) return plainTextOf(text);
+	if (isRichText(text)) return text;
 	if (!text || typeof text !== 'object' || Array.isArray(text)) return '';
 	const map = text as Record<string, unknown>;
 	for (const key of [lang, 'en', ...Object.keys(map)]) {
 		const v = map[key];
 		if (typeof v === 'string') return v;
-		if (isRichText(v)) return plainTextOf(v);
+		if (isRichText(v)) return v;
 	}
 	return '';
+}
+
+/** `richFor` flattened to its words, for widget props, names and summaries. */
+export function textFor(text: unknown, lang = 'en'): string {
+	const v = richFor(text, lang);
+	return typeof v === 'string' ? v : plainTextOf(v);
 }
 
 export type PipeSegment = { kind: 'text'; text: string } | { kind: 'pipe'; id: string };

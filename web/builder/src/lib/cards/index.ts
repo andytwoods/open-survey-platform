@@ -8,5 +8,5 @@ export { default as MatrixCard } from './MatrixCard.svelte';
 export { default as ScaleCard } from './ScaleCard.svelte';
 export { default as NoteCard } from './NoteCard.svelte';
 export { CARDS, cardFor } from './dispatch';
-export { badgesFor, exprToText, pipeSegments, resolveFamily, textFor } from './logic';
+export { badgesFor, exprToText, pipeSegments, resolveFamily, richFor, textFor } from './logic';
 export * from './types';

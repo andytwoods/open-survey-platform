@@ -1,0 +1,221 @@
+import '@testing-library/svelte/vitest';
+import { fireEvent, render } from '@testing-library/svelte';
+import type { RichText } from '@osp/engine';
+import axe from 'axe-core';
+import { afterEach, describe, expect, it, vi } from 'vitest';
+import RichTextEditor from './RichTextEditor.svelte';
+import type { RichValue } from './convert';
+import { activate, blurField, editable, typeInto, wait } from './test-utils';
+
+// The rich-text field (planning/rich-text.md §9) in jsdom: edit on focus, the buffering
+// contract (debounce, blur, Escape, echo-safe), normalised commits, levels, counts, chips.
+
+const bold: RichText = { type: 'rich', blocks: [{ type: 'p', content: [{ text: 'Be ' }, { text: 'bold', marks: ['b'] }] }] };
+
+function setup(value: RichValue | undefined, extra: Partial<{ level: 'block' | 'stem' | 'inline'; pipes: null; delay: number; placeholder: string; readonly: boolean }> = {}) {
+	const commits: RichValue[] = [];
+	const dirty: boolean[] = [];
+	const props = {
+		id: 'f1',
+		value,
+		level: extra.level ?? 'stem',
+		pipes: extra.pipes === null ? null : [{ id: 'age', label: 'Age', group: 'Earlier questions' as const }],
+		delay: extra.delay ?? 50,
+		placeholder: extra.placeholder ?? '',
+		readonly: extra.readonly ?? false,
+		labelledBy: 'lbl',
+		onCommit: (v: RichValue) => commits.push(v),
+		onDirty: (d: boolean) => dirty.push(d)
+	};
+	document.body.insertAdjacentHTML('afterbegin', '<span id="lbl">Question text</span>');
+	const r = render(RichTextEditor, { props });
+	const idle = () => r.container.querySelector<HTMLElement>('#f1[role="textbox"]')!;
+	return { ...r, commits, dirty, props, idle };
+}
+
+afterEach(() => {
+	document.getElementById('lbl')?.remove();
+	vi.useRealTimers();
+});
+
+describe('at rest', () => {
+	it('renders the value read-only as a labelled textbox, chips included, with the count', () => {
+		const t = setup('Hello ${age} there');
+		const idle = t.idle();
+		expect(idle.getAttribute('aria-labelledby')).toBe('lbl');
+		expect(idle.getAttribute('aria-multiline')).toBe('true');
+		expect(idle.textContent).toContain('Hello ');
+		expect(idle.querySelector('.osp-rt-chip')!.textContent).toBe('${age}');
+		expect(editable('f1')).toBeNull();
+		expect(t.container.querySelector('.osp-rt-count')!.textContent).toMatch(/12 \/ 2,000/);
+	});
+
+	it('shows the placeholder when empty and renders formatting', () => {
+		const t = setup('', { placeholder: 'Type here' });
+		expect(t.idle().textContent).toBe('Type here');
+		expect(t.idle().getAttribute('aria-placeholder')).toBe('Type here');
+		t.unmount();
+		const b = setup(bold);
+		expect(b.idle().querySelector('strong')!.textContent).toBe('bold');
+	});
+
+	it('follows the value prop', async () => {
+		const t = setup('one');
+		await t.rerender({ ...t.props, value: 'two' });
+		expect(t.idle().textContent).toBe('two');
+	});
+});
+
+describe('editing', () => {
+	it('focus swaps in the editor with the field id and ARIA, and a toolbar', async () => {
+		const t = setup('Hello');
+		const ed = await activate(t.idle());
+		const el = editable('f1')!;
+		expect(el.getAttribute('role')).toBe('textbox');
+		expect(el.getAttribute('aria-labelledby')).toBe('lbl');
+		expect(el.getAttribute('aria-describedby')).toContain('f1-count');
+		expect(t.container.querySelector('#f1[role="textbox"]:not([contenteditable])')).toBeNull();
+		expect(ed.getText()).toBe('Hello');
+		const toolbar = t.container.querySelector('[role="toolbar"]')!;
+		expect(toolbar.getAttribute('aria-label')).toBe('Text formatting');
+		const names = [...toolbar.querySelectorAll('button')].map((b) => b.getAttribute('aria-label'));
+		expect(names).toEqual(['Bold', 'Italic', 'Link', 'Bulleted list', 'Numbered list', 'Insert answer', 'Line break', 'Clear formatting', 'Undo', 'Redo']);
+		expect(toolbar.querySelector('select')).toBeNull(); // no heading control at stem level
+	});
+
+	it('commits a plain string after the pause, once, and reports dirty', async () => {
+		const t = setup('Hello');
+		const ed = await activate(t.idle());
+		await typeInto(ed, 'Hello world');
+		expect(t.commits).toEqual([]);
+		expect(t.dirty).toEqual([true]);
+		await wait(80);
+		expect(t.commits).toEqual(['Hello world']);
+		expect(t.dirty).toEqual([true, false]);
+	});
+
+	it('commits the tree when formatted, normalised; a pipe typed as ${id} is a chip', async () => {
+		const t = setup('Hello', { delay: 1000 });
+		const ed = await activate(t.idle());
+		ed.chain().selectAll().toggleBold().run();
+		// Inserted at the end of bold text, the new text is bold too; `${age}` inserted as text
+		// stays text (the input rule fires on typing, the paste pass on pasting).
+		ed.commands.insertContentAt(ed.state.doc.content.size - 1, ' ${age}');
+		await blurField('f1');
+		expect(t.commits).toEqual([{ type: 'rich', blocks: [{ type: 'p', content: [{ text: 'Hello ${age}', marks: ['b'] }] }] }]);
+	});
+
+	it('Escape reverts the draft and keeps the Escape to itself; a clean Escape bubbles', async () => {
+		const t = setup('Hello', { delay: 1000 });
+		const ed = await activate(t.idle());
+		await typeInto(ed, 'Oops');
+		expect(t.dirty).toEqual([true]);
+		const escaped: boolean[] = [];
+		document.body.addEventListener('keydown', (e) => escaped.push(e.key === 'Escape'), { once: true });
+		await fireEvent.keyDown(editable('f1')!, { key: 'Escape' });
+		expect(ed.getText()).toBe('Hello');
+		expect(t.dirty).toEqual([true, false]);
+		expect(escaped).toEqual([]); // stopped: the drawer must not close
+		await fireEvent.keyDown(editable('f1')!, { key: 'Escape' });
+		expect(escaped).toEqual([true]);
+		await blurField('f1');
+		expect(t.commits).toEqual([]);
+	});
+
+	it('a server echo never clobbers text being typed, but lands when the field is clean', async () => {
+		const t = setup('Hello', { delay: 1000 });
+		const ed = await activate(t.idle());
+		await typeInto(ed, 'Hello, typing');
+		await t.rerender({ ...t.props, value: 'Hello' }); // the old value echoed back
+		expect(ed.getText()).toBe('Hello, typing');
+		await blurField('f1');
+		expect(t.commits).toEqual(['Hello, typing']);
+		// Clean again: another client's edit replaces the text.
+		const again = await activate(t.idle());
+		await t.rerender({ ...t.props, value: 'Elsewhere' });
+		expect(again.getText()).toBe('Elsewhere');
+	});
+
+	it('blur commits and returns to the read-only view', async () => {
+		const t = setup('Hello', { delay: 1000 });
+		const ed = await activate(t.idle());
+		await typeInto(ed, 'Done');
+		await blurField('f1');
+		expect(t.commits).toEqual(['Done']);
+		expect(editable('f1')).toBeNull();
+		expect(t.idle().textContent).toBe('Done');
+	});
+
+	it('flush() commits like the panel does before undo or navigation', async () => {
+		const t = setup('Hello', { delay: 1000 });
+		const ed = await activate(t.idle());
+		await typeInto(ed, 'Flushed');
+		(t.component as unknown as { flush(): void }).flush();
+		expect(t.commits).toEqual(['Flushed']);
+	});
+
+	it('an emptied field commits "" (the caller unsets it)', async () => {
+		const t = setup('Hello', { delay: 1000 });
+		const ed = await activate(t.idle());
+		await typeInto(ed, '');
+		await blurField('f1');
+		expect(t.commits).toEqual(['']);
+	});
+});
+
+describe('levels', () => {
+	it('block offers the heading select; inline offers no lists, breaks or paragraphs and Enter commits', async () => {
+		const b = setup('x', { level: 'block' });
+		await activate(b.idle());
+		expect(b.container.querySelector('[role="toolbar"] select[aria-label="Text style"]')).not.toBeNull();
+		b.unmount();
+
+		const i = setup('x', { level: 'inline', delay: 1000 });
+		const ed = await activate(i.idle());
+		expect(editable('f1')!.getAttribute('aria-multiline')).toBe('false');
+		const names = [...i.container.querySelectorAll('[role="toolbar"] button')].map((b) => b.getAttribute('aria-label'));
+		expect(names).toEqual(['Bold', 'Italic', 'Link', 'Insert answer', 'Clear formatting', 'Undo', 'Redo']);
+		expect(i.container.querySelector('.osp-rt-count')!.textContent).toMatch(/1 \/ 500/);
+		await typeInto(ed, 'xy');
+		await fireEvent.keyDown(editable('f1')!, { key: 'Enter' });
+		expect(i.commits).toEqual(['xy']);
+		expect(ed.state.doc.childCount).toBe(1);
+	});
+
+	it('a field without pipes has no Insert answer button', async () => {
+		const t = setup('x', { pipes: null });
+		await activate(t.idle());
+		expect(t.container.querySelector('[role="toolbar"] [aria-label="Insert answer"]')).toBeNull();
+	});
+
+	it('over the limit the count turns into an error and the commit still happens', async () => {
+		const t = setup('x'.repeat(499), { level: 'inline', delay: 1000 });
+		const ed = await activate(t.idle());
+		await typeInto(ed, 'y'.repeat(501));
+		const count = t.container.querySelector('.osp-rt-count')!;
+		expect(count.textContent).toMatch(/501 \/ 500/);
+		expect(count.textContent).toContain('too long');
+		expect(count.getAttribute('aria-live')).toBe('polite');
+		expect(editable('f1')!.getAttribute('aria-invalid')).toBe('true');
+		await blurField('f1');
+		expect(t.commits).toHaveLength(1);
+	});
+
+	it('read-only fields are not focusable', () => {
+		const t = setup('x', { readonly: true });
+		expect(t.idle().getAttribute('tabindex')).toBe('-1');
+		expect(t.idle().getAttribute('aria-readonly')).toBe('true');
+	});
+});
+
+describe('accessibility', () => {
+	it('has no axe violations at rest and while editing', async () => {
+		const t = setup('Hello ${age}');
+		const rules = { rules: { 'color-contrast': { enabled: false }, region: { enabled: false } } };
+		const rest = await axe.run(t.container, rules);
+		expect(rest.violations.map((v) => v.id)).toEqual([]);
+		await activate(t.idle());
+		const editing = await axe.run(t.container, rules);
+		expect(editing.violations.map((v) => `${v.id}: ${v.nodes.map((n) => n.target).join(', ')}`)).toEqual([]);
+	});
+});
