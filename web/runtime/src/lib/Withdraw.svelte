@@ -37,7 +37,7 @@
 		<p>{consentUi.withdrawnHelp}</p>
 	</section>
 {:else}
-	<section class="withdraw">
+	<section class="withdraw" data-print="hide">
 		{#if !confirming}
 			<button type="button" class="link" onclick={() => (confirming = true)}>{consentUi.withdraw}</button>
 		{:else}

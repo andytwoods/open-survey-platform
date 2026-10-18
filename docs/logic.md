@@ -125,6 +125,11 @@ completion code, automatically after a countdown or by a button; see
 [Redirects](settings.md#redirects). Because the ending is keyed by outcome, a screened-out
 participant can get a different code (or no redirect) from a completer.
 
+An ending can show participants their own answers once the response is stored, as a list in
+path order with a Print button (for a receipt, or a debrief): **Show participants their
+answers** in the ending's card, with its shared-device privacy note. See
+[Endings](settings.md#endings).
+
 ### External task step
 
 An **External task** node hands the participant to a task hosted elsewhere in the middle of

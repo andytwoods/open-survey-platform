@@ -93,6 +93,17 @@ ending for …** to give an outcome its own screen:
   your own wording, so participants are never told something about their data that is not
   true. After a consent decline the line is always *Nothing about you has been recorded*.
 
+- **Show participants their answers**: once the response is stored, a list of every
+  question they answered, in the order they saw them, with the labels and the answers as
+  shown on screen (a choice's label, a matrix row by row), and a **Print** button. The
+  browser prints or saves the page; the print layout keeps only the ending and the list.
+  The list is built in the participant's browser from the answers just sent, never fetched
+  back from the server, and it is shown only on the page that sent them: a reload, a resume
+  link or a withdrawal shows the ending without it. It is never available for the consent
+  decline, which records nothing. **Privacy on a shared device:** the answers stay on
+  screen until the page is closed, next to the Withdraw button, so leave this off for
+  sensitive questions answered in public places.
+
 - **Afterwards**: where to send participants once the response is stored (see
   [Redirects](#redirects) below). *Nowhere* keeps them on this screen.
 

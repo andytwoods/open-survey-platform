@@ -1,7 +1,7 @@
 /** Public engine types (runtime-design.md §3). Everything in `Data` is plain JSON. */
 
 import type { Stored } from './values.ts';
-import type { ChoiceValue, Id, Plan } from './plan.ts';
+import type { ChoiceValue, Id, ItemType, Plan } from './plan.ts';
 
 export type Clock = () => number;
 export type Device = 'phone' | 'tablet' | 'desktop';
@@ -377,6 +377,19 @@ export interface PageView {
 export interface AnswerRecord {
 	state: QuestionState;
 	value: Stored;
+}
+
+/**
+ * One answered question for the ending's list of answers (end-of-survey plan §4.4, EN5;
+ * `answerSummary`). `value` is the answer as text (participant data: escape it when
+ * rendering as HTML); a matrix has `rows` instead, one per answered row.
+ */
+export interface SummaryEntry {
+	id: Id;
+	type: ItemType;
+	label: RenderedText;
+	value: RenderedText | null;
+	rows: Array<{ id: Id; label: RenderedText; value: RenderedText }> | null;
 }
 
 export interface ResponseRecord {

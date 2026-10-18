@@ -56,11 +56,20 @@ test('the End card opens its outcome ending, which is edited in Survey settings'
 	await expect(saved(page)).toHaveText(/All changes saved/);
 	await ending(page, 'early_exit').getByRole('checkbox', { name: 'Show the status line' }).uncheck();
 	await expect(saved(page)).toHaveText(/All changes saved/);
+	// EN5: the answers list, with its shared-device privacy note.
+	const answers = ending(page, 'early_exit').getByRole('checkbox', { name: 'Show participants their answers' });
+	await expect(ending(page, 'early_exit')).toContainText('On a shared device the answers stay on screen');
+	await answers.check();
+	await expect(saved(page)).toHaveText(/All changes saved/);
 	await expect.poll(async () => (await serverEndings(page, id)).early_exit).toEqual({
 		title: { en: 'Sorry to hear that' },
 		body: { en: 'You rated breakfast ${rating}.' },
-		status: 'none'
+		status: 'none',
+		summary: 'answers'
 	});
+	await answers.uncheck();
+	await expect(saved(page)).toHaveText(/All changes saved/);
+	await expect.poll(async () => (await serverEndings(page, id)).early_exit.summary).toBeUndefined();
 	// The preview shows the pipe as a token; the builder never resolves it.
 	await expect(page.getByTestId('ending-preview-early_exit')).toContainText('Sorry to hear that');
 	await expect(page.getByTestId('ending-preview-early_exit').locator('.pipe')).toHaveText('${rating}');

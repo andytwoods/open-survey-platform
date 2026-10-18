@@ -74,7 +74,6 @@ CODES: dict[str, Severity] = {
     # Endings (end-of-survey plan §4.1, EN1)
     "ending.unreachable": "warning",  # an ending for an outcome nothing in the survey reaches
     "ending.declined_summary": "error",  # a decline records nothing, so it has no answers to show
-    "ending.summary_unsupported": "warning",  # `summary: answers` is reserved (EN5), not shown yet
     # End redirects (end-of-survey plan §4.2, EN2)
     "redirect.template": "error",  # a settings.redirectTemplates entry breaks the URL rules
     "redirect.template_clash": "error",  # the same name in settings.redirectTemplates and hooks

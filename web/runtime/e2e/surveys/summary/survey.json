@@ -1,0 +1,213 @@
+{
+  "specVersion": "osp-survey/0.1",
+  "id": "e2e_summary",
+  "version": 1,
+  "metadata": {
+    "title": "Breakfast (answers after submit)",
+    "description": "EN5 end-to-end survey: a consent page, every answer type and a branch; the complete ending lists the participant's answers with a Print button, the screened-out ending does not, and a decline never does.",
+    "languages": [
+      "en"
+    ]
+  },
+  "consent": {
+    "text": "This is a synthetic study about breakfast. Taking part is voluntary.",
+    "agreeLabel": "I agree to take part",
+    "declineLabel": "I do not want to take part",
+    "declineOutcome": "declined",
+    "countDeclines": false
+  },
+  "settings": {
+    "backNavigation": true,
+    "endings": {
+      "complete": {
+        "title": "Thank you for your time",
+        "body": "You rated breakfast ${rating} out of 10.",
+        "summary": "answers"
+      },
+      "ineligible": {
+        "title": "Thank you for your interest",
+        "body": "This study needs people willing to answer a few more questions, so it ends here."
+      },
+      "declined": {
+        "body": "No problem at all."
+      }
+    }
+  },
+  "choiceLists": [
+    {
+      "id": "yesno",
+      "choices": [
+        {
+          "value": "yes",
+          "label": "Yes"
+        },
+        {
+          "value": "no",
+          "label": "No"
+        }
+      ]
+    },
+    {
+      "id": "food_list",
+      "choices": [
+        {
+          "value": "toast",
+          "label": "Toast"
+        },
+        {
+          "value": "eggs",
+          "label": "Eggs"
+        },
+        {
+          "value": "fruit",
+          "label": "Fruit"
+        }
+      ]
+    },
+    {
+      "id": "rating3",
+      "choices": [
+        {
+          "value": 1,
+          "label": "Poor"
+        },
+        {
+          "value": 2,
+          "label": "Fine"
+        },
+        {
+          "value": 3,
+          "label": "Good"
+        }
+      ]
+    }
+  ],
+  "blocks": [
+    {
+      "id": "p1",
+      "pages": [
+        {
+          "id": "p1_page",
+          "items": [
+            {
+              "type": "note",
+              "id": "intro",
+              "label": "A few questions about this morning."
+            },
+            {
+              "type": "single",
+              "id": "eligible",
+              "label": "Are you willing to answer a few more questions?",
+              "choiceList": "yesno",
+              "required": true
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "id": "p2",
+      "pages": [
+        {
+          "id": "p2_page",
+          "items": [
+            {
+              "type": "integer",
+              "id": "rating",
+              "label": "Rate your breakfast today from 1 to 10.",
+              "required": true
+            },
+            {
+              "type": "multi",
+              "id": "foods",
+              "label": "What did you have?",
+              "choiceList": "food_list"
+            },
+            {
+              "type": "date",
+              "id": "when",
+              "label": "When was your last cooked breakfast?"
+            },
+            {
+              "type": "text",
+              "id": "comment",
+              "label": "Anything else?",
+              "multiline": true
+            }
+          ]
+        },
+        {
+          "id": "p2_page2",
+          "items": [
+            {
+              "type": "matrix",
+              "id": "drinks",
+              "name": "drink",
+              "label": "How do you rate these drinks?",
+              "rows": [
+                {
+                  "id": "tea",
+                  "label": "Tea"
+                },
+                {
+                  "id": "coffee",
+                  "label": "Coffee"
+                }
+              ],
+              "choiceList": "rating3"
+            },
+            {
+              "type": "slider",
+              "id": "hunger",
+              "label": "How hungry are you now?",
+              "min": 0,
+              "max": 10,
+              "step": 1,
+              "minLabel": "Not at all",
+              "maxLabel": "Starving"
+            }
+          ]
+        }
+      ]
+    }
+  ],
+  "flow": [
+    {
+      "type": "block",
+      "id": "n_p1",
+      "block": "p1"
+    },
+    {
+      "type": "branch",
+      "id": "branch_1",
+      "if": {
+        "kind": "compare",
+        "op": "==",
+        "left": {
+          "kind": "ref",
+          "id": "eligible"
+        },
+        "right": {
+          "kind": "text",
+          "value": "no"
+        }
+      },
+      "then": [
+        {
+          "type": "end",
+          "id": "end_ineligible",
+          "outcome": "ineligible"
+        }
+      ]
+    },
+    {
+      "type": "block",
+      "id": "n_p2",
+      "block": "p2"
+    },
+    {
+      "type": "end",
+      "id": "end_complete"
+    }
+  ]
+}

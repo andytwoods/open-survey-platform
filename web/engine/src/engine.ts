@@ -86,6 +86,7 @@ import {
 	type StartOptions,
 	type State,
 	type StepResult,
+	type SummaryEntry,
 	type ViewItem,
 	type ViewRow
 } from './types.ts';
@@ -1600,6 +1601,50 @@ export function answers(state: State): Record<Id, AnswerRecord> {
 		const st = reportedState(state.plan, state.data, env, id);
 		const v = state.data.values[id];
 		out[id] = { state: st, value: st === 'answered' && v !== undefined ? v : null };
+	}
+	return out;
+}
+
+/**
+ * The participant's answers for the ending screen (end-of-survey plan §4.4, task EN5):
+ * every answered question on the path, in the order its page was shown and the item was
+ * displayed, with its label and the answer as text: a choice's label, a multi's labels in
+ * the realised order joined with ", " (as piping, §8), the stored text otherwise; a matrix
+ * is one entry with its answered rows. The states and values are the ones `answers` reports
+ * (what the record holds). Notes, unanswered and irrelevant questions are left out, and so
+ * is every page a later answer took off the path (its answers were cleared, §3).
+ */
+export function answerSummary(state: State): SummaryEntry[] {
+	const { plan, data: d } = state;
+	const env = new Env(plan, d);
+	const out: SummaryEntry[] = [];
+	const seen = new Set<Id>();
+	const answered = (id: Id): RenderedText | null => {
+		const item = plan.items[id];
+		if (!item || !isQuestion(item) || !env.relevant(id)) return null;
+		if (reportedState(plan, d, env, id) !== 'answered') return null;
+		return [{ kind: 'value', text: pipeText(plan, d, env, id) }];
+	};
+	for (const h of d.history) {
+		if (seen.has(h.page)) continue;
+		seen.add(h.page);
+		for (const id of displayOrder(plan, d, h.page)) {
+			const item = plan.items[id];
+			if (!item) continue;
+			if (isMatrix(item)) {
+				if (!env.relevant(id)) continue;
+				const rows: NonNullable<SummaryEntry['rows']> = [];
+				for (const rid of item.rows) {
+					const row = plan.items[rid];
+					const value = answered(rid);
+					if (row && value) rows.push({ id: rid, label: render(plan, d, env, row.label), value });
+				}
+				if (rows.length) out.push({ id, type: 'matrix', label: render(plan, d, env, item.label), value: null, rows });
+				continue;
+			}
+			const value = answered(id);
+			if (value) out.push({ id, type: item.type, label: render(plan, d, env, item.label), value, rows: null });
+		}
 	}
 	return out;
 }

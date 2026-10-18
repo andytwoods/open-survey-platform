@@ -11,6 +11,7 @@
 	import { boot, BootError, type Env, type Session } from './lib/session';
 	import { localStorageBackup, localStoragePointer, MemoryStore, openIndexedDb, sessionPointer } from './lib/storage';
 	import { domId, errorText, plain } from './lib/view-map';
+	import AnswerSummary from './lib/AnswerSummary.svelte';
 	import ConsentPage from './lib/ConsentPage.svelte';
 	import EndRedirect from './lib/EndRedirect.svelte';
 	import EndScreen from './lib/EndScreen.svelte';
@@ -299,6 +300,12 @@
 		void version;
 		return phase === 'done' ? (session?.redirect ?? null) : null;
 	});
+	// The ending's list of answers (§4.4, EN5): the session gives it only for this tab's own
+	// acknowledged submit, never after a decline or a withdrawal.
+	const answerList = $derived.by(() => {
+		void version;
+		return phase === 'done' ? (session?.summary ?? null) : null;
+	});
 
 	onMount(() => {
 		// The app's own strings before the plan is known: the browser's languages.
@@ -359,6 +366,9 @@
 			<EndScreen end={view.end} testid="thanks" bind:heading />
 			{#if redirect}
 				<EndRedirect {redirect} preview={!!preview} />
+			{/if}
+			{#if answerList}
+				<AnswerSummary entries={answerList} />
 			{/if}
 			<Withdraw {session} {version} />
 		</main>
@@ -430,7 +440,7 @@
 				<Withdraw {session} {version} />
 			{/if}
 		</main>
-		<nav class="nav" class:docked={keyboard.open} aria-label="Survey" bind:offsetHeight={navHeight}>
+		<nav class="nav" class:docked={keyboard.open} aria-label="Survey" bind:offsetHeight={navHeight} data-print="hide">
 			<div class="nav-inner">
 				{#if view.nav?.back}
 					<button type="button" class="btn" onclick={onBack} disabled={phase !== 'page'}>{ui.back}</button>
@@ -604,5 +614,28 @@
 	.btn:focus-visible {
 		outline: var(--focus-ring-width) solid var(--color-focus);
 		outline-offset: 2px;
+	}
+	/*
+	 * Print (end-of-survey plan §4.4, EN5): the ending and the list of answers on plain paper,
+	 * nothing interactive. Buttons, the nav bar, the redirect and Withdraw mark themselves
+	 * with data-print="hide". No PDF library: the browser prints (or saves) the page.
+	 */
+	@media print {
+		:global(html),
+		:global(body) {
+			background: #fff;
+			color: #000;
+		}
+		.shell {
+			min-block-size: auto;
+		}
+		.page {
+			max-inline-size: none;
+			padding: 0;
+			gap: var(--space-4);
+		}
+		:global([data-print='hide']) {
+			display: none !important;
+		}
 	}
 </style>
