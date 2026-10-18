@@ -41,7 +41,6 @@
       "conditions": {},
       "end": null,
       "labels": {},
-      "choiceLabels": {},
       "ending": null
     },
     {
@@ -164,18 +163,6 @@
         "grid": "How much do you agree?",
         "mood": "How do you feel?"
       },
-      "choiceLabels": {
-        "grid": [
-          [
-            1,
-            "<em>Disagree</em>"
-          ],
-          [
-            2,
-            "Agree"
-          ]
-        ]
-      },
       "ending": null
     },
     {
@@ -218,7 +205,6 @@
       "conditions": {},
       "end": "complete",
       "labels": {},
-      "choiceLabels": {},
       "ending": {
         "title": "All done",
         "message": "Finished\n\nGoodbye, دانة!",
@@ -275,6 +261,6 @@
       "mood__state": "answered"
     },
     "consentVersion": "sha256:a8a1ff20fd802f789f2bd5ac79d6a37cbe9bfe3afb8621f4104330fdbaefad46",
-    "consentedAt": 3000
+    "consentedAt": "<engine>"
   }
 }

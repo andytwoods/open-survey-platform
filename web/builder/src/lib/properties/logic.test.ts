@@ -16,7 +16,8 @@ import {
 	propertyPointer,
 	setPropertyOp,
 	textValue,
-	withTranslation
+	withTranslation,
+	textIn
 } from './logic';
 import type { PropertySchemasDoc, PropertySpec } from './types';
 
@@ -175,5 +176,28 @@ describe('numbers, enums, external editors', () => {
 		expect(externalSummary('choicelist', undefined)).toBe('No choices');
 		expect(externalSummary('condition', undefined)).toBe('No condition');
 		expect(typeof externalSummary('condition', { kind: 'nonsense' })).toBe('string');
+	});
+});
+
+describe('rich text in the property panel before the editor lands (RT2)', () => {
+	const rich = { type: 'rich', blocks: [{ type: 'p', content: [{ text: 'Hi ', marks: ['b'] }, { pipe: 'name' }] }] };
+
+	it('shows a rich value flattened, in a map and on its own', () => {
+		expect(textIn(rich, 'en')).toBe('Hi ${name}');
+		expect(textIn({ en: rich, de: 'Hallo' }, 'en')).toBe('Hi ${name}');
+		expect(textIn({ en: rich, de: 'Hallo' }, 'de')).toBe('Hallo');
+		expect(isMissingTranslation({ en: rich }, 'de')).toBe(true);
+		expect(isMissingTranslation({ en: rich }, 'en')).toBe(false);
+		expect(isMissingTranslation(rich, 'de')).toBe(false);
+		expect(fallbackText({ en: rich }, 'en')).toBe('Hi ${name}');
+	});
+
+	it('keeps the other languages rich when one language is edited', () => {
+		expect(withTranslation({ en: rich, de: 'Hallo' }, 'de', 'en', 'Servus')).toEqual({ en: rich, de: 'Servus' });
+		expect(withTranslation({ en: rich, de: 'Hallo' }, 'en', 'en', 'Plain')).toEqual({ en: 'Plain', de: 'Hallo' });
+		expect(withTranslation(rich, 'en', 'en', 'Plain')).toBe('Plain');
+		expect(withTranslation(rich, 'de', 'en', 'Hallo')).toEqual({ en: rich, de: 'Hallo' });
+		expect(withTranslation(rich, 'de', 'en', '')).toBe(rich);
+		expect(withTranslation({ en: rich }, 'en', 'en', '')).toBeUndefined();
 	});
 });

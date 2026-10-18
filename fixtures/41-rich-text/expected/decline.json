@@ -41,7 +41,6 @@
       "conditions": {},
       "end": null,
       "labels": {},
-      "choiceLabels": {},
       "ending": null
     },
     {
@@ -84,7 +83,6 @@
       "conditions": {},
       "end": "declined",
       "labels": {},
-      "choiceLabels": {},
       "ending": {
         "title": null,
         "message": null,

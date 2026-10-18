@@ -3,6 +3,7 @@
  * `set_property`, matching diagnostics to fields and shaping translatable text.
  * Display and op-shaping only; validation is the server's job (AGENTS.md rule 8).
  */
+import { isRichText, plainTextOf } from '@osp/engine';
 import { exprToText } from '../cards/logic';
 import {
 	CUSTOM_PREFIX,
@@ -159,34 +160,42 @@ export function fieldId(prefix: string, key: string): string {
 
 // --- Text ----------------------------------------------------------------------------
 
-/** The text shown for `language`: a plain string is the same in every language. */
+/**
+ * The text shown for `language`: a plain string is the same in every language; a rich
+ * value (planning/rich-text.md, RT2) is shown flattened until the editor lands (RT3), so
+ * the researcher sees the words and typing replaces the formatting with plain text.
+ */
 export function textIn(value: unknown, language: string): string {
 	if (typeof value === 'string') return value;
-	if (isObj(value) && typeof value[language] === 'string') return value[language] as string;
+	if (isRichText(value)) return plainTextOf(value);
+	if (isObj(value)) {
+		const v = value[language];
+		if (typeof v === 'string') return v;
+		if (isRichText(v)) return plainTextOf(v);
+	}
 	return '';
 }
 
+const present = (v: unknown) => (typeof v === 'string' && v !== '') || isRichText(v);
+
 /** A translation map that has text in some language but not in `language`. */
 export function isMissingTranslation(value: unknown, language: string): boolean {
-	if (!isObj(value)) return false;
-	const has = (l: string) => typeof value[l] === 'string' && (value[l] as string) !== '';
-	return !has(language) && Object.keys(value).some(has);
+	if (!isObj(value) || isRichText(value)) return false;
+	return !present(value[language]) && Object.keys(value).some((l) => present(value[l]));
 }
 
 /** Text from another language to show as a placeholder when this one is missing. */
 export function fallbackText(value: unknown, defaultLanguage: string): string {
-	if (!isObj(value)) return '';
-	const first = [defaultLanguage, ...Object.keys(value)].find(
-		(l) => typeof value[l] === 'string' && value[l] !== ''
-	);
-	return first ? (value[first] as string) : '';
+	if (!isObj(value) || isRichText(value)) return '';
+	const first = [defaultLanguage, ...Object.keys(value)].find((l) => present(value[l]));
+	return first ? textIn(value, first) : '';
 }
 
 /**
  * The new value of a translatable field after editing it in `language`.
- * A map gets that language set (or removed when emptied); a plain string stays a string
- * when edited in the default language and becomes a map when another language is added.
- * `undefined` means unset.
+ * A map gets that language set (or removed when emptied); a plain or rich value stays as
+ * it is when edited in the default language and becomes a map when another language is
+ * added; the other languages' rich values are kept. `undefined` means unset.
  */
 export function withTranslation(
 	old: unknown,
@@ -194,14 +203,14 @@ export function withTranslation(
 	defaultLanguage: string,
 	text: string
 ): unknown {
-	if (isObj(old)) {
-		const out: Record<string, string> = {};
-		for (const [k, v] of Object.entries(old)) if (typeof v === 'string') out[k] = v;
+	if (isObj(old) && !isRichText(old)) {
+		const out: Record<string, unknown> = {};
+		for (const [k, v] of Object.entries(old)) if (present(v)) out[k] = v;
 		if (text === '') delete out[language];
 		else out[language] = text;
 		return Object.keys(out).length ? out : undefined;
 	}
-	if (typeof old === 'string' && old !== '') {
+	if ((typeof old === 'string' && old !== '') || isRichText(old)) {
 		if (language === defaultLanguage) return text === '' ? undefined : text;
 		return text === '' ? old : { [defaultLanguage]: old, [language]: text };
 	}
