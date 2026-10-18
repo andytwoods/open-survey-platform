@@ -71,7 +71,8 @@ def js_safe(value: Any) -> bool:
             for a, b in zip(value, value[1:], strict=False)
         )
     if isinstance(value, int):
-        return abs(value) <= 2**53 - 1
+        # Exactly a double, and printed in full by JavaScript's String() (below 1e21).
+        return abs(value) < 10**21 and int(float(value)) == value
     if isinstance(value, float):
         return value == value and abs(value) != float("inf") and not value.is_integer()
     if isinstance(value, list):

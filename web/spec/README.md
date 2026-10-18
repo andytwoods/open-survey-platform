@@ -42,7 +42,7 @@ Messages are exact, including pydantic's. What cannot match:
 
 - **Numbers.** A JavaScript number that is an integer is a Python `int`, anything else a
   `float`: JSON `1.0` is an int here (Python: a float, so `int_type` on an integer field), and
-  integers beyond 2^53 lose precision. `NaN`/`Infinity` do not exist in JSON. The vectors
+  integers that are not exactly a double, or of 1e21 and more, are not Python's. `NaN`/`Infinity` do not exist in JSON. The vectors
   leave such documents out.
 - **Key order.** JavaScript objects list array-index keys (`"1"`, `"10"`) first, so
   diagnostics about such keys come in that order. The vectors are put in JavaScript order
