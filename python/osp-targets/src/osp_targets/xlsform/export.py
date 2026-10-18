@@ -13,7 +13,7 @@ import re
 from collections.abc import Iterator, Mapping
 from typing import Any
 
-from osp_spec import Survey, parse
+from osp_spec import Survey, flatten_text, parse
 from osp_spec.model import (
     AssignedVariable,
     AssignNode,
@@ -347,6 +347,7 @@ class _Exporter:
 
     def _all_texts(self) -> Iterator[str]:
         def strings(t: object) -> Iterator[str]:
+            t = flatten_text(t)  # rich text (RT2) as the plain text this writer emits
             if isinstance(t, str):
                 yield t
             elif isinstance(t, dict):
@@ -377,7 +378,10 @@ class _Exporter:
     # -- text ----------------------------------------------------------------------------
 
     def _texts(self, text: object, ptr: str) -> dict[str, str]:
-        """``{language column: text}`` with pipes rewritten to XLSForm names."""
+        """``{language column: text}`` with pipes rewritten to XLSForm names. Rich text
+        (RT2) is flattened to plain text until RT4 writes the Markdown subset; the loss is
+        reported through the `RichText.*` / `TextRun.*` capability rows (feature_uses)."""
+        text = flatten_text(text)
         if text is None:
             return {}
         if isinstance(text, str):
@@ -763,6 +767,7 @@ def _assign_calc(seed: str, v: AssignedVariable) -> str:
 
 
 def _plain(text: object, lang: str) -> str:
+    text = flatten_text(text)
     if isinstance(text, str):
         return text
     if isinstance(text, dict):

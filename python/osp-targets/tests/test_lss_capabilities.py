@@ -49,8 +49,11 @@ def test_lss_summary_is_stable() -> None:
     counts = Counter(cap.level for cap in LSS.values())
     # EN2 moved the redirect template rows (HookRedirect* → RedirectTemplate*/RedirectParam)
     # and added Settings.redirectTemplates, Ending.redirect and EndRedirect.*. EX2 added the
-    # ExternalTaskNode rows (id native; type/template/params/returns unsupported).
-    assert dict(counts) == {"native": 143, "lowered": 58, "approximated": 28, "unsupported": 119}
+    # ExternalTaskNode rows (id native; type/template/params/returns unsupported). RT2 added
+    # the rich-text rows (RichText/Paragraph/Heading/RichList/TextRun/PipeRun/LineBreak and
+    # $rich.*): flattened to plain text until RT4 writes the HTML subset.
+    assert dict(counts) == {"native": 149, "lowered": 58, "approximated": 37, "unsupported": 126}
+    assert LSS["TextRun.marks"].level == "unsupported"  # RT4 flips this to native
     assert LSS["MatrixQuestion.type"].level == "native"
     assert LSS["SliderQuestion.type"].level == "approximated"
     assert LSS["Survey.quotas"].level == "lowered"

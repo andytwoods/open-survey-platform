@@ -29,6 +29,7 @@ from osp_spec import (
     SingleQuestion,
     SliderQuestion,
     Survey,
+    flatten_text,
     matrix_row_id,
     matrix_row_name,
     matrix_row_required,
@@ -126,9 +127,11 @@ class Layout:
     def title(self) -> str:
         return self.text(self.survey.metadata.title).get(self.default_language, "")
 
-    def text(self, value: str | dict[str, str] | None) -> dict[str, str]:
+    def text(self, value: Any) -> dict[str, str]:
         """Translatable text as ``{language: text}`` for every survey language (a plain
-        string applies to all of them; a missing translation falls back like the plan)."""
+        string applies to all of them; a missing translation falls back like the plan).
+        Rich text (RT2) is flattened: codebooks and preregistrations carry plain text."""
+        value = flatten_text(value)
         if value is None:
             return {}
         if isinstance(value, str):

@@ -7,6 +7,7 @@ import copy
 from typing import Any
 
 from osp_spec import model as m
+from osp_spec import normalise_text
 from pydantic import BaseModel, JsonValue
 
 from .doc import BLOCK, CHOICE_LIST, NODE, PAGE, QUESTION, QUOTA, VARIABLE, get, locate
@@ -133,7 +134,9 @@ def set_property(ctx: Ctx, p: SetProperty) -> Invocation:
     if p.unset:
         obj.pop(p.property, None)
     else:
-        obj[p.property] = copy.deepcopy(p.value)
+        # Formatting-free rich text is stored as the plain string it is (RT-D3); every
+        # other value passes through unchanged.
+        obj[p.property] = normalise_text(copy.deepcopy(p.value))
     if not had_settings and p.target == "/settings":
         # Undo must also drop the `settings` object it created.
         if not obj:

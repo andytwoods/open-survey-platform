@@ -5,6 +5,7 @@ from __future__ import annotations
 import copy
 from typing import Any, Literal
 
+from osp_spec import normalise_text
 from pydantic import Field, JsonValue
 
 from .doc import (
@@ -36,12 +37,29 @@ DEFAULT_ROWS: list[dict[str, Any]] = [
 
 def new_question(qid: str, qtype: str, label: JsonValue = None) -> dict[str, Any]:
     q: dict[str, Any] = {"id": qid, "type": qtype}
-    q["label"] = DEFAULT_LABEL if label is None else copy.deepcopy(label)
+    q["label"] = DEFAULT_LABEL if label is None else normalise_text(copy.deepcopy(label))
     if qtype in ("single", "multi", "matrix"):
         q["choices"] = copy.deepcopy(DEFAULT_CHOICES)
     if qtype == "matrix":
         q["rows"] = copy.deepcopy(DEFAULT_ROWS)
     return q
+
+
+TEXT_KEYS = ("label", "help", "constraintMessage", "minLabel", "maxLabel")
+
+
+def normalise_question_texts(q: dict[str, Any]) -> None:
+    """Normalise every text of a question object in place (RT-D3): its own texts, its
+    inline choice labels and its grid row labels."""
+    for key in TEXT_KEYS:
+        if key in q:
+            q[key] = normalise_text(q[key])
+    for coll in ("choices", "rows"):
+        items = q.get(coll)
+        if isinstance(items, list):
+            for item in items:
+                if isinstance(item, dict) and "label" in item:
+                    item["label"] = normalise_text(item["label"])
 
 
 def _page_of(ctx: Ctx, page_id: str) -> list[Any]:
@@ -60,7 +78,7 @@ class AddQuestion(Params):
     type: QuestionType = "text"
     index: int | None = Index
     id: str | None = None
-    label: str | dict[str, str] | None = None
+    label: str | dict[str, JsonValue] | None = None  # plain, rich or per language
     question: dict[str, JsonValue] | None = None  # a full question object (used by undo)
     # Values the new question starts with beyond the stock ones: the lab panel profile's
     # defaults (planning/property-profiles.md §6), as `property` or `custom.<key>`.
@@ -94,6 +112,7 @@ def add_question(ctx: Ctx, p: AddQuestion) -> Invocation:
         q = copy.deepcopy(dict(p.question))
         qid = claim_id(ctx, q.get("id") if isinstance(q.get("id"), str) else p.id, "q")
         q["id"] = qid
+        normalise_question_texts(q)
     else:
         qid = claim_id(ctx, p.id, "q")
         q = new_question(qid, p.type, p.label)
@@ -149,10 +168,13 @@ class DuplicateQuestion(Params):
 
 
 def _rename_self(node: Any, old: str, new: str) -> Any:
-    """Point the copy's own references (`constraint` on itself, `${old}` pipes) at it."""
+    """Point the copy's own references (`constraint` on itself, `${old}` pipes and
+    `{pipe: old}` nodes of rich text) at it."""
     if isinstance(node, dict):
         if node.get("kind") == "ref" and node.get("id") == old:
             return {**node, "id": new}
+        if node.get("pipe") == old and len(node) == 1:
+            return {"pipe": new}
         return {k: _rename_self(v, old, new) for k, v in node.items()}
     if isinstance(node, list):
         return [_rename_self(v, old, new) for v in node]

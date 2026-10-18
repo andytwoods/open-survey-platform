@@ -46,10 +46,13 @@ def _copy_page(ctx: Ctx, page: dict[str, Any], pid: str, ids: dict[str, str]) ->
 
 
 def _remap(node: Any, ids: dict[str, str]) -> Any:
-    """Point expression refs and `${id}` pipes at the copies, where `ids` has one."""
+    """Point expression refs, `${id}` pipes and rich-text `{pipe: id}` nodes at the
+    copies, where `ids` has one."""
     if isinstance(node, dict):
         if node.get("kind") == "ref" and node.get("id") in ids:
             return {**node, "id": ids[node["id"]]}
+        if len(node) == 1 and isinstance(node.get("pipe"), str) and node["pipe"] in ids:
+            return {"pipe": ids[node["pipe"]]}
         return {k: (v if k == "id" else _remap(v, ids)) for k, v in node.items()}
     if isinstance(node, list):
         return [_remap(v, ids) for v in node]

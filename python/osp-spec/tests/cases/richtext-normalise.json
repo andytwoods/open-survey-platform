@@ -1,0 +1,106 @@
+{
+  "about": "normalise_text() cases shared by Python (osp_spec.richtext) and TypeScript (web/engine/src/richtext.ts), planning/rich-text.md §3.3 (RT-D3): formatting-free rich text is stored as the plain string it is, pipes written back as ${id}; anything with formatting, and anything that is not rich text, comes back unchanged.",
+  "cases": [
+    {
+      "name": "plain string unchanged",
+      "input": "Hello ${name}",
+      "output": "Hello ${name}"
+    },
+    {
+      "name": "language map of plain strings unchanged",
+      "input": { "en": "Hi", "de": "Hallo" },
+      "output": { "en": "Hi", "de": "Hallo" }
+    },
+    {
+      "name": "one paragraph of text becomes a string",
+      "input": { "type": "rich", "blocks": [{ "type": "p", "content": [{ "text": "Just text" }] }] },
+      "output": "Just text"
+    },
+    {
+      "name": "pipes are written back as ${id}",
+      "input": {
+        "type": "rich",
+        "blocks": [
+          { "type": "p", "content": [{ "text": "Hello " }, { "pipe": "name" }, { "text": ", trial " }, { "pipe": "$trial" }] }
+        ]
+      },
+      "output": "Hello ${name}, trial ${$trial}"
+    },
+    {
+      "name": "empty tree is the empty string",
+      "input": { "type": "rich", "blocks": [] },
+      "output": ""
+    },
+    {
+      "name": "empty paragraph is the empty string",
+      "input": { "type": "rich", "blocks": [{ "type": "p", "content": [] }] },
+      "output": ""
+    },
+    {
+      "name": "an empty marks list is no formatting",
+      "input": { "type": "rich", "blocks": [{ "type": "p", "content": [{ "text": "a", "marks": [] }] }] },
+      "output": "a"
+    },
+    {
+      "name": "bold keeps the tree",
+      "input": { "type": "rich", "blocks": [{ "type": "p", "content": [{ "text": "a", "marks": ["b"] }] }] },
+      "output": { "type": "rich", "blocks": [{ "type": "p", "content": [{ "text": "a", "marks": ["b"] }] }] }
+    },
+    {
+      "name": "a link keeps the tree",
+      "input": { "type": "rich", "blocks": [{ "type": "p", "content": [{ "text": "a", "href": "https://example.org" }] }] },
+      "output": { "type": "rich", "blocks": [{ "type": "p", "content": [{ "text": "a", "href": "https://example.org" }] }] }
+    },
+    {
+      "name": "a language span keeps the tree",
+      "input": { "type": "rich", "blocks": [{ "type": "p", "content": [{ "text": "a", "lang": "fr" }] }] },
+      "output": { "type": "rich", "blocks": [{ "type": "p", "content": [{ "text": "a", "lang": "fr" }] }] }
+    },
+    {
+      "name": "a line break keeps the tree",
+      "input": { "type": "rich", "blocks": [{ "type": "p", "content": [{ "text": "a" }, { "br": true }, { "text": "b" }] }] },
+      "output": { "type": "rich", "blocks": [{ "type": "p", "content": [{ "text": "a" }, { "br": true }, { "text": "b" }] }] }
+    },
+    {
+      "name": "two paragraphs keep the tree",
+      "input": { "type": "rich", "blocks": [{ "type": "p", "content": [{ "text": "a" }] }, { "type": "p", "content": [{ "text": "b" }] }] },
+      "output": { "type": "rich", "blocks": [{ "type": "p", "content": [{ "text": "a" }] }, { "type": "p", "content": [{ "text": "b" }] }] }
+    },
+    {
+      "name": "a heading keeps the tree",
+      "input": { "type": "rich", "blocks": [{ "type": "h", "level": 1, "content": [{ "text": "a" }] }] },
+      "output": { "type": "rich", "blocks": [{ "type": "h", "level": 1, "content": [{ "text": "a" }] }] }
+    },
+    {
+      "name": "a list keeps the tree",
+      "input": { "type": "rich", "blocks": [{ "type": "ul", "items": [[{ "text": "a" }]] }] },
+      "output": { "type": "rich", "blocks": [{ "type": "ul", "items": [[{ "text": "a" }]] }] }
+    },
+    {
+      "name": "a newline inside a run stays in the string",
+      "input": { "type": "rich", "blocks": [{ "type": "p", "content": [{ "text": "a\nb" }] }] },
+      "output": "a\nb"
+    },
+    {
+      "name": "a language map is normalised value by value",
+      "input": {
+        "en": { "type": "rich", "blocks": [{ "type": "p", "content": [{ "text": "Hi " }, { "pipe": "name" }] }] },
+        "de": { "type": "rich", "blocks": [{ "type": "p", "content": [{ "text": "Hallo", "marks": ["i"] }] }] }
+      },
+      "output": {
+        "en": "Hi ${name}",
+        "de": { "type": "rich", "blocks": [{ "type": "p", "content": [{ "text": "Hallo", "marks": ["i"] }] }] }
+      }
+    },
+    {
+      "name": "not a text: unchanged",
+      "input": [{ "value": 1, "label": "A" }],
+      "output": [{ "value": 1, "label": "A" }]
+    },
+    {
+      "name": "a tree whose blocks are not a list: unchanged",
+      "input": { "type": "rich", "blocks": "nope" },
+      "output": { "type": "rich", "blocks": "nope" }
+    }
+  ]
+}

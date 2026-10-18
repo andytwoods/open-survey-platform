@@ -44,6 +44,7 @@ OP_CODES: dict[str, str] = {
     "op.cascade_blocked": "cascade cannot repair a required expression",
     "op.type_conflict": "the type change would break conditions or piping that use the answer",
     "op.invalid_result": "the edit would make the survey structurally invalid",
+    "op.invalid_text": "the edit would store text the model refuses (link, length, level)",
     "op.expr_syntax": "condition text does not parse",
     "op.patch": "the JSON Patch is malformed or does not apply",
     "op.conflict": "baseRevision is stale (HTTP 409)",
@@ -60,6 +61,18 @@ _DANGLING_CODES = frozenset(
         "ref.unknown_choice_list",
         "ref.unknown_quota",
         "ref.unknown_variable",
+    }
+)
+# Rich-text rules (planning/rich-text.md §3.2) an op may not newly break, whole-document
+# ops included: the server validates every written text, which is what "validated on
+# write" means. A problem that was already in the survey is reported, not blocking.
+_TEXT_CODES = frozenset(
+    {
+        "text.too_long",
+        "text.too_many_blocks",
+        "text.block_not_allowed",
+        "link.scheme",
+        "link.empty",
     }
 )
 
@@ -254,14 +267,21 @@ def _execute_unguarded(
             [diag("op.invalid_result", "the edit would make the survey invalid"), *after],
         )
 
+    guarded = set(_TEXT_CODES)
     if not spec.whole_document:
-        guarded = set(_DUPLICATE_CODES)
+        guarded |= _DUPLICATE_CODES
         if ctx.check_dangling:
             guarded |= _DANGLING_CODES
-        new = _new_errors(before_parsed[1], after, guarded)
-        if new:
-            code = "op.duplicate_id" if new[0].code in _DUPLICATE_CODES else "op.dangling_ref"
-            return _fail(survey, [diag(code, f"the edit would add: {new[0].message}"), *new])
+    new = _new_errors(before_parsed[1], after, guarded)
+    if new:
+        first = new[0].code
+        if first in _DUPLICATE_CODES:
+            code = "op.duplicate_id"
+        elif first in _TEXT_CODES:
+            code = "op.invalid_text"
+        else:
+            code = "op.dangling_ref"
+        return _fail(survey, [diag(code, f"the edit would add: {new[0].message}"), *new])
 
     if inverse is REVERSE_PATCH:
         inverse = Invocation(op="apply_patch", params={"patch": jp.diff(ctx.doc, survey)})

@@ -12,7 +12,8 @@ from dataclasses import dataclass
 from typing import Any
 
 from osp_expr.ast import KEYWORDS
-from osp_spec import RESERVED_NAMES
+from osp_spec import RESERVED_NAMES, is_rich
+from osp_spec.richtext import pipes_of
 
 from .patch import to_pointer
 from .registry import Ctx, OpError, diag
@@ -182,20 +183,29 @@ def insert_at(lst: list[Json], index: int | None, item: Json) -> int:
 
 # --- text and expression sites --------------------------------------------------------
 
-TEXT_KEYS_QUESTION = ("label", "help", "constraintMessage")
+TEXT_KEYS_QUESTION = ("label", "help", "constraintMessage", "minLabel", "maxLabel")
 
 
 def text_sites(doc: Json) -> Iterator[tuple[Path, Json]]:
-    """Every translatable `Text` value in the survey, with its path."""
+    """Every translatable `Text` value in the survey, with its path: metadata, consent,
+    choice and row labels, question texts (slider end labels included), page titles, end
+    messages and endings. A value is a string, a rich tree or a per-language map."""
     md = doc.get("metadata", {})
     for key in ("title", "description"):
         if md.get(key) is not None:
             yield ("metadata", key), md[key]
+    consent = doc.get("consent")
+    if isinstance(consent, dict):
+        for key in ("text", "agreeLabel", "declineLabel"):
+            if consent.get(key) is not None:
+                yield ("consent", key), consent[key]
     for i, cl in enumerate(doc.get("choiceLists", [])):
         for k, c in enumerate(cl["choices"]):
             yield ("choiceLists", i, "choices", k, "label"), c["label"]
     for i, b in enumerate(doc.get("blocks", [])):
         for j, page in enumerate(b["pages"]):
+            if page.get("title") is not None:
+                yield ("blocks", i, "pages", j, "title"), page["title"]
             for k, q in enumerate(page["items"]):
                 qp: Path = ("blocks", i, "pages", j, "items", k)
                 for key in TEXT_KEYS_QUESTION:
@@ -227,13 +237,26 @@ def text_sites(doc: Json) -> Iterator[tuple[Path, Json]]:
 
 
 def strings_of(text: Json, path: Path) -> Iterator[tuple[Path, str]]:
-    """The plain strings of a `Text` (a string, or one per language)."""
+    """The plain strings of a `Text` (a string, or the plain ones per language)."""
     if isinstance(text, str):
         yield path, text
-    elif isinstance(text, dict):
+    elif isinstance(text, dict) and not is_rich(text):
         for lang, s in text.items():
             if isinstance(s, str):
                 yield (*path, lang), s
+
+
+def pipe_nodes_of(text: Json, path: Path) -> Iterator[tuple[Path, str]]:
+    """The `{pipe: id}` nodes of a `Text`'s rich trees (one tree, or one per language),
+    as `(path to the node, id)` (planning/rich-text.md §3)."""
+    if is_rich(text):
+        for sub, pid in pipes_of(text):
+            yield (*path, *sub), pid
+    elif isinstance(text, dict):
+        for lang, v in text.items():
+            if is_rich(v):
+                for sub, pid in pipes_of(v):
+                    yield (*path, lang, *sub), pid
 
 
 def expr_sites(doc: Json) -> Iterator[tuple[Path, bool, Json]]:
@@ -280,9 +303,10 @@ def pipe_refs(s: str) -> set[str]:
 class RefSite:
     """A place that refers to `target`. `kind` says how cascade repairs it:
     expr (clear the optional condition), expr_required (cannot repair), pipe (drop the
-    `${id}`), choice_list (inline the list's choices), flow_block / quota_check (remove the
-    flow node), on_full_block (clear `onFull.block`), assign_var (drop the variable, and
-    the assign node if it becomes empty)."""
+    `${id}`), pipe_node (drop the `{pipe: id}` node of a rich tree), choice_list (inline
+    the list's choices), flow_block / quota_check (remove the flow node), on_full_block
+    (clear `onFull.block`), assign_var (drop the variable, and the assign node if it
+    becomes empty)."""
 
     path: Path
     kind: str
@@ -312,6 +336,9 @@ def _ref_sites(doc: Json, ids: set[str]) -> list[RefSite]:
         for sp, s in strings_of(text, path):
             for t in sorted(pipe_refs(s) & ids):
                 out.append(RefSite(sp, "pipe", t))
+        for np, pid in pipe_nodes_of(text, path):
+            if pid in ids:
+                out.append(RefSite(np, "pipe_node", pid))
     for i, b in enumerate(doc.get("blocks", [])):
         for j, page in enumerate(b["pages"]):
             for k, q in enumerate(page["items"]):
@@ -433,6 +460,8 @@ def _repair(doc: Json, s: RefSite, inline: dict[str, list[Json]]) -> None:
         parent[key] = PIPE.sub(
             lambda m: "" if m.group(1).strip() == s.target else m.group(0), parent[key]
         )
+    elif s.kind == "pipe_node":
+        parent.pop(key)  # the inline list; sites are repaired last index first
     elif s.kind == "choice_list":
         parent.pop("choiceList", None)
         parent["choices"] = copy.deepcopy(inline.get(s.target, []))
@@ -491,7 +520,7 @@ def strip_languages(doc: Json, langs: set[str]) -> int:
     """Remove translations in `langs` from every Text. Returns how many were removed."""
     n = 0
     for path, text in list(text_sites(doc)):
-        if isinstance(text, dict):
+        if isinstance(text, dict) and not is_rich(text):
             for lang in [k for k in text if k in langs]:
                 del get(doc, path)[lang]
                 n += 1
@@ -502,6 +531,6 @@ def translations_in(doc: Json, langs: set[str]) -> list[str]:
     """Pointers to translations in `langs`."""
     out: list[str] = []
     for path, text in text_sites(doc):
-        if isinstance(text, dict):
+        if isinstance(text, dict) and not is_rich(text):
             out.extend(to_pointer((*path, k)) for k in text if k in langs)
     return out

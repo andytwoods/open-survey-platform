@@ -12,14 +12,15 @@ import copy
 from typing import Any
 
 from osp_expr.ast import KEYWORDS
-from osp_spec import RESERVED_NAMES
-from pydantic import Field
+from osp_spec import RESERVED_NAMES, normalise_text
+from pydantic import Field, JsonValue
 
 from .doc import IDENT, QUESTION, get, handle_refs, insert_at, locate, ref_sites, taken_names
 from .patch import to_pointer
 from .registry import REVERSE_PATCH, Ctx, Invocation, OpError, Params, op
 
-type Text = str | dict[str, str]
+# A label: plain, a rich tree or per language (the survey model validates the shape).
+type Text = str | dict[str, JsonValue]
 Index = Field(default=None, ge=0)
 MAX_ID = 64
 
@@ -90,7 +91,7 @@ def add_matrix_row(ctx: Ctx, p: AddMatrixRow) -> Invocation:
             code = "op.params" if not IDENT.match(p.id) else "op.duplicate_id"
             raise OpError(code, why, "/id")
         rid = p.id
-    row: dict[str, Any] = {"id": rid, "label": copy.deepcopy(p.label)}
+    row: dict[str, Any] = {"id": rid, "label": normalise_text(copy.deepcopy(p.label))}
     if p.required is not None:
         row["required"] = p.required
     insert_at(q["rows"], p.index, row)
@@ -172,7 +173,7 @@ def rename_matrix_row(ctx: Ctx, p: RenameMatrixRow) -> Invocation:
     q, path = _matrix(ctx, p.question)
     row = q["rows"][_find(q, path, p.row)]
     old = row["label"]
-    row["label"] = copy.deepcopy(p.label)
+    row["label"] = normalise_text(copy.deepcopy(p.label))
     return Invocation(
         op="rename_matrix_row", params={"question": p.question, "row": p.row, "label": old}
     )
