@@ -66,6 +66,8 @@ test('Add page under a page on the canvas: after it, selected, title focused; un
 	await expect(saved(page)).toHaveText(/All changes saved/);
 	expect(await pageIds(page)).toEqual([['p1', 'page1', 'p2'], ['p3']]);
 	await expect(item(page, 'page1')).toHaveAttribute('aria-selected', 'true');
+	// The title is rich text: fill() needs its editor, which may still be loading.
+	await expect(title).toHaveAttribute('contenteditable', 'true');
 	await title.fill('Middle');
 	await expect(item(page, 'Middle')).toBeVisible();
 	await expect(saved(page)).toHaveText(/All changes saved/);

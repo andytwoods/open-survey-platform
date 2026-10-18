@@ -307,6 +307,48 @@ test('the count turns into an error over the limit, and the commit still happens
 	await expect(log(page).getByRole('listitem')).toHaveCount(1);
 });
 
+test('the editor chunk is fetched while the page is idle, before any field is focused (RT7)', async ({ page }) => {
+	const chunk = page.waitForRequest(/\/tiptap-[\w-]+\.js$/);
+	await open(page);
+	await chunk;
+	await expect(page.getByLabel('Question text')).not.toHaveAttribute('contenteditable', 'true');
+});
+
+test('keys typed straight after focus on a cold page are kept (RT7)', async ({ page }) => {
+	// Hold the editor chunk until the keys are typed, so they all arrive while the field loads.
+	let release!: () => void;
+	const held = new Promise<void>((r) => (release = r));
+	await page.route(/\/tiptap-[\w-]+\.js$/, async (route) => {
+		await held;
+		await route.continue();
+	});
+	await open(page);
+	const field = page.getByLabel('Question text');
+	await expect(field).toHaveAttribute('role', 'textbox');
+	await field.focus();
+	await page.keyboard.type(' Really, at onxe');
+	await page.keyboard.press('Backspace');
+	await page.keyboard.press('Backspace');
+	await page.keyboard.type('ce?');
+	await expect(field).not.toHaveAttribute('contenteditable', 'true');
+	release();
+	await expect(field).toHaveAttribute('contenteditable', 'true');
+	await expect(field).toBeFocused();
+	await expect(field).toHaveText('How many hours do you sleep? Really, at once?');
+	await page.keyboard.press('Tab');
+	await expect(log(page)).toContainText('"value":{"en":"How many hours do you sleep? Really, at once?"}');
+});
+
+test('typing at once after a click on a fresh page loses nothing (RT7)', async ({ page }) => {
+	await open(page, 'page');
+	const field = page.getByLabel('Title');
+	await expect(field).toHaveAttribute('role', 'textbox');
+	await field.click();
+	await page.keyboard.type('Your habits');
+	await expect(field).toHaveAttribute('contenteditable', 'true');
+	await expect(field).toContainText('Your habits');
+});
+
 for (const scheme of ['light', 'dark'] as const) {
 	test.describe(`rich text, ${scheme}`, () => {
 		test.use({ colorScheme: scheme });

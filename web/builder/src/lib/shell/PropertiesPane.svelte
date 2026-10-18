@@ -1,6 +1,6 @@
 <script lang="ts">
 	import { Tabs, announce } from '@osp/ui-components';
-	import { tick, untrack } from 'svelte';
+	import { onMount, tick, untrack } from 'svelte';
 	import { propertyFocus, type FocusRequest } from '../diagnostics/focus.svelte';
 	import { SURVEY_ID } from '../diagnostics/model';
 	import {
@@ -20,7 +20,7 @@
 	import { fetchPropertySchemas, propertySchemas, schemaFor } from '../properties/schemas.svelte';
 	import type { OpenEditorRequest } from '../properties/types';
 	import { ChoiceListDialog, editorInputs } from '../choices';
-	import { pipeCandidates } from '../richtext';
+	import { pipeCandidates, preloadEditorWhenIdle } from '../richtext';
 	import { RowsDialog, rowsEditorInputs } from '../rows';
 	import { ConditionDialog, apiExpressionService, questionsFromSurvey, type ConditionField, type ExprNode } from '../conditions';
 	import { questionTypeInfo } from '../question-types/catalogue';
@@ -45,6 +45,9 @@
 		/** Present when editing is connected: the Type row offers "Change type…". */
 		onChangeType?: (id: string) => void;
 	} = $props();
+
+	// Most fields here are rich text: fetch the editor while idle, so a first focus is ready (RT7).
+	onMount(preloadEditorWhenIdle);
 
 	// The survey itself is selected (from the diagnostics strip) as SURVEY_ID.
 	const node = $derived(

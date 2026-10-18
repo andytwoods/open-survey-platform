@@ -7,6 +7,7 @@
 	import { fromDoc, isEmptyValue, normalForm, sameValue, toDoc, type PmNode, type RichValue } from './convert';
 	import type { Editor, Range, ToolbarState } from './tiptap';
 	import { LIMITS, type Level } from './levels';
+	import { loadEditor, preloadEditor, preloadEditorWhenIdle, type EditorModule } from './load';
 	import LinkDialog from './LinkDialog.svelte';
 	import { describeReport } from './paste';
 	import PipePicker from './PipePicker.svelte';
@@ -17,8 +18,10 @@
 
 	/**
 	 * One rich-text field (planning/rich-text.md §9). At rest it is the read-only renderer
-	 * styled as an input (`role=textbox`); focusing it (click, Tab, Enter) loads the editor
-	 * chunk once and swaps in a Tiptap editor with its toolbar. The buffering contract is
+	 * styled as an input (`role=textbox`); focusing it (click, Tab, Enter) swaps in a Tiptap
+	 * editor with its toolbar. The editor chunk is fetched when the page is idle or the pointer
+	 * goes down on a field, and keys typed before the editor is ready are replayed into it
+	 * (RT7), so nothing typed straight after focusing is lost. The buffering contract is
 	 * BufferedInput's: typing never round-trips, the value is committed after a pause, on
 	 * blur or on Enter (inline fields), Escape reverts the draft, and a server echo never
 	 * clobbers text the researcher is still typing. Commits are the normalised value: a plain
@@ -72,10 +75,6 @@
 		onCommit: (value: RichValue) => void;
 		onDirty?: (dirty: boolean) => void;
 	} = $props();
-
-	type EditorModule = typeof import('./tiptap');
-	let modulePromise: Promise<EditorModule> | null = null;
-	const loadEditor = () => (modulePromise ??= import('./tiptap'));
 
 	let root = $state<HTMLDivElement | null>(null);
 	let host = $state<HTMLDivElement | null>(null);
@@ -218,9 +217,11 @@
 	const handle = { flush };
 	onMount(() => {
 		registry?.add(handle);
+		if (!readonly) preloadEditorWhenIdle();
 	});
 	onDestroy(() => {
 		registry?.delete(handle);
+		stopCatching();
 		flush();
 		destroyEditor();
 	});
@@ -237,9 +238,34 @@
 
 	// --- Edit on focus ----------------------------------------------------------------------
 
+	/** Keys typed between the focus and the editor taking it over (RT7), in order. */
+	let early: string[] = [];
+
+	/**
+	 * While the editor loads, keys meant for it land on the idle view, or on the body once
+	 * the view is swapped out: keep text, Enter and Backspace for replay. Keys aimed at
+	 * another control (focus has moved on) and shortcuts are left alone.
+	 */
+	function catchEarly(e: KeyboardEvent) {
+		if (e.defaultPrevented || e.isComposing) return;
+		const at = document.activeElement;
+		if (at && at !== document.body && !root?.contains(at)) return;
+		const text = e.key.length === 1 && (!(e.ctrlKey || e.metaKey) || e.getModifierState('AltGraph'));
+		if (!text && e.key !== 'Enter' && e.key !== 'Backspace') return;
+		e.preventDefault();
+		e.stopPropagation();
+		early.push(e.key);
+	}
+
+	function stopCatching() {
+		document.removeEventListener('keydown', catchEarly, true);
+	}
+
 	async function activate() {
 		if (active || activating || readonly) return;
 		activating = true;
+		early = [];
+		document.addEventListener('keydown', catchEarly, true);
 		try {
 			mod = await loadEditor();
 			active = true;
@@ -276,7 +302,11 @@
 			tb = m.toolbarState(editor);
 			m.placeCaret(editor, point);
 			point = null;
+			stopCatching();
+			if (early.length) m.replayKeys(editor, early);
 		} finally {
+			stopCatching();
+			early = [];
 			activating = false;
 		}
 	}
@@ -420,6 +450,7 @@
 				aria-readonly={readonly || undefined}
 				{lang}
 				onfocus={() => void activate()}
+				onpointerdown={readonly ? undefined : preloadEditor}
 				onmousedown={(e) => (point = { x: e.clientX, y: e.clientY })}
 			>
 				{#if empty}<span class="osp-rt-placeholder">{placeholder}</span>{:else}<RichView value={draft} inline={level === 'inline'} />{/if}

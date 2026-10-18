@@ -288,3 +288,50 @@ describe('accessibility', () => {
 		expect(editing.violations.map((v) => `${v.id}: ${v.nodes.map((n) => n.target).join(', ')}`)).toEqual([]);
 	});
 });
+
+describe('keys typed before the editor is ready (RT7)', () => {
+	/** Press a key on whatever has focus; true when the field took it for replay. */
+	const press = (key: string, init: KeyboardEventInit = {}) =>
+		!(document.activeElement ?? document.body).dispatchEvent(new KeyboardEvent('keydown', { key, bubbles: true, cancelable: true, ...init }));
+
+	it('replays text, Backspace and Enter typed straight after focus, in order', async () => {
+		const t = setup('Hi', { level: 'block', delay: 1000 });
+		const idle = t.idle();
+		idle.focus();
+		// The chunk is still loading: every key below arrives before the editor exists.
+		for (const key of [' ', 't', 'h', 'e', 'r', 'x', 'Backspace', 'e', 'Enter', 'B', 'y', 'e']) expect(press(key)).toBe(true);
+		const ed = await activate(idle);
+		expect(ed.getText({ blockSeparator: '|' })).toBe('Hi there|Bye');
+		await blurField('f1');
+		expect(t.commits.at(-1)).toEqual({ type: 'rich', blocks: [{ type: 'p', content: [{ text: 'Hi there' }] }, { type: 'p', content: [{ text: 'Bye' }] }] });
+	});
+
+	it('leaves shortcuts and other keys alone, and stops catching once the editor is ready', async () => {
+		const t = setup('Hi');
+		const idle = t.idle();
+		idle.focus();
+		expect(press('b', { ctrlKey: true })).toBe(false);
+		expect(press('Tab')).toBe(false);
+		expect(press('Escape')).toBe(false);
+		const ed = await activate(idle);
+		expect(ed.getText()).toBe('Hi');
+		expect(press('z')).toBe(false); // ProseMirror's own handling now (jsdom cannot type it)
+		expect(ed.getText()).toBe('Hi');
+	});
+
+	it('keys aimed at another control while the field loads stay with that control', async () => {
+		const t = setup('Hi');
+		const other = document.createElement('input');
+		document.body.append(other);
+		try {
+			t.idle().focus();
+			other.focus();
+			expect(press('q')).toBe(false);
+			await vi.dynamicImportSettled();
+			for (let i = 0; i < 5; i++) await wait(5);
+			expect(t.container.textContent).not.toContain('q');
+		} finally {
+			other.remove();
+		}
+	});
+});

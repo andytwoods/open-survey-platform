@@ -2,8 +2,8 @@
  * The Tiptap 3 editor behind RichTextEditor.svelte (planning/rich-text.md §2, §9): a
  * schema that can hold exactly the survey model's rich tree for a level (so the editor
  * cannot produce what the spec cannot store), the pipe chip node, our own https-only link
- * mark, the paste pass and the keyboard contract. Loaded as a lazy chunk on the first focus
- * of a text field; the only module outside this folder that `@tiptap/*` may be imported
+ * mark, the paste pass and the keyboard contract. A lazy chunk (./load.ts), preloaded when
+ * the builder is idle; the only module outside this folder that `@tiptap/*` may be imported
  * from is nowhere (dependency-cruiser rule `tiptap-stays-in-richtext`).
  *
  * Clean-room: Tiptap's API is learnt from its documentation (MIT code we depend on).
@@ -485,4 +485,25 @@ export function placeCaret(editor: Editor, point: { x: number; y: number } | nul
 	}
 	editor.view.dispatch(editor.state.tr.setSelection(selection).scrollIntoView());
 	editor.view.focus();
+}
+
+/**
+ * Replay keys typed before the editor was ready (RT7), as typing them would have done:
+ * characters through the text-input hooks (so `${` still opens the picker), Enter and
+ * Backspace through the keymaps. A Backspace no keymap takes deletes the character before
+ * the caret, which the browser would have done.
+ */
+export function replayKeys(editor: Editor, keys: readonly string[]): void {
+	const { view } = editor;
+	for (const key of keys) {
+		const { from, to, empty, $from } = view.state.selection;
+		if (key === 'Enter' || key === 'Backspace') {
+			const event = new KeyboardEvent('keydown', { key, cancelable: true });
+			if (view.someProp('handleKeyDown', (f) => f(view, event))) continue;
+			if (key === 'Backspace' && empty && $from.parentOffset > 0) view.dispatch(view.state.tr.delete(from - 1, from));
+			continue;
+		}
+		const insert = () => view.state.tr.insertText(key, from, to);
+		if (!view.someProp('handleTextInput', (f) => f(view, from, to, key, insert))) view.dispatch(insert());
+	}
 }
