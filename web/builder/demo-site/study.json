@@ -1,0 +1,617 @@
+{
+	"specVersion": "osp-survey/0.1",
+	"id": "coffee_focus",
+	"version": 1,
+	"metadata": {
+		"title": {
+			"en": "Coffee and focus",
+			"de": "Kaffee und Konzentration"
+		},
+		"description": "An invented demo study (Open Survey Platform's live demo). No real data.",
+		"languages": [
+			"en",
+			"de"
+		],
+		"license": "CC0-1.0"
+	},
+	"settings": {
+		"backNavigation": true,
+		"retention": {
+			"kind": "days-after-close",
+			"days": 365
+		},
+		"theme": {
+			"themeVersion": "osp-theme/0.1",
+			"preset": "warm",
+			"colours": {
+				"light": {
+					"accent": "#a3431a",
+					"background": "#fdf8f1",
+					"surface": "#f5ecdf",
+					"text": "#2b2118",
+					"muted": "#65544a",
+					"error": "#a8201a",
+					"focus": "#a3431a"
+				},
+				"dark": {
+					"accent": "#f2a571",
+					"background": "#1c1713",
+					"surface": "#262019",
+					"text": "#f3eadf",
+					"muted": "#c4b4a2",
+					"error": "#ff8f84",
+					"focus": "#f2a571"
+				}
+			},
+			"logoAssetId": null,
+			"headerText": null,
+			"font": "system-serif",
+			"baseSize": 16,
+			"lineSpacing": 1.6,
+			"radius": 12,
+			"density": "comfortable",
+			"buttonStyle": "filled",
+			"choiceStyle": "cards",
+			"mode": "auto"
+		},
+		"endings": {
+			"complete": {
+				"title": {
+					"en": "Thank you!",
+					"de": "Vielen Dank!"
+				},
+				"body": {
+					"en": "That's everything. Your answers help our (entirely invented) lab understand how coffee, sleep and focus fit together.",
+					"de": "Das war alles. Ihre Antworten helfen unserem (frei erfundenen) Labor zu verstehen, wie Kaffee, Schlaf und Konzentration zusammenhängen."
+				},
+				"summary": "answers"
+			},
+			"too_young": {
+				"title": {
+					"en": "Thanks for your interest",
+					"de": "Danke für Ihr Interesse"
+				},
+				"body": {
+					"en": "This study is for adults (18 or over), so we can't include you this time. Nothing else is needed from you.",
+					"de": "Diese Studie richtet sich an Erwachsene (ab 18 Jahren), daher können wir Sie diesmal nicht aufnehmen. Mehr brauchen wir nicht von Ihnen."
+				}
+			},
+			"declined": {
+				"body": {
+					"en": "No problem: you chose not to take part.",
+					"de": "Kein Problem: Sie haben sich gegen die Teilnahme entschieden."
+				}
+			}
+		}
+	},
+	"consent": {
+		"text": {
+			"en": "This is a short demo survey about coffee, sleep and focus. It takes about three minutes. Taking part is voluntary, and in this demo nothing you enter leaves your browser.",
+			"de": "Dies ist eine kurze Demo-Umfrage über Kaffee, Schlaf und Konzentration. Sie dauert etwa drei Minuten. Die Teilnahme ist freiwillig, und in dieser Demo verlässt nichts, was Sie eingeben, Ihren Browser."
+		},
+		"agreeLabel": {
+			"en": "I agree to take part",
+			"de": "Ich bin einverstanden"
+		},
+		"declineLabel": {
+			"en": "No, thanks",
+			"de": "Nein, danke"
+		},
+		"declineOutcome": "declined"
+	},
+	"choiceLists": [
+		{
+			"id": "yesno",
+			"choices": [
+				{
+					"value": "yes",
+					"label": {
+						"en": "Yes",
+						"de": "Ja"
+					}
+				},
+				{
+					"value": "no",
+					"label": {
+						"en": "No",
+						"de": "Nein"
+					}
+				}
+			]
+		},
+		{
+			"id": "focus5",
+			"choices": [
+				{
+					"value": 1,
+					"label": {
+						"en": "Very poor",
+						"de": "Sehr schlecht"
+					}
+				},
+				{
+					"value": 2,
+					"label": {
+						"en": "Poor",
+						"de": "Schlecht"
+					}
+				},
+				{
+					"value": 3,
+					"label": {
+						"en": "OK",
+						"de": "Mittel"
+					}
+				},
+				{
+					"value": 4,
+					"label": {
+						"en": "Good",
+						"de": "Gut"
+					}
+				},
+				{
+					"value": 5,
+					"label": {
+						"en": "Excellent",
+						"de": "Ausgezeichnet"
+					}
+				}
+			]
+		}
+	],
+	"variables": [
+		{
+			"kind": "computed",
+			"id": "caffeine_mg",
+			"expr": {
+				"kind": "arith",
+				"op": "*",
+				"left": {
+					"kind": "ref",
+					"id": "cups"
+				},
+				"right": {
+					"kind": "int",
+					"value": 95
+				}
+			}
+		}
+	],
+	"blocks": [
+		{
+			"id": "about_you",
+			"title": "About you",
+			"pages": [
+				{
+					"id": "about_page",
+					"title": {
+						"en": "About you",
+						"de": "Über Sie"
+					},
+					"items": [
+						{
+							"type": "integer",
+							"id": "age",
+							"label": {
+								"en": "How old are you?",
+								"de": "Wie alt sind Sie?"
+							},
+							"required": true,
+							"min": 10,
+							"max": 110,
+							"constraintMessage": {
+								"en": "Please enter an age between 10 and 110.",
+								"de": "Bitte geben Sie ein Alter zwischen 10 und 110 an."
+							}
+						},
+						{
+							"type": "single",
+							"id": "drinks_coffee",
+							"label": {
+								"en": "Do you drink coffee?",
+								"de": "Trinken Sie Kaffee?"
+							},
+							"choiceList": "yesno",
+							"required": true
+						}
+					]
+				}
+			]
+		},
+		{
+			"id": "coffee",
+			"title": "Coffee habits",
+			"pages": [
+				{
+					"id": "coffee_page",
+					"title": {
+						"en": "Your coffee",
+						"de": "Ihr Kaffee"
+					},
+					"items": [
+						{
+							"type": "slider",
+							"id": "cups",
+							"label": {
+								"en": "How many cups of coffee did you have yesterday?",
+								"de": "Wie viele Tassen Kaffee haben Sie gestern getrunken?"
+							},
+							"required": true,
+							"min": 0,
+							"max": 8,
+							"step": 1,
+							"minLabel": {
+								"en": "None",
+								"de": "Keine"
+							},
+							"maxLabel": {
+								"en": "8 or more",
+								"de": "8 oder mehr"
+							}
+						},
+						{
+							"type": "multi",
+							"id": "how_take",
+							"label": {
+								"en": "How do you take it?",
+								"de": "Wie trinken Sie ihn?"
+							},
+							"help": {
+								"en": "Pick all that apply.",
+								"de": "Wählen Sie alles Zutreffende."
+							},
+							"showIf": {
+								"kind": "compare",
+								"op": ">",
+								"left": {
+									"kind": "ref",
+									"id": "cups"
+								},
+								"right": {
+									"kind": "int",
+									"value": 0
+								}
+							},
+							"choiceOrder": "shuffle",
+							"choices": [
+								{
+									"value": "black",
+									"label": {
+										"en": "Black",
+										"de": "Schwarz"
+									}
+								},
+								{
+									"value": "milk",
+									"label": {
+										"en": "With milk",
+										"de": "Mit Milch"
+									}
+								},
+								{
+									"value": "plant_milk",
+									"label": {
+										"en": "With plant milk",
+										"de": "Mit Pflanzenmilch"
+									}
+								},
+								{
+									"value": "sugar",
+									"label": {
+										"en": "With sugar",
+										"de": "Mit Zucker"
+									}
+								},
+								{
+									"value": "syrup",
+									"label": {
+										"en": "With a flavoured syrup",
+										"de": "Mit Sirup"
+									}
+								}
+							]
+						},
+						{
+							"type": "decimal",
+							"id": "first_cup",
+							"label": {
+								"en": "How many hours after waking do you have your first cup?",
+								"de": "Wie viele Stunden nach dem Aufwachen trinken Sie Ihre erste Tasse?"
+							},
+							"showIf": {
+								"kind": "compare",
+								"op": ">",
+								"left": {
+									"kind": "ref",
+									"id": "cups"
+								},
+								"right": {
+									"kind": "int",
+									"value": 0
+								}
+							},
+							"min": 0,
+							"max": 24
+						}
+					]
+				}
+			]
+		},
+		{
+			"id": "no_coffee",
+			"title": "Non-drinkers",
+			"pages": [
+				{
+					"id": "no_coffee_page",
+					"items": [
+						{
+							"type": "single",
+							"id": "instead",
+							"label": {
+								"en": "What do you drink instead to stay alert?",
+								"de": "Was trinken Sie stattdessen, um wach zu bleiben?"
+							},
+							"choiceOrder": "shuffle",
+							"choices": [
+								{
+									"value": "tea",
+									"label": {
+										"en": "Tea",
+										"de": "Tee"
+									}
+								},
+								{
+									"value": "energy",
+									"label": {
+										"en": "Energy drinks",
+										"de": "Energydrinks"
+									}
+								},
+								{
+									"value": "water",
+									"label": {
+										"en": "Just water",
+										"de": "Nur Wasser"
+									}
+								},
+								{
+									"value": "nothing",
+									"label": {
+										"en": "Nothing in particular",
+										"de": "Nichts Bestimmtes"
+									}
+								}
+							]
+						}
+					]
+				}
+			]
+		},
+		{
+			"id": "focus",
+			"title": "Focus (randomised)",
+			"pages": [
+				{
+					"id": "focus_page",
+					"title": {
+						"en": "Focus",
+						"de": "Konzentration"
+					},
+					"items": [
+						{
+							"type": "matrix",
+							"id": "focus_grid",
+							"label": {
+								"en": "Yesterday, how well could you focus on each of these?",
+								"de": "Wie gut konnten Sie sich gestern auf Folgendes konzentrieren?"
+							},
+							"required": true,
+							"choiceList": "focus5",
+							"rows": [
+								{
+									"id": "reading",
+									"label": {
+										"en": "Reading",
+										"de": "Lesen"
+									}
+								},
+								{
+									"id": "email",
+									"label": {
+										"en": "Email and messages",
+										"de": "E-Mails und Nachrichten"
+									}
+								},
+								{
+									"id": "deep_work",
+									"label": {
+										"en": "Deep work",
+										"de": "Konzentriertes Arbeiten"
+									}
+								},
+								{
+									"id": "meetings",
+									"label": {
+										"en": "Meetings (optional)",
+										"de": "Besprechungen (optional)"
+									},
+									"required": false
+								}
+							]
+						}
+					]
+				}
+			]
+		},
+		{
+			"id": "sleep",
+			"title": "Sleep (randomised)",
+			"pages": [
+				{
+					"id": "sleep_page",
+					"title": {
+						"en": "Sleep",
+						"de": "Schlaf"
+					},
+					"items": [
+						{
+							"type": "slider",
+							"id": "sleep_hours",
+							"valueType": "decimal",
+							"label": {
+								"en": "How many hours did you sleep last night?",
+								"de": "Wie viele Stunden haben Sie letzte Nacht geschlafen?"
+							},
+							"required": true,
+							"min": 0,
+							"max": 12,
+							"step": "0.5",
+							"minLabel": {
+								"en": "0 hours",
+								"de": "0 Stunden"
+							},
+							"maxLabel": {
+								"en": "12 hours",
+								"de": "12 Stunden"
+							}
+						},
+						{
+							"type": "date",
+							"id": "late_night",
+							"label": {
+								"en": "When did you last stay up past 2 a.m.? (optional)",
+								"de": "Wann waren Sie zuletzt nach 2 Uhr nachts noch wach? (optional)"
+							}
+						}
+					]
+				}
+			]
+		},
+		{
+			"id": "wrap_up",
+			"title": "Wrap-up",
+			"pages": [
+				{
+					"id": "wrap_page",
+					"items": [
+						{
+							"type": "note",
+							"id": "caffeine_note",
+							"label": {
+								"en": "You had ${cups} cups yesterday: roughly ${caffeine_mg} mg of caffeine.",
+								"de": "Sie hatten gestern ${cups} Tassen: ungefähr ${caffeine_mg} mg Koffein."
+							},
+							"showIf": {
+								"kind": "compare",
+								"op": ">",
+								"left": {
+									"kind": "ref",
+									"id": "cups"
+								},
+								"right": {
+									"kind": "int",
+									"value": 0
+								}
+							}
+						},
+						{
+							"type": "text",
+							"id": "tips",
+							"multiline": true,
+							"label": {
+								"en": "Any tips for staying focused? (optional)",
+								"de": "Haben Sie Tipps, um konzentriert zu bleiben? (optional)"
+							}
+						}
+					]
+				}
+			]
+		}
+	],
+	"flow": [
+		{
+			"type": "block",
+			"id": "n_about",
+			"block": "about_you"
+		},
+		{
+			"type": "branch",
+			"id": "br_age",
+			"if": {
+				"kind": "compare",
+				"op": "<",
+				"left": {
+					"kind": "ref",
+					"id": "age"
+				},
+				"right": {
+					"kind": "int",
+					"value": 18
+				}
+			},
+			"then": [
+				{
+					"type": "end",
+					"id": "end_too_young",
+					"outcome": "too_young"
+				}
+			]
+		},
+		{
+			"type": "branch",
+			"id": "br_coffee",
+			"if": {
+				"kind": "compare",
+				"op": "==",
+				"left": {
+					"kind": "ref",
+					"id": "drinks_coffee"
+				},
+				"right": {
+					"kind": "text",
+					"value": "yes"
+				}
+			},
+			"then": [
+				{
+					"type": "block",
+					"id": "n_coffee",
+					"block": "coffee"
+				}
+			],
+			"else": [
+				{
+					"type": "block",
+					"id": "n_no_coffee",
+					"block": "no_coffee"
+				}
+			]
+		},
+		{
+			"type": "randomiser",
+			"id": "r_focus_sleep",
+			"children": [
+				{
+					"type": "block",
+					"id": "n_focus",
+					"block": "focus"
+				},
+				{
+					"type": "block",
+					"id": "n_sleep",
+					"block": "sleep"
+				}
+			]
+		},
+		{
+			"type": "block",
+			"id": "n_wrap",
+			"block": "wrap_up"
+		},
+		{
+			"type": "end",
+			"id": "end_complete"
+		}
+	]
+}

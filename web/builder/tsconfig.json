@@ -18,5 +18,5 @@
 		"skipLibCheck": true,
 		"noEmit": true
 	},
-	"include": ["src", "dev-host", "vite.config.ts", "vitest.dom.config.ts"]
+	"include": ["src", "dev-host", "demo-site", "vite.config.ts", "vite.demo.config.ts", "vitest.dom.config.ts"]
 }

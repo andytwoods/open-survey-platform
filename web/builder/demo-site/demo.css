@@ -1,0 +1,38 @@
+/* The demo banner (src/lib/demo/boot.ts) and the builder shell fitted under it. */
+.osp-demo-banner {
+	display: flex;
+	flex-wrap: wrap;
+	align-items: center;
+	justify-content: space-between;
+	gap: 0.25rem 1rem;
+	margin: 0;
+	padding: 0.375rem 1rem;
+	background: var(--color-accent-subtle, #efeafd);
+	color: var(--color-text, #1d2433);
+	border-bottom: 1px solid var(--color-border, #d5dae1);
+	font: inherit;
+	font-size: 0.875rem;
+	line-height: 1.4;
+}
+.osp-demo-banner p {
+	margin: 0;
+}
+.osp-demo-links {
+	display: flex;
+	flex-wrap: wrap;
+	gap: 0.25rem 1rem;
+}
+.osp-demo-banner a {
+	color: var(--color-text, #1d2433);
+	font-weight: 600;
+	text-decoration: underline;
+	text-underline-offset: 2px;
+}
+.osp-demo-banner a:focus-visible {
+	outline: 2px solid var(--color-focus, #5b3fd1);
+	outline-offset: 2px;
+}
+/* The shell is 100dvh tall (Shell.svelte): leave room for the banner above it. */
+#osp .shell {
+	height: calc(100dvh - var(--osp-demo-banner, 0px));
+}

@@ -10,6 +10,8 @@ export default defineConfig(
 			'**/node_modules/**',
 			'**/build/**',
 			'**/dist/**',
+			// The serverless Pages demo's build (make docs-demo).
+			'builder/build-demo/**',
 			// Generated from /contract/openapi.json by `make contract`.
 			'api-client/src/schema.d.ts'
 		]

@@ -2,9 +2,11 @@ name: CI
 
 # `make check` split into jobs that run side by side (task CI1), so a run finishes well
 # under 20 minutes:
-#   check          Ubuntu: `make check` without the browser suite (harness-quick)
+#   check          Ubuntu: `make check` without the browser suites (harness-quick,
+#                  demo-e2e)
 #   web-e2e        Ubuntu and Windows: builder end-to-end (Playwright, `make web-e2e`),
-#                  each against its own platform's visual snapshots (task W2)
+#                  each against its own platform's visual snapshots (task W2); on Ubuntu
+#                  also the serverless Pages demo (`make demo-e2e`, task DEMO2)
 #   harness-quick  Ubuntu: fixture harness in desktop Chromium (`make harness-quick`)
 #   windows        Windows: `make check` without the browser suite (py-test included
 #                  since task W3)
@@ -57,7 +59,7 @@ jobs:
         run: make install
 
       - name: make check (without the browser suite)
-        run: make check CHECK_SKIP="harness-quick"
+        run: make check CHECK_SKIP="harness-quick demo-e2e"
 
   web-e2e:
     name: builder e2e (${{ matrix.os }})
@@ -108,12 +110,19 @@ jobs:
       - name: make web-e2e
         run: make web-e2e
 
+      # The static Pages demo with every /api request blocked (task DEMO2).
+      - name: make demo-e2e
+        if: runner.os == 'Linux'
+        run: make demo-e2e
+
       - name: Upload traces of failed tests
         if: failure()
         uses: actions/upload-artifact@v4
         with:
           name: builder-e2e-results-${{ matrix.os }}
-          path: web/builder/test-results
+          path: |
+            web/builder/test-results
+            web/builder/e2e-demo/test-results
           if-no-files-found: ignore
           retention-days: 7
 
@@ -203,4 +212,4 @@ jobs:
       # POSIX file-mode checks are skipped on Windows, and .gitattributes keeps the
       # generated contract LF under core.autocrlf=true.
       - name: make check (without the browser suite)
-        run: make check CHECK_SKIP="harness-quick"
+        run: make check CHECK_SKIP="harness-quick demo-e2e"
