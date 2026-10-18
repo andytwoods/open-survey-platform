@@ -1,0 +1,24 @@
+{
+	"name": "@osp/spec",
+	"private": true,
+	"version": "0.1.0",
+	"license": "MIT",
+	"description": "TypeScript port of the osp-spec validator: validate(doc) gives the diagnostics osp_spec.validate gives. Pure: no DOM, no I/O.",
+	"type": "module",
+	"types": "./src/index.ts",
+	"exports": {
+		".": {
+			"types": "./src/index.ts",
+			"default": "./src/index.ts"
+		}
+	},
+	"sideEffects": false,
+	"scripts": {
+		"check": "tsc -p tsconfig.json"
+	},
+	"devDependencies": {
+		"@types/node": "^24.19.2",
+		"typescript": "~6.0.3",
+		"vitest": "^4.1.12"
+	}
+}
