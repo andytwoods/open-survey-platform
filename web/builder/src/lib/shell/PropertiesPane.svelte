@@ -8,8 +8,6 @@
 		findObject,
 		pointerOf,
 		pointerWithin,
-		textIn,
-		withText,
 		type OutlineNode
 	} from '../model/outline';
 	import { findNode } from '../outline/tree-nav';
@@ -17,6 +15,7 @@
 	import type { SurveyStore } from '../sync/survey-store.svelte';
 	import BufferedTextField from './BufferedTextField.svelte';
 	import { api } from '../api';
+	import { richIn, textIn, withTranslation } from '../properties/logic';
 	import PropertyPanel from '../properties/PropertyPanel.svelte';
 	import { fetchPropertySchemas, propertySchemas, schemaFor } from '../properties/schemas.svelte';
 	import type { OpenEditorRequest } from '../properties/types';
@@ -24,11 +23,14 @@
 	import { RowsDialog, rowsEditorInputs } from '../rows';
 	import { ConditionDialog, apiExpressionService, questionsFromSurvey, type ConditionField, type ExprNode } from '../conditions';
 	import { questionTypeInfo } from '../question-types/catalogue';
+	import { EditingLanguageSelect, editLanguageOf } from '../translations';
 
 	/**
 	 * Shows what is selected and its schema-driven property panel (B4). Until the property
 	 * schemas have loaded, the one editable field each object has (question label,
-	 * page/block title) stands in.
+	 * page/block title) stands in. Translatable text is edited in the pane's editing language
+	 * (planning/rich-text.md §5, RT6): one select at the top, shared with the choice and row
+	 * dialogs; the default language is the fallback and the reference.
 	 */
 	let {
 		roots,
@@ -52,7 +54,10 @@
 				: undefined
 	);
 	const raw = $derived(store && node ? findObject(store.survey, node.id) : undefined);
+	/** The survey's default language: plain strings belong to it; it is the fallback. */
 	const lang = $derived(store ? defaultLanguage(store.survey) : 'en');
+	/** The language translatable fields are edited in (the pane's select). */
+	const editLang = $derived(store ? editLanguageOf(store.survey) : lang);
 	let tab = $state('details');
 
 	const field = $derived.by(() => {
@@ -65,14 +70,15 @@
 
 	// Block titles are plain strings (builder-only); page titles and labels are translatable.
 	const fieldValue = $derived(
-		field && raw ? (node?.type === 'block' ? String(raw.title ?? '') : textIn(raw[field.property], lang)) : ''
+		field && raw ? (node?.type === 'block' ? String(raw.title ?? '') : textIn(raw[field.property], editLang)) : ''
 	);
 
 	/**
 	 * The commit for one object, bound when its field is rendered: a buffer flushed after
-	 * the selection moved on must still edit the object it was typed into.
+	 * the selection moved on must still edit the object it was typed into, in the language
+	 * it was typed in.
 	 */
-	function commitFor(id: string, type: OutlineNode['type'], property: string) {
+	function commitFor(id: string, type: OutlineNode['type'], property: string, language: string) {
 		return (text: string) => {
 			if (!store) return;
 			const unset = { op: 'set_property', params: { target: id, property, unset: true } };
@@ -80,9 +86,9 @@
 			if (type === 'block') {
 				return store.submit([blank ? unset : { op: 'set_property', params: { target: id, property, value: text } }]);
 			}
-			if (type === 'page' && blank) return store.submit([unset]);
 			const current = findObject(store.survey, id)?.[property];
-			const value = withText(current, defaultLanguage(store.survey), text);
+			const value = withTranslation(current, language, defaultLanguage(store.survey), blank ? '' : text);
+			if (value === undefined) return type === 'page' || richIn(current, language) !== '' ? store.submit([unset]) : undefined;
 			return store.submit([{ op: 'set_property', params: { target: id, property, value } }]);
 		};
 	}
@@ -170,6 +176,9 @@
 
 <div class="properties">
 	<h2 id="properties-heading" tabindex="-1" data-pane-focus>Properties</h2>
+	{#if store}
+		<div class="edit-lang"><EditingLanguageSelect survey={store.survey} id="properties-editing-language" /></div>
+	{/if}
 	{#if node}
 		{#snippet details()}
 			{#if store && schema && propertySchemas.doc}
@@ -178,7 +187,8 @@
 						bind:this={panel}
 						{schema}
 						target={panelTarget}
-						language={lang}
+						language={editLang}
+						defaultLanguage={lang}
 						diagnostics={[...store.diagnostics, ...(store.rejection?.diagnostics ?? [])]}
 						pointer={panelPointer}
 						survey={store.survey}
@@ -190,13 +200,13 @@
 					/>
 				</div>
 			{:else if field && store}
-				{#key node.id}
+				{#key `${node.id}|${editLang}`}
 					<div class="field">
 						<BufferedTextField
 							label={field.label}
 							value={fieldValue}
 							{store}
-							commit={commitFor(node.id, node.type, field.property)}
+							commit={commitFor(node.id, node.type, field.property, editLang)}
 						/>
 					</div>
 				{/key}
@@ -275,7 +285,7 @@
 		choiceLists={choiceInputs.choiceLists}
 		usage={choiceInputs.usage}
 		pointer={choiceInputs.pointer}
-		{lang}
+		lang={editLang}
 		defaultLanguage={choiceInputs.defaultLanguage}
 		diagnostics={allDiagnostics}
 		onOps={(ops) => void store?.submit(ops)}
@@ -287,7 +297,7 @@
 		bind:open={rowsOpen}
 		question={rowsInputs.question}
 		pointer={rowsInputs.pointer}
-		{lang}
+		lang={editLang}
 		defaultLanguage={rowsInputs.defaultLanguage}
 		survey={store.survey}
 		diagnostics={allDiagnostics}
@@ -299,7 +309,7 @@
 	<ConditionDialog
 		bind:open={conditionOpen}
 		description={findNode(roots, conditionReq.target)?.label}
-		questions={questionsFromSurvey(store.survey, lang)}
+		questions={questionsFromSurvey(store.survey, editLang)}
 		value={(conditionReq.value ?? null) as ExprNode | null}
 		target={conditionReq.target}
 		field={CONDITION_FIELDS.includes(conditionReq.path) ? (conditionReq.path as ConditionField) : undefined}
@@ -323,6 +333,9 @@
 	}
 	.field {
 		margin-bottom: var(--space-4);
+	}
+	.edit-lang:not(:empty) {
+		margin-bottom: var(--space-3);
 	}
 	dl {
 		display: grid;

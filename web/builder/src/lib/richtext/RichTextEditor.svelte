@@ -11,6 +11,7 @@
 	import { describeReport } from './paste';
 	import PipePicker from './PipePicker.svelte';
 	import type { PipeCandidate } from './pipes';
+	import ReferenceStrip from './ReferenceStrip.svelte';
 	import RichView from './RichView.svelte';
 	import Toolbar, { type ToolbarAction } from './Toolbar.svelte';
 
@@ -22,6 +23,9 @@
 	 * blur or on Enter (inline fields), Escape reverts the draft, and a server echo never
 	 * clobbers text the researcher is still typing. Commits are the normalised value: a plain
 	 * string when there is no formatting (RT-D3), else the tree.
+	 *
+	 * When another language than the default is edited, `reference` (the default-language
+	 * value) is shown read-only above the field with *Copy from <default>* (§5, RT6).
 	 */
 	let {
 		id,
@@ -30,6 +34,7 @@
 		pipes = null,
 		problems = new Map<string, string>(),
 		placeholder = '',
+		reference = null,
 		labelledBy,
 		describedBy,
 		required = false,
@@ -49,6 +54,8 @@
 		/** Server diagnostics by pipe id, shown on the chips. */
 		problems?: ReadonlyMap<string, string>;
 		placeholder?: string;
+		/** The default-language value and its tag, when editing a translation; null otherwise. */
+		reference?: { value: RichValue | undefined | null; language: string } | null;
 		labelledBy?: string;
 		describedBy?: string;
 		required?: boolean;
@@ -96,6 +103,9 @@
 	const statusId = $derived(`${id}-status`);
 	const describes = $derived([describedBy, countId, status ? statusId : ''].filter(Boolean).join(' '));
 	const empty = $derived(isEmptyValue(draft));
+	/** The reference strip shows when there is a default-language value to translate. */
+	const ref = $derived(reference && !isEmptyValue(reference.value) ? { value: normalForm(reference.value), language: reference.language } : null);
+	const sameAsRef = $derived(ref !== null && sameValue(draft, ref.value));
 
 	const attrs = (): Record<string, string> => {
 		const a: Record<string, string> = {
@@ -160,6 +170,23 @@
 		if (sameValue(draft, sent)) return;
 		sent = draft;
 		onCommit(draft);
+	}
+
+	/**
+	 * Copy from <default>: the default-language value (formatting, links and chips included)
+	 * becomes this language's value, committed at once; the researcher edits from there.
+	 */
+	function copyFromReference() {
+		if (!ref || readonly) return;
+		if (timer !== null) {
+			clearTimeout(timer);
+			timer = null;
+			onDirty?.(false);
+		}
+		draft = ref.value;
+		if (editor) setEditorContent(ref.value);
+		flush();
+		announce(`Copied from ${ref.language}`);
 	}
 
 	/** Escape: throw the unsent text away. True when there was something to revert. */
@@ -355,6 +382,9 @@
 	{onfocusout}
 	{onkeydown}
 >
+	{#if ref && !readonly}
+		<ReferenceStrip {id} value={ref.value} language={ref.language} inline={level === 'inline'} same={sameAsRef} onCopy={copyFromReference} />
+	{/if}
 	<div class="osp-rt-box" class:invalid={invalid || over}>
 		{#if active}
 			{#if tb}

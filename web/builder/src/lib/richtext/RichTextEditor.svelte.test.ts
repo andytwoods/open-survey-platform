@@ -3,6 +3,7 @@ import { fireEvent, render } from '@testing-library/svelte';
 import type { RichText } from '@osp/engine';
 import axe from 'axe-core';
 import { afterEach, describe, expect, it, vi } from 'vitest';
+import { editingLanguage } from '../translations/editing-language.svelte';
 import RichTextEditor from './RichTextEditor.svelte';
 import type { RichValue } from './convert';
 import { activate, blurField, editable, typeInto, wait } from './test-utils';
@@ -12,7 +13,12 @@ import { activate, blurField, editable, typeInto, wait } from './test-utils';
 
 const bold: RichText = { type: 'rich', blocks: [{ type: 'p', content: [{ text: 'Be ' }, { text: 'bold', marks: ['b'] }] }] };
 
-function setup(value: RichValue | undefined, extra: Partial<{ level: 'block' | 'stem' | 'inline'; pipes: null; delay: number; placeholder: string; readonly: boolean }> = {}) {
+type Reference = { value: RichValue | undefined | null; language: string } | null;
+
+function setup(
+	value: RichValue | undefined,
+	extra: Partial<{ level: 'block' | 'stem' | 'inline'; pipes: null; delay: number; placeholder: string; readonly: boolean; reference: Reference }> = {}
+) {
 	const commits: RichValue[] = [];
 	const dirty: boolean[] = [];
 	const props = {
@@ -23,6 +29,7 @@ function setup(value: RichValue | undefined, extra: Partial<{ level: 'block' | '
 		delay: extra.delay ?? 50,
 		placeholder: extra.placeholder ?? '',
 		readonly: extra.readonly ?? false,
+		reference: extra.reference ?? null,
 		labelledBy: 'lbl',
 		onCommit: (v: RichValue) => commits.push(v),
 		onDirty: (d: boolean) => dirty.push(d)
@@ -35,7 +42,69 @@ function setup(value: RichValue | undefined, extra: Partial<{ level: 'block' | '
 
 afterEach(() => {
 	document.getElementById('lbl')?.remove();
+	editingLanguage.referenceOpen = true;
 	vi.useRealTimers();
+});
+
+describe('translations (RT6)', () => {
+	const ref = { value: bold, language: 'en' };
+	const strip = (c: HTMLElement) => c.querySelector<HTMLElement>('[data-testid="reference-strip"]');
+	const copy = (c: HTMLElement) => c.querySelector<HTMLButtonElement>('.osp-rt-ref-copy')!;
+
+	it('shows the default-language value as a read-only reference, formatting included', () => {
+		const t = setup('', { reference: ref, placeholder: 'Be bold' });
+		const s = strip(t.container)!;
+		expect(s).not.toBeNull();
+		expect(s.querySelector('.osp-rt-ref-body')!.getAttribute('lang')).toBe('en');
+		expect(s.querySelector('.osp-rt-ref-body strong')!.textContent).toBe('bold');
+		expect(copy(t.container).textContent).toContain('Copy from en');
+		expect(copy(t.container).disabled).toBe(false);
+		expect(t.container.querySelector('[role="toolbar"]')).toBeNull();
+		t.unmount();
+		// No reference (the default language is being edited), or nothing to translate: no strip.
+		const none = setup('x');
+		expect(strip(none.container)).toBeNull();
+		none.unmount();
+		const empty = setup('x', { reference: { value: '', language: 'en' } });
+		expect(strip(empty.container)).toBeNull();
+	});
+
+	it('Copy from <default> commits the reference at once and the field shows it', async () => {
+		const t = setup('', { reference: ref, delay: 1000 });
+		await fireEvent.click(copy(t.container));
+		expect(t.commits).toEqual([bold]);
+		expect(t.idle().querySelector('strong')!.textContent).toBe('bold');
+		expect(copy(t.container).disabled).toBe(true); // the same as the reference now
+		expect(t.dirty).toEqual([]);
+		// While the editor is open the copy lands in the editor and replaces a pending draft.
+		const ed = await activate(t.idle());
+		await typeInto(ed, 'Fett');
+		expect(t.dirty).toEqual([true]);
+		expect(copy(t.container).disabled).toBe(false);
+		await fireEvent.click(copy(t.container));
+		expect(ed.getText()).toBe('Be bold');
+		expect(t.dirty).toEqual([true, false]);
+		expect(t.commits).toEqual([bold]); // unchanged from the server's value: nothing new sent
+	});
+
+	it('the reference collapses and expands, one shared choice for every field', async () => {
+		const t = setup('', { reference: ref });
+		const toggle = t.container.querySelector<HTMLButtonElement>('.osp-rt-ref-toggle')!;
+		const body = t.container.querySelector<HTMLElement>('.osp-rt-ref-body')!;
+		expect(toggle.getAttribute('aria-expanded')).toBe('true');
+		expect(toggle.getAttribute('aria-controls')).toBe(body.id);
+		await fireEvent.click(toggle);
+		expect(toggle.getAttribute('aria-expanded')).toBe('false');
+		expect(body.hidden).toBe(true);
+		expect(editingLanguage.referenceOpen).toBe(false);
+		await fireEvent.click(toggle);
+		expect(body.hidden).toBe(false);
+	});
+
+	it('an inline reference renders on one line', () => {
+		const t = setup('', { level: 'inline', reference: { value: 'Yes', language: 'en' } });
+		expect(t.container.querySelector('.osp-rt-ref-body .osp-rv-inline')!.textContent).toBe('Yes');
+	});
 });
 
 describe('at rest', () => {

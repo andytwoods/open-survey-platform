@@ -3,6 +3,7 @@
 // folder), the read-only renderer the cards use, and the pure helpers behind them.
 export { default as RichTextEditor } from './RichTextEditor.svelte';
 export { default as RichView } from './RichView.svelte';
+export { default as ReferenceStrip } from './ReferenceStrip.svelte';
 export { LIMITS, LEVELS, allows, isLevel, type Level } from './levels';
 export {
 	asRich,

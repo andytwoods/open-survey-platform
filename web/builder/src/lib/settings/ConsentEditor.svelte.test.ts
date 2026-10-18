@@ -1,9 +1,10 @@
 import '@testing-library/svelte/vitest';
 import { fireEvent, render } from '@testing-library/svelte';
-import { describe, expect, it } from 'vitest';
+import { afterEach, describe, expect, it } from 'vitest';
 import { activate, blurField, typeInto } from '../richtext/test-utils';
 import type { Outcome } from '../sync/survey-store.svelte';
 import type { Invocation } from '../sync/transport';
+import { editingLanguage } from '../translations/editing-language.svelte';
 import ConsentEditor from './ConsentEditor.svelte';
 
 // The store applies an edit only when the server answers. Every set_consent sends the whole
@@ -14,17 +15,21 @@ import ConsentEditor from './ConsentEditor.svelte';
 
 type Consent = Record<string, unknown> | null;
 
-function setup(consent: Record<string, unknown> = { text: { en: '' } }) {
+function setup(consent: Record<string, unknown> = { text: { en: '' } }, languages = ['en']) {
 	const sent: Consent[] = [];
 	const answers: ((o: Outcome) => void)[] = [];
 	const submit = (ops: Invocation[]) => {
 		sent.push((ops[0]!.params as { consent: Consent }).consent);
 		return new Promise<Outcome>((resolve) => answers.push(resolve));
 	};
-	const survey = { metadata: { title: 'S', languages: ['en'] }, consent, blocks: [] };
+	const survey = { metadata: { title: 'S', languages }, consent, blocks: [] };
 	const view = render(ConsentEditor, { survey, defaultLanguage: 'en', submit });
 	return { ...view, sent, answers };
 }
+
+afterEach(() => {
+	editingLanguage.requested = null;
+});
 
 /** Edit a consent field as a researcher would: focus, replace the text, leave. */
 async function edit(el: HTMLElement, text: string) {
@@ -76,5 +81,20 @@ describe('ConsentEditor', () => {
 		expect(sent[0]).toEqual({
 			text: { en: { type: 'rich', blocks: [{ type: 'h', level: 1, content: [{ text: 'Information' }] }, { type: 'p', content: [{ text: 'Read ', marks: ['b'] }, { text: 'this now' }] }] } }
 		});
+	});
+
+	it('edits the page\'s editing language, with the default text as reference and Copy from it (RT6)', async () => {
+		editingLanguage.requested = 'de';
+		const { getByLabelText, getByTestId, container, sent } = setup({ text: { en: 'Voluntary.' }, agreeLabel: { en: 'Yes' } }, ['en', 'de']);
+		expect((getByLabelText('Editing language') as HTMLSelectElement).value).toBe('de');
+		expect(getByTestId('consent-missing').textContent).toContain('de');
+		const field = getByLabelText('Consent text');
+		expect(field.textContent).toBe(''); // de has no text yet
+		expect(field.getAttribute('lang')).toBe('de');
+		const strips = container.querySelectorAll('[data-testid="reference-strip"]');
+		expect(strips).toHaveLength(2); // text and the agree label; the decline label has no default text
+		expect(strips[0]!.querySelector('.osp-rt-ref-body')!.textContent).toBe('Voluntary.');
+		await fireEvent.click(strips[0]!.querySelector('.osp-rt-ref-copy')!);
+		expect(sent[0]).toEqual({ text: { en: 'Voluntary.', de: 'Voluntary.' }, agreeLabel: { en: 'Yes' } });
 	});
 });

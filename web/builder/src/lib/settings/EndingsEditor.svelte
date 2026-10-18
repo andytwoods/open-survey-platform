@@ -21,6 +21,7 @@
 		templatesOf,
 		type OutcomeUse
 	} from './endings';
+	import { EditingLanguageSelect, editLanguageOf } from '../translations';
 	import { languagesOf, setText, textExact } from './model';
 
 	/**
@@ -52,8 +53,8 @@
 	type Obj = Record<string, unknown>;
 	const endings = $derived(endingsOf(survey));
 	const languages = $derived(languagesOf(survey));
-	let lang = $state('');
-	const editLang = $derived(languages.includes(lang) ? lang : defaultLanguage);
+	// The page's shared editing language (planning/rich-text.md §5, RT6).
+	const editLang = $derived(editLanguageOf(survey));
 	const rows = $derived.by((): OutcomeUse[] => {
 		const used = outcomesInUse(survey);
 		const extra = Object.keys(endings)
@@ -175,12 +176,7 @@
 		Without an ending, participants see “Thank you” and the status line.
 	</p>
 	{#if languages.length > 1}
-		<label class="field narrow">
-			<span>Editing language</span>
-			<select bind:value={lang}>
-				{#each languages as l (l)}<option value={l}>{l}{l === defaultLanguage ? ' (default)' : ''}</option>{/each}
-			</select>
-		</label>
+		<EditingLanguageSelect {survey} id="endings-editing-language" />
 	{/if}
 	{#each rows as row (row.outcome)}
 		{@const ending = endings[row.outcome] ?? null}

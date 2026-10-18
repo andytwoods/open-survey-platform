@@ -6,7 +6,10 @@ import type { FlowDiagnostic, ListRef } from './model';
 export interface FlowCtx {
 	readonly store: SurveyStore;
 	readonly survey: unknown;
+	/** The survey's default language (plain strings belong to it; the fallback). */
 	readonly language: string;
+	/** The language translatable text (an End node's message) is edited in (RT6). */
+	readonly editLanguage: string;
 	readonly diagnostics: Map<string, FlowDiagnostic[]>;
 	/** Id of the node being dragged, if any. */
 	readonly dragging: string | null;

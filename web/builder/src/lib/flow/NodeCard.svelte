@@ -17,6 +17,7 @@
 	import { textFor } from '../cards/logic';
 	import { pipeCandidates, RichTextEditor } from '../richtext';
 	import { endingOf } from '../settings/endings';
+	import { richExact } from '../settings/model';
 	import BufferedTextField from '../shell/BufferedTextField.svelte';
 	import { flowCtx } from './context';
 	import {
@@ -24,7 +25,6 @@
 		assignedVariables,
 		blocks,
 		conditionText,
-		endMessage,
 		flagFor,
 		nodeLabel,
 		quotas,
@@ -68,7 +68,13 @@
 	let message = $state<RichTextEditor | null>(null);
 	const offBuffer = ctx.store.registerBuffer({ flush: () => message?.flush() });
 	onDestroy(offBuffer);
-	const messagePipes = $derived(type === 'end' ? pipeCandidates(ctx.survey, { lang: ctx.language }) : null);
+	const messagePipes = $derived(type === 'end' ? pipeCandidates(ctx.survey, { lang: ctx.editLanguage }) : null);
+	// Edited in the pane's editing language (RT6): exactly that language's value, the
+	// default language's as placeholder and reference while a translation is missing.
+	const translating = $derived(ctx.editLanguage !== ctx.language);
+	const messageValue = $derived(type === 'end' ? richExact(node.message, ctx.editLanguage, ctx.language) : '');
+	const messageDefault = $derived(type === 'end' ? richExact(node.message, ctx.language, ctx.language) : '');
+	const messageMissing = $derived(translating && !messageValue && !!messageDefault);
 
 	function onkeydown(e: KeyboardEvent) {
 		if (!e.altKey || e.ctrlKey || e.metaKey || e.shiftKey) return;
@@ -268,18 +274,33 @@
 					commit={(t) => set('outcome', t.trim() && t.trim() !== 'complete' ? t.trim() : undefined)}
 				/>
 				<div class="message">
-					<span class="field-label" id="{uid}-msg-label">Message</span>
-					<RichTextEditor
-						bind:this={message}
-						id="{uid}-msg"
-						value={endMessage(node, ctx.language)}
-						level="block"
-						pipes={messagePipes}
-						labelledBy="{uid}-msg-label"
-						lang={ctx.language}
-						onCommit={(v) => void set('message', withTranslation(node.message, ctx.language, ctx.language, v))}
-						onDirty={(d) => ctx.store.markDirty(d)}
-					/>
+					<div class="message-head">
+						<span class="field-label" id="{uid}-msg-label">Message</span>
+						{#if translating}
+							<span class="lang" id="{uid}-msg-lang">
+								<span class="osp-visually-hidden">Language:</span>
+								<span class="lang-code">{ctx.editLanguage}</span>{#if messageMissing}<span class="missing">
+										Missing translation</span
+									>{/if}
+							</span>
+						{/if}
+					</div>
+					{#key ctx.editLanguage}
+						<RichTextEditor
+							bind:this={message}
+							id="{uid}-msg"
+							value={messageValue}
+							level="block"
+							pipes={messagePipes}
+							placeholder={messageMissing ? textFor(messageDefault, ctx.language) : ''}
+							reference={translating ? { value: messageDefault, language: ctx.language } : null}
+							labelledBy="{uid}-msg-label"
+							describedBy={translating ? `${uid}-msg-lang` : undefined}
+							lang={ctx.editLanguage}
+							onCommit={(v) => void set('message', withTranslation(node.message, ctx.editLanguage, ctx.language, v))}
+							onDirty={(d) => ctx.store.markDirty(d)}
+						/>
+					{/key}
 				</div>
 			</div>
 			<p class="muted hint ending" data-testid="ending-line">
@@ -502,8 +523,32 @@
 		gap: var(--space-1);
 		flex-basis: 100%;
 	}
+	.message-head {
+		display: flex;
+		align-items: baseline;
+		justify-content: space-between;
+		gap: var(--space-2);
+	}
 	.field-label {
 		font-size: var(--text-sm);
+		font-weight: var(--weight-medium);
+	}
+	.lang {
+		display: inline-flex;
+		gap: var(--space-2);
+		align-items: baseline;
+		font-size: var(--text-xs);
+		color: var(--color-text-muted);
+	}
+	.lang-code {
+		padding: 0 var(--space-1);
+		border: 1px solid var(--color-border);
+		border-radius: var(--radius-sm);
+		text-transform: uppercase;
+		font-family: var(--font-mono);
+	}
+	.missing {
+		color: var(--color-text);
 		font-weight: var(--weight-medium);
 	}
 	.arms {

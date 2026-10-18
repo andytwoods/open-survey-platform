@@ -10,6 +10,7 @@
 	import type { SurveyStore } from '../sync/survey-store.svelte';
 	import type { Diagnostic } from '../sync/transport';
 	import { addBlockPlan } from '../structure/ops';
+	import { EditingLanguageSelect, editLanguageOf } from '../translations';
 	import { setFlowCtx } from './context';
 	import FlowList from './FlowList.svelte';
 	import { flowUi } from './flow-ui.svelte';
@@ -61,6 +62,7 @@
 	const survey = $derived(store.survey);
 	const rows = $derived(walk(survey));
 	const language = $derived(defaultLanguage(survey));
+	const editLanguage = $derived(editLanguageOf(survey));
 
 	// The store only learns diagnostics from edits; on open, ask the server for them.
 	let loaded = $state<{ revision: number; diagnostics: Diagnostic[] } | null>(null);
@@ -220,6 +222,9 @@
 		get language() {
 			return language;
 		},
+		get editLanguage() {
+			return editLanguage;
+		},
 		get diagnostics() {
 			return byNode;
 		},
@@ -276,6 +281,7 @@
 			</p>
 		</div>
 		<div class="head-actions">
+			<EditingLanguageSelect {survey} id="flow-editing-language" />
 			<Button onclick={() => void addBlock()}>
 				<LayersPlus size={16} aria-hidden="true" />
 				Add block
@@ -436,6 +442,7 @@
 	.head-actions {
 		display: flex;
 		flex-wrap: wrap;
+		align-items: flex-end;
 		gap: var(--space-2);
 		justify-content: flex-end;
 	}
