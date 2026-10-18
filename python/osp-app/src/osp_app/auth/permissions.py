@@ -32,6 +32,9 @@ class Action(StrEnum):
     THEMES_MANAGE = "themes.manage"  # save, change, delete themes; set the lab default
     PROFILE_VIEW = "profile.view"  # the lab's property panel profile (property-profiles.md)
     PROFILE_MANAGE = "profile.manage"  # set or clear it (owner only)
+    BANK_VIEW = "bank.view"  # the question bank (question-bank.md §3): browse, search
+    BANK_MANAGE = "bank.manage"  # save, new version, tag, delete, import, export
+    BANK_SHARE = "bank.share"  # host visibility; a `licensed-to-lab` item (owner only)
 
 
 class ResourceKind(StrEnum):
@@ -52,10 +55,15 @@ _ACTION_KIND: Mapping[Action, ResourceKind] = {
     Action.THEMES_MANAGE: ResourceKind.TENANT,
     Action.PROFILE_VIEW: ResourceKind.TENANT,
     Action.PROFILE_MANAGE: ResourceKind.TENANT,
+    Action.BANK_VIEW: ResourceKind.TENANT,
+    Action.BANK_MANAGE: ResourceKind.TENANT,
+    Action.BANK_SHARE: ResourceKind.TENANT,
 }
 
 POLICY: Mapping[Role, frozenset[Action]] = {
-    Role.VIEWER: frozenset({Action.SURVEY_READ, Action.THEMES_VIEW, Action.PROFILE_VIEW}),
+    Role.VIEWER: frozenset(
+        {Action.SURVEY_READ, Action.THEMES_VIEW, Action.PROFILE_VIEW, Action.BANK_VIEW}
+    ),
     Role.EDITOR: frozenset(
         {
             Action.SURVEY_READ,
@@ -67,6 +75,8 @@ POLICY: Mapping[Role, frozenset[Action]] = {
             Action.THEMES_VIEW,
             Action.THEMES_MANAGE,
             Action.PROFILE_VIEW,
+            Action.BANK_VIEW,
+            Action.BANK_MANAGE,
         }
     ),
     Role.OWNER: frozenset(Action),

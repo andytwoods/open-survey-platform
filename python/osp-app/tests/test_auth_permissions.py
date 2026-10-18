@@ -33,6 +33,9 @@ EXPECTED: dict[Role, set[Action]] = {
         A.THEMES_MANAGE,
         A.PROFILE_VIEW,
         A.PROFILE_MANAGE,
+        A.BANK_VIEW,
+        A.BANK_MANAGE,
+        A.BANK_SHARE,
     },
     Role.EDITOR: {
         A.SURVEY_READ,
@@ -44,15 +47,17 @@ EXPECTED: dict[Role, set[Action]] = {
         A.THEMES_VIEW,
         A.THEMES_MANAGE,
         A.PROFILE_VIEW,
+        A.BANK_VIEW,
+        A.BANK_MANAGE,
     },
-    Role.VIEWER: {A.SURVEY_READ, A.THEMES_VIEW, A.PROFILE_VIEW},
+    Role.VIEWER: {A.SURVEY_READ, A.THEMES_VIEW, A.PROFILE_VIEW, A.BANK_VIEW},
 }
 
 HOME, OTHER = "tenant-home", "tenant-other"
 
 
 def resource_for(action: Action, tenant_id: str) -> Resource:
-    if action.value.startswith(("members.", "themes.", "profile.")):
+    if action.value.startswith(("members.", "themes.", "profile.", "bank.")):
         return Resource.tenant(tenant_id)
     return Resource.survey(tenant_id, "s1")
 
@@ -124,7 +129,7 @@ def test_bad_resource(resource):
 def test_action_on_wrong_resource_kind(action):
     wrong = (
         Resource.survey(HOME, "s1")
-        if action.value.startswith(("members.", "themes.", "profile."))
+        if action.value.startswith(("members.", "themes.", "profile.", "bank."))
         else Resource.tenant(HOME)
     )
     assert can(owner, action, wrong) is False

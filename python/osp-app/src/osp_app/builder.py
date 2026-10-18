@@ -366,9 +366,18 @@ def _invocations(ops: object) -> list[Invocation]:
 class Builder:
     """Survey-building commands over osp-store. Thread-safe as far as the store is."""
 
-    def __init__(self, store: Store, sessions: SessionService | None = None) -> None:
+    def __init__(
+        self,
+        store: Store,
+        sessions: SessionService | None = None,
+        *,
+        bank_host_sharing: bool = True,
+    ) -> None:
         self.store = store
         self.sessions = sessions or SessionService(StoreParticipantRepo(store))
+        # OSP_BANK_HOST_SHARING (question-bank.md lead decision 2): whether a lab may share
+        # bank items with every lab on this host; off, other labs' items are never shown.
+        self.bank_host_sharing = bank_host_sharing
 
     def run(self, command_id: str, actor: object, **params: Any) -> Any:
         """Dispatch an app command by id (what the API, CLI and MCP call)."""

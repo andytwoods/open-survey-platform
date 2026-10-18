@@ -11,6 +11,7 @@ from osp_ops import openapi_components
 
 from ..identity import IdentityProvider
 from . import (
+    bank,
     data_export,
     export_check,
     expressions,
@@ -80,6 +81,7 @@ def install(
         expressions,
         themes,
         panel_profile,
+        bank,
     ):
         app.include_router(module.router)
     _with_op_schemas(app)

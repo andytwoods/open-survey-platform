@@ -114,7 +114,7 @@ When `scores` arrive, a migration (`bank.scoring_to_scores`) rewrites recipe var
 
 ## 3. Storage, permissions, API
 
-**Store** (`osp_store.bank`, mixed into `Store` like `ThemeLibrary`; migration `0011_question_bank`, additive):
+**Store** (`osp_store.bank`, mixed into `Store` like `ThemeLibrary`; migration `0012_question_bank` (the plan said 0011; EN4 took that number), additive):
 
 | Table | Columns |
 |---|---|

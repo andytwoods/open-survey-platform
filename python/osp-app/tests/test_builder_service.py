@@ -166,6 +166,18 @@ def test_every_command_fails_closed_for_non_members(env, command_id, who):
         "profile.set": {"profile": {}, "tenant_id": "lab-a"},
         "profile.clear": {"tenant_id": "lab-a"},
         "profile.schemas": {"tenant_id": "lab-a"},
+        "bank.list": {"tenant_id": "lab-a"},
+        "bank.library": {},
+        "bank.get": {"item_id": "i", "tenant_id": "lab-a"},
+        "bank.versions": {"item_id": "i", "tenant_id": "lab-a"},
+        "bank.save": {"survey_id": sid, "target_id": "b1", "title": "x"},
+        "bank.new_version": {"item_id": "i", "survey_id": sid, "target_id": "b1"},
+        "bank.update": {"item_id": "i", "fields": {}, "tenant_id": "lab-a"},
+        "bank.share": {"item_id": "i", "visibility": "host", "tenant_id": "lab-a"},
+        "bank.delete": {"item_id": "i", "tenant_id": "lab-a"},
+        "bank.export": {"item_id": "i", "tenant_id": "lab-a"},
+        "bank.import": {"file": {}, "tenant_id": "lab-a"},
+        "bank.copy": {"item_id": "i", "tenant_id": "lab-a"},
     }.get(command_id, {"survey_id": sid})
     if who is None or isinstance(who, str):
         with pytest.raises(Unauthenticated):
