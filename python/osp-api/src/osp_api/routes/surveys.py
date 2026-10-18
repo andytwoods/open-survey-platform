@@ -247,7 +247,6 @@ def export_lss(survey_id: str, auth: Auth, services: Services) -> Response:
     )
 
 
-
 @router.get(
     "/{survey_id}/export/qsf",
     operation_id="exportQsf",
@@ -270,7 +269,6 @@ def export_qsf(survey_id: str, auth: Auth, services: Services) -> Response:
             "Cache-Control": "no-store",
         },
     )
-
 
 
 @router.get(
