@@ -19,6 +19,10 @@ instrument, need the owner role.
 
 ## Finding and inserting
 
+<figure markdown="span">
+  ![The Bank section under the outline, searched for "PHQ", with the PHQ-9 card expanded](assets/screenshots/bank.png){ loading=lazy }
+</figure>
+
 In the editor, the **Bank** section sits under the outline, beside the question types.
 Opening it folds the question types (they share the room). Type in the search box to match
 titles, abbreviations, item text and tags; narrow by source (my lab, shared, bundled) and

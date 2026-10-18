@@ -27,7 +27,7 @@ export default defineConfig({
 	},
 	webServer: [
 		{
-			command: `pnpm -C ../runtime exec vite build --logLevel warn && uv run --locked --with uvicorn python e2e/api_server.py --port ${API_PORT}`,
+			command: `pnpm -C ../runtime exec vite build --logLevel warn && uv run --locked --with uvicorn python docs/docs_server.py --port ${API_PORT}`,
 			cwd: '..',
 			url: `http://127.0.0.1:${API_PORT}/api/health`,
 			reuseExistingServer: !!process.env.OSP_DOCS_REUSE,

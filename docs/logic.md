@@ -108,6 +108,10 @@ simply an End node with that name.
 
 ### Endings
 
+<figure markdown="span">
+  ![The flow with a branch that ends the survey with the outcome ineligible](assets/screenshots/flow-branches.png){ loading=lazy }
+</figure>
+
 What participants see when the session ends is set **per outcome**, in
 [Survey settings → Endings](settings.md#endings): a title and a text, so a screened-out or
 quota-full participant can get a different screen (and a different tone) from a completer.

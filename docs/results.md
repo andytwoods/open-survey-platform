@@ -106,6 +106,10 @@ Refresh or Show results is an ordinary `results.read`.
 
 ## Presentation mode
 
+<figure markdown="span">
+  ![Presentation mode: a histogram and a bar chart of invented responses, with counts below 5 hidden](assets/screenshots/results-present.png){ loading=lazy }
+</figure>
+
 **Present** opens a small dialog, then hides everything but the cards: no top bar, filters,
 layout bar or per-card controls, just each question's title, its chart (or table) and its
 caption, on the theme's background, with a footer such as "142 responses · updated 14:32 ·
