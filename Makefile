@@ -161,6 +161,7 @@ web-e2e: sim-build
 .PHONY: engine-fixtures engine-test engine-size
 engine-fixtures:
 	$(UV_RUN) python web/engine/scripts/build_fixtures.py
+	$(UV_RUN) python web/engine/scripts/build_plan_vectors.py
 
 engine-test: engine-fixtures
 	$(PNPM) -C web/engine exec vitest run
