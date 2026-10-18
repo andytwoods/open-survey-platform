@@ -42,6 +42,7 @@ from .model import (
     Question,
     Source,
 )
+from .richtext import is_rich, pipes_of
 from .validate import parse, validate
 
 BANK_VERSION = "osp-bank-item/0.1"
@@ -201,21 +202,42 @@ def _value_ids(obj: Mapping[str, Any], kind: str) -> set[str]:
 
 
 def _texts(obj: Any, ptr: str = "") -> Iterator[tuple[dict[str, Any], str, str]]:
-    """(container, key, pointer) of every translatable text value under `obj`."""
+    """(container, key, pointer) of every translatable text value under `obj`: plain
+    strings, per-language plain strings, and rich trees (RT2; the value is the tree)."""
     if isinstance(obj, dict):
         for k, v in obj.items():
             here = ptr + pointer(k)
             if k in _TEXT_KEYS and isinstance(v, str):
                 yield obj, k, here
+            elif k in _TEXT_KEYS and is_rich(v):
+                yield obj, k, here
             elif k in _TEXT_KEYS and isinstance(v, dict):
                 for lang, s in v.items():
-                    if isinstance(s, str):
+                    if isinstance(s, str) or is_rich(s):
                         yield v, lang, here + pointer(lang)
             elif k not in _CONDITION_KEYS:
                 yield from _texts(v, here)
     elif isinstance(obj, list):
         for i, v in enumerate(obj):
             yield from _texts(v, ptr + pointer(i))
+
+
+def _cut_rich_pipes(tree: dict[str, Any], inside: set[str]) -> list[str]:
+    """Drop the pipe nodes of a rich tree that name question or variable ids outside
+    `inside` (built-ins stay); returns the ids cut."""
+    sites = [(path, pid) for path, pid in pipes_of(tree) if _IDENT.match(pid) and pid not in inside]
+    # Later indices first, so earlier paths stay valid while nodes are removed.
+    order = sorted(
+        sites,
+        key=lambda s: tuple((0, p) if isinstance(p, int) else (1, p) for p in s[0]),
+        reverse=True,
+    )
+    for path, _ in order:
+        runs: Any = tree
+        for part in path[:-1]:
+            runs = runs[part]
+        runs.pop(path[-1])
+    return [pid for _, pid in sites]
 
 
 def _cut_external(obj: dict[str, Any], inside: set[str], base: str) -> list[Diagnostic]:
@@ -247,14 +269,20 @@ def _cut_external(obj: dict[str, Any], inside: set[str], base: str) -> list[Diag
     walk(obj, base)
     for holder, key, ptr in list(_texts(obj, base)):
         text = holder[key]
-        cut = [
-            inner
-            for inner in (m.group(1).strip() for m in _PIPE.finditer(text))
-            if _IDENT.match(inner) and inner not in inside
-        ]
-        new = _PIPE.sub(lambda m, cut=cut: "" if m.group(1).strip() in cut else m.group(0), text)
+        if is_rich(text):
+            cut = [pid for pid in _cut_rich_pipes(text, inside) if _IDENT.match(pid)]
+        else:
+            cut = [
+                inner
+                for inner in (m.group(1).strip() for m in _PIPE.finditer(text))
+                if _IDENT.match(inner) and inner not in inside
+            ]
+            new = _PIPE.sub(
+                lambda m, cut=cut: "" if m.group(1).strip() in cut else m.group(0), text
+            )
+            if cut:
+                holder[key] = new
         if cut:
-            holder[key] = new
             diags.append(
                 _diag(
                     "bank.external_ref",
@@ -359,7 +387,7 @@ def fragment_languages(fragment: Mapping[str, Any]) -> list[str]:
 def _iter_text_maps(obj: Any) -> Iterator[dict[str, str]]:
     if isinstance(obj, dict):
         for k, v in obj.items():
-            if k in _TEXT_KEYS and isinstance(v, dict):
+            if k in _TEXT_KEYS and isinstance(v, dict) and not is_rich(v):
                 yield v
             elif k not in _CONDITION_KEYS:
                 yield from _iter_text_maps(v)

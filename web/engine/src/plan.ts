@@ -26,10 +26,46 @@ export type BuiltinRef =
 	| '$outcome'
 	| '$response.id';
 
-/** Researcher text (sanitised at save), or a pipe the engine fills (escaped at render). */
+/**
+ * Researcher text (plain: validated by osp-spec on every write and rendered as text nodes,
+ * never as HTML), or a pipe the engine fills (escaped at render).
+ */
 export type Segment = string | { pipe: Id | BuiltinRef };
-/** Segments per language. Every survey language is present. */
-export type Text = Record<LanguageTag, Segment[]>;
+
+// --- Rich text (planning/rich-text.md §3, task RT2) ------------------------------------
+
+export type Mark = 'b' | 'i';
+/** A run of text with optional bold/italic marks, an https link and a language span. */
+export interface TextRun {
+	text: string;
+	marks?: Mark[];
+	href?: string;
+	lang?: string;
+}
+/** One inline node: a text run, a pipe the engine fills, or a line break. */
+export type InlineRun = TextRun | { pipe: Id | BuiltinRef } | { br: true };
+/** One block: a paragraph, a heading (1–3, relative to the page) or a single-level list. */
+export type RichBlock =
+	| { type: 'p'; content: InlineRun[] }
+	| { type: 'h'; level: 1 | 2 | 3; content: InlineRun[] }
+	| { type: 'ul' | 'ol'; items: InlineRun[][] };
+
+/**
+ * Per language, every survey language present: segments for a plain string (unchanged
+ * since R1, so plans compiled before RT2 still load), or blocks for a rich-text value.
+ */
+export type Text = Record<LanguageTag, Segment[] | RichBlock[]>;
+
+export function isBlock(x: Segment | RichBlock): x is RichBlock {
+	return typeof x === 'object' && x !== null && 'type' in x;
+}
+
+/** A text value as blocks: segments become one paragraph of runs. */
+export function toBlocks(value: Segment[] | RichBlock[] | undefined | null): RichBlock[] {
+	if (!value || value.length === 0) return [{ type: 'p', content: [] }];
+	if (isBlock(value[0]!)) return value as RichBlock[];
+	return [{ type: 'p', content: (value as Segment[]).map((s) => (typeof s === 'string' ? { text: s } : s)) }];
+}
 
 // --- Expressions: osp-expr AST JSON (python/osp-expr/src/osp_expr/ast.py) -------------
 

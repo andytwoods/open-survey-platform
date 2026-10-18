@@ -10,7 +10,8 @@ import copy
 import re
 from typing import Any, Literal
 
-from pydantic import Field
+from osp_spec import normalise_text
+from pydantic import Field, JsonValue
 
 from .doc import (
     CHOICE_LIST,
@@ -26,7 +27,8 @@ from .patch import same, to_pointer
 from .registry import REVERSE_PATCH, Ctx, Invocation, OpError, Params, op
 
 type ChoiceValue = int | str
-type Text = str | dict[str, str]
+# A label: plain, a rich tree or per language (the survey model validates the shape).
+type Text = str | dict[str, JsonValue]
 Index = Field(default=None, ge=0)
 MAX_PASTE = 100_000  # characters
 
@@ -99,7 +101,8 @@ def add_choice(ctx: Ctx, p: AddChoice) -> Invocation:
     value = next_code(choices) if p.value is None else p.value
     if any(same(c["value"], value) for c in choices):
         raise OpError("op.not_allowed", f"code {value!r} is already used", ptr)
-    insert_at(choices, p.index, {"value": value, "label": copy.deepcopy(p.label)})
+    label = normalise_text(copy.deepcopy(p.label))
+    insert_at(choices, p.index, {"value": value, "label": label})
     return Invocation(op="delete_choice", params={"owner": p.owner, "value": value, "force": True})
 
 
@@ -186,7 +189,7 @@ def set_choice(ctx: Ctx, p: SetChoice) -> Invocation:
         c["value"] = p.new_value
         inverse = {**inverse, "value": p.new_value, "new_value": old["value"]}
     if p.label is not None:
-        c["label"] = copy.deepcopy(p.label)
+        c["label"] = normalise_text(copy.deepcopy(p.label))
         inverse["label"] = old["label"]
     return Invocation(op="set_choice", params=inverse)
 

@@ -9,9 +9,12 @@ from __future__ import annotations
 
 import copy
 
+from osp_spec import normalise_text
 from pydantic import JsonValue
 
 from .registry import REVERSE_PATCH, Ctx, Invocation, Params, op
+
+TEXT_KEYS = ("text", "agreeLabel", "declineLabel")
 
 
 class SetConsent(Params):
@@ -21,11 +24,15 @@ class SetConsent(Params):
 @op("set_consent", SetConsent, label="Set consent page", area="survey")
 def set_consent(ctx: Ctx, p: SetConsent) -> Invocation:
     """Set the consent page (`text`, `agreeLabel`, `declineLabel`, `declineOutcome`,
-    `countDeclines`), or with `consent: null` remove it. Texts are plain or per language;
-    nothing can be piped into them (`consent.pipe`)."""
+    `countDeclines`), or with `consent: null` remove it. Texts are plain, rich or per
+    language; nothing can be piped into them (`consent.pipe`)."""
     if p.consent is None:
         ctx.doc.pop("consent", None)
     else:
-        ctx.doc["consent"] = copy.deepcopy(dict(p.consent))
+        consent = copy.deepcopy(dict(p.consent))
+        for key in TEXT_KEYS:
+            if key in consent:
+                consent[key] = normalise_text(consent[key])
+        ctx.doc["consent"] = consent
     ctx.touch()
     return REVERSE_PATCH

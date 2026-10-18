@@ -3,6 +3,7 @@
  * `${pipe}` tokens. Display-only; nothing here decides survey behaviour (AGENTS.md rule 8).
  * Every function accepts hostile input and never throws.
  */
+import { isRichText, plainTextOf } from '@osp/engine';
 import {
 	FAMILIES,
 	type Badge,
@@ -46,13 +47,20 @@ export function resolveFamily(
 	return typeof t === 'string' && Object.hasOwn(TYPE_FAMILY, t) ? TYPE_FAMILY[t] : null;
 }
 
-/** Pick one language from translatable text: `lang`, then English, then the first entry. */
+/**
+ * Pick one language from translatable text: `lang`, then English, then the first entry.
+ * Rich text (planning/rich-text.md, RT2) is flattened to its words: cards show plain text
+ * until RT3 renders them rich.
+ */
 export function textFor(text: unknown, lang = 'en'): string {
 	if (typeof text === 'string') return text;
+	if (isRichText(text)) return plainTextOf(text);
 	if (!text || typeof text !== 'object' || Array.isArray(text)) return '';
 	const map = text as Record<string, unknown>;
 	for (const key of [lang, 'en', ...Object.keys(map)]) {
-		if (typeof map[key] === 'string') return map[key] as string;
+		const v = map[key];
+		if (typeof v === 'string') return v;
+		if (isRichText(v)) return plainTextOf(v);
 	}
 	return '';
 }

@@ -306,3 +306,86 @@ def test_end_redirects_are_compiled_with_their_templates() -> None:
     # Without templates or redirects neither key appears (plans and checksums unchanged).
     plain, _ = compile_survey(_survey(CASES / "valid" / "v01_worked_example.json"))
     assert plain is not None and "redirectTemplates" not in plain
+
+
+# --- Rich text (planning/rich-text.md §3, task RT2) ---------------------------------------
+
+RICH = {
+    "type": "rich",
+    "blocks": [
+        {"type": "h", "level": 1, "content": [{"text": "Before you start"}]},
+        {"type": "p", "content": [
+            {"text": "Hello "}, {"pipe": "name"}, {"text": "!", "marks": ["b"]}, {"br": True},
+            {"text": "sheet", "href": "https://example.org/s", "lang": "fr"}, {"pipe": "$trial"},
+        ]},
+        {"type": "ul", "items": [[{"text": "one"}], [{"text": "two", "marks": ["i"]}]]},
+    ],
+}  # fmt: skip
+
+
+def _rich_survey() -> dict:
+    s = _survey(VALID[0])
+    s = copy.deepcopy(s)
+    items = s["blocks"][0]["pages"][0]["items"]
+    items.insert(0, {"id": "name", "type": "text", "label": "Name?"})
+    items.append({"id": "rich_note", "type": "note", "label": {"en": RICH}})
+    stem = {"type": "rich", "blocks": RICH["blocks"][1:]}  # no heading in a stem
+    items.append({"id": "rich_mixed", "type": "integer", "label": {"en": "Plain ${name}"},
+                  "help": stem})  # fmt: skip
+    return s
+
+
+def test_rich_text_compiles_to_blocks_and_plain_text_to_segments() -> None:
+    plan, diags = compile_survey(_rich_survey())
+    assert plan is not None, [d.code for d in diags if d.severity == "error"]
+    note = plan["items"]["rich_note"]["label"]
+    langs = plan["languages"]
+    assert set(note) == set(langs)
+    for lang in langs:  # one tree, every language (missing translations fall back)
+        assert note[lang][0] == {"type": "h", "level": 1, "content": [{"text": "Before you start"}]}
+        runs = note[lang][1]["content"]
+        assert runs[1] == {"pipe": "name"} and runs[2] == {"text": "!", "marks": ["b"]}
+        assert runs[3] == {"br": True}
+        assert runs[4] == {"text": "sheet", "href": "https://example.org/s", "lang": "fr"}
+        assert runs[5] == {"pipe": "$trial"}
+        assert note[lang][2] == {
+            "type": "ul",
+            "items": [[{"text": "one"}], [{"text": "two", "marks": ["i"]}]],
+        }
+    mixed = plan["items"]["rich_mixed"]
+    assert mixed["label"][langs[0]] == ["Plain ", {"pipe": "name"}]  # segments, as before
+    assert mixed["help"][langs[0]][0]["type"] == "p"
+    # The schema accepts both shapes (the small validator lives in test_plan_hooks.py).
+    import importlib.util
+
+    spec = importlib.util.spec_from_file_location(
+        "plan_hooks_validator", Path(__file__).with_name("test_plan_hooks.py")
+    )
+    assert spec is not None and spec.loader is not None
+    mod = importlib.util.module_from_spec(spec)
+    spec.loader.exec_module(mod)
+    assert mod.valid(SCHEMA, plan)
+    assert plan["checksum"] == checksum(plan)
+
+
+def test_plain_strings_compile_exactly_as_before_rt2() -> None:
+    """A survey without rich text gets the same plan and checksum as a plain string
+    compiles to segments (RT-D3: existing plans and checksums are unchanged)."""
+    survey = json.loads((REPO / "fixtures/17-piping/survey.json").read_text(encoding="utf-8"))
+    plan, _ = compile_survey(survey)
+    assert plan is not None
+    for item in plan["items"].values():
+        for lang, value in item["label"].items():
+            assert all(isinstance(s, str) or set(s) == {"pipe"} for s in value), (item["id"], lang)
+
+
+def test_blocks_writes_an_unknown_pipe_back_as_text() -> None:
+    from osp_runtime.plan import blocks
+
+    tree = {
+        "type": "rich",
+        "blocks": [{"type": "p", "content": [{"pipe": "not valid"}, {"pipe": "$nope"}]}],
+    }
+    assert blocks(tree) == [
+        {"type": "p", "content": [{"text": "${not valid}"}, {"text": "${$nope}"}]}
+    ]

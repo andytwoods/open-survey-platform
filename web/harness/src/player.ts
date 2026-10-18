@@ -16,7 +16,7 @@
  * end the response is read from what the server stored.
  */
 import type { Browser, BrowserContext, BrowserContextOptions, Page, Route } from '@playwright/test';
-import { escapeHtml, result, toHtml, toPlain, type Plan, type ResponseRecord, type ViewItem } from '@osp/engine';
+import { escapeHtml, result, toHtml, toPlain, type Plan, type RenderedRun, type RenderedText, type ResponseRecord, type ViewItem } from '@osp/engine';
 import type { Action, QuotaFate, Script } from './fixtures.ts';
 import { engineStep, responseOf, restoreSnapshot, blockOfPage } from './trace.ts';
 
@@ -156,13 +156,40 @@ function esc(s: string) {
  * A label as a name pattern. Accessible-name computation collapses white space and some
  * browsers drop zero-width characters (U+200B …), so both are matched loosely.
  */
+/** Whitespace collapsed and trimmed: how the DOM shows a label with breaks or list items. */
+function squash(s: string): string {
+	return s.replace(/\s+/g, ' ').trim();
+}
+
 function namePattern(label: string): string {
 	const zw = /[\u200B-\u200D\u2060\uFEFF]/;
 	return label
 		.trim()
 		.split(/\s+/)
 		.map((tok) => tok.split(zw).map(esc).join('[\\u200B-\\u200D\\u2060\\uFEFF]?'))
-		.join('\\s+');
+		.join('\\s+')
+		// Browsers may put a space either side of an inline element next to a bracket (a
+		// link's hidden suffix before a closing parenthesis, planning/rich-text.md §7).
+		.replace(/\\\(/g, '\\(\\s*')
+		.replace(/\\\)/g, '\\s*\\)');
+}
+
+/**
+ * The accessible name a rich label gets (planning/rich-text.md §7): its plain text with
+ * each link followed by the visually hidden "(opens in a new tab)".
+ */
+function accessibleName(text: RenderedText | null): string {
+	const runs = (rs: RenderedRun[]) =>
+		rs
+			.map((r, k) => {
+				const s = r.kind === 'br' ? '\n' : r.text;
+				const href = r.kind === 'text' ? r.href : undefined;
+				const next = rs[k + 1];
+				const nextHref = next?.kind === 'text' ? next.href : undefined;
+				return s + (href && nextHref !== href ? ' (opens in a new tab)' : '');
+			})
+			.join('');
+	return (text ?? []).map((b) => ('items' in b ? b.items.map(runs).join('\n') : runs(b.content))).join('\n\n');
 }
 
 /** The accessible name of a question: its label, then the frame's "(Required)" if any. */
@@ -184,6 +211,8 @@ function probe(): DomState {
 		if (!el) return '';
 		const c = el.cloneNode(true) as Element;
 		c.querySelectorAll('.req, .osp-visually-hidden, [aria-hidden="true"]').forEach((x) => x.remove());
+		// Block elements and breaks of rich text (RT2) read as line breaks, as on screen.
+		c.querySelectorAll('p, h1, h2, h3, h4, h5, h6, li, br').forEach((x) => x.insertAdjacentText('afterend', '\n'));
 		return c.textContent ?? '';
 	};
 	const items: DomItem[] = [...document.querySelectorAll('.items [data-question]')].map((q) => {
@@ -215,9 +244,18 @@ function probe(): DomState {
 		ending: (() => {
 			const h = document.querySelector('h1[data-testid="thanks"], h1[data-testid="declined"]');
 			if (!h) return null;
+			// Blocks as the engine's toPlain flattens them (FORMAT.md §3 `ending`): a blank line
+			// between blocks, list items on their own lines; rich text (RT2) adds headings and lists.
 			const paras = (sel: string) => {
 				const el = document.querySelector(sel);
-				return el ? [...el.querySelectorAll('p')].map((p) => text(p).trim()).join('\n\n') : null;
+				if (!el) return null;
+				return [...el.querySelectorAll(':scope > p, :scope > h3, :scope > h4, :scope > h5, :scope > ul, :scope > ol')]
+					.map((b) =>
+						b.tagName === 'UL' || b.tagName === 'OL'
+							? [...b.querySelectorAll(':scope > li')].map((li) => text(li).trim()).join('\n')
+							: text(b).trim()
+					)
+					.join('\n\n');
 			};
 			return {
 				title: h.hasAttribute('data-default') ? null : text(h).trim(),
@@ -258,7 +296,14 @@ interface ItemInfo {
 /** What the engine (inside the app) says a visible item is: type, label, choices, rows. */
 function viewItems(): ItemInfo[] {
 	const s = (window as unknown as { __osp?: { view(): { items: ViewItem[] } } }).__osp;
-	const plain = (t: Array<{ text: string }> | null | undefined) => (t ?? []).map((p) => p.text).join('');
+	// Rendered blocks (RT2) flattened in the page as the browser names them: text runs and
+	// values joined, breaks as newlines, each link followed by its hidden "(opens in a new tab)".
+	type Run = { kind: string; text?: string; href?: string };
+	type Blk = { type: string; content?: Run[]; items?: Run[][] };
+	const runs = (rs: Run[]) =>
+		rs.map((r, k) => (r.text ?? '\n') + (r.href && rs[k + 1]?.href !== r.href ? ' (opens in a new tab)' : '')).join('');
+	const plain = (t: Blk[] | null | undefined) =>
+		(t ?? []).map((b) => (b.items ? b.items.map(runs).join('\n') : runs(b.content ?? []))).join('\n\n');
 	return (s?.view().items ?? []).map((i) => ({
 		id: i.id,
 		type: i.type,
@@ -421,7 +466,8 @@ export class Player {
 		for (const it of dom.items) {
 			const vi = byId.get(it.id);
 			if (!vi) continue;
-			if (it.label !== toPlain(vi.label).trim()) problem(`screen.label.${it.id}`, toPlain(vi.label), it.label);
+			// Whitespace-insensitive: a rich label's breaks and list items are DOM structure, not text.
+			if (squash(it.label) !== squash(toPlain(vi.label))) problem(`screen.label.${it.id}`, toPlain(vi.label), it.label);
 			this.checkValue(it, vi, problem);
 		}
 
@@ -430,11 +476,11 @@ export class Player {
 		const errors: Record<string, unknown> = {};
 		for (const it of dom.items) {
 			const vi = byId.get(it.id);
-			labels[it.id] = vi && it.label === toPlain(vi.label).trim() ? toHtml(vi.label) : escapeHtml(it.label);
+			labels[it.id] = vi && squash(it.label) === squash(toPlain(vi.label)) ? toHtml(vi.label) : escapeHtml(it.label);
 			if (vi?.choices && vi.type !== 'matrix') {
 				choiceLabels[it.id] = it.choices.map((c, k) => {
 					const vc = vi.choices![k];
-					const same = vc && c.label === toPlain(vc.label).trim();
+					const same = vc && squash(c.label) === squash(toPlain(vc.label));
 					return [vc?.value ?? null, same ? toHtml(vc.label) : escapeHtml(c.label)];
 				});
 			}
@@ -462,12 +508,12 @@ export class Player {
 				const vi = byId.get(it.id);
 				const role = vi ? ROLE[vi.type] : undefined;
 				if (!vi || !role) continue;
-				const n = await page.getByRole(role, { name: nameOf(toPlain(vi.label)) }).count();
+				const n = await page.getByRole(role, { name: nameOf(accessibleName(vi.label)) }).count();
 				if (n < 1) {
 					// What the accessibility tree does have for that role (for the report).
 					const tree = await page.locator('main').ariaSnapshot();
 					const named = tree.split('\n').filter((l) => l.includes(role)).map((l) => l.trim());
-					problem(`a11y.${it.id}`, `a ${role} named ${JSON.stringify(toPlain(vi.label))}`, named);
+					problem(`a11y.${it.id}`, `a ${role} named ${JSON.stringify(accessibleName(vi.label))}`, named);
 				}
 			}
 		}
@@ -636,8 +682,9 @@ export class Player {
 			case 'decline': {
 				// The consent page (M5): its buttons are named by the plan's labels.
 				const label = await page.evaluate((which) => {
-					const c = (window as unknown as { __osp: { view(): { consent?: Record<string, Array<{ text: string }>> } } }).__osp.view().consent;
-					return (c?.[which] ?? []).map((p) => p.text).join('');
+					type Blk = { content?: Array<{ text?: string }> }; // rendered blocks (RT2)
+					const c = (window as unknown as { __osp: { view(): { consent?: Record<string, Blk[]> } } }).__osp.view().consent;
+					return (c?.[which] ?? []).map((b) => (b.content ?? []).map((p) => p.text ?? '').join('')).join(' ');
 				}, a.do);
 				const btn = page.getByRole('button', { name: exactName(label) });
 				if (!label || (await btn.count()) === 0) throw new ScriptError(i, `${a.do}: no consent button "${label}"`);

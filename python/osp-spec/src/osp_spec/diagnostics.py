@@ -29,6 +29,12 @@ CODES: dict[str, Severity] = {
     "lang.unknown_default": "error",
     "text.unknown_language": "error",
     "text.missing_translation": "warning",
+    # Rich text (planning/rich-text.md §3.2): per-field levels and limits, links
+    "text.too_long": "error",  # more text characters than the field's level allows
+    "text.too_many_blocks": "error",  # over 200 blocks, or over 100 items in a list
+    "text.block_not_allowed": "error",  # a heading in a stem; a list or 2nd block inline
+    "link.scheme": "error",  # a link whose href is not an absolute https: URL
+    "link.empty": "error",  # a link with no text
     # Choices
     "choice.source": "error",
     "choice.duplicate_value": "error",

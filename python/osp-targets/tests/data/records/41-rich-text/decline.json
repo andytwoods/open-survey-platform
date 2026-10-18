@@ -1,0 +1,100 @@
+{
+ "format": "osp-response/1",
+ "surveyId": "f41_rich_text",
+ "surveyVersion": 1,
+ "planVersion": "osp-runtime-plan/1",
+ "planChecksum": "sha256:5c45979bfa8ecef982e4fe7f377361c6be431ea8f09b9f504debe0832e16743d",
+ "engineVersion": "1",
+ "sessionSeed": 4103,
+ "sessionId": null,
+ "language": "en",
+ "device": null,
+ "end": "declined",
+ "endNode": null,
+ "allocation": "server",
+ "assigned": {},
+ "conditions": {},
+ "conditionSources": {},
+ "orders": {
+  "blocks": {},
+  "items": {},
+  "choices": {}
+ },
+ "answers": {
+  "name": {
+   "state": "not-reached",
+   "value": null
+  },
+  "fav": {
+   "state": "not-reached",
+   "value": null
+  },
+  "rate": {
+   "state": "not-reached",
+   "value": null
+  },
+  "grid_taste": {
+   "state": "not-reached",
+   "value": null
+  },
+  "grid_price": {
+   "state": "not-reached",
+   "value": null
+  },
+  "mood": {
+   "state": "not-reached",
+   "value": null
+  }
+ },
+ "csvState": {
+  "name__state": "not-reached",
+  "fav__state": "not-reached",
+  "rate__state": "not-reached",
+  "grid_taste__state": "not-reached",
+  "grid_price__state": "not-reached",
+  "mood__state": "not-reached"
+ },
+ "embedded": {},
+ "computed": {},
+ "variableStates": {},
+ "quotas": {},
+ "diagnostics": [],
+ "effects": [],
+ "urlParams": {},
+ "startedAt": 2000,
+ "endedAt": 3000,
+ "revision": 2,
+ "events": [
+  {
+   "type": "start",
+   "seq": 1,
+   "rev": 1,
+   "t": 2000,
+   "sessionSeed": 4103,
+   "assigned": {},
+   "language": "en",
+   "device": null,
+   "urlParams": {},
+   "sessionId": null
+  },
+  {
+   "type": "consent",
+   "t": 3000,
+   "decision": "decline",
+   "version": "sha256:a8a1ff20fd802f789f2bd5ac79d6a37cbe9bfe3afb8621f4104330fdbaefad46",
+   "seq": 2,
+   "rev": 2,
+   "result": {
+    "outcome": "ended",
+    "to": null,
+    "effect": {
+     "kind": "end",
+     "outcome": "declined",
+     "nodeId": null
+    }
+   }
+  }
+ ],
+ "consentVersion": null,
+ "consentedAt": null
+}

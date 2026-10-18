@@ -198,3 +198,32 @@ def test_other_tenant_owner_sees_not_found(env):
         svc.builder.run("survey.get", owner_b, survey_id=sid)
     with pytest.raises(NotFoundError):
         svc.builder.run("survey.delete", owner_b, survey_id=sid)
+
+
+def test_create_survey_refuses_text_the_ops_would_refuse(env):
+    """planning/rich-text.md §3.2 (RT2): rich text is validated on every write, a survey
+    given whole included (import, the JSON view): an http link is refused, https is fine."""
+    from osp_app import Rejected
+
+    svc, actors = env
+    owner = actors["owner_a"]
+
+    def survey(href: str) -> dict:
+        label = {
+            "type": "rich",
+            "blocks": [{"type": "p", "content": [{"text": "x", "href": href}]}],
+        }
+        return {
+            "specVersion": "osp-survey/0.1",
+            "id": "s1",
+            "metadata": {"title": "T", "languages": ["en"]},
+            "blocks": [{"id": "b1", "pages": [{"id": "p1", "items": [
+                {"id": "q1", "type": "note", "label": label}]}]}],
+            "flow": [{"type": "block", "id": "f1", "block": "b1"}],
+        }  # fmt: skip
+
+    with pytest.raises(Rejected) as exc:
+        svc.builder.run("survey.create", owner, title="S", survey=survey("http://x.org"))
+    assert [d.code for d in exc.value.diagnostics] == ["link.scheme"]
+    view = svc.builder.run("survey.create", owner, title="S", survey=survey("https://x.org"))
+    assert view.survey.id

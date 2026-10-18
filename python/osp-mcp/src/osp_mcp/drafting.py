@@ -28,7 +28,7 @@ from osp_app import AppError, Builder, Rejected, RevisionConflictError
 from osp_app.auth import Action, Actor
 from osp_app.commands import COMMANDS
 from osp_ops import REGISTRY, Invocation, op_catalogue
-from osp_spec import Diagnostic, publish_diagnostics, validate
+from osp_spec import Diagnostic, flatten_text, publish_diagnostics, validate
 from osp_store import StoreError
 
 from .recipes import PageSpec, QuestionSpec, add_block_ops, add_page_ops, add_question_ops
@@ -108,7 +108,9 @@ def _dump(d: Any) -> dict[str, Any]:
 
 
 def _text(value: Any, lang: str | None) -> str | None:
-    """A translatable text as one string (the default language, else the first)."""
+    """A translatable text as one string (the default language, else the first); rich
+    text (RT2) flattened to plain text."""
+    value = flatten_text(value)
     if isinstance(value, str):
         return value
     if isinstance(value, dict) and value:

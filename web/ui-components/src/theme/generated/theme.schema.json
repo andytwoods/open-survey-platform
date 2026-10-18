@@ -67,7 +67,7 @@
       "title": "Palette",
       "type": "object"
     },
-    "Text": {
+    "PlainText": {
       "anyOf": [
         {
           "type": "string"
@@ -140,7 +140,7 @@
     "headerText": {
       "anyOf": [
         {
-          "$ref": "#/$defs/Text"
+          "$ref": "#/$defs/PlainText"
         },
         {
           "type": "null"

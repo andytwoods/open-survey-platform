@@ -200,3 +200,13 @@ describe('pipes and text', () => {
 		expect(scaleRange({ id: 's', type: 'slider', min: 1, max: 7, step: 0.5 })).toEqual({ min: 1, max: 7, step: 0.5 });
 	});
 });
+
+describe('textFor with rich text (RT2)', () => {
+	it('flattens a rich value to its words until the cards render rich (RT3)', () => {
+		const rich = { type: 'rich', blocks: [{ type: 'p', content: [{ text: 'Hi ', marks: ['b'] }, { pipe: 'name' }] }, { type: 'ul', items: [[{ text: 'one' }]] }] };
+		expect(textFor(rich)).toBe('Hi ${name}\n\n- one');
+		expect(textFor({ en: rich, de: 'Hallo' }, 'en')).toBe('Hi ${name}\n\n- one');
+		expect(textFor({ en: rich, de: 'Hallo' }, 'de')).toBe('Hallo');
+		expect(textFor({ fr: rich }, 'en')).toBe('Hi ${name}\n\n- one');
+	});
+});

@@ -41,8 +41,7 @@ import {
 	type ResponseRecord,
 	type Snapshot,
 	type State,
-	type Text
-} from '@osp/engine';
+	type Text, toBlocks } from '@osp/engine';
 import { rng as makeRng, type Rng } from './prng.ts';
 import { representative, sliderCount, sliderPoint } from './structure.ts';
 
@@ -147,8 +146,11 @@ function decimalText(x: number): string {
 }
 
 function plain(text: Text | undefined, lang: string, fallback: string): string {
-	const segs = text?.[lang] ?? text?.[fallback] ?? [];
-	return segs.map((s) => (typeof s === 'string' ? s : ' ')).join('');
+	// Pipes render as a space; rich blocks (RT2) contribute their text runs.
+	return toBlocks(text?.[lang] ?? text?.[fallback] ?? [])
+		.flatMap((b) => ('items' in b ? b.items.flat() : b.content))
+		.map((r) => ('text' in r ? r.text : 'br' in r ? '\n' : ' '))
+		.join('');
 }
 
 // --- Free text --------------------------------------------------------------------------------

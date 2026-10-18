@@ -4,7 +4,7 @@
 	import { safeId } from './locale';
 	import { arrowSelect } from './radio-arrows';
 	import QuestionFrame from './QuestionFrame.svelte';
-	import RichText from './RichText.svelte';
+	import RichInline from './RichInline.svelte';
 	import type { SingleChoiceProps } from './types';
 
 	/**
@@ -61,8 +61,8 @@
 				>
 					<span class="osp-choice-ind" data-kind="radio" aria-hidden="true"></span>
 					<span class="osp-choice-text">
-						<span class="osp-choice-label"><RichText text={choice.label} /></span>
-						{#if choice.help}<span class="osp-choice-help"><RichText text={choice.help} /></span>{/if}
+						<span class="osp-choice-label"><RichInline text={choice.label} /></span>
+						{#if choice.help}<span class="osp-choice-help"><RichInline text={choice.help} /></span>{/if}
 					</span>
 				</RadioGroup.Item>
 			{/each}

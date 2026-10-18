@@ -4,13 +4,13 @@
 	 * engine's view (`view.end`) with its pipes filled. The heading is the ending's title or
 	 * the app's own "Thank you"; the end node's message comes first, then the ending's body,
 	 * then the app's truthful status line, which researcher text never replaces. Everything
-	 * is rendered as text nodes (RichText), never as HTML, so piped answers cannot inject
-	 * markup.
+	 * is rendered as text nodes and our own elements (RichText), never as HTML, so piped
+	 * answers cannot inject markup; rich text (RT2) keeps its headings, lists and links.
 	 */
-	import { RichText } from '@osp/ui-components/survey';
+	import { RichInline, RichText } from '@osp/ui-components/survey';
 	import type { EndView } from '@osp/engine';
 	import { ui } from './messages';
-	import { paragraphs, segs } from './view-map';
+	import { blocks, paragraphs, segs } from './view-map';
 
 	let {
 		end,
@@ -27,24 +27,20 @@
 	} = $props();
 
 	const title = $derived(end?.ending?.title?.length ? end.ending.title : null);
-	const message = $derived(paragraphs(end?.message));
-	const body = $derived(paragraphs(end?.ending?.body));
+	const message = $derived(blocks(paragraphs(end?.message)));
+	const body = $derived(blocks(paragraphs(end?.ending?.body)));
 	const status = $derived(end ? end.status : 'recorded');
 	const statusText = $derived(status === 'not-recorded' ? ui.notRecorded : status === 'recorded' ? ui.thanks : '');
 </script>
 
 <h1 tabindex="-1" bind:this={heading} data-testid={testid} data-default={title ? undefined : ''}>
-	{#if title}<RichText text={segs(title)} />{:else}{ui.thanksTitle}{/if}
+	{#if title}<RichInline text={segs(title)} />{:else}{ui.thanksTitle}{/if}
 </h1>
 {#if message.length}
-	<div class="ending-text" data-ending="message">
-		{#each message as p, i (i)}<p><RichText text={segs(p)} /></p>{/each}
-	</div>
+	<div class="ending-text" data-ending="message"><RichText text={message} block /></div>
 {/if}
 {#if body.length}
-	<div class="ending-text" data-ending="body">
-		{#each body as p, i (i)}<p><RichText text={segs(p)} /></p>{/each}
-	</div>
+	<div class="ending-text" data-ending="body"><RichText text={body} block /></div>
 {:else if fallbackBody}
 	<p>{fallbackBody}</p>
 {/if}
@@ -53,11 +49,11 @@
 {/if}
 
 <style>
-	.ending-text p {
+	.ending-text :global(p) {
 		margin: 0 0 var(--space-3);
 		white-space: pre-line;
 	}
-	.ending-text p:last-child {
+	.ending-text :global(p:last-child) {
 		margin-block-end: 0;
 	}
 	.status-line {

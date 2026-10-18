@@ -9,6 +9,7 @@ survey model validates it and the validator reports `ending.*` and piping proble
 
 from __future__ import annotations
 
+from osp_spec import normalise_text
 from osp_spec.model import Ending, OutcomeKey
 from pydantic import JsonValue, ValidationError
 
@@ -37,8 +38,15 @@ def set_ending(ctx: Ctx, p: SetEnding) -> Invocation:
         if not endings:
             del settings["endings"]
         return REVERSE_PATCH
+    raw = dict(p.ending)
+    for key in ("title", "body"):
+        if key in raw:
+            raw[key] = normalise_text(raw[key])
+    redirect = raw.get("redirect")
+    if isinstance(redirect, dict) and "label" in redirect:
+        raw["redirect"] = {**redirect, "label": normalise_text(redirect["label"])}
     try:
-        ending = Ending.model_validate(p.ending)
+        ending = Ending.model_validate(raw)
     except ValidationError as err:
         e = err.errors(include_url=False, include_input=False)[0]
         parts = [str(x) for x in e["loc"] if isinstance(x, (str, int))]

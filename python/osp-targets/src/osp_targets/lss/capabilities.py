@@ -547,6 +547,45 @@ _row("Contains.kind", "lowered", '`<q>_<code>.NAOK == "Y"` on the choice\'s subq
 _row("Contains.ref", "native", "The question code.")
 _row("Contains.value", "native", "The choice's subquestion code.")
 
+# --- Rich text (planning/rich-text.md §3, task RT2; the HTML writer is task RT4) ----------
+_FLAT = (
+    "Rich text is flattened to plain text until RT4 writes the allow-listed HTML subset: "
+    "paragraphs separated by a blank line (`<br /><br />`), list items as `- ` / `1. ` "
+    "lines, headings as their text; bold, italic, links and language spans are dropped."
+)
+_row("RichText.type", "approximated", _FLAT)
+_row("RichText.blocks", "approximated", _FLAT)
+_row("Paragraph.type", "approximated", "A blank line (`<br /><br />`); `<p>` in RT4.")
+_row("Paragraph.content", "native", "The paragraph's runs, as text.")
+_row("Heading.type", "approximated", "The heading's text as a paragraph; `<h3>`–`<h5>` in RT4.")
+_row("Heading.level", "approximated", "See Heading.type.")
+_row("Heading.content", "native", "The heading's runs, as text.")
+_row("RichList.type", "approximated", "`- ` / `1. ` lines; `<ul>` / `<ol>` in RT4.")
+_row("RichList.items", "approximated", "See RichList.type.")
+_row("TextRun.text", "native", "The run's text, HTML-escaped as any text ($text.markup).")
+_row(
+    "TextRun.marks",
+    "unsupported",
+    "Bold and italic are dropped until RT4 writes `<strong>` / `<em>`.",
+)
+_row(
+    "TextRun.href", "unsupported", "The link text stays; the URL is dropped until RT4 writes `<a>`."
+)
+_row(
+    "TextRun.lang",
+    "unsupported",
+    "Per-run language spans are dropped until RT4 writes `<span lang>`.",
+)
+_row("PipeRun.pipe", "native", "A pipe node is written as `{code}`, like `${id}` in plain text.")
+_row("LineBreak.br", "native", "`<br />`.")
+_row("$rich.bold", "unsupported", "See TextRun.marks.")
+_row("$rich.italic", "unsupported", "See TextRun.marks.")
+_row("$rich.link", "unsupported", "See TextRun.href.")
+_row("$rich.heading", "approximated", "See Heading.type.")
+_row("$rich.list", "approximated", "See RichList.type.")
+_row("$rich.break", "native", "See LineBreak.br.")
+_row("$rich.lang", "unsupported", "See TextRun.lang.")
+
 # --- Behaviours that are not a single field ----------------------------------------------
 _row("$pipe.value", "native", "`{q}` in a text inserts the stored value (§8).")
 _row(

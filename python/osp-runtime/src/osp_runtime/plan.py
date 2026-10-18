@@ -16,7 +16,10 @@ The plan (`contract/runtime-plan.schema.json`, TS types in `web/engine/src/plan.
 - embeds expressions as `osp-expr` AST JSON (the browser never parses text syntax);
 - splits every translatable text into segments per language: a plain string, or
   `{"pipe": id}` for `${id}` (semantics.md §8). The engine fills pipes; the renderer
-  HTML-escapes the filled values;
+  escapes the filled values. A rich-text value (planning/rich-text.md §3, task RT2) is
+  carried as its blocks instead (`Block[]`: paragraphs, headings, lists of runs with marks,
+  links, language spans, pipe nodes and breaks), so a plain string compiles exactly as
+  before and existing plans and checksums are unchanged;
 - carries the optional consent page (`consent`, semantics.md §11) with its version, the
   checksum of its compiled texts;
 - carries the survey's endings (`endings`, end-of-survey plan §4.1): per outcome its title
@@ -64,6 +67,7 @@ from osp_spec.model import (
     NoteQuestion,
     QuotaCheckNode,
     RandomiserNode,
+    RichText,
     SingleQuestion,
     SliderQuestion,
     TextQuestion,
@@ -78,6 +82,7 @@ __all__ = [
     "HOOK_EVENTS",
     "PLAN_VERSION",
     "PlanError",
+    "blocks",
     "canonical_json",
     "checksum",
     "compile_plan",
@@ -109,6 +114,7 @@ _BUILTIN = re.compile(
 
 type Json = Any
 type Segment = str | dict[str, str]
+type Block = dict[str, Any]
 
 
 class PlanError(ValueError):
@@ -255,6 +261,37 @@ def segments(text: str) -> list[Segment]:
     return out
 
 
+def _pipe_ok(inner: str) -> bool:
+    return bool(_IDENT.match(inner) or _BUILTIN.match(inner))
+
+
+def _runs(runs: list[Json]) -> list[Json]:
+    out: list[Json] = []
+    for node in runs:
+        pipe = node.get("pipe")
+        if isinstance(pipe, str) and not _pipe_ok(pipe):
+            out.append({"text": "${" + pipe + "}"})  # as `segments` keeps an invalid pipe
+        else:
+            out.append(node)
+    return out
+
+
+def blocks(tree: RichText | Json) -> list[Block]:
+    """A rich tree (planning/rich-text.md §3) as plan blocks: the tree's own shape, with
+    `None` fields dropped and a pipe node that is not a valid reference written back as
+    literal `${…}` text (what `segments` does for a plain string)."""
+    data = tree.model_dump(mode="json", exclude_none=True) if isinstance(tree, RichText) else tree
+    out: list[Block] = []
+    for block in data.get("blocks", []):
+        if block.get("type") in ("ul", "ol"):
+            out.append({"type": block["type"], "items": [_runs(item) for item in block["items"]]})
+        else:
+            copied = {k: v for k, v in block.items() if k != "content"}
+            copied["content"] = _runs(block["content"])
+            out.append(copied)
+    return out
+
+
 class _Compiler:
     def __init__(self, survey: Survey) -> None:
         self.s = survey
@@ -268,20 +305,25 @@ class _Compiler:
         self.questions: list[str] = []
         self.seed_nodes: dict[str, str] = {}
 
-    def text(self, text: str | dict[str, str] | None) -> Json:
-        """Translatable text → `{language: segments}` for every survey language.
+    def text(self, text: str | RichText | dict[str, str | RichText] | None) -> Json:
+        """Translatable text → `{language: segments | blocks}` for every survey language:
+        segments for a plain string (unchanged since R1), blocks for rich text (RT2).
 
         A missing translation falls back to the default language, then to any language
         (osp-spec reports missing translations; the plan never has holes).
         """
         if text is None:
             return None
-        if isinstance(text, str):
-            return {lang: segments(text) for lang in self.languages}
+        if isinstance(text, (str, RichText)):
+            return {lang: self.value(text) for lang in self.languages}
         fallback = text.get(self.default)
         if fallback is None:
             fallback = next(iter(text.values()), "")
-        return {lang: segments(text.get(lang, fallback)) for lang in self.languages}
+        return {lang: self.value(text.get(lang, fallback)) for lang in self.languages}
+
+    @staticmethod
+    def value(text: str | RichText) -> list[Segment] | list[Block]:
+        return segments(text) if isinstance(text, str) else blocks(text)
 
     @staticmethod
     def expr(e: Any) -> Json:

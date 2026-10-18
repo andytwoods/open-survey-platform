@@ -4,7 +4,7 @@
 	import { safeId } from './locale';
 	import { arrowSelect } from './radio-arrows';
 	import QuestionFrame from './QuestionFrame.svelte';
-	import RichText from './RichText.svelte';
+	import RichInline from './RichInline.svelte';
 	import type { MatrixProps } from './types';
 
 	/**
@@ -74,7 +74,7 @@
 		<div class="matrix" data-layout={layout} bind:this={root} style:--cols={choices.length}>
 			<div class="m-head" aria-hidden="true">
 				<span></span>
-				{#each choices as col (col.value)}<span class="m-col"><RichText text={col.label} /></span>{/each}
+				{#each choices as col (col.value)}<span class="m-col"><RichInline text={col.label} /></span>{/each}
 			</div>
 			{#each rows as row (row.value)}
 				{@const legendId = `${id}-r-${safeId(row.value)}`}
@@ -89,7 +89,7 @@
 				>
 					{#snippet child({ props })}
 						<fieldset {...props} class="m-row">
-							<legend id={legendId} class="m-legend"><RichText text={row.label} /></legend>
+							<legend id={legendId} class="m-legend"><RichInline text={row.label} /></legend>
 							{#each choices as col (col.value)}
 								<RadioGroup.Item
 									id="{legendId}-{safeId(col.value)}"
@@ -100,7 +100,7 @@
 									onfocus={() => arrows.onfocus(col.value)}
 								>
 									<span class="osp-choice-ind" data-kind="radio" aria-hidden="true"></span>
-									<span class="osp-choice-text m-cell-label"><RichText text={col.label} /></span>
+									<span class="osp-choice-text m-cell-label"><RichInline text={col.label} /></span>
 								</RadioGroup.Item>
 							{/each}
 						</fieldset>
@@ -110,7 +110,7 @@
 			<div class="m-probe-clip" aria-hidden="true">
 				<div class="m-probe" bind:this={probe}>
 					<span></span>
-					{#each choices as col (col.value)}<span class="m-col"><RichText text={col.label} /></span>{/each}
+					{#each choices as col (col.value)}<span class="m-col"><RichInline text={col.label} /></span>{/each}
 				</div>
 			</div>
 		</div>

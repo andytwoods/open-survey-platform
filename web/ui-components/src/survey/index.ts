@@ -4,6 +4,7 @@
 export { default as QuestionFrame } from './QuestionFrame.svelte';
 export type { FrameContext, FrameKind } from './QuestionFrame.svelte';
 export { default as RichText } from './RichText.svelte';
+export { default as RichInline } from './RichInline.svelte';
 export { default as IntegerInput } from './IntegerInput.svelte';
 export { default as DecimalInput } from './DecimalInput.svelte';
 export { default as TextInput } from './TextInput.svelte';

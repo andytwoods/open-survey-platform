@@ -3,7 +3,7 @@
  * and 39 trace: the view's row and track shapes, refusals, and replay.
  */
 import { describe, expect, it } from 'vitest';
-import { checkAnswer, isState, next, replay, result, start, tryAnswer, view, type QuestionItem } from '../src/index.ts';
+import { checkAnswer, isState, next, replay, result, start, tryAnswer, view, type QuestionItem, toPlain } from '../src/index.ts';
 import { loadPlan } from './fixture-runner.ts';
 
 const clock = () => 1;
@@ -65,7 +65,7 @@ describe('slider (C2c-3)', () => {
 		expect(pain.value).toBeNull();
 		expect(pain.state).toBe('unanswered');
 		expect(pain.slider).toMatchObject({ min: 0, max: 10, step: 1, valueType: 'integer' });
-		expect(pain.slider!.maxLabel?.[0]?.text).toBe('Worst imaginable');
+		expect(toPlain(pain.slider!.maxLabel)).toBe('Worst imaginable');
 	});
 
 	it('reads input as its value type and checks the step grid', () => {

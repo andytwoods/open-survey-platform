@@ -407,6 +407,90 @@ def m_hooks_parent_origin(s):
     s["hooks"] = _hooks(parent={"origin": "https://x.org/", "messages": {}})
 
 
+# --- Rich text (planning/rich-text.md §3.2, task RT2) ----------------------------------
+
+
+def _rich(*blocks: dict) -> dict:
+    return {"type": "rich", "blocks": list(blocks)}
+
+
+def _p(*content: dict) -> dict:
+    return {"type": "p", "content": list(content)}
+
+
+def _h(level: int, text: str) -> dict:
+    return {"type": "h", "level": level, "content": [{"text": text}]}
+
+
+def m_rich_ok(s):
+    """Every construct at its level: a note with headings and lists, a stem with marks, a
+    link and a pipe to an earlier answer, an inline choice label, per-language mixing."""
+    _items(s)[1]["label"] = _rich(
+        _p({"text": "You said "}, {"pipe": "q1"}, {"text": "!", "marks": ["b", "i"]}, {"br": True}),
+        {"type": "ul", "items": [[{"text": "info", "href": "https://example.org/info"}]]},
+    )
+    _items(s).append({"id": "n1", "type": "note", "label": {"en": _rich(
+        _h(1, "Before you start"), _p({"text": "Bonjour", "lang": "fr"}),
+        {"type": "ol", "items": [[{"text": "First"}], [{"text": "Second"}]]},
+    )}})  # fmt: skip
+    italic = _rich(_p({"text": "A", "marks": ["i"]}))
+    _items(s).append({"id": "q3", "type": "single", "label": "Pick",
+                      "choices": [{"value": 1, "label": italic}]})  # fmt: skip
+
+
+def m_rich_heading_in_stem(s):
+    _items(s)[1]["label"] = _rich(_h(1, "Not here"))
+
+
+def m_rich_inline_list(s):
+    choices = [{"value": 1, "label": _rich({"type": "ul", "items": [[{"text": "x"}]]})},
+               {"value": 2, "label": _rich(_p({"text": "a"}), _p({"text": "b"}))}]  # fmt: skip
+    _items(s)[0] = {"id": "q1", "type": "single", "label": "Q1", "choices": choices}
+
+
+def m_link_scheme(s):
+    _items(s)[1]["label"] = _rich(_p({"text": "x", "href": "http://example.org"}))
+    _items(s)[1]["help"] = _rich(_p({"text": "y", "href": "javascript:alert(1)"}))
+
+
+def m_link_empty(s):
+    _items(s)[1]["label"] = _rich(_p({"text": "", "href": "https://example.org"}))
+
+
+def m_text_too_long(s):
+    _items(s)[1]["label"] = "x" * 2001  # a stem: plain strings have the limit too
+    _items(s)[1]["help"] = _rich(_p({"text": "x" * 2000}, {"pipe": "q1"}, {"text": "y"}))
+    _items(s)[0] = {"id": "q1", "type": "single", "label": "Q1",
+                    "choices": [{"value": 1, "label": "x" * 501}]}  # fmt: skip
+
+
+def m_text_too_many_blocks(s):
+    _items(s).append({"id": "n1", "type": "note", "label": _rich(*[_p({"text": "p"})] * 201)})
+    _items(s)[1]["help"] = _rich({"type": "ul", "items": [[{"text": "i"}]] * 101})
+
+
+def m_rich_pipe_invalid(s):
+    _items(s)[1]["label"] = _rich(_p({"pipe": "bad id"}, {"pipe": "$trial"}))
+
+
+def m_rich_ref_unknown(s):
+    _items(s)[1]["label"] = {"en": _rich(_p({"text": "Hi "}, {"pipe": "nope"}))}
+
+
+def m_rich_ref_forward(s):
+    _items(s)[0]["label"] = _rich(_p({"pipe": "q3"}))
+    _add_block(s, "b2", "q3")
+    s["flow"].append({"type": "block", "id": "f2", "block": "b2"})
+
+
+def m_rich_consent_pipe(s):
+    s["consent"] = {"text": _rich(_p({"text": "Hello "}, {"pipe": "q1"}))}
+
+
+def m_rich_title_plain(s):
+    s["metadata"]["title"] = _rich(_p({"text": "T"}))
+
+
 def m_slider_range(s):
     _items(s)[1] = {"id": "q2", "type": "slider", "label": "S", "min": 5, "max": 5}
 
@@ -495,6 +579,51 @@ TABLE: list[tuple[Callable[[dict], None], list[tuple[str, str]]]] = [
     (m_matrix_row_id, [("matrix.row_id", f"{P0}/1/rows/0/id")]),
     (m_matrix_row_clash, [("id.duplicate", f"{P0}/1/rows/0/id")]),
     (m_matrix_ref, [("ref.no_value", f"{P0}/0/showIf")]),
+    (m_rich_ok, []),
+    (m_rich_heading_in_stem, [("text.block_not_allowed", f"{P0}/1/label/blocks/0")]),
+    (
+        m_rich_inline_list,
+        [
+            ("text.block_not_allowed", f"{P0}/0/choices/0/label/blocks/0"),
+            ("text.block_not_allowed", f"{P0}/0/choices/1/label/blocks"),
+        ],
+    ),
+    (
+        m_link_scheme,
+        [
+            ("link.scheme", f"{P0}/1/label/blocks/0/content/0/href"),
+            ("link.scheme", f"{P0}/1/help/blocks/0/content/0/href"),
+        ],
+    ),
+    (m_link_empty, [("link.empty", f"{P0}/1/label/blocks/0/content/0")]),
+    (
+        m_text_too_long,
+        [
+            ("text.too_long", f"{P0}/1/label"),
+            ("text.too_long", f"{P0}/1/help"),
+            ("text.too_long", f"{P0}/0/choices/0/label"),
+        ],
+    ),
+    (
+        m_text_too_many_blocks,
+        [
+            ("text.too_many_blocks", f"{P0}/2/label"),
+            ("text.too_many_blocks", f"{P0}/1/help/blocks/0/items"),
+        ],
+    ),
+    (m_rich_pipe_invalid, [("pipe.invalid", f"{P0}/1/label/blocks/0/content/0")]),
+    (m_rich_ref_unknown, [("ref.unknown", f"{P0}/1/label/en/blocks/0/content/1")]),
+    (m_rich_ref_forward, [("ref.forward", f"{P0}/0/label/blocks/0/content/0")]),
+    (m_rich_consent_pipe, [("consent.pipe", "/consent/text")]),
+    (
+        m_rich_title_plain,  # the title is PlainText: a tree is read as a language map
+        [
+            ("schema.type", "/metadata/title"),
+            ("schema.type", "/metadata/title/blocks"),
+            ("schema.pattern", "/metadata/title/type"),
+            ("schema.pattern", "/metadata/title/blocks"),
+        ],
+    ),
     (m_slider_range, [("question.slider", f"{P0}/1/min")]),
     (m_slider_grid, [("question.slider", f"{P0}/1/step")]),
     (m_slider_integer_step, [("question.slider", f"{P0}/1/step")]),

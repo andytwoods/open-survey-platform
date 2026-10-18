@@ -4,7 +4,7 @@
 	import './choices.css';
 	import { safeId } from './locale';
 	import QuestionFrame from './QuestionFrame.svelte';
-	import RichText from './RichText.svelte';
+	import RichInline from './RichInline.svelte';
 	import type { MultiChoiceProps } from './types';
 
 	/**
@@ -52,8 +52,8 @@
 							{#if checked}<Check strokeWidth={3} />{/if}
 						</span>
 						<span class="osp-choice-text">
-							<span class="osp-choice-label"><RichText text={choice.label} /></span>
-							{#if choice.help}<span class="osp-choice-help"><RichText text={choice.help} /></span>{/if}
+							<span class="osp-choice-label"><RichInline text={choice.label} /></span>
+							{#if choice.help}<span class="osp-choice-help"><RichInline text={choice.help} /></span>{/if}
 						</span>
 					{/snippet}
 				</Checkbox.Root>

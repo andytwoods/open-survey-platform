@@ -142,7 +142,7 @@ Researchers style a survey **by editing design tokens in the builder, not by wri
 
 ## 7. Security and data
 
-- Researcher HTML in labels sanitised at save (allow-list); participant values HTML-escaped when piped; strict CSP (no inline scripts, no third-party origins).
+- Researcher text in labels is never HTML: it is a plain string or the closed rich-text tree (planning/rich-text.md, RT2), validated by osp-spec on every write and rendered as text nodes and our own elements; participant values HTML-escaped when piped; strict CSP (no inline scripts, no third-party origins).
 - No IP stored by default. Paradata (page timings, device class) coarse by default; finer is opt-in per survey.
 - Resume tokens are secret, scoped to one session, short-lived after inactivity, and rate-limited. Local copies are deleted after submit.
 - Rate limiting on session start; optional bot checks without third-party CAPTCHA.

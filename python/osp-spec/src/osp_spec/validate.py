@@ -60,10 +60,12 @@ from .model import (
     MatrixQuestion,
     MultiQuestion,
     NoteQuestion,
+    PlainText,
     Question,
     QuotaCheckNode,
     RandomiserNode,
     RedirectTemplate,
+    RichText,
     SingleQuestion,
     SliderQuestion,
     Survey,
@@ -73,6 +75,7 @@ from .model import (
     matrix_row_required,
 )
 from .reserved import reserved_reason
+from .richtext import LIMITS, Level, char_count, check_rich, has_pipes
 
 try:
     from osp_expr.values import canonical_decimal as _canonical_decimal
@@ -397,24 +400,30 @@ class _Checker:
             )
         self._text(md.title, "/metadata/title", None)
         if md.description is not None:
-            self._text(md.description, "/metadata/description", None)
+            self._text(md.description, "/metadata/description", None, level="block")
 
     # -- text and piping ------------------------------------------------------------
 
     def _text(
         self,
-        text: Text,
+        text: Text | PlainText,
         ptr: str,
         site: _Site | None,
         builtins: frozenset[str] = BUILTIN_PIPES,
+        level: Level | None = None,
     ) -> list[str]:
-        """Check a translatable text's languages and pipes; returns the ids it pipes."""
+        """Check a translatable text's languages, pipes, rich-text shape and length
+        (planning/rich-text.md §3.2); returns the ids it pipes.
+
+        `level` is the field's rich-text level (`osp_spec.richtext.text_level`): it fixes
+        which blocks a tree may hold and the character limit, which applies to plain
+        strings too. None: a plain field with no limit (the title, redirect params)."""
         langs = self.s.metadata.languages
-        strings: list[tuple[str, str]]
-        if isinstance(text, str):
-            strings = [(text, ptr)]
+        values: list[tuple[str | RichText, str]]
+        if isinstance(text, (str, RichText)):
+            values = [(text, ptr)]
         else:
-            strings = [(v, ptr + pointer(k)) for k, v in text.items()]
+            values = [(v, ptr + pointer(k)) for k, v in text.items()]
             for k in text:
                 if k not in langs:
                     self.emit(
@@ -426,20 +435,31 @@ class _Checker:
             if missing:
                 self.emit("text.missing_translation", ptr, f"no text for: {', '.join(missing)}")
         piped: list[str] = []
-        for s, sp in strings:
-            refs: list[str] = []
-            for m in _PIPE.finditer(s):
-                inner = m.group(1).strip()
+        for v, vp in values:
+            pipes: list[tuple[str, str]]  # (pointer the diagnostic names, inner text)
+            if isinstance(v, str):
+                pipes = [(vp, m.group(1)) for m in _PIPE.finditer(v)]
+            else:
+                pipes = check_rich(v, level or "block", vp, self.emit)
+            if level is not None and (n := char_count(v)) > LIMITS[level]:
+                self.emit(
+                    "text.too_long",
+                    vp,
+                    f"{n} characters; this field allows at most {LIMITS[level]}",
+                )
+            by_site: dict[str, list[str]] = {}
+            for pp, raw in pipes:
+                inner = raw.strip()
                 if _IDENT.match(inner):
-                    refs.append(inner)
+                    by_site.setdefault(pp, []).append(inner)
                 elif inner in builtins:
                     continue  # filled by the engine; always available
                 else:
-                    self.emit("pipe.invalid", sp, f"'${{{m.group(1)}}}' is not a valid reference")
-            if refs:
-                base = site or _Site(sp, [], None)
+                    self.emit("pipe.invalid", pp, f"'${{{raw}}}' is not a valid reference")
+            for pp, refs in by_site.items():
+                base = site or _Site(pp, [], None)
                 self.sites.append(
-                    _Site(sp, refs, base.pos, base.path, base.self_id, False, base.page)
+                    _Site(pp, refs, base.pos, base.path, base.self_id, False, base.page)
                 )
                 piped.extend(refs)
         return piped
@@ -488,7 +508,7 @@ class _Checker:
             if key in seen:
                 self.emit("choice.duplicate_value", cp + "/value", f"code {key!r} is repeated")
             seen.add(key)
-            self._text(c.label, cp + "/label", site)
+            self._text(c.label, cp + "/label", site, level="inline")
         if len({type(c.value) for c in choices}) > 1:
             self.emit("choice.mixed_types", ptr, "list mixes integer and text codes")
 
@@ -622,7 +642,8 @@ class _Checker:
             return False
         assert isinstance(node, EndNode)
         if node.message is not None:
-            self._text(node.message, ptr + "/message", _Site(ptr, [], self.counter, path))
+            site = _Site(ptr, [], self.counter, path)
+            self._text(node.message, ptr + "/message", site, level="block")
         return True
 
     def _external_node(self, node: ExternalTaskNode, ptr: str, path: tuple[PathElem, ...]) -> None:
@@ -713,7 +734,8 @@ class _Checker:
             pp = bp + pointer("pages", j)
             if page.title is not None:
                 # A page title sits before the page's first item: it may pipe earlier pages.
-                self._text(page.title, pp + "/title", _Site(pp, [], self.counter, path))
+                site = _Site(pp, [], self.counter, path)
+                self._text(page.title, pp + "/title", site, level="inline")
             if page.showIf is not None:
                 # So does a page-level showIf: it may refer only to earlier pages.
                 self._expr_site(page.showIf, pp + "/showIf", self.counter, path, boolean=True)
@@ -734,7 +756,8 @@ class _Checker:
                 continue
             for j, page in enumerate(self.s.blocks[i].pages):
                 if page.title is not None:
-                    self._text(page.title, pointer("blocks", i, "pages", j, "title"), None)
+                    tp = pointer("blocks", i, "pages", j, "title")
+                    self._text(page.title, tp, None, level="inline")
                 if page.showIf is not None:
                     pp = pointer("blocks", i, "pages", j, "showIf")
                     self._expr_site(page.showIf, pp, None, (), boolean=True)
@@ -770,17 +793,22 @@ class _Checker:
             for key in ("minLabel", "maxLabel"):
                 text = getattr(q, key)
                 if text is not None:
-                    self._text(text, info.ptr + "/" + key, site)
+                    self._text(text, info.ptr + "/" + key, site, level="inline")
         if isinstance(q, MatrixQuestion):
             for k, row in enumerate(q.rows):
-                self._text(row.label, info.ptr + pointer("rows", k, "label"), site)
+                rp = info.ptr + pointer("rows", k, "label")
+                self._text(row.label, rp, site, level="inline")
             if q.choices is not None:
                 self._choice_items(q.choices, info.ptr + "/choices", site)
-        self._text(q.label, info.ptr + "/label", site)
+        # A note's text may carry headings; an answerable question's label is a stem
+        # (lead decision 2: no headings in stems).
+        label_level: Level = "block" if isinstance(q, NoteQuestion) else "stem"
+        self._text(q.label, info.ptr + "/label", site, level=label_level)
         if q.help is not None:
-            self._text(q.help, info.ptr + "/help", site)
+            self._text(q.help, info.ptr + "/help", site, level="stem")
         if not isinstance(q, NoteQuestion | MatrixQuestion) and q.constraintMessage is not None:
-            self._text(q.constraintMessage, info.ptr + "/constraintMessage", site)
+            cp = info.ptr + "/constraintMessage"
+            self._text(q.constraintMessage, cp, site, level="inline")
         if isinstance(q, (SingleQuestion, MultiQuestion)) and q.choices is not None:
             self._choice_items(q.choices, info.ptr + "/choices", site)
 
@@ -1127,9 +1155,8 @@ def _consent(self: _Checker) -> None:
     for key in ("text", "agreeLabel", "declineLabel"):
         text = getattr(c, key)
         ptr = "/consent/" + key
-        self._text(text, ptr, None)
-        values = [text] if isinstance(text, str) else list(text.values())
-        if any(_PIPE.search(v) for v in values):
+        self._text(text, ptr, None, level="block" if key == "text" else "inline")
+        if has_pipes(text):
             self.emit("consent.pipe", ptr, "the consent page is shown first: nothing can be piped")
     if c.declineOutcome == "complete":
         self.emit("consent.outcome", "/consent/declineOutcome", "a decline cannot end 'complete'")
@@ -1184,12 +1211,15 @@ def _endings(self: _Checker) -> None:
                 "so this ending is never shown",
             )
         site = _Site(ptr, [], self.counter, ())
-        texts = [(key, getattr(ending, key)) for key in ("title", "body")]
+        texts: list[tuple[str, Text | None, Level]] = [
+            ("title", ending.title, "inline"),
+            ("body", ending.body, "block"),
+        ]
         if ending.redirect is not None:
-            texts.append(("redirect/label", ending.redirect.label))
-        for key, text in texts:
+            texts.append(("redirect/label", ending.redirect.label, "inline"))
+        for key, text, level in texts:
             if text is not None:
-                self._text(text, ptr + "/" + key, site, pipes)
+                self._text(text, ptr + "/" + key, site, pipes, level=level)
         if ending.redirect is not None:
             self._redirect(ending.redirect, ptr + "/redirect", templates, outcome == declined)
         if ending.summary == "answers" and outcome == declined:

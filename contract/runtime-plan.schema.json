@@ -329,7 +329,7 @@
     "id": { "type": "string", "pattern": "^[A-Za-z_][A-Za-z0-9_]*$" },
     "language": { "type": "string", "pattern": "^[A-Za-z]{2,3}(-[A-Za-z0-9]{1,8})*$" },
     "segment": {
-      "description": "Researcher text (sanitised HTML), or a pipe the engine fills with an escaped participant value.",
+      "description": "Researcher text (plain: validated by osp-spec on every write, rendered as text nodes), or a pipe the engine fills with a participant value (escaped by the renderer).",
       "oneOf": [
         { "type": "string" },
         {
@@ -345,10 +345,84 @@
         }
       ]
     },
+    "inlineRun": {
+      "description": "One run of rich text (planning/rich-text.md §3): text with optional bold/italic marks, an https link and a language span; a pipe the engine fills; or a line break.",
+      "oneOf": [
+        {
+          "type": "object",
+          "additionalProperties": false,
+          "required": ["text"],
+          "properties": {
+            "text": { "type": "string" },
+            "marks": { "type": "array", "items": { "enum": ["b", "i"] } },
+            "href": { "type": "string", "pattern": "^https://" },
+            "lang": { "$ref": "#/$defs/language" }
+          }
+        },
+        {
+          "type": "object",
+          "additionalProperties": false,
+          "required": ["pipe"],
+          "properties": {
+            "pipe": {
+              "type": "string",
+              "pattern": "^([A-Za-z_][A-Za-z0-9_]*|\\$(trial|position\\.index|position\\.of|pagesDone|language|device|response\\.id|session\\.id|outcome))$"
+            }
+          }
+        },
+        {
+          "type": "object",
+          "additionalProperties": false,
+          "required": ["br"],
+          "properties": { "br": { "const": true } }
+        }
+      ]
+    },
+    "richBlock": {
+      "description": "One block of rich text: a paragraph, a heading (level 1–3, relative to the page) or a single-level bulleted/numbered list of runs.",
+      "oneOf": [
+        {
+          "type": "object",
+          "additionalProperties": false,
+          "required": ["type", "content"],
+          "properties": {
+            "type": { "const": "p" },
+            "content": { "type": "array", "items": { "$ref": "#/$defs/inlineRun" } }
+          }
+        },
+        {
+          "type": "object",
+          "additionalProperties": false,
+          "required": ["type", "level", "content"],
+          "properties": {
+            "type": { "const": "h" },
+            "level": { "type": "integer", "minimum": 1, "maximum": 3 },
+            "content": { "type": "array", "items": { "$ref": "#/$defs/inlineRun" } }
+          }
+        },
+        {
+          "type": "object",
+          "additionalProperties": false,
+          "required": ["type", "items"],
+          "properties": {
+            "type": { "enum": ["ul", "ol"] },
+            "items": {
+              "type": "array",
+              "items": { "type": "array", "items": { "$ref": "#/$defs/inlineRun" } }
+            }
+          }
+        }
+      ]
+    },
     "text": {
-      "description": "Segments per language; every survey language is present.",
+      "description": "Per language, every survey language present: segments for a plain string (a plain string compiles exactly as before RT2), or rich blocks for a rich-text value (planning/rich-text.md §3). The engine renders either as blocks; a single paragraph renders inline.",
       "type": "object",
-      "additionalProperties": { "type": "array", "items": { "$ref": "#/$defs/segment" } }
+      "additionalProperties": {
+        "anyOf": [
+          { "type": "array", "items": { "$ref": "#/$defs/segment" } },
+          { "type": "array", "items": { "$ref": "#/$defs/richBlock" } }
+        ]
+      }
     },
     "choiceValue": { "type": ["integer", "string"] },
     "order": { "enum": ["fixed", "shuffle"] },

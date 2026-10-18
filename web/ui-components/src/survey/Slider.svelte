@@ -2,7 +2,7 @@
 	import { Slider } from 'bits-ui';
 	import { dirFor, fill, formatDecimal, messagesFor, parseDecimal } from './locale';
 	import QuestionFrame from './QuestionFrame.svelte';
-	import RichText from './RichText.svelte';
+	import RichInline from './RichInline.svelte';
 	import TextControl from './TextControl.svelte';
 	import type { SliderProps } from './types';
 
@@ -129,8 +129,8 @@
 				</Slider.Root>
 			</div>
 			<div class="ends" aria-hidden="true">
-				<span><RichText text={minLabel ?? numberFormat.format(min)} /></span>
-				<span><RichText text={maxLabel ?? numberFormat.format(max)} /></span>
+				<span><RichInline text={minLabel ?? numberFormat.format(min)} /></span>
+				<span><RichInline text={maxLabel ?? numberFormat.format(max)} /></span>
 			</div>
 			<div class="typed">
 				<label for="{id}-typed">{m.sliderTypeValue}</label>

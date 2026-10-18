@@ -2,39 +2,78 @@
  * PageView → widget props (ui-components/src/survey/types.ts). Pure formatting: which item
  * shows, its value, its error and its choices all come from the engine's view.
  */
-import type { RenderedText, ViewItem } from '@osp/engine';
-import type { Choice, TextSegment } from '@osp/ui-components/survey';
+import { toPlain, type RenderedBlock, type RenderedRun, type RenderedText, type ViewItem } from '@osp/engine';
+import type { Choice, InlineNode, Text, TextBlock } from '@osp/ui-components/survey';
 import { ui } from './messages';
 
+function node(r: RenderedRun): InlineNode {
+	if (r.kind === 'br') return { br: true };
+	if (r.kind === 'value') return { text: r.text };
+	return {
+		text: r.text,
+		...(r.marks?.includes('b') ? { strong: true } : {}),
+		...(r.marks?.includes('i') ? { em: true } : {}),
+		...(r.lang ? { lang: r.lang } : {}),
+		...(r.href ? { href: r.href } : {})
+	};
+}
+
+function block(b: RenderedBlock): TextBlock {
+	if ('items' in b) return { type: b.type, items: b.items.map((i) => i.map(node)) };
+	if (b.type === 'h') return { type: 'h', level: b.level, content: b.content.map(node) };
+	return { type: 'p', content: b.content.map(node) };
+}
+
 /**
- * Engine text → widget text segments. Widgets render text nodes, never HTML, so researcher
- * text and piped participant values are both safe (§7: values are escaped by construction).
+ * Engine text → widget text (planning/rich-text.md §7). Widgets render text nodes and
+ * our own elements, never HTML, so researcher text and piped participant values are both
+ * safe (§7: values are escaped by construction). A single paragraph becomes inline runs
+ * (valid inside a `<label>`); anything else becomes blocks.
  */
-export function segs(text: RenderedText | null | undefined): TextSegment[] {
-	return (text ?? []).map((p) => ({ text: p.text }));
+export function segs(text: RenderedText | null | undefined): Text {
+	if (!text || text.length === 0) return [];
+	if (text.length === 1 && text[0]!.type === 'p') return text[0]!.content.map(node);
+	return text.map(block);
+}
+
+/** Engine text as widget blocks, always (a reading page: every paragraph gets its `<p>`). */
+export function blocks(text: RenderedText | null | undefined): TextBlock[] {
+	return (text ?? []).map(block);
 }
 
 export function plain(text: RenderedText | null | undefined): string {
-	return (text ?? []).map((p) => p.text).join('');
+	return toPlain(text ?? null);
 }
 
 /**
- * Rendered text split into paragraphs at blank lines in the researcher's text (piped values
- * are never split), for the ending body (end-of-survey plan §4.1). Empty paragraphs go.
+ * Rendered text as blocks for a reading page (the ending body, the consent text; end-of-
+ * survey plan §4.1): plain-string paragraphs are split at blank lines in the researcher's
+ * text (piped values are never split), as before RT2; rich blocks stay as they are. Empty
+ * paragraphs go.
  */
-export function paragraphs(text: RenderedText | null | undefined): RenderedText[] {
-	const out: RenderedText[] = [[]];
-	for (const p of text ?? []) {
-		if (p.kind !== 'text') {
-			out[out.length - 1]!.push(p);
+export function paragraphs(text: RenderedText | null | undefined): RenderedText {
+	const out: RenderedText = [];
+	for (const b of text ?? []) {
+		if (b.type !== 'p') {
+			out.push(b);
 			continue;
 		}
-		p.text.split(/\n[^\S\n]*\n\s*/).forEach((t, i) => {
-			if (i > 0) out.push([]);
-			if (t) out[out.length - 1]!.push({ kind: 'text', text: t });
-		});
+		const parts: RenderedRun[][] = [[]];
+		for (const p of b.content) {
+			if (p.kind !== 'text') {
+				parts[parts.length - 1]!.push(p);
+				continue;
+			}
+			p.text.split(/\n[^\S\n]*\n\s*/).forEach((t, i) => {
+				if (i > 0) parts.push([]);
+				if (t) parts[parts.length - 1]!.push({ ...p, text: t });
+			});
+		}
+		for (const content of parts) {
+			if (content.some((s) => s.kind === 'br' || s.text.trim() !== '')) out.push({ type: 'p', content });
+		}
 	}
-	return out.filter((par) => par.some((s) => s.text.trim() !== ''));
+	return out;
 }
 
 export function choicesOf(item: ViewItem): Choice[] {

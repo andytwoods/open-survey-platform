@@ -239,8 +239,15 @@ CASES: list[tuple[str, str, Callable[[dict[str, Any]], None]]] = [
     (
         "integer",
         "property_schema.kind_mismatch",
-        _set_prop("label", kind="number", translatable=False, default=None),
+        _set_prop("label", kind="number", translatable=False, default=None, rich=None),
     ),  # fmt: skip
+    # Rich-text levels (RT2): declared exactly when the model takes a tree, matching the
+    # validator's level; never on another kind.
+    ("integer", "property_schema.invalid", _set_prop("required", rich="stem")),
+    ("integer", "property_schema.kind_mismatch", _set_prop("label", rich="block")),
+    ("integer", "property_schema.kind_mismatch", _set_prop("label", rich=None)),
+    ("integer", "property_schema.kind_mismatch", _set_prop("name", rich="inline")),
+    ("survey", "property_schema.kind_mismatch", _set_prop("metadata.title", rich="inline")),
     ("integer", "property_schema.kind_mismatch", _set_prop("showIf", kind="text")),
     ("integer", "property_schema.kind_mismatch", _set_prop("help", translatable=False)),
     ("integer", "property_schema.kind_mismatch", _set_prop("name", translatable=True)),

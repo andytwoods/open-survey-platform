@@ -36,7 +36,7 @@ from osp_expr.ast import (
     TextLit,
 )
 from osp_expr.static import references
-from osp_spec import Survey, parse, redirect_templates
+from osp_spec import Survey, flatten_text, parse, redirect_templates
 from osp_spec.hooks import DEFAULT_PARAM_PATTERN, placeholders
 from osp_spec.model import (
     AssignedVariable,
@@ -558,7 +558,10 @@ class _Exporter:
     # -- text ----------------------------------------------------------------------------
 
     def _texts(self, text: object, ptr: str) -> Texts:
-        """``{language: LimeSurvey text}`` with pipes rewritten to Expression Manager."""
+        """``{language: LimeSurvey text}`` with pipes rewritten to Expression Manager. Rich
+        text (RT2) is flattened to plain text until RT4 writes the HTML subset; the loss is
+        reported through the `RichText.*` / `TextRun.*` capability rows (feature_uses)."""
+        text = flatten_text(text)
         if text is None:
             return {}
         if isinstance(text, str):

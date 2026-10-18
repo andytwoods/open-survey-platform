@@ -1,0 +1,194 @@
+{
+ "format": "osp-response/1",
+ "surveyId": "f41_rich_text",
+ "surveyVersion": 1,
+ "planVersion": "osp-runtime-plan/1",
+ "planChecksum": "sha256:5c45979bfa8ecef982e4fe7f377361c6be431ea8f09b9f504debe0832e16743d",
+ "engineVersion": "1",
+ "sessionSeed": 4101,
+ "sessionId": null,
+ "language": "en",
+ "device": null,
+ "end": "complete",
+ "endNode": "n_end",
+ "allocation": "server",
+ "assigned": {},
+ "conditions": {},
+ "conditionSources": {},
+ "orders": {
+  "blocks": {},
+  "items": {},
+  "choices": {}
+ },
+ "answers": {
+  "name": {
+   "state": "answered",
+   "value": "Sam & <Co>"
+  },
+  "fav": {
+   "state": "answered",
+   "value": "pear"
+  },
+  "rate": {
+   "state": "answered",
+   "value": 3
+  },
+  "grid_taste": {
+   "state": "answered",
+   "value": 2
+  },
+  "grid_price": {
+   "state": "answered",
+   "value": 1
+  },
+  "mood": {
+   "state": "answered",
+   "value": 7
+  }
+ },
+ "csvState": {
+  "name__state": "answered",
+  "fav__state": "answered",
+  "rate__state": "answered",
+  "grid_taste__state": "answered",
+  "grid_price__state": "answered",
+  "mood__state": "answered"
+ },
+ "embedded": {},
+ "computed": {},
+ "variableStates": {},
+ "quotas": {},
+ "diagnostics": [],
+ "effects": [],
+ "urlParams": {},
+ "startedAt": 2000,
+ "endedAt": 13000,
+ "revision": 12,
+ "events": [
+  {
+   "type": "start",
+   "seq": 1,
+   "rev": 1,
+   "t": 2000,
+   "sessionSeed": 4101,
+   "assigned": {},
+   "language": "en",
+   "device": null,
+   "urlParams": {},
+   "sessionId": null
+  },
+  {
+   "type": "consent",
+   "t": 3000,
+   "decision": "agree",
+   "version": "sha256:a8a1ff20fd802f789f2bd5ac79d6a37cbe9bfe3afb8621f4104330fdbaefad46",
+   "seq": 2,
+   "rev": 2,
+   "result": {
+    "outcome": "advanced",
+    "to": "p1_page"
+   }
+  },
+  {
+   "type": "answer",
+   "t": 4000,
+   "item": "name",
+   "value": "Sam & <Co>",
+   "seq": 3,
+   "rev": 3
+  },
+  {
+   "type": "answer",
+   "t": 5000,
+   "item": "fav",
+   "value": "pear",
+   "seq": 4,
+   "rev": 4
+  },
+  {
+   "type": "next",
+   "t": 6000,
+   "from": "p1_page",
+   "seq": 5,
+   "rev": 5,
+   "result": {
+    "outcome": "advanced",
+    "to": "p2_page"
+   }
+  },
+  {
+   "type": "answer",
+   "t": 7000,
+   "item": "rate",
+   "value": 9,
+   "seq": 6,
+   "rev": 6
+  },
+  {
+   "type": "next",
+   "t": 8000,
+   "from": "p2_page",
+   "seq": 7,
+   "rev": 7,
+   "result": {
+    "outcome": "invalid",
+    "to": "p2_page",
+    "errors": {
+     "rate": {
+      "kind": "constraint"
+     }
+    }
+   }
+  },
+  {
+   "type": "answer",
+   "t": 9000,
+   "item": "rate",
+   "value": 3,
+   "seq": 8,
+   "rev": 8
+  },
+  {
+   "type": "answer",
+   "t": 10000,
+   "item": "grid_taste",
+   "value": 2,
+   "seq": 9,
+   "rev": 9
+  },
+  {
+   "type": "answer",
+   "t": 11000,
+   "item": "grid_price",
+   "value": 1,
+   "seq": 10,
+   "rev": 10
+  },
+  {
+   "type": "answer",
+   "t": 12000,
+   "item": "mood",
+   "value": 7,
+   "seq": 11,
+   "rev": 11
+  },
+  {
+   "type": "next",
+   "t": 13000,
+   "from": "p2_page",
+   "seq": 12,
+   "rev": 12,
+   "result": {
+    "outcome": "ended",
+    "to": null,
+    "effect": {
+     "kind": "end",
+     "outcome": "complete",
+     "nodeId": "n_end"
+    }
+   }
+  }
+ ],
+ "consentVersion": "sha256:a8a1ff20fd802f789f2bd5ac79d6a37cbe9bfe3afb8621f4104330fdbaefad46",
+ "consentedAt": 3000
+}

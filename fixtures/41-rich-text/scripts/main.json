@@ -1,0 +1,38 @@
+{
+  "format": "osp-fixture-script/0",
+  "id": "main",
+  "description": "English: consent with rich text, rich labels, help, choices, rows, columns, slider labels and page titles; pipes inside formatting; a rich end message and ending; a rich constraint message after a too-high rating.",
+  "sessionSeed": 4101,
+  "language": "en",
+  "actions": [
+    {
+      "expectPage": "$consent",
+      "do": "agree"
+    },
+    {
+      "expectPage": "p1",
+      "set": {
+        "name": "Sam & <Co>",
+        "fav": "pear"
+      },
+      "do": "next"
+    },
+    {
+      "expectPage": "p2",
+      "set": {
+        "rate": 9
+      },
+      "do": "next"
+    },
+    {
+      "expectPage": "p2",
+      "set": {
+        "rate": 3,
+        "grid_taste": 2,
+        "grid_price": 1,
+        "mood": 7
+      },
+      "do": "next"
+    }
+  ]
+}

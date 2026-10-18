@@ -1,0 +1,911 @@
+{
+  "specVersion": "osp-survey/0.1",
+  "id": "f41_rich_text",
+  "version": 1,
+  "metadata": {
+    "title": "Rich text in every field",
+    "description": {
+      "type": "rich",
+      "blocks": [
+        {
+          "type": "p",
+          "content": [
+            {
+              "text": "planning/rich-text.md §3 (task RT2): the rich-text model end to end. Block fields (a note, the consent text, the end message) carry headings and lists; stems (labels, help) carry marks, links and pipes; inline fields (choice, row and column labels, slider end labels, the page title, the constraint message, the consent buttons) carry one paragraph. Pipes sit inside formatting. Arabic is a second language with a rich RTL label; one label has no Arabic and falls back."
+            }
+          ]
+        }
+      ]
+    },
+    "languages": [
+      "en",
+      "ar"
+    ],
+    "defaultLanguage": "en"
+  },
+  "settings": {
+    "backNavigation": true,
+    "endings": {
+      "complete": {
+        "title": {
+          "type": "rich",
+          "blocks": [
+            {
+              "type": "p",
+              "content": [
+                {
+                  "text": "All "
+                },
+                {
+                  "text": "done",
+                  "marks": [
+                    "b"
+                  ]
+                }
+              ]
+            }
+          ]
+        },
+        "body": {
+          "type": "rich",
+          "blocks": [
+            {
+              "type": "p",
+              "content": [
+                {
+                  "text": "Thank you, "
+                },
+                {
+                  "pipe": "name"
+                },
+                {
+                  "text": "."
+                }
+              ]
+            },
+            {
+              "type": "ul",
+              "items": [
+                [
+                  {
+                    "text": "Your fruit: "
+                  },
+                  {
+                    "pipe": "fav"
+                  }
+                ],
+                [
+                  {
+                    "text": "Your rating: "
+                  },
+                  {
+                    "pipe": "rate"
+                  }
+                ]
+              ]
+            }
+          ]
+        }
+      }
+    }
+  },
+  "consent": {
+    "text": {
+      "en": {
+        "type": "rich",
+        "blocks": [
+          {
+            "type": "h",
+            "level": 1,
+            "content": [
+              {
+                "text": "Before you start"
+              }
+            ]
+          },
+          {
+            "type": "p",
+            "content": [
+              {
+                "text": "This is a "
+              },
+              {
+                "text": "synthetic",
+                "marks": [
+                  "i"
+                ]
+              },
+              {
+                "text": " study. Read the "
+              },
+              {
+                "text": "information sheet",
+                "href": "https://example.org/info"
+              },
+              {
+                "text": " first."
+              }
+            ]
+          },
+          {
+            "type": "ol",
+            "items": [
+              [
+                {
+                  "text": "Taking part is "
+                },
+                {
+                  "text": "voluntary",
+                  "marks": [
+                    "b"
+                  ]
+                },
+                {
+                  "text": "."
+                }
+              ],
+              [
+                {
+                  "text": "You can stop at any time."
+                }
+              ]
+            ]
+          }
+        ]
+      },
+      "ar": {
+        "type": "rich",
+        "blocks": [
+          {
+            "type": "h",
+            "level": 1,
+            "content": [
+              {
+                "text": "قبل أن تبدأ"
+              }
+            ]
+          },
+          {
+            "type": "p",
+            "content": [
+              {
+                "text": "هذه دراسة "
+              },
+              {
+                "text": "اصطناعية",
+                "marks": [
+                  "i"
+                ]
+              },
+              {
+                "text": ". المشاركة "
+              },
+              {
+                "text": "طوعية",
+                "marks": [
+                  "b"
+                ]
+              },
+              {
+                "text": "."
+              }
+            ]
+          }
+        ]
+      }
+    },
+    "agreeLabel": {
+      "en": {
+        "type": "rich",
+        "blocks": [
+          {
+            "type": "p",
+            "content": [
+              {
+                "text": "I "
+              },
+              {
+                "text": "agree",
+                "marks": [
+                  "b"
+                ]
+              }
+            ]
+          }
+        ]
+      },
+      "ar": "أوافق"
+    },
+    "declineLabel": {
+      "en": "I do not agree",
+      "ar": "لا أوافق"
+    },
+    "declineOutcome": "declined"
+  },
+  "blocks": [
+    {
+      "id": "p1",
+      "pages": [
+        {
+          "id": "p1_page",
+          "title": {
+            "en": {
+              "type": "rich",
+              "blocks": [
+                {
+                  "type": "p",
+                  "content": [
+                    {
+                      "text": "Part "
+                    },
+                    {
+                      "text": "one",
+                      "marks": [
+                        "i"
+                      ]
+                    }
+                  ]
+                }
+              ]
+            },
+            "ar": "الجزء الأول"
+          },
+          "items": [
+            {
+              "type": "note",
+              "id": "intro",
+              "label": {
+                "en": {
+                  "type": "rich",
+                  "blocks": [
+                    {
+                      "type": "h",
+                      "level": 1,
+                      "content": [
+                        {
+                          "text": "Welcome"
+                        }
+                      ]
+                    },
+                    {
+                      "type": "p",
+                      "content": [
+                        {
+                          "text": "Please answer "
+                        },
+                        {
+                          "text": "every",
+                          "marks": [
+                            "b"
+                          ]
+                        },
+                        {
+                          "text": " question."
+                        },
+                        {
+                          "br": true
+                        },
+                        {
+                          "text": "It takes "
+                        },
+                        {
+                          "text": "two minutes",
+                          "marks": [
+                            "i"
+                          ]
+                        },
+                        {
+                          "text": "."
+                        }
+                      ]
+                    },
+                    {
+                      "type": "h",
+                      "level": 2,
+                      "content": [
+                        {
+                          "text": "What you need"
+                        }
+                      ]
+                    },
+                    {
+                      "type": "ul",
+                      "items": [
+                        [
+                          {
+                            "text": "Your "
+                          },
+                          {
+                            "text": "participant code",
+                            "marks": [
+                              "b",
+                              "i"
+                            ]
+                          }
+                        ],
+                        [
+                          {
+                            "text": "The "
+                          },
+                          {
+                            "text": "study page",
+                            "href": "https://example.org/study"
+                          },
+                          {
+                            "text": " open"
+                          }
+                        ]
+                      ]
+                    },
+                    {
+                      "type": "p",
+                      "content": [
+                        {
+                          "text": "Merci",
+                          "lang": "fr"
+                        },
+                        {
+                          "text": " and thank you."
+                        }
+                      ]
+                    }
+                  ]
+                },
+                "ar": {
+                  "type": "rich",
+                  "blocks": [
+                    {
+                      "type": "h",
+                      "level": 1,
+                      "content": [
+                        {
+                          "text": "مرحباً"
+                        }
+                      ]
+                    },
+                    {
+                      "type": "p",
+                      "content": [
+                        {
+                          "text": "يرجى الإجابة على "
+                        },
+                        {
+                          "text": "كل",
+                          "marks": [
+                            "b"
+                          ]
+                        },
+                        {
+                          "text": " سؤال. "
+                        },
+                        {
+                          "text": "two minutes",
+                          "lang": "en",
+                          "marks": [
+                            "i"
+                          ]
+                        }
+                      ]
+                    },
+                    {
+                      "type": "ul",
+                      "items": [
+                        [
+                          {
+                            "text": "رمز المشارك",
+                            "marks": [
+                              "b"
+                            ]
+                          }
+                        ],
+                        [
+                          {
+                            "text": "صفحة الدراسة",
+                            "href": "https://example.org/study"
+                          }
+                        ]
+                      ]
+                    }
+                  ]
+                }
+              }
+            },
+            {
+              "type": "text",
+              "id": "name",
+              "label": {
+                "en": {
+                  "type": "rich",
+                  "blocks": [
+                    {
+                      "type": "p",
+                      "content": [
+                        {
+                          "text": "Your "
+                        },
+                        {
+                          "text": "name",
+                          "marks": [
+                            "b"
+                          ]
+                        },
+                        {
+                          "text": " (as on the "
+                        },
+                        {
+                          "text": "sheet",
+                          "href": "https://example.org/info"
+                        },
+                        {
+                          "text": ")"
+                        }
+                      ]
+                    }
+                  ]
+                }
+              },
+              "help": {
+                "type": "rich",
+                "blocks": [
+                  {
+                    "type": "p",
+                    "content": [
+                      {
+                        "text": "Either:"
+                      }
+                    ]
+                  },
+                  {
+                    "type": "ul",
+                    "items": [
+                      [
+                        {
+                          "text": "first name only, or"
+                        }
+                      ],
+                      [
+                        {
+                          "text": "a "
+                        },
+                        {
+                          "text": "nickname",
+                          "marks": [
+                            "i"
+                          ]
+                        }
+                      ]
+                    ]
+                  }
+                ]
+              },
+              "required": true
+            },
+            {
+              "type": "single",
+              "id": "fav",
+              "label": "Pick a fruit",
+              "choices": [
+                {
+                  "value": "apple",
+                  "label": {
+                    "en": {
+                      "type": "rich",
+                      "blocks": [
+                        {
+                          "type": "p",
+                          "content": [
+                            {
+                              "text": "Apple",
+                              "marks": [
+                                "b"
+                              ]
+                            }
+                          ]
+                        }
+                      ]
+                    },
+                    "ar": "تفاحة"
+                  }
+                },
+                {
+                  "value": "pear",
+                  "label": {
+                    "en": {
+                      "type": "rich",
+                      "blocks": [
+                        {
+                          "type": "p",
+                          "content": [
+                            {
+                              "text": "Pear ("
+                            },
+                            {
+                              "text": "green",
+                              "marks": [
+                                "i"
+                              ]
+                            },
+                            {
+                              "text": ")"
+                            }
+                          ]
+                        }
+                      ]
+                    },
+                    "ar": "كمثرى"
+                  }
+                },
+                {
+                  "value": "other",
+                  "label": {
+                    "en": "Something else",
+                    "ar": "شيء آخر"
+                  }
+                }
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "id": "p2",
+      "pages": [
+        {
+          "id": "p2_page",
+          "title": {
+            "type": "rich",
+            "blocks": [
+              {
+                "type": "p",
+                "content": [
+                  {
+                    "text": "Part "
+                  },
+                  {
+                    "text": "two",
+                    "marks": [
+                      "i"
+                    ]
+                  },
+                  {
+                    "text": " for "
+                  },
+                  {
+                    "pipe": "name"
+                  }
+                ]
+              }
+            ]
+          },
+          "items": [
+            {
+              "type": "note",
+              "id": "echo",
+              "label": {
+                "type": "rich",
+                "blocks": [
+                  {
+                    "type": "p",
+                    "content": [
+                      {
+                        "text": "Hello ",
+                        "marks": [
+                          "b"
+                        ]
+                      },
+                      {
+                        "pipe": "name"
+                      },
+                      {
+                        "text": ", you chose ",
+                        "marks": [
+                          "b"
+                        ]
+                      },
+                      {
+                        "pipe": "fav"
+                      },
+                      {
+                        "text": "."
+                      }
+                    ]
+                  },
+                  {
+                    "type": "ol",
+                    "items": [
+                      [
+                        {
+                          "text": "Trial "
+                        },
+                        {
+                          "pipe": "$trial"
+                        }
+                      ],
+                      [
+                        {
+                          "text": "Language "
+                        },
+                        {
+                          "pipe": "$language"
+                        }
+                      ]
+                    ]
+                  }
+                ]
+              }
+            },
+            {
+              "type": "integer",
+              "id": "rate",
+              "label": {
+                "en": {
+                  "type": "rich",
+                  "blocks": [
+                    {
+                      "type": "p",
+                      "content": [
+                        {
+                          "text": "Rate "
+                        },
+                        {
+                          "pipe": "fav"
+                        },
+                        {
+                          "text": " from "
+                        },
+                        {
+                          "text": "1",
+                          "marks": [
+                            "b"
+                          ]
+                        },
+                        {
+                          "text": " to "
+                        },
+                        {
+                          "text": "5",
+                          "marks": [
+                            "b"
+                          ]
+                        }
+                      ]
+                    }
+                  ]
+                },
+                "ar": {
+                  "type": "rich",
+                  "blocks": [
+                    {
+                      "type": "p",
+                      "content": [
+                        {
+                          "text": "قيّم "
+                        },
+                        {
+                          "pipe": "fav"
+                        },
+                        {
+                          "text": " من "
+                        },
+                        {
+                          "text": "١",
+                          "marks": [
+                            "b"
+                          ]
+                        },
+                        {
+                          "text": " إلى "
+                        },
+                        {
+                          "text": "٥",
+                          "marks": [
+                            "b"
+                          ]
+                        }
+                      ]
+                    }
+                  ]
+                }
+              },
+              "constraint": {
+                "kind": "compare",
+                "op": "<=",
+                "left": {
+                  "kind": "ref",
+                  "id": "rate"
+                },
+                "right": {
+                  "kind": "int",
+                  "value": 5
+                }
+              },
+              "constraintMessage": {
+                "type": "rich",
+                "blocks": [
+                  {
+                    "type": "p",
+                    "content": [
+                      {
+                        "text": "Enter "
+                      },
+                      {
+                        "text": "5 or less",
+                        "marks": [
+                          "b"
+                        ]
+                      },
+                      {
+                        "text": " for "
+                      },
+                      {
+                        "pipe": "fav"
+                      }
+                    ]
+                  }
+                ]
+              }
+            },
+            {
+              "type": "matrix",
+              "id": "grid",
+              "label": "How much do you agree?",
+              "rows": [
+                {
+                  "id": "taste",
+                  "label": {
+                    "type": "rich",
+                    "blocks": [
+                      {
+                        "type": "p",
+                        "content": [
+                          {
+                            "pipe": "fav"
+                          },
+                          {
+                            "text": " tastes "
+                          },
+                          {
+                            "text": "good",
+                            "marks": [
+                              "b"
+                            ]
+                          }
+                        ]
+                      }
+                    ]
+                  }
+                },
+                {
+                  "id": "price",
+                  "label": "It is cheap"
+                }
+              ],
+              "choices": [
+                {
+                  "value": 1,
+                  "label": {
+                    "type": "rich",
+                    "blocks": [
+                      {
+                        "type": "p",
+                        "content": [
+                          {
+                            "text": "Disagree",
+                            "marks": [
+                              "i"
+                            ]
+                          }
+                        ]
+                      }
+                    ]
+                  }
+                },
+                {
+                  "value": 2,
+                  "label": "Agree"
+                }
+              ]
+            },
+            {
+              "type": "slider",
+              "id": "mood",
+              "label": "How do you feel?",
+              "min": 0,
+              "max": 10,
+              "minLabel": {
+                "type": "rich",
+                "blocks": [
+                  {
+                    "type": "p",
+                    "content": [
+                      {
+                        "text": "Very ",
+                        "marks": [
+                          "i"
+                        ]
+                      },
+                      {
+                        "text": "bad"
+                      }
+                    ]
+                  }
+                ]
+              },
+              "maxLabel": {
+                "type": "rich",
+                "blocks": [
+                  {
+                    "type": "p",
+                    "content": [
+                      {
+                        "text": "Very ",
+                        "marks": [
+                          "i"
+                        ]
+                      },
+                      {
+                        "text": "good",
+                        "marks": [
+                          "b"
+                        ]
+                      }
+                    ]
+                  }
+                ]
+              }
+            }
+          ]
+        }
+      ]
+    }
+  ],
+  "flow": [
+    {
+      "type": "block",
+      "id": "n_p1",
+      "block": "p1"
+    },
+    {
+      "type": "block",
+      "id": "n_p2",
+      "block": "p2"
+    },
+    {
+      "type": "end",
+      "id": "n_end",
+      "outcome": "complete",
+      "message": {
+        "type": "rich",
+        "blocks": [
+          {
+            "type": "h",
+            "level": 1,
+            "content": [
+              {
+                "text": "Finished"
+              }
+            ]
+          },
+          {
+            "type": "p",
+            "content": [
+              {
+                "text": "Goodbye, "
+              },
+              {
+                "pipe": "name"
+              },
+              {
+                "text": "!",
+                "marks": [
+                  "b"
+                ]
+              }
+            ]
+          }
+        ]
+      }
+    }
+  ]
+}

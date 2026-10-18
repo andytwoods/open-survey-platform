@@ -57,13 +57,17 @@ from .model import (
     MultiQuestion,
     NoteQuestion,
     Page,
+    PlainText,
     Question,
     SingleQuestion,
     SliderQuestion,
     Survey,
-    Text,
     TextQuestion,
 )
+from .richtext import Level, text_level
+
+# A formatting-free paragraph: what a field must take to be rich at all.
+_RICH_SAMPLE = {"type": "rich", "blocks": [{"type": "p", "content": [{"text": "x"}]}]}
 
 KINDS = (
     "text",
@@ -130,24 +134,31 @@ class _Spec(BaseModel):
 
 class EnumOption(_Spec):
     value: StrictStr | StrictInt
-    label: Text
+    label: PlainText
 
 
 class PropertySpec(_Spec):
     """One editable field: which editor (`kind`), where (`group`) and how it starts."""
 
     kind: Kind
-    label: Text
+    label: PlainText
     required: StrictBool = False
     default: JsonValue = None  # None: no default
     translatable: StrictBool = False
     group: Group = "Basics"
-    help: Text | None = None
+    help: PlainText | None = None
     options: list[EnumOption] | None = Field(default=None, min_length=1)  # enum only
     optionsFrom: PropertyKey | None = None  # enum only: options are another field's values
+    # text / richtext only: the rich-text level the field takes (planning/rich-text.md
+    # §3.1): which blocks the editor offers and the character limit it shows. Must agree
+    # with the validator's level for the field (`osp_spec.richtext.text_level`); absent
+    # for a plain field.
+    rich: Level | None = None
 
     @model_validator(mode="after")
     def _enum_options(self) -> PropertySpec:
+        if self.rich is not None and self.kind not in ("text", "richtext"):
+            raise ValueError("`rich` is only for text and richtext properties")
         has_static, has_dynamic = self.options is not None, self.optionsFrom is not None
         if self.kind == "enum" and has_static == has_dynamic:
             raise ValueError("an enum property needs exactly one of `options` or `optionsFrom`")
@@ -168,7 +179,7 @@ class TypeSchema(_Spec):
     type: StrictStr
     entity: Entity
     family: Family | None = None  # question types only: picks the canvas card
-    label: Text
+    label: PlainText
     icon: LucideName
     properties: dict[PropertyKey, PropertySpec]
     hidden: dict[PropertyKey, Annotated[str, StringConstraints(min_length=1)]] = Field(
@@ -283,8 +294,8 @@ def _submodel(tp: Any) -> type[BaseModel] | None:
     return None
 
 
-def _resolve(model: type[BaseModel], key: str) -> Any | None:
-    """The pydantic FieldInfo a dotted key names, or None."""
+def _owner(model: type[BaseModel], key: str) -> tuple[type[BaseModel], str] | None:
+    """The model class that directly holds the field a dotted key names, and the field."""
     *parents, last = key.split(".")
     for part in parents:
         info = model.model_fields.get(part)
@@ -292,7 +303,13 @@ def _resolve(model: type[BaseModel], key: str) -> Any | None:
         if sub is None:
             return None
         model = sub
-    return model.model_fields.get(last)
+    return (model, last) if last in model.model_fields else None
+
+
+def _resolve(model: type[BaseModel], key: str) -> Any | None:
+    """The pydantic FieldInfo a dotted key names, or None."""
+    found = _owner(model, key)
+    return found[0].model_fields[found[1]] if found else None
 
 
 def _literal_values(tp: Any) -> set[Any] | None:
@@ -422,6 +439,18 @@ def _check_against_model(schema: TypeSchema, filename: str) -> list[Diagnostic]:
             mismatch.append(f"optionsFrom names no model field {spec.optionsFrom!r}")
         if spec.required != info.is_required():
             mismatch.append(f"required should be {info.is_required()} to match the model")
+        if spec.kind in ("text", "richtext"):
+            # Rich-text level (planning/rich-text.md §3.1): declared exactly when the model
+            # takes a tree, and the same level the validator applies to the field.
+            owner = _owner(model, key)
+            expected = text_level(owner[0], owner[1]) if owner else None
+            takes_rich = _accepts(model, schema, key, _RICH_SAMPLE)
+            if takes_rich and spec.rich is None:
+                mismatch.append(f"the field takes rich text: declare rich: {expected}")
+            elif not takes_rich and spec.rich is not None:
+                mismatch.append("the field is plain text (no rich: level)")
+            elif takes_rich and spec.rich != expected:
+                mismatch.append(f"rich should be {expected!r}, the validator's level")
         for m in mismatch:
             report("property_schema.kind_mismatch", "properties", key, msg=f"{key}: {m}")
 
