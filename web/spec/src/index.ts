@@ -9,4 +9,4 @@
 
 export { CODES, type Diagnostic, hasErrors, pointer, type Severity } from './diagnostics.ts';
 export { BUILTIN_PIPES, ENDING_PIPES, parse, validate } from './validate.ts';
-export { SPEC_VERSION } from './model.ts';
+export { Fragment, SPEC_VERSION } from './model.ts';

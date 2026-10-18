@@ -9,5 +9,5 @@
 		"skipLibCheck": true,
 		"noEmit": true
 	},
-	"include": ["builder/src", "ui-components/src", "api-client/src", "spec/src"]
+	"include": ["builder/src", "ui-components/src", "api-client/src", "spec/src", "ops/src"]
 }

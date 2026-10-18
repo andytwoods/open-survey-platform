@@ -5,6 +5,7 @@ packages:
   - engine
   - spec
   - engine-sim
+  - ops
   - runtime
   - hooks-sandbox
   - harness

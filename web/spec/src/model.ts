@@ -350,6 +350,13 @@ const Block = model('Block', [
 
 // --- Variables, quotas, flow ------------------------------------------------------------------
 
+const ComputedVariable = model('ComputedVariable', [
+	f('id', Identifier),
+	opt('name', Identifier),
+	f('kind', literal('computed')),
+	f('expr', Expr)
+]);
+
 const Variable = tagged('kind', [
 	[
 		'embedded',
@@ -374,7 +381,7 @@ const Variable = tagged('kind', [
 	],
 	[
 		'computed',
-		model('ComputedVariable', [f('id', Identifier), opt('name', Identifier), f('kind', literal('computed')), f('expr', Expr)])
+		ComputedVariable
 	]
 ]);
 
@@ -535,6 +542,16 @@ const Hooks = model('Hooks', [
 	opt('redirects', dict(Name, RedirectTemplate)),
 	opt('parent', HookParent),
 	opt('exportsConfirmedFor', str())
+]);
+
+/** `osp_spec.bank.Fragment`: one question, page or block with its choice lists and computed
+ * (scoring) variables (used by `@osp/ops` for `check_fragment`). */
+export const Fragment = model('Fragment', [
+	f('choiceLists', list(ChoiceList), { default: () => [] }),
+	f('variables', list(ComputedVariable), { default: () => [] }),
+	opt('question', Question),
+	opt('page', Page),
+	opt('block', Block)
 ]);
 
 // --- Survey -----------------------------------------------------------------------------------

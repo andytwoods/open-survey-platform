@@ -20,7 +20,7 @@ PNPM := pnpm
 # them in the console code page (cp1252) and fail on the first non-ASCII character.
 export PYTHONUTF8 := 1
 
-CHECKS := py-test py-layers py-lint web-check web-test web-build contract-check licence-check harness-quick engine-test hooks-test sim-test spec-test docs-check
+CHECKS := py-test py-layers py-lint web-check web-test web-build contract-check licence-check harness-quick engine-test hooks-test sim-test spec-test docs-check ops-parity
 
 # `make check CHECK_SKIP="harness-quick"` leaves targets out: CI runs the browser suites as
 # their own jobs (.github/workflows/ci.yml), and the Windows job skips what needs a POSIX
@@ -167,6 +167,19 @@ engine-fixtures:
 
 engine-test: engine-fixtures
 	$(PNPM) -C web/engine exec vitest run
+
+# Builder edit ops in TypeScript (task CE2, web/ops, planning/client-edits.md). Python's
+# osp-ops writes the parity vectors into web/ops/.build/ (gitignored): every op on every
+# fixture, every call the osp-ops tests make, seeded random op sequences with undo/redo,
+# pydantic model vectors and the validator's answers; vitest replays them through @osp/ops
+# and asserts identical documents, patches, inverses and diagnostics. The vectors are
+# rebuilt only when osp-ops/osp-spec/osp-expr, their tests, the fixtures or the script change.
+.PHONY: ops-vectors ops-parity
+ops-vectors:
+	$(UV_RUN) python web/ops/scripts/build_vectors.py
+
+ops-parity: ops-vectors
+	$(PNPM) -C web/ops exec vitest run
 
 # Engine records (task M2/M3 inputs): every fixture script played through web/engine,
 # `result(state)` written to python/osp-targets/tests/data/records/ (committed, so py-test

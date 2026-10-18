@@ -31,13 +31,14 @@ function cruise(files: Files, cwd?: string) {
 			writeFileSync(join(root, path), body);
 		}
 	}
-	const args = ['builder/src', 'ui-components/src', 'api-client/src', '--config', CONFIG];
+	const args = ['builder/src', 'ui-components/src', 'api-client/src', 'spec/src', 'ops/src', '--config', CONFIG];
 	// Default reporter: what `pnpm depcruise` (and so `make check`) runs; sets the exit code.
 	const gate = spawnSync(process.execPath, [DEPCRUISE, ...args], { cwd: root, encoding: 'utf8' });
 	// JSON reporter (always exits 0): tells us which rules fired.
 	const json = spawnSync(process.execPath, [DEPCRUISE, ...args, '--output-type', 'json'], {
 		cwd: root,
-		encoding: 'utf8'
+		encoding: 'utf8',
+		maxBuffer: 256 * 1024 * 1024 // the real workspace's JSON report is several MB
 	});
 	expect(gate.error).toBeUndefined();
 	expect(json.error).toBeUndefined();
@@ -50,7 +51,9 @@ function cruise(files: Files, cwd?: string) {
 const base: Files = {
 	'builder/src/main.ts': "import { x } from '../../api-client/src/index.ts';\nexport const y = x;\n",
 	'ui-components/src/index.ts': 'export const ok = 1;\n',
-	'api-client/src/index.ts': 'export const x = 1;\n'
+	'api-client/src/index.ts': 'export const x = 1;\n',
+	'spec/src/index.ts': 'export const v = 1;\n',
+	'ops/src/index.ts': 'export const op = 1;\n'
 };
 
 afterEach(() => {
@@ -101,6 +104,12 @@ describe('web boundaries (dependency-cruiser)', () => {
 			'not-to-unresolvable',
 			'ui-components/src/bad.ts',
 			"import { z } from 'no-such-package-anywhere';\nexport const b = z;\n"
+		],
+		[
+			// @osp/ops is pure: the engine and the validator only (planning/client-edits.md).
+			'ops-imports-only-engine-and-spec',
+			'ops/src/bad.ts',
+			"import { ok } from '../../ui-components/src/index.ts';\nexport const b = ok;\n"
 		],
 		[
 			// The editor library is confined to builder/src/lib/richtext/ (a lazy chunk).

@@ -1,0 +1,28 @@
+{
+	"name": "@osp/ops",
+	"private": true,
+	"version": "0.1.0",
+	"license": "MIT",
+	"description": "Survey edit ops in TypeScript: a faithful port of python/osp-ops (same ops, params, errors, patches, inverses, transactions). Pure: no DOM, no I/O.",
+	"type": "module",
+	"types": "./src/index.ts",
+	"exports": {
+		".": {
+			"types": "./src/index.ts",
+			"default": "./src/index.ts"
+		}
+	},
+	"sideEffects": true,
+	"scripts": {
+		"check": "tsc -p tsconfig.json"
+	},
+	"dependencies": {
+		"@osp/engine": "workspace:*",
+		"@osp/spec": "workspace:*"
+	},
+	"devDependencies": {
+		"@types/node": "^24.19.2",
+		"typescript": "~6.0.3",
+		"vitest": "^4.1.12"
+	}
+}
