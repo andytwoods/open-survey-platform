@@ -55,7 +55,7 @@ A package imports only **lower** layers; packages in the same layer don't import
    - Unidentifiable metadata gets an `[[override]]` with a reason. A copyleft or unclear licence is a "Needs human" item: pick an alternative, never override it.
 6. **Completeness guard.** A new `osp-spec` field must be handled by the serialiser and listed in every target's capability table, or CI fails.
 7. **No real personal data** in fixtures, logs, screenshots or prompts.
-8. **The UI is thin.** No survey logic in Svelte. It calls ops through the generated API client.
+8. **The UI is thin.** No survey logic in Svelte. It applies ops with `@osp/ops` (the TS port of osp-ops) and saves the document through the generated API client (`PUT …/draft`, planning/client-edits.md).
 
 ## 4. Definition of done
 

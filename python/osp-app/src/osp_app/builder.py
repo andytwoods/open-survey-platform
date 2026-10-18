@@ -521,13 +521,27 @@ class Builder:
             )
             for i in range(n)
         ]
-        body = res.draft.survey
+        saved = self._persist(ctx, survey_id, draft, res.draft.survey, records, txn_id, ops)
+        return EditResult(saved.revision, list(res.patch), list(res.diagnostics), txn_id)
+
+    def _persist(
+        self,
+        ctx: TenantContext,
+        survey_id: str,
+        draft: Draft,
+        body: Any,
+        records: list[OpRecord],
+        txn_id: str,
+        ops: Sequence[Invocation],
+    ) -> Draft:
+        """Store ``body`` as the revision after ``draft`` with its op log rows, keep the
+        listing title in step and audit hook and redirect changes (every edit path)."""
         try:
             saved = self.store.save_draft(
-                ctx, survey_id, body, base_revision, ops=records, txn_id=txn_id
+                ctx, survey_id, body, draft.revision, ops=records, txn_id=txn_id
             )
         except RevisionConflict as exc:
-            raise RevisionConflictError(base_revision, exc.current) from exc
+            raise RevisionConflictError(draft.revision, exc.current) from exc
         new_title, old_title = title_of(body), title_of(draft.body)
         if new_title and new_title != old_title:
             self.store.set_survey_title(ctx, survey_id, new_title)
@@ -537,7 +551,7 @@ class Builder:
         redirects_change = _redirects_change(draft.body, body, txn_id, ops)
         if redirects_change is not None:
             self.store.audit(ctx, REDIRECTS_CHANGED, "survey", survey_id, redirects_change)
-        return EditResult(saved.revision, list(res.patch), list(res.diagnostics), txn_id)
+        return saved
 
     def _transaction(self, ctx: TenantContext, survey_id: str, txn_id: str) -> list[OpLogEntry]:
         return [e for e in self.store.list_ops(ctx, survey_id) if e.txn_id == txn_id]

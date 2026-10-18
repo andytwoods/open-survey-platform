@@ -3,6 +3,7 @@ See README.md."""
 
 from . import bank as bank  # registers the question bank commands
 from . import bank_licensed as bank_licensed  # registers bank.preview / stubs / compose_licensed
+from . import draft_save as draft_save  # registers survey.save_draft
 from . import import_survey as import_survey  # registers survey.import / import_preview
 from . import prereg as prereg  # registers the preregistration commands
 from . import results as results  # registers the results commands
@@ -21,6 +22,7 @@ from .bank_licensed import BankPreview
 from .builder import Builder, EditResult, ExportResult, HistoryEntry, PublishResult, SurveyView
 from .commands import COMMANDS, AppCommand, command, dispatch
 from .data_export import DataExport
+from .draft_save import DraftSaved
 from .errors import (
     AppError,
     ConflictError,
@@ -58,6 +60,7 @@ __all__ = [
     "Builder",
     "ConflictError",
     "DataExport",
+    "DraftSaved",
     "EditResult",
     "ExportResult",
     "Forbidden",

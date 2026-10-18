@@ -8,7 +8,7 @@
  */
 import { mount } from 'svelte';
 import { previewEnv, RuntimeApp } from '@osp/runtime/preview';
-import { compileDraft } from './plan';
+import { previewPlan } from '../preview/compile';
 import { restoreDraft } from './state';
 import { demoStudy } from './study';
 
@@ -23,7 +23,7 @@ export async function bootTake(): Promise<void> {
 	const el = document.getElementById('app');
 	if (!el) return;
 	// The draft as edited in the demo builder (this tab), else the prespecified study.
-	const { plan, diagnostics } = compileDraft(restoreDraft()?.survey ?? demoStudy());
+	const { plan, diagnostics } = previewPlan(restoreDraft()?.survey ?? demoStudy(), null);
 	if (!plan) {
 		console.error(diagnostics);
 		el.textContent = 'The demo study could not be compiled.';

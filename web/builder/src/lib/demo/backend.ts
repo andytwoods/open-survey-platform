@@ -2,9 +2,11 @@
  * The serverless demo's API (task DEMO2): every call the builder's generated client makes
  * is answered here, in the page (api.ts `setLocalBackend`). Nothing reaches a network.
  *
- * - The survey: `GET /api/surveys[/{id}]`, `POST …/ops|undo|redo` and `PUT …/draft` go to
- *   a `MemorySurveyTransport` (@osp/ops edits, @osp/spec diagnostics).
- * - `POST …/preview-plan`: compiled here (plan.ts). Expressions: expressions.ts.
+ * - The survey: `GET /api/surveys[/{id}]` and `PUT …/draft` (the builder applies its edits,
+ *   undo and redo itself with @osp/ops and saves the patch, CE5) go to a
+ *   `MemorySurveyTransport` (@osp/spec diagnostics). Preview and condition text are
+ *   compiled and parsed by the builder itself, so `/preview-plan` and `/meta/expressions`
+ *   are not called.
  * - Static metadata (property schemas, retention options, version, health, identity, panel
  *   profile, themes, the bundled bank instruments) comes from `DemoData`, generated at
  *   build time from the Python packages through the real API (scripts/demo_data.py).
@@ -13,8 +15,6 @@
  *   "not available in the demo" message the pages show as they show any refusal.
  */
 import type { MemorySurveyTransport } from './memory-transport';
-import { parseExpression, printExpression } from './expressions';
-import { compileDraft } from './plan';
 import type { Result } from '../sync/transport';
 
 export const DEMO_UNAVAILABLE_CODE = 'demo.unavailable';
@@ -187,46 +187,20 @@ export function createDemoBackend(opts: DemoBackendOptions): (request: Request) 
 			// Imports (`/api/surveys/import…`) and other labs' surveys: not here.
 			if (sid !== id) return method === 'GET' && rest === '' ? notFound('Survey not found.') : unavailable();
 			if (method === 'GET' && rest === '') return json(200, detail());
-			if (method === 'POST' && rest === '/ops') {
+			if (method === 'PUT' && rest === '/draft') {
 				const b = await body(request);
 				return fromResult(
-					await transport.applyOps(sid, {
-						ops: (Array.isArray(b.ops) ? b.ops : []) as never,
+					await transport.saveDraft(sid, {
 						baseRevision: b.baseRevision as number,
+						patch: (Array.isArray(b.patch) ? b.patch : []) as never,
+						ops: (Array.isArray(b.ops) ? b.ops : []) as never,
 						transactionId: b.transactionId as string
 					})
 				);
 			}
-			if (method === 'POST' && (rest === '/undo' || rest === '/redo')) {
-				const b = await body(request);
-				const args = { transactionId: b.transactionId as string, baseRevision: b.baseRevision as number };
-				return fromResult(rest === '/undo' ? await transport.undo(sid, args) : await transport.redo(sid, args));
-			}
-			if (method === 'PUT' && rest === '/draft') {
-				const b = await body(request);
-				return fromResult(transport.putDraft(sid, { baseRevision: b.baseRevision as number, patch: b.patch }));
-			}
-			if (method === 'POST' && rest === '/preview-plan') {
-				const d = transport.draft;
-				const c = compileDraft(d.survey, data.presets.clean ?? null);
-				return json(200, { surveyId: sid, revision: d.revision, plan: c.plan, conditions: c.conditions, diagnostics: c.diagnostics });
-			}
 			return unavailable();
 		}
 
-		if (method === 'POST' && path === '/api/meta/expressions/parse') {
-			const b = await body(request);
-			const survey = b.surveyId === id ? transport.draft.survey : null;
-			if (b.surveyId !== undefined && b.surveyId !== null && b.surveyId !== id) return notFound('Survey not found.');
-			return json(
-				200,
-				parseExpression(b.text, survey, typeof b.target === 'string' ? b.target : null, typeof b.field === 'string' ? b.field : null)
-			);
-		}
-		if (method === 'POST' && path === '/api/meta/expressions/print') {
-			const b = await body(request);
-			return json(200, printExpression(b.ast));
-		}
 		return unavailable();
 	}
 

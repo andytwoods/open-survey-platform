@@ -14,7 +14,6 @@
 	import type { SelectionStore } from '../selection.svelte';
 	import type { SurveyStore } from '../sync/survey-store.svelte';
 	import BufferedTextField from './BufferedTextField.svelte';
-	import { api } from '../api';
 	import { richIn, textIn, withTranslation } from '../properties/logic';
 	import PropertyPanel from '../properties/PropertyPanel.svelte';
 	import { fetchPropertySchemas, propertySchemas, schemaFor } from '../properties/schemas.svelte';
@@ -22,7 +21,7 @@
 	import { ChoiceListDialog, editorInputs } from '../choices';
 	import { pipeCandidates, preloadEditorWhenIdle } from '../richtext';
 	import { RowsDialog, rowsEditorInputs } from '../rows';
-	import { ConditionDialog, apiExpressionService, questionsFromSurvey, type ConditionField, type ExprNode } from '../conditions';
+	import { ConditionDialog, localExpressionService, questionsFromSurvey, type ConditionField, type ExprNode } from '../conditions';
 	import { questionTypeInfo } from '../question-types/catalogue';
 	import { EditingLanguageSelect, editLanguageOf } from '../translations';
 
@@ -144,7 +143,7 @@
 	let conditionReq = $state<OpenEditorRequest | null>(null);
 	let conditionOpen = $state(false);
 	const CONDITION_FIELDS: readonly string[] = ['showIf', 'constraint', 'if', 'when', 'expr'];
-	const expressionService = apiExpressionService(api);
+	const expressionService = localExpressionService(() => store?.survey ?? null);
 
 	const editors: Partial<Record<OpenEditorRequest['kind'], (r: OpenEditorRequest) => void>> = {
 		choicelist: (r) => {

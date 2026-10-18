@@ -2,13 +2,11 @@
 	import LayersPlus from '@lucide/svelte/icons/layers-plus';
 	import Plus from '@lucide/svelte/icons/plus';
 	import { announce, Button, Dialog } from '@osp/ui-components';
-	import { onMount, tick, untrack } from 'svelte';
+	import { tick, untrack } from 'svelte';
 	import { SvelteSet } from 'svelte/reactivity';
-	import { api } from '../api';
-	import { apiExpressionService, ConditionDialog, questionsFromSurvey } from '../conditions';
+	import { ConditionDialog, localExpressionService, questionsFromSurvey } from '../conditions';
 	import type { ConditionOp, ExprNode, QuestionInfo } from '../conditions';
 	import type { SurveyStore } from '../sync/survey-store.svelte';
-	import type { Diagnostic } from '../sync/transport';
 	import { addBlockPlan } from '../structure/ops';
 	import { EditingLanguageSelect, editLanguageOf } from '../translations';
 	import { setFlowCtx } from './context';
@@ -64,20 +62,8 @@
 	const language = $derived(defaultLanguage(survey));
 	const editLanguage = $derived(editLanguageOf(survey));
 
-	// The store only learns diagnostics from edits; on open, ask the server for them.
-	let loaded = $state<{ revision: number; diagnostics: Diagnostic[] } | null>(null);
-	onMount(() => {
-		const id = untrack(() => store.surveyId);
-		void api
-			.GET('/api/surveys/{survey_id}', { params: { path: { survey_id: id } } })
-			.then(({ data }) => {
-				if (data) loaded = { revision: data.revision, diagnostics: data.diagnostics ?? [] };
-			})
-			.catch(() => {});
-	});
-	const diagnostics = $derived(
-		loaded && store.revision <= loaded.revision ? loaded.diagnostics : store.diagnostics
-	);
+	// The store's diagnostics: the server's on load and save, @osp/spec's right after an edit.
+	const diagnostics = $derived(store.diagnostics);
 	const byNode = $derived(diagnosticsByNode(rows, diagnostics));
 	const problems = $derived([...byNode.values()].reduce((n, d) => n + d.length, 0));
 	const unused = $derived(unusedBlocks(survey));
@@ -187,7 +173,7 @@
 	let condOpen = $state(false);
 	let condId = $state('');
 	const condRow = $derived(rows.find((r) => r.id === condId));
-	const service = apiExpressionService(api);
+	const service = localExpressionService(() => store.survey);
 	const questions = $derived<QuestionInfo[]>([
 		...questionsFromSurvey(survey, language),
 		// Assigned variables can be tested like single-choice questions over their levels.

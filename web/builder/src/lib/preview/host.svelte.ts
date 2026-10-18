@@ -17,8 +17,8 @@
  * other frames: each would answer with its own `onResume`, and so on forever.
  */
 import { isState, restore, snapshot, type EngineEvent, type Plan, type State } from '@osp/engine';
-import { api } from '../api';
 import { startState } from '../debugger/script';
+import { previewPlan, type LabDefaultTheme } from './compile';
 import { listenForFrames, type FrameConfig, type FrameHandle, type PreviewBridge } from './bridge';
 
 export interface PreviewDiagnostic {
@@ -67,11 +67,12 @@ export function randomSeed(): number {
 
 export class PreviewHost implements PreviewBridge {
 	plan = $state.raw<Plan | null>(null);
-	/** Condition texts by engine site (from the server). */
+	/** Condition texts by engine site (compile.ts `conditionTexts`). */
 	texts = $state.raw<Record<string, string>>({});
 	diagnostics = $state.raw<PreviewDiagnostic[]>([]);
 	/** Diagnostics from the participant app in the frames, newest last. */
 	logs = $state.raw<PreviewLog[]>([]);
+	/** The store version the plan was built from. */
 	revision = $state<number | null>(null);
 	loading = $state(false);
 	error = $state<string | null>(null);
@@ -114,28 +115,28 @@ export class PreviewHost implements PreviewBridge {
 		};
 	}
 
-	/** Compile the current draft (`POST /preview-plan`) and restart on it. */
-	async fetch(surveyId: string): Promise<void> {
+	/**
+	 * Compile `survey` here (compile.ts: @osp/spec + @osp/engine, no server round trip) and
+	 * restart on it. `version` is the store version it came from (to tell when the draft has
+	 * moved on); `labTheme` fetches the lab default theme, asked for only when the survey has
+	 * no theme of its own.
+	 */
+	async build(survey: unknown, version: number, labTheme: () => Promise<LabDefaultTheme | null> = async () => null): Promise<void> {
 		this.loading = true;
 		this.error = null;
 		try {
-			const { data, error } = await api.POST('/api/surveys/{survey_id}/preview-plan', {
-				params: { path: { survey_id: surveyId } }
-			});
-			if (!data) {
-				const m = (error as { message?: unknown } | undefined)?.message;
-				this.error = typeof m === 'string' ? m : 'The preview could not be built.';
-				return;
-			}
-			this.diagnostics = (data.diagnostics ?? []) as PreviewDiagnostic[];
+			const settings = (survey as { settings?: { theme?: unknown } } | null)?.settings;
+			const lab = settings?.theme === undefined || settings.theme === null ? await labTheme() : null;
+			const r = previewPlan(survey, lab);
+			this.diagnostics = r.diagnostics as PreviewDiagnostic[];
 			this.logs = [];
-			this.texts = data.conditions ?? {};
-			this.revision = data.revision;
-			this.plan = (data.plan as unknown as Plan | null) ?? null;
+			this.texts = r.conditions;
+			this.revision = version;
+			this.plan = r.plan;
 			if (this.plan) this.restart();
 			else this.state = null;
 		} catch (e) {
-			this.error = (e as Error)?.message || 'Network error';
+			this.error = (e as Error)?.message || 'The preview could not be built.';
 		} finally {
 			this.loading = false;
 		}

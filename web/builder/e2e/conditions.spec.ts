@@ -1,9 +1,9 @@
 import { expect, test, type Locator, type Page } from '@playwright/test';
-import { serveExpressions, startBridge } from './expr-bridge';
 import { axe, focused } from './fixtures';
 
-// Condition builder (/dev/conditions, task B7). The parse/print endpoints are answered by
-// osp-api's own functions (expr_bridge.py), so text ⇄ AST here is the real osp_expr.
+// Condition builder (/dev/conditions, task B7). Text ⇄ AST is parsed, printed and checked in
+// the browser (@osp/engine's port of osp_expr, @osp/ops for the in-place check; CE5), so the
+// server's /api/meta/expressions endpoints must never be called: every test checks that.
 const EXAMPLE = '(age >= 18 and contains(colours, "red")) or not answered(q3)';
 const CANONICAL = 'age >= 18 and contains(colours, "red") or not answered(q3)';
 const EXAMPLE_AST = {
@@ -20,13 +20,21 @@ const EXAMPLE_AST = {
 	]
 };
 
+let expressionCalls: string[] = [];
+
 async function open(page: Page, preset = 'empty') {
-	await startBridge();
-	const log = await serveExpressions(page);
+	expressionCalls = [];
+	await page.route('**/api/meta/expressions/*', (route) => {
+		expressionCalls.push(route.request().url());
+		return route.abort();
+	});
 	await page.goto(`/dev/conditions?preset=${preset}`);
 	await expect(page.getByRole('heading', { level: 1, name: 'Condition builder' })).toBeVisible();
-	return log;
 }
+
+test.afterEach(() => {
+	expect(expressionCalls).toEqual([]);
+});
 
 const builder = (page: Page) => page.getByTestId('condition-builder').first();
 const root = (page: Page) => builder(page).getByTestId('condition-root');

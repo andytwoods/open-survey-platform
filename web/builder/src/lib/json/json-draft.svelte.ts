@@ -63,8 +63,10 @@ export class JsonDraft {
 	text = $state('');
 	/** The survey as formatted when editing started (or last synced). */
 	baseText = $state('');
-	/** The store revision `baseText` came from. */
+	/** The server revision `baseText` came from (shown in the stale notice). */
 	baseRevision = $state(0);
+	/** The store version `baseText` came from: any change to the survey since makes it stale. */
+	baseVersion = $state(0);
 	applying = $state(false);
 	/** Set by Apply when the text is not valid JSON (nothing was sent). */
 	syntaxError = $state.raw<JsonSyntaxError | null>(null);
@@ -86,9 +88,12 @@ export class JsonDraft {
 		return this.text !== this.baseText;
 	}
 
-	/** Local edits exist and the survey changed on the server since they began. */
+	/**
+	 * Local edits exist and the survey changed since they began (on the server, picked up
+	 * by a reload or a rebase, or by another edit in the builder).
+	 */
 	get stale(): boolean {
-		return this.dirty && this.#store.revision !== this.baseRevision;
+		return this.dirty && this.#store.version !== this.baseVersion;
 	}
 
 	get serverRevision(): number {
@@ -103,13 +108,14 @@ export class JsonDraft {
 	#take() {
 		this.baseText = formatJson(this.#store.survey);
 		this.baseRevision = this.#store.revision;
+		this.baseVersion = this.#store.version;
 		this.text = this.baseText;
 	}
 
 	/** Follow the store while there are no local edits (call from an effect). */
 	sync() {
 		if (this.dirty || this.applying) return;
-		if (this.baseRevision === this.#store.revision && this.text === formatJson(this.#store.survey)) return;
+		if (this.baseVersion === this.#store.version && this.text === formatJson(this.#store.survey)) return;
 		this.#take();
 	}
 

@@ -1,23 +1,31 @@
 /**
- * The survey store and op client (builder-design §4). It holds the draft JSON, its
- * revision and diagnostics, and is the only thing that sends edits.
+ * The survey store (builder-design §4, planning/client-edits.md CE5). It holds the draft
+ * JSON, its revision and diagnostics, applies every edit in the browser and saves it.
  *
- * - `submit(ops)` is one user gesture = one transaction (a drag or a bulk paste is one
- *   call with many ops, so it is one undo step). Items are queued and sent one at a time,
- *   each against the latest revision.
- * - 200: the server's RFC 6902 patch is applied to the local copy (refetch if it doesn't
- *   apply). 422: nothing changed; the diagnostics are surfaced. 409: refetch, then replay
- *   the pending ops; if the server now rejects them, show the conflict banner.
- * - Network failures keep the item queued and retry with backoff; the transaction id
- *   makes a retry of a request that did land a no-op (the server says `replayed`).
- * - Undo/redo call the API's undo/redo with transaction ids from this session's stacks.
- * - 401 (the host session ended, planning/pages-split.md D9): the item stays queued and
- *   sending stops until `resume()`; nothing pending is dropped.
+ * - `submit(ops)` is one user gesture = one transaction (a drag or a bulk paste is one call
+ *   with many ops, so it is one undo step). It runs the ops locally with `@osp/ops`
+ *   (`applyTransaction`: the same ops, errors, patches and inverses as the server's
+ *   osp-ops) and shows the result at once (optimistic). A local rejection changes nothing
+ *   and is surfaced like a server one. The diagnostics shown are `@osp/spec`'s for the
+ *   local document, replaced by the server's when the save lands (server wins).
+ * - Saves queue in order: each sends the JSON Patch from the last saved document to its
+ *   own (`PUT …/draft` via `SurveyTransport.saveDraft`), with the op names for the audit
+ *   log and a transaction id that makes a retry of a save that landed a no-op (`replayed`).
+ * - 409 (someone else saved): refetch, re-run every pending transaction's ops on the newer
+ *   draft (rebase) and save again; if they no longer apply, show the conflict banner with
+ *   the latest draft. 422 (the server refuses the document): roll the change back, re-run
+ *   the later pending ones without it, and show the diagnostics as a rejection.
+ * - Network failures keep the save queued and retry with backoff (offline). 401 (the host
+ *   session ended, planning/pages-split.md D9): saving stops until `resume()`; nothing
+ *   pending is dropped.
+ * - Undo/redo are local: each transaction's inverse (from @osp/ops) is kept on this page
+ *   load's stacks; undoing applies it like any edit and saves it as a normal draft PUT.
  *
- * No survey logic lives here: the server validates and applies every op.
+ * No survey logic lives here: @osp/ops applies the ops and the server validates the save.
  */
-import { applyPatch } from './json-patch';
-import type { Diagnostic, EditResult, Invocation, Result, SurveyDoc, SurveyTransport } from './transport';
+import { applyTransaction, DEFAULT_ENV, type Json, type OpsEnv } from '@osp/ops';
+import type { PatchOperation } from './json-patch';
+import type { Diagnostic, EditResult, Invocation, Result, SaveResult, SurveyDoc, SurveyTransport } from './transport';
 
 export type SaveState = 'loading' | 'saved' | 'saving' | 'offline' | 'conflict' | 'error' | 'signed-out';
 
@@ -32,18 +40,6 @@ export interface Rejection {
 	diagnostics: Diagnostic[];
 }
 
-interface OpsItem {
-	kind: 'ops';
-	ops: Invocation[];
-	txnId: string;
-	/** Set after a 409: this item is being replayed onto a newer revision. */
-	replay: boolean;
-	attempts: number;
-	/** Rejection codes the caller handles itself: not surfaced as `rejection`. */
-	quiet: readonly string[];
-	resolve: (o: Outcome) => void;
-}
-
 export interface SubmitOptions {
 	/**
 	 * Rejection codes the caller handles itself (e.g. asks before retrying with `force`):
@@ -52,15 +48,27 @@ export interface SubmitOptions {
 	quiet?: readonly string[];
 }
 
-interface ReverseItem {
-	kind: 'undo' | 'redo';
-	/** The transaction to reverse, taken off its stack when the item is first sent. */
-	txn: string | null;
-	attempts: number;
-	resolve: (o: Outcome) => void;
+/** An undo or redo step: the ops that reverse a transaction. */
+interface Step {
+	ops: Invocation[];
 }
 
-type Item = OpsItem | ReverseItem;
+/** A local transaction (edit, undo or redo) not yet saved. */
+interface Change {
+	kind: 'edit' | 'undo' | 'redo';
+	/** The ops applied (re-run on a rebase; sent for the audit log). */
+	ops: Invocation[];
+	txnId: string;
+	/** The document after this change (and every change before it in the queue). */
+	after: SurveyDoc;
+	/** RFC 6902, from the document before this change to `after`. */
+	patch: PatchOperation[];
+	/** The stack step this change pushed (its inverse, kept up to date on a rebase). */
+	step: Step | null;
+	/** Undo what the change did to the undo/redo stacks (when it is rolled back). */
+	unstack: () => void;
+	attempts: number;
+}
 
 export interface Flushable {
 	flush(): void;
@@ -72,9 +80,11 @@ export interface SurveyStoreOptions {
 	sleep?: (ms: number) => Promise<void>;
 	/** Backoff before retrying after a network failure (last value repeats). */
 	retryDelays?: readonly number[];
-	/** Give up on an item after this many consecutive 409s. */
+	/** Give up on a save after this many consecutive 409s. */
 	maxConflictRetries?: number;
 	onUnauthenticated?: () => void;
+	/** The validator and expression parser the ops use (default: @osp/spec, @osp/engine). */
+	env?: OpsEnv;
 }
 
 function defaultTxnId(): string {
@@ -82,13 +92,23 @@ function defaultTxnId(): string {
 	return `t${Date.now().toString(36)}${Math.random().toString(36).slice(2, 12)}`;
 }
 
+const REJECTED = 'The edit was rejected.';
+const CONFLICT =
+	'This survey was changed elsewhere, and your pending change no longer applies. You are now seeing the latest version.';
+
 export class SurveyStore {
 	surveyId = $state('');
 	/** Title from the survey list/detail; the model's own title wins once loaded. */
 	title = $state('');
+	/** The draft as edited here: the last saved document plus every pending change. */
 	survey = $state.raw<SurveyDoc | null>(null);
+	/** The server's revision of the last saved document (what publish and exports use). */
 	revision = $state(0);
+	/** Bumped whenever `survey` changes here (edits, undo, rollbacks, reloads). */
+	version = $state(0);
 	diagnostics = $state.raw<Diagnostic[]>([]);
+	/** The survey's lab, when the transport says (null: unknown). */
+	tenantId = $state<string | null>(null);
 	/** Published versions of this survey (responses may exist for each): 0 = never published. */
 	publishedVersions = $state(0);
 	/** The last rejected edit (422), until the next successful one or `clearRejection`. */
@@ -98,21 +118,24 @@ export class SurveyStore {
 	/** Load failure or a non-retryable error. */
 	error = $state<string | null>(null);
 	loading = $state(false);
-	/** Queued items (ops, undo, redo) not yet answered. */
+	/** Changes applied here and not yet saved. */
 	pending = $state(0);
 	/**
-	 * Items queued since load, never decreasing: "saved" after this grew means the edit was
-	 * answered, not the one before it (the save status shows it as `data-edits`).
+	 * Edits (and undo/redo) made since load, never decreasing: "saved" after this grew means
+	 * the edit was saved, not the one before it (the save status shows it as `data-edits`).
 	 */
 	edits = $state(0);
-	/** A 401 stopped sending: the queue is kept until `resume()`. */
+	/** A 401 stopped saving: the queue is kept until `resume()`. */
 	paused = $state(false);
 	#resume: (() => void) | null = null;
 	#dirty = $state(0);
-	#undo = $state<string[]>([]);
-	#redo = $state<string[]>([]);
+	#undo = $state.raw<Step[]>([]);
+	#redo = $state.raw<Step[]>([]);
+	#ids = new WeakMap<Step, string>();
 
-	#queue: Item[] = [];
+	/** The last document the server stored, at `revision`. */
+	#saved: SurveyDoc | null = null;
+	#queue: Change[] = [];
 	#draining: Promise<void> | null = null;
 	// Not reactive: only iterated on flush.
 	// eslint-disable-next-line svelte/prefer-svelte-reactivity
@@ -123,6 +146,7 @@ export class SurveyStore {
 	readonly #delays: readonly number[];
 	readonly #maxConflicts: number;
 	readonly #onUnauth: () => void;
+	readonly #env: OpsEnv;
 
 	constructor(o: SurveyStoreOptions) {
 		this.#t = o.transport;
@@ -131,6 +155,7 @@ export class SurveyStore {
 		this.#delays = o.retryDelays ?? [1000, 2000, 4000, 8000, 15000];
 		this.#maxConflicts = o.maxConflictRetries ?? 5;
 		this.#onUnauth = o.onUnauthenticated ?? (() => {});
+		this.#env = o.env ?? DEFAULT_ENV;
 	}
 
 	get canUndo(): boolean {
@@ -139,12 +164,12 @@ export class SurveyStore {
 	get canRedo(): boolean {
 		return this.#redo.length > 0;
 	}
-	/** Transaction ids on the undo stack, oldest first (read-only view, for tests). */
+	/** Transaction ids of the steps on the undo stack, oldest first (for tests). */
 	get undoStack(): readonly string[] {
-		return this.#undo;
+		return this.#undo.map((s) => this.#ids.get(s) ?? '');
 	}
 	get redoStack(): readonly string[] {
-		return this.#redo;
+		return this.#redo.map((s) => this.#ids.get(s) ?? '');
 	}
 
 	get saveState(): SaveState {
@@ -164,15 +189,12 @@ export class SurveyStore {
 		this.loading = true;
 		this.error = null;
 		try {
-			const r = await this.#t.load(surveyId);
+			const r = await this.#refetch();
 			if (r.kind !== 'ok') {
 				this.#fail(r);
 				return false;
 			}
-			this.title = r.data.title;
-			this.survey = r.data.survey;
-			this.revision = r.data.revision;
-			if (r.data.diagnostics) this.diagnostics = r.data.diagnostics;
+			this.#show(this.#saved);
 			this.publishedVersions = r.data.publishedVersions ?? 0;
 			return true;
 		} finally {
@@ -180,16 +202,26 @@ export class SurveyStore {
 		}
 	}
 
-	/** Fetch the latest draft (after a 409, a replayed retry or an unappliable patch). */
-	async #refetch(): Promise<Result<unknown>> {
+	/** Fetch the latest draft as the saved document (`survey` is the caller's to set). */
+	async #refetch() {
 		const r = await this.#t.load(this.surveyId);
 		if (r.kind === 'ok') {
 			this.title = r.data.title;
-			this.survey = r.data.survey;
+			this.tenantId = r.data.tenantId ?? null;
+			this.#saved = r.data.survey;
 			this.revision = r.data.revision;
-			if (r.data.diagnostics) this.diagnostics = r.data.diagnostics;
+			this.diagnostics = r.data.diagnostics ?? this.#validate(r.data.survey);
 		}
 		return r;
+	}
+
+	#show(doc: SurveyDoc | null) {
+		this.survey = doc;
+		this.version += 1;
+	}
+
+	#validate(doc: SurveyDoc): Diagnostic[] {
+		return this.#env.validator.parse(doc as Json).diagnostics;
 	}
 
 	// -- text buffers -----------------------------------------------------------------
@@ -209,7 +241,7 @@ export class SurveyStore {
 		for (const b of [...this.#buffers]) b.flush();
 	}
 
-	/** Edits queued or buffered and not yet acknowledged (the page's leave guard). */
+	/** Edits queued or buffered and not yet saved (the page's leave guard). */
 	get unsaved(): boolean {
 		return this.pending > 0 || this.#dirty > 0;
 	}
@@ -224,28 +256,109 @@ export class SurveyStore {
 
 	// -- edits ------------------------------------------------------------------------
 
-	/** Send one gesture's ops as one transaction. Resolves when the server has answered. */
+	/** Apply one gesture's ops as one transaction, here and now; it is saved in the background. */
 	submit(ops: Invocation[], options: SubmitOptions = {}): Promise<Outcome> {
 		if (!ops.length) return Promise.resolve({ status: 'dropped', message: 'No change.' });
-		return this.#enqueue((resolve) => ({
-			kind: 'ops',
-			ops,
-			txnId: this.#newTxn(),
-			replay: false,
-			attempts: 0,
-			quiet: options.quiet ?? [],
-			resolve
-		}));
+		this.edits += 1;
+		const quiet = options.quiet ?? [];
+		return Promise.resolve(
+			this.#local('edit', ops, (inverse) => {
+				const step: Step = { ops: inverse };
+				this.#undo = [...this.#undo, step];
+				const redo = this.#redo;
+				this.#redo = [];
+				return {
+					step,
+					unstack: () => {
+						this.#undo = this.#undo.filter((s) => s !== step);
+						if (!this.#redo.length) this.#redo = redo;
+					}
+				};
+			}, (r) => !quiet.includes(r.diagnostics[0]?.code ?? ''))
+		);
 	}
 
 	undo(): Promise<Outcome> {
-		this.flushBuffers();
-		return this.#enqueue((resolve) => ({ kind: 'undo', txn: null, attempts: 0, resolve }));
+		return this.#reverse('undo');
 	}
 
 	redo(): Promise<Outcome> {
+		return this.#reverse('redo');
+	}
+
+	#reverse(kind: 'undo' | 'redo'): Promise<Outcome> {
 		this.flushBuffers();
-		return this.#enqueue((resolve) => ({ kind: 'redo', txn: null, attempts: 0, resolve }));
+		const from = kind === 'undo' ? this.#undo : this.#redo;
+		const step = from.at(-1);
+		if (step === undefined) {
+			return Promise.resolve({ status: 'dropped', message: kind === 'undo' ? 'Nothing to undo.' : 'Nothing to redo.' });
+		}
+		this.edits += 1;
+		const take = () => {
+			if (kind === 'undo') this.#undo = this.#undo.filter((s) => s !== step);
+			else this.#redo = this.#redo.filter((s) => s !== step);
+		};
+		const out = this.#local(kind, step.ops, (inverse) => {
+			take();
+			const back: Step = { ops: inverse };
+			if (kind === 'undo') this.#redo = [...this.#redo, back];
+			else this.#undo = [...this.#undo, back];
+			return {
+				step: back,
+				unstack: () => {
+					if (kind === 'undo') {
+						this.#redo = this.#redo.filter((s) => s !== back);
+						this.#undo = [...this.#undo, step];
+					} else {
+						this.#undo = this.#undo.filter((s) => s !== back);
+						this.#redo = [...this.#redo, step];
+					}
+				}
+			};
+		});
+		// A step that no longer applies (the survey changed since) or changes nothing is
+		// dropped, as before.
+		if (out.status !== 'applied' || out.result.transactionId === null) take();
+		return Promise.resolve(out);
+	}
+
+	/**
+	 * Apply `ops` to the local draft. On success `stack(inverse)` records the undo/redo step
+	 * and the change is queued for saving.
+	 */
+	#local(
+		kind: Change['kind'],
+		ops: Invocation[],
+		stack: (inverse: Invocation[]) => { step: Step; unstack: () => void },
+		surface: (r: Rejection) => boolean = () => true
+	): Outcome {
+		if (!this.survey) return { status: 'dropped', message: 'The survey is not loaded.' };
+		const tx = applyTransaction({ survey: this.survey as Json, revision: 0 }, ops, 0, this.#env);
+		if (tx.status !== 'ok') {
+			const r = { message: REJECTED, diagnostics: tx.diagnostics };
+			if (surface(r)) this.rejection = r;
+			return { status: 'rejected', ...r };
+		}
+		this.rejection = null;
+		this.diagnostics = tx.diagnostics;
+		const patch = tx.patch as unknown as PatchOperation[];
+		if (!patch.length) {
+			return { status: 'applied', result: { revision: this.#localRevision(), patch, diagnostics: tx.diagnostics, transactionId: null } };
+		}
+		const txnId = this.#newTxn();
+		const { step, unstack } = stack(tx.inverse as Invocation[]);
+		this.#ids.set(step, txnId);
+		const after = tx.draft.survey as SurveyDoc;
+		this.#queue.push({ kind, ops, txnId, after, patch, step, unstack, attempts: 0 });
+		this.pending = this.#queue.length;
+		this.#show(after);
+		if (!this.#draining) this.#draining = this.#drain();
+		return { status: 'applied', result: { revision: this.#localRevision(), patch, diagnostics: tx.diagnostics, transactionId: txnId } };
+	}
+
+	/** The revision the server will be at once every pending change is saved. */
+	#localRevision(): number {
+		return this.revision + this.#queue.length;
 	}
 
 	clearRejection() {
@@ -262,11 +375,15 @@ export class SurveyStore {
 		await this.settled();
 		this.conflict = null;
 		const r = await this.#refetch();
-		if (r.kind !== 'ok') this.#fail(r);
-		else this.error = null;
+		if (r.kind !== 'ok') {
+			this.#fail(r);
+			return;
+		}
+		this.error = null;
+		this.#show(this.#saved);
 	}
 
-	/** Resolves when every queued item has been answered. */
+	/** Resolves when every pending change has been saved (or given up on). */
 	async settled(): Promise<void> {
 		while (this.#draining) await this.#draining;
 	}
@@ -280,182 +397,147 @@ export class SurveyStore {
 		});
 	}
 
-	/** A 401 on a write: keep the item, stop sending until `resume()`. */
-	async #pause(): Promise<null> {
+	// -- saving -----------------------------------------------------------------------
+
+	async #drain() {
+		// `#draining` is cleared synchronously when the loop sees an empty queue, so a change
+		// queued by a continuation of the last save always starts a new drain.
+		for (;;) {
+			const c = this.#queue[0];
+			if (!c) {
+				this.#draining = null;
+				return;
+			}
+			const r = await this.#t.saveDraft(this.surveyId, {
+				baseRevision: this.revision,
+				patch: c.patch,
+				ops: c.ops,
+				transactionId: c.txnId
+			});
+			if (this.#queue[0] !== c) continue; // the queue was reset meanwhile
+			switch (r.kind) {
+				case 'ok':
+					this.#saved = c.after;
+					this.#done(c, r.data);
+					break;
+				case 'rejected':
+					this.offline = false;
+					this.#rollback(c, { message: r.message, diagnostics: r.diagnostics });
+					break;
+				case 'conflict':
+					await this.#conflicted(c);
+					break;
+				case 'offline':
+					this.offline = true;
+					await this.#backoff(c);
+					break;
+				case 'error':
+					if (r.status === 401) {
+						await this.#pause();
+						break;
+					}
+					this.offline = false;
+					this.#fail(r);
+					this.#rollback(c, null);
+			}
+		}
+	}
+
+	#done(c: Change, data: SaveResult) {
+		this.offline = false;
+		this.error = null;
+		this.revision = data.revision;
+		this.#queue.shift();
+		this.pending = this.#queue.length;
+		// The server's diagnostics describe the saved document: show them once nothing newer
+		// is pending (a replayed save answers none: keep ours).
+		if (!this.#queue.length && !data.replayed) this.diagnostics = data.diagnostics;
+	}
+
+	async #backoff(c: Change) {
+		const d = this.#delays;
+		await this.#sleep(d[Math.min(c.attempts, d.length - 1)] ?? 1000);
+		c.attempts++;
+	}
+
+	/** A 401 on a save: keep the queue, stop sending until `resume()`. */
+	async #pause(): Promise<void> {
 		this.offline = false;
 		this.paused = true;
 		this.#onUnauth();
 		await new Promise<void>((r) => (this.#resume = r));
-		return null;
 	}
 
-	#enqueue(make: (resolve: (o: Outcome) => void) => Item): Promise<Outcome> {
-		return new Promise<Outcome>((resolve) => {
-			this.#queue.push(make(resolve));
-			this.pending = this.#queue.length;
-			this.edits += 1;
-			if (!this.#draining) this.#draining = this.#drain();
-		});
-	}
-
-	async #drain() {
-		// `#draining` is cleared synchronously when the loop sees an empty queue, so an
-		// item enqueued by a continuation of the last resolve always starts a new drain.
-		for (;;) {
-			if (!this.#queue.length) {
-				this.#draining = null;
-				return;
-			}
-			const item = this.#queue[0];
-			const out = item.kind === 'ops' ? await this.#sendOps(item) : await this.#sendReverse(item);
-			if (out === null) continue; // retry
-			if (this.#queue[0] === item) this.#queue.shift();
-			this.pending = this.#queue.length;
-			item.resolve(out);
-		}
-	}
-
-	async #backoff(item: Item) {
-		const d = this.#delays;
-		await this.#sleep(d[Math.min(item.attempts, d.length - 1)] ?? 1000);
-		item.attempts++;
-	}
-
-	/** Accept a successful edit: apply its patch (or refetch). */
-	async #accept(data: EditResult) {
-		this.offline = false;
-		this.error = null;
-		if (data.replayed) {
-			// A retry of a request that had landed: the patch is empty, so refetch.
-			await this.#refetch();
+	/** 409: fetch the newer draft and rebase every pending change onto it. */
+	async #conflicted(c: Change) {
+		c.attempts++;
+		if (c.attempts > this.#maxConflicts) {
+			this.#enterConflict('The survey keeps changing elsewhere; your change was not applied.');
 			return;
-		}
-		if (data.patch.length) {
-			try {
-				this.survey = applyPatch(this.survey, data.patch);
-			} catch {
-				const r = await this.#refetch();
-				if (r.kind === 'ok') {
-					this.diagnostics = data.diagnostics;
-					return;
-				}
-			}
-		}
-		this.revision = data.revision;
-		this.diagnostics = data.diagnostics;
-	}
-
-	/** 409 / offline, shared by both item kinds. Returns null to retry the item. */
-	async #retryable(item: Item, r: Result<unknown>): Promise<Outcome | null> {
-		if (r.kind === 'offline') {
-			this.offline = true;
-			await this.#backoff(item);
-			return null;
-		}
-		// 409: refetch, then send again against the new revision.
-		item.attempts++;
-		if (item.attempts > this.#maxConflicts) {
-			return this.#enterConflict('The survey keeps changing elsewhere; your change was not applied.');
 		}
 		const f = await this.#refetch();
 		if (f.kind === 'offline') {
 			this.offline = true;
-			await this.#backoff(item);
-		} else if (f.kind !== 'ok') {
-			this.#fail(f);
-			const out: Outcome = { status: 'dropped', message: f.message };
-			this.#dropAll(out);
-			return out;
+			await this.#backoff(c);
+			return;
 		}
-		for (const q of this.#queue) if (q.kind === 'ops') q.replay = true;
+		if (f.kind !== 'ok') {
+			this.#fail(f);
+			this.#discard();
+			this.#show(this.#saved);
+			return;
+		}
+		this.offline = false;
+		const failed = this.#rebase(false);
+		if (failed) this.#enterConflict(CONFLICT, failed);
+	}
+
+	/**
+	 * Re-run every pending change's ops on the saved document, in order. With `drop`, a
+	 * change that no longer applies is rolled back and the rest go on; without, the first
+	 * one that fails stops the rebase and its diagnostics are returned.
+	 */
+	#rebase(drop: boolean): Diagnostic[] | null {
+		let doc = this.#saved as SurveyDoc;
+		const kept: Change[] = [];
+		for (const c of this.#queue) {
+			const tx = applyTransaction({ survey: doc as Json, revision: 0 }, c.ops, 0, this.#env);
+			if (tx.status !== 'ok') {
+				if (!drop) return tx.diagnostics;
+				c.unstack();
+				continue;
+			}
+			c.after = tx.draft.survey as SurveyDoc;
+			c.patch = tx.patch as unknown as PatchOperation[];
+			if (c.step) c.step.ops = tx.inverse as Invocation[];
+			doc = c.after;
+			kept.push(c);
+		}
+		this.#queue = kept;
+		this.pending = kept.length;
+		this.#show(doc);
+		this.diagnostics = this.#validate(doc);
 		return null;
 	}
 
-	async #sendOps(item: OpsItem): Promise<Outcome | null> {
-		const r = await this.#t.applyOps(this.surveyId, {
-			ops: item.ops,
-			baseRevision: this.revision,
-			transactionId: item.txnId
-		});
-		switch (r.kind) {
-			case 'ok':
-				await this.#accept(r.data);
-				this.rejection = null;
-				if (r.data.transactionId) {
-					this.#undo = [...this.#undo, r.data.transactionId];
-					this.#redo = [];
-				}
-				return { status: 'applied', result: r.data };
-			case 'rejected':
-				this.offline = false;
-				if (item.replay) {
-					// Someone else's change makes ours invalid: banner, drop what's pending.
-					return this.#enterConflict(
-						'This survey was changed elsewhere, and your pending change no longer applies. You are now seeing the latest version.',
-						r.diagnostics
-					);
-				}
-				if (!item.quiet.includes(r.diagnostics[0]?.code ?? '')) {
-					this.rejection = { message: r.message, diagnostics: r.diagnostics };
-				}
-				return { status: 'rejected', message: r.message, diagnostics: r.diagnostics };
-			case 'error':
-				if (r.status === 401) return this.#pause();
-				this.offline = false;
-				this.#fail(r);
-				return { status: 'dropped', message: r.message };
-			default:
-				return this.#retryable(item, r);
-		}
+	/** The server refused `c` (or failed it): undo it here, keep what came after it. */
+	#rollback(c: Change, rejection: Rejection | null) {
+		c.unstack();
+		this.#queue = this.#queue.filter((q) => q !== c);
+		if (rejection) this.rejection = rejection;
+		this.#rebase(true);
 	}
 
-	async #sendReverse(item: ReverseItem): Promise<Outcome | null> {
-		const undo = item.kind === 'undo';
-		if (item.txn === null) {
-			const stack = undo ? this.#undo : this.#redo;
-			const txn = stack.at(-1);
-			if (txn === undefined) {
-				return { status: 'dropped', message: undo ? 'Nothing to undo.' : 'Nothing to redo.' };
-			}
-			item.txn = txn;
-			if (undo) this.#undo = this.#undo.slice(0, -1);
-			else this.#redo = this.#redo.slice(0, -1);
-		}
-		const body = { transactionId: item.txn, baseRevision: this.revision };
-		const r = undo ? await this.#t.undo(this.surveyId, body) : await this.#t.redo(this.surveyId, body);
-		switch (r.kind) {
-			case 'ok':
-				await this.#accept(r.data);
-				this.rejection = null;
-				if (r.data.transactionId) {
-					if (undo) this.#redo = [...this.#redo, r.data.transactionId];
-					else this.#undo = [...this.#undo, r.data.transactionId];
-				}
-				return { status: 'applied', result: r.data };
-			case 'rejected':
-				this.offline = false;
-				this.rejection = { message: r.message, diagnostics: r.diagnostics };
-				return { status: 'rejected', message: r.message, diagnostics: r.diagnostics };
-			case 'error':
-				if (r.status === 401) return this.#pause();
-				this.offline = false;
-				return { status: 'dropped', message: r.message };
-			default:
-				return this.#retryable(item, r);
-		}
-	}
-
-	#enterConflict(message: string, diagnostics: Diagnostic[] = []): Outcome {
+	/** Pending changes no longer apply: show the latest draft, drop them, say so. */
+	#enterConflict(message: string, diagnostics: Diagnostic[] = []) {
 		this.conflict = { message };
 		if (diagnostics.length) this.rejection = { message, diagnostics };
-		const out: Outcome = { status: 'conflict', message };
-		this.#dropAll(out);
-		return out;
+		this.#discard();
+		this.#show(this.#saved);
 	}
 
-	#dropAll(outcome: Outcome) {
-		const items = this.#queue.splice(0);
-		for (const q of items) q.resolve(outcome);
+	#discard() {
+		for (const c of this.#queue.splice(0).reverse()) c.unstack();
 		this.pending = 0;
 	}
 
@@ -464,3 +546,4 @@ export class SurveyStore {
 		if (r.kind === 'error' && r.status === 401) this.#onUnauth();
 	}
 }
+

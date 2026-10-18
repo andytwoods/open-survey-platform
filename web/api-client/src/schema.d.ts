@@ -750,6 +750,23 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
+    "/api/surveys/{survey_id}/draft": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        /** Save Draft */
+        put: operations["saveDraft"];
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
     "/api/surveys/{survey_id}/export-check": {
         parameters: {
             query?: never;
@@ -2191,6 +2208,51 @@ export interface components {
              * @enum {string}
              */
             severity: "error" | "warning" | "info";
+        };
+        /** DraftRequest */
+        DraftRequest: {
+            /**
+             * Baserevision
+             * @description The revision the patch was made against
+             */
+            baseRevision: number;
+            /**
+             * Ops
+             * @description The ops the client applied to make the patch: logged, not re-run
+             */
+            ops?: components["schemas"]["Invocation"][];
+            /**
+             * Patch
+             * @description RFC 6902, from baseRevision to the new document
+             */
+            patch: {
+                [key: string]: unknown;
+            }[];
+            /**
+             * Transactionid
+             * @description Client-chosen id; a retry with the same id is not applied twice
+             */
+            transactionId: string;
+        };
+        /** DraftResponse */
+        DraftResponse: {
+            /**
+             * Diagnostics
+             * @description The validator's, for the saved draft
+             */
+            diagnostics: components["schemas"]["Diagnostic"][];
+            /**
+             * Replayed
+             * @default false
+             */
+            replayed: boolean;
+            /** Revision */
+            revision: number;
+            /**
+             * Transactionid
+             * @description The transaction logged; null when the patch changed nothing
+             */
+            transactionId: string | null;
         };
         /** DuplicateById */
         DuplicateBlockParams: {
@@ -7248,6 +7310,77 @@ export interface operations {
                 };
                 content: {
                     "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    saveDraft: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                survey_id: string;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["DraftRequest"];
+            };
+        };
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["DraftResponse"];
+                };
+            };
+            /** @description Unauthorized */
+            401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorBody"];
+                };
+            };
+            /** @description Forbidden */
+            403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorBody"];
+                };
+            };
+            /** @description Not Found */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorBody"];
+                };
+            };
+            /** @description Stale baseRevision */
+            409: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["RevisionConflictBody"];
+                };
+            };
+            /** @description Unprocessable Content */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["RejectedBody"];
                 };
             };
         };

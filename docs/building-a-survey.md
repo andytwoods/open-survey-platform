@@ -89,11 +89,15 @@ narrower screens the less-used actions move into a **More actions** menu.
 
 ### Saving
 
-There is no Save button. Every edit is sent to the server as an *op* as soon as you make it,
-and the status in the top bar says **Saving…** and then **All changes saved**. If the
-connection drops the status reads *Offline: changes will be sent when you reconnect* and
-your edits queue up on the page. If someone else changed the survey in the meantime the
-status reads *Conflict: changed elsewhere* and offers **Reload**.
+There is no Save button. Every edit is applied in your browser the moment you make it, so
+it shows at once, and then saved to the server in the background: the status in the top
+bar says **Saving…** and then **All changes saved**. The server checks the whole survey
+on every save (text limits, links, ids, references); if it refuses a change, that change is
+taken back and a message says why. If the connection drops the status reads *Offline:
+changes will be sent when you reconnect*; you can keep editing and your edits queue up on
+the page. If someone else saved the survey in the meantime your pending edits are applied
+again on top of theirs; only if they no longer fit does the status read *Conflict: changed
+elsewhere*, showing their version, with **Reload**.
 
 ## Pages, blocks and questions
 
@@ -206,7 +210,8 @@ SPSS, Stata and LimeSurvey fold case.
 ## Undo and redo
 
 Every edit can be undone and redone, with ++ctrl+z++ and ++ctrl+shift+z++ (or ++ctrl+y++),
-the top-bar buttons or the palette. The history is per page load.
+the top-bar buttons or the palette. Undo works in the browser, at once, and is saved like any
+other edit. The history is per page load.
 
 ## The command palette
 

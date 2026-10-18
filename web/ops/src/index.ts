@@ -50,5 +50,9 @@ export { PatchError, apply as applyPatch, diff as diffPatch, toPointer, fromPoin
 export { same, deepCopy, type Json, type JsonObject } from './py.ts';
 export { canonicalJson, fragmentChecksum, isRich, normaliseText, pipesOf, RESERVED_NAMES } from './spec.ts';
 export { KEYWORDS } from './models.ts';
+// For the builder's condition editor (CE5): where a condition lives, and which fields it may set.
+export { buildIndex } from './doc.ts';
+export { FIELDS as CONDITION_FIELDS, exprAstProblem } from './ops/condition.ts';
+export { TEXT_CODES } from './registry.ts';
 
 export { opCatalogue, opIds } from './catalogue.ts';

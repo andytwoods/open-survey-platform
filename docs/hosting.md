@@ -161,6 +161,12 @@ osp-api's `/api`. For each request:
 6. Return the status, the body and the `Content-Type`, `Content-Disposition` and
    `Cache-Control` headers.
 
+The editor applies edits in the browser and saves them with `PUT /api/surveys/{id}/draft`
+(a JSON Patch against the revision it started from), so forward `PUT` like `POST`, with
+bodies as large as a survey. osp-api applies the patch and validates the whole document
+before storing it (rich text is sanitised at save, whatever sent it), so nothing the
+browser computed is trusted.
+
 Install the signer in your host. It is one module, standard library only, Python 3.9+, MIT,
 and it is the code osp-api verifies with (`osp_api.signing` re-exports it). It is not on
 PyPI; install it from the repository (pin a commit in production):

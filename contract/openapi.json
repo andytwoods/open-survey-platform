@@ -2188,6 +2188,89 @@
         "title": "Diagnostic",
         "type": "object"
       },
+      "DraftRequest": {
+        "additionalProperties": false,
+        "properties": {
+          "baseRevision": {
+            "description": "The revision the patch was made against",
+            "minimum": 0.0,
+            "title": "Baserevision",
+            "type": "integer"
+          },
+          "ops": {
+            "description": "The ops the client applied to make the patch: logged, not re-run",
+            "items": {
+              "$ref": "#/components/schemas/Invocation"
+            },
+            "maxItems": 1000,
+            "title": "Ops",
+            "type": "array"
+          },
+          "patch": {
+            "description": "RFC 6902, from baseRevision to the new document",
+            "items": {
+              "additionalProperties": true,
+              "type": "object"
+            },
+            "maxItems": 10000,
+            "title": "Patch",
+            "type": "array"
+          },
+          "transactionId": {
+            "description": "Client-chosen id; a retry with the same id is not applied twice",
+            "pattern": "^[A-Za-z0-9_-]{1,36}$",
+            "title": "Transactionid",
+            "type": "string"
+          }
+        },
+        "required": [
+          "baseRevision",
+          "patch",
+          "transactionId"
+        ],
+        "title": "DraftRequest",
+        "type": "object"
+      },
+      "DraftResponse": {
+        "properties": {
+          "diagnostics": {
+            "description": "The validator's, for the saved draft",
+            "items": {
+              "$ref": "#/components/schemas/Diagnostic"
+            },
+            "title": "Diagnostics",
+            "type": "array"
+          },
+          "replayed": {
+            "default": false,
+            "title": "Replayed",
+            "type": "boolean"
+          },
+          "revision": {
+            "title": "Revision",
+            "type": "integer"
+          },
+          "transactionId": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "description": "The transaction logged; null when the patch changed nothing",
+            "title": "Transactionid"
+          }
+        },
+        "required": [
+          "revision",
+          "diagnostics",
+          "transactionId"
+        ],
+        "title": "DraftResponse",
+        "type": "object"
+      },
       "DuplicateBlockParams": {
         "additionalProperties": false,
         "properties": {
@@ -11941,6 +12024,98 @@
         "summary": "Get Survey",
         "tags": [
           "surveys"
+        ]
+      }
+    },
+    "/api/surveys/{survey_id}/draft": {
+      "put": {
+        "operationId": "saveDraft",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "survey_id",
+            "required": true,
+            "schema": {
+              "title": "Survey Id",
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/DraftRequest"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/DraftResponse"
+                }
+              }
+            },
+            "description": "Successful Response"
+          },
+          "401": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorBody"
+                }
+              }
+            },
+            "description": "Unauthorized"
+          },
+          "403": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorBody"
+                }
+              }
+            },
+            "description": "Forbidden"
+          },
+          "404": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorBody"
+                }
+              }
+            },
+            "description": "Not Found"
+          },
+          "409": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/RevisionConflictBody"
+                }
+              }
+            },
+            "description": "Stale baseRevision"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/RejectedBody"
+                }
+              }
+            },
+            "description": "Unprocessable Content"
+          }
+        },
+        "summary": "Save Draft",
+        "tags": [
+          "ops"
         ]
       }
     },
