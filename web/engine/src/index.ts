@@ -11,6 +11,7 @@ export {
 	agree,
 	answer,
 	answers,
+	answerSummary,
 	awaitingConsent,
 	decline,
 	declinedConsent,

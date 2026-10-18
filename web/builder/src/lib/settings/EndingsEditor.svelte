@@ -240,6 +240,26 @@
 						The app's own line, “Your answers have been sent.”, shown once the response is stored.
 					{/if}
 				</p>
+				<label class="check">
+					<input
+						type="checkbox"
+						checked={!row.declined && ending.summary === 'answers'}
+						disabled={row.declined}
+						data-testid="summary-{row.outcome}"
+						onchange={(e) => void send(row.outcome, endingWith(latest(row.outcome), 'summary', e.currentTarget.checked ? 'answers' : undefined))}
+					/>
+					<span>Show participants their answers</span>
+				</label>
+				<p class="help">
+					{#if row.declined}
+						A decline records no answers, so there is nothing to show.
+					{:else}
+						Once the response is stored, a list of every question they answered appears under the text, with a
+						<em>Print</em> button (the browser prints or saves the page; nothing is fetched back from the server).
+						<strong>On a shared device the answers stay on screen</strong> until the page is closed, next to the
+						Withdraw button; leave this off for sensitive questions answered in public places.
+					{/if}
+				</p>
 				<div class="preview" lang={editLang} data-testid="ending-preview-{row.outcome}">
 					<p class="ptitle"><PipedText text={shown(row.outcome, 'title') || 'Thank you'} /></p>
 					{#if shown(row.outcome, 'body')}<p class="pbody"><PipedText text={shown(row.outcome, 'body')} /></p>{/if}

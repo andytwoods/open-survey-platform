@@ -1192,19 +1192,12 @@ def _endings(self: _Checker) -> None:
                 self._text(text, ptr + "/" + key, site, pipes)
         if ending.redirect is not None:
             self._redirect(ending.redirect, ptr + "/redirect", templates, outcome == declined)
-        if ending.summary == "answers":
-            if outcome == declined:
-                self.emit(
-                    "ending.declined_summary",
-                    ptr + "/summary",
-                    "a decline records no response, so there are no answers to show",
-                )
-            else:
-                self.emit(
-                    "ending.summary_unsupported",
-                    ptr + "/summary",
-                    "showing the participant's answers is not available yet; it is ignored",
-                )
+        if ending.summary == "answers" and outcome == declined:
+            self.emit(
+                "ending.declined_summary",
+                ptr + "/summary",
+                "a decline records no response, so there are no answers to show",
+            )
 
 
 def redirect_templates(survey: Survey) -> dict[str, RedirectTemplate]:

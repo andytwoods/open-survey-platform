@@ -259,7 +259,8 @@ export interface ConsentPlan {
  * The ending screen of one outcome (end-of-survey plan §4.1, osp-survey `settings.endings`).
  * `title` and `body` pipe like labels; absent means the app's own default. `status: auto`
  * shows the app's truthful status line, `none` hides it (a decline always shows it).
- * `summary` is reserved (task EN5).
+ * `summary: answers` lists the participant's answers under the body (§4.4, task EN5;
+ * `answerSummary`).
  */
 export interface EndingPlan {
 	title?: Text;

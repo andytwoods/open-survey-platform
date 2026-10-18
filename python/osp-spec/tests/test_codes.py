@@ -202,7 +202,8 @@ def m_ending_declined_summary(s: dict) -> None:
     s["settings"] = {"endings": {"declined": {"summary": "answers"}}}
 
 
-def m_ending_summary_unsupported(s: dict) -> None:
+def m_ending_summary_ok(s: dict) -> None:
+    # EN5: showing the answers is allowed for any recorded outcome.
     s["settings"] = {"endings": {"complete": {"summary": "answers"}}}
 
 
@@ -453,10 +454,7 @@ TABLE: list[tuple[Callable[[dict], None], list[tuple[str, str]]]] = [
         m_ending_declined_summary,
         [("ending.declined_summary", "/settings/endings/declined/summary")],
     ),
-    (
-        m_ending_summary_unsupported,
-        [("ending.summary_unsupported", "/settings/endings/complete/summary")],
-    ),
+    (m_ending_summary_ok, []),
     (m_ending_pipe, [("ref.unknown", "/settings/endings/complete/body")]),
     (m_redirect_ok, []),
     (

@@ -79,6 +79,7 @@
 		data-testid="redirect"
 		data-mode={redirect.mode}
 		data-state={preview ? 'preview' : counting ? 'counting' : cancelled ? 'cancelled' : 'link'}
+		data-print="hide"
 	>
 		{#if preview}
 			<p class="muted">{ui.redirectPreview}</p>

@@ -149,6 +149,8 @@ Server-side state the researcher controls, not part of the survey version (so a 
 
 `summary: answers` renders, after the submit acknowledgement, the participant's own answers below the body: every answered question in path order, with display labels, as a definition list, plus a Print button (print stylesheet, no PDF library; the browser prints to PDF). Never in `declined`. The summary comes from the engine's view (the same values the record holds), is never fetched back from the server, and is not shown when the page is a resume of an already-submitted session in `end-only` + `memory` mode (nothing is left to show). Privacy note in the builder: on a shared device the answers stay on screen; the Withdraw button is next to them. A pre-submit review with Edit buttons (SurveyJS style) is a flow feature, not an ending, and is out of scope here.
 
+*Built (EN5, 18 Oct 2026):* as above, with one rule made stricter: the list is shown only on the page whose **own** submit the server acknowledged (the same gate as the redirect), so any resume of a submitted session, in either save mode, shows the ending without it (whether the ended snapshot reached the server before the submit is a race, so showing it there would be hit and miss), and it goes once the response is withdrawn.
+
 ### 4.5 Data
 
 - `responses.outcome` becomes a plain column (migration), written at submit from the record's `end.outcome`, indexed with `survey_version_id`. The results page then shows "N complete · N screened out · N quota full" at no decrypt cost, and the `status` filter can use it. The record stays the source of truth; a mismatch is a `verified: false` difference.

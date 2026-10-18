@@ -455,6 +455,85 @@ describe('end redirects (EN2, end-of-survey plan §4.2)', () => {
 	});
 });
 
+describe('the list of answers under the ending (EN5, end-of-survey plan §4.4)', () => {
+	function summaryPlan(summary: 'answers' | 'none' = 'answers'): Plan {
+		const p = plan();
+		return withChecksum({ ...p, endings: { complete: { status: 'auto', summary } } } as unknown as Plan);
+	}
+	const ids = (s: Session) => s.summary?.map((e) => e.id) ?? null;
+
+	it("is given only once this tab's submit is acknowledged, in path order, and only when the ending asks for it", async () => {
+		const server = new FakeServer(summaryPlan());
+		const s = await open(env(server));
+		expect(s.summary).toBeNull();
+		s.answer('age', '42');
+		s.next();
+		s.answer('why', 'because');
+		s.next();
+		server.offline = true;
+		s.next();
+		await settle(100);
+		expect(s.phase).toBe('submitting');
+		expect(s.summary).toBeNull();
+		server.offline = false;
+		await settle(60_000);
+		expect(s.phase).toBe('done');
+		expect(ids(s)).toEqual(['age', 'why']);
+		expect(s.summary![1]!.value).toEqual([{ kind: 'value', text: 'because' }]);
+
+		const none = new FakeServer(summaryPlan('none'));
+		const n = await open(env(none));
+		n.answer('age', '1');
+		n.next();
+		n.next();
+		n.next();
+		await settle(100);
+		expect(n.phase).toBe('done');
+		expect(n.summary).toBeNull();
+	});
+
+	it('is not shown on a resume of an already-submitted session, nor after a withdrawal', async () => {
+		const server = new FakeServer(summaryPlan());
+		const store = durable();
+		const a = await open(env(server, store));
+		a.answer('age', '2');
+		a.next();
+		a.next();
+		a.next();
+		await settle(100);
+		expect(ids(a)).toEqual(['age']);
+		// A resume link to the submitted session (every-page): the ending, without the answers.
+		const b = await open(env(server, durable()), 'demo', server.only.token);
+		await settle(100);
+		expect(b.phase).toBe('done');
+		expect(b.summary).toBeNull();
+		// Withdrawn: the server deleted the response, so the list goes too.
+		expect(await a.withdraw()).toBe(true);
+		expect(a.withdrawn).toBe(true);
+		expect(a.summary).toBeNull();
+	});
+
+	it('end-only with a memory-only copy: a resume after the submit has nothing left to show', async () => {
+		const server = new FakeServer(summaryPlan(), 'end-only');
+		const pointer = tabPointer();
+		const a = await open({ ...env(server, new MemoryStore()), pointer });
+		a.answer('age', '3');
+		await a.next();
+		await a.next();
+		await a.next();
+		await settle(100);
+		expect(a.phase).toBe('done');
+		expect(ids(a)).toEqual(['age']);
+		expect(pointer.map.size).toBe(0);
+		a.dispose();
+		const b = await open({ ...env(server, new MemoryStore()), pointer }, 'demo', server.only.token);
+		await settle(100);
+		expect(b.phase).toBe('done');
+		expect(view(b.state).end).toBeNull();
+		expect(b.summary).toBeNull();
+	});
+});
+
 /** A tab's sessionStorage pointer, in memory. */
 function tabPointer(): SessionPointer & { map: Map<string, PointerRecord> } {
 	const map = new Map<string, PointerRecord>();

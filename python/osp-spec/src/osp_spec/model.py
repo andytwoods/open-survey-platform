@@ -225,7 +225,10 @@ class Ending(Model):
     - `status`: `auto` shows the app's own truthful line ("Your answers have been sent." when
       a response was recorded, "Nothing was recorded." for a decline); `none` hides it for a
       recorded response. Researcher text never replaces it; a decline always shows it.
-    - `summary`: reserved for showing the participant's answers (task EN5); `none` today.
+    - `summary`: `answers` lists the participant's own answers (every answered question in
+      path order, with a Print button) under the body once the response is stored (§4.4,
+      task EN5); `none` (default) shows nothing. Never for the consent decline
+      (`ending.declined_summary`): nothing was recorded.
     - `redirect`: where to send the participant afterwards (task EN2), or None.
     """
 

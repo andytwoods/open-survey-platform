@@ -23,9 +23,9 @@ class SetEnding(Params):
 @op("set_ending", SetEnding, label="Set ending", area="survey")
 def set_ending(ctx: Ctx, p: SetEnding) -> Invocation:
     """Set the ending screen for one outcome (`title` and `body`, plain or per language, with
-    piping in both; `status` `auto` or `none`; `summary` reserved), or with `ending: null`
-    remove it, so that outcome shows the app's defaults. An outcome nothing reaches is
-    allowed but warned about (`ending.unreachable`)."""
+    piping in both; `status` `auto` or `none`; `summary` `none` or `answers`), or with
+    `ending: null` remove it, so that outcome shows the app's defaults. An outcome nothing
+    reaches is allowed but warned about (`ending.unreachable`)."""
     settings = ctx.doc.get("settings")
     endings = settings.get("endings") if isinstance(settings, dict) else None
     if p.ending is None:

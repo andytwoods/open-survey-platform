@@ -257,6 +257,21 @@ export class Session {
 		return E.endRedirect(this.state);
 	}
 
+	/**
+	 * The participant's answers to list under the ending (end-of-survey plan §4.4, EN5), or
+	 * null when there is nothing to show: the ending does not ask for them, the session ended
+	 * with a consent decline (nothing was recorded), the response was withdrawn, or this tab
+	 * did not submit (a resumed, already-submitted session shows the ending without them; after
+	 * a memory-only resume nothing is left to show at all). Built from the engine state, the
+	 * same values the record holds; never fetched back from the server.
+	 */
+	get summary(): E.SummaryEntry[] | null {
+		if (this.phase !== 'done' || !this.acked || this.withdrawn) return null;
+		const end = E.view(this.state).end;
+		if (!end || end.ending?.summary !== 'answers' || E.declinedConsent(this.state)) return null;
+		return E.answerSummary(this.state);
+	}
+
 	/** After boot: reconcile with the server (every-page resume), then run pending effects. */
 	async run(): Promise<void> {
 		if (this.phase === 'done') return;

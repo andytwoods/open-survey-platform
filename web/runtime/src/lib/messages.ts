@@ -61,7 +61,11 @@ const en = {
 	redirectStay: 'Stay on this page',
 	redirectStayed: 'You are staying on this page. Use the button when you are ready to continue to {host}.',
 	redirectPreview: 'In the published survey participants would be taken to:',
-	hooksFailed: 'This survey could not start its custom code. Please contact the research team.'
+	hooksFailed: 'This survey could not start its custom code. Please contact the research team.',
+	// The ending's list of answers (end-of-survey plan §4.4, EN5).
+	summaryTitle: 'Your answers',
+	summaryHelp: 'The answers you gave, as they were sent. You can print or save this page for your records.',
+	print: 'Print'
 };
 
 export type Strings = typeof en;
@@ -124,7 +128,10 @@ const de: Strings = {
 	redirectStay: 'Auf dieser Seite bleiben',
 	redirectStayed: 'Sie bleiben auf dieser Seite. Nutzen Sie die Schaltfläche, wenn Sie bereit sind, zu {host} weiterzugehen.',
 	redirectPreview: 'In der veröffentlichten Umfrage würden Teilnehmende weitergeleitet zu:',
-	hooksFailed: 'Diese Umfrage konnte ihren eigenen Programmcode nicht starten. Bitte wenden Sie sich an das Forschungsteam.'
+	hooksFailed: 'Diese Umfrage konnte ihren eigenen Programmcode nicht starten. Bitte wenden Sie sich an das Forschungsteam.',
+	summaryTitle: 'Ihre Antworten',
+	summaryHelp: 'Die Antworten, die Sie gegeben haben, so wie sie gesendet wurden. Sie können diese Seite für Ihre Unterlagen drucken oder speichern.',
+	print: 'Drucken'
 };
 
 /** App string tables by primary language subtag. */
