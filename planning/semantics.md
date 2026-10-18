@@ -113,6 +113,7 @@ Raw `-99`-style codes are **never** written into CSV, where they would silently 
 - **Built-ins** [R6-3]: the `$` namespace is reserved. `${$trial}` is the 1-based number of the current page on the participant's path (pages skipped as empty don't count; after back it is the number of the page now shown). `${$position.index}` and `${$position.of}` give the 1-based position within the innermost randomiser and `of` = its `pick` (or its number of children); outside a randomiser they are empty. `$pagesDone`, `$language` and `$device` are also available.
 - Piping an unanswered, irrelevant or not-reached question inserts an empty string.
 - Piped text is HTML-escaped.
+- **Pipes inside formatting** (planning/rich-text.md §3, RT2): in a rich-text value a pipe is a node `{"pipe": "id"}` with the same identifiers, built-ins and reference rules as `${id}`. A piped value takes the formatting of the run it sits in (bold text around a pipe stays bold); the value itself is never parsed as rich text, so an answer cannot add formatting, links or markup. A rich value with no formatting is stored as the plain string with `${id}` written back.
 
 ## 9. Versions
 

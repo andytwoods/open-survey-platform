@@ -1,10 +1,11 @@
-import type { RenderedText } from '@osp/engine';
+import type { RenderedRun, RenderedText } from '@osp/engine';
 import { describe, expect, it } from 'vitest';
 import { paragraphs, plain, segs } from '../src/lib/view-map';
 
-const txt = (text: string) => ({ kind: 'text' as const, text });
-const val = (text: string) => ({ kind: 'value' as const, text });
-const p = (...content: RenderedText[number] extends { type: 'p'; content: infer R } ? R : never) => ({ type: 'p' as const, content });
+const txt = (text: string): RenderedRun => ({ kind: 'text', text });
+const val = (text: string): RenderedRun => ({ kind: 'value', text });
+const br: RenderedRun = { kind: 'br' };
+const p = (...content: RenderedRun[]): RenderedText[number] => ({ type: 'p', content });
 
 describe('ending body paragraphs (EN1)', () => {
 	it('splits researcher text at blank lines and keeps single line breaks', () => {
@@ -21,7 +22,7 @@ describe('ending body paragraphs (EN1)', () => {
 	it('keeps rich blocks as they are (RT2)', () => {
 		const rich: RenderedText = [
 			{ type: 'h', level: 1, content: [txt('Done')] },
-			p(txt('a'), { kind: 'br' }, txt('b')),
+			p(txt('a'), br, txt('b')),
 			{ type: 'ul', items: [[txt('one')], [txt('two')]] }
 		];
 		expect(paragraphs(rich)).toEqual(rich);
@@ -31,7 +32,7 @@ describe('ending body paragraphs (EN1)', () => {
 describe('engine text → widget text (RT2)', () => {
 	it('maps a single paragraph to inline runs with marks, links and language', () => {
 		const label: RenderedText = [
-			p({ kind: 'text', text: 'Hi ', marks: ['b', 'i'], lang: 'fr' }, val('<x>'), { kind: 'br' }, { kind: 'text', text: 'doc', href: 'https://e.org' })
+			p({ kind: 'text', text: 'Hi ', marks: ['b', 'i'], lang: 'fr' }, val('<x>'), br, { kind: 'text', text: 'doc', href: 'https://e.org' })
 		];
 		expect(segs(label)).toEqual([
 			{ text: 'Hi ', strong: true, em: true, lang: 'fr' },

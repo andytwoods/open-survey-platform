@@ -121,6 +121,36 @@ Three ways:
 Then fill in **Question text** in the properties panel. Rich-text fields accept
 `${id}` to [pipe in](logic.md#piping) an earlier answer.
 
+### Formatting text
+
+Every participant-facing text can carry formatting: **bold**, *italic*, links, line
+breaks, bulleted and numbered lists and, in notes, the consent text and ending text,
+headings. A formatting toolbar in the properties panel is coming (task RT3); until then
+formatted text is written in the JSON view as a small tree, and the participant app, the
+preview and the exports already render it.
+
+A plain string stays a plain string. A formatted value is `{"type": "rich", "blocks":
+[...]}`, where each block is a paragraph `{"type": "p", "content": [...]}`, a heading
+`{"type": "h", "level": 1–3, "content": [...]}` (shown under the page title) or a list
+`{"type": "ul" | "ol", "items": [[...], [...]]}`. Content is a list of runs: `{"text":
+"...", "marks": ["b", "i"], "href": "https://...", "lang": "fr"}` (every key but `text`
+optional), `{"pipe": "id"}` for a piped answer (the same ids and built-ins as `${id}`), and
+`{"br": true}` for a line break. Per language, each value is plain or formatted on its own.
+
+The rules, checked on every save:
+
+| Where | Allowed | Characters |
+|---|---|---|
+| Notes, the survey description, the consent text, end messages, ending bodies | headings, paragraphs, lists, marks, links, pipes, breaks | 20,000 |
+| Question text and help | paragraphs, lists, marks, links, pipes, breaks (no headings) | 2,000 |
+| Choice, row and column labels, slider end labels, page titles, constraint messages, consent buttons, ending titles | one paragraph with marks, links, pipes, breaks | 500 |
+| The survey title | plain text only | – |
+
+Links must be absolute `https:` URLs; they open in a new tab, with a hidden "(opens in a new
+tab)" for screen readers. Nothing else can be stored: no colours, fonts, sizes, images or
+raw HTML (`text.block_not_allowed`, `link.scheme`, `link.empty`, `text.too_long`). A
+formatted value that uses no formatting at all is saved as the plain string it is.
+
 ### Moving things
 
 Drag an item by its handle in the outline, or use the keyboard: ++alt+up++ /

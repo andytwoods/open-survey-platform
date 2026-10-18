@@ -19,7 +19,7 @@ function node(r: RenderedRun): InlineNode {
 }
 
 function block(b: RenderedBlock): TextBlock {
-	if (b.type === 'ul' || b.type === 'ol') return { type: b.type, items: b.items.map((i) => i.map(node)) };
+	if ('items' in b) return { type: b.type, items: b.items.map((i) => i.map(node)) };
 	if (b.type === 'h') return { type: 'h', level: b.level, content: b.content.map(node) };
 	return { type: 'p', content: b.content.map(node) };
 }
