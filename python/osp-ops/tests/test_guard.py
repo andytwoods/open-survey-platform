@@ -40,8 +40,43 @@ AGE_LT_120 = {
     "right": {"kind": "int", "value": 120},
 }
 
+BANK_SRC = {"bank": "demo2", "version": 2, "library": "bundled"}
+BANK_QUESTION = {
+    "question": {"id": "age", "type": "integer", "label": "Age in years", "name": "yrs"}
+}
+BANK_BLOCK = {
+    "choiceLists": [{"id": "yesno", "choices": [{"value": 1, "label": "Yes"}]}],
+    "variables": [
+        {"id": "age_next", "kind": "computed",
+         "expr": {"kind": "arith", "op": "+", "left": {"kind": "ref", "id": "age"},
+                  "right": {"kind": "int", "value": 1}}},
+    ],
+    "block": {"id": "b_main", "pages": [{"id": "p_main", "items": [
+        {"id": "age", "type": "integer", "label": "Age?"},
+        {"id": "grid", "type": "matrix", "label": "Agree?", "choiceList": "yesno",
+         "rows": [{"id": "taste", "label": "Taste"}]},
+        {"id": "why", "type": "text", "label": "Why ${grid_taste}?",
+         "showIf": {"kind": "answered", "ref": {"kind": "ref", "id": "age_next"}}},
+    ]}]},
+}  # fmt: skip
+
 # Params that must succeed on BASE, per op. One test per entry.
 EXAMPLES: dict[str, list[dict[str, Any]]] = {
+    "insert_bank_item": [
+        {"fragment": BANK_QUESTION, "source": BANK_SRC, "page": "p_demo", "index": 1},
+        {"fragment": BANK_BLOCK, "source": BANK_SRC, "flow": {"after": "n_main"}},
+        {"fragment": BANK_BLOCK, "source": {**BANK_SRC, "library": "lab"}, "index": 0},
+        {
+            "fragment": {
+                "page": BANK_BLOCK["block"]["pages"][0],
+                "choiceLists": BANK_BLOCK["choiceLists"],
+                "variables": BANK_BLOCK["variables"],
+            },
+            "source": BANK_SRC,
+            "block": "b_extra",
+        },
+    ],
+    "clear_source": [{"target": "b_full"}],
     "add_question": [
         {"page": "p_demo"},
         {"page": "p_main", "type": "single", "index": 0, "id": "newq", "label": "Hi"},

@@ -52,6 +52,7 @@ Why this policy: silently clearing a condition changes who sees a question. That
 | flow | `insert_flow_node`, `delete_flow_node`, `move_flow_node` |
 | variables | `add_variable`, `delete_variable` |
 | metadata | `set_title`, `set_languages` |
+| bank | `insert_bank_item` (a bank item's fragment with its choice lists and scoring variables, fresh ids where the fragment's clash, a choice list with the same choices reused, `source` written on the inserted object, optional flow node for a block; a fragment that refers outside itself is refused whole; the inverse is the exact reverse patch, one undo), `clear_source` (drops an object's own `source`; undo puts it back) |
 | survey | `replace_survey` (the JSON view's Apply), `apply_patch` |
 
 `op_catalogue()` and `openapi_components()` export ids, labels and params JSON Schemas for osp-api.

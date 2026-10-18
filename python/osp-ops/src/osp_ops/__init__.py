@@ -9,6 +9,7 @@ Pure: no I/O, no clock, no randomness. See README.md.
 
 # Area modules register their ops on import (one module per area, AGENTS.md §5).
 from . import (  # noqa: F401
+    bank_ops,
     choice_list_ops,
     choice_ops,
     condition_ops,
