@@ -351,7 +351,13 @@ for _d in CHOICE_QUESTIONS:
 # --- Pages and blocks --------------------------------------------------------------------
 _row("Page.id", "native", "One question group per page (survey format G: group by group).")
 _row("Page.items", "native", "The group's questions, in `question_order`.")
-_row("Page.title", "native", "`group_l10ns.group_name` (otherwise the page id).")
+_row(
+    "Page.title",
+    "native",
+    "`group_l10ns.group_name` (otherwise the page id) and the group description. A "
+    "formatted title is HTML in the description and its plain text in the name, which "
+    "LimeSurvey shows without markup.",
+)
 _row("Page.itemOrder", "native", "`fixed`: question order.")
 _row("Page.showIf", "native", "Joined into the group's relevance (`grelevance`).")
 _row(
@@ -547,44 +553,50 @@ _row("Contains.kind", "lowered", '`<q>_<code>.NAOK == "Y"` on the choice\'s subq
 _row("Contains.ref", "native", "The question code.")
 _row("Contains.value", "native", "The choice's subquestion code.")
 
-# --- Rich text (planning/rich-text.md §3, task RT2; the HTML writer is task RT4) ----------
-_FLAT = (
-    "Rich text is flattened to plain text until RT4 writes the allow-listed HTML subset: "
-    "paragraphs separated by a blank line (`<br /><br />`), list items as `- ` / `1. ` "
-    "lines, headings as their text; bold, italic, links and language spans are dropped."
+# --- Rich text (planning/rich-text.md §3 and §8, tasks RT2 and RT4) -----------------------
+_row(
+    "RichText.type",
+    "native",
+    "Written as HTML, which LimeSurvey texts are: `<p>`, `<h3>`–`<h5>`, `<ul>` / `<ol>`, "
+    "`<strong>`, `<em>`, `<a>`, `<span lang>`, `<br />`; the text itself escaped as any "
+    "text ($text.markup, $text.braces).",
 )
-_row("RichText.type", "approximated", _FLAT)
-_row("RichText.blocks", "approximated", _FLAT)
-_row("Paragraph.type", "approximated", "A blank line (`<br /><br />`); `<p>` in RT4.")
-_row("Paragraph.content", "native", "The paragraph's runs, as text.")
-_row("Heading.type", "approximated", "The heading's text as a paragraph; `<h3>`–`<h5>` in RT4.")
-_row("Heading.level", "approximated", "See Heading.type.")
-_row("Heading.content", "native", "The heading's runs, as text.")
-_row("RichList.type", "approximated", "`- ` / `1. ` lines; `<ul>` / `<ol>` in RT4.")
-_row("RichList.items", "approximated", "See RichList.type.")
+_row(
+    "RichText.blocks",
+    "native",
+    "One element per block. A lone paragraph has no `<p>` wrapper, so one-line fields "
+    "(answers, subquestions, group names) stay one line.",
+)
+_row("Paragraph.type", "native", "`<p>` (none around a lone paragraph).")
+_row("Paragraph.content", "native", "The paragraph's runs.")
+_row(
+    "Heading.type",
+    "lowered",
+    "`<h3>`, `<h4>` or `<h5>` (level + 2), under LimeSurvey's own survey and group "
+    "headings; the size is absolute, not relative to the page.",
+)
+_row("Heading.level", "native", "See Heading.type.")
+_row("Heading.content", "native", "The heading's runs.")
+_row("RichList.type", "native", "`<ul>` or `<ol>` of `<li>` items.")
+_row("RichList.items", "native", "See RichList.type.")
 _row("TextRun.text", "native", "The run's text, HTML-escaped as any text ($text.markup).")
+_row("TextRun.marks", "native", "`<strong>` / `<em>`.")
 _row(
-    "TextRun.marks",
-    "unsupported",
-    "Bold and italic are dropped until RT4 writes `<strong>` / `<em>`.",
+    "TextRun.href",
+    "native",
+    '`<a href="https://…" target="_blank" rel="noopener noreferrer">`; adjacent runs with '
+    "the same URL are one link.",
 )
-_row(
-    "TextRun.href", "unsupported", "The link text stays; the URL is dropped until RT4 writes `<a>`."
-)
-_row(
-    "TextRun.lang",
-    "unsupported",
-    "Per-run language spans are dropped until RT4 writes `<span lang>`.",
-)
+_row("TextRun.lang", "native", '`<span lang="…">`.')
 _row("PipeRun.pipe", "native", "A pipe node is written as `{code}`, like `${id}` in plain text.")
 _row("LineBreak.br", "native", "`<br />`.")
-_row("$rich.bold", "unsupported", "See TextRun.marks.")
-_row("$rich.italic", "unsupported", "See TextRun.marks.")
-_row("$rich.link", "unsupported", "See TextRun.href.")
-_row("$rich.heading", "approximated", "See Heading.type.")
-_row("$rich.list", "approximated", "See RichList.type.")
+_row("$rich.bold", "native", "See TextRun.marks.")
+_row("$rich.italic", "native", "See TextRun.marks.")
+_row("$rich.link", "native", "See TextRun.href.")
+_row("$rich.heading", "lowered", "See Heading.type.")
+_row("$rich.list", "native", "See RichList.type.")
 _row("$rich.break", "native", "See LineBreak.br.")
-_row("$rich.lang", "unsupported", "See TextRun.lang.")
+_row("$rich.lang", "native", "See TextRun.lang.")
 
 # --- Behaviours that are not a single field ----------------------------------------------
 _row("$pipe.value", "native", "`{q}` in a text inserts the stored value (§8).")

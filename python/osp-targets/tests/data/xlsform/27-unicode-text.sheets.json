@@ -1,0 +1,123 @@
+{
+ "survey": {
+  "columns": [
+   "type",
+   "name",
+   "label::English (en)",
+   "relevant",
+   "appearance"
+  ],
+  "rows": [
+   {
+    "type": "begin group",
+    "name": "p1"
+   },
+   {
+    "type": "begin group",
+    "name": "p1_page",
+    "appearance": "field-list"
+   },
+   {
+    "type": "text",
+    "name": "t_emoji",
+    "label::English (en)": "Describe your day with an emoji."
+   },
+   {
+    "type": "text",
+    "name": "t_rtl",
+    "label::English (en)": "Write a greeting in Hebrew."
+   },
+   {
+    "type": "text",
+    "name": "t_mixed",
+    "label::English (en)": "Write a product code."
+   },
+   {
+    "type": "text",
+    "name": "t_name",
+    "label::English (en)": "Choose a display name."
+   },
+   {
+    "type": "end group"
+   },
+   {
+    "type": "end group"
+   },
+   {
+    "type": "begin group",
+    "name": "p2"
+   },
+   {
+    "type": "begin group",
+    "name": "p2_page",
+    "appearance": "field-list"
+   },
+   {
+    "type": "text",
+    "name": "pipe_emoji",
+    "label::English (en)": "Your day: ${t_emoji}"
+   },
+   {
+    "type": "text",
+    "name": "pipe_rtl",
+    "label::English (en)": "Your greeting: ${t_rtl}"
+   },
+   {
+    "type": "text",
+    "name": "pipe_mixed",
+    "label::English (en)": "Code: [${t_mixed}]"
+   },
+   {
+    "type": "text",
+    "name": "pipe_name",
+    "label::English (en)": "Hello ${t_name}!"
+   },
+   {
+    "type": "text",
+    "name": "s_emoji",
+    "label::English (en)": "Shown when t\\_emoji == \"👍🏽 great\"",
+    "relevant": "(string-length(${t_emoji}) > 0) and (${t_emoji} = '👍🏽 great')"
+   },
+   {
+    "type": "text",
+    "name": "s_rtl",
+    "label::English (en)": "Shown when t\\_rtl == \"שלום עולם\"",
+    "relevant": "(string-length(${t_rtl}) > 0) and (${t_rtl} = 'שלום עולם')"
+   },
+   {
+    "type": "text",
+    "name": "s_mixed_plain",
+    "label::English (en)": "Shown when t\\_mixed == \"AB 12X\" with plain characters (it must not be: the typed code has an NBSP and a zero-width space)",
+    "relevant": "(string-length(${t_mixed}) > 0) and (${t_mixed} = 'AB 12X')"
+   },
+   {
+    "type": "end group"
+   },
+   {
+    "type": "end group"
+   }
+  ]
+ },
+ "choices": {
+  "columns": [],
+  "rows": []
+ },
+ "settings": {
+  "columns": [
+   "form_title",
+   "form_id",
+   "default_language",
+   "style",
+   "version"
+  ],
+  "rows": [
+   {
+    "form_title": "Whitespace and Unicode text",
+    "form_id": "f27_unicode_text",
+    "default_language": "English (en)",
+    "style": "pages",
+    "version": "1"
+   }
+  ]
+ }
+}

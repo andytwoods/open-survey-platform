@@ -13,7 +13,7 @@ import re
 from collections.abc import Iterator, Mapping
 from typing import Any
 
-from osp_spec import Survey, flatten_text, parse
+from osp_spec import Survey, flatten_text, is_rich, parse
 from osp_spec.model import (
     AssignedVariable,
     AssignNode,
@@ -40,14 +40,14 @@ from pydantic import BaseModel
 
 from ..capabilities import XLSFORM, Capability
 from ..diagnostics import SEVERITY_FOR_LEVEL, ExportDiagnostic, pointer
+from ..richtext import as_json
+from .markdown import CONTROL, UNESCAPABLE, escape_plain, to_markdown
 from .workbook import columns, write_workbook
 from .xpath import FALSE, TRUE, XPathContext, XPathWriter, and_, not_, or_, string_literal
 
 TARGET = "xlsform"
 
 _PIPE = re.compile(r"\$\{([^}]*)\}")
-_MARKUP = re.compile(r"[*_#<>]")
-_CONTROL = re.compile(r"[\x00-\x08\x0b\x0c\x0e-\x1f]")
 
 # Park–Miller constants (osp_engine.random): modulus 2**31 - 1, multiplier 16807.
 _M = 2147483647
@@ -347,7 +347,7 @@ class _Exporter:
 
     def _all_texts(self) -> Iterator[str]:
         def strings(t: object) -> Iterator[str]:
-            t = flatten_text(t)  # rich text (RT2) as the plain text this writer emits
+            t = flatten_text(t)  # rich text (RT2) flattened: pipe nodes become `${id}`
             if isinstance(t, str):
                 yield t
             elif isinstance(t, dict):
@@ -378,13 +378,13 @@ class _Exporter:
     # -- text ----------------------------------------------------------------------------
 
     def _texts(self, text: object, ptr: str) -> dict[str, str]:
-        """``{language column: text}`` with pipes rewritten to XLSForm names. Rich text
-        (RT2) is flattened to plain text until RT4 writes the Markdown subset; the loss is
-        reported through the `RichText.*` / `TextRun.*` capability rows (feature_uses)."""
-        text = flatten_text(text)
+        """``{language column: Markdown}``: plain strings with their literal `\\ * _ #`
+        escaped, rich text (RT2) as the Enketo/Collect Markdown subset (RT4,
+        `markdown.py`), pipes rewritten to XLSForm names."""
+        text = as_json(text)
         if text is None:
             return {}
-        if isinstance(text, str):
+        if isinstance(text, str) or is_rich(text):
             per_lang = {lang: (text, ptr) for lang in self.langs}
         else:
             assert isinstance(text, dict)
@@ -394,35 +394,43 @@ class _Exporter:
                 for lang in self.langs
             }
         out: dict[str, str] = {}
-        for lang, (s, sp) in per_lang.items():
-            out[language_column(lang)] = self._pipe(s, sp)
+        for lang, (value, vp) in per_lang.items():
+            out[language_column(lang)] = self._markdown(value, vp)
         return out
 
-    def _pipe(self, s: str, ptr: str) -> str:
-        if _CONTROL.search(s):
+    def _markdown(self, value: object, ptr: str) -> str:
+        if is_rich(value):
+            assert isinstance(value, dict)
+            return to_markdown(
+                value,
+                pipe=lambda qid, path: self._pipe(qid, ptr + pointer(*path)),
+                report=lambda key, path: self.note(key, ptr + pointer(*path)),
+            )
+        s = value if isinstance(value, str) else ""
+        if CONTROL.search(s):
             self.note("$text.controlCharacters", ptr)
-        if _MARKUP.search(_PIPE.sub("", s)):
+        if UNESCAPABLE.search(_PIPE.sub("", s)):
             self.note("$text.markup", ptr)
+        return _PIPE.sub(lambda m: self._pipe(m.group(1).strip(), ptr, m.group(0)), escape_plain(s))
 
-        def repl(m: re.Match[str]) -> str:
-            qid = m.group(1).strip()
-            if qid.startswith("$"):
-                # Built-ins ($trial, $position.*; semantics §8) are our runtime's.
-                self.note("$pipe.builtin", ptr, f"${{{qid}}}")
-                return ""
-            if qid not in self.names:
-                return m.group(0)
-            self.note("$pipe.escaping", ptr)
-            kind = self.types.get(qid)
-            if kind == "single":
-                self.note("$pipe.choiceLabel", ptr, f"${{{qid}}}")
-                calc = self.label_calcs.get(qid) or self._label_calc_name(qid)
-                return "${" + calc + "}"
-            if kind == "multi":
-                self.note("$pipe.multi", ptr, f"${{{qid}}}")
-            return "${" + self.names[qid] + "}"
-
-        return _PIPE.sub(repl, s)
+    def _pipe(self, qid: str, ptr: str, raw: str | None = None) -> str:
+        """The XLSForm text for one `${qid}` (`raw` is how it was written, kept when the
+        id is unknown), with the piping diagnostics at `ptr`."""
+        if qid.startswith("$"):
+            # Built-ins ($trial, $position.*; semantics §8) are our runtime's.
+            self.note("$pipe.builtin", ptr, f"${{{qid}}}")
+            return ""
+        if qid not in self.names:
+            return raw if raw is not None else "${" + qid + "}"
+        self.note("$pipe.escaping", ptr)
+        kind = self.types.get(qid)
+        if kind == "single":
+            self.note("$pipe.choiceLabel", ptr, f"${{{qid}}}")
+            calc = self.label_calcs.get(qid) or self._label_calc_name(qid)
+            return "${" + calc + "}"
+        if kind == "multi":
+            self.note("$pipe.multi", ptr, f"${{{qid}}}")
+        return "${" + self.names[qid] + "}"
 
     def _label_calc_name(self, qid: str) -> str:
         name = self.label_calcs.get(qid) or self._alloc(f"osp_label_{self.names[qid]}")

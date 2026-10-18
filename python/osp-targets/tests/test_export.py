@@ -10,6 +10,7 @@ from __future__ import annotations
 import copy
 import io
 import json
+import os
 import zipfile
 from pathlib import Path
 from typing import Any
@@ -24,6 +25,8 @@ from pyxform.xls2xform import convert
 REPO = Path(__file__).resolve().parents[3]
 CASES = sorted((REPO / "python/osp-spec/tests/cases/valid").glob("*.json"))
 FIXTURES = sorted((REPO / "fixtures").glob("*/survey.json"))
+GOLDEN = Path(__file__).parent / "data/xlsform"
+GOLDEN_FIXTURES = ["27-unicode-text", "41-rich-text"]
 
 
 def _fixture_survey(path: Path) -> Any:
@@ -91,6 +94,25 @@ def test_export_converts(label: str, data: Any) -> None:
     for key, ptr, _value in feature_uses(survey):
         if XLSFORM[key].level != "native":
             assert (key, ptr) in reported, (key, ptr)
+
+
+@pytest.mark.parametrize("name", GOLDEN_FIXTURES)
+def test_golden(name: str) -> None:
+    """The sheets and diagnostics of a fixture, pinned (regenerate with
+    ``OSP_UPDATE_GOLDEN=1``): 27 for plain text with literal markup, 41 for rich text."""
+    form, diags = build_xlsform(_fixture_survey(REPO / "fixtures" / name / "survey.json"))
+    assert form is not None, diags
+    sheets = {s: {"columns": cols, "rows": rows} for s, (cols, rows) in form.sheets().items()}
+    got_sheets = json.dumps(sheets, indent=1, ensure_ascii=False) + "\n"
+    got_diags = "".join(f"{d.severity}\t{d.feature}\t{d.pointer}\n" for d in diags)
+    path_sheets = GOLDEN / f"{name}.sheets.json"
+    path_diags = GOLDEN / f"{name}.diagnostics.tsv"
+    if os.environ.get("OSP_UPDATE_GOLDEN") == "1":
+        GOLDEN.mkdir(parents=True, exist_ok=True)
+        path_sheets.write_text(got_sheets, encoding="utf-8", newline="\n")
+        path_diags.write_text(got_diags, encoding="utf-8", newline="\n")
+    assert got_sheets == path_sheets.read_text(encoding="utf-8"), "OSP_UPDATE_GOLDEN=1"
+    assert got_diags == path_diags.read_text(encoding="utf-8")
 
 
 def test_deterministic_bytes() -> None:
@@ -273,13 +295,99 @@ def test_missing_states_documented() -> None:
 
 
 def test_text_is_never_a_formula_and_control_chars_reported() -> None:
-    data = _survey([{"id": "a", "type": "text", "label": "=1+1 \x07 *bold*"}])
+    data = _survey([{"id": "a", "type": "text", "label": "=1+1 \x07 *bold* <b>"}])
     xlsx, diags = export_xlsform(data)
     ws = load_workbook(io.BytesIO(xlsx))["survey"]
     labels = [c.value for row in ws.iter_rows() for c in row]
-    assert "=1+1  *bold*" in labels
+    # Literal markup is escaped (RT4, lead decision 5); `<` has no escape and is reported.
+    assert "=1+1  \\*bold\\* <b>" in labels
     features = {d.feature for d in diags}
     assert {"$text.controlCharacters", "$text.markup"} <= features
+    _xform(xlsx)
+
+
+def _label(name: str, lang: str = "English (en)") -> Any:
+    def get(xlsx: bytes, col: str = "label") -> str:
+        ws = load_workbook(io.BytesIO(xlsx))["survey"]
+        rows = list(ws.iter_rows(values_only=True))
+        head = list(rows[0])
+        row = next(r for r in rows[1:] if r[head.index("name")] == name)
+        return row[head.index(f"{col}::{lang}")]
+
+    return get
+
+
+def test_rich_text_is_markdown_with_pipes_and_one_diagnostic_per_node() -> None:
+    """RT4: marks, links, lists and pipes inside formatting (fixture 41 pins the rest)."""
+    label = {
+        "type": "rich",
+        "blocks": [
+            {
+                "type": "p",
+                "content": [
+                    {"text": "Hello ", "marks": ["b"]},
+                    {"pipe": "fav"},
+                    {"text": ", "},
+                    {"text": "Merci", "lang": "fr"},
+                    {"text": " * ", "marks": ["i"]},
+                    {"text": "sheet", "href": "https://example.org/"},
+                ],
+            },
+            {"type": "ol", "items": [[{"text": "a"}, {"br": True}, {"text": "b"}]]},
+        ],
+    }
+    fav = {"id": "fav", "type": "single", "label": "Fruit", "choices": FRUIT}
+    data = _survey([fav, {"id": "n", "type": "note", "label": label}])
+    xlsx, diags = export_xlsform(data)
+    assert _label("n")(xlsx) == (
+        "**Hello** ${osp_label_fav}, Merci *\\** [sheet](https://example.org/)\n\n1. a b"
+    )
+    base = "/blocks/0/pages/0/items/1/label"
+    by = {(d.feature, d.pointer) for d in diags}
+    assert ("TextRun.lang", base + "/blocks/0/content/3/lang") in by
+    assert ("$pipe.choiceLabel", base + "/blocks/0/content/1") in by
+    assert ("RichList.type", base + "/blocks/1") in by
+    assert ("$rich.listBreak", base + "/blocks/1/items/0/1") in by
+    assert not [d for d in diags if d.feature.startswith("$text.")]
+    assert len(diags) == len({(d.feature, d.pointer) for d in diags})  # once per node
+    _xform(xlsx)
+
+
+def test_plain_text_markup_is_escaped_in_every_text_column() -> None:
+    """Lead decision 5: literal `* _ #` in existing plain text show as written in
+    Enketo/Collect; `$text.markup` is only for what has no escape."""
+    data = _survey(
+        [
+            {
+                "id": "f",
+                "type": "single",
+                "label": "F",
+                "choices": [{"value": "v", "label": "a*b"}],
+            },
+            {
+                "id": "a",
+                "type": "integer",
+                "label": "Score #1 of ${f}_x",
+                "help": "_hint_",
+                "constraint": {
+                    "kind": "compare",
+                    "op": "<=",
+                    "left": {"kind": "ref", "id": "a"},
+                    "right": {"kind": "int", "value": 5},
+                },
+                "constraintMessage": "5 * 1 max",
+            },
+        ]
+    )
+    xlsx, diags = export_xlsform(data)
+    assert xlsx, diags
+    get = _label("a")
+    assert get(xlsx) == "Score \\#1 of ${osp_label_f}\\_x"
+    assert get(xlsx, "hint") == "\\_hint\\_"
+    assert get(xlsx, "constraint_message") == "5 \\* 1 max"
+    ws = load_workbook(io.BytesIO(xlsx))["choices"]
+    assert "a\\*b" in [c.value for row in ws.iter_rows() for c in row]
+    assert "$text.markup" not in {d.feature for d in diags}
     _xform(xlsx)
 
 

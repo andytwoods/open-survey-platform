@@ -135,8 +135,21 @@ the questions concerned.
 
 | Target | File | What does not carry over |
 |---|---|---|
-| **XLSForm** (ODK, Enketo, KoboToolbox) | `.xlsx` | Quotas, turning Back off, page and block order shuffles, consent, settings and theme, licence and DDI metadata |
+| **XLSForm** (ODK, Enketo, KoboToolbox) | `.xlsx` | Quotas, turning Back off, page and block order shuffles, consent, settings and theme, licence and DDI metadata; per-run language spans in formatted text |
 | **LimeSurvey** | `.lss` | Consent, save mode, retention and theme; a slider becomes a number box without its end labels; shuffles use LimeSurvey's own unseeded randomiser; assignment, computed values and quota behaviour are approximated |
+
+[Formatted text](building-a-survey.md#formatting-text) is written in each target's own
+markup. XLSForm labels, hints and constraint messages get the Markdown subset Enketo and
+ODK Collect render: `**bold**`, `*italic*`, `[text](https://…)`, `#` headings (absolute
+sizes, so they are reported as lowered), `- ` and `1. ` lists (Enketo shows a list, Collect
+shows the markers, so lists are reported as approximated) and line breaks; a language span
+is lost. Because those characters are markup there, a literal `*`, `_`, `#` or `\` in any
+text, plain strings included, is written with a backslash in front so it shows as written.
+Only `<`, `>` and the `[text](url)` pattern have no escape and are still reported as
+`$text.markup`. LimeSurvey texts are HTML, so formatting becomes `<strong>`, `<em>`, `<a
+target="_blank" rel="noopener noreferrer">`, `<span lang>`, `<p>`, `<h3>`–`<h5>`, `<ul>` /
+`<ol>` and `<br />`, with the text itself escaped; a formatted page title is HTML in the
+group description and plain text in the group name.
 
 ## The reproducibility package
 
