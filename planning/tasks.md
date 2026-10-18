@@ -195,7 +195,7 @@ Plan V: `planning/results-viewer.md` (decisions V-D1–V-D10). V1 publishes the 
 | EN5 | Show the participant's answers after submit | EN1 | §6 EN5 | todo |
 | EN6 | Quota editor in the builder | — | §6 EN6 | todo |
 | QB2 | Question bank: spec, `source`, `metadata.instruments`, osp-instruments package + verified bundle | QB1 | `planning/question-bank.md` §8 item 1 + lead decision 7 (verify every class A/B row online, URL + date; draft letter for the owner) | done |
-| QB3 | Question bank ops | QB2 | §8 item 2 | todo |
+| QB3 | Question bank ops | QB2 | §8 item 2 | review |
 | QB4 | Question bank store, API, permissions (migration 0011) | QB2 | §8 item 3 | todo |
 | QB5 | Question bank in the builder | QB3, QB4 | §8 item 4 | todo |
 | QB6 | Bundled translations | QB2 | §8 item 5 | todo |

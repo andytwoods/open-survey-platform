@@ -134,6 +134,21 @@ def row_variables(q: Json) -> set[str]:
     return {f"{p}_{r['id']}" for p in prefixes for r in q.get("rows") or []}
 
 
+def _is_free(candidate: str, taken_lower: set[str]) -> bool:
+    return (
+        candidate.lower() not in taken_lower
+        and candidate not in KEYWORDS
+        and candidate.lower() not in RESERVED_NAMES
+        and len(candidate) <= 64
+    )
+
+
+def is_free_id(doc: Json, candidate: str, *, also: set[str] | None = None) -> bool:
+    """Whether `candidate` could be a new id or name: not in use (or in `also`), not an
+    expression keyword, not reserved, within the length limit. Case-insensitive."""
+    return _is_free(candidate, {t.lower() for t in taken_names(doc) | (also or set())})
+
+
 def fresh_id(
     doc: Json, prefix: str, *, exact_first: bool = False, also: set[str] | None = None
 ) -> str:
@@ -143,12 +158,7 @@ def fresh_id(
     taken = {t.lower() for t in taken_names(doc) | (also or set())}
 
     def free(c: str) -> bool:
-        return (
-            c.lower() not in taken
-            and c not in KEYWORDS
-            and c.lower() not in RESERVED_NAMES
-            and len(c) <= 64
-        )
+        return _is_free(c, taken)
 
     if exact_first and free(prefix):
         return prefix
@@ -271,6 +281,24 @@ def expr_refs(e: Json) -> set[str]:
 
 def pipe_refs(s: str) -> set[str]:
     return {m.group(1).strip() for m in PIPE.finditer(s)}
+
+
+def remap_ids(node: Json, ids: dict[str, str]) -> Json:
+    """A copy of `node` with expression refs, `${id}` pipes and `choiceList` names pointed
+    at `ids[old]` where `ids` has an entry. An object's own `id` is never touched: the
+    caller sets those (duplicate and bank inserts both claim fresh ids first)."""
+    if isinstance(node, dict):
+        if node.get("kind") == "ref" and node.get("id") in ids:
+            return {**node, "id": ids[node["id"]]}
+        out = {k: (v if k == "id" else remap_ids(v, ids)) for k, v in node.items()}
+        if isinstance(out.get("choiceList"), str) and out["choiceList"] in ids:
+            out["choiceList"] = ids[out["choiceList"]]
+        return out
+    if isinstance(node, list):
+        return [remap_ids(v, ids) for v in node]
+    if isinstance(node, str):
+        return PIPE.sub(lambda m: f"${{{ids.get(m.group(1).strip(), m.group(1))}}}", node)
+    return node
 
 
 # --- references to deleted objects ----------------------------------------------------

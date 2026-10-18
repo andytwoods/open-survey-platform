@@ -91,6 +91,7 @@
     },
     {
       "id": "b_full",
+      "source": {"bank": "demo", "version": 1, "library": "lab"},
       "pages": [
         {"id": "p_full", "items": [{"id": "sorry", "type": "note", "label": {"en": "Full", "de": "Voll"}}]}
       ]

@@ -970,6 +970,20 @@
           }
         ]
       },
+      "ClearSourceParams": {
+        "additionalProperties": false,
+        "properties": {
+          "target": {
+            "title": "Target",
+            "type": "string"
+          }
+        },
+        "required": [
+          "target"
+        ],
+        "title": "ClearSource",
+        "type": "object"
+      },
       "ConditionFilter": {
         "additionalProperties": false,
         "properties": {
@@ -2027,6 +2041,26 @@
         "title": "Facet",
         "type": "object"
       },
+      "FlowPlacement": {
+        "additionalProperties": false,
+        "description": "Where a block's flow node goes: right after node `after` (in that node's list), or\nat the end of the top-level flow when `after` is null.",
+        "properties": {
+          "after": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "default": null,
+            "title": "After"
+          }
+        },
+        "title": "FlowPlacement",
+        "type": "object"
+      },
       "Group": {
         "properties": {
           "cells": {
@@ -2441,6 +2475,79 @@
           "preview"
         ],
         "title": "ImportSurveyResponse",
+        "type": "object"
+      },
+      "InsertBankItemParams": {
+        "additionalProperties": false,
+        "properties": {
+          "block": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "default": null,
+            "title": "Block"
+          },
+          "flow": {
+            "anyOf": [
+              {
+                "$ref": "#/components/schemas/FlowPlacement"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "default": null
+          },
+          "fragment": {
+            "additionalProperties": {
+              "$ref": "#/components/schemas/JsonValue"
+            },
+            "title": "Fragment",
+            "type": "object"
+          },
+          "index": {
+            "anyOf": [
+              {
+                "minimum": 0,
+                "type": "integer"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "default": null,
+            "title": "Index"
+          },
+          "page": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "default": null,
+            "title": "Page"
+          },
+          "source": {
+            "additionalProperties": {
+              "$ref": "#/components/schemas/JsonValue"
+            },
+            "title": "Source",
+            "type": "object"
+          }
+        },
+        "required": [
+          "fragment",
+          "source"
+        ],
+        "title": "InsertBankItem",
         "type": "object"
       },
       "InsertFlowNodeParams": {
@@ -3255,6 +3362,7 @@
           "apply_patch",
           "bulk_paste_choices",
           "change_question_type",
+          "clear_source",
           "create_choice_list",
           "delete_block",
           "delete_choice",
@@ -3267,6 +3375,7 @@
           "duplicate_block",
           "duplicate_page",
           "duplicate_question",
+          "insert_bank_item",
           "insert_flow_node",
           "move_block",
           "move_choice",

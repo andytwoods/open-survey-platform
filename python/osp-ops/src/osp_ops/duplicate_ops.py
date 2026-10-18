@@ -7,7 +7,7 @@ from __future__ import annotations
 import copy
 from typing import Any
 
-from .doc import BLOCK, PAGE, PIPE, claim_id, fresh_id, get, locate
+from .doc import BLOCK, PAGE, claim_id, fresh_id, get, locate, remap_ids
 from .registry import Ctx, Invocation, Params, op
 
 # Room for "_copy" plus a counter inside the 64-character id limit.
@@ -45,26 +45,13 @@ def _copy_page(ctx: Ctx, page: dict[str, Any], pid: str, ids: dict[str, str]) ->
     return out
 
 
-def _remap(node: Any, ids: dict[str, str]) -> Any:
-    """Point expression refs and `${id}` pipes at the copies, where `ids` has one."""
-    if isinstance(node, dict):
-        if node.get("kind") == "ref" and node.get("id") in ids:
-            return {**node, "id": ids[node["id"]]}
-        return {k: (v if k == "id" else _remap(v, ids)) for k, v in node.items()}
-    if isinstance(node, list):
-        return [_remap(v, ids) for v in node]
-    if isinstance(node, str):
-        return PIPE.sub(lambda m: f"${{{ids.get(m.group(1).strip(), m.group(1))}}}", node)
-    return node
-
-
 @op("duplicate_page", DuplicateById, label="Duplicate page", area="pages")
 def duplicate_page(ctx: Ctx, p: DuplicateById) -> Invocation:
     """Copy a page (and its questions) to just after itself, in the same block."""
     loc = locate(ctx, p.id, PAGE)
     pid = claim_id(ctx, p.new_id, "page") if p.new_id is not None else _new_id(ctx, p.id, set())
     ids: dict[str, str] = {}
-    page = _remap(_copy_page(ctx, get(ctx.doc, loc.path), pid, ids), ids)
+    page = remap_ids(_copy_page(ctx, get(ctx.doc, loc.path), pid, ids), ids)
     get(ctx.doc, loc.container).insert(loc.index + 1, page)
     ctx.touch()
     return Invocation(op="delete_page", params={"id": pid, "force": True})
@@ -87,6 +74,6 @@ def duplicate_block(ctx: Ctx, p: DuplicateById) -> Invocation:
     if isinstance(block.get("title"), str) and block["title"].strip():
         block["title"] = f"{block['title']} (copy)"
     block["pages"] = pages
-    get(ctx.doc, loc.container).insert(loc.index + 1, _remap(block, ids))
+    get(ctx.doc, loc.container).insert(loc.index + 1, remap_ids(block, ids))
     ctx.touch()
     return Invocation(op="delete_block", params={"id": bid, "force": True})
