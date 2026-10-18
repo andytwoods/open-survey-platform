@@ -43,9 +43,16 @@ A survey can carry its text in several languages. Under **Languages**, add a lan
 tag (`de`, `pt-BR`), remove one (the builder asks before deleting its translations), and
 choose the **Default language**.
 
-Every text field in the properties panel shows which language you are editing and flags a
-**Missing translation**; the diagnostics list them as warnings. Participants get the language
-their browser prefers: an exact match, then the same primary language, then the default.
+With more than one language, an **Editing language** select appears at the top of the
+properties panel (and on the flow page, and beside the consent and endings editors): every
+text field then edits that language, shows its tag and flags a **Missing translation**; the
+diagnostics list them as warnings. While you edit a language other than the default, each
+field shows the default-language text above it as a read-only **Reference** (formatting and
+piped answers included; collapse it once and every field's reference stays collapsed) with
+**Copy from &lt;default&gt;** to start the translation from it. Formatting may differ per
+language. The choice is kept in the page's address (`?lang=de`, so a link opens the same
+language) and remembered for the survey. Participants get the language their browser
+prefers: an exact match, then the same primary language, then the default.
 Exports store choice codes, not labels, so the data is the same whatever language a
 participant saw; the `_language` column records it, and the codebook has the labels in
 every language.

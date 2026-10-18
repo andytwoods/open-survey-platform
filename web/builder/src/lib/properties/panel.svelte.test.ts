@@ -379,6 +379,23 @@ describe('translations', () => {
 		await editRich(t.field('label'), 'Hallo');
 		expect(t.ops).toEqual([{ op: 'set_property', params: { target: 'q1', property: 'label', value: { en: rich, de: 'Hallo' } } }]);
 	});
+
+	it('shows the default language as a reference above a translation and copies it (RT6)', async () => {
+		const rich = { type: 'rich', blocks: [{ type: 'p', content: [{ text: 'Hi ' }, { pipe: 'name' }, { text: '!', marks: ['b'] }] }] };
+		const t = setup(schemaOf('single'), { id: 'q1', type: 'single', label: { en: rich }, help: { en: 'Be honest' } }, { language: 'de' });
+		const label = t.container.querySelector('[data-property="label"]')!;
+		const strip = label.querySelector('[data-testid="reference-strip"]')!;
+		expect(strip.querySelector('.osp-rt-ref-body')!.textContent).toContain('Hi ${name}!');
+		expect(strip.querySelector('.osp-rt-ref-body strong')!.textContent).toBe('!');
+		// Only translatable text fields edited in another language have one.
+		expect(t.container.querySelector('[data-property="help"] [data-testid="reference-strip"]')).not.toBeNull();
+		expect(t.container.querySelector('[data-property="name"] [data-testid="reference-strip"]')).toBeNull();
+		await fireEvent.click(strip.querySelector('.osp-rt-ref-copy')!);
+		expect(t.ops).toEqual([{ op: 'set_property', params: { target: 'q1', property: 'label', value: { en: rich, de: rich } } }]);
+		// In the default language there is nothing to refer to.
+		const en = setup(schemaOf('single'), { id: 'q1', type: 'single', label: { en: rich } }, { language: 'en' });
+		expect(en.container.querySelector('[data-testid="reference-strip"]')).toBeNull();
+	});
 });
 
 describe('diagnostics', () => {

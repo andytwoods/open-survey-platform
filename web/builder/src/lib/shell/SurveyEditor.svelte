@@ -2,12 +2,16 @@
 	import type { BuilderView } from '../appearance/commands';
 	import { link } from '../host/links';
 	import { storeFor } from '../sync/stores';
+	import { initEditingLanguage } from '../translations';
 	import Shell from './Shell.svelte';
 
 	/** Loads a real survey into the shell. */
 	let { surveyId, view = 'editor' }: { surveyId: string; view?: BuilderView } = $props();
 
 	const store = $derived(storeFor(surveyId));
+	// The editing language of this page (planning/rich-text.md §5): from `?lang=`, else as
+	// remembered for this survey, else the default language.
+	$effect.pre(() => initEditingLanguage(surveyId));
 
 	$effect(() => {
 		const s = store;

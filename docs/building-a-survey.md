@@ -146,9 +146,12 @@ web it reads as a link.
 Choice labels and matrix row labels (in the *Edit choices…* and *Edit rows…* dialogs) are
 one-line fields with the same editor: bold, italic, links and *Insert answer*, but no
 lists, headings or line breaks, and ++enter++ saves the row instead of starting a new
-line. A row shows its character count (of 500) only while you are editing it. The
-translations of a text are still edited as plain text (task RT6). The JSON view shows and
-accepts the stored form:
+line. A row shows its character count (of 500) only while you are editing it.
+
+A survey with several languages is edited one language at a time: the **Editing language**
+select at the top of the properties panel, with the default text shown as a reference above
+each translated field ([Settings → Languages](settings.md#languages)). The JSON view shows
+and accepts the stored form:
 
 A plain string stays a plain string. A formatted value is `{"type": "rich", "blocks":
 [...]}`, where each block is a paragraph `{"type": "p", "content": [...]}`, a heading

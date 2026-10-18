@@ -100,6 +100,10 @@
 	// (items before this one), and the server's diagnostics on the chips they are about.
 	const pipes = $derived(level === null ? null : pipeCandidates(survey, { before: addr?.target, lang: language }));
 	const problems = $derived(level === null ? new Map<string, string>() : pipeProblems(raw, language, diagnostics, pointer));
+	// Editing a translation: the default-language value is the reference (planning/rich-text.md §5).
+	const reference = $derived(
+		translatable && language !== defaultLanguage ? { value: richIn(raw, defaultLanguage), language: defaultLanguage } : null
+	);
 
 	function emit(value: unknown) {
 		if (addr) onOp(setPropertyOp(addr, value));
@@ -155,6 +159,7 @@
 			{pipes}
 			{problems}
 			placeholder={missing ? fallbackText(raw, defaultLanguage) : ''}
+			{reference}
 			labelledBy={labelId}
 			{describedBy}
 			required={spec.required}

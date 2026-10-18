@@ -2,6 +2,7 @@
 	import { RichTextEditor, RichView, type RichValue } from '../richtext';
 	import type { Outcome } from '../sync/survey-store.svelte';
 	import type { Invocation } from '../sync/transport';
+	import { EditingLanguageSelect, editLanguageOf } from '../translations';
 	import {
 		CONSENT_DEFAULTS,
 		consentOf,
@@ -20,7 +21,8 @@
 	 * button labels per language, decline counting, and a preview of what participants see
 	 * first. The text is rich at block level, the button labels inline (planning/rich-text.md
 	 * RT-D5); nothing can be piped into them, so the editors offer no chips. Texts are saved
-	 * after a pause or when a field loses focus.
+	 * after a pause or when a field loses focus. The editing language is the page's shared
+	 * one (planning/rich-text.md §5, RT6); a translation shows the default text as reference.
 	 */
 	let {
 		survey,
@@ -30,8 +32,8 @@
 
 	const consent = $derived(consentOf(survey));
 	const languages = $derived(languagesOf(survey));
-	let lang = $state('');
-	const editLang = $derived(languages.includes(lang) ? lang : defaultLanguage);
+	const editLang = $derived(editLanguageOf(survey));
+	const translating = $derived(editLang !== defaultLanguage);
 	const missing = $derived(missingConsentLanguages(consent, languages, defaultLanguage));
 	let problem = $state<string | null>(null);
 
@@ -44,6 +46,9 @@
 	const latest = () => (inFlight > 0 ? sent : consent);
 
 	const shown = (field: ConsentTextField): RichValue => richExact(consent?.[field], editLang, defaultLanguage);
+	/** The default language's value, as the reference above a translation. */
+	const reference = (field: ConsentTextField) =>
+		translating ? { value: richExact(consent?.[field], defaultLanguage, defaultLanguage), language: defaultLanguage } : null;
 	const preview = (field: ConsentTextField): RichValue => {
 		const own = shown(field);
 		if (own) return own;
@@ -93,12 +98,7 @@
 		</p>
 	{:else}
 		{#if languages.length > 1}
-			<label class="field">
-				<span>Editing language</span>
-				<select bind:value={lang}>
-					{#each languages as l (l)}<option value={l}>{l}{l === defaultLanguage ? ' (default)' : ''}</option>{/each}
-				</select>
-			</label>
+			<EditingLanguageSelect {survey} id="consent-editing-language" />
 			{#if missing.length}
 				<p class="warn" data-testid="consent-missing">Not translated yet: {missing.join(', ')}.</p>
 			{/if}
@@ -111,6 +111,7 @@
 					value={shown('text')}
 					level="block"
 					pipes={null}
+					reference={reference('text')}
 					labelledBy="consent-text-label"
 					describedBy="consent-text-help"
 					lang={editLang}
@@ -128,6 +129,7 @@
 						value={shown('agreeLabel')}
 						level="inline"
 						pipes={null}
+						reference={reference('agreeLabel')}
 						labelledBy="consent-agree-label"
 						placeholder={CONSENT_DEFAULTS.agreeLabel}
 						lang={editLang}
@@ -141,6 +143,7 @@
 						value={shown('declineLabel')}
 						level="inline"
 						pipes={null}
+						reference={reference('declineLabel')}
 						labelledBy="consent-decline-label"
 						placeholder={CONSENT_DEFAULTS.declineLabel}
 						lang={editLang}
@@ -211,17 +214,6 @@
 		font-size: var(--text-sm);
 		flex: 1;
 		min-width: 0;
-	}
-	.field select {
-		padding: var(--space-1) var(--space-2);
-		min-block-size: 2.25rem;
-		max-width: 16rem;
-		border: 1px solid var(--color-border-strong);
-		border-radius: var(--radius-md);
-		background: var(--color-surface-raised);
-		color: var(--color-text);
-		font: inherit;
-		font-size: var(--text-md);
 	}
 	.pair {
 		display: flex;
