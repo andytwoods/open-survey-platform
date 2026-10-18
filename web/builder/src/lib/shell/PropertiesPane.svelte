@@ -116,7 +116,9 @@
 	$effect(() => {
 		const r = propertyFocus.request;
 		if (!r || !node || node.id !== r.id) return;
-		// Wait for the panel when its schema is there but it has not mounted yet.
+		// Wait for the schemas while they load (an "Add page" just after the page loads can
+		// beat them, F6), then for the panel when its schema is there but it has not mounted.
+		if (store && !propertySchemas.doc && !propertySchemas.error) return;
 		if (schema && propertySchemas.doc && !panel) return;
 		const p = panel;
 		untrack(() => void focusRequested(r, p));
