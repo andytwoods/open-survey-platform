@@ -148,13 +148,11 @@ participant saw.
 - **Import** Qualtrics (`.qsf`), LimeSurvey (`.lss`) and SurveyJS (JSON) files. A preview
   lists what will be created, what will not carry over and what will behave differently,
   before anything is saved. Nothing is dropped silently.
-- **Export** the survey to **XLSForm** (ODK, Enketo, KoboToolbox) and **LimeSurvey**, each
+- **Export** the survey to **XLSForm** (ODK, Enketo, KoboToolbox), **LimeSurvey**,
+  **Qualtrics** (`.qsf`) and **SurveyJS** (JSON), each
   with a capability table that says, feature by feature, what the target can carry.
 - Responses as **CSV or JSON** with a codebook; every missing answer is labelled
   (answered, unanswered, irrelevant, not reached), never a `-99`.
-
-!!! info "Coming soon"
-    Export to Qualtrics (`.qsf`) and SurveyJS is being added.
 
 [Read more: importing](building-a-survey.md#import-a-survey) ·
 [exports](publishing.md#exporting-the-survey-itself)
@@ -219,7 +217,7 @@ products differ; check the ones you are considering.
 | Preregistration export | OSF-ready bundle with checksum, codebook and design | Usually assembled by hand from exports |
 | Randomisation record | Seeded; every order and assignment stored with the response | Varies; often only the condition |
 | Missing answers in exports | Each one labelled: unanswered, irrelevant or not reached | Often blank cells or numeric codes |
-| Survey export to other tools | XLSForm and LimeSurvey (Qualtrics and SurveyJS coming soon) | Usually the vendor's own format |
+| Survey export to other tools | XLSForm, LimeSurvey, Qualtrics and SurveyJS | Usually the vendor's own format |
 | Maturity and support | Early development; community support | Established products with support teams |
 
 ## See it in action
