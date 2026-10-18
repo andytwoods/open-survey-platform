@@ -1,7 +1,8 @@
 import { answers, canonicalJson, restore, isState, view, withChecksum, type Plan } from '@osp/engine';
+import { HookRunner, type HookManifest, type InvokeOutcome, type InvokeRequest } from '@osp/hooks-sandbox';
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 import { NetworkError } from '../src/lib/api';
-import { boot, isPrefix, type Env, type Session } from '../src/lib/session';
+import { boot, isPrefix, type Env, type HookFactory, type Session } from '../src/lib/session';
 import { MemoryStore, type LocalStore, type PointerRecord, type SessionPointer } from '../src/lib/storage';
 import { FakeServer } from './fake-server';
 
@@ -779,5 +780,71 @@ describe('errors after a refresh (R4-2)', () => {
 		expect(b.view().items.every((i) => i.error === null)).toBe(true);
 		expect(await b.next()).toBe('invalid');
 		expect(Object.keys(b.view().errors)).toEqual(['age']);
+	});
+});
+
+describe('researcher hooks (runtime-design §7a)', () => {
+	const manifest: HookManifest = {
+		format: 'osp-hooks/1',
+		source: '',
+		handlers: { onPageShown: { reads: [], writes: [] }, onPageNext: { reads: ['age'], writes: [] } }
+	};
+	const hooked = () => withChecksum({ ...plan(), hooks: manifest } as unknown as Plan);
+
+	/** A sandbox that answers every call at once, except the ones `hold` keeps waiting. */
+	function invoker(hold: string[] = []) {
+		const calls: InvokeRequest[] = [];
+		const waiting: (() => void)[] = [];
+		return {
+			calls,
+			release: () => waiting.splice(0).forEach((r) => r()),
+			invoke(req: InvokeRequest): Promise<InvokeOutcome> {
+				calls.push(req);
+				if (!hold.includes(req.event)) return Promise.resolve({ status: 'ok', actions: [] });
+				return new Promise((resolve) => waiting.push(() => resolve({ status: 'ok', actions: [] })));
+			},
+			dispose() {}
+		};
+	}
+	const factory = (inv: ReturnType<typeof invoker>, ready: Promise<void> = Promise.resolve()): HookFactory =>
+		async (p, state, onState) => {
+			await ready;
+			return new HookRunner({ plan: p, manifest, invoker: inv, state, onState });
+		};
+	const nextReads = (inv: ReturnType<typeof invoker>) =>
+		inv.calls.filter((c) => c.event === 'onPageNext').map((c) => (c.ctx as { results: Record<string, unknown> }).results);
+
+	it('an answer typed while onPageShown runs is applied when it is done, not dropped', async () => {
+		const p = hooked();
+		const inv = invoker(['onPageShown']);
+		const s = await open({ ...env(new FakeServer(p)), hooks: factory(inv) });
+		expect(s.phase).toBe('hook');
+		s.answer('age', '42');
+		expect(s.state.data.values.age).toBeUndefined();
+		inv.release();
+		await settle();
+		expect(s.phase).toBe('page');
+		expect(s.state.data.values.age).toBe(42);
+		const next = s.next();
+		await settle();
+		inv.release(); // p2's onPageShown
+		expect(await next).toBe('advanced');
+		expect(nextReads(inv)).toEqual([{ age: expect.objectContaining({ value: 42 }) }]);
+		expect(view(s.state).page).toBe('p2');
+	});
+
+	it('while the sandbox loads, Next waits and answers are held for the runner', async () => {
+		const p = hooked();
+		const inv = invoker();
+		let loaded!: () => void;
+		const s = await open({ ...env(new FakeServer(p)), hooks: factory(inv, new Promise((r) => (loaded = r))) });
+		expect(s.phase).toBe('hook');
+		expect(await s.next()).toBeNull();
+		s.answer('age', '7');
+		loaded();
+		await settle();
+		expect(s.phase).toBe('page');
+		expect(s.state.data.values.age).toBe(7);
+		expect(inv.calls.map((c) => c.event)).toEqual(['onPageShown']);
 	});
 });

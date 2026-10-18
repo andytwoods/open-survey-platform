@@ -29,6 +29,7 @@
 	let {
 		title,
 		saveState = 'saved',
+		edits = 0,
 		view = 'editor',
 		viewTabs = false,
 		results = false,
@@ -43,6 +44,8 @@
 	}: {
 		title: string;
 		saveState?: SaveState;
+		/** The store's `edits` (items queued since load), on the status for tests to wait on. */
+		edits?: number;
 		view?: BuilderView;
 		/** Show the Questions / Flow switch (a real survey is open). */
 		viewTabs?: boolean;
@@ -156,7 +159,7 @@
 {/snippet}
 
 {#snippet saveStatus()}
-	<span class="save-state" role="status" data-state={saveState}>
+	<span class="save-state" role="status" data-state={saveState} data-edits={edits}>
 		<save.icon size={16} aria-hidden="true" />
 		<span>{save.text}</span>
 	</span>

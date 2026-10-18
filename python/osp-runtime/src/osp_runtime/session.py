@@ -360,6 +360,7 @@ class SessionService:
         policy: SessionPolicy | None = None,
         start_limiter: TokenBucket | None = None,
         resume_limiter: TokenBucket | None = None,
+        client_limiter: TokenBucket | None = None,
         return_secret: bytes | None = None,
     ) -> None:
         self._repo = repo
@@ -373,7 +374,7 @@ class SessionService:
         # Defaults: bursts of 30 starts per survey link, refilling 5 a second, and 10
         # per client, refilling one every 6 s.
         self._start_limiter = start_limiter or TokenBucket(30, 5, clock)
-        self._client_limiter = TokenBucket(10, 1 / 6, clock)
+        self._client_limiter = client_limiter or TokenBucket(10, 1 / 6, clock)
         self._resume_limiter = resume_limiter or TokenBucket(20, 1, clock)
 
     # -- publish (researcher side; auth is the caller's job) -------------------------

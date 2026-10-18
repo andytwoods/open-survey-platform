@@ -62,7 +62,9 @@ def build(db_dir: Path, host: str = "127.0.0.1") -> FastAPI:
     migrate(engine)
     key = base64.b64encode(secrets.token_bytes(32)).decode("ascii")
     store = Store(engine, Keyring({"k1": key}, active="k1"))
-    services = build_services(store)
+    # Every e2e tab is one client (127.0.0.1): new participant sessions per client get a
+    # burst of 10, then one every 6 s, which repeated publish/hooks runs use up (429).
+    services = build_services(store, session_client_limiter=TokenBucket(1000, 100.0))
     # Live results (task LV3): the shortest poll interval the server allows, so an e2e test
     # sees a seeded response within a second or two; and a limiter wide enough for several
     # live tests polling in parallel as the one dev user (production: a burst of 5, then 1/s).

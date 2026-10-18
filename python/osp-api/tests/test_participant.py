@@ -548,6 +548,19 @@ def test_session_start_is_rate_limited(tmp_path):
     assert env.client.post("/api/s/demo/sessions").status_code == 201
 
 
+def test_new_sessions_per_client_are_limited_and_the_limit_is_configurable(tmp_path):
+    env = Env(tmp_path)
+    env.publish("demo")
+    codes = [env.client.post("/api/s/demo/sessions").status_code for _ in range(11)]
+    assert codes == [201] * 10 + [429]  # default: a burst of 10 per client
+    env.service = SessionService(
+        env.repo, clock=env.clock, client_limiter=TokenBucket(2, 1, env.clock)
+    )
+    env.client = TestClient(create_app(env.service))
+    codes = [env.client.post("/api/s/demo/sessions").status_code for _ in range(3)]
+    assert codes == [201, 201, 429]
+
+
 def test_endpoints_answer_503_without_a_service():
     client = TestClient(create_app())
     assert client.post("/api/s/demo/sessions").status_code == 503

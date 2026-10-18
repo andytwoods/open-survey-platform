@@ -1,15 +1,16 @@
 import { readFileSync } from 'node:fs';
 import { expect, test, type Page, type Request } from '@playwright/test';
 import { pickQuestionType, signIn, writeHeaders } from './fixtures';
+import { E2E_OUT_DIR } from './out-dir';
 
 // The pages as a host embeds them (planning/pages-split.md F1–F3): a host page is just
-// `<div id="osp">`, the JSON config tag and the page's files from build/manifest.json. The
+// `<div id="osp">`, the JSON config tag and the page's files from manifest.json. The
 // tests below serve such host pages at /host/<page> (page.route), with their own link
 // templates, API base, CSRF scheme and sign-in behaviour.
 
 type Manifest = { version: 1; pages: Record<string, { js: string; css: string[]; preload: string[] }> };
 const manifest = (): Manifest =>
-	JSON.parse(readFileSync(new URL('../build/manifest.json', import.meta.url), 'utf8')) as Manifest;
+	JSON.parse(readFileSync(new URL('manifest.json', E2E_OUT_DIR), 'utf8')) as Manifest;
 
 /** The host's link templates: every page under /host/, the survey id in the query. */
 const HOST_LINKS = {

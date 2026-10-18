@@ -675,6 +675,7 @@
 		<TopBar
 			{title}
 			saveState={store?.saveState ?? 'saved'}
+			edits={store?.edits ?? 0}
 			{view}
 			viewTabs={!!store}
 			results={hasResults}

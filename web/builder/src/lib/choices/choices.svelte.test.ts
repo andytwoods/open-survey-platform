@@ -133,7 +133,9 @@ describe('ChoiceListEditor labels', () => {
 		expect(t.container.querySelectorAll('[contenteditable]')).toHaveLength(0);
 		// jsdom is slow; the bound only catches a per-row editor creeping back in.
 		expect(rendered).toBeLessThan(5000);
-	});
+		// The render alone may take up to 5 s, vitest's default for the whole test: CI's
+		// Windows runner timed out here with the render inside its bound.
+	}, 20_000);
 
 	it('has no axe violations at rest and with a row open', async () => {
 		const { t, label } = setup();

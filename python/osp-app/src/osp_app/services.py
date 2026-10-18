@@ -11,7 +11,7 @@ import threading
 import time
 from dataclasses import dataclass, field
 
-from osp_runtime import SessionService
+from osp_runtime import SessionService, TokenBucket
 from osp_store import Store, SystemContext
 
 from .auth import Actor
@@ -92,10 +92,12 @@ def build_services(
     auto_create_labs: bool = True,
     external_token_key: bytes | None = None,
     bank_host_sharing: bool = True,
+    session_client_limiter: TokenBucket | None = None,
 ) -> AppServices:
     sessions = SessionService(
         StoreParticipantRepo(store),
         return_secret=external_token_key,
+        client_limiter=session_client_limiter,
         **({"clock": clock.now} if clock is not None else {}),
     )
     return AppServices(

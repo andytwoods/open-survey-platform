@@ -122,7 +122,8 @@
 			let t = '';
 			if (ast) {
 				const res = await service.print(ast);
-				if (mine !== seq) return;
+				// The text view is the source once it is shown: a late print must not replace it.
+				if (mine !== seq || mode !== 'tree') return;
 				if (res.text === null) {
 					checked = { text, ok: false, ast: null, diagnostics: res.diagnostics };
 					return;
@@ -151,7 +152,7 @@
 		const ast = untrack(() => value) as ExprNode;
 		void (async () => {
 			const res = await service.print(ast);
-			if (res.text !== null) {
+			if (res.text !== null && text === '') {
 				text = res.text;
 				await check(res.text, ast);
 			}
@@ -193,9 +194,25 @@
 		mode = 'tree';
 	}
 
-	function showText() {
+	/**
+	 * Open the text view on the tree's current text: print it now (not when the tree's debounce
+	 * fires), so nothing replaces the text after the editor is up and someone types into it.
+	 */
+	let toText: Promise<void> | null = null;
+	function showText(): Promise<void> {
 		notice = '';
-		mode = 'text';
+		if (mode === 'text') return Promise.resolve();
+		toText ??= (async () => {
+			clearTimeout(timer);
+			const snapshot = JSON.stringify(compiled.ast);
+			try {
+				await syncFromTree(snapshot === undefined ? null : JSON.parse(snapshot));
+				mode = 'text';
+			} finally {
+				toText = null;
+			}
+		})();
+		return toText;
 	}
 
 	function fix(fixKey: string, question: string) {
