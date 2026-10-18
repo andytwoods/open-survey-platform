@@ -1,0 +1,772 @@
+{
+  "SurveyEntry": {
+    "SurveyID": "SV_SsawkKLmBqjofVw",
+    "SurveyName": "Piping",
+    "SurveyDescription": "§8 piping: choice label, raw values, HTML escaping, empty for missing values.",
+    "SurveyOwnerID": "",
+    "SurveyBrandID": "",
+    "DivisionID": null,
+    "SurveyLanguage": "EN",
+    "SurveyActiveResponseSet": "RS_BIBKXTScUHVXe7G",
+    "SurveyStatus": "Inactive",
+    "SurveyStartDate": "0000-00-00 00:00:00",
+    "SurveyExpirationDate": "0000-00-00 00:00:00",
+    "SurveyCreationDate": "0000-00-00 00:00:00",
+    "CreatorID": "",
+    "LastModified": "0000-00-00 00:00:00",
+    "LastAccessed": "0000-00-00 00:00:00",
+    "LastActivated": "0000-00-00 00:00:00",
+    "Deleted": null
+  },
+  "SurveyElements": [
+    {
+      "SurveyID": "SV_SsawkKLmBqjofVw",
+      "Element": "BL",
+      "PrimaryAttribute": "Survey Blocks",
+      "SecondaryAttribute": null,
+      "TertiaryAttribute": null,
+      "Payload": [
+        {
+          "Type": "Default",
+          "Description": "p1",
+          "ID": "BL_L1QIyxM6ncktDAE",
+          "BlockElements": [
+            {
+              "Type": "Question",
+              "QuestionID": "QID1"
+            },
+            {
+              "Type": "Question",
+              "QuestionID": "QID2"
+            },
+            {
+              "Type": "Question",
+              "QuestionID": "QID3"
+            },
+            {
+              "Type": "Question",
+              "QuestionID": "QID4"
+            },
+            {
+              "Type": "Question",
+              "QuestionID": "QID5"
+            }
+          ],
+          "Options": {
+            "BlockLocking": "false",
+            "RandomizeQuestions": "false",
+            "BlockVisibility": "Expanded"
+          }
+        },
+        {
+          "Type": "Standard",
+          "Description": "p1b",
+          "ID": "BL_2DH0X92xey4VfR5",
+          "BlockElements": [
+            {
+              "Type": "Question",
+              "QuestionID": "QID6"
+            },
+            {
+              "Type": "Question",
+              "QuestionID": "QID7"
+            }
+          ],
+          "Options": {
+            "BlockLocking": "false",
+            "RandomizeQuestions": "false",
+            "BlockVisibility": "Expanded"
+          }
+        },
+        {
+          "Type": "Standard",
+          "Description": "p_opt",
+          "ID": "BL_rEk8bs7B6LOFnPe",
+          "BlockElements": [
+            {
+              "Type": "Question",
+              "QuestionID": "QID8"
+            }
+          ],
+          "Options": {
+            "BlockLocking": "false",
+            "RandomizeQuestions": "false",
+            "BlockVisibility": "Expanded"
+          }
+        },
+        {
+          "Type": "Standard",
+          "Description": "p2",
+          "ID": "BL_7RSXXcwEyk5nCrU",
+          "BlockElements": [
+            {
+              "Type": "Question",
+              "QuestionID": "QID9"
+            },
+            {
+              "Type": "Question",
+              "QuestionID": "QID10"
+            },
+            {
+              "Type": "Question",
+              "QuestionID": "QID11"
+            },
+            {
+              "Type": "Question",
+              "QuestionID": "QID12"
+            },
+            {
+              "Type": "Question",
+              "QuestionID": "QID13"
+            },
+            {
+              "Type": "Question",
+              "QuestionID": "QID14"
+            }
+          ],
+          "Options": {
+            "BlockLocking": "false",
+            "RandomizeQuestions": "false",
+            "BlockVisibility": "Expanded"
+          }
+        },
+        {
+          "Type": "Trash",
+          "Description": "Trash / Unused Questions",
+          "ID": "BL_OX3xPwmiSD9nclG",
+          "BlockElements": []
+        }
+      ]
+    },
+    {
+      "SurveyID": "SV_SsawkKLmBqjofVw",
+      "Element": "FL",
+      "PrimaryAttribute": "Survey Flow",
+      "SecondaryAttribute": null,
+      "TertiaryAttribute": null,
+      "Payload": {
+        "Type": "Root",
+        "FlowID": "FL_1",
+        "Flow": [
+          {
+            "Type": "Block",
+            "ID": "BL_L1QIyxM6ncktDAE",
+            "FlowID": "FL_2",
+            "Autofill": []
+          },
+          {
+            "Type": "Standard",
+            "ID": "BL_2DH0X92xey4VfR5",
+            "FlowID": "FL_3",
+            "Autofill": []
+          },
+          {
+            "Type": "Branch",
+            "FlowID": "FL_5",
+            "Description": "branch_1 (then)",
+            "BranchLogic": {
+              "0": {
+                "0": {
+                  "LogicType": "Question",
+                  "QuestionID": "QID5",
+                  "QuestionIsInLoop": "no",
+                  "ChoiceLocator": "q://QID5/SelectableChoice/2",
+                  "Operator": "Selected",
+                  "QuestionIDFromLocator": "QID5",
+                  "LeftOperand": "q://QID5/SelectableChoice/2",
+                  "Type": "Expression",
+                  "Description": "QID5 choice 2 is Selected"
+                },
+                "Type": "If"
+              },
+              "Type": "BooleanExpression",
+              "inPage": false
+            },
+            "Flow": [
+              {
+                "Type": "Standard",
+                "ID": "BL_rEk8bs7B6LOFnPe",
+                "FlowID": "FL_4",
+                "Autofill": []
+              }
+            ]
+          },
+          {
+            "Type": "Standard",
+            "ID": "BL_7RSXXcwEyk5nCrU",
+            "FlowID": "FL_6",
+            "Autofill": []
+          },
+          {
+            "Type": "EndSurvey",
+            "FlowID": "FL_7"
+          }
+        ],
+        "Properties": {
+          "Count": 7
+        }
+      }
+    },
+    {
+      "SurveyID": "SV_SsawkKLmBqjofVw",
+      "Element": "SO",
+      "PrimaryAttribute": "Survey Options",
+      "SecondaryAttribute": null,
+      "TertiaryAttribute": null,
+      "Payload": {
+        "BackButton": "true",
+        "SaveAndContinue": "true",
+        "SurveyProtection": "PublicSurvey",
+        "BallotBoxStuffingPrevention": "false",
+        "NoIndex": "Yes",
+        "SecureResponseFiles": "true",
+        "SurveyExpiration": "None",
+        "Header": "",
+        "Footer": "",
+        "ProgressBarDisplay": "None",
+        "PreviousButton": "",
+        "NextButton": "",
+        "SurveyTitle": "Piping",
+        "SurveyLanguage": "EN"
+      }
+    },
+    {
+      "SurveyID": "SV_SsawkKLmBqjofVw",
+      "Element": "QC",
+      "PrimaryAttribute": "Survey Question Count",
+      "SecondaryAttribute": "14",
+      "TertiaryAttribute": null,
+      "Payload": null
+    },
+    {
+      "SurveyID": "SV_SsawkKLmBqjofVw",
+      "Element": "RS",
+      "PrimaryAttribute": "RS_BIBKXTScUHVXe7G",
+      "SecondaryAttribute": "Default Response Set",
+      "TertiaryAttribute": null,
+      "Payload": null
+    },
+    {
+      "SurveyID": "SV_SsawkKLmBqjofVw",
+      "Element": "SQ",
+      "PrimaryAttribute": "QID1",
+      "SecondaryAttribute": "Which fruit do you like best?",
+      "TertiaryAttribute": null,
+      "Payload": {
+        "QuestionText": "Which fruit do you like best?",
+        "DefaultChoices": false,
+        "DataExportTag": "fav_fruit",
+        "QuestionType": "MC",
+        "Selector": "SAVR",
+        "Configuration": {
+          "QuestionDescriptionOption": "UseText",
+          "TextPosition": "inline"
+        },
+        "QuestionDescription": "Which fruit do you like best?",
+        "Language": {},
+        "QuestionID": "QID1",
+        "DataVisibility": {
+          "Private": false,
+          "Hidden": false
+        },
+        "SubSelector": "TX",
+        "Choices": {
+          "1": {
+            "Display": "Apple"
+          },
+          "2": {
+            "Display": "Banana"
+          },
+          "3": {
+            "Display": "Cherry"
+          }
+        },
+        "ChoiceOrder": [
+          "1",
+          "2",
+          "3"
+        ],
+        "NextChoiceId": 4,
+        "RecodeValues": {
+          "1": "1",
+          "2": "2",
+          "3": "3"
+        },
+        "NextAnswerId": 1,
+        "Validation": {
+          "Settings": {
+            "ForceResponse": "OFF",
+            "ForceResponseType": "ON",
+            "Type": "None"
+          }
+        }
+      }
+    },
+    {
+      "SurveyID": "SV_SsawkKLmBqjofVw",
+      "Element": "SQ",
+      "PrimaryAttribute": "QID2",
+      "SecondaryAttribute": "How many pets would you like?",
+      "TertiaryAttribute": null,
+      "Payload": {
+        "QuestionText": "How many pets would you like?",
+        "DefaultChoices": false,
+        "DataExportTag": "n_pets",
+        "QuestionType": "TE",
+        "Selector": "SL",
+        "Configuration": {
+          "QuestionDescriptionOption": "UseText"
+        },
+        "QuestionDescription": "How many pets would you like?",
+        "Language": {},
+        "QuestionID": "QID2",
+        "DataVisibility": {
+          "Private": false,
+          "Hidden": false
+        },
+        "Validation": {
+          "Settings": {
+            "ForceResponse": "OFF",
+            "ForceResponseType": "ON",
+            "Type": "ContentType",
+            "ContentType": "ValidNumber",
+            "ValidNumber": {
+              "Min": "",
+              "Max": "",
+              "NumDecimals": "0"
+            }
+          }
+        }
+      }
+    },
+    {
+      "SurveyID": "SV_SsawkKLmBqjofVw",
+      "Element": "SQ",
+      "PrimaryAttribute": "QID3",
+      "SecondaryAttribute": "Choose a nickname.",
+      "TertiaryAttribute": null,
+      "Payload": {
+        "QuestionText": "Choose a nickname.",
+        "DefaultChoices": false,
+        "DataExportTag": "nickname",
+        "QuestionType": "TE",
+        "Selector": "SL",
+        "Configuration": {
+          "QuestionDescriptionOption": "UseText"
+        },
+        "QuestionDescription": "Choose a nickname.",
+        "Language": {},
+        "QuestionID": "QID3",
+        "DataVisibility": {
+          "Private": false,
+          "Hidden": false
+        },
+        "Validation": {
+          "Settings": {
+            "ForceResponse": "OFF",
+            "ForceResponseType": "ON",
+            "Type": "None"
+          }
+        }
+      }
+    },
+    {
+      "SurveyID": "SV_SsawkKLmBqjofVw",
+      "Element": "SQ",
+      "PrimaryAttribute": "QID4",
+      "SecondaryAttribute": "Optional: a favourite word.",
+      "TertiaryAttribute": null,
+      "Payload": {
+        "QuestionText": "Optional: a favourite word.",
+        "DefaultChoices": false,
+        "DataExportTag": "empty_q",
+        "QuestionType": "TE",
+        "Selector": "SL",
+        "Configuration": {
+          "QuestionDescriptionOption": "UseText"
+        },
+        "QuestionDescription": "Optional: a favourite word.",
+        "Language": {},
+        "QuestionID": "QID4",
+        "DataVisibility": {
+          "Private": false,
+          "Hidden": false
+        },
+        "Validation": {
+          "Settings": {
+            "ForceResponse": "OFF",
+            "ForceResponseType": "ON",
+            "Type": "None"
+          }
+        }
+      }
+    },
+    {
+      "SurveyID": "SV_SsawkKLmBqjofVw",
+      "Element": "SQ",
+      "PrimaryAttribute": "QID5",
+      "SecondaryAttribute": "Skip the optional page?",
+      "TertiaryAttribute": null,
+      "Payload": {
+        "QuestionText": "Skip the optional page?",
+        "DefaultChoices": false,
+        "DataExportTag": "skip_opt",
+        "QuestionType": "MC",
+        "Selector": "SAVR",
+        "Configuration": {
+          "QuestionDescriptionOption": "UseText",
+          "TextPosition": "inline"
+        },
+        "QuestionDescription": "Skip the optional page?",
+        "Language": {},
+        "QuestionID": "QID5",
+        "DataVisibility": {
+          "Private": false,
+          "Hidden": false
+        },
+        "SubSelector": "TX",
+        "Choices": {
+          "1": {
+            "Display": "Yes"
+          },
+          "2": {
+            "Display": "No"
+          }
+        },
+        "ChoiceOrder": [
+          "1",
+          "2"
+        ],
+        "NextChoiceId": 3,
+        "RecodeValues": {
+          "1": "1",
+          "2": "2"
+        },
+        "NextAnswerId": 1,
+        "Validation": {
+          "Settings": {
+            "ForceResponse": "ON",
+            "ForceResponseType": "ON",
+            "Type": "None"
+          }
+        }
+      }
+    },
+    {
+      "SurveyID": "SV_SsawkKLmBqjofVw",
+      "Element": "SQ",
+      "PrimaryAttribute": "QID6",
+      "SecondaryAttribute": "Name them.",
+      "TertiaryAttribute": null,
+      "Payload": {
+        "QuestionText": "Name them.",
+        "DefaultChoices": false,
+        "DataExportTag": "pet_names",
+        "QuestionType": "TE",
+        "Selector": "SL",
+        "Configuration": {
+          "QuestionDescriptionOption": "UseText"
+        },
+        "QuestionDescription": "Name them.",
+        "Language": {},
+        "QuestionID": "QID6",
+        "DataVisibility": {
+          "Private": false,
+          "Hidden": false
+        },
+        "Validation": {
+          "Settings": {
+            "ForceResponse": "OFF",
+            "ForceResponseType": "ON",
+            "Type": "None"
+          }
+        },
+        "DisplayLogic": {
+          "0": {
+            "0": {
+              "LogicType": "Question",
+              "QuestionID": "QID2",
+              "QuestionIsInLoop": "no",
+              "ChoiceLocator": "q://QID2/ChoiceTextEntryValue",
+              "Operator": "GreaterThan",
+              "QuestionIDFromLocator": "QID2",
+              "LeftOperand": "q://QID2/ChoiceTextEntryValue",
+              "RightOperand": "5",
+              "Type": "Expression",
+              "Description": "QID2 GreaterThan 5"
+            },
+            "1": {
+              "LogicType": "Question",
+              "QuestionID": "QID2",
+              "QuestionIsInLoop": "no",
+              "ChoiceLocator": "q://QID2/ChoiceTextEntryValue",
+              "Operator": "NotEmpty",
+              "QuestionIDFromLocator": "QID2",
+              "LeftOperand": "q://QID2/ChoiceTextEntryValue",
+              "Type": "Expression",
+              "Description": "QID2 NotEmpty",
+              "Conjuction": "And"
+            },
+            "Type": "If"
+          },
+          "Type": "BooleanExpression",
+          "inPage": false
+        }
+      }
+    },
+    {
+      "SurveyID": "SV_SsawkKLmBqjofVw",
+      "Element": "SQ",
+      "PrimaryAttribute": "QID7",
+      "SecondaryAttribute": "How many plants do you have?",
+      "TertiaryAttribute": null,
+      "Payload": {
+        "QuestionText": "How many plants do you have?",
+        "DefaultChoices": false,
+        "DataExportTag": "plants",
+        "QuestionType": "TE",
+        "Selector": "SL",
+        "Configuration": {
+          "QuestionDescriptionOption": "UseText"
+        },
+        "QuestionDescription": "How many plants do you have?",
+        "Language": {},
+        "QuestionID": "QID7",
+        "DataVisibility": {
+          "Private": false,
+          "Hidden": false
+        },
+        "Validation": {
+          "Settings": {
+            "ForceResponse": "OFF",
+            "ForceResponseType": "ON",
+            "Type": "ContentType",
+            "ContentType": "ValidNumber",
+            "ValidNumber": {
+              "Min": "",
+              "Max": "",
+              "NumDecimals": "0"
+            }
+          }
+        }
+      }
+    },
+    {
+      "SurveyID": "SV_SsawkKLmBqjofVw",
+      "Element": "SQ",
+      "PrimaryAttribute": "QID8",
+      "SecondaryAttribute": "Optional page: type anything.",
+      "TertiaryAttribute": null,
+      "Payload": {
+        "QuestionText": "Optional page: type anything.",
+        "DefaultChoices": false,
+        "DataExportTag": "opt_q",
+        "QuestionType": "TE",
+        "Selector": "SL",
+        "Configuration": {
+          "QuestionDescriptionOption": "UseText"
+        },
+        "QuestionDescription": "Optional page: type anything.",
+        "Language": {},
+        "QuestionID": "QID8",
+        "DataVisibility": {
+          "Private": false,
+          "Hidden": false
+        },
+        "Validation": {
+          "Settings": {
+            "ForceResponse": "OFF",
+            "ForceResponseType": "ON",
+            "Type": "None"
+          }
+        }
+      }
+    },
+    {
+      "SurveyID": "SV_SsawkKLmBqjofVw",
+      "Element": "SQ",
+      "PrimaryAttribute": "QID9",
+      "SecondaryAttribute": "You picked ${q://QID1/ChoiceGroup/SelectedChoices}.",
+      "TertiaryAttribute": null,
+      "Payload": {
+        "QuestionText": "You picked ${q://QID1/ChoiceGroup/SelectedChoices}.",
+        "DefaultChoices": false,
+        "DataExportTag": "pipe_choice",
+        "QuestionType": "TE",
+        "Selector": "SL",
+        "Configuration": {
+          "QuestionDescriptionOption": "UseText"
+        },
+        "QuestionDescription": "You picked ${q://QID1/ChoiceGroup/SelectedChoices}.",
+        "Language": {},
+        "QuestionID": "QID9",
+        "DataVisibility": {
+          "Private": false,
+          "Hidden": false
+        },
+        "Validation": {
+          "Settings": {
+            "ForceResponse": "OFF",
+            "ForceResponseType": "ON",
+            "Type": "None"
+          }
+        }
+      }
+    },
+    {
+      "SurveyID": "SV_SsawkKLmBqjofVw",
+      "Element": "SQ",
+      "PrimaryAttribute": "QID10",
+      "SecondaryAttribute": "You would like ${q://QID2/ChoiceTextEntryValue} pets.",
+      "TertiaryAttribute": null,
+      "Payload": {
+        "QuestionText": "You would like ${q://QID2/ChoiceTextEntryValue} pets.",
+        "DefaultChoices": false,
+        "DataExportTag": "pipe_int",
+        "QuestionType": "TE",
+        "Selector": "SL",
+        "Configuration": {
+          "QuestionDescriptionOption": "UseText"
+        },
+        "QuestionDescription": "You would like ${q://QID2/ChoiceTextEntryValue} pets.",
+        "Language": {},
+        "QuestionID": "QID10",
+        "DataVisibility": {
+          "Private": false,
+          "Hidden": false
+        },
+        "Validation": {
+          "Settings": {
+            "ForceResponse": "OFF",
+            "ForceResponseType": "ON",
+            "Type": "None"
+          }
+        }
+      }
+    },
+    {
+      "SurveyID": "SV_SsawkKLmBqjofVw",
+      "Element": "SQ",
+      "PrimaryAttribute": "QID11",
+      "SecondaryAttribute": "Hello ${q://QID3/ChoiceTextEntryValue}!",
+      "TertiaryAttribute": null,
+      "Payload": {
+        "QuestionText": "Hello ${q://QID3/ChoiceTextEntryValue}!",
+        "DefaultChoices": false,
+        "DataExportTag": "pipe_text",
+        "QuestionType": "TE",
+        "Selector": "SL",
+        "Configuration": {
+          "QuestionDescriptionOption": "UseText"
+        },
+        "QuestionDescription": "Hello ${q://QID3/ChoiceTextEntryValue}!",
+        "Language": {},
+        "QuestionID": "QID11",
+        "DataVisibility": {
+          "Private": false,
+          "Hidden": false
+        },
+        "Validation": {
+          "Settings": {
+            "ForceResponse": "OFF",
+            "ForceResponseType": "ON",
+            "Type": "None"
+          }
+        }
+      }
+    },
+    {
+      "SurveyID": "SV_SsawkKLmBqjofVw",
+      "Element": "SQ",
+      "PrimaryAttribute": "QID12",
+      "SecondaryAttribute": "Favourite word: [${q://QID4/ChoiceTextEntryValue}]",
+      "TertiaryAttribute": null,
+      "Payload": {
+        "QuestionText": "Favourite word: [${q://QID4/ChoiceTextEntryValue}]",
+        "DefaultChoices": false,
+        "DataExportTag": "pipe_empty",
+        "QuestionType": "TE",
+        "Selector": "SL",
+        "Configuration": {
+          "QuestionDescriptionOption": "UseText"
+        },
+        "QuestionDescription": "Favourite word: [${q://QID4/ChoiceTextEntryValue}]",
+        "Language": {},
+        "QuestionID": "QID12",
+        "DataVisibility": {
+          "Private": false,
+          "Hidden": false
+        },
+        "Validation": {
+          "Settings": {
+            "ForceResponse": "OFF",
+            "ForceResponseType": "ON",
+            "Type": "None"
+          }
+        }
+      }
+    },
+    {
+      "SurveyID": "SV_SsawkKLmBqjofVw",
+      "Element": "SQ",
+      "PrimaryAttribute": "QID13",
+      "SecondaryAttribute": "Pet names: [${q://QID6/ChoiceTextEntryValue}]",
+      "TertiaryAttribute": null,
+      "Payload": {
+        "QuestionText": "Pet names: [${q://QID6/ChoiceTextEntryValue}]",
+        "DefaultChoices": false,
+        "DataExportTag": "pipe_irr",
+        "QuestionType": "TE",
+        "Selector": "SL",
+        "Configuration": {
+          "QuestionDescriptionOption": "UseText"
+        },
+        "QuestionDescription": "Pet names: [${q://QID6/ChoiceTextEntryValue}]",
+        "Language": {},
+        "QuestionID": "QID13",
+        "DataVisibility": {
+          "Private": false,
+          "Hidden": false
+        },
+        "Validation": {
+          "Settings": {
+            "ForceResponse": "OFF",
+            "ForceResponseType": "ON",
+            "Type": "None"
+          }
+        }
+      }
+    },
+    {
+      "SurveyID": "SV_SsawkKLmBqjofVw",
+      "Element": "SQ",
+      "PrimaryAttribute": "QID14",
+      "SecondaryAttribute": "Optional page answer: [${q://QID8/ChoiceTextEntryValue}]",
+      "TertiaryAttribute": null,
+      "Payload": {
+        "QuestionText": "Optional page answer: [${q://QID8/ChoiceTextEntryValue}]",
+        "DefaultChoices": false,
+        "DataExportTag": "pipe_nr",
+        "QuestionType": "TE",
+        "Selector": "SL",
+        "Configuration": {
+          "QuestionDescriptionOption": "UseText"
+        },
+        "QuestionDescription": "Optional page answer: [${q://QID8/ChoiceTextEntryValue}]",
+        "Language": {},
+        "QuestionID": "QID14",
+        "DataVisibility": {
+          "Private": false,
+          "Hidden": false
+        },
+        "Validation": {
+          "Settings": {
+            "ForceResponse": "OFF",
+            "ForceResponseType": "ON",
+            "Type": "None"
+          }
+        }
+      }
+    }
+  ]
+}
