@@ -31,7 +31,7 @@ test('typing sends one set_property after a pause; focus and the caret survive t
 	const field = page.getByLabel('Question text');
 	await expect(field).toHaveText('How many hours do you sleep?');
 	await openRich(page, field);
-	await caretToEnd(page);
+	await caretToEnd(field);
 	await page.keyboard.type(' Really', { delay: 20 });
 	await expect(log(page).getByRole('listitem')).toHaveCount(1);
 	await expect(log(page)).toContainText('"property":"label","value":{"en":"How many hours do you sleep? Really"}');

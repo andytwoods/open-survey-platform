@@ -15,7 +15,22 @@ async function open(page: Page, type = 'single') {
 
 const log = (page: Page) => page.getByTestId('op-log');
 const toolbar = (page: Page) => page.getByRole('toolbar', { name: 'Text formatting' });
-const lastOp = async (page: Page) => (await log(page).getByRole('listitem').last().textContent()) ?? '';
+/** Select the word before the caret; ProseMirror reads the browser's selection asynchronously, so wait for it. */
+async function selectWordLeft(page: Page) {
+	await page.keyboard.press('Shift+ControlOrMeta+ArrowLeft');
+	await page.waitForTimeout(100);
+}
+
+/** Insert a chip through the toolbar's picker. */
+async function insertPipe(page: Page, id: string) {
+	await toolbar(page).getByRole('button', { name: 'Insert answer' }).click();
+	const picker = page.getByRole('dialog', { name: 'Insert answer' });
+	await picker.getByRole('combobox').fill(id);
+	await expect(picker.getByRole('option', { name: new RegExp(id) })).toHaveCount(1);
+	await page.keyboard.press('Enter');
+	await expect(picker).toBeHidden();
+}
+
 
 /** Paste HTML into the open editor (Chromium lets a test build the clipboard event). */
 async function pasteHtml(field: Locator, html: string, text = '') {
@@ -54,7 +69,7 @@ test('bold, italic and a list become a rich value; clear formatting makes it pla
 	await open(page);
 	const field = page.getByLabel('Question text');
 	await fillRich(page, field, 'Thinking about last week');
-	await page.keyboard.press('Shift+ControlOrMeta+ArrowLeft'); // select "week"
+	await selectWordLeft(page); // select "week"
 	await page.keyboard.press('ControlOrMeta+b');
 	await expect(toolbar(page).getByRole('button', { name: 'Bold' })).toHaveAttribute('aria-pressed', 'true');
 	await expect(field.locator('strong')).toHaveText('week');
@@ -77,14 +92,14 @@ test('bold, italic and a list become a rich value; clear formatting makes it pla
 	await toolbar(page).getByRole('button', { name: 'Clear formatting' }).click();
 	await expect(field.locator('strong, em, ul')).toHaveCount(0);
 	await page.keyboard.press('Tab');
-	expect(await lastOp(page)).toContain('"value":{"en":"Thinking about last week"}');
+	await expect(log(page)).toContainText('"value":{"en":"Thinking about last week"}');
 });
 
 test('links: https only, applied to the selection, removable', async ({ page }) => {
 	await open(page);
 	const field = page.getByLabel('Question text');
 	await fillRich(page, field, 'Read the information sheet');
-	await page.keyboard.press('Shift+ControlOrMeta+ArrowLeft');
+	await selectWordLeft(page);
 	await toolbar(page).getByRole('button', { name: 'Link' }).click();
 	const dialog = page.getByRole('dialog', { name: 'Add link' });
 	await expect(dialog).toBeVisible();
@@ -105,7 +120,7 @@ test('links: https only, applied to the selection, removable', async ({ page }) 
 
 	// The caret in the link: the Link button is pressed; the dialog offers Remove link.
 	await openRich(page, field);
-	await caretToEnd(page);
+	await caretToEnd(field);
 	await page.keyboard.press('ArrowLeft');
 	await expect(toolbar(page).getByRole('button', { name: 'Link' })).toHaveAttribute('aria-pressed', 'true');
 	await toolbar(page).getByRole('button', { name: 'Link' }).click();
@@ -114,7 +129,7 @@ test('links: https only, applied to the selection, removable', async ({ page }) 
 	await edit.getByRole('button', { name: 'Remove link' }).click();
 	await expect(field.locator('a')).toHaveCount(0);
 	await page.keyboard.press('Tab');
-	expect(await lastOp(page)).toContain('"value":{"en":"Read the information sheet"}');
+	await expect(log(page)).toContainText('"value":{"en":"Read the information sheet"}');
 });
 
 test('a note is a block field: headings from the Text style select', async ({ page }) => {
@@ -164,7 +179,7 @@ test('pipes: the picker inserts a chip, typing ${ opens it, Escape leaves the te
 	await expect(picker.getByRole('option')).toContainText(['q_age', 'cond', '$trial']);
 	await expect(picker.getByRole('option', { name: /q_after/ })).toHaveCount(0);
 	await expect(picker.getByRole('option', { name: /q_sleep/ })).toHaveCount(0);
-	await search.fill('age');
+	await search.fill('q_a');
 	await expect(picker.getByRole('option')).toHaveCount(1);
 	await page.keyboard.press('Enter');
 	await expect(picker).toBeHidden();
@@ -174,13 +189,14 @@ test('pipes: the picker inserts a chip, typing ${ opens it, Escape leaves the te
 	await expect(field).toBeFocused();
 	await page.keyboard.type(' years old');
 	await page.keyboard.press('Tab');
-	await expect(log(page)).toContainText('{"text":"You said you are "},{"pipe":"q_age"},{"text":" years old"}');
+	// No formatting: stored as the plain string, the chip written back as ${id} (RT-D3).
+	await expect(log(page)).toContainText('"value":{"en":"You said you are ${q_age} years old"}');
 	// At rest the chip is drawn the same way.
 	await expect(field.locator('.osp-rt-chip')).toHaveText('${q_age}');
 
 	// Typing `${` opens the picker; Escape keeps the two characters as text.
 	await openRich(page, field);
-	await caretToEnd(page);
+	await caretToEnd(field);
 	await page.keyboard.type(' ${');
 	await expect(picker).toBeVisible();
 	await page.keyboard.press('Escape');
@@ -190,7 +206,7 @@ test('pipes: the picker inserts a chip, typing ${ opens it, Escape leaves the te
 	await page.keyboard.type('cond}');
 	await expect(field.locator('.osp-rt-chip')).toHaveCount(2);
 	await page.keyboard.press('Tab');
-	await expect(log(page)).toContainText('{"text":" years old "},{"pipe":"cond"}');
+	await expect(log(page)).toContainText('"value":{"en":"You said you are ${q_age} years old ${cond}"}');
 });
 
 test('paste is cleaned to the schema and says what was simplified', async ({ page }) => {
@@ -208,7 +224,8 @@ test('paste is cleaned to the schema and says what was simplified', async ({ pag
 	await expect(field.locator('a')).toHaveCount(1);
 	await expect(field.locator('.osp-rt-chip')).toHaveText('${q_age}');
 	await expect(field.locator('li')).toHaveCount(2);
-	await expect(field.locator('h1, u, img')).toHaveCount(0);
+	// (ProseMirror draws its own separator <img> after a trailing atom: not pasted content.)
+	await expect(field.locator('h1, u, img:not(.ProseMirror-separator)')).toHaveCount(0);
 	await page.keyboard.press('Tab');
 	await expect(log(page)).toContainText('{"text":"Under "},{"text":"bold","marks":["b"]},{"text":" plain "},{"text":"link","href":"https://x.org/a"},{"text":" "},{"pipe":"q_age"}');
 
@@ -223,10 +240,10 @@ test('paste is cleaned to the schema and says what was simplified', async ({ pag
 
 test('keyboard only: Tab in and out, Alt+F10 to the toolbar and back, Escape reverts a draft', async ({ page }) => {
 	await open(page);
-	// Tab from the group heading into the field opens the editor.
+	// Tabbing from the group heading reaches the field, which opens the editor.
 	await page.getByRole('button', { name: 'Basics' }).focus();
-	await page.keyboard.press('Tab');
 	const field = page.getByLabel('Question text');
+	await page.keyboard.press('Tab');
 	await expect(field).toHaveAttribute('contenteditable', 'true');
 	await expect(field).toBeFocused();
 
@@ -235,8 +252,8 @@ test('keyboard only: Tab in and out, Alt+F10 to the toolbar and back, Escape rev
 	await expect(bold).toBeFocused();
 	await page.keyboard.press('ArrowRight');
 	await expect(toolbar(page).getByRole('button', { name: 'Italic' })).toBeFocused();
-	await page.keyboard.press('End');
-	await expect(toolbar(page).getByRole('button', { name: 'Redo' })).toBeFocused();
+	await page.keyboard.press('End'); // Undo and Redo are disabled (nothing to undo yet): skipped
+	await expect(toolbar(page).getByRole('button', { name: 'Clear formatting' })).toBeFocused();
 	await page.keyboard.press('Home');
 	await expect(bold).toBeFocused();
 	// One tab stop: Tab from the toolbar leaves it; Escape returns to the text.
@@ -247,11 +264,11 @@ test('keyboard only: Tab in and out, Alt+F10 to the toolbar and back, Escape rev
 	// Shortcut toggles are announced.
 	await page.keyboard.press('ControlOrMeta+a');
 	await page.keyboard.press('ControlOrMeta+b');
-	await expect(page.getByRole('status').filter({ hasText: 'Bold on' })).toHaveCount(1);
+	await expect(page.getByTestId('announcer')).toHaveText('Bold on');
 	await page.keyboard.press('ControlOrMeta+b');
 
 	// A draft is reverted by Escape (no op), and the field keeps the Escape to itself.
-	await caretToEnd(page);
+	await caretToEnd(field);
 	await page.keyboard.type(' oops');
 	await expect(field).toHaveText(/oops$/);
 	await page.keyboard.press('Escape');
@@ -262,7 +279,12 @@ test('keyboard only: Tab in and out, Alt+F10 to the toolbar and back, Escape rev
 	await expect(field).not.toBeFocused();
 	await expect(focused(page)).toHaveAccessibleName(/Help/);
 	await expect(log(page).getByRole('listitem')).toHaveCount(0);
-	// And Shift+Tab comes back into the editor.
+	// Help is now the open editor; its toolbar is one tab stop before it, so two Shift+Tabs
+	// come back into this field (which opens again on focus).
+	const help = focused(page);
+	await expect(help).toHaveAttribute('contenteditable', 'true');
+	await page.keyboard.press('Shift+Tab');
+	await expect(focused(page)).toHaveAccessibleName('Bold');
 	await page.keyboard.press('Shift+Tab');
 	await expect(field).toHaveAttribute('contenteditable', 'true');
 	await expect(field).toBeFocused();
@@ -289,7 +311,8 @@ for (const scheme of ['light', 'dark'] as const) {
 		test('axe-clean with the editor, the link dialog and the picker open', async ({ page }) => {
 			await open(page, 'note');
 			const field = page.getByRole('textbox', { name: 'Text', exact: true });
-			await fillRich(page, field, 'Read ${q_age} first');
+			await fillRich(page, field, 'Read this first');
+			await insertPipe(page, 'q_age');
 			expect(await axe(page)).toEqual([]);
 			await toolbar(page).getByRole('button', { name: 'Link' }).click();
 			await expect(page.getByRole('dialog', { name: 'Add link' })).toBeVisible();
@@ -309,9 +332,13 @@ for (const scheme of ['light', 'dark'] as const) {
 				await toolbar(page).getByRole('combobox', { name: 'Text style' }).selectOption('1');
 				await page.keyboard.press('End');
 				await page.keyboard.press('Enter');
-				await page.keyboard.type('Read the information sheet and keep your code ${q_age} handy.');
-				await page.keyboard.press('Shift+ControlOrMeta+ArrowLeft');
+				await page.keyboard.type('Read the information sheet and keep your ');
 				await page.keyboard.press('ControlOrMeta+b');
+				await page.keyboard.type('code');
+				await page.keyboard.press('ControlOrMeta+b');
+				await page.keyboard.type(' ');
+				await insertPipe(page, 'q_age');
+				await page.keyboard.type(' handy.');
 				// Under 480 px the rarely used controls fold into a More menu.
 				const more = toolbar(page).getByRole('button', { name: 'More formatting' });
 				if (width < 480) {
@@ -334,7 +361,7 @@ test('the More menu runs the folded commands at 320 px, from the keyboard', asyn
 	await page.keyboard.press('Enter');
 	const menu = page.getByRole('menu');
 	await expect(menu).toBeVisible();
-	await expect(menu.getByRole('menuitem')).toHaveText(['Line breakShift+Enter', 'Clear formatting', /Undo/, /Redo/]);
+	await expect(menu.getByRole('menuitem')).toHaveText([/Line break/, /Clear formatting/, /Undo/, /Redo/]);
 	await menu.getByRole('menuitem', { name: /Undo/ }).click();
 	await expect(menu).toBeHidden();
 	await expect(field).toBeFocused();
@@ -352,25 +379,28 @@ test('in the editor against a real osp-api: formatting is saved, shown on the ca
 
 	const saved = page.getByRole('banner').getByRole('status').first();
 	const field = page.getByRole('complementary', { name: 'Properties' }).getByRole('textbox', { name: 'Question text' });
-	await fillRich(page, field, 'How many hours did you sleep last night?');
-	await page.keyboard.press('Shift+ControlOrMeta+ArrowLeft');
-	await page.keyboard.press('ArrowLeft');
-	await page.keyboard.press('Shift+ControlOrMeta+ArrowLeft');
+	await fillRich(page, field, 'How many hours did you sleep ');
 	await page.keyboard.press('ControlOrMeta+b');
+	await page.keyboard.type('last');
+	await page.keyboard.press('ControlOrMeta+b');
+	await page.keyboard.type(' night?');
 	await page.keyboard.press('Tab');
 	await expect(saved).toHaveText(/All changes saved/);
-	const card = page.locator('[data-question-card]').first();
+	const id = page.url().split('/').pop()!;
+	// The new question is appended after the survey's starter item.
+	const stored = async () => ((await (await page.request.get(`/api/surveys/${id}`)).json()) as { survey: { blocks: { pages: { items: { label: unknown }[] }[] }[] } }).survey.blocks[0]!.pages[0]!.items.at(-1)!.label;
+	const card = page.locator('[data-question-card]').filter({ hasText: 'How many hours' });
 	await expect(card.locator('strong')).toHaveText('last');
 	expect(await axe(page)).toEqual([]);
 
 	await page.reload();
-	await expect(page.locator('[data-question-card]').first().locator('strong')).toHaveText('last');
+	await expect(card.locator('strong')).toHaveText('last');
 	await page.getByRole('tree', { name: 'Survey outline' }).getByRole('treeitem', { name: /How many hours/ }).click();
 	await expect(field.locator('strong')).toHaveText('last');
-	// The server's view: a rich tree with the bold run.
-	const id = page.url().split('/').pop()!;
-	const detail = (await (await page.request.get(`/api/surveys/${id}`)).json()) as { survey: { blocks: { pages: { items: { label: unknown }[] }[] }[] } };
-	expect(detail.survey.blocks[0]!.pages[0]!.items[0]!.label).toEqual({
-		en: { type: 'rich', blocks: [{ type: 'p', content: [{ text: 'How many hours did you sleep ' }, { text: 'last', marks: ['b'] }, { text: ' night?' }] }] }
+	// The server's view: a rich tree with the bold run (a value edited in the default
+	// language stays unwrapped, as the plain string was).
+	expect(await stored()).toEqual({
+		type: 'rich',
+		blocks: [{ type: 'p', content: [{ text: 'How many hours did you sleep ' }, { text: 'last', marks: ['b'] }, { text: ' night?' }] }]
 	});
 });

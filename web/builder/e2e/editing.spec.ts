@@ -53,7 +53,7 @@ test('create, add, rename, undo, redo, reload', async ({ page }) => {
 	const redo = page.getByRole('banner').getByRole('button', { name: 'Redo', exact: true });
 	await undo.click();
 	await expect(question(page, 'New question')).toBeVisible();
-	await expect(field).toHaveValue('New question');
+	await expect(field).toHaveText('New question');
 	await undo.click();
 	await expect(question(page, 'New question')).toHaveCount(0);
 	await redo.click();

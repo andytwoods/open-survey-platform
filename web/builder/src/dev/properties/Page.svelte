@@ -1,5 +1,5 @@
 <script lang="ts">
-	import { theme } from '@osp/ui-components';
+	import { Announcer, theme } from '@osp/ui-components';
 	import fixture from '#lib/properties/fixtures/property-schemas.json';
 	import PropertyPanel from '#lib/properties/PropertyPanel.svelte';
 	import type { OpenEditorRequest, PanelDiagnostic, PropertySchemasDoc, PanelOp } from '#lib/properties/types.js';
@@ -86,6 +86,7 @@
 </script>
 
 
+<Announcer />
 <main class="page">
 	<h1>Property panel</h1>
 	<div class="controls">

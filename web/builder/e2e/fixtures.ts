@@ -96,11 +96,19 @@ export function focused(page: Page) {
 // editor (a contenteditable with the same accessible name) swaps in. A locator by label
 // resolves to whichever is present, so these helpers wait for the editor before typing.
 
-/** Focus a rich-text field and wait for its editor to open. */
+/**
+ * Focus a rich-text field and wait for its editor to open. Waits for the rich field itself
+ * first: until the property schemas load, the properties pane shows a plain fallback input
+ * with the same name.
+ */
 export async function openRich(page: Page, field: Locator): Promise<void> {
+	await expect(field).toHaveAttribute('role', 'textbox');
 	await field.click();
 	await expect(field).toHaveAttribute('contenteditable', 'true');
 	await expect(field).toBeFocused();
+	// The toolbar appears above the text and may now sit under the pointer: park the mouse
+	// so no tooltip opens (a tooltip is portalled outside the landmarks axe checks).
+	await page.mouse.move(0, 0);
 }
 
 /** Replace a rich-text field's content with `text` (the editor stays open and focused). */
@@ -111,10 +119,10 @@ export async function fillRich(page: Page, field: Locator, text: string): Promis
 	if (text) await page.keyboard.type(text);
 }
 
-/** Put the caret at the end of the open editor's text (End alone does not move it on macOS). */
-export async function caretToEnd(page: Page): Promise<void> {
-	await page.keyboard.press('ControlOrMeta+a');
-	await page.keyboard.press('ArrowRight');
+/** Put the caret at the end of an open editor's text (keyboard End differs per platform). */
+export async function caretToEnd(field: Locator): Promise<void> {
+	await field.evaluate((el) => (el as HTMLElement & { editor: { commands: { focus(where: string): void } } }).editor.commands.focus('end'));
+	await expect(field).toBeFocused();
 }
 
 /**

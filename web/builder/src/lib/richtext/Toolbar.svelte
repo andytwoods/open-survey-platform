@@ -81,7 +81,8 @@
 		return () => mq.removeEventListener('change', apply);
 	});
 
-	const items = () => (root ? [...root.querySelectorAll<HTMLElement>('[data-tb]')] : []);
+	/** The toolbar's controls that can take focus (a disabled Undo is skipped). */
+	const items = () => (root ? [...root.querySelectorAll<HTMLElement>('[data-tb]:not(:disabled)')] : []);
 
 	/** Move focus to the toolbar (Alt+F10): the item that last had it. */
 	export function focus() {

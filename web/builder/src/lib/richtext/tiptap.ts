@@ -19,7 +19,7 @@ import Paragraph from '@tiptap/extension-paragraph';
 import Text from '@tiptap/extension-text';
 import { Placeholder, UndoRedo } from '@tiptap/extensions';
 import { Fragment, Slice, type Node as PmNodeModel, type Schema } from '@tiptap/pm/model';
-import { Plugin, PluginKey } from '@tiptap/pm/state';
+import { Plugin, PluginKey, Selection, TextSelection } from '@tiptap/pm/state';
 import { Decoration, DecorationSet } from '@tiptap/pm/view';
 import { M, N, PIPE_RE, isPipeRef, type PmNode } from './convert';
 import type { Level } from './levels';
@@ -470,14 +470,19 @@ export function insertPipe(editor: Editor, id: string, range?: Range | null): vo
 	else chain.insertContent(node).run();
 }
 
-/** Put the caret where the researcher clicked on the read-only view, if anywhere. */
+/**
+ * Put the caret where the researcher clicked on the read-only view (else at the end) and
+ * focus the editor now. Synchronous on purpose: Tiptap's own `focus()` waits for an
+ * animation frame, during which a Tab that just landed on the field would find nothing
+ * focused and move on.
+ */
 export function placeCaret(editor: Editor, point: { x: number; y: number } | null): void {
+	const { doc } = editor.state;
+	let selection = Selection.atEnd(doc);
 	if (point) {
 		const at = editor.view.posAtCoords({ left: point.x, top: point.y });
-		if (at) {
-			editor.commands.focus(at.pos);
-			return;
-		}
+		if (at) selection = TextSelection.near(doc.resolve(at.pos));
 	}
-	editor.commands.focus('end');
+	editor.view.dispatch(editor.state.tr.setSelection(selection).scrollIntoView());
+	editor.view.focus();
 }

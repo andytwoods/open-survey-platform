@@ -72,9 +72,10 @@
 			<Input label="Link text" bind:value={linkText} />
 		{/if}
 		<div class="actions">
-			{#if hasLink}<Button variant="ghost" onclick={remove}>Remove link</Button>{/if}
+			<!-- type="button": inside the form these must not submit (submit = Add link). -->
+			{#if hasLink}<Button type="button" variant="ghost" onclick={remove}>Remove link</Button>{/if}
 			<span class="spacer"></span>
-			<Button variant="ghost" onclick={() => (open = false)}>Cancel</Button>
+			<Button type="button" variant="ghost" onclick={() => (open = false)}>Cancel</Button>
 			<Button variant="primary" type="submit">{hasLink ? 'Save' : 'Add link'}</Button>
 		</div>
 	</form>

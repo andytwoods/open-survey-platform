@@ -184,9 +184,18 @@
 	onDestroy(() => {
 		registry?.delete(handle);
 		flush();
-		editor?.destroy();
-		editor = null;
+		destroyEditor();
 	});
+
+	/**
+	 * Tiptap's destroy() blurs the view, which dispatches one last transaction; our
+	 * onTransaction must not touch state then (teardown may run inside Svelte's render).
+	 */
+	function destroyEditor() {
+		const e = editor;
+		editor = null;
+		e?.destroy();
+	}
 
 	// --- Edit on focus ----------------------------------------------------------------------
 
@@ -237,8 +246,7 @@
 	function deactivate() {
 		if (!active) return;
 		flush();
-		editor?.destroy();
-		editor = null;
+		destroyEditor();
 		tb = null;
 		active = false;
 		status = '';
