@@ -479,7 +479,7 @@ describe('the list of answers under the ending (EN5, end-of-survey plan §4.4)',
 		await settle(60_000);
 		expect(s.phase).toBe('done');
 		expect(ids(s)).toEqual(['age', 'why']);
-		expect(s.summary![1]!.value).toEqual([{ kind: 'value', text: 'because' }]);
+		expect(s.summary![1]!.value).toEqual([{ type: 'p', content: [{ kind: 'value', text: 'because' }] }]);
 
 		const none = new FakeServer(summaryPlan('none'));
 		const n = await open(env(none));
