@@ -1,0 +1,24 @@
+<!doctype html>
+<html lang="en">
+	<head>
+		<meta charset="utf-8" />
+		<meta name="viewport" content="width=device-width, initial-scale=1" />
+		<title>Themes · Open Survey Platform demo</title>
+		<meta name="description" content="The demo lab's theme library." />
+		<meta name="osp-demo-root" content="../" />
+		<meta name="osp-demo-page" content="themes" />
+		<link rel="icon" href="../favicon.svg" type="image/svg+xml" />
+		<link rel="icon" href="../favicon-32.png" sizes="32x32" type="image/png" />
+		<link rel="apple-touch-icon" href="../apple-touch-icon.png" />
+		<script>
+			try {
+				var t = localStorage.getItem('osp-theme');
+				if (t === 'light' || t === 'dark') document.documentElement.dataset.theme = t;
+			} catch (e) {}
+		</script>
+	</head>
+	<body>
+		<div id="osp"></div>
+		<script type="module" src="../main.ts"></script>
+	</body>
+</html>

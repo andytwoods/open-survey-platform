@@ -20,7 +20,7 @@ PNPM := pnpm
 # them in the console code page (cp1252) and fail on the first non-ASCII character.
 export PYTHONUTF8 := 1
 
-CHECKS := py-test py-layers py-lint web-check web-test web-build contract-check licence-check harness-quick engine-test hooks-test sim-test spec-test docs-check ops-parity
+CHECKS := py-test py-layers py-lint web-check web-test web-build contract-check licence-check harness-quick engine-test hooks-test sim-test spec-test docs-check ops-parity demo-e2e
 
 # `make check CHECK_SKIP="harness-quick"` leaves targets out: CI runs the browser suites as
 # their own jobs (.github/workflows/ci.yml), and the Windows job skips what needs a POSIX
@@ -77,12 +77,8 @@ licence-check:
 # `docs-screenshots` redraws docs/assets/screenshots/ with Playwright against a fresh stack
 # (web/builder/docs/), like the demo videos; not part of `make check`, commit the PNGs.
 # sim-build first: the Results screenshot is drawn over `osp-cli fake-responses` data.
-# `docs-showcase` then writes lossless WebP copies of the home page's (feature tour, task
-# SHOW1) images into docs/assets/showcase/, a third of the PNG size. It needs `cwebp`
-# (libwebp; a tool here, not a project dependency, like ffmpeg for the demo videos).
-CWEBP ?= cwebp
-SHOWCASE_SHOTS := editor type-picker flow-branches languages appearance bank endings results-present import publish participant-phone
-.PHONY: docs docs-check docs-serve docs-screenshots docs-showcase
+# The home page shows the live demo instead of screenshots (task DEMO2, `docs-demo` below).
+.PHONY: docs docs-check docs-serve docs-screenshots
 docs:
 	$(UV_RUN) mkdocs build --strict
 
@@ -94,14 +90,27 @@ docs-serve:
 docs-screenshots: sim-build
 	OSP_DOCS_PORT="$${OSP_DOCS_PORT:-$(HARNESS_FREE_PORT)}" OSP_DOCS_API_PORT="$${OSP_DOCS_API_PORT:-$(HARNESS_FREE_PORT)}" \
 		$(PNPM) -C web --filter @osp/builder exec playwright test -c docs/playwright.config.ts $(DOCS_ARGS)
-	$(MAKE) docs-showcase
 
-docs-showcase:
-	@mkdir -p docs/assets/showcase
-	@for name in $(SHOWCASE_SHOTS); do \
-		$(CWEBP) -quiet -lossless -z 9 -metadata none docs/assets/screenshots/$$name.png -o docs/assets/showcase/$$name.webp || exit 1; \
-	done
-	@du -ch docs/assets/showcase/*.webp | tail -1
+# Serverless Pages demo (task DEMO2): the builder on a prespecified study and "Take the study",
+# as static files with no server (web/builder/demo-site/, web/builder/src/lib/demo/).
+# `demo-build` writes the demo's static data from the Python packages through the real API
+# (scripts/demo_data.py) and builds web/builder/build-demo/; `docs-demo` is `make docs` plus
+# that build copied to the site's /demo/ (what the docs workflow deploys); `demo-e2e` serves
+# the build with a plain static server, every /api request aborted (web/builder/e2e-demo/).
+# Part of `make check` (about 10 s; needs Playwright's Chromium, so CI's check jobs skip it and
+# the Ubuntu builder e2e job runs it; the docs workflow runs it before deploying).
+.PHONY: demo-build docs-demo demo-e2e
+demo-build:
+	$(UV_RUN) python scripts/demo_data.py
+	$(PNPM) -C web --filter @osp/builder exec vite build -c vite.demo.config.ts --logLevel warn
+
+docs-demo: docs demo-build
+	rm -rf .build/site/demo
+	cp -R web/builder/build-demo .build/site/demo
+
+demo-e2e: demo-build
+	OSP_PAGES_DEMO_PORT="$${OSP_PAGES_DEMO_PORT:-$(HARNESS_FREE_PORT)}" \
+		$(PNPM) -C web --filter @osp/builder exec playwright test -c e2e-demo/playwright.config.ts $(DEMO_E2E_ARGS)
 
 # Fixture harness (task R4, web/harness): every fixture script played through the real
 # participant app (web/runtime) in a real browser against osp-api on a fresh SQLite store

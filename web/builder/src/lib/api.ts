@@ -54,7 +54,22 @@ function sessionEndedResponse(): Response {
 	});
 }
 
+/** Answers every API call in the page itself instead of the network (the Pages demo). */
+export type LocalBackend = (request: Request) => Promise<Response>;
+
+let localBackend: LocalBackend | null = null;
+
+/**
+ * Route every call of the generated client to `backend` (null: back to the network). Only
+ * the serverless demo (src/lib/demo/, task DEMO2) sets one, before it mounts a page; a
+ * host's pages never do.
+ */
+export function setLocalBackend(backend: LocalBackend | null) {
+	localBackend = backend;
+}
+
 async function hostFetch(request: Request): Promise<Response> {
+	if (localBackend) return localBackend(request);
 	const cfg = pageConfig();
 	const u = new URL(request.url);
 	const origin = typeof location === 'undefined' ? u.origin : location.origin;

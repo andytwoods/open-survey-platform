@@ -1,8 +1,10 @@
 name: Docs
 
-# Builds the docs site (mkdocs.yml, docs/) and publishes it to GitHub Pages from main.
-# Pull requests and other branches get the same strict build from `make check` (docs-check
-# in ci.yml), so a broken link never reaches main. The site is at
+# Builds the docs site (mkdocs.yml, docs/) with the serverless demo under /demo/ (the
+# builder on a prespecified study, and /demo/take/ to take it: web/builder/demo-site/, task
+# DEMO2) and publishes it to GitHub Pages from main. Pull requests and other branches get
+# the same strict docs build from `make check` (docs-check in ci.yml) and the demo's e2e from
+# the builder e2e job, so a broken link or a broken demo never reaches main. The site is at
 # https://andytwoods.github.io/open-survey-platform/ once Pages is set to "GitHub Actions"
 # in the repository settings (Settings → Pages → Source).
 
@@ -15,8 +17,13 @@ on:
       - mkdocs.yml
       - contract/openapi.json
       - scripts/docs_openapi.py
+      - scripts/demo_data.py
       - pyproject.toml
       - uv.lock
+      - Makefile
+      # The demo is built from the builder, the participant app and the Python packages.
+      - "web/**"
+      - "python/**"
       - .github/workflows/docs.yml
   workflow_dispatch:
 
@@ -32,12 +39,13 @@ concurrency:
 
 env:
   UV_VERSION: "0.11.23"
+  NODE_VERSION: "24"
 
 jobs:
   build:
     name: build
     runs-on: ubuntu-latest
-    timeout-minutes: 10
+    timeout-minutes: 15
     steps:
       - uses: actions/checkout@v4
 
@@ -47,12 +55,42 @@ jobs:
           enable-cache: true
           cache-dependency-glob: uv.lock
 
-      # Only the docs tooling: the site needs MkDocs, not the workspace packages.
-      - name: Install (docs group, from the lockfile)
-        run: uv sync --locked --only-group docs
+      - uses: pnpm/action-setup@v4
+        with:
+          package_json_file: web/package.json
 
-      - name: mkdocs build --strict
-        run: uv run --locked --no-sync mkdocs build --strict
+      - uses: actions/setup-node@v4
+        with:
+          node-version: ${{ env.NODE_VERSION }}
+          cache: pnpm
+          cache-dependency-path: web/pnpm-lock.yaml
+
+      # The whole workspace: the demo's static data comes from the Python packages through
+      # the real API (scripts/demo_data.py), and the demo is the builder's own code.
+      - name: Install (from lockfiles)
+        run: make install
+
+      - name: Playwright browsers (Chromium)
+        uses: ./.github/actions/playwright
+        with:
+          package: web/builder
+
+      # The demo, served as plain static files with every /api request blocked.
+      - name: make demo-e2e
+        run: make demo-e2e
+
+      # mkdocs build --strict into .build/site, then the demo into .build/site/demo/.
+      - name: make docs-demo
+        run: make docs-demo
+
+      - name: Upload demo e2e traces
+        if: failure()
+        uses: actions/upload-artifact@v4
+        with:
+          name: demo-e2e-results
+          path: web/builder/e2e-demo/test-results
+          if-no-files-found: ignore
+          retention-days: 7
 
       - uses: actions/upload-pages-artifact@v3
         with:
