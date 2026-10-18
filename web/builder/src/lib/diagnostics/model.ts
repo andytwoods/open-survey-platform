@@ -6,13 +6,15 @@
  */
 import { pointerSegments } from '../json/source';
 
-export type TargetId = 'xlsform' | 'lss';
+export type TargetId = 'xlsform' | 'lss' | 'qsf' | 'surveyjs';
 export type TargetChoice = TargetId | 'none';
 
 export const TARGET_OPTIONS: { value: TargetChoice; label: string }[] = [
 	{ value: 'none', label: 'None' },
 	{ value: 'xlsform', label: 'XLSForm' },
-	{ value: 'lss', label: 'LimeSurvey' }
+	{ value: 'lss', label: 'LimeSurvey' },
+	{ value: 'qsf', label: 'Qualtrics' },
+	{ value: 'surveyjs', label: 'SurveyJS' }
 ];
 
 export const targetLabel = (t: TargetChoice) => TARGET_OPTIONS.find((o) => o.value === t)?.label ?? t;

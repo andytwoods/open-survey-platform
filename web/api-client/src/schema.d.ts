@@ -801,6 +801,23 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
+    "/api/surveys/{survey_id}/export/qsf": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** Export Qsf */
+        get: operations["exportQsf"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
     "/api/surveys/{survey_id}/export/responses": {
         parameters: {
             query?: never;
@@ -810,6 +827,23 @@ export interface paths {
         };
         /** Export Responses */
         get: operations["exportResponses"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/surveys/{survey_id}/export/surveyjs": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** Export Surveyjs */
+        get: operations["exportSurveyjs"];
         put?: never;
         post?: never;
         delete?: never;
@@ -2244,7 +2278,7 @@ export interface components {
              * Target
              * @enum {string}
              */
-            target: "xlsform" | "lss";
+            target: "xlsform" | "lss" | "qsf" | "surveyjs";
         };
         /** ExportDiagnostic */
         ExportDiagnostic: {
@@ -2281,7 +2315,7 @@ export interface components {
              * Id
              * @enum {string}
              */
-            id: "xlsform" | "lss";
+            id: "xlsform" | "lss" | "qsf" | "surveyjs";
             /** Label */
             label: string;
         };
@@ -7221,7 +7255,7 @@ export interface operations {
     checkExport: {
         parameters: {
             query: {
-                target: "xlsform" | "lss";
+                target: "xlsform" | "lss" | "qsf" | "surveyjs";
             };
             header?: never;
             path: {
@@ -7403,6 +7437,64 @@ export interface operations {
             };
         };
     };
+    exportQsf: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                survey_id: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Qualtrics survey file (.qsf) */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": string;
+                };
+            };
+            /** @description Unauthorized */
+            401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorBody"];
+                };
+            };
+            /** @description Forbidden */
+            403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorBody"];
+                };
+            };
+            /** @description Not Found */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorBody"];
+                };
+            };
+            /** @description Unprocessable Content */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["RejectedBody"];
+                };
+            };
+        };
+    };
     exportResponses: {
         parameters: {
             query?: {
@@ -7434,6 +7526,64 @@ export interface operations {
                 content: {
                     "application/json": Record<string, never>;
                     "text/csv": string;
+                };
+            };
+            /** @description Unauthorized */
+            401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorBody"];
+                };
+            };
+            /** @description Forbidden */
+            403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorBody"];
+                };
+            };
+            /** @description Not Found */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorBody"];
+                };
+            };
+            /** @description Unprocessable Content */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["RejectedBody"];
+                };
+            };
+        };
+    };
+    exportSurveyjs: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                survey_id: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description SurveyJS survey JSON */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": string;
                 };
             };
             /** @description Unauthorized */

@@ -13,17 +13,32 @@ from functools import cache
 from typing import Any, Literal
 
 from fastapi import APIRouter, Response
-from osp_targets import TABLES, ExportDiagnostic, Level, build_lss, build_xlsform
+from osp_targets import (
+    TABLES,
+    ExportDiagnostic,
+    Level,
+    build_lss,
+    build_qsf,
+    build_surveyjs,
+    build_xlsform,
+)
 from pydantic import BaseModel, Field
 
 from .common import Auth, Services, errors
 
-TargetId = Literal["xlsform", "lss"]
+TargetId = Literal["xlsform", "lss", "qsf", "surveyjs"]
 
-_LABELS: dict[str, str] = {"xlsform": "XLSForm", "lss": "LimeSurvey"}
+_LABELS: dict[str, str] = {
+    "xlsform": "XLSForm",
+    "lss": "LimeSurvey",
+    "qsf": "Qualtrics",
+    "surveyjs": "SurveyJS",
+}
 _DESCRIPTIONS: dict[str, str] = {
     "xlsform": "XLSForm workbook for ODK, Enketo and KoboToolbox (.xlsx).",
     "lss": "LimeSurvey survey structure (.lss).",
+    "qsf": "Qualtrics survey file (.qsf).",
+    "surveyjs": "SurveyJS survey JSON (.json).",
 }
 
 
@@ -34,6 +49,8 @@ def _diagnostics_only(build: Callable[[Any], tuple[Any, list[ExportDiagnostic]]]
 _CHECKS: dict[str, Callable[[Mapping[str, Any]], list[ExportDiagnostic]]] = {
     "xlsform": _diagnostics_only(build_xlsform),
     "lss": _diagnostics_only(build_lss),
+    "qsf": _diagnostics_only(build_qsf),
+    "surveyjs": _diagnostics_only(build_surveyjs),
 }
 
 

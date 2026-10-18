@@ -1,0 +1,80 @@
+{
+  "title": "End nodes",
+  "description": "§6: explicit end nodes with codes, inside branches and at the end of the flow; endings per outcome (end-of-survey plan §4.1): title, piped body, node message above it, status line hidden for one, defaults for an outcome without an ending.",
+  "clearInvisibleValues": "onHidden",
+  "pages": [
+    {
+      "name": "p1_page",
+      "elements": [
+        {
+          "name": "eligible",
+          "type": "radiogroup",
+          "title": "Are you willing to answer two more questions?",
+          "choices": [
+            {
+              "value": "yes",
+              "text": "Yes"
+            },
+            {
+              "value": "no",
+              "text": "No"
+            }
+          ],
+          "isRequired": true
+        }
+      ]
+    },
+    {
+      "name": "p2_page",
+      "visibleIf": "!({eligible} = 'no')",
+      "elements": [
+        {
+          "name": "rating",
+          "type": "text",
+          "title": "Rate your breakfast today from 1 to 10.",
+          "inputType": "number",
+          "step": 1,
+          "isRequired": true,
+          "validators": [
+            {
+              "type": "regex",
+              "regex": "^-?[0-9]+$"
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "p3_page",
+      "visibleIf": "!({eligible} = 'no') and !({rating} notempty and {rating} < 3)",
+      "elements": [
+        {
+          "name": "extra",
+          "type": "text",
+          "title": "Anything else about breakfast?"
+        }
+      ]
+    }
+  ],
+  "calculatedValues": [
+    {
+      "name": "osp_outcome",
+      "expression": "iif({eligible} = 'no', 'ineligible', iif(!({eligible} = 'no') and {rating} notempty and {rating} < 3, 'early_exit', 'complete'))",
+      "includeIntoResult": true
+    }
+  ],
+  "completedHtmlOnCondition": [
+    {
+      "expression": "{eligible} = 'no'",
+      "html": "<p>You chose not to go on.</p><h3>Thank you for your interest</h3><p>This study needs people willing to answer two more questions, so it ends here.</p>"
+    },
+    {
+      "expression": "!({eligible} = 'no') and {rating} notempty and {rating} < 3",
+      "html": "<p>Sorry your breakfast was not better.</p>"
+    },
+    {
+      "expression": "!({eligible} = 'no') and !({rating} notempty and {rating} < 3)",
+      "html": "<h3>Thank you for your time</h3><p>You rated breakfast {rating} out of 10.</p>"
+    }
+  ]
+}

@@ -92,6 +92,14 @@ test('settings → theme → publish → the participant link shows the survey i
 	await expect(result.getByRole('button', { name: 'Copy link' })).toBeVisible();
 	await expect(result.getByRole('link', { name: 'XLSForm (.xlsx)' })).toHaveAttribute('href', /export\/xlsform$/);
 	await expect(result.getByRole('link', { name: 'LimeSurvey (.lss)' })).toHaveAttribute('href', /export\/lss$/);
+	// XP1: Qualtrics and SurveyJS files download as JSON.
+	for (const [name, path] of [['Qualtrics (.qsf)', 'qsf'], ['SurveyJS (.json)', 'surveyjs']] as const) {
+		const a = result.getByRole('link', { name });
+		await expect(a).toHaveAttribute('href', new RegExp(`export/${path}$`));
+		const res = await page.request.get((await a.getAttribute('href'))!);
+		expect(res.status()).toBe(200);
+		expect(typeof (await res.json())).toBe('object');
+	}
 	const repro = result.getByRole('link', { name: 'Reproducibility package' });
 	await expect(repro).toHaveAttribute('href', /\/versions\/1\/repro-package$/);
 	expect((await page.request.get((await repro.getAttribute('href'))!)).status()).toBe(200);

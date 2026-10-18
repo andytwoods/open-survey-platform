@@ -1,0 +1,799 @@
+{
+  "SurveyEntry": {
+    "SurveyID": "SV_tIgKkb1utmeDfld",
+    "SurveyName": "Rich text in every field",
+    "SurveyDescription": "planning/rich-text.md §3 (task RT2): the rich-text model end to end. Block fields (a note, the consent text, the end message) carry headings and lists; stems (labels, help) carry marks, links and pipes; inline fields (choice, row and column labels, slider end labels, the page title, the constraint message, the consent buttons) carry one paragraph. Pipes sit inside formatting. Arabic is a second language with a rich RTL label; one label has no Arabic and falls back.",
+    "SurveyOwnerID": "",
+    "SurveyBrandID": "",
+    "DivisionID": null,
+    "SurveyLanguage": "EN",
+    "SurveyActiveResponseSet": "RS_jLWiNRuw0khpmaw",
+    "SurveyStatus": "Inactive",
+    "SurveyStartDate": "0000-00-00 00:00:00",
+    "SurveyExpirationDate": "0000-00-00 00:00:00",
+    "SurveyCreationDate": "0000-00-00 00:00:00",
+    "CreatorID": "",
+    "LastModified": "0000-00-00 00:00:00",
+    "LastAccessed": "0000-00-00 00:00:00",
+    "LastActivated": "0000-00-00 00:00:00",
+    "Deleted": null
+  },
+  "SurveyElements": [
+    {
+      "SurveyID": "SV_tIgKkb1utmeDfld",
+      "Element": "BL",
+      "PrimaryAttribute": "Survey Blocks",
+      "SecondaryAttribute": null,
+      "TertiaryAttribute": null,
+      "Payload": [
+        {
+          "Type": "Default",
+          "Description": "Consent",
+          "ID": "BL_emqnIxL8pp5eCw8",
+          "BlockElements": [
+            {
+              "Type": "Question",
+              "QuestionID": "QID8"
+            },
+            {
+              "Type": "Question",
+              "QuestionID": "QID9"
+            }
+          ],
+          "Options": {
+            "BlockLocking": "false",
+            "RandomizeQuestions": "false",
+            "BlockVisibility": "Expanded"
+          }
+        },
+        {
+          "Type": "Standard",
+          "Description": "p1",
+          "ID": "BL_T0Y7zqoyjLXn6FO",
+          "BlockElements": [
+            {
+              "Type": "Question",
+              "QuestionID": "QID10"
+            },
+            {
+              "Type": "Question",
+              "QuestionID": "QID1"
+            },
+            {
+              "Type": "Question",
+              "QuestionID": "QID2"
+            },
+            {
+              "Type": "Question",
+              "QuestionID": "QID3"
+            }
+          ],
+          "Options": {
+            "BlockLocking": "false",
+            "RandomizeQuestions": "false",
+            "BlockVisibility": "Expanded"
+          }
+        },
+        {
+          "Type": "Standard",
+          "Description": "p2",
+          "ID": "BL_oN7QOJ7oBQsvDAW",
+          "BlockElements": [
+            {
+              "Type": "Question",
+              "QuestionID": "QID11"
+            },
+            {
+              "Type": "Question",
+              "QuestionID": "QID4"
+            },
+            {
+              "Type": "Question",
+              "QuestionID": "QID5"
+            },
+            {
+              "Type": "Question",
+              "QuestionID": "QID6"
+            },
+            {
+              "Type": "Question",
+              "QuestionID": "QID7"
+            }
+          ],
+          "Options": {
+            "BlockLocking": "false",
+            "RandomizeQuestions": "false",
+            "BlockVisibility": "Expanded"
+          }
+        },
+        {
+          "Type": "Standard",
+          "Description": "End: n_end",
+          "ID": "BL_ug2ALRLrKC66VLu",
+          "BlockElements": [
+            {
+              "Type": "Question",
+              "QuestionID": "QID12"
+            }
+          ],
+          "Options": {
+            "BlockLocking": "false",
+            "RandomizeQuestions": "false",
+            "BlockVisibility": "Expanded"
+          }
+        },
+        {
+          "Type": "Trash",
+          "Description": "Trash / Unused Questions",
+          "ID": "BL_gojTw1TssG64pxF",
+          "BlockElements": []
+        }
+      ]
+    },
+    {
+      "SurveyID": "SV_tIgKkb1utmeDfld",
+      "Element": "FL",
+      "PrimaryAttribute": "Survey Flow",
+      "SecondaryAttribute": null,
+      "TertiaryAttribute": null,
+      "Payload": {
+        "Type": "Root",
+        "FlowID": "FL_1",
+        "Flow": [
+          {
+            "Type": "Block",
+            "ID": "BL_emqnIxL8pp5eCw8",
+            "FlowID": "FL_2",
+            "Autofill": []
+          },
+          {
+            "Type": "Branch",
+            "FlowID": "FL_3",
+            "Description": "Consent declined",
+            "BranchLogic": {
+              "0": {
+                "0": {
+                  "LogicType": "Question",
+                  "QuestionID": "QID9",
+                  "QuestionIsInLoop": "no",
+                  "ChoiceLocator": "q://QID9/SelectableChoice/2",
+                  "Operator": "Selected",
+                  "QuestionIDFromLocator": "QID9",
+                  "LeftOperand": "q://QID9/SelectableChoice/2",
+                  "Type": "Expression",
+                  "Description": "QID9 choice 2 is Selected"
+                },
+                "Type": "If"
+              },
+              "Type": "BooleanExpression",
+              "inPage": false
+            },
+            "Flow": [
+              {
+                "Type": "EmbeddedData",
+                "FlowID": "FL_4",
+                "EmbeddedData": [
+                  {
+                    "Description": "ospoutcome",
+                    "Type": "Custom",
+                    "Field": "ospoutcome",
+                    "VariableType": "String",
+                    "DataVisibility": [],
+                    "AnalyzeText": false,
+                    "Value": "declined"
+                  }
+                ]
+              },
+              {
+                "Type": "EndSurvey",
+                "FlowID": "FL_5"
+              }
+            ]
+          },
+          {
+            "Type": "Standard",
+            "ID": "BL_T0Y7zqoyjLXn6FO",
+            "FlowID": "FL_6",
+            "Autofill": []
+          },
+          {
+            "Type": "Standard",
+            "ID": "BL_oN7QOJ7oBQsvDAW",
+            "FlowID": "FL_7",
+            "Autofill": []
+          },
+          {
+            "Type": "Standard",
+            "ID": "BL_ug2ALRLrKC66VLu",
+            "FlowID": "FL_8",
+            "Autofill": []
+          },
+          {
+            "Type": "EndSurvey",
+            "FlowID": "FL_9"
+          }
+        ],
+        "Properties": {
+          "Count": 9
+        }
+      }
+    },
+    {
+      "SurveyID": "SV_tIgKkb1utmeDfld",
+      "Element": "SO",
+      "PrimaryAttribute": "Survey Options",
+      "SecondaryAttribute": null,
+      "TertiaryAttribute": null,
+      "Payload": {
+        "BackButton": "true",
+        "SaveAndContinue": "true",
+        "SurveyProtection": "PublicSurvey",
+        "BallotBoxStuffingPrevention": "false",
+        "NoIndex": "Yes",
+        "SecureResponseFiles": "true",
+        "SurveyExpiration": "None",
+        "Header": "",
+        "Footer": "",
+        "ProgressBarDisplay": "None",
+        "PreviousButton": "",
+        "NextButton": "",
+        "SurveyTitle": "Rich text in every field",
+        "SurveyLanguage": "EN"
+      }
+    },
+    {
+      "SurveyID": "SV_tIgKkb1utmeDfld",
+      "Element": "QC",
+      "PrimaryAttribute": "Survey Question Count",
+      "SecondaryAttribute": "12",
+      "TertiaryAttribute": null,
+      "Payload": null
+    },
+    {
+      "SurveyID": "SV_tIgKkb1utmeDfld",
+      "Element": "RS",
+      "PrimaryAttribute": "RS_jLWiNRuw0khpmaw",
+      "SecondaryAttribute": "Default Response Set",
+      "TertiaryAttribute": null,
+      "Payload": null
+    },
+    {
+      "SurveyID": "SV_tIgKkb1utmeDfld",
+      "Element": "SQ",
+      "PrimaryAttribute": "QID1",
+      "SecondaryAttribute": "Welcome Please answer every question. It takes two minutes . What you need Your participant code The",
+      "TertiaryAttribute": null,
+      "Payload": {
+        "QuestionText": "<h3>Welcome</h3><p>Please answer <strong>every</strong> question.<br />It takes <em>two minutes</em>.</p><h4>What you need</h4><ul><li>Your <strong><em>participant code</em></strong></li><li>The <a href=\"https://example.org/study\" target=\"_blank\" rel=\"noopener noreferrer\">study page</a> open</li></ul><p><span lang=\"fr\">Merci</span> and thank you.</p>",
+        "DefaultChoices": false,
+        "DataExportTag": "intro",
+        "QuestionType": "DB",
+        "Selector": "TB",
+        "Configuration": {
+          "QuestionDescriptionOption": "UseText"
+        },
+        "QuestionDescription": "Welcome Please answer every question. It takes two minutes . What you need Your participant code The study page open Merci and thank you.",
+        "Language": {
+          "AR": {
+            "QuestionText": "<h3>مرحباً</h3><p>يرجى الإجابة على <strong>كل</strong> سؤال. <span lang=\"en\"><em>two minutes</em></span></p><ul><li><strong>رمز المشارك</strong></li><li><a href=\"https://example.org/study\" target=\"_blank\" rel=\"noopener noreferrer\">صفحة الدراسة</a></li></ul>"
+          }
+        },
+        "QuestionID": "QID1",
+        "DataVisibility": {
+          "Private": false,
+          "Hidden": false
+        }
+      }
+    },
+    {
+      "SurveyID": "SV_tIgKkb1utmeDfld",
+      "Element": "SQ",
+      "PrimaryAttribute": "QID2",
+      "SecondaryAttribute": "Your name (as on the sheet ) Either: first name only, or a nickname",
+      "TertiaryAttribute": null,
+      "Payload": {
+        "QuestionText": "<p>Your <strong>name</strong> (as on the <a href=\"https://example.org/info\" target=\"_blank\" rel=\"noopener noreferrer\">sheet</a>)</p><div><small><p>Either:</p><ul><li>first name only, or</li><li>a <em>nickname</em></li></ul></small></div>",
+        "DefaultChoices": false,
+        "DataExportTag": "name",
+        "QuestionType": "TE",
+        "Selector": "SL",
+        "Configuration": {
+          "QuestionDescriptionOption": "UseText"
+        },
+        "QuestionDescription": "Your name (as on the sheet ) Either: first name only, or a nickname",
+        "Language": {
+          "AR": {
+            "QuestionText": "<p>Your <strong>name</strong> (as on the <a href=\"https://example.org/info\" target=\"_blank\" rel=\"noopener noreferrer\">sheet</a>)</p><div><small><p>Either:</p><ul><li>first name only, or</li><li>a <em>nickname</em></li></ul></small></div>"
+          }
+        },
+        "QuestionID": "QID2",
+        "DataVisibility": {
+          "Private": false,
+          "Hidden": false
+        },
+        "Validation": {
+          "Settings": {
+            "ForceResponse": "ON",
+            "ForceResponseType": "ON",
+            "Type": "None"
+          }
+        }
+      }
+    },
+    {
+      "SurveyID": "SV_tIgKkb1utmeDfld",
+      "Element": "SQ",
+      "PrimaryAttribute": "QID3",
+      "SecondaryAttribute": "Pick a fruit",
+      "TertiaryAttribute": null,
+      "Payload": {
+        "QuestionText": "Pick a fruit",
+        "DefaultChoices": false,
+        "DataExportTag": "fav",
+        "QuestionType": "MC",
+        "Selector": "SAVR",
+        "Configuration": {
+          "QuestionDescriptionOption": "UseText",
+          "TextPosition": "inline"
+        },
+        "QuestionDescription": "Pick a fruit",
+        "Language": {
+          "AR": {
+            "QuestionText": "Pick a fruit",
+            "Choices": {
+              "1": {
+                "Display": "تفاحة"
+              },
+              "2": {
+                "Display": "كمثرى"
+              },
+              "3": {
+                "Display": "شيء آخر"
+              }
+            }
+          }
+        },
+        "QuestionID": "QID3",
+        "DataVisibility": {
+          "Private": false,
+          "Hidden": false
+        },
+        "SubSelector": "TX",
+        "Choices": {
+          "1": {
+            "Display": "<strong>Apple</strong>"
+          },
+          "2": {
+            "Display": "Pear (<em>green</em>)"
+          },
+          "3": {
+            "Display": "Something else"
+          }
+        },
+        "ChoiceOrder": [
+          "1",
+          "2",
+          "3"
+        ],
+        "NextChoiceId": 4,
+        "RecodeValues": {
+          "1": "1",
+          "2": "2",
+          "3": "3"
+        },
+        "NextAnswerId": 1,
+        "Validation": {
+          "Settings": {
+            "ForceResponse": "OFF",
+            "ForceResponseType": "ON",
+            "Type": "None"
+          }
+        }
+      }
+    },
+    {
+      "SurveyID": "SV_tIgKkb1utmeDfld",
+      "Element": "SQ",
+      "PrimaryAttribute": "QID4",
+      "SecondaryAttribute": "Hello ${q://QID2/ChoiceTextEntryValue} , you chose ${q://QID3/ChoiceGroup/SelectedChoices}. Trial La",
+      "TertiaryAttribute": null,
+      "Payload": {
+        "QuestionText": "<p><strong>Hello </strong>${q://QID2/ChoiceTextEntryValue}<strong>, you chose </strong>${q://QID3/ChoiceGroup/SelectedChoices}.</p><ol><li>Trial </li><li>Language </li></ol>",
+        "DefaultChoices": false,
+        "DataExportTag": "echo",
+        "QuestionType": "DB",
+        "Selector": "TB",
+        "Configuration": {
+          "QuestionDescriptionOption": "UseText"
+        },
+        "QuestionDescription": "Hello ${q://QID2/ChoiceTextEntryValue} , you chose ${q://QID3/ChoiceGroup/SelectedChoices}. Trial Language",
+        "Language": {
+          "AR": {
+            "QuestionText": "<p><strong>Hello </strong>${q://QID2/ChoiceTextEntryValue}<strong>, you chose </strong>${q://QID3/ChoiceGroup/SelectedChoices}.</p><ol><li>Trial </li><li>Language </li></ol>"
+          }
+        },
+        "QuestionID": "QID4",
+        "DataVisibility": {
+          "Private": false,
+          "Hidden": false
+        }
+      }
+    },
+    {
+      "SurveyID": "SV_tIgKkb1utmeDfld",
+      "Element": "SQ",
+      "PrimaryAttribute": "QID5",
+      "SecondaryAttribute": "Rate ${q://QID3/ChoiceGroup/SelectedChoices} from 1 to 5",
+      "TertiaryAttribute": null,
+      "Payload": {
+        "QuestionText": "Rate ${q://QID3/ChoiceGroup/SelectedChoices} from <strong>1</strong> to <strong>5</strong>",
+        "DefaultChoices": false,
+        "DataExportTag": "rate",
+        "QuestionType": "TE",
+        "Selector": "SL",
+        "Configuration": {
+          "QuestionDescriptionOption": "UseText"
+        },
+        "QuestionDescription": "Rate ${q://QID3/ChoiceGroup/SelectedChoices} from 1 to 5",
+        "Language": {
+          "AR": {
+            "QuestionText": "قيّم ${q://QID3/ChoiceGroup/SelectedChoices} من <strong>١</strong> إلى <strong>٥</strong>"
+          }
+        },
+        "QuestionID": "QID5",
+        "DataVisibility": {
+          "Private": false,
+          "Hidden": false
+        },
+        "Validation": {
+          "Settings": {
+            "ForceResponse": "OFF",
+            "ForceResponseType": "ON",
+            "Type": "ContentType",
+            "ContentType": "ValidNumber",
+            "ValidNumber": {
+              "Min": "",
+              "Max": "",
+              "NumDecimals": "0"
+            }
+          }
+        }
+      }
+    },
+    {
+      "SurveyID": "SV_tIgKkb1utmeDfld",
+      "Element": "SQ",
+      "PrimaryAttribute": "QID6",
+      "SecondaryAttribute": "How much do you agree?",
+      "TertiaryAttribute": null,
+      "Payload": {
+        "QuestionText": "How much do you agree?",
+        "DefaultChoices": false,
+        "DataExportTag": "grid",
+        "QuestionType": "Matrix",
+        "Selector": "Likert",
+        "Configuration": {
+          "QuestionDescriptionOption": "UseText",
+          "TextPosition": "inline",
+          "ChoiceColumnWidth": 25,
+          "RepeatHeaders": "none",
+          "WhiteSpace": "OFF",
+          "MobileFirst": true
+        },
+        "QuestionDescription": "How much do you agree?",
+        "Language": {
+          "AR": {
+            "QuestionText": "How much do you agree?",
+            "Answers": {
+              "1": {
+                "Display": "<em>Disagree</em>"
+              },
+              "2": {
+                "Display": "Agree"
+              }
+            },
+            "Choices": {
+              "1": {
+                "Display": "${q://QID3/ChoiceGroup/SelectedChoices} tastes <strong>good</strong>"
+              },
+              "2": {
+                "Display": "It is cheap"
+              }
+            }
+          }
+        },
+        "QuestionID": "QID6",
+        "DataVisibility": {
+          "Private": false,
+          "Hidden": false
+        },
+        "SubSelector": "SingleAnswer",
+        "Choices": {
+          "1": {
+            "Display": "${q://QID3/ChoiceGroup/SelectedChoices} tastes <strong>good</strong>"
+          },
+          "2": {
+            "Display": "It is cheap"
+          }
+        },
+        "ChoiceOrder": [
+          "1",
+          "2"
+        ],
+        "ChoiceDataExportTags": {
+          "1": "taste",
+          "2": "price"
+        },
+        "Answers": {
+          "1": {
+            "Display": "<em>Disagree</em>"
+          },
+          "2": {
+            "Display": "Agree"
+          }
+        },
+        "AnswerOrder": [
+          "1",
+          "2"
+        ],
+        "NextAnswerId": 3,
+        "RecodeValues": {
+          "1": "1",
+          "2": "2"
+        },
+        "NextChoiceId": 3,
+        "Validation": {
+          "Settings": {
+            "ForceResponse": "OFF",
+            "ForceResponseType": "ON",
+            "Type": "None"
+          }
+        }
+      }
+    },
+    {
+      "SurveyID": "SV_tIgKkb1utmeDfld",
+      "Element": "SQ",
+      "PrimaryAttribute": "QID7",
+      "SecondaryAttribute": "How do you feel?",
+      "TertiaryAttribute": null,
+      "Payload": {
+        "QuestionText": "How do you feel?",
+        "DefaultChoices": false,
+        "DataExportTag": "mood",
+        "QuestionType": "Slider",
+        "Selector": "HSLIDER",
+        "Configuration": {
+          "QuestionDescriptionOption": "UseText",
+          "CSSliderMin": 0,
+          "CSSliderMax": 10,
+          "GridLines": 10,
+          "SnapToGrid": false,
+          "NumDecimals": "0",
+          "ShowValue": true,
+          "CustomStart": false,
+          "NotApplicable": false,
+          "MobileFirst": true
+        },
+        "QuestionDescription": "How do you feel?",
+        "Language": {
+          "AR": {
+            "QuestionText": "How do you feel?",
+            "Labels": {
+              "1": {
+                "Display": "<em>Very </em>bad"
+              },
+              "2": {
+                "Display": "<em>Very </em><strong>good</strong>"
+              }
+            }
+          }
+        },
+        "QuestionID": "QID7",
+        "DataVisibility": {
+          "Private": false,
+          "Hidden": false
+        },
+        "Choices": {
+          "1": {
+            "Display": ""
+          }
+        },
+        "ChoiceOrder": [
+          "1"
+        ],
+        "Labels": {
+          "1": {
+            "Display": "<em>Very </em>bad"
+          },
+          "2": {
+            "Display": "<em>Very </em><strong>good</strong>"
+          }
+        },
+        "Validation": {
+          "Settings": {
+            "ForceResponse": "OFF",
+            "ForceResponseType": "ON",
+            "Type": "None"
+          }
+        },
+        "NextChoiceId": 2,
+        "NextAnswerId": 1
+      }
+    },
+    {
+      "SurveyID": "SV_tIgKkb1utmeDfld",
+      "Element": "SQ",
+      "PrimaryAttribute": "QID8",
+      "SecondaryAttribute": "Before you start This is a synthetic study. Read the information sheet first. Taking part is volunta",
+      "TertiaryAttribute": null,
+      "Payload": {
+        "QuestionText": "<h3>Before you start</h3><p>This is a <em>synthetic</em> study. Read the <a href=\"https://example.org/info\" target=\"_blank\" rel=\"noopener noreferrer\">information sheet</a> first.</p><ol><li>Taking part is <strong>voluntary</strong>.</li><li>You can stop at any time.</li></ol>",
+        "DefaultChoices": false,
+        "DataExportTag": "ospconsent_text",
+        "QuestionType": "DB",
+        "Selector": "TB",
+        "Configuration": {
+          "QuestionDescriptionOption": "UseText"
+        },
+        "QuestionDescription": "Before you start This is a synthetic study. Read the information sheet first. Taking part is voluntary . You can stop at any time.",
+        "Language": {
+          "AR": {
+            "QuestionText": "<h3>قبل أن تبدأ</h3><p>هذه دراسة <em>اصطناعية</em>. المشاركة <strong>طوعية</strong>.</p>"
+          }
+        },
+        "QuestionID": "QID8",
+        "DataVisibility": {
+          "Private": false,
+          "Hidden": false
+        }
+      }
+    },
+    {
+      "SurveyID": "SV_tIgKkb1utmeDfld",
+      "Element": "SQ",
+      "PrimaryAttribute": "QID9",
+      "SecondaryAttribute": "",
+      "TertiaryAttribute": null,
+      "Payload": {
+        "QuestionText": "",
+        "DefaultChoices": false,
+        "DataExportTag": "ospconsent",
+        "QuestionType": "MC",
+        "Selector": "SAVR",
+        "Configuration": {
+          "QuestionDescriptionOption": "UseText"
+        },
+        "QuestionDescription": "",
+        "Language": {
+          "AR": {
+            "QuestionText": "",
+            "Choices": {
+              "1": {
+                "Display": "أوافق"
+              },
+              "2": {
+                "Display": "لا أوافق"
+              }
+            }
+          }
+        },
+        "QuestionID": "QID9",
+        "DataVisibility": {
+          "Private": false,
+          "Hidden": false
+        },
+        "SubSelector": "TX",
+        "Choices": {
+          "1": {
+            "Display": "I <strong>agree</strong>"
+          },
+          "2": {
+            "Display": "I do not agree"
+          }
+        },
+        "ChoiceOrder": [
+          "1",
+          "2"
+        ],
+        "RecodeValues": {
+          "1": "1",
+          "2": "2"
+        },
+        "Validation": {
+          "Settings": {
+            "ForceResponse": "ON",
+            "ForceResponseType": "ON",
+            "Type": "None"
+          }
+        },
+        "NextChoiceId": 3,
+        "NextAnswerId": 1
+      }
+    },
+    {
+      "SurveyID": "SV_tIgKkb1utmeDfld",
+      "Element": "SQ",
+      "PrimaryAttribute": "QID10",
+      "SecondaryAttribute": "Part one",
+      "TertiaryAttribute": null,
+      "Payload": {
+        "QuestionText": "Part <em>one</em>",
+        "DefaultChoices": false,
+        "DataExportTag": "p1_page_title",
+        "QuestionType": "DB",
+        "Selector": "TB",
+        "Configuration": {
+          "QuestionDescriptionOption": "UseText"
+        },
+        "QuestionDescription": "Part one",
+        "Language": {
+          "AR": {
+            "QuestionText": "الجزء الأول"
+          }
+        },
+        "QuestionID": "QID10",
+        "DataVisibility": {
+          "Private": false,
+          "Hidden": false
+        }
+      }
+    },
+    {
+      "SurveyID": "SV_tIgKkb1utmeDfld",
+      "Element": "SQ",
+      "PrimaryAttribute": "QID11",
+      "SecondaryAttribute": "Part two for ${q://QID2/ChoiceTextEntryValue}",
+      "TertiaryAttribute": null,
+      "Payload": {
+        "QuestionText": "Part <em>two</em> for ${q://QID2/ChoiceTextEntryValue}",
+        "DefaultChoices": false,
+        "DataExportTag": "p2_page_title",
+        "QuestionType": "DB",
+        "Selector": "TB",
+        "Configuration": {
+          "QuestionDescriptionOption": "UseText"
+        },
+        "QuestionDescription": "Part two for ${q://QID2/ChoiceTextEntryValue}",
+        "Language": {
+          "AR": {
+            "QuestionText": "Part <em>two</em> for ${q://QID2/ChoiceTextEntryValue}"
+          }
+        },
+        "QuestionID": "QID11",
+        "DataVisibility": {
+          "Private": false,
+          "Hidden": false
+        }
+      }
+    },
+    {
+      "SurveyID": "SV_tIgKkb1utmeDfld",
+      "Element": "SQ",
+      "PrimaryAttribute": "QID12",
+      "SecondaryAttribute": "Finished Goodbye, ${q://QID2/ChoiceTextEntryValue} ! All done Thank you, ${q://QID2/ChoiceTextEntryV",
+      "TertiaryAttribute": null,
+      "Payload": {
+        "QuestionText": "<h3>Finished</h3><p>Goodbye, ${q://QID2/ChoiceTextEntryValue}<strong>!</strong></p><p>All <strong>done</strong></p><p>Thank you, ${q://QID2/ChoiceTextEntryValue}.</p><ul><li>Your fruit: ${q://QID3/ChoiceGroup/SelectedChoices}</li><li>Your rating: ${q://QID5/ChoiceTextEntryValue}</li></ul>",
+        "DefaultChoices": false,
+        "DataExportTag": "ospend_n_end",
+        "QuestionType": "DB",
+        "Selector": "TB",
+        "Configuration": {
+          "QuestionDescriptionOption": "UseText"
+        },
+        "QuestionDescription": "Finished Goodbye, ${q://QID2/ChoiceTextEntryValue} ! All done Thank you, ${q://QID2/ChoiceTextEntryValue}. Your fruit: ${q://QID3/ChoiceGroup/SelectedChoices} Your rating: ${q://QID5/ChoiceTextEntryVa",
+        "Language": {
+          "AR": {
+            "QuestionText": "<h3>Finished</h3><p>Goodbye, ${q://QID2/ChoiceTextEntryValue}<strong>!</strong></p><p>All <strong>done</strong></p><p>Thank you, ${q://QID2/ChoiceTextEntryValue}.</p><ul><li>Your fruit: ${q://QID3/ChoiceGroup/SelectedChoices}</li><li>Your rating: ${q://QID5/ChoiceTextEntryValue}</li></ul>"
+          }
+        },
+        "QuestionID": "QID12",
+        "DataVisibility": {
+          "Private": false,
+          "Hidden": false
+        }
+      }
+    }
+  ]
+}

@@ -1,0 +1,140 @@
+{
+  "title": "Piping",
+  "description": "§8 piping: choice label, raw values, HTML escaping, empty for missing values.",
+  "clearInvisibleValues": "onHidden",
+  "pages": [
+    {
+      "name": "p1_page",
+      "elements": [
+        {
+          "name": "fav_fruit",
+          "type": "radiogroup",
+          "title": "Which fruit do you like best?",
+          "choices": [
+            {
+              "value": "apple",
+              "text": "Apple"
+            },
+            {
+              "value": "banana",
+              "text": "Banana"
+            },
+            {
+              "value": "cherry",
+              "text": "Cherry"
+            }
+          ]
+        },
+        {
+          "name": "n_pets",
+          "type": "text",
+          "title": "How many pets would you like?",
+          "inputType": "number",
+          "step": 1,
+          "validators": [
+            {
+              "type": "regex",
+              "regex": "^-?[0-9]+$"
+            }
+          ]
+        },
+        {
+          "name": "nickname",
+          "type": "text",
+          "title": "Choose a nickname."
+        },
+        {
+          "name": "empty_q",
+          "type": "text",
+          "title": "Optional: a favourite word."
+        },
+        {
+          "name": "skip_opt",
+          "type": "radiogroup",
+          "title": "Skip the optional page?",
+          "choices": [
+            {
+              "value": "yes",
+              "text": "Yes"
+            },
+            {
+              "value": "no",
+              "text": "No"
+            }
+          ],
+          "isRequired": true
+        }
+      ]
+    },
+    {
+      "name": "p1b_page",
+      "elements": [
+        {
+          "name": "pet_names",
+          "type": "text",
+          "title": "Name them.",
+          "visibleIf": "{n_pets} notempty and {n_pets} > 5"
+        },
+        {
+          "name": "plants",
+          "type": "text",
+          "title": "How many plants do you have?",
+          "inputType": "number",
+          "step": 1,
+          "validators": [
+            {
+              "type": "regex",
+              "regex": "^-?[0-9]+$"
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "p_opt_page",
+      "visibleIf": "{skip_opt} = 'no'",
+      "elements": [
+        {
+          "name": "opt_q",
+          "type": "text",
+          "title": "Optional page: type anything."
+        }
+      ]
+    },
+    {
+      "name": "p2_page",
+      "elements": [
+        {
+          "name": "pipe_choice",
+          "type": "text",
+          "title": "You picked {fav_fruit}."
+        },
+        {
+          "name": "pipe_int",
+          "type": "text",
+          "title": "You would like {n_pets} pets."
+        },
+        {
+          "name": "pipe_text",
+          "type": "text",
+          "title": "Hello {nickname}!"
+        },
+        {
+          "name": "pipe_empty",
+          "type": "text",
+          "title": "Favourite word: [{empty_q}]"
+        },
+        {
+          "name": "pipe_irr",
+          "type": "text",
+          "title": "Pet names: [{pet_names}]"
+        },
+        {
+          "name": "pipe_nr",
+          "type": "text",
+          "title": "Optional page answer: [{opt_q}]"
+        }
+      ]
+    }
+  ]
+}

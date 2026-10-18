@@ -43,7 +43,8 @@ with:
 
 - the **Participant link**, with **Copy link** and **Open**;
 - any remaining warnings;
-- **Exports and records**: **XLSForm (.xlsx)**, **LimeSurvey (.lss)**, the
+- **Exports and records**: **XLSForm (.xlsx)**, **LimeSurvey (.lss)**, **Qualtrics
+  (.qsf)**, **SurveyJS (.json)**, the
   **Reproducibility package** for this version (all below) and the
   **Preregistration bundle** and summary ([Preregistration](preregistration.md)), with
   an optional upload to an OSF project.
@@ -127,7 +128,7 @@ them as formulas.
 
 ## Exporting the survey itself
 
-The platform can write the survey for other tools. Both exports take the **draft**, and
+The platform can write the survey for other tools. Every export takes the **draft**, and
 each has a **capability table** that says, feature by feature, whether the target represents
 it natively, lowers it, approximates it or cannot carry it. Choose an **Export target** in
 the editor's diagnostics strip to see them before exporting: as a list, and as badges on
@@ -137,6 +138,8 @@ the questions concerned.
 |---|---|---|
 | **XLSForm** (ODK, Enketo, KoboToolbox) | `.xlsx` | Quotas, turning Back off, page and block order shuffles, consent, settings and theme, licence and DDI metadata; per-run language spans in formatted text |
 | **LimeSurvey** | `.lss` | Consent, save mode, retention and theme; a slider becomes a number box without its end labels; shuffles use LimeSurvey's own unseeded randomiser; assignment, computed values and quota behaviour are approximated |
+| **Qualtrics** | `.qsf` | Computed variables, quotas, external tasks, constraints and their messages; conditions Qualtrics logic cannot express (arithmetic, `if`, comparing two questions, ordering on text or dates); piping a grid row. Consent becomes a first block with an agree/decline question; endings become a text block before End of Survey; assignment becomes a randomizer over embedded data |
+| **SurveyJS** | `.json` | Formatting in titles (plain text); conditions on assigned or embedded variables; the flow tree becomes page conditions; end texts become the completion text (per-outcome where SurveyJS can tell them apart); shuffles use SurveyJS's own unseeded random order. The slider needs SurveyJS 2.3 or later |
 
 [Formatted text](building-a-survey.md#formatting-text) is written in each target's own
 markup. XLSForm labels, hints and constraint messages get the Markdown subset Enketo and

@@ -1,0 +1,59 @@
+"""Completeness guard for the SurveyJS capability table (AGENTS.md rule 6): every
+osp-survey schema field has a row, and no row names a field that no longer exists."""
+
+from __future__ import annotations
+
+import copy
+from collections import Counter
+
+from osp_spec import json_schema
+from osp_targets.capabilities import LEVELS, XLSFORM, check_table
+from osp_targets.surveyjs import SURVEYJS
+
+
+def test_every_schema_field_has_a_row() -> None:
+    missing, stale = check_table(json_schema(), SURVEYJS)
+    assert missing == [], f"surveyjs: add capability rows for {missing}"
+    assert stale == [], f"surveyjs: rows for fields that no longer exist: {stale}"
+
+
+def test_rows_are_well_formed() -> None:
+    for key, cap in SURVEYJS.items():
+        assert cap.level in LEVELS, key
+        assert cap.note.strip(), key
+
+
+def test_same_schema_keys_as_xlsform() -> None:
+    """Every table covers the same schema fields (target behaviours may differ)."""
+    schema_keys = {k for k in SURVEYJS if not k.startswith("$") and "=" not in k}
+    assert schema_keys == {k for k in XLSFORM if not k.startswith("$") and "=" not in k}
+
+
+def test_guard_fails_on_a_new_field() -> None:
+    schema = copy.deepcopy(json_schema())
+    schema["$defs"]["Page"]["properties"]["pageShowIf"] = {"type": "object"}
+    missing, _ = check_table(schema, SURVEYJS)
+    assert missing == ["Page.pageShowIf"]
+
+
+def test_guard_fails_on_a_removed_field() -> None:
+    schema = copy.deepcopy(json_schema())
+    del schema["$defs"]["Page"]["properties"]["itemOrder"]
+    _, stale = check_table(schema, SURVEYJS)
+    assert stale == ["Page.itemOrder", "Page.itemOrder=shuffle"]
+
+
+def test_surveyjs_summary_is_stable() -> None:
+    """Counts per level, so a change of level is a visible, reviewed diff."""
+    counts = Counter(cap.level for cap in SURVEYJS.values())
+    assert dict(counts) == {"native": 160, "lowered": 39, "approximated": 33, "unsupported": 134}
+    assert SURVEYJS["MatrixQuestion.type"].level == "native"
+    assert SURVEYJS["IntegerQuestion.type"].level == "lowered"
+    assert SURVEYJS["SliderQuestion.type"].level == "approximated"
+    assert SURVEYJS["Survey.quotas"].level == "unsupported"
+    assert SURVEYJS["AssignedVariable.kind"].level == "unsupported"
+    assert SURVEYJS["RandomiserNode.type"].level == "approximated"
+    assert SURVEYJS["SingleQuestion.choiceOrder=shuffle"].level == "approximated"
+    assert SURVEYJS["Compare.kind"].level == "lowered"
+    assert SURVEYJS["$rich.bold"].level == "approximated"
+    assert SURVEYJS["$expr.unmappable"].level == "unsupported"

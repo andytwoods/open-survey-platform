@@ -37,10 +37,12 @@ describe('links', () => {
 		expect(participantLink('https://osp.example/', '/r/?s=ab%20c')).toBe('https://osp.example/r/?s=ab%20c');
 		expect(participantLink('https://osp.example', 'http://localhost:5174/r/?s=x')).toBe('http://localhost:5174/r/?s=x');
 	});
-	it('lists the XLSForm and LSS exports', () => {
+	it('lists the XLSForm, LSS, QSF and SurveyJS exports', () => {
 		expect(exportLinks('s1').map((x) => x.href)).toEqual([
 			'/api/surveys/s1/export/xlsform',
-			'/api/surveys/s1/export/lss'
+			'/api/surveys/s1/export/lss',
+			'/api/surveys/s1/export/qsf',
+			'/api/surveys/s1/export/surveyjs'
 		]);
 	});
 	it('links the reproducibility package of the version', () => {

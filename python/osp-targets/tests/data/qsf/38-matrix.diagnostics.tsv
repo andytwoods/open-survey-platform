@@ -1,0 +1,21 @@
+info	Survey.id	/id
+loss	Survey.version	/version
+warning	Metadata.description	/metadata/description
+info	Survey.choiceLists	/choiceLists
+info	Block.id	/blocks/0/id
+info	Page.id	/blocks/0/pages/0/id
+info	Block.id	/blocks/1/id
+info	Page.id	/blocks/1/pages/0/id
+info	IntegerQuestion.showIf	/blocks/1/pages/0/items/0/showIf
+info	Compare.kind	/blocks/1/pages/0/items/0/showIf
+info	MatrixQuestion.showIf	/blocks/1/pages/0/items/1/showIf
+info	Answered.kind	/blocks/1/pages/0/items/1/showIf
+info	MatrixQuestion.choiceList	/blocks/1/pages/0/items/1/choiceList
+info	$choice.code	/choiceLists/0/choices/0/value
+info	$choice.code	/choiceLists/0/choices/1/value
+info	$choice.code	/choiceLists/0/choices/2/value
+warning	$matrix.someRowsRequired	/blocks/0/pages/0/items/0/rows
+loss	$pipe.unsupported	/blocks/1/pages/0/items/0/label
+warning	$matrix.someRowsRequired	/blocks/1/pages/0/items/1/rows
+warning	$missingStates	
+info	$text.markup	/metadata/description

@@ -165,3 +165,14 @@ def test_lss_export(benv):
     assert r.content.startswith(b"<?xml") and ".lss" in r.headers["content-disposition"]
     viewer = benv.login("viewer@a.example")
     assert viewer.get(f"/api/surveys/{s['id']}/export/lss").status_code == 403
+
+
+@pytest.mark.parametrize(("target", "suffix"), [("qsf", ".qsf"), ("surveyjs", ".surveyjs.json")])
+def test_json_exports(benv, target, suffix):
+    c = benv.login("editor@a.example")
+    s = c.post("/api/surveys", json={"title": "Export me"}).json()
+    r = c.get(f"/api/surveys/{s['id']}/export/{target}")
+    assert r.status_code == 200, r.text
+    assert isinstance(r.json(), dict) and suffix in r.headers["content-disposition"]
+    viewer = benv.login("viewer@a.example")
+    assert viewer.get(f"/api/surveys/{s['id']}/export/{target}").status_code == 403
