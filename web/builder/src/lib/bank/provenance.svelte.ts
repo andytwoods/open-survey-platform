@@ -19,7 +19,7 @@ export interface ProvenanceInfo {
 }
 
 export class ProvenanceIndex {
-	#items = new SvelteMap<string, { title: string; version: number; licenceClass: string } | null>();
+	#items = new SvelteMap<string, { title: string; abbreviation: string | null; version: number; licenceClass: string } | null>();
 	#pending = new SvelteSet<string>();
 
 	/** Fetch what is missing for every source in `survey` (idempotent). */
@@ -32,20 +32,31 @@ export class ProvenanceIndex {
 		this.#pending.add(id);
 		const r = await bank.get(id);
 		this.#pending.delete(id);
-		this.#items.set(id, r.ok ? { title: r.data.summary.title, version: r.data.summary.version, licenceClass: r.data.summary.licenceClass } : null);
+		this.#items.set(
+			id,
+			r.ok
+				? {
+						title: r.data.summary.title,
+						abbreviation: r.data.summary.abbreviation ?? null,
+						version: r.data.summary.version,
+						licenceClass: r.data.summary.licenceClass
+					}
+				: null
+		);
 	}
 
 	/** Forget an item (after a new version was saved), so the next refresh re-reads it. */
-	invalidate(id: string) {
+	invalidate(id: string, survey?: unknown) {
 		this.#items.delete(id);
 		bank.forget(id);
+		if (survey !== undefined) this.refresh(survey);
 	}
 
 	info(source: SourceRef): ProvenanceInfo {
 		const known = this.#items.get(source.bank);
 		const title = known?.title ?? null;
 		return {
-			label: provenanceLabel(source, title) + (known === null ? ' (not found)' : ''),
+			label: provenanceLabel(source, known?.abbreviation || title) + (known === null ? ' (not found)' : ''),
 			title,
 			current: known?.version ?? null,
 			licenceClass: known?.licenceClass ?? null,

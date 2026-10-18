@@ -925,7 +925,15 @@
 	<TypeChangeDialog request={typeChange} onresolve={onTypeChangeResolved} />
 	<StructureDeleteDialog request={structure.deleteRequest} onresolve={(ok) => structure.resolveDelete(ok)} />
 	<MoveToDialog bind:open={moveToOpen} roots={pages} ids={outlineSelection.ids} onMove={(ids, t) => void moveItems(ids, t)} />
-	<SaveToBankDialog request={saveRequest} {store} canLicense={bank.canShare} onclose={() => (saveRequest = null)} />
+	<SaveToBankDialog
+		request={saveRequest}
+		{store}
+		canLicense={bank.canShare}
+		onclose={(saved) => {
+			saveRequest = null;
+			if (saved) provenance.invalidate(saved.id, store.survey);
+		}}
+	/>
 	<ProvenanceDialog
 		request={provenanceRequest}
 		lang={defaultLanguage(store.survey)}

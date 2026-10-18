@@ -78,7 +78,7 @@ test('the Bank section: search, preview, Insert at the selection, provenance, De
 	await expect(result(page, 'gad2')).toBeVisible();
 	await expect(bankPane(page).locator('[data-bank-result]')).toHaveCount(1);
 	// The preview: items, scoring, the licence statement.
-	await result(page, 'gad2').getByRole('button', { name: /Generalized Anxiety Disorder-2/ }).click();
+	await result(page, 'gad2').getByRole('button', { name: /^Generalized Anxiety Disorder-2/ }).click();
 	const preview = result(page, 'gad2').getByTestId('bank-preview');
 	await expect(preview).toBeVisible();
 	await expect(preview.getByRole('list', { name: 'Items' })).toContainText('Feeling nervous');
@@ -105,7 +105,7 @@ test('the Bank section: search, preview, Insert at the selection, provenance, De
 	await expect(details.getByTestId('provenance-details')).toContainText('version 1');
 	await expect(details.getByRole('list', { name: 'Items' })).toContainText('Not being able to stop');
 	expect(await axe(page)).toEqual([]);
-	await details.getByRole('button', { name: 'Close' }).click();
+	await details.getByRole('button', { name: 'Close', exact: true }).click();
 	await expect(details).toBeHidden();
 	await line.getByRole('button', { name: /Detach/ }).click();
 	await expect(line).toHaveCount(0);
@@ -128,15 +128,19 @@ test('dragging a bank item onto the canvas inserts it as a block there', async (
 	const id = await seeded(page, `Bank drag ${Date.now()}`);
 	await openBank(page);
 	await bankPane(page).getByRole('searchbox', { name: 'Search the bank' }).fill('phq-2');
+	// The debounced search re-lays the list out: measure only once it holds the one result.
+	await expect(bankPane(page).locator('[data-bank-result]')).toHaveCount(1);
 	await expect(result(page, 'phq2')).toBeVisible();
 	const from = (await result(page, 'phq2').boundingBox())!;
-	// Onto the gap above Alpha (the first gap of the first block): the block goes before b1.
-	const alpha = (await page.locator('[data-canvas-question="q_a"]').boundingBox())!;
+	// Onto the very first gap of the first block (above the starter question): a block
+	// dropped there goes before b1.
+	const firstCard = page.locator('[data-canvas-question]').first();
+	const top = (await firstCard.boundingBox())!;
 	await page.mouse.move(from.x + from.width / 2, from.y + from.height / 2);
 	await page.mouse.down();
 	await page.mouse.move(from.x + from.width / 2 + 12, from.y + from.height / 2 - 8, { steps: 3 });
-	await page.mouse.move(alpha.x + alpha.width / 2, alpha.y + 4, { steps: 10 });
-	await expect(page.locator('[data-canvas-question="q_a"]')).toHaveAttribute('data-drop', 'before');
+	await page.mouse.move(top.x + top.width / 2, top.y + 4, { steps: 10 });
+	await expect(firstCard).toHaveAttribute('data-drop', 'before');
 	await page.mouse.up();
 	await expect(item(page, 'PHQ-2')).toBeVisible();
 	await expect(saved(page)).toHaveText(/All changes saved/);
@@ -146,6 +150,7 @@ test('dragging a bank item onto the canvas inserts it as a block there', async (
 
 	// Escape mid-drag inserts nothing.
 	const from2 = (await result(page, 'phq2').boundingBox())!;
+	const alpha = (await page.locator('[data-canvas-question="q_a"]').boundingBox())!;
 	await page.mouse.move(from2.x + from2.width / 2, from2.y + from2.height / 2);
 	await page.mouse.down();
 	await page.mouse.move(from2.x + from2.width / 2 + 12, from2.y + from2.height / 2 - 8, { steps: 3 });
@@ -195,7 +200,8 @@ test('Save to bank… from the context menu shows what travels and what is cut, 
 	// Found again in the Bank section, as the lab's own item with the default licence.
 	await openBank(page);
 	await bankPane(page).getByRole('searchbox', { name: 'Search the bank' }).fill(title);
-	const card = bankPane(page).locator('[data-bank-result][data-source="lab"]');
+	await expect(bankPane(page).locator('[data-bank-result]')).toHaveCount(1);
+	const card = bankPane(page).locator('[data-bank-item][data-source="lab"]');
 	await expect(card).toHaveCount(1);
 	await expect(card).toContainText(title);
 	await expect(card).toContainText('Licence not stated');
@@ -270,12 +276,14 @@ test('the Bank page: edit, share with relicensing, export, delete, bundled libra
 	await card.getByRole('button', { name: 'Delete…' }).click();
 	await page.getByRole('group', { name: `Delete ${title}?` }).getByRole('button', { name: 'Delete' }).click();
 	await expect(card).toHaveCount(0);
-	expect((await page.request.get(`/api/bank/${mine.id}`)).status()).toBe(404);
+	// Soft delete: it leaves every list (surveys that inserted it can still read it).
+	expect((await (await page.request.get(`/api/bank/${mine.id}`)).json()).summary.deletedAt).toBeTruthy();
+	expect((await (await page.request.get(`/api/bank?source=lab&q=${encodeURIComponent(title)}`)).json()).items).toEqual([]);
 
 	// The bundled library shows the licence evidence.
 	await page.getByRole('tab', { name: 'Bundled library' }).click();
 	const phq9 = page.locator('[data-bank-item="phq9"]');
-	await phq9.getByRole('button', { name: /Patient Health Questionnaire-9/ }).click();
+	await phq9.getByRole('button', { name: /^Patient Health Questionnaire-9/ }).click();
 	await expect(phq9.getByTestId('bank-preview')).toContainText('no permission is required');
 	await expect(phq9.getByRole('link', { name: /Terms page/ })).toHaveAttribute('href', /phqscreeners/);
 	expect(await axe(page)).toEqual([]);
@@ -322,6 +330,7 @@ test('320 px: the Bank section fits, Insert picks the item up and Place here put
 	const pane = page.locator('#pane-outline');
 	expect(await pane.evaluate((el) => el.scrollWidth <= el.clientWidth + 1)).toBe(true);
 	await bankPane(page).getByRole('searchbox', { name: 'Search the bank' }).fill('gad-2');
+	await expect(bankPane(page).locator('[data-bank-result]')).toHaveCount(1);
 	await expect(result(page, 'gad2')).toBeVisible();
 	expect(await axe(page)).toEqual([]);
 	await result(page, 'gad2').getByRole('button', { name: /^Insert / }).click();
@@ -334,7 +343,7 @@ test('320 px: the Bank section fits, Insert picks the item up and Place here put
 
 	await page.goto('/bank');
 	await expect(page.getByRole('heading', { level: 2, name: 'Question bank' })).toBeVisible();
-	await expect(page.locator('[data-bank-item="phq9"]').or(page.getByRole('tab', { name: 'Bundled library' }))).toBeVisible();
+	await expect(page.getByRole('tab', { name: 'Bundled library' })).toBeVisible();
 	expect(await page.evaluate(() => document.documentElement.scrollWidth)).toBeLessThanOrEqual(320);
 	expect(await axe(page)).toEqual([]);
 });
