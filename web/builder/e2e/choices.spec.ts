@@ -194,7 +194,9 @@ test('labels are rich: bold, a chip and a count while editing; plain at rest (RT
 	await expect(tb.getByRole('button', { name: 'Bulleted list' })).toHaveCount(0);
 	await expect(tb.getByRole('button', { name: 'Line break' })).toHaveCount(0);
 	await expect(editor.locator('.osp-rt-count')).toHaveText(/9 \/ 500/);
-	await page.keyboard.press('Shift+ControlOrMeta+ArrowLeft');
+	// Select "good" one character at a time: Ctrl+Shift+Left selects a word on Linux and
+	// Windows, but Meta+Shift+Left selects to the line start on macOS.
+	for (let i = 0; i < 4; i++) await page.keyboard.press('Shift+ArrowLeft');
 	await page.waitForTimeout(100);
 	await page.keyboard.press('ControlOrMeta+b');
 	await expect(tb.getByRole('button', { name: 'Bold' })).toHaveAttribute('aria-pressed', 'true');
